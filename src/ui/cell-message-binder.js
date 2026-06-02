@@ -82,4 +82,5 @@ export class CellMessageBinder {
         this.cellListeners.clear();
         this.floatingMessage.hide();
     }
+    
 }
