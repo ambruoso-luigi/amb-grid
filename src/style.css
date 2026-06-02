@@ -1,0 +1,62 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.toolbar button {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    padding: 8px 12px;
+}
+
+.toolbar button:hover {
+    background: #f4f4f4;
+}
+
+.tabulator-row[data-state="clean"] {
+    background-color: #fff !important;
+}
+
+.tabulator-row[data-state="new"] {
+    background-color: #eef2ff !important;
+}
+
+.tabulator-row[data-state="modified"] {
+    background-color: #fff4cc !important;
+}
+
+.tabulator-cell[data-cell-state="modified"] {
+    background-color: #ffd966 !important;
+}
+
+.tabulator-cell[data-cell-error="true"] {
+    background-color: #f7b7b7 !important;
+}
+
+.tabulator-row[data-state="saved"] {
+    background-color: #e8f7e8 !important;
+}
+
+.tabulator-row[data-state="deleted"] {
+    background-color: #f1f1f1 !important;
+    color: #777;
+    text-decoration: line-through;
+}
+
+.tabulator-row[data-row-error="true"] {
+    background-color: #fde8e8 !important;
+}
