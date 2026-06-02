@@ -72,7 +72,6 @@ export class CrudHelper {
 
             if (state === ROW_STATE.NEW || state === ROW_STATE.DELETED) {
                 this._clearCellState(cell);
-                this._applyConsistentRowState(row);
                 this._validateCell(cell);
                 return;
             }
@@ -107,6 +106,16 @@ export class CrudHelper {
 
         delete clonedData[this.options.stateField];
         delete clonedData[this.options.originalDataField];
+
+        return clonedData;
+    }
+
+    _cleanStateReportData(data) {
+        const clonedData = this._cleanHelperFields(data);
+
+        if (this._isRowNumberingEnabled()) {
+            delete clonedData[this._getRowNumberField()];
+        }
 
         return clonedData;
     }
@@ -398,22 +407,24 @@ export class CrudHelper {
         if (!cell) return;
 
         const field = cell.getField();
-        const validator = this.cellValidators.get(field);
+        const validators = this.cellValidators.get(field);
 
-        if (!validator) return;
+        if (!validators || validators.length === 0) return;
 
         const row = cell.getRow();
         const rowData = row.getData();
         const id = rowData[this.options.idField];
         const value = cell.getValue();
-        const isValid = validator.validateFn(value, rowData, cell, this);
+        const failedValidator = validators.find(validator => {
+            return !validator.validateFn(value, rowData, cell, this);
+        });
 
-        if (isValid) {
+        if (!failedValidator) {
             this.clearCellError(id, field);
             return;
         }
 
-        this.markCellError(id, field, validator.message);
+        this.markCellError(id, field, failedValidator.message);
     }
 
     _syncRowErrorAttribute(row) {
@@ -449,7 +460,11 @@ export class CrudHelper {
      * @param {Function} validateFn - Function receiving (value, rowData, cell, helper); returns true when valid.
      */
     addCellValidator(field, message, validateFn) {
-        this.cellValidators.set(field, {
+        if (!this.cellValidators.has(field)) {
+            this.cellValidators.set(field, []);
+        }
+
+        this.cellValidators.get(field).push({
             message,
             validateFn
         });
@@ -648,7 +663,7 @@ export class CrudHelper {
         const errors = this.cellErrors.get(id);
 
         if (errors) {
-            errors.forEach((message, field) => {
+            Array.from(errors).forEach(([field, message]) => {
                 const cell = this._getCell(row, field);
                 const cellElement = cell && cell.getElement();
 
@@ -656,6 +671,8 @@ export class CrudHelper {
                     delete cellElement.dataset.cellError;
                     cellElement.removeAttribute('title');
                 }
+
+                this._emit('cell-error-cleared', { row, cell, id, field, message });
             });
         }
 
@@ -919,6 +936,31 @@ export class CrudHelper {
     }
 
     /**
+     * Mark multiple pending rows as saved after a successful backend confirmation.
+     *
+     * @param {*[]} ids - Row identifiers to mark as saved.
+     * @returns {boolean} True only when every row was marked successfully.
+     */
+    markRowsSaved(ids) {
+        return ids.every(id => {
+            return this.markRowSaved(id);
+        });
+    }
+
+    /**
+     * Mark all valid changed rows from the current state report as saved.
+     *
+     * @returns {boolean} True only when every valid changed row was marked successfully.
+     */
+    markValidChangesSaved() {
+        const report = this.getStateReport();
+
+        return report.validChangedRows.every(row => {
+            return this.markRowSaved(row.id);
+        });
+    }
+
+    /**
      * Search rows by a field value using Tabulator's equality search.
      *
      * @param {string} field - Field name to search.
@@ -982,6 +1024,118 @@ export class CrudHelper {
         });
 
         return changes;
+    }
+
+    /**
+     * Return a complete read-only snapshot of row state, errors, and save-ready changes.
+     *
+     * @returns {{
+     *   hasChanges: boolean,
+     *   hasErrors: boolean,
+     *   totalRows: number,
+     *   changedRowsCount: number,
+     *   errorRowsCount: number,
+     *   validChangedRowsCount: number,
+     *   invalidChangedRowsCount: number,
+     *   rows: object[],
+     *   changedRows: object[],
+     *   validChangedRows: object[],
+     *   invalidChangedRows: object[],
+     *   changes: {inserted: object[], updated: object[], deleted: object[]},
+     *   validChanges: {inserted: object[], updated: object[], deleted: object[]},
+     *   errors: {hasErrors: boolean, rows: object[], cells: object[]}
+     * }} Full table state report.
+     */
+    getStateReport() {
+        const rows = this.table.getRows().map(row => {
+            const data = row.getData();
+            const id = data[this.options.idField];
+            const state = data[this.options.stateField] || ROW_STATE.CLEAN;
+            const hasRowError = this.rowErrors.has(id);
+            const rowError = hasRowError ? this.rowErrors.get(id) : null;
+            const cellErrorMap = this.cellErrors.get(id);
+            const cellErrors = cellErrorMap
+                ? Array.from(cellErrorMap, ([field, message]) => {
+                    return { field, message };
+                })
+                : [];
+            const hasChanges = state === ROW_STATE.NEW
+                || state === ROW_STATE.MODIFIED
+                || state === ROW_STATE.DELETED;
+            const hasErrors = hasRowError || cellErrors.length > 0;
+            const beforeData = this._getOriginalDataForRow(row);
+            const before = beforeData ? this._cleanStateReportData(beforeData) : null;
+            const after = this._cleanStateReportData(data);
+            const changedFields = before ? this._getChangedFields(before, after) : [];
+
+            return {
+                id,
+                rowNumber: this._isRowNumberingEnabled() ? data[this._getRowNumberField()] : null,
+                state,
+                hasChanges,
+                hasErrors,
+                isValid: !hasErrors,
+                isSaveCandidate: hasChanges && !hasErrors,
+                rowError,
+                cellErrors,
+                changedFields,
+                before,
+                after
+            };
+        });
+
+        const changedRows = rows.filter(row => row.hasChanges);
+        const validChangedRows = changedRows.filter(row => !row.hasErrors);
+        const invalidChangedRows = changedRows.filter(row => row.hasErrors);
+        const errorRows = rows.filter(row => row.hasErrors);
+        const validChanges = {
+            inserted: [],
+            updated: [],
+            deleted: []
+        };
+
+        validChangedRows.forEach(row => {
+            if (row.state === ROW_STATE.NEW) {
+                validChanges.inserted.push(row.after);
+                return;
+            }
+
+            if (row.state === ROW_STATE.MODIFIED) {
+                if (!row.before) return;
+
+                validChanges.updated.push({
+                    id: row.id,
+                    before: row.before,
+                    after: row.after,
+                    changedFields: row.changedFields
+                });
+                return;
+            }
+
+            if (row.state === ROW_STATE.DELETED) {
+                validChanges.deleted.push({
+                    id: row.id,
+                    originalData: row.before
+                });
+            }
+        });
+
+        return {
+            hasChanges: changedRows.length > 0,
+            hasErrors: errorRows.length > 0,
+            totalRows: rows.length,
+            changedRowsCount: changedRows.length,
+            errorRowsCount: errorRows.length,
+            validChangedRowsCount: validChangedRows.length,
+            invalidChangedRowsCount: invalidChangedRows.length,
+            rows,
+            changedRows,
+            validChangedRows,
+            invalidChangedRows,
+            changes: this.getChanges(),
+            validChanges,
+            errors: this.getErrors()
+        };
     }
 
     _markRowModified(row) {

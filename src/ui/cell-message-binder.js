@@ -52,10 +52,11 @@ export class CellMessageBinder {
     }
 
     _handleCellErrorCleared({ cell }) {
+        this.floatingMessage.hide();
+
         const cellElement = cell && cell.getElement();
 
         this._removeCellListeners(cellElement);
-        this.floatingMessage.hide();
     }
 
     _removeCellListeners(cellElement) {

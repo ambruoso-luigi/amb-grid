@@ -27,6 +27,35 @@ h1 {
     background: #f4f4f4;
 }
 
+.teh-delete-button {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #c8c8c8;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.teh-delete-button:hover {
+    background: #f4f4f4;
+    border-color: #999;
+}
+
+.teh-delete-button--delete {
+    color: #8a1f1f;
+}
+
+.teh-delete-button--rollback {
+    color: #5f4b00;
+}
+
+.teh-delete-button--remove {
+    color: #333;
+}
+
 .tabulator-row[data-state="clean"] {
     background-color: #fff !important;
 }
