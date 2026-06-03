@@ -73,7 +73,7 @@ h1 {
 }
 
 .tabulator-cell[data-cell-error="true"] {
-    background-color: #f7b7b7 !important;
+    background-color: #f8caca !important;
 }
 
 .tabulator-row[data-state="saved"] {
@@ -87,5 +87,9 @@ h1 {
 }
 
 .tabulator-row[data-row-error="true"] {
-    background-color: #fde8e8 !important;
+    background-color: #fff1f1 !important;
+}
+
+.tabulator-row[data-has-cell-error="true"] {
+    background-color: #fff8f8 !important;
 }

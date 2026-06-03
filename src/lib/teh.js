@@ -2,6 +2,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { CrudHelper, ROW_STATE } from './crud-helper.js';
 import { CellMessageBinder } from '../ui/cell-message-binder.js';
 import { FloatingMessage } from '../ui/floating-message.js';
+import { ConfirmDialog } from '../ui/confirm-dialog.js';
 
 const DEFAULT_MESSAGES = {
     required: 'This field is required'
@@ -56,9 +57,11 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
     };
 };
 
-const createDeleteColumn = (deleteColumn, getCrud) => {
+const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const confirmDeleteMessage = deleteColumn.confirmDeleteMessage || deleteColumn.confirmMessage;
     const confirmRollbackMessage = deleteColumn.confirmRollbackMessage;
+    const confirmRemoveNewMessage = deleteColumn.confirmRemoveNewMessage;
+    const confirmProvider = deleteColumn.confirmProvider;
 
     const getRowState = row => {
         const crud = getCrud();
@@ -125,6 +128,16 @@ const createDeleteColumn = (deleteColumn, getCrud) => {
         }, 0);
     };
 
+    const requestConfirmation = async ({ action, message, row, state, id }) => {
+        if (!message) return true;
+
+        if (typeof confirmProvider === 'function') {
+            return Boolean(await confirmProvider({ action, message, row, state, id }));
+        }
+
+        return confirmDialog.confirm({ message });
+    };
+
     return {
         column: {
             width: deleteColumn.width || 55,
@@ -142,7 +155,7 @@ const createDeleteColumn = (deleteColumn, getCrud) => {
 
                 return button;
             },
-            cellClick: (event, cell) => {
+            cellClick: async (event, cell) => {
                 event.preventDefault();
                 event.stopPropagation();
 
@@ -156,13 +169,33 @@ const createDeleteColumn = (deleteColumn, getCrud) => {
                 const state = getRowState(row);
 
                 if (state === ROW_STATE.NEW) {
+                    const confirmed = await requestConfirmation({
+                        action: 'remove-new',
+                        message: confirmRemoveNewMessage,
+                        row,
+                        state,
+                        id
+                    });
+
+                    if (!confirmed) {
+                        return;
+                    }
+
                     crud.deleteRow(id);
                     scheduleRowButtonUpdate(row);
                     return;
                 }
 
                 if (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED) {
-                    if (confirmRollbackMessage && !window.confirm(confirmRollbackMessage)) {
+                    const confirmed = await requestConfirmation({
+                        action: 'rollback',
+                        message: confirmRollbackMessage,
+                        row,
+                        state,
+                        id
+                    });
+
+                    if (!confirmed) {
                         return;
                     }
 
@@ -171,7 +204,15 @@ const createDeleteColumn = (deleteColumn, getCrud) => {
                     return;
                 }
 
-                if (confirmDeleteMessage && !window.confirm(confirmDeleteMessage)) {
+                const confirmed = await requestConfirmation({
+                    action: 'delete',
+                    message: confirmDeleteMessage,
+                    row,
+                    state,
+                    id
+                });
+
+                if (!confirmed) {
                     return;
                 }
 
@@ -185,7 +226,7 @@ const createDeleteColumn = (deleteColumn, getCrud) => {
 
 export const TEH = {
     table(options = {}) {
-        const { selector, columns, messages, deleteColumn, ...tabulatorOptions } = options;
+        const { selector, columns, messages, deleteColumn, errorStyle, ...tabulatorOptions } = options;
         const normalizedMessages = {
             ...DEFAULT_MESSAGES,
             ...messages
@@ -194,8 +235,9 @@ export const TEH = {
         const normalizedOptions = { ...tabulatorOptions };
         let crud = null;
         let unsubscribeDeleteColumn = null;
+        const confirmDialog = new ConfirmDialog();
         const deleteColumnController = deleteColumn && deleteColumn.enabled
-            ? createDeleteColumn(deleteColumn, () => crud)
+            ? createDeleteColumn(deleteColumn, () => crud, confirmDialog)
             : null;
 
         if (columns) {
@@ -208,7 +250,7 @@ export const TEH = {
         }
 
         const table = new Tabulator(selector, normalizedOptions);
-        crud = new CrudHelper(table);
+        crud = new CrudHelper(table, { errorStyle });
         const floatingMessage = new FloatingMessage();
         const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
 
@@ -229,6 +271,7 @@ export const TEH = {
             crud,
             floatingMessage,
             cellMessageBinder,
+            confirmDialog,
             destroy() {
                 if (unsubscribeDeleteColumn) {
                     unsubscribeDeleteColumn();
@@ -237,6 +280,7 @@ export const TEH = {
 
                 cellMessageBinder.destroy();
                 floatingMessage.destroy();
+                confirmDialog.destroy();
 
                 if (typeof table.destroy === 'function') {
                     table.destroy();

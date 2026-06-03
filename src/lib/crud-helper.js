@@ -29,13 +29,15 @@ export class CrudHelper {
      * @param {string} [options.idField='id'] - Unique row identifier field.
      * @param {string} [options.stateField='_state'] - Field used to store the row state.
      * @param {string} [options.originalDataField='_originalData'] - Field used to store original row data.
+     * @param {object} [options.errorStyle] - Error highlighting options.
+     * @param {boolean} [options.errorStyle.highlightRowOnCellError=false] - Whether cell errors also mark the row.
      * @param {object} [options.rowNumbering] - Local technical row numbering options.
      * @param {boolean} [options.rowNumbering.enabled=true] - Whether local row numbering is enabled.
      * @param {string} [options.rowNumbering.field='_tehRowNumber'] - Field used to store the local row number.
      * @param {boolean} [options.rowNumbering.assignOnAdd=true] - Whether new rows receive the next local row number.
      */
     constructor(table, options = {}) {
-        const { rowNumbering = {}, ...baseOptions } = options;
+        const { errorStyle = {}, rowNumbering = {}, ...baseOptions } = options;
 
         this.table = table;
         this.options = {
@@ -43,6 +45,10 @@ export class CrudHelper {
             stateField: '_state',
             originalDataField: '_originalData',
             ...baseOptions,
+            errorStyle: {
+                highlightRowOnCellError: false,
+                ...errorStyle
+            },
             rowNumbering: {
                 enabled: true,
                 field: '_tehRowNumber',
@@ -435,12 +441,17 @@ export class CrudHelper {
 
         if (!rowElement) return;
 
-        if (this._hasRowError(id) || this._hasCellErrors(id)) {
+        if (this._hasRowError(id)) {
             rowElement.dataset.rowError = 'true';
-            return;
+        } else {
+            delete rowElement.dataset.rowError;
         }
 
-        delete rowElement.dataset.rowError;
+        if (this.options.errorStyle.highlightRowOnCellError && this._hasCellErrors(id)) {
+            rowElement.dataset.hasCellError = 'true';
+        } else {
+            delete rowElement.dataset.hasCellError;
+        }
     }
 
     /**
@@ -706,9 +717,10 @@ export class CrudHelper {
         const rowElement = row.getElement();
 
         if (rowElement) {
-            rowElement.dataset.rowError = 'true';
             rowElement.title = message;
         }
+
+        this._syncRowErrorAttribute(row);
 
         this._emit('row-error', { row, id, message });
         return true;

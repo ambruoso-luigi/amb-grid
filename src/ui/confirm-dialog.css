@@ -1,0 +1,68 @@
+.teh-confirm-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 20px;
+}
+
+.teh-confirm-dialog--visible {
+    display: flex;
+}
+
+.teh-confirm-dialog__panel {
+    width: min(420px, 100%);
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+    padding: 20px;
+}
+
+.teh-confirm-dialog__title {
+    margin: 0 0 10px;
+    color: #222;
+    font-size: 18px;
+    line-height: 1.3;
+}
+
+.teh-confirm-dialog__message {
+    margin: 0;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.teh-confirm-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.teh-confirm-dialog__button {
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    font: inherit;
+    padding: 8px 12px;
+}
+
+.teh-confirm-dialog__button:hover {
+    background: #f5f5f5;
+}
+
+.teh-confirm-dialog__button--confirm {
+    border-color: #8a1f1f;
+    background: #8a1f1f;
+    color: #fff;
+}
+
+.teh-confirm-dialog__button--confirm:hover {
+    background: #741919;
+}

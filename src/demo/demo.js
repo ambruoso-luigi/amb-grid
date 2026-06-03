@@ -1,6 +1,7 @@
 import 'tabulator-tables/dist/css/tabulator.min.css';
-import { TEH } from '../lib/teh.js';
+import { TEH } from '../index.js';
 import '../ui/floating-message.css';
+import '../ui/confirm-dialog.css';
 
 document.querySelector('#app').innerHTML = `
     <h1>tabulator-editable-helper</h1>
@@ -27,7 +28,8 @@ const editableTable = TEH.table({
         enabled: true,
         width: 55,
         confirmDeleteMessage: 'Confirm row deletion?',
-        confirmRollbackMessage: 'Confirm rollback?'
+        confirmRollbackMessage: 'Confirm rollback?',
+        confirmRemoveNewMessage: 'Confirm removing this new row?'
     },
 
     data: [
