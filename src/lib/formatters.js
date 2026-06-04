@@ -45,16 +45,67 @@ export const formatters = {
                 return stringifyValue(value);
             }
 
-            return numberValue.toLocaleString(options.locale || 'it-IT', {
+            const { locale = 'it-IT', ...formatOptions } = options;
+
+            return numberValue.toLocaleString(locale, {
                 minimumFractionDigits: decimals,
                 maximumFractionDigits: decimals,
-                ...options
+                ...formatOptions
             });
         };
     },
 
     integer(options = {}) {
         return formatters.decimal(0, options);
+    },
+
+    currency(options = {}) {
+        return cell => {
+            const value = getCellValue(cell);
+
+            if (isEmptyValue(value)) return '';
+
+            const numberValue = Number(value);
+
+            if (!Number.isFinite(numberValue)) {
+                return stringifyValue(value);
+            }
+
+            const {
+                locale = 'it-IT',
+                currency = 'EUR',
+                ...formatOptions
+            } = options;
+
+            return numberValue.toLocaleString(locale, {
+                style: 'currency',
+                currency,
+                ...formatOptions
+            });
+        };
+    },
+
+    percent(decimals = 2, options = {}) {
+        return cell => {
+            const value = getCellValue(cell);
+
+            if (isEmptyValue(value)) return '';
+
+            const numberValue = Number(value);
+
+            if (!Number.isFinite(numberValue)) {
+                return stringifyValue(value);
+            }
+
+            const { locale = 'it-IT', ...formatOptions } = options;
+
+            return numberValue.toLocaleString(locale, {
+                style: 'percent',
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+                ...formatOptions
+            });
+        };
     },
 
     emptyPlaceholder(placeholder = '-') {

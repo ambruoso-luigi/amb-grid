@@ -33,9 +33,9 @@ const editableTable = TEH.table({
     },
 
     data: [
-        { id: 1, fullName: 'Mario Rossi', email: 'mario.rossi@example.com', roleCode: 'ADM001', age: 34 },
-        { id: 2, fullName: 'Luigi Bianchi', email: 'luigi.bianchi@example.com', roleCode: 'USR102', age: 41 },
-        { id: 3, fullName: 'Anna Verdi', email: 'anna.verdi@example.com', roleCode: 'SUP210', age: 29 }
+        { id: 1, fullName: 'Mario Rossi', email: 'mario.rossi@example.com', roleCode: 'ADM001', age: 34, salary: 42000 },
+        { id: 2, fullName: 'Luigi Bianchi', email: 'luigi.bianchi@example.com', roleCode: 'USR102', age: 41, salary: 38500 },
+        { id: 3, fullName: 'Anna Verdi', email: 'anna.verdi@example.com', roleCode: 'SUP210', age: 29, salary: 45200 }
     ],
 
     layout: 'fitColumns',
@@ -82,13 +82,29 @@ const editableTable = TEH.table({
         {
             title: 'Age',
             field: 'age',
-            editor: 'number',
+            editor: TEH.editors.integer({ allowEmpty: true }),
             formatter: TEH.formatters.integer(),
             validation: {
                 range: {
                     min: 18,
                     max: 65,
                     message: 'Age must be between 18 and 65'
+                }
+            }
+        },
+        {
+            title: 'Salary',
+            field: 'salary',
+            editor: TEH.editors.decimal({
+                integerDigits: 7,
+                decimalDigits: 2,
+                allowEmpty: true
+            }),
+            formatter: TEH.formatters.currency(),
+            validation: {
+                min: {
+                    value: 0,
+                    message: 'Salary must be positive'
                 }
             }
         }
@@ -105,7 +121,7 @@ window.cellMessageBinder = cellMessageBinder;
 document.querySelector('#add-row').addEventListener('click', async () => {
     if (crud.findRowById(4)) return;
 
-    await crud.addRow({ id: 4, fullName: '', email: '', roleCode: '', age: '' });
+    await crud.addRow({ id: 4, fullName: '', email: '', roleCode: '', age: '', salary: '' });
 });
 
 document.querySelector('#show-state-report').addEventListener('click', () => {

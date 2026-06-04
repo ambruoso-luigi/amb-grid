@@ -5,6 +5,7 @@ import { FloatingMessage } from '../ui/floating-message.js';
 import { ConfirmDialog } from '../ui/confirm-dialog.js';
 import { validators } from './validators.js';
 import { formatters } from './formatters.js';
+import { editors } from './editors.js';
 
 const DEFAULT_MESSAGES = {
     required: 'This field is required'
@@ -12,6 +13,8 @@ const DEFAULT_MESSAGES = {
 
 const DEFAULT_VALIDATION_MESSAGES = {
     email: 'Invalid email address',
+    integer: 'Value must be an integer',
+    number: 'Value must be a number',
     pattern: 'Invalid format',
     custom: 'Invalid value'
 };
@@ -64,6 +67,18 @@ const extractValidationRules = (field, validation = {}, messages = DEFAULT_MESSA
         const message = validation.email.message || DEFAULT_VALIDATION_MESSAGES.email;
 
         extractedValidators.push(validators.email(message));
+    }
+
+    if (validation.number) {
+        const message = validation.number.message || DEFAULT_VALIDATION_MESSAGES.number;
+
+        extractedValidators.push(validators.number(message));
+    }
+
+    if (validation.integer) {
+        const message = validation.integer.message || DEFAULT_VALIDATION_MESSAGES.integer;
+
+        extractedValidators.push(validators.integer(message));
     }
 
     if (validation.range) {
@@ -343,6 +358,7 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
 export const TEH = {
     validators,
     formatters,
+    editors,
 
     table(options = {}) {
         const { selector, columns, messages, deleteColumn, errorStyle, ...tabulatorOptions } = options;

@@ -36,6 +36,28 @@ export const validators = {
         };
     },
 
+    number(message = 'Value must be a number') {
+        return {
+            message,
+            validate: value => {
+                if (isEmptyValue(value)) return true;
+
+                return Number.isFinite(Number(value));
+            }
+        };
+    },
+
+    integer(message = 'Value must be an integer') {
+        return {
+            message,
+            validate: value => {
+                if (isEmptyValue(value)) return true;
+
+                return Number.isInteger(Number(value));
+            }
+        };
+    },
+
     range(min, max, message) {
         return {
             message,
