@@ -3,17 +3,132 @@ import { CrudHelper, ROW_STATE } from './crud-helper.js';
 import { CellMessageBinder } from '../ui/cell-message-binder.js';
 import { FloatingMessage } from '../ui/floating-message.js';
 import { ConfirmDialog } from '../ui/confirm-dialog.js';
+import { validators } from './validators.js';
+import { formatters } from './formatters.js';
 
 const DEFAULT_MESSAGES = {
     required: 'This field is required'
 };
 
+const DEFAULT_VALIDATION_MESSAGES = {
+    email: 'Invalid email address',
+    pattern: 'Invalid format',
+    custom: 'Invalid value'
+};
+
+const createRangeMessage = (min, max) => {
+    return `Value must be between ${min} and ${max}`;
+};
+
+const createMinMessage = minValue => {
+    return `Value must be at least ${minValue}`;
+};
+
+const createMaxMessage = maxValue => {
+    return `Value must be at most ${maxValue}`;
+};
+
+const createMinLengthMessage = length => {
+    return `Minimum length is ${length}`;
+};
+
+const createMaxLengthMessage = length => {
+    return `Maximum length is ${length}`;
+};
+
+const extractValidationRules = (field, validation = {}, messages = DEFAULT_MESSAGES) => {
+    const extractedValidators = [];
+
+    if (!field || !validation) return extractedValidators;
+
+    if (validation.required) {
+        const requiredMessage = validation.required.message
+            || messages.required
+            || DEFAULT_MESSAGES.required;
+
+        extractedValidators.push(validators.required(requiredMessage));
+    }
+
+    if (validation.pattern) {
+        const regex = validation.pattern instanceof RegExp
+            ? validation.pattern
+            : validation.pattern.regex;
+        const message = validation.pattern.message || DEFAULT_VALIDATION_MESSAGES.pattern;
+
+        if (regex) {
+            extractedValidators.push(validators.pattern(regex, message));
+        }
+    }
+
+    if (validation.email) {
+        const message = validation.email.message || DEFAULT_VALIDATION_MESSAGES.email;
+
+        extractedValidators.push(validators.email(message));
+    }
+
+    if (validation.range) {
+        const { min, max, message } = validation.range;
+
+        extractedValidators.push(validators.range(
+            min,
+            max,
+            message || createRangeMessage(min, max)
+        ));
+    }
+
+    if (validation.min !== undefined) {
+        const minValue = typeof validation.min === 'number'
+            ? validation.min
+            : validation.min.value;
+        const message = validation.min.message || createMinMessage(minValue);
+
+        extractedValidators.push(validators.min(minValue, message));
+    }
+
+    if (validation.max !== undefined) {
+        const maxValue = typeof validation.max === 'number'
+            ? validation.max
+            : validation.max.value;
+        const message = validation.max.message || createMaxMessage(maxValue);
+
+        extractedValidators.push(validators.max(maxValue, message));
+    }
+
+    if (validation.minLength !== undefined) {
+        const length = typeof validation.minLength === 'number'
+            ? validation.minLength
+            : validation.minLength.value;
+        const message = validation.minLength.message || createMinLengthMessage(length);
+
+        extractedValidators.push(validators.minLength(length, message));
+    }
+
+    if (validation.maxLength !== undefined) {
+        const length = typeof validation.maxLength === 'number'
+            ? validation.maxLength
+            : validation.maxLength.value;
+        const message = validation.maxLength.message || createMaxLengthMessage(length);
+
+        extractedValidators.push(validators.maxLength(length, message));
+    }
+
+    if (validation.custom && typeof validation.custom.validate === 'function') {
+        extractedValidators.push(validators.custom(
+            validation.custom.message || DEFAULT_VALIDATION_MESSAGES.custom,
+            validation.custom.validate
+        ));
+    }
+
+    return extractedValidators;
+};
+
 const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
-    const validators = [];
+    const extractedValidators = [];
 
     const normalizedColumns = (columns || []).map(column => {
         const {
             validator,
+            validation,
             required,
             requiredMessage,
             columns: childColumns,
@@ -21,20 +136,21 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
         } = column;
 
         if (required && column.field) {
-            validators.push({
+            extractedValidators.push({
                 field: column.field,
-                message: requiredMessage || messages.required || DEFAULT_MESSAGES.required,
-                validate: value => {
-                    if (value === null || value === undefined) return false;
-                    if (typeof value === 'string') return value.trim() !== '';
-
-                    return true;
-                }
+                ...validators.required(requiredMessage || messages.required || DEFAULT_MESSAGES.required)
             });
         }
 
+        extractValidationRules(column.field, validation, messages).forEach(extractedValidator => {
+            extractedValidators.push({
+                field: column.field,
+                ...extractedValidator
+            });
+        });
+
         if (validator && column.field) {
-            validators.push({
+            extractedValidators.push({
                 field: column.field,
                 message: validator.message,
                 validate: validator.validate
@@ -45,7 +161,7 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
             const childExtraction = extractColumnValidators(childColumns, messages);
 
             tabulatorColumn.columns = childExtraction.columns;
-            validators.push(...childExtraction.validators);
+            extractedValidators.push(...childExtraction.validators);
         }
 
         return tabulatorColumn;
@@ -53,7 +169,7 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
 
     return {
         columns: normalizedColumns,
-        validators
+        validators: extractedValidators
     };
 };
 
@@ -225,6 +341,9 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
 };
 
 export const TEH = {
+    validators,
+    formatters,
+
     table(options = {}) {
         const { selector, columns, messages, deleteColumn, errorStyle, ...tabulatorOptions } = options;
         const normalizedMessages = {

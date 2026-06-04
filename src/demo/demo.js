@@ -7,7 +7,7 @@ document.querySelector('#app').innerHTML = `
     <h1>tabulator-editable-helper</h1>
 
     <div class="toolbar">
-        <button type="button" id="add-row">Add temp row</button>
+        <button type="button" id="add-row">Add temp contact</button>
         <button type="button" id="show-state-report">Show state report</button>
         <button type="button" id="mark-valid-changes-saved">Mark valid changes saved</button>
         <button type="button" id="show-row-numbers">Show row numbers</button>
@@ -33,25 +33,62 @@ const editableTable = TEH.table({
     },
 
     data: [
-        { id: 1, name: 'Mario', age: 30 },
-        { id: 2, name: 'Luigi', age: 41 },
-        { id: 3, name: 'Anna', age: 25 }
+        { id: 1, fullName: 'Mario Rossi', email: 'mario.rossi@example.com', roleCode: 'ADM001', age: 34 },
+        { id: 2, fullName: 'Luigi Bianchi', email: 'luigi.bianchi@example.com', roleCode: 'USR102', age: 41 },
+        { id: 3, fullName: 'Anna Verdi', email: 'anna.verdi@example.com', roleCode: 'SUP210', age: 29 }
     ],
 
     layout: 'fitColumns',
 
     columns: [
         { title: 'ID', field: 'id', width: 80 },
-        { title: 'Name', field: 'name', editor: 'input', required: true },
+        {
+            title: 'Full name',
+            field: 'fullName',
+            editor: 'input',
+            required: true,
+            validation: {
+                minLength: {
+                    value: 3,
+                    message: 'Full name must be at least 3 characters'
+                },
+                maxLength: {
+                    value: 40,
+                    message: 'Full name must be at most 40 characters'
+                }
+            }
+        },
+        {
+            title: 'Email',
+            field: 'email',
+            editor: 'input',
+            validation: {
+                email: {
+                    message: 'Invalid email format'
+                }
+            }
+        },
+        {
+            title: 'Role code',
+            field: 'roleCode',
+            editor: 'input',
+            validation: {
+                pattern: {
+                    regex: /^[A-Z]{3}[0-9]{3}$/,
+                    message: 'Role code must be like ADM001'
+                }
+            }
+        },
         {
             title: 'Age',
             field: 'age',
             editor: 'number',
-            validator: {
-                message: 'Age must be between 18 and 40',
-                validate: value => {
-                    const numberValue = Number(value);
-                    return Number.isFinite(numberValue) && numberValue >= 18 && numberValue <= 40;
+            formatter: TEH.formatters.integer(),
+            validation: {
+                range: {
+                    min: 18,
+                    max: 65,
+                    message: 'Age must be between 18 and 65'
                 }
             }
         }
@@ -68,7 +105,7 @@ window.cellMessageBinder = cellMessageBinder;
 document.querySelector('#add-row').addEventListener('click', async () => {
     if (crud.findRowById(4)) return;
 
-    await crud.addRow({ id: 4, name: 'Francesca', age: 29 });
+    await crud.addRow({ id: 4, fullName: '', email: '', roleCode: '', age: '' });
 });
 
 document.querySelector('#show-state-report').addEventListener('click', () => {
@@ -85,7 +122,7 @@ document.querySelector('#show-row-numbers').addEventListener('click', () => {
 
         return {
             id: data.id,
-            name: data.name,
+            fullName: data.fullName,
             rowNumber: data._tehRowNumber
         };
     });
