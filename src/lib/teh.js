@@ -6,12 +6,15 @@ import { ConfirmDialog } from '../ui/confirm-dialog.js';
 import { validators } from './validators.js';
 import { formatters } from './formatters.js';
 import { editors } from './editors.js';
+import { parsers } from './parsers.js';
 
 const DEFAULT_MESSAGES = {
     required: 'This field is required'
 };
 
 const DEFAULT_VALIDATION_MESSAGES = {
+    date: 'Invalid date',
+    decimal: 'Invalid decimal value',
     email: 'Invalid email address',
     integer: 'Value must be an integer',
     number: 'Value must be a number',
@@ -76,9 +79,35 @@ const extractValidationRules = (field, validation = {}, messages = DEFAULT_MESSA
     }
 
     if (validation.integer) {
-        const message = validation.integer.message || DEFAULT_VALIDATION_MESSAGES.integer;
+        const message = validation.integer === true
+            ? DEFAULT_VALIDATION_MESSAGES.integer
+            : validation.integer.message || DEFAULT_VALIDATION_MESSAGES.integer;
 
         extractedValidators.push(validators.integer(message));
+    }
+
+    if (validation.decimal) {
+        const decimalValidation = validation.decimal === true
+            ? {}
+            : validation.decimal;
+        const { message, ...decimalOptions } = decimalValidation;
+
+        extractedValidators.push(validators.decimal(
+            decimalOptions,
+            message || DEFAULT_VALIDATION_MESSAGES.decimal
+        ));
+    }
+
+    if (validation.date) {
+        const dateValidation = validation.date === true
+            ? {}
+            : validation.date;
+        const { message, ...dateOptions } = dateValidation;
+
+        extractedValidators.push(validators.date(
+            dateOptions,
+            message || DEFAULT_VALIDATION_MESSAGES.date
+        ));
     }
 
     if (validation.range) {
@@ -359,6 +388,7 @@ export const TEH = {
     validators,
     formatters,
     editors,
+    parsers,
 
     table(options = {}) {
         const { selector, columns, messages, deleteColumn, errorStyle, ...tabulatorOptions } = options;

@@ -1,3 +1,5 @@
+import { parsers } from './parsers.js';
+
 const isEmptyValue = value => {
     return value === null
         || value === undefined
@@ -82,6 +84,25 @@ export const formatters = {
                 currency,
                 ...formatOptions
             });
+        };
+    },
+
+    date(format = 'dd/mm/yyyy', options = {}) {
+        return cell => {
+            const value = getCellValue(cell);
+
+            if (isEmptyValue(value)) return '';
+
+            const parsedValue = parsers.date({
+                inputFormat: options.inputFormat || format,
+                outputFormat: options.outputFormat || format
+            }).parse(value);
+
+            if (parsedValue === null) {
+                return stringifyValue(value);
+            }
+
+            return parsedValue;
         };
     },
 

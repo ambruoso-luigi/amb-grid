@@ -33,9 +33,9 @@ const editableTable = TEH.table({
     },
 
     data: [
-        { id: 1, fullName: 'Mario Rossi', email: 'mario.rossi@example.com', roleCode: 'ADM001', age: 34, salary: 42000 },
-        { id: 2, fullName: 'Luigi Bianchi', email: 'luigi.bianchi@example.com', roleCode: 'USR102', age: 41, salary: 38500 },
-        { id: 3, fullName: 'Anna Verdi', email: 'anna.verdi@example.com', roleCode: 'SUP210', age: 29, salary: 45200 }
+        { id: 1, fullName: 'Mario Rossi', email: 'mario.rossi@example.com', roleCode: 'ADM001', age: 34, salary: 42000, hireDate: '01/03/2020' },
+        { id: 2, fullName: 'Luigi Bianchi', email: 'luigi.bianchi@example.com', roleCode: 'USR102', age: 41, salary: 38500, hireDate: '15/09/2018' },
+        { id: 3, fullName: 'Anna Verdi', email: 'anna.verdi@example.com', roleCode: 'SUP210', age: 29, salary: 45200, hireDate: '10/01/2022' }
     ],
 
     layout: 'fitColumns',
@@ -98,13 +98,28 @@ const editableTable = TEH.table({
             editor: TEH.editors.decimal({
                 integerDigits: 7,
                 decimalDigits: 2,
+                allowNegative: true,
                 allowEmpty: true
             }),
             formatter: TEH.formatters.currency(),
             validation: {
-                min: {
-                    value: 0,
-                    message: 'Salary must be positive'
+                decimal: {
+                    integerDigits: 7,
+                    decimalDigits: 2,
+                    allowNegative: true,
+                    message: 'Salary must be a valid decimal value'
+                }
+            }
+        },
+        {
+            title: 'Hire date',
+            field: 'hireDate',
+            editor: TEH.editors.date({ format: 'dd/mm/yyyy', allowEmpty: true }),
+            formatter: TEH.formatters.date('dd/mm/yyyy'),
+            validation: {
+                date: {
+                    format: 'dd/mm/yyyy',
+                    message: 'Invalid hire date'
                 }
             }
         }
@@ -113,6 +128,7 @@ const editableTable = TEH.table({
 
 const { table, crud, floatingMessage, cellMessageBinder } = editableTable;
 
+window.TEH = TEH;
 window.crud = crud;
 window.table = table;
 window.floatingMessage = floatingMessage;
@@ -121,7 +137,7 @@ window.cellMessageBinder = cellMessageBinder;
 document.querySelector('#add-row').addEventListener('click', async () => {
     if (crud.findRowById(4)) return;
 
-    await crud.addRow({ id: 4, fullName: '', email: '', roleCode: '', age: '', salary: '' });
+    await crud.addRow({ id: 4, fullName: '', email: '', roleCode: '', age: '', salary: '', hireDate: '' });
 });
 
 document.querySelector('#show-state-report').addEventListener('click', () => {
