@@ -1,4 +1,4 @@
-export { TEH } from './lib/teh.js';
+export { AMB } from './lib/amb.js';
 export { CrudHelper, ROW_STATE } from './lib/crud-helper.js';
 export { validators } from './lib/validators.js';
 export { formatters } from './lib/formatters.js';

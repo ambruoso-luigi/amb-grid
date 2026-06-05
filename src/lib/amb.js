@@ -384,7 +384,7 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 };
 
-export const TEH = {
+export const AMB = {
     validators,
     formatters,
     editors,

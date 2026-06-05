@@ -1,10 +1,69 @@
 body {
     font-family: Arial, sans-serif;
     padding: 20px;
+    color: #222;
 }
 
 h1 {
     color: #333;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.demo-page {
+    display: grid;
+    gap: 18px;
+}
+
+.demo-header p,
+.demo-note {
+    color: #555;
+    margin-top: 6px;
+}
+
+.demo-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.demo-menu-button {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    padding: 8px 12px;
+}
+
+.demo-menu-button:hover,
+.demo-menu-button.is-active {
+    background: #eef2ff;
+    border-color: #6b7cff;
+}
+
+.demo-example {
+    min-width: 0;
+}
+
+.demo-output {
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #222;
+    margin-top: 12px;
+    max-height: 260px;
+    overflow: auto;
+    padding: 12px;
+    white-space: pre-wrap;
+}
+
+.demo-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .toolbar {
