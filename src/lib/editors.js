@@ -161,6 +161,32 @@ const getDateCursorPosition = (normalizedValue, digitCount) => {
     return normalizedValue.length;
 };
 
+const createSelectOption = ({ value, label }) => {
+    const option = document.createElement('option');
+
+    option.value = value;
+    option.textContent = label;
+
+    return option;
+};
+
+const normalizeSelectOption = (option, options) => {
+    if (typeof option === 'string') {
+        return {
+            value: option,
+            label: option
+        };
+    }
+
+    const value = option && option[options.valueField];
+    const label = option && option[options.labelField];
+
+    return {
+        value: value === null || value === undefined ? '' : String(value),
+        label: label === null || label === undefined ? String(value ?? '') : String(label)
+    };
+};
+
 export const editors = {
     text(options = {}) {
         return (cell, onRendered, success, cancel) => {
@@ -206,6 +232,53 @@ export const editors = {
                 selectOnFocus: options.selectOnFocus !== false
             });
             return input;
+        };
+    },
+
+    select(options = {}) {
+        const normalizedOptions = {
+            options: [],
+            allowEmpty: true,
+            emptyLabel: '',
+            valueField: 'value',
+            labelField: 'label',
+            ...options
+        };
+
+        return (cell, onRendered, success, cancel) => {
+            const select = document.createElement('select');
+
+            if (normalizedOptions.allowEmpty) {
+                select.appendChild(createSelectOption({
+                    value: '',
+                    label: normalizedOptions.emptyLabel
+                }));
+            }
+
+            normalizedOptions.options.forEach(option => {
+                select.appendChild(createSelectOption(
+                    normalizeSelectOption(option, normalizedOptions)
+                ));
+            });
+
+            select.value = getInitialValue(cell);
+
+            const commit = () => {
+                success(select.value);
+            };
+
+            select.addEventListener('change', commit);
+            select.addEventListener('blur', commit);
+            select.addEventListener('keydown', event => {
+                if (event.key === 'Escape') {
+                    cancel();
+                }
+            });
+
+            onRendered(() => {
+                select.focus();
+            });
+            return select;
         };
     },
 

@@ -22,9 +22,9 @@ export default function fullDemo(app) {
             confirmRemoveNewMessage: 'Remove this new starship?'
         },
         data: [
-            { id: 1, shipName: 'Aster Dawn', registryCode: 'AST001', captainEmail: 'aster@example.test', crewSize: 42, fuelCapacity: 12500.5, launchDate: '05/06/2026', status: 'Ready' },
-            { id: 2, shipName: 'Vector Halo', registryCode: 'VEC220', captainEmail: 'vector@example.test', crewSize: 18, fuelCapacity: 8800, launchDate: '14/09/2026', status: 'Survey' },
-            { id: 3, shipName: 'Lumen Arc', registryCode: 'LUM404', captainEmail: 'lumen@example.test', crewSize: 64, fuelCapacity: 15120.75, launchDate: '02/12/2026', status: 'Docked' }
+            { id: 1, shipName: 'Aster Dawn', registryCode: 'AST001', captainEmail: 'aster@example.test', crewSize: 42, fuelCapacity: 12500.5, launchDate: '05/06/2026', status: 'ACTIVE' },
+            { id: 2, shipName: 'Vector Halo', registryCode: 'VEC220', captainEmail: 'vector@example.test', crewSize: 18, fuelCapacity: 8800, launchDate: '14/09/2026', status: 'REPAIR' },
+            { id: 3, shipName: 'Lumen Arc', registryCode: 'LUM404', captainEmail: 'lumen@example.test', crewSize: 64, fuelCapacity: 15120.75, launchDate: '02/12/2026', status: 'DOCKED' }
         ],
         layout: 'fitColumns',
         columns: [
@@ -78,7 +78,19 @@ export default function fullDemo(app) {
                     }
                 }
             },
-            { title: 'Status', field: 'status', editor: AMB.editors.text({ trim: true }) }
+            {
+                title: 'Status',
+                field: 'status',
+                editor: AMB.editors.select({
+                    allowEmpty: true,
+                    options: [
+                        { value: 'ACTIVE', label: 'Active' },
+                        { value: 'DOCKED', label: 'Docked' },
+                        { value: 'REPAIR', label: 'Under repair' },
+                        { value: 'DECOMMISSIONED', label: 'Decommissioned' }
+                    ]
+                })
+            }
         ]
     });
 
