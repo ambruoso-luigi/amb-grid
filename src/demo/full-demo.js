@@ -12,6 +12,29 @@ export default function fullDemo(app) {
         <pre class="demo-output" id="starship-output"></pre>
     `;
 
+    const statusOptions = [
+        { id: 'ACTIVE', description: 'Active' },
+        { id: 'DOCKED', description: 'Docked' },
+        { id: 'REPAIR', description: 'Under repair' },
+        { id: 'DECOMMISSIONED', description: 'Decommissioned' }
+    ];
+    const statusLabels = Object.fromEntries(
+        statusOptions.map(item => [item.id, item.description])
+    );
+    const statusLookup = AMB.lookup({
+        valueField: 'id',
+        labelField: 'description',
+        load: async ({ query }) => {
+            const q = String(query || '').toLowerCase();
+
+            return statusOptions.filter(item =>
+                item.id.toLowerCase().includes(q) ||
+                item.description.toLowerCase().includes(q)
+            );
+        }
+    });
+    const lookupDialog = new AMB.LookupDialog();
+
     const demo = AMB.table({
         selector: '#starship-table',
         height: '320px',
@@ -81,15 +104,24 @@ export default function fullDemo(app) {
             {
                 title: 'Status',
                 field: 'status',
-                editor: AMB.editors.select({
+                editor: AMB.editors.lookup(statusLookup, {
+                    uppercase: true,
                     allowEmpty: true,
-                    options: [
-                        { value: 'ACTIVE', label: 'Active' },
-                        { value: 'DOCKED', label: 'Docked' },
-                        { value: 'REPAIR', label: 'Under repair' },
-                        { value: 'DECOMMISSIONED', label: 'Decommissioned' }
+                    buttonText: '🔍',
+                    dialog: lookupDialog,
+                    dialogTitle: 'Search status',
+                    dialogColumns: [
+                        { field: 'id', title: 'Code', width: 140 },
+                        { field: 'description', title: 'Description' }
                     ]
-                })
+                }),
+                formatter: cell => {
+                    const value = cell.getValue();
+
+                    cell.getElement().title = statusLabels[value] || '';
+
+                    return value || '';
+                }
             }
         ]
     });
@@ -116,5 +148,11 @@ export default function fullDemo(app) {
         output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
     });
 
-    return demo;
+    return {
+        ...demo,
+        destroy() {
+            lookupDialog.destroy();
+            demo.destroy();
+        }
+    };
 }

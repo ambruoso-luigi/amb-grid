@@ -152,3 +152,81 @@ h2 {
 .tabulator-row[data-has-cell-error="true"] {
     background-color: #fff8f8 !important;
 }
+
+.amb-lookup-option {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+.amb-lookup-option__code {
+    color: #1f2937;
+    flex: 0 0 130px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.amb-lookup-option__description {
+    color: #4b5563;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.amb-lookup-item {
+    color: #1f2937;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.amb-lookup-editor {
+    align-items: stretch;
+    display: flex;
+    height: 100%;
+    min-width: 0;
+    width: 100%;
+}
+
+.amb-lookup-editor__input {
+    border: 1px solid #b8bec8;
+    border-radius: 3px 0 0 3px;
+    color: #222;
+    flex: 1 1 auto;
+    font: inherit;
+    min-width: 0;
+    padding: 4px 6px;
+}
+
+.amb-lookup-editor__input:focus {
+    border-color: #6b7cff;
+    outline: none;
+}
+
+.amb-lookup-editor__button {
+    align-items: center;
+    background: #f7f8fb;
+    border: 1px solid #b8bec8;
+    border-left: 0;
+    border-radius: 0 3px 3px 0;
+    color: #333;
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 34px;
+    font: inherit;
+    justify-content: center;
+    padding: 0;
+}
+
+.amb-lookup-editor__button:hover {
+    background: #eef2ff;
+}

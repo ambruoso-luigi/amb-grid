@@ -12,6 +12,7 @@
     "vite": "^8.0.12"
   },
   "dependencies": {
-    "tabulator-tables": "^6.4.0"
+    "tabulator-tables": "^6.4.0",
+    "tom-select": "^2.6.1"
   }
 }

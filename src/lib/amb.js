@@ -3,10 +3,12 @@ import { CrudHelper, ROW_STATE } from './crud-helper.js';
 import { CellMessageBinder } from '../ui/cell-message-binder.js';
 import { FloatingMessage } from '../ui/floating-message.js';
 import { ConfirmDialog } from '../ui/confirm-dialog.js';
+import { LookupDialog } from '../ui/lookup-dialog.js';
 import { validators } from './validators.js';
 import { formatters } from './formatters.js';
 import { editors } from './editors.js';
 import { parsers } from './parsers.js';
+import { createLookup } from './lookup.js';
 
 const DEFAULT_MESSAGES = {
     required: 'This field is required'
@@ -389,6 +391,8 @@ export const AMB = {
     formatters,
     editors,
     parsers,
+    lookup: createLookup,
+    LookupDialog,
 
     table(options = {}) {
         const { selector, columns, messages, deleteColumn, errorStyle, ...tabulatorOptions } = options;

@@ -1,0 +1,130 @@
+.amb-lookup-dialog {
+    align-items: center;
+    background: rgb(17 24 39 / 0.42);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 24px;
+    position: fixed;
+    z-index: 10080;
+}
+
+.amb-lookup-dialog__panel {
+    background: #fff;
+    border: 1px solid #d4d8e1;
+    border-radius: 6px;
+    box-shadow: 0 18px 48px rgb(15 23 42 / 0.28);
+    display: flex;
+    flex-direction: column;
+    max-height: min(680px, calc(100vh - 48px));
+    max-width: calc(100vw - 48px);
+    overflow: hidden;
+    width: 720px;
+}
+
+.amb-lookup-dialog__header {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 14px 18px;
+}
+
+.amb-lookup-dialog__title {
+    color: #111827;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.amb-lookup-dialog__body {
+    display: grid;
+    gap: 12px;
+    min-height: 0;
+    padding: 14px 18px;
+}
+
+.amb-lookup-dialog__search {
+    border: 1px solid #b8bec8;
+    border-radius: 4px;
+    color: #222;
+    font: inherit;
+    padding: 8px 10px;
+}
+
+.amb-lookup-dialog__search:focus {
+    border-color: #6b7cff;
+    outline: none;
+}
+
+.amb-lookup-dialog__table-wrap {
+    border: 1px solid #d8dce5;
+    border-radius: 4px;
+    max-height: 420px;
+    overflow: auto;
+}
+
+.amb-lookup-dialog__table {
+    border-collapse: collapse;
+    font-size: 14px;
+    width: 100%;
+}
+
+.amb-lookup-dialog__table th,
+.amb-lookup-dialog__table td {
+    border-bottom: 1px solid #eef0f4;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.amb-lookup-dialog__table th {
+    background: #f8fafc;
+    color: #374151;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.amb-lookup-dialog__row {
+    cursor: pointer;
+}
+
+.amb-lookup-dialog__row:hover {
+    background: #f6f8ff;
+}
+
+.amb-lookup-dialog__row--selected,
+.amb-lookup-dialog__row--selected:hover {
+    background: #eef2ff;
+}
+
+.amb-lookup-dialog__footer {
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 12px 18px;
+}
+
+.amb-lookup-dialog__button {
+    background: #fff;
+    border: 1px solid #b8bec8;
+    border-radius: 4px;
+    color: #222;
+    cursor: pointer;
+    font: inherit;
+    padding: 8px 12px;
+}
+
+.amb-lookup-dialog__button:hover {
+    background: #f4f6fb;
+}
+
+.amb-lookup-dialog__button--primary {
+    background: #3347ff;
+    border-color: #3347ff;
+    color: #fff;
+}
+
+.amb-lookup-dialog__button--primary:hover {
+    background: #2335db;
+}

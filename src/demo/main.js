@@ -1,7 +1,9 @@
 import '../style.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
+import 'tom-select/dist/css/tom-select.css';
 import '../ui/floating-message.css';
 import '../ui/confirm-dialog.css';
+import '../ui/lookup-dialog.css';
 import { AMB } from '../index.js';
 import basicCrud from './basic-crud.js';
 import validation from './validation.js';
@@ -13,6 +15,7 @@ import multipleTables from './multiple-tables.js';
 import fullDemo from './full-demo.js';
 
 window.AMB = AMB;
+window.LookupDialog = AMB.LookupDialog;
 
 const examples = [
     { id: 'basic-crud', label: 'Basic CRUD', mount: basicCrud },
