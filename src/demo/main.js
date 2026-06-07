@@ -30,6 +30,7 @@ const examples = [
 
 const root = document.querySelector('#app');
 let currentExample = null;
+let loadToken = 0;
 
 const clearExample = () => {
     if (currentExample && typeof currentExample.destroy === 'function') {
@@ -67,12 +68,25 @@ const renderShell = selectedId => {
     });
 };
 
-const loadExample = id => {
+const loadExample = async id => {
     const example = examples.find(item => item.id === id) || examples[0];
+    const token = loadToken + 1;
 
+    loadToken = token;
     clearExample();
     renderShell(example.id);
-    currentExample = example.mount(root.querySelector('#demo-example')) || null;
+
+    const mountedExample = await example.mount(root.querySelector('#demo-example'));
+
+    if (token !== loadToken) {
+        if (mountedExample && typeof mountedExample.destroy === 'function') {
+            mountedExample.destroy();
+        }
+
+        return;
+    }
+
+    currentExample = mountedExample || null;
 };
 
 loadExample(examples[0].id);

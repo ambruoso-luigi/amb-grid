@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
+import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 
-export default function fullDemo(app) {
+export default async function fullDemo(app) {
     app.innerHTML = `
         <h2>Starship Registry</h2>
         <div class="toolbar">
@@ -12,26 +13,21 @@ export default function fullDemo(app) {
         <pre class="demo-output" id="starship-output"></pre>
     `;
 
-    const statusOptions = [
-        { id: 'ACTIVE', description: 'Active' },
-        { id: 'DOCKED', description: 'Docked' },
-        { id: 'REPAIR', description: 'Under repair' },
-        { id: 'DECOMMISSIONED', description: 'Decommissioned' }
-    ];
+    const output = app.querySelector('#starship-output');
+
+    output.textContent = 'Loading...';
+
+    const [statuses, starships] = await Promise.all([
+        fakeApi.getStatuses(),
+        fakeApi.getStarships()
+    ]);
     const statusLabels = Object.fromEntries(
-        statusOptions.map(item => [item.id, item.description])
+        statuses.map(item => [item.id, item.description])
     );
     const statusLookup = AMB.lookup({
         valueField: 'id',
         labelField: 'description',
-        load: async ({ query }) => {
-            const q = String(query || '').toLowerCase();
-
-            return statusOptions.filter(item =>
-                item.id.toLowerCase().includes(q) ||
-                item.description.toLowerCase().includes(q)
-            );
-        }
+        load: async ({ query }) => fakeApi.searchStatuses(query)
     });
     const lookupDialog = new AMB.LookupDialog();
 
@@ -44,11 +40,7 @@ export default function fullDemo(app) {
             confirmRollbackMessage: 'Rollback this starship?',
             confirmRemoveNewMessage: 'Remove this new starship?'
         },
-        data: [
-            { id: 1, shipName: 'Aster Dawn', registryCode: 'AST001', captainEmail: 'aster@example.test', crewSize: 42, fuelCapacity: 12500.5, launchDate: '05/06/2026', status: 'ACTIVE' },
-            { id: 2, shipName: 'Vector Halo', registryCode: 'VEC220', captainEmail: 'vector@example.test', crewSize: 18, fuelCapacity: 8800, launchDate: '14/09/2026', status: 'REPAIR' },
-            { id: 3, shipName: 'Lumen Arc', registryCode: 'LUM404', captainEmail: 'lumen@example.test', crewSize: 64, fuelCapacity: 15120.75, launchDate: '02/12/2026', status: 'DOCKED' }
-        ],
+        data: starships,
         layout: 'fitColumns',
         columns: [
             { title: 'Ship Name', field: 'shipName', editor: AMB.editors.text({ trim: true }), required: true },
@@ -152,7 +144,9 @@ export default function fullDemo(app) {
     });
 
     const { crud } = demo;
-    const output = app.querySelector('#starship-output');
+    const saveButton = app.querySelector('#save-ships');
+
+    output.textContent = '';
 
     app.querySelector('#add-ship').addEventListener('click', () => {
         crud.addRow({
@@ -166,21 +160,46 @@ export default function fullDemo(app) {
             status: ''
         });
     });
-    app.querySelector('#save-ships').addEventListener('click', () => {
-        const validation = crud.validateAll();
+    saveButton.addEventListener('click', async () => {
+        output.textContent = 'Validating...';
 
-        if (!validation.isValid) {
+        const validateResult = crud.validateAll();
+
+        if (!validateResult.isValid) {
             output.textContent = JSON.stringify({
-                validation,
-                report: crud.getStateReport()
+                validateResult,
+                payload: crud.getSavePayload({ includeInvalid: true })
             }, null, 2);
             return;
         }
 
-        output.textContent = JSON.stringify({
-            validation,
-            saved: crud.markValidChangesSaved()
-        }, null, 2);
+        const payload = crud.getSavePayload();
+
+        output.textContent = 'Saving...';
+        saveButton.disabled = true;
+
+        try {
+            const result = await fakeApi.saveStarshipChanges(payload);
+
+            if (result.ok) {
+                crud.markValidChangesSaved();
+                output.textContent = JSON.stringify(result, null, 2);
+                return;
+            }
+
+            (result.errors || []).forEach(error => {
+                if (error.field) {
+                    crud.markCellError(error.id, error.field, error.message);
+                    return;
+                }
+
+                crud.markRowError(error.id, error.message);
+            });
+
+            output.textContent = JSON.stringify(result, null, 2);
+        } finally {
+            saveButton.disabled = false;
+        }
     });
     app.querySelector('#ship-report').addEventListener('click', () => {
         output.textContent = JSON.stringify(crud.getStateReport(), null, 2);

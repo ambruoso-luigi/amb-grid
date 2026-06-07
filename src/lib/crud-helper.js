@@ -1247,6 +1247,42 @@ export class CrudHelper {
         };
     }
 
+    /**
+     * Build a backend-ready save payload from the current report without changing state.
+     *
+     * @param {object} [options] - Payload options.
+     * @param {boolean} [options.onlyValid=true] - Use only valid changes.
+     * @param {boolean} [options.includeInvalid=false] - Include invalid changed rows.
+     * @returns {object} Save payload snapshot.
+     */
+    getSavePayload(options = {}) {
+        const normalizedOptions = {
+            onlyValid: true,
+            includeInvalid: false,
+            ...options
+        };
+        const report = this.getStateReport();
+        const changes = normalizedOptions.onlyValid ? report.validChanges : report.changes;
+        const hasPayloadChanges = changes.inserted.length > 0
+            || changes.updated.length > 0
+            || changes.deleted.length > 0;
+
+        return {
+            canSave: hasPayloadChanges && !report.hasErrors,
+            hasChanges: report.hasChanges,
+            hasErrors: report.hasErrors,
+            summary: {
+                totalRows: report.totalRows,
+                changedRowsCount: report.changedRowsCount,
+                validChangedRowsCount: report.validChangedRowsCount,
+                invalidChangedRowsCount: report.invalidChangedRowsCount,
+                errorRowsCount: report.errorRowsCount
+            },
+            changes,
+            invalidChangedRows: normalizedOptions.includeInvalid ? report.invalidChangedRows : []
+        };
+    }
+
     _markRowModified(row) {
         if (!row) return;
 
