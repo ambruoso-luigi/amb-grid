@@ -56,6 +56,7 @@ export default function fullDemo(app) {
                 title: 'Registry Code',
                 field: 'registryCode',
                 editor: AMB.editors.text({ uppercase: true, trim: true }),
+                required: true,
                 validation: {
                     pattern: {
                         regex: /^[A-Z]{3}[0-9]{3}$/,
@@ -104,12 +105,15 @@ export default function fullDemo(app) {
             {
                 title: 'Status',
                 field: 'status',
+                required: true,
                 editor: AMB.editors.lookup(statusLookup, {
                     uppercase: true,
                     allowEmpty: true,
                     buttonText: '🔍',
                     dialog: lookupDialog,
                     dialogTitle: 'Search status',
+                    invalidMessage: 'Unknown status code',
+                    autoComplete: true,
                     dialogColumns: [
                         { field: 'id', title: 'Code', width: 140 },
                         { field: 'description', title: 'Description' }
@@ -117,8 +121,29 @@ export default function fullDemo(app) {
                 }),
                 formatter: cell => {
                     const value = cell.getValue();
+                    const cellElement = cell.getElement();
+                    const description = statusLabels[value] || '';
+                    const rowData = cell.getRow().getData();
+                    const field = cell.getField();
 
-                    cell.getElement().title = statusLabels[value] || '';
+                    if (!rowData._ambLookup) {
+                        rowData._ambLookup = {};
+                    }
+
+                    if (!rowData._ambLookup[field]) {
+                        rowData._ambLookup[field] = {
+                            initial: {
+                                value: value || '',
+                                description
+                            },
+                            current: {
+                                value: value || '',
+                                description
+                            }
+                        };
+                    }
+
+                    cellElement.dataset.lookupField = field;
 
                     return value || '';
                 }
@@ -142,7 +167,20 @@ export default function fullDemo(app) {
         });
     });
     app.querySelector('#save-ships').addEventListener('click', () => {
-        output.textContent = JSON.stringify({ saved: crud.markValidChangesSaved() }, null, 2);
+        const validation = crud.validateAll();
+
+        if (!validation.isValid) {
+            output.textContent = JSON.stringify({
+                validation,
+                report: crud.getStateReport()
+            }, null, 2);
+            return;
+        }
+
+        output.textContent = JSON.stringify({
+            validation,
+            saved: crud.markValidChangesSaved()
+        }, null, 2);
     });
     app.querySelector('#ship-report').addEventListener('click', () => {
         output.textContent = JSON.stringify(crud.getStateReport(), null, 2);

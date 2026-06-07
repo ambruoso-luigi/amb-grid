@@ -9,6 +9,7 @@ import { formatters } from './formatters.js';
 import { editors } from './editors.js';
 import { parsers } from './parsers.js';
 import { createLookup } from './lookup.js';
+import { getLookupMetadata } from './lookup-metadata.js';
 
 const DEFAULT_MESSAGES = {
     required: 'This field is required'
@@ -219,6 +220,45 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
     };
 };
 
+const configureLookupEditors = (columns, getCrud) => {
+    (columns || []).forEach(column => {
+        if (
+            column.editor
+            && column.editor._ambEditorType === 'lookup'
+            && typeof column.editor._ambSetLookupErrorHandlers === 'function'
+        ) {
+            column.editor._ambSetLookupErrorHandlers({
+                markInvalid(cell, message) {
+                    const crud = getCrud();
+                    const row = cell && cell.getRow && cell.getRow();
+                    const data = row && row.getData ? row.getData() : null;
+                    const id = crud && data ? data[crud.options.idField] : null;
+                    const field = cell && cell.getField && cell.getField();
+
+                    if (!crud || id === null || id === undefined || !field) return;
+
+                    crud.markCellError(id, field, message);
+                },
+                clearInvalid(cell) {
+                    const crud = getCrud();
+                    const row = cell && cell.getRow && cell.getRow();
+                    const data = row && row.getData ? row.getData() : null;
+                    const id = crud && data ? data[crud.options.idField] : null;
+                    const field = cell && cell.getField && cell.getField();
+
+                    if (!crud || id === null || id === undefined || !field) return;
+
+                    crud.clearCellError(id, field);
+                }
+            });
+        }
+
+        if (column.columns) {
+            configureLookupEditors(column.columns, getCrud);
+        }
+    });
+};
+
 const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const confirmDeleteMessage = deleteColumn.confirmDeleteMessage || deleteColumn.confirmMessage;
     const confirmRollbackMessage = deleteColumn.confirmRollbackMessage;
@@ -386,6 +426,72 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 };
 
+const createLookupDescriptionBinder = (table, floatingMessage) => {
+    const tableElement = table && table.element;
+
+    if (!tableElement) {
+        return () => {};
+    }
+
+    let activeCellElement = null;
+
+    const findLookupCell = target => {
+        return target && target.closest
+            ? target.closest('.tabulator-cell[data-lookup-field]')
+            : null;
+    };
+
+    const getRowForElement = rowElement => {
+        return table.getRows().find(row => row.getElement && row.getElement() === rowElement) || null;
+    };
+
+    const getLookupDescription = cellElement => {
+        const rowElement = cellElement.closest('.tabulator-row');
+        const row = getRowForElement(rowElement);
+        const field = cellElement.dataset.lookupField;
+        const metadata = row && getLookupMetadata(row.getData(), field);
+
+        return metadata && metadata.current ? metadata.current.description : '';
+    };
+
+    const showDescription = event => {
+        const cellElement = findLookupCell(event.target);
+
+        if (!cellElement || cellElement.dataset.cellError === 'true') return;
+        if (cellElement === activeCellElement) return;
+
+        const description = getLookupDescription(cellElement);
+
+        if (!description) return;
+
+        activeCellElement = cellElement;
+        floatingMessage.scheduleShow(cellElement, {
+            type: 'info',
+            title: 'Description',
+            message: description
+        });
+    };
+
+    const hideDescription = event => {
+        const cellElement = findLookupCell(event.target);
+
+        if (!cellElement || cellElement !== activeCellElement) return;
+        if (cellElement.contains(event.relatedTarget)) return;
+
+        activeCellElement = null;
+        floatingMessage.hide();
+    };
+
+    tableElement.addEventListener('mouseover', showDescription);
+    tableElement.addEventListener('mouseout', hideDescription);
+
+    return () => {
+        tableElement.removeEventListener('mouseover', showDescription);
+        tableElement.removeEventListener('mouseout', hideDescription);
+        floatingMessage.hide();
+    };
+};
+
 export const AMB = {
     validators,
     formatters,
@@ -404,6 +510,7 @@ export const AMB = {
         const normalizedOptions = { ...tabulatorOptions };
         let crud = null;
         let unsubscribeDeleteColumn = null;
+        let unsubscribeLookupDescriptions = null;
         const confirmDialog = new ConfirmDialog();
         const deleteColumnController = deleteColumn && deleteColumn.enabled
             ? createDeleteColumn(deleteColumn, () => crud, confirmDialog)
@@ -416,12 +523,15 @@ export const AMB = {
                     ...extracted.columns
                 ]
                 : extracted.columns;
+
+            configureLookupEditors(normalizedOptions.columns, () => crud);
         }
 
         const table = new Tabulator(selector, normalizedOptions);
         crud = new CrudHelper(table, { errorStyle });
         const floatingMessage = new FloatingMessage();
         const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
+        unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage);
 
         if (deleteColumnController) {
             unsubscribeDeleteColumn = crud.on('row-state-changed', ({ row }) => {
@@ -445,6 +555,11 @@ export const AMB = {
                 if (unsubscribeDeleteColumn) {
                     unsubscribeDeleteColumn();
                     unsubscribeDeleteColumn = null;
+                }
+
+                if (unsubscribeLookupDescriptions) {
+                    unsubscribeLookupDescriptions();
+                    unsubscribeLookupDescriptions = null;
                 }
 
                 cellMessageBinder.destroy();

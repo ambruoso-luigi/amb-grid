@@ -1,4 +1,6 @@
 
+import { LOOKUP_METADATA_FIELD, rollbackLookupMetadata } from './lookup-metadata.js';
+
 /**
  * Row lifecycle states tracked by CrudHelper.
  *
@@ -433,6 +435,33 @@ export class CrudHelper {
         this.markCellError(id, field, failedValidator.message);
     }
 
+    _validateField(row, field) {
+        const validators = this.cellValidators.get(field);
+
+        if (!validators || validators.length === 0) return null;
+
+        const cell = this._getCell(row, field);
+        const rowData = row.getData();
+        const id = rowData[this.options.idField];
+        const value = rowData[field];
+        const failedValidator = validators.find(validator => {
+            return !validator.validateFn(value, rowData, cell, this);
+        });
+
+        if (!failedValidator) {
+            this.clearCellError(id, field);
+            return null;
+        }
+
+        this.markCellError(id, field, failedValidator.message);
+
+        return {
+            field,
+            message: failedValidator.message,
+            value
+        };
+    }
+
     _syncRowErrorAttribute(row) {
         if (!row) return;
 
@@ -488,6 +517,66 @@ export class CrudHelper {
      */
     removeCellValidator(field) {
         this.cellValidators.delete(field);
+    }
+
+    /**
+     * Validate every registered cell validator for one row without changing row state.
+     *
+     * @param {*} id - Row identifier.
+     * @returns {{id: *, isValid: boolean, errors: {field: string, message: string, value: *}[]}|null}
+     */
+    validateRow(id) {
+        const row = this.findRowById(id);
+
+        if (!row) {
+            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            return null;
+        }
+
+        const errors = [];
+
+        this.cellValidators.forEach((validators, field) => {
+            if (!validators || validators.length === 0) return;
+
+            const error = this._validateField(row, field);
+
+            if (error) {
+                errors.push(error);
+            }
+        });
+
+        return {
+            id,
+            isValid: errors.length === 0,
+            errors
+        };
+    }
+
+    /**
+     * Validate all rows with registered cell validators without changing row state.
+     *
+     * @returns {{isValid: boolean, rows: object[], errors: object[]}}
+     */
+    validateAll() {
+        const rows = this.table.getRows()
+            .map(row => this.validateRow(this._getRowId(row)))
+            .filter(Boolean);
+        const errors = [];
+
+        rows.forEach(rowResult => {
+            rowResult.errors.forEach(error => {
+                errors.push({
+                    id: rowResult.id,
+                    ...error
+                });
+            });
+        });
+
+        return {
+            isValid: errors.length === 0,
+            rows,
+            errors
+        };
     }
 
     /**
@@ -900,7 +989,15 @@ export class CrudHelper {
                 return false;
             }
 
-            this._restoreRowData(row, originalData);
+            const lookupMetadata = rollbackLookupMetadata(data);
+            const restoredData = lookupMetadata
+                ? {
+                    ...originalData,
+                    [LOOKUP_METADATA_FIELD]: lookupMetadata
+                }
+                : originalData;
+
+            this._restoreRowData(row, restoredData);
             this._clearRowCellStates(row);
             this.clearAllErrors(id);
             this._applyRowState(row, ROW_STATE.CLEAN);

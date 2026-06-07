@@ -1,5 +1,6 @@
 import TomSelect from 'tom-select';
 import { parsers } from './parsers.js';
+import { ensureLookupMetadata, setLookupMetadata } from './lookup-metadata.js';
 
 const getInitialValue = cell => {
     const value = cell.getValue();
@@ -524,6 +525,10 @@ export const editors = {
             trim: true,
             selectOnFocus: true,
             validateOnBlur: true,
+            autoComplete: false,
+            autoCompleteMinChars: 1,
+            autoCompleteOnTab: true,
+            invalidMessage: 'Invalid lookup code',
             ...options
         };
         const valueField = lookupInstance && lookupInstance.valueField
@@ -533,7 +538,7 @@ export const editors = {
             ? lookupInstance.labelField
             : normalizedOptions.labelField || 'label';
 
-        return (cell, onRendered, success, cancel) => {
+        const editor = (cell, onRendered, success, cancel) => {
             const container = document.createElement('div');
             const input = document.createElement('input');
             const button = document.createElement('button');
@@ -544,6 +549,8 @@ export const editors = {
             const context = normalizedOptions.context || {};
             let closed = false;
             let dialogOpen = false;
+            let autoCompleteRequestId = 0;
+            let hasAutoCompleteSuggestion = false;
 
             container.className = 'amb-lookup-editor';
             input.className = 'amb-lookup-editor__input';
@@ -577,6 +584,48 @@ export const editors = {
                 cancel();
             };
 
+            const markInvalidCode = value => {
+                if (typeof normalizedOptions.onInvalidCode === 'function') {
+                    normalizedOptions.onInvalidCode({
+                        value,
+                        rowData,
+                        field,
+                        context,
+                        lookupInstance,
+                        message: normalizedOptions.invalidMessage,
+                        cell
+                    });
+                    return;
+                }
+
+                if (typeof normalizedOptions.markInvalid === 'function') {
+                    normalizedOptions.markInvalid(cell, normalizedOptions.invalidMessage);
+                }
+            };
+
+            const clearInvalidCode = () => {
+                if (typeof normalizedOptions.clearInvalid === 'function') {
+                    normalizedOptions.clearInvalid(cell);
+                }
+            };
+
+            const setCellLookupDescription = description => {
+                const cellElement = cell && cell.getElement && cell.getElement();
+
+                if (!cellElement) return;
+
+                cellElement.dataset.lookupField = field;
+            };
+
+            const closeWithLookupItem = (value, item) => {
+                const description = item && item[labelField];
+
+                setLookupMetadata(rowData, field, value, description);
+                setCellLookupDescription(description);
+                clearInvalidCode();
+                closeWithSuccess(value);
+            };
+
             const loadLookup = async query => {
                 if (!lookupInstance || typeof lookupInstance.load !== 'function') {
                     return [];
@@ -596,18 +645,61 @@ export const editors = {
                 return items.find(item => getLookupOptionValue(item, valueField) === value) || null;
             };
 
-            const resolveTitle = async value => {
-                if (!value) return;
+            const applyManualAutoComplete = async () => {
+                if (!normalizedOptions.autoComplete || closed) return;
+
+                const typedValue = getValue();
+                const requestId = autoCompleteRequestId + 1;
+
+                autoCompleteRequestId = requestId;
+                hasAutoCompleteSuggestion = false;
+
+                if (typedValue.length < normalizedOptions.autoCompleteMinChars) return;
 
                 try {
-                    const item = await findExactItem(value);
-                    const label = item && item[labelField];
+                    const items = await loadLookup(typedValue);
+                    const matchedItem = items.find(item => {
+                        return getLookupOptionValue(item, valueField).startsWith(typedValue);
+                    });
 
-                    if (!closed && label !== null && label !== undefined) {
-                        input.title = String(label);
-                    }
+                    if (closed || requestId !== autoCompleteRequestId) return;
+                    if (!matchedItem) return;
+
+                    const matchedValue = getLookupOptionValue(matchedItem, valueField);
+
+                    if (!matchedValue || matchedValue === typedValue) return;
+
+                    input.value = matchedValue;
+                    input.setSelectionRange(typedValue.length, matchedValue.length);
+                    hasAutoCompleteSuggestion = true;
                 } catch {
-                    input.title = '';
+                    // Manual autocomplete is opportunistic; validation still happens on commit.
+                }
+            };
+
+            const initializeLookupMetadata = async () => {
+                if (!initialValue) return;
+
+                const metadata = ensureLookupMetadata(rowData, field);
+
+                if (metadata.initial) {
+                    setCellLookupDescription(metadata.current && metadata.current.description);
+                    return;
+                }
+
+                try {
+                    const item = await findExactItem(initialValue);
+                    const description = item && item[labelField];
+
+                    setLookupMetadata(rowData, field, initialValue, description || '', {
+                        setInitial: true
+                    });
+                    setCellLookupDescription(description);
+                } catch {
+                    setLookupMetadata(rowData, field, initialValue, '', {
+                        setInitial: true
+                    });
+                    setCellLookupDescription('');
                 }
             };
 
@@ -618,6 +710,9 @@ export const editors = {
 
                 if (value === '') {
                     if (normalizedOptions.allowEmpty) {
+                        setLookupMetadata(rowData, field, '', '');
+                        setCellLookupDescription('');
+                        clearInvalidCode();
                         closeWithSuccess('');
                         return;
                     }
@@ -630,22 +725,39 @@ export const editors = {
                     const item = await findExactItem(value);
 
                     if (item) {
-                        closeWithSuccess(value);
+                        closeWithLookupItem(value, item);
                         return;
                     }
                 } catch {
                     // Invalid lookup values are handled by cancelling below.
                 }
 
-                closeWithCancel();
+                setLookupMetadata(rowData, field, value, '');
+                setCellLookupDescription('');
+                markInvalidCode(value);
+                closeWithSuccess(value);
             };
 
             input.addEventListener('input', () => {
                 if (normalizedOptions.uppercase) {
                     input.value = input.value.toUpperCase();
                 }
+
+                applyManualAutoComplete();
             });
             input.addEventListener('keydown', event => {
+                if (
+                    event.key === 'Tab'
+                    && normalizedOptions.autoCompleteOnTab
+                    && hasAutoCompleteSuggestion
+                    && input.selectionStart < input.selectionEnd
+                ) {
+                    event.preventDefault();
+                    input.setSelectionRange(input.value.length, input.value.length);
+                    hasAutoCompleteSuggestion = false;
+                    return;
+                }
+
                 if (event.key === 'Enter') {
                     commit();
                     return;
@@ -707,7 +819,7 @@ export const editors = {
                     if (selectedValue === null || selectedValue === undefined) return;
 
                     input.value = String(selectedValue);
-                    closeWithSuccess(String(selectedValue));
+                    closeWithLookupItem(String(selectedValue), selected);
                 } finally {
                     dialogOpen = false;
                 }
@@ -720,11 +832,19 @@ export const editors = {
                     input.select();
                 }
 
-                resolveTitle(getValue());
+                initializeLookupMetadata();
             });
 
             return container;
         };
+
+        editor._ambEditorType = 'lookup';
+        editor._ambSetLookupErrorHandlers = handlers => {
+            normalizedOptions.markInvalid = handlers.markInvalid;
+            normalizedOptions.clearInvalid = handlers.clearInvalid;
+        };
+
+        return editor;
     },
 
     integer(options = {}) {

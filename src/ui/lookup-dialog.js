@@ -45,6 +45,10 @@ export class LookupDialog {
             data: [],
             valueField: 'id',
             searchPlaceholder: 'Search...',
+            width: 720,
+            noResultsText: 'No results',
+            selectText: 'Select',
+            cancelText: 'Cancel',
             ...options
         };
         this.options.columns = normalizeColumns(this.options.columns);
@@ -95,13 +99,14 @@ export class LookupDialog {
         const tableWrap = createElement('div', 'amb-lookup-dialog__table-wrap');
         const table = createElement('table', 'amb-lookup-dialog__table');
         const footer = createElement('div', 'amb-lookup-dialog__footer');
-        const cancelButton = createElement('button', 'amb-lookup-dialog__button', 'Cancel');
-        const selectButton = createElement('button', 'amb-lookup-dialog__button amb-lookup-dialog__button--primary', 'Select');
+        const cancelButton = createElement('button', 'amb-lookup-dialog__button', this.options.cancelText);
+        const selectButton = createElement('button', 'amb-lookup-dialog__button amb-lookup-dialog__button--primary', this.options.selectText);
 
         search.type = 'search';
         search.placeholder = this.options.searchPlaceholder;
         cancelButton.type = 'button';
         selectButton.type = 'button';
+        panel.style.width = `${this.options.width}px`;
 
         header.appendChild(title);
         tableWrap.appendChild(table);
@@ -118,6 +123,7 @@ export class LookupDialog {
         this.overlay = overlay;
         this.table = table;
         this.search = search;
+        this.selectButton = selectButton;
 
         overlay.addEventListener('mousedown', event => {
             if (event.target === overlay) {
@@ -132,6 +138,12 @@ export class LookupDialog {
 
         this.renderTable();
         search.focus();
+    }
+
+    updateSelectButton() {
+        if (!this.selectButton) return;
+
+        this.selectButton.disabled = this.selectedIndex < 0;
     }
 
     renderTable() {
@@ -153,12 +165,25 @@ export class LookupDialog {
 
         thead.appendChild(headerRow);
 
+        if (!this.filteredData.length) {
+            const row = document.createElement('tr');
+            const td = document.createElement('td');
+
+            row.className = 'amb-lookup-dialog__empty-row';
+            td.className = 'amb-lookup-dialog__empty-cell';
+            td.colSpan = Math.max(this.options.columns.length, 1);
+            td.textContent = this.options.noResultsText;
+            row.appendChild(td);
+            tbody.appendChild(row);
+        }
+
         this.filteredData.forEach((item, index) => {
             const row = document.createElement('tr');
 
             row.className = index === this.selectedIndex
                 ? 'amb-lookup-dialog__row amb-lookup-dialog__row--selected'
                 : 'amb-lookup-dialog__row';
+            row.dataset.rowIndex = String(index);
 
             this.options.columns.forEach(column => {
                 const td = document.createElement('td');
@@ -169,7 +194,7 @@ export class LookupDialog {
 
             row.addEventListener('click', () => {
                 this.selectedIndex = index;
-                this.renderTable();
+                this.updateRowSelection();
             });
             row.addEventListener('dblclick', () => {
                 this.selectedIndex = index;
@@ -181,6 +206,21 @@ export class LookupDialog {
         this.table.innerHTML = '';
         this.table.appendChild(thead);
         this.table.appendChild(tbody);
+        this.updateSelectButton();
+    }
+
+    updateRowSelection() {
+        if (!this.table) return;
+
+        this.table.querySelectorAll('.amb-lookup-dialog__row').forEach(row => {
+            const rowIndex = Number(row.dataset.rowIndex);
+
+            row.classList.toggle(
+                'amb-lookup-dialog__row--selected',
+                rowIndex === this.selectedIndex
+            );
+        });
+        this.updateSelectButton();
     }
 
     filter(query) {
@@ -231,7 +271,7 @@ export class LookupDialog {
             0,
             Math.min(this.filteredData.length - 1, this.selectedIndex + direction)
         );
-        this.renderTable();
+        this.updateRowSelection();
     }
 
     selectCurrent() {
