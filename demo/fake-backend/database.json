@@ -14,7 +14,8 @@
       "crewSize": 42,
       "fuelCapacity": 12500.5,
       "launchDate": "05/06/2026",
-      "status": "ACTIVE"
+      "status": "ACTIVE",
+      "notes": "Requires engine inspection before the next deep-space mission."
     },
     {
       "id": 2,
@@ -24,7 +25,8 @@
       "crewSize": 18,
       "fuelCapacity": 8800,
       "launchDate": "14/09/2026",
-      "status": "REPAIR"
+      "status": "REPAIR",
+      "notes": "Docked for navigation system calibration and fuel balance checks."
     },
     {
       "id": 3,
@@ -34,7 +36,8 @@
       "crewSize": 64,
       "fuelCapacity": 15120.75,
       "launchDate": "02/12/2026",
-      "status": "DOCKED"
+      "status": "DOCKED",
+      "notes": "Ready for deployment. Crew training completed."
     }
   ]
 }

@@ -10,6 +10,7 @@ export default function rowStates(app) {
             <button type="button" id="state-save">Saved</button>
             <button type="button" id="state-error">Error</button>
             <button type="button" id="state-report">Report</button>
+            <button type="button" id="state-row-numbers">Show row numbers</button>
         </div>
         <div id="row-states-table"></div>
         <pre class="demo-output" id="row-states-output"></pre>
@@ -26,6 +27,9 @@ export default function rowStates(app) {
         layout: 'fitColumns',
         columns: [
             { title: 'ID', field: 'id', width: 80 },
+            { title: 'Temp ID', field: '_ambTempId', width: 130 },
+            { title: '#', field: '_ambRowNumber', width: 70 },
+            { title: 'State', field: '_state', width: 100 },
             { title: 'Item', field: 'item', editor: AMB.editors.text({ trim: true }) },
             { title: 'Note', field: 'note', editor: AMB.editors.text({ trim: true }) }
         ]
@@ -35,7 +39,7 @@ export default function rowStates(app) {
     const output = app.querySelector('#row-states-output');
 
     app.querySelector('#state-add').addEventListener('click', () => {
-        crud.addRow({ id: Date.now(), item: 'New sample', note: '' });
+        crud.addRow({ id: null, item: 'New sample', note: '' });
     });
     app.querySelector('#state-modify').addEventListener('click', () => {
         crud.updateRow(2, { note: `Changed ${new Date().toLocaleTimeString()}` });
@@ -51,6 +55,18 @@ export default function rowStates(app) {
     });
     app.querySelector('#state-report').addEventListener('click', () => {
         output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
+    });
+    app.querySelector('#state-row-numbers').addEventListener('click', () => {
+        const rows = crud.getStateReport().rows.map(row => {
+            return {
+                id: row.id,
+                tempId: row.tempId,
+                rowNumber: row.rowNumber,
+                state: row.state
+            };
+        });
+
+        output.textContent = JSON.stringify(rows, null, 2);
     });
 
     return demo;

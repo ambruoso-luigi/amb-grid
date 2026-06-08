@@ -140,6 +140,16 @@ export default async function fullDemo(app) {
 
                     return value || '';
                 }
+            },
+            {
+                title: 'Notes',
+                field: 'notes',
+                width: 220,
+                formatter: AMB.formatters.largeTextPreview({ maxLength: 40 }),
+                editor: AMB.editors.largeText({
+                    title: 'Edit notes',
+                    rows: 10
+                })
             }
         ]
     });
@@ -151,14 +161,15 @@ export default async function fullDemo(app) {
 
     app.querySelector('#add-ship').addEventListener('click', () => {
         crud.addRow({
-            id: Date.now(),
+            id: null,
             shipName: '',
             registryCode: '',
             captainEmail: '',
             crewSize: '',
             fuelCapacity: '',
             launchDate: '',
-            status: ''
+            status: '',
+            notes: ''
         });
     });
     saveButton.addEventListener('click', async () => {
@@ -183,8 +194,15 @@ export default async function fullDemo(app) {
             const result = await fakeApi.saveStarshipChanges(payload);
 
             if (result.ok) {
-                crud.markValidChangesSaved();
-                output.textContent = JSON.stringify(result, null, 2);
+                const applyIdsResult = crud.applyBackendIds(result.generatedIds || []);
+                const savedResult = crud.markValidChangesSaved();
+
+                output.textContent = JSON.stringify({
+                    result,
+                    applyIdsResult,
+                    savedResult,
+                    report: crud.getStateReport()
+                }, null, 2);
                 return;
             }
 

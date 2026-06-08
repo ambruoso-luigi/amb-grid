@@ -137,5 +137,31 @@ export const formatters = {
 
             return stringifyValue(value);
         };
+    },
+
+    largeTextPreview(options = {}) {
+        const normalizedOptions = {
+            maxLength: 40,
+            ellipsis: '...',
+            ...options
+        };
+
+        return cell => {
+            const value = getCellValue(cell);
+            const cellElement = cell.getElement && cell.getElement();
+
+            if (cellElement) {
+                cellElement.dataset.largeTextField = cell.getField();
+            }
+
+            if (isEmptyValue(value)) return '';
+
+            const text = stringifyValue(value).replace(/\s+/g, ' ').trim();
+
+            if (text === '') return '';
+            if (text.length <= normalizedOptions.maxLength) return text;
+
+            return `${text.slice(0, normalizedOptions.maxLength)}${normalizedOptions.ellipsis}`;
+        };
     }
 };

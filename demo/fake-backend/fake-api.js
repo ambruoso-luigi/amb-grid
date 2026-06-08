@@ -13,7 +13,11 @@ const normalizeCode = value => {
 };
 
 const getChangeId = item => {
-    return item && item.id;
+    if (!item) return undefined;
+
+    return item.id === null || item.id === undefined || item.id === ''
+        ? item._ambTempId
+        : item.id;
 };
 
 const getInsertedStarship = item => {
@@ -24,6 +28,14 @@ const getUpdatedStarship = change => {
     return clone(change.after || change);
 };
 
+const getNextStarshipId = () => {
+    const maxId = state.starships.reduce((max, item) => {
+        return typeof item.id === 'number' && item.id > max ? item.id : max;
+    }, 0);
+
+    return maxId + 1;
+};
+
 const hasRegistryDuplicate = payload => {
     const changes = payload.changes || {};
     const deletedIds = new Set((changes.deleted || []).map(change => getChangeId(change)));
@@ -32,21 +44,21 @@ const hasRegistryDuplicate = payload => {
     (changes.updated || []).forEach(change => {
         const starship = getUpdatedStarship(change);
 
-        pendingById.set(starship.id, starship);
+        pendingById.set(getChangeId(starship), starship);
     });
 
     (changes.inserted || []).forEach(item => {
         const starship = getInsertedStarship(item);
 
-        pendingById.set(starship.id, starship);
+        pendingById.set(getChangeId(starship), starship);
     });
 
     const candidates = [
         ...state.starships
             .filter(item => !deletedIds.has(item.id))
-            .map(item => pendingById.get(item.id) || item),
+            .map(item => pendingById.get(getChangeId(item)) || item),
         ...(changes.inserted || []).map(getInsertedStarship)
-            .filter(item => !state.starships.some(existing => existing.id === item.id))
+            .filter(item => !state.starships.some(existing => getChangeId(existing) === getChangeId(item)))
     ];
     const seen = new Map();
 
@@ -55,15 +67,15 @@ const hasRegistryDuplicate = payload => {
 
         if (!registryCode) continue;
 
-        if (seen.has(registryCode) && seen.get(registryCode) !== item.id) {
+        if (seen.has(registryCode) && seen.get(registryCode) !== getChangeId(item)) {
             return {
-                id: item.id,
+                id: getChangeId(item),
                 field: 'registryCode',
                 message: 'Registry code already exists'
             };
         }
 
-        seen.set(registryCode, item.id);
+        seen.set(registryCode, getChangeId(item));
     }
 
     return null;
@@ -98,7 +110,7 @@ export const fakeApi = {
 
         const changes = payload.changes || {};
         const missingDelete = (changes.deleted || []).find(change => {
-            return !state.starships.some(item => item.id === getChangeId(change));
+            return !state.starships.some(item => getChangeId(item) === getChangeId(change));
         });
 
         if (missingDelete) {
@@ -129,10 +141,12 @@ export const fakeApi = {
             updated: [],
             deleted: []
         };
+        const generatedIds = [];
+        const unmappedInserted = [];
 
         (changes.deleted || []).forEach(change => {
             const id = getChangeId(change);
-            const index = state.starships.findIndex(item => item.id === id);
+            const index = state.starships.findIndex(item => getChangeId(item) === id);
 
             if (index === -1) return;
 
@@ -142,7 +156,7 @@ export const fakeApi = {
 
         (changes.updated || []).forEach(change => {
             const starship = getUpdatedStarship(change);
-            const index = state.starships.findIndex(item => item.id === starship.id);
+            const index = state.starships.findIndex(item => getChangeId(item) === getChangeId(starship));
 
             if (index === -1) return;
 
@@ -152,13 +166,33 @@ export const fakeApi = {
 
         (changes.inserted || []).forEach(item => {
             const starship = getInsertedStarship(item);
+            const tempId = starship._ambTempId;
 
+            if (starship.id === null || starship.id === undefined || starship.id === '') {
+                starship.id = getNextStarshipId();
+
+                if (tempId) {
+                    generatedIds.push({
+                        tempId,
+                        id: starship.id
+                    });
+                } else {
+                    unmappedInserted.push({
+                        id: starship.id,
+                        reason: 'missing-temp-id'
+                    });
+                }
+            }
+
+            delete starship._ambTempId;
             state.starships.push(starship);
             saved.inserted.push(clone(starship));
         });
 
         return {
             ok: true,
+            generatedIds,
+            unmappedInserted,
             saved
         };
     }

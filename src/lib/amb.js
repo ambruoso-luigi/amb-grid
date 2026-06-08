@@ -221,6 +221,16 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
 };
 
 const configureLookupEditors = (columns, getCrud) => {
+    const getCrudRowIdentifier = (crud, data) => {
+        if (!crud || !data) return null;
+
+        const id = data[crud.options.idField];
+
+        if (id !== null && id !== undefined && id !== '') return id;
+
+        return data[crud.options.tempIdField];
+    };
+
     (columns || []).forEach(column => {
         if (
             column.editor
@@ -232,23 +242,23 @@ const configureLookupEditors = (columns, getCrud) => {
                     const crud = getCrud();
                     const row = cell && cell.getRow && cell.getRow();
                     const data = row && row.getData ? row.getData() : null;
-                    const id = crud && data ? data[crud.options.idField] : null;
+                    const identifier = getCrudRowIdentifier(crud, data);
                     const field = cell && cell.getField && cell.getField();
 
-                    if (!crud || id === null || id === undefined || !field) return;
+                    if (!crud || identifier === null || identifier === undefined || !field) return;
 
-                    crud.markCellError(id, field, message);
+                    crud.markCellError(identifier, field, message);
                 },
                 clearInvalid(cell) {
                     const crud = getCrud();
                     const row = cell && cell.getRow && cell.getRow();
                     const data = row && row.getData ? row.getData() : null;
-                    const id = crud && data ? data[crud.options.idField] : null;
+                    const identifier = getCrudRowIdentifier(crud, data);
                     const field = cell && cell.getField && cell.getField();
 
-                    if (!crud || id === null || id === undefined || !field) return;
+                    if (!crud || identifier === null || identifier === undefined || !field) return;
 
-                    crud.clearCellError(id, field);
+                    crud.clearCellError(identifier, field);
                 }
             });
         }
@@ -271,6 +281,14 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         const stateField = crud ? crud.options.stateField : '_state';
 
         return data[stateField] || ROW_STATE.CLEAN;
+    };
+
+    const getRowIdentifier = (crud, data) => {
+        const id = data[crud.options.idField];
+
+        if (id !== null && id !== undefined && id !== '') return id;
+
+        return data[crud.options.tempIdField];
     };
 
     const getButtonConfig = state => {
@@ -368,6 +386,7 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                 const row = cell.getRow();
                 const data = row.getData();
                 const id = data[crud.options.idField];
+                const identifier = getRowIdentifier(crud, data);
                 const state = getRowState(row);
 
                 if (state === ROW_STATE.NEW) {
@@ -376,14 +395,14 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                         message: confirmRemoveNewMessage,
                         row,
                         state,
-                        id
+                        id: identifier
                     });
 
                     if (!confirmed) {
                         return;
                     }
 
-                    crud.deleteRow(id);
+                    crud.deleteRow(identifier);
                     scheduleRowButtonUpdate(row);
                     return;
                 }
@@ -394,14 +413,14 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                         message: confirmRollbackMessage,
                         row,
                         state,
-                        id
+                        id: identifier
                     });
 
                     if (!confirmed) {
                         return;
                     }
 
-                    crud.rollbackRow(id);
+                    crud.rollbackRow(identifier);
                     scheduleRowButtonUpdate(row);
                     return;
                 }
@@ -411,14 +430,14 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                     message: confirmDeleteMessage,
                     row,
                     state,
-                    id
+                    id: identifier
                 });
 
                 if (!confirmed) {
                     return;
                 }
 
-                crud.deleteRow(id);
+                crud.deleteRow(identifier);
                 scheduleRowButtonUpdate(row);
             }
         },
@@ -492,6 +511,75 @@ const createLookupDescriptionBinder = (table, floatingMessage) => {
     };
 };
 
+const createLargeTextBinder = (table, floatingMessage) => {
+    const tableElement = table && table.element;
+
+    if (!tableElement) {
+        return () => {};
+    }
+
+    let activeCellElement = null;
+
+    const findLargeTextCell = target => {
+        return target && target.closest
+            ? target.closest('.tabulator-cell[data-large-text-field]')
+            : null;
+    };
+
+    const getRowForElement = rowElement => {
+        return table.getRows().find(row => row.getElement && row.getElement() === rowElement) || null;
+    };
+
+    const getFullText = cellElement => {
+        const rowElement = cellElement.closest('.tabulator-row');
+        const row = getRowForElement(rowElement);
+        const field = cellElement.dataset.largeTextField;
+        const rowData = row && row.getData ? row.getData() : null;
+        const value = rowData && field ? rowData[field] : '';
+
+        if (value === null || value === undefined || value === '') return '';
+
+        return String(value);
+    };
+
+    const showText = event => {
+        const cellElement = findLargeTextCell(event.target);
+
+        if (!cellElement || cellElement.dataset.cellError === 'true') return;
+        if (cellElement === activeCellElement) return;
+
+        const text = getFullText(cellElement);
+
+        if (!text) return;
+
+        activeCellElement = cellElement;
+        floatingMessage.scheduleShow(cellElement, {
+            type: 'info',
+            title: 'Text',
+            message: text
+        });
+    };
+
+    const hideText = event => {
+        const cellElement = findLargeTextCell(event.target);
+
+        if (!cellElement || cellElement !== activeCellElement) return;
+        if (cellElement.contains(event.relatedTarget)) return;
+
+        activeCellElement = null;
+        floatingMessage.hide();
+    };
+
+    tableElement.addEventListener('mouseover', showText);
+    tableElement.addEventListener('mouseout', hideText);
+
+    return () => {
+        tableElement.removeEventListener('mouseover', showText);
+        tableElement.removeEventListener('mouseout', hideText);
+        floatingMessage.hide();
+    };
+};
+
 export const AMB = {
     validators,
     formatters,
@@ -511,6 +599,7 @@ export const AMB = {
         let crud = null;
         let unsubscribeDeleteColumn = null;
         let unsubscribeLookupDescriptions = null;
+        let unsubscribeLargeText = null;
         const confirmDialog = new ConfirmDialog();
         const deleteColumnController = deleteColumn && deleteColumn.enabled
             ? createDeleteColumn(deleteColumn, () => crud, confirmDialog)
@@ -532,6 +621,7 @@ export const AMB = {
         const floatingMessage = new FloatingMessage();
         const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
         unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage);
+        unsubscribeLargeText = createLargeTextBinder(table, floatingMessage);
 
         if (deleteColumnController) {
             unsubscribeDeleteColumn = crud.on('row-state-changed', ({ row }) => {
@@ -560,6 +650,11 @@ export const AMB = {
                 if (unsubscribeLookupDescriptions) {
                     unsubscribeLookupDescriptions();
                     unsubscribeLookupDescriptions = null;
+                }
+
+                if (unsubscribeLargeText) {
+                    unsubscribeLargeText();
+                    unsubscribeLargeText = null;
                 }
 
                 cellMessageBinder.destroy();

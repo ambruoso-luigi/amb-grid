@@ -29,6 +29,9 @@ export default function basicCrud(app) {
         layout: 'fitColumns',
         columns: [
             { title: 'ID', field: 'id', width: 80 },
+            { title: 'Temp ID', field: '_ambTempId', width: 130 },
+            { title: '#', field: '_ambRowNumber', width: 70 },
+            { title: 'State', field: '_state', width: 100 },
             { title: 'Title', field: 'title', editor: AMB.editors.text({ trim: true }) },
             { title: 'Tag', field: 'tag', editor: AMB.editors.text({ lowercase: true, trim: true }) }
         ]
@@ -38,7 +41,7 @@ export default function basicCrud(app) {
     const output = app.querySelector('#basic-output');
 
     app.querySelector('#add-note').addEventListener('click', () => {
-        crud.addRow({ id: Date.now(), title: '', tag: '' });
+        crud.addRow({ id: null, title: '', tag: '' });
     });
     app.querySelector('#save-valid').addEventListener('click', () => {
         output.textContent = JSON.stringify({ saved: crud.markValidChangesSaved() }, null, 2);

@@ -33,17 +33,26 @@ export class CrudHelper {
      * @param {string} [options.originalDataField='_originalData'] - Field used to store original row data.
      * @param {object} [options.errorStyle] - Error highlighting options.
      * @param {boolean} [options.errorStyle.highlightRowOnCellError=false] - Whether cell errors also mark the row.
-     * @param {object} [options.rowNumbering] - Local technical row numbering options.
-     * @param {boolean} [options.rowNumbering.enabled=true] - Whether local row numbering is enabled.
-     * @param {string} [options.rowNumbering.field='_tehRowNumber'] - Field used to store the local row number.
-     * @param {boolean} [options.rowNumbering.assignOnAdd=true] - Whether new rows receive the next local row number.
+     * @param {string} [options.rowNumberField='_ambRowNumber'] - Internal visible/logical row number field.
+     * @param {string} [options.tempIdField='_ambTempId'] - Internal technical key for rows without backend id.
+     * @param {boolean} [options.renumberOnAdd=true] - Whether new rows receive the next row number.
+     * @param {boolean} [options.renumberOnDelete=true] - Whether physically removing new rows renumbers remaining rows.
      */
     constructor(table, options = {}) {
         const { errorStyle = {}, rowNumbering = {}, ...baseOptions } = options;
+        const rowNumberField = baseOptions.rowNumberField
+            || rowNumbering.field
+            || '_ambRowNumber';
 
         this.table = table;
         this.options = {
             idField: 'id',
+            rowNumberField,
+            tempIdField: '_ambTempId',
+            renumberOnAdd: rowNumbering.assignOnAdd !== undefined
+                ? rowNumbering.assignOnAdd
+                : true,
+            renumberOnDelete: true,
             stateField: '_state',
             originalDataField: '_originalData',
             ...baseOptions,
@@ -53,8 +62,12 @@ export class CrudHelper {
             },
             rowNumbering: {
                 enabled: true,
-                field: '_tehRowNumber',
-                assignOnAdd: true,
+                field: rowNumberField,
+                assignOnAdd: baseOptions.renumberOnAdd !== undefined
+                    ? baseOptions.renumberOnAdd
+                    : rowNumbering.assignOnAdd !== undefined
+                        ? rowNumbering.assignOnAdd
+                        : true,
                 ...rowNumbering
             }
         };
@@ -64,6 +77,7 @@ export class CrudHelper {
         this.cellValidators = new Map();
         this.rowErrors = new Map();
         this.eventHandlers = new Map();
+        this.nextTempIdNumber = 1;
 
         this._captureInitialSnapshot();
         this._enableTracking();
@@ -92,18 +106,20 @@ export class CrudHelper {
 
     _captureInitialSnapshot() {
         this._assignMissingRowNumbers();
+        this._assignMissingTempIds();
 
         const rows = this.table.getRows();
 
         rows.forEach(row => {
             const data = row.getData();
-            const id = data[this.options.idField];
+            const key = this._getRowKey(row);
+            const state = data[this.options.stateField];
 
-            if (id === undefined || this.originalRows.has(id)) return;
+            if (!key || state === ROW_STATE.NEW || this.originalRows.has(key)) return;
 
-            this.originalRows.set(id, this._cleanHelperFields(data));
+            this.originalRows.set(key, this._cleanHelperFields(data));
 
-            if (!data[this.options.stateField]) {
+            if (!state) {
                 this._applyRowState(row, ROW_STATE.CLEAN);
             }
         });
@@ -119,13 +135,7 @@ export class CrudHelper {
     }
 
     _cleanStateReportData(data) {
-        const clonedData = this._cleanHelperFields(data);
-
-        if (this._isRowNumberingEnabled()) {
-            delete clonedData[this._getRowNumberField()];
-        }
-
-        return clonedData;
+        return this._cleanHelperFields(data);
     }
 
     _patchRow(row, partialData) {
@@ -159,7 +169,60 @@ export class CrudHelper {
     }
 
     _getRowNumberField() {
-        return this._getRowNumberingOptions().field;
+        return this.options.rowNumberField || this._getRowNumberingOptions().field;
+    }
+
+    _getTempIdField() {
+        return this.options.tempIdField;
+    }
+
+    _isMissingId(id) {
+        return id === null || id === undefined || id === '';
+    }
+
+    _getRowTempId(row) {
+        const data = row && row.getData ? row.getData() : {};
+
+        return data[this._getTempIdField()];
+    }
+
+    _getRowKey(row) {
+        const id = this._getRowId(row);
+
+        if (!this._isMissingId(id)) return id;
+
+        return this._getRowTempId(row);
+    }
+
+    _getIdentifierLabel(identifier) {
+        return `${this.options.idField}/${this._getTempIdField()} ${identifier}`;
+    }
+
+    _extractTempIdNumber(tempId) {
+        const match = String(tempId || '').match(/^amb-temp-(\d+)$/);
+
+        return match ? Number(match[1]) : 0;
+    }
+
+    _createTempId() {
+        const tempId = `amb-temp-${this.nextTempIdNumber}`;
+
+        this.nextTempIdNumber += 1;
+
+        return tempId;
+    }
+
+    _syncNextTempIdNumber() {
+        const field = this._getTempIdField();
+        const maxTempIdNumber = this.table.getRows().reduce((max, row) => {
+            const tempIdNumber = this._extractTempIdNumber(row.getData()[field]);
+
+            return tempIdNumber > max ? tempIdNumber : max;
+        }, 0);
+
+        if (maxTempIdNumber >= this.nextTempIdNumber) {
+            this.nextTempIdNumber = maxTempIdNumber + 1;
+        }
     }
 
     _getMaxRowNumber() {
@@ -194,23 +257,82 @@ export class CrudHelper {
         });
     }
 
-    _assignRowNumberOnAdd(rowData) {
-        const rowNumbering = this._getRowNumberingOptions();
+    _assignMissingTempIds() {
+        const idField = this.options.idField;
+        const tempIdField = this._getTempIdField();
 
-        if (!this._isRowNumberingEnabled() || !rowNumbering.assignOnAdd) {
-            return rowData;
+        this._syncNextTempIdNumber();
+
+        this.table.getRows().forEach(row => {
+            const data = row.getData();
+
+            if (!this._isMissingId(data[idField]) || data[tempIdField]) return;
+
+            this._patchRow(row, {
+                [tempIdField]: this._createTempId()
+            });
+        });
+    }
+
+    _assignInternalFieldsOnAdd(rowData) {
+        const nextRowData = { ...rowData };
+        const idField = this.options.idField;
+        const tempIdField = this._getTempIdField();
+
+        if (this._isMissingId(nextRowData[idField]) && !nextRowData[tempIdField]) {
+            nextRowData[tempIdField] = this._createTempId();
         }
 
         const field = this._getRowNumberField();
 
-        if (rowData[field] !== undefined && rowData[field] !== null) {
-            return rowData;
+        if (
+            this._isRowNumberingEnabled()
+            && this.options.renumberOnAdd
+            && (nextRowData[field] === undefined || nextRowData[field] === null)
+        ) {
+            nextRowData[field] = this._getMaxRowNumber() + 1;
         }
 
-        return {
-            ...rowData,
-            [field]: this._getMaxRowNumber() + 1
+        return nextRowData;
+    }
+
+    _renumberRows() {
+        if (!this._isRowNumberingEnabled()) return;
+
+        const field = this._getRowNumberField();
+
+        this.table.getRows().forEach((row, index) => {
+            const rowNumber = index + 1;
+            const key = this._getRowKey(row);
+
+            this._patchRow(row, {
+                [field]: rowNumber
+            });
+
+            if (this.originalRows.has(key)) {
+                const originalData = this.originalRows.get(key);
+
+                this.originalRows.set(key, {
+                    ...originalData,
+                    [field]: rowNumber
+                });
+            }
+        });
+    }
+
+    _renumberAfterPhysicalDelete(deleteResult) {
+        const renumber = () => {
+            if (this.options.renumberOnDelete) {
+                this._renumberRows();
+            }
         };
+
+        if (deleteResult && typeof deleteResult.then === 'function') {
+            deleteResult.then(renumber);
+            return;
+        }
+
+        globalThis.setTimeout(renumber, 0);
     }
 
     _restoreRowData(row, originalData) {
@@ -260,9 +382,9 @@ export class CrudHelper {
 
     _getOriginalDataForRow(row) {
         const data = row.getData();
-        const id = data[this.options.idField];
+        const key = this._getRowKey(row);
 
-        return this.originalRows.get(id) || data[this.options.originalDataField] || null;
+        return this.originalRows.get(key) || data[this.options.originalDataField] || null;
     }
 
     _valuesAreEqual(currentValue, originalValue) {
@@ -284,15 +406,15 @@ export class CrudHelper {
         if (!cell) return;
 
         const row = cell.getRow();
-        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
         const field = cell.getField();
         const cellElement = cell.getElement();
 
-        if (!this.modifiedCells.has(id)) {
-            this.modifiedCells.set(id, new Set());
+        if (!this.modifiedCells.has(key)) {
+            this.modifiedCells.set(key, new Set());
         }
 
-        this.modifiedCells.get(id).add(field);
+        this.modifiedCells.get(key).add(field);
 
         if (cellElement) {
             cellElement.dataset.cellState = ROW_STATE.MODIFIED;
@@ -309,16 +431,16 @@ export class CrudHelper {
         if (!cell) return;
 
         const row = cell.getRow();
-        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
         const field = cell.getField();
         const cellElement = cell.getElement();
-        const fields = this.modifiedCells.get(id);
+        const fields = this.modifiedCells.get(key);
 
         if (fields) {
             fields.delete(field);
 
             if (fields.size === 0) {
-                this.modifiedCells.delete(id);
+                this.modifiedCells.delete(key);
             }
         }
 
@@ -330,7 +452,7 @@ export class CrudHelper {
     _clearRowCellStates(row) {
         if (!row) return;
 
-        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
 
         row.getCells().forEach(cell => {
             const cellElement = cell.getElement();
@@ -340,13 +462,13 @@ export class CrudHelper {
             }
         });
 
-        this.modifiedCells.delete(id);
+        this.modifiedCells.delete(key);
     }
 
     _hasModifiedCells(row) {
         if (!row) return false;
 
-        const fields = this.modifiedCells.get(this._getRowId(row));
+        const fields = this.modifiedCells.get(this._getRowKey(row));
 
         return Boolean(fields && fields.size > 0);
     }
@@ -421,18 +543,18 @@ export class CrudHelper {
 
         const row = cell.getRow();
         const rowData = row.getData();
-        const id = rowData[this.options.idField];
+        const key = this._getRowKey(row);
         const value = cell.getValue();
         const failedValidator = validators.find(validator => {
             return !validator.validateFn(value, rowData, cell, this);
         });
 
         if (!failedValidator) {
-            this.clearCellError(id, field);
+            this.clearCellError(key, field);
             return;
         }
 
-        this.markCellError(id, field, failedValidator.message);
+        this.markCellError(key, field, failedValidator.message);
     }
 
     _validateField(row, field) {
@@ -442,18 +564,18 @@ export class CrudHelper {
 
         const cell = this._getCell(row, field);
         const rowData = row.getData();
-        const id = rowData[this.options.idField];
+        const key = this._getRowKey(row);
         const value = rowData[field];
         const failedValidator = validators.find(validator => {
             return !validator.validateFn(value, rowData, cell, this);
         });
 
         if (!failedValidator) {
-            this.clearCellError(id, field);
+            this.clearCellError(key, field);
             return null;
         }
 
-        this.markCellError(id, field, failedValidator.message);
+        this.markCellError(key, field, failedValidator.message);
 
         return {
             field,
@@ -465,18 +587,18 @@ export class CrudHelper {
     _syncRowErrorAttribute(row) {
         if (!row) return;
 
-        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
         const rowElement = row.getElement();
 
         if (!rowElement) return;
 
-        if (this._hasRowError(id)) {
+        if (this._hasRowError(key)) {
             rowElement.dataset.rowError = 'true';
         } else {
             delete rowElement.dataset.rowError;
         }
 
-        if (this.options.errorStyle.highlightRowOnCellError && this._hasCellErrors(id)) {
+        if (this.options.errorStyle.highlightRowOnCellError && this._hasCellErrors(key)) {
             rowElement.dataset.hasCellError = 'true';
         } else {
             delete rowElement.dataset.hasCellError;
@@ -525,14 +647,18 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {{id: *, isValid: boolean, errors: {field: string, message: string, value: *}[]}|null}
      */
-    validateRow(id) {
-        const row = this.findRowById(id);
+    validateRow(identifier) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return null;
         }
 
+        const data = row.getData();
+        const id = data[this.options.idField];
+        const tempId = data[this._getTempIdField()];
+        const rowNumber = data[this._getRowNumberField()];
         const errors = [];
 
         this.cellValidators.forEach((validators, field) => {
@@ -547,6 +673,8 @@ export class CrudHelper {
 
         return {
             id,
+            tempId,
+            rowNumber,
             isValid: errors.length === 0,
             errors
         };
@@ -559,7 +687,7 @@ export class CrudHelper {
      */
     validateAll() {
         const rows = this.table.getRows()
-            .map(row => this.validateRow(this._getRowId(row)))
+            .map(row => this.validateRow(this._getRowKey(row)))
             .filter(Boolean);
         const errors = [];
 
@@ -567,6 +695,8 @@ export class CrudHelper {
             rowResult.errors.forEach(error => {
                 errors.push({
                     id: rowResult.id,
+                    tempId: rowResult.tempId,
+                    rowNumber: rowResult.rowNumber,
                     ...error
                 });
             });
@@ -638,8 +768,17 @@ export class CrudHelper {
      * @returns {{id: *, message: string}[]} Row-level errors.
      */
     getRowErrors() {
-        return Array.from(this.rowErrors, ([id, message]) => {
-            return { id, message };
+        return Array.from(this.rowErrors, ([key, message]) => {
+            const row = this.findRowByKey(key);
+            const data = row && row.getData ? row.getData() : {};
+
+            return {
+                key,
+                id: data[this.options.idField],
+                tempId: data[this._getTempIdField()],
+                rowNumber: data[this._getRowNumberField()],
+                message
+            };
         });
     }
 
@@ -651,9 +790,19 @@ export class CrudHelper {
     getCellErrors() {
         const errors = [];
 
-        this.cellErrors.forEach((fields, id) => {
+        this.cellErrors.forEach((fields, key) => {
+            const row = this.findRowByKey(key);
+            const data = row && row.getData ? row.getData() : {};
+
             fields.forEach((message, field) => {
-                errors.push({ id, field, message });
+                errors.push({
+                    key,
+                    id: data[this.options.idField],
+                    tempId: data[this._getTempIdField()],
+                    rowNumber: data[this._getRowNumberField()],
+                    field,
+                    message
+                });
             });
         });
 
@@ -668,14 +817,16 @@ export class CrudHelper {
      * @param {string} message - Error message shown as the cell title.
      * @returns {boolean} True when the cell error was applied.
      */
-    markCellError(id, field, message) {
-        const row = this.findRowById(id);
+    markCellError(identifier, field, message) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
 
+        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
         const cell = this._getCell(row, field);
 
         if (!cell) {
@@ -684,11 +835,11 @@ export class CrudHelper {
         }
 
         if (this._getBaseRowState(row) === ROW_STATE.DELETED) {
-            console.warn(`Cannot mark deleted row with ${this.options.idField} ${id} as error`);
+            console.warn(`Cannot mark deleted row with ${this._getIdentifierLabel(identifier)} as error`);
             return false;
         }
 
-        this._getCellErrorMap(id).set(field, message);
+        this._getCellErrorMap(key).set(field, message);
 
         const cellElement = cell.getElement();
 
@@ -698,7 +849,15 @@ export class CrudHelper {
         }
 
         this._syncRowErrorAttribute(row);
-        this._emit('cell-error', { row, cell, id, field, message });
+        this._emit('cell-error', {
+            row,
+            cell,
+            id,
+            tempId: this._getRowTempId(row),
+            key,
+            field,
+            message
+        });
         return true;
     }
 
@@ -709,15 +868,17 @@ export class CrudHelper {
      * @param {string} field - Cell field name.
      * @returns {boolean} True when the row was found and the marker was cleared.
      */
-    clearCellError(id, field) {
-        const row = this.findRowById(id);
+    clearCellError(identifier, field) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
 
-        const errors = this.cellErrors.get(id);
+        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
+        const errors = this.cellErrors.get(key);
 
         const hadError = Boolean(errors && errors.has(field));
 
@@ -725,7 +886,7 @@ export class CrudHelper {
             errors.delete(field);
 
             if (errors.size === 0) {
-                this.cellErrors.delete(id);
+                this.cellErrors.delete(key);
             }
         }
 
@@ -740,7 +901,14 @@ export class CrudHelper {
         this._syncRowErrorAttribute(row);
 
         if (hadError) {
-            this._emit('cell-error-cleared', { row, cell, id, field });
+            this._emit('cell-error-cleared', {
+                row,
+                cell,
+                id,
+                tempId: this._getRowTempId(row),
+                key,
+                field
+            });
         }
 
         return true;
@@ -752,15 +920,17 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {boolean} True when the row was found and its cell errors were cleared.
      */
-    clearRowErrors(id) {
-        const row = this.findRowById(id);
+    clearRowErrors(identifier) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
 
-        const errors = this.cellErrors.get(id);
+        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
+        const errors = this.cellErrors.get(key);
 
         if (errors) {
             Array.from(errors).forEach(([field, message]) => {
@@ -772,11 +942,19 @@ export class CrudHelper {
                     cellElement.removeAttribute('title');
                 }
 
-                this._emit('cell-error-cleared', { row, cell, id, field, message });
+                this._emit('cell-error-cleared', {
+                    row,
+                    cell,
+                    id,
+                    tempId: this._getRowTempId(row),
+                    key,
+                    field,
+                    message
+                });
             });
         }
 
-        this.cellErrors.delete(id);
+        this.cellErrors.delete(key);
         this._syncRowErrorAttribute(row);
         return true;
     }
@@ -788,20 +966,23 @@ export class CrudHelper {
      * @param {string} message - Error message shown as the row title.
      * @returns {boolean} True when the row error was applied.
      */
-    markRowError(id, message) {
-        const row = this.findRowById(id);
+    markRowError(identifier, message) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
+
+        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
 
         if (this._getBaseRowState(row) === ROW_STATE.DELETED) {
-            console.warn(`Cannot mark deleted row with ${this.options.idField} ${id} as error`);
+            console.warn(`Cannot mark deleted row with ${this._getIdentifierLabel(identifier)} as error`);
             return false;
         }
 
-        this.rowErrors.set(id, message);
+        this.rowErrors.set(key, message);
 
         const rowElement = row.getElement();
 
@@ -811,7 +992,13 @@ export class CrudHelper {
 
         this._syncRowErrorAttribute(row);
 
-        this._emit('row-error', { row, id, message });
+        this._emit('row-error', {
+            row,
+            id,
+            tempId: this._getRowTempId(row),
+            key,
+            message
+        });
         return true;
     }
 
@@ -821,17 +1008,19 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {boolean} True when the row was found and the marker was cleared.
      */
-    clearRowError(id) {
-        const row = this.findRowById(id);
+    clearRowError(identifier) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
 
-        const hadError = this.rowErrors.has(id);
+        const id = this._getRowId(row);
+        const key = this._getRowKey(row);
+        const hadError = this.rowErrors.has(key);
 
-        this.rowErrors.delete(id);
+        this.rowErrors.delete(key);
 
         const rowElement = row.getElement();
 
@@ -842,7 +1031,12 @@ export class CrudHelper {
         this._syncRowErrorAttribute(row);
 
         if (hadError) {
-            this._emit('row-error-cleared', { row, id });
+            this._emit('row-error-cleared', {
+                row,
+                id,
+                tempId: this._getRowTempId(row),
+                key
+            });
         }
 
         return true;
@@ -854,9 +1048,9 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {boolean} True when the row was found and all error markers were cleared.
      */
-    clearAllErrors(id) {
-        const clearedCellErrors = this.clearRowErrors(id);
-        const clearedRowError = this.clearRowError(id);
+    clearAllErrors(identifier) {
+        const clearedCellErrors = this.clearRowErrors(identifier);
+        const clearedRowError = this.clearRowError(identifier);
 
         return clearedCellErrors && clearedRowError;
     }
@@ -868,7 +1062,7 @@ export class CrudHelper {
      * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one.
      */
     addRow(data) {
-        const rowData = this._assignRowNumberOnAdd({
+        const rowData = this._assignInternalFieldsOnAdd({
             ...data,
             [this.options.stateField]: ROW_STATE.NEW
         });
@@ -896,10 +1090,181 @@ export class CrudHelper {
         const idField = this.options.idField;
         const rows = this.table.getRows();
 
+        if (this._isMissingId(id)) return null;
+
         return rows.find(row => {
             const data = row.getData();
             return data[idField] === id;
         }) || null;
+    }
+
+    /**
+     * Find a row by backend id when present, otherwise by AMB temporary id.
+     *
+     * @param {*} identifier - Backend id or temporary AMB id.
+     * @returns {object|null} Tabulator row component, or null when no row matches.
+     */
+    findRowByKey(identifier) {
+        const rows = this.table.getRows();
+
+        return rows.find(row => {
+            const data = row.getData();
+            const id = data[this.options.idField];
+
+            if (!this._isMissingId(id) && id === identifier) return true;
+
+            return data[this._getTempIdField()] === identifier;
+        }) || null;
+    }
+
+    _findRowByTempId(tempId) {
+        const tempIdField = this._getTempIdField();
+
+        return this.table.getRows().find(row => {
+            return row.getData()[tempIdField] === tempId;
+        }) || null;
+    }
+
+    _copyMapEntry(map, oldKey, newKey) {
+        if (!map.has(oldKey)) return;
+
+        map.set(newKey, map.get(oldKey));
+        map.delete(oldKey);
+    }
+
+    _applyBackendIdToSnapshot(snapshot, id, tempId, keepTempIdAfterBackendId) {
+        if (!snapshot) return snapshot;
+
+        const idField = this.options.idField;
+        const tempIdField = this._getTempIdField();
+        const nextSnapshot = {
+            ...snapshot,
+            [idField]: id
+        };
+
+        if (keepTempIdAfterBackendId) {
+            nextSnapshot[tempIdField] = tempId;
+        } else {
+            delete nextSnapshot[tempIdField];
+        }
+
+        return nextSnapshot;
+    }
+
+    /**
+     * Apply backend-generated ids to rows currently identified by AMB temporary ids.
+     *
+     * @param {{tempId: *, id: *}[]} mappings - Backend id mappings keyed by temp id.
+     * @param {object} [options] - Apply options.
+     * @param {boolean} [options.keepTempIdAfterBackendId=false] - Keep the temporary id after assigning backend id.
+     * @returns {{applied: object[], notFound: object[], invalid: object[], duplicates: object[]}} Apply result.
+     */
+    applyBackendIds(mappings, options = {}) {
+        const normalizedOptions = {
+            keepTempIdAfterBackendId: false,
+            ...options
+        };
+        const result = {
+            applied: [],
+            notFound: [],
+            invalid: [],
+            duplicates: []
+        };
+        const idField = this.options.idField;
+        const tempIdField = this._getTempIdField();
+        const rowNumberField = this._getRowNumberField();
+
+        (mappings || []).forEach(mapping => {
+            const tempId = mapping && mapping.tempId;
+            const id = mapping && mapping.id;
+
+            if (this._isMissingId(id)) {
+                result.invalid.push({
+                    tempId,
+                    id,
+                    reason: 'Backend id is required'
+                });
+                return;
+            }
+
+            const row = this._findRowByTempId(tempId);
+
+            if (!row) {
+                result.notFound.push({ tempId, id });
+                return;
+            }
+
+            const duplicate = this.findRowById(id);
+
+            if (duplicate && duplicate !== row) {
+                result.duplicates.push({
+                    tempId,
+                    id,
+                    reason: 'Backend id already exists'
+                });
+                return;
+            }
+
+            const data = row.getData();
+            const oldKey = this._getRowKey(row);
+            const rowNumber = data[rowNumberField];
+            const oldOriginalData = data[this.options.originalDataField];
+            const patch = {
+                [idField]: id
+            };
+
+            if (!normalizedOptions.keepTempIdAfterBackendId) {
+                patch[tempIdField] = undefined;
+            } else {
+                patch[tempIdField] = tempId;
+            }
+
+            if (oldOriginalData) {
+                patch[this.options.originalDataField] = this._applyBackendIdToSnapshot(
+                    oldOriginalData,
+                    id,
+                    tempId,
+                    normalizedOptions.keepTempIdAfterBackendId
+                );
+            }
+
+            this._patchRow(row, patch);
+
+            if (!normalizedOptions.keepTempIdAfterBackendId) {
+                delete row.getData()[tempIdField];
+                if (row.getData()[this.options.originalDataField]) {
+                    delete row.getData()[this.options.originalDataField][tempIdField];
+                }
+            }
+
+            const newKey = this._getRowKey(row);
+
+            if (oldKey !== newKey) {
+                if (this.originalRows.has(oldKey)) {
+                    const originalData = this.originalRows.get(oldKey);
+
+                    this.originalRows.delete(oldKey);
+                    this.originalRows.set(newKey, this._applyBackendIdToSnapshot(
+                        originalData,
+                        id,
+                        tempId,
+                        normalizedOptions.keepTempIdAfterBackendId
+                    ));
+                }
+
+                this._copyMapEntry(this.modifiedCells, oldKey, newKey);
+                this._copyMapEntry(this.cellErrors, oldKey, newKey);
+                this._copyMapEntry(this.rowErrors, oldKey, newKey);
+            }
+
+            result.applied.push({
+                tempId,
+                id,
+                rowNumber
+            });
+        });
+
+        return result;
     }
 
     /**
@@ -929,23 +1294,26 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {boolean} True when the row was found and deleted or marked for deletion.
      */
-    deleteRow(id) {
-        const row = this.findRowById(id);
+    deleteRow(identifier) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
 
+        const key = this._getRowKey(row);
+
         if (this._getBaseRowState(row) === ROW_STATE.NEW) {
             this._clearRowCellStates(row);
-            this.clearAllErrors(id);
-            row.delete();
+            this.clearAllErrors(key);
+
+            this._renumberAfterPhysicalDelete(row.delete());
             return true;
         }
 
         this._clearRowCellStates(row);
-        this.clearAllErrors(id);
+        this.clearAllErrors(key);
         this._applyRowState(row, ROW_STATE.DELETED);
         return true;
     }
@@ -956,36 +1324,38 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {boolean} True when the rollback completed.
      */
-    rollbackRow(id) {
-        const row = this.findRowById(id);
+    rollbackRow(identifier) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
 
         const data = row.getData();
+        const key = this._getRowKey(row);
         const state = this._getBaseRowState(row);
 
         if (state === ROW_STATE.NEW) {
             this._clearRowCellStates(row);
-            this.clearAllErrors(id);
-            row.delete();
+            this.clearAllErrors(key);
+
+            this._renumberAfterPhysicalDelete(row.delete());
             return true;
         }
 
         if (state === ROW_STATE.CLEAN) {
             this._clearRowCellStates(row);
-            this.clearAllErrors(id);
+            this.clearAllErrors(key);
             this._applyRowState(row, ROW_STATE.CLEAN);
             return true;
         }
 
         if (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED) {
-            const originalData = this.originalRows.get(id) || data[this.options.originalDataField];
+            const originalData = this.originalRows.get(key) || data[this.options.originalDataField];
 
             if (!originalData) {
-                console.warn(`Original data for row with ${this.options.idField} ${id} not found`);
+                console.warn(`Original data for row with ${this._getIdentifierLabel(identifier)} not found`);
                 return false;
             }
 
@@ -999,7 +1369,7 @@ export class CrudHelper {
 
             this._restoreRowData(row, restoredData);
             this._clearRowCellStates(row);
-            this.clearAllErrors(id);
+            this.clearAllErrors(key);
             this._applyRowState(row, ROW_STATE.CLEAN);
             return true;
         }
@@ -1013,31 +1383,49 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {boolean} True when the row was found and the saved marker was applied or no-op was valid.
      */
-    markRowSaved(id) {
-        const row = this.findRowById(id);
+    markRowSaved(identifier) {
+        const row = this.findRowByKey(identifier);
 
         if (!row) {
-            console.warn(`Row with ${this.options.idField} ${id} not found`);
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
             return false;
         }
 
         const data = row.getData();
+        const id = data[this.options.idField];
+        const key = this._getRowKey(row);
         const state = this._getBaseRowState(row);
 
+        if (state === ROW_STATE.NEW && this._isMissingId(id)) {
+            return false;
+        }
+
         if (state === ROW_STATE.NEW || state === ROW_STATE.MODIFIED) {
-            this.originalRows.set(id, this._cleanHelperFields(data));
+            this.originalRows.set(key, this._cleanHelperFields(data));
             this._clearRowCellStates(row);
             this._applyRowState(row, ROW_STATE.SAVED);
-            this._emit('row-saved', { row, id, state: ROW_STATE.SAVED });
+            this._emit('row-saved', {
+                row,
+                id,
+                tempId: this._getRowTempId(row),
+                key,
+                state: ROW_STATE.SAVED
+            });
             return true;
         }
 
         if (state === ROW_STATE.DELETED) {
             this._clearRowCellStates(row);
-            this.clearAllErrors(id);
-            this.originalRows.delete(id);
-            this._emit('row-saved', { row, id, state });
-            row.delete();
+            this.clearAllErrors(key);
+            this.originalRows.delete(key);
+            this._emit('row-saved', {
+                row,
+                id,
+                tempId: this._getRowTempId(row),
+                key,
+                state
+            });
+            this._renumberAfterPhysicalDelete(row.delete());
             return true;
         }
 
@@ -1063,10 +1451,41 @@ export class CrudHelper {
      */
     markValidChangesSaved() {
         const report = this.getStateReport();
+        const result = {
+            saved: [],
+            skipped: []
+        };
 
-        return report.validChangedRows.every(row => {
-            return this.markRowSaved(row.id);
+        report.validChangedRows.forEach(row => {
+            if (row.state === ROW_STATE.NEW && this._isMissingId(row.id)) {
+                result.skipped.push({
+                    tempId: row.tempId,
+                    reason: 'missing-backend-id'
+                });
+                return;
+            }
+
+            if (this.markRowSaved(row.key)) {
+                result.saved.push({
+                    key: row.key,
+                    id: row.id,
+                    tempId: row.tempId,
+                    rowNumber: row.rowNumber,
+                    state: row.state
+                });
+                return;
+            }
+
+            result.skipped.push({
+                key: row.key,
+                id: row.id,
+                tempId: row.tempId,
+                rowNumber: row.rowNumber,
+                reason: 'not-saved'
+            });
         });
+
+        return result;
     }
 
     /**
@@ -1095,13 +1514,12 @@ export class CrudHelper {
         this.table.getRows().forEach(row => {
             const data = row.getData();
             const id = data[this.options.idField];
+            const tempId = data[this._getTempIdField()];
+            const rowNumber = data[this._getRowNumberField()];
             const state = data[this.options.stateField] || ROW_STATE.CLEAN;
 
             if (state === ROW_STATE.NEW) {
-                changes.inserted.push({
-                    ...this._cleanHelperFields(data),
-                    tempRowNumber: data[this._getRowNumberField()]
-                });
+                changes.inserted.push(this._cleanHelperFields(data));
                 return;
             }
 
@@ -1115,6 +1533,8 @@ export class CrudHelper {
 
                 changes.updated.push({
                     id,
+                    tempId,
+                    rowNumber,
                     before: cleanBefore,
                     after,
                     changedFields: this._getChangedFields(cleanBefore, after)
@@ -1127,6 +1547,8 @@ export class CrudHelper {
 
                 changes.deleted.push({
                     id,
+                    tempId,
+                    rowNumber,
                     originalData: originalData ? this._cleanHelperFields(originalData) : null
                 });
             }
@@ -1159,10 +1581,12 @@ export class CrudHelper {
         const rows = this.table.getRows().map(row => {
             const data = row.getData();
             const id = data[this.options.idField];
+            const tempId = data[this._getTempIdField()];
+            const key = this._getRowKey(row);
             const state = data[this.options.stateField] || ROW_STATE.CLEAN;
-            const hasRowError = this.rowErrors.has(id);
-            const rowError = hasRowError ? this.rowErrors.get(id) : null;
-            const cellErrorMap = this.cellErrors.get(id);
+            const hasRowError = this.rowErrors.has(key);
+            const rowError = hasRowError ? this.rowErrors.get(key) : null;
+            const cellErrorMap = this.cellErrors.get(key);
             const cellErrors = cellErrorMap
                 ? Array.from(cellErrorMap, ([field, message]) => {
                     return { field, message };
@@ -1178,7 +1602,9 @@ export class CrudHelper {
             const changedFields = before ? this._getChangedFields(before, after) : [];
 
             return {
+                key,
                 id,
+                tempId,
                 rowNumber: this._isRowNumberingEnabled() ? data[this._getRowNumberField()] : null,
                 state,
                 hasChanges,
@@ -1214,6 +1640,8 @@ export class CrudHelper {
 
                 validChanges.updated.push({
                     id: row.id,
+                    tempId: row.tempId,
+                    rowNumber: row.rowNumber,
                     before: row.before,
                     after: row.after,
                     changedFields: row.changedFields
@@ -1224,6 +1652,8 @@ export class CrudHelper {
             if (row.state === ROW_STATE.DELETED) {
                 validChanges.deleted.push({
                     id: row.id,
+                    tempId: row.tempId,
+                    rowNumber: row.rowNumber,
                     originalData: row.before
                 });
             }
@@ -1304,9 +1734,9 @@ export class CrudHelper {
             return;
         }
 
-        const id = data[this.options.idField];
+        const key = this._getRowKey(row);
 
-        if (!this.originalRows.has(id) && !data[originalDataField]) {
+        if (!this.originalRows.has(key) && !data[originalDataField]) {
             this._patchRow(row, {
                 [originalDataField]: this._cleanHelperFields(data)
             });
@@ -1335,6 +1765,8 @@ export class CrudHelper {
             this._emit('row-state-changed', {
                 row,
                 id: this._getRowId(row),
+                tempId: this._getRowTempId(row),
+                key: this._getRowKey(row),
                 previousState,
                 nextState: state
             });
