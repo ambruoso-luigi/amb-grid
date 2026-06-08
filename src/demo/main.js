@@ -1,6 +1,7 @@
 import '../style.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import 'tom-select/dist/css/tom-select.css';
+import 'vanillajs-datepicker/css/datepicker.min.css';
 import '../ui/floating-message.css';
 import '../ui/confirm-dialog.css';
 import '../ui/lookup-dialog.css';

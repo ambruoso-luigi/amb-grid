@@ -6,7 +6,7 @@ export default async function fullDemo(app) {
         <h2>Starship Registry</h2>
         <div class="toolbar">
             <button type="button" id="add-ship">Add starship</button>
-            <button type="button" id="save-ships">Mark valid changes saved</button>
+            <button type="button" id="save-ships">Save changes</button>
             <button type="button" id="ship-report">Show state report</button>
         </div>
         <div id="starship-table"></div>
@@ -17,10 +17,8 @@ export default async function fullDemo(app) {
 
     output.textContent = 'Loading...';
 
-    const [statuses, starships] = await Promise.all([
-        fakeApi.getStatuses(),
-        fakeApi.getStarships()
-    ]);
+    const starships = await fakeApi.getStarships();
+    const statuses = await fakeApi.getStatuses();
     const statusLabels = Object.fromEntries(
         statuses.map(item => [item.id, item.description])
     );
@@ -85,7 +83,11 @@ export default async function fullDemo(app) {
             {
                 title: 'Launch Date',
                 field: 'launchDate',
-                editor: AMB.editors.date({ format: 'dd/mm/yyyy', allowEmpty: true }),
+                editor: AMB.editors.date({
+                    format: 'dd/mm/yyyy',
+                    allowEmpty: true,
+                    picker: true
+                }),
                 formatter: AMB.formatters.date('dd/mm/yyyy'),
                 validation: {
                     date: {
@@ -101,7 +103,6 @@ export default async function fullDemo(app) {
                 editor: AMB.editors.lookup(statusLookup, {
                     uppercase: true,
                     allowEmpty: true,
-                    buttonText: '🔍',
                     dialog: lookupDialog,
                     dialogTitle: 'Search status',
                     invalidMessage: 'Unknown status code',

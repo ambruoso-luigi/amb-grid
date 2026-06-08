@@ -1,4 +1,5 @@
 import TomSelect from 'tom-select';
+import Datepicker from 'vanillajs-datepicker/Datepicker';
 import { parsers } from './parsers.js';
 import { ensureLookupMetadata, setLookupMetadata } from './lookup-metadata.js';
 
@@ -1025,6 +1026,7 @@ export const editors = {
         const normalizedOptions = {
             format: 'dd/mm/yyyy',
             allowEmpty: true,
+            picker: false,
             selectOnFocus: false,
             ...options
         };
@@ -1045,6 +1047,137 @@ export const editors = {
                     ? initialValue
                     : initialParsedValue;
             input.maxLength = 10;
+
+            if (normalizedOptions.picker) {
+                let datepicker = null;
+                let closed = false;
+                let blurTimeout = null;
+
+                input.className = 'amb-date-editor';
+
+                const destroyDatepicker = () => {
+                    if (blurTimeout) {
+                        window.clearTimeout(blurTimeout);
+                        blurTimeout = null;
+                    }
+
+                    if (datepicker) {
+                        datepicker.destroy();
+                        datepicker = null;
+                    }
+                };
+
+                const closeWithSuccess = value => {
+                    if (closed) return;
+
+                    closed = true;
+                    destroyDatepicker();
+                    success(value);
+                };
+
+                const closeWithCancel = () => {
+                    if (closed) return;
+
+                    closed = true;
+                    destroyDatepicker();
+                    cancel();
+                };
+
+                const commit = () => {
+                    const value = input.value;
+
+                    if (value === '') {
+                        if (normalizedOptions.allowEmpty) {
+                            closeWithSuccess('');
+                            return;
+                        }
+
+                        closeWithCancel();
+                        return;
+                    }
+
+                    const parsedValue = parsers.date({
+                        inputFormat: normalizedOptions.format,
+                        outputFormat: normalizedOptions.format,
+                        allowEmpty: normalizedOptions.allowEmpty
+                    }).parse(value);
+
+                    if (parsedValue === null) {
+                        closeWithCancel();
+                        return;
+                    }
+
+                    closeWithSuccess(parsedValue);
+                };
+
+                const sanitizeInput = () => {
+                    const previousValue = input.value;
+                    const previousSelectionStart = input.selectionStart || 0;
+                    const digitsBeforeCaret = countDigits(previousValue.slice(0, previousSelectionStart));
+                    const normalizedValue = normalizeDateInput(previousValue, normalizedOptions.format);
+
+                    input.value = normalizedValue;
+                    input.setSelectionRange(
+                        getDateCursorPosition(normalizedValue, digitsBeforeCaret),
+                        getDateCursorPosition(normalizedValue, digitsBeforeCaret)
+                    );
+                };
+
+                input.addEventListener('input', sanitizeInput);
+                input.addEventListener('changeDate', event => {
+                    const date = event.detail && event.detail.date;
+
+                    if (!date) return;
+
+                    const formattedValue = Datepicker.formatDate(date, normalizedOptions.format);
+
+                    input.value = formattedValue;
+                    closeWithSuccess(formattedValue);
+                });
+                input.addEventListener('keydown', event => {
+                    if (event.key === 'Enter') {
+                        commit();
+                        return;
+                    }
+
+                    if (event.key === 'Escape') {
+                        closeWithCancel();
+                    }
+                });
+                input.addEventListener('blur', () => {
+                    blurTimeout = window.setTimeout(() => {
+                        if (closed) return;
+
+                        const activeElement = document.activeElement;
+                        const isPickerFocused = activeElement
+                            && activeElement.closest
+                            && activeElement.closest('.datepicker');
+
+                        if (isPickerFocused || (datepicker && datepicker.active)) {
+                            return;
+                        }
+
+                        commit();
+                    }, 300);
+                });
+
+                onRendered(() => {
+                    datepicker = new Datepicker(input, {
+                        autohide: true,
+                        format: normalizedOptions.format,
+                        container: document.body
+                    });
+                    input.focus();
+
+                    if (normalizedOptions.selectOnFocus) {
+                        input.select();
+                    }
+
+                    datepicker.show();
+                });
+
+                return input;
+            }
 
             const sanitizeInput = () => {
                 const previousValue = input.value;

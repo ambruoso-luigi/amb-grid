@@ -1,4 +1,4 @@
-import database from './database.json';
+import database from './database.json' with { type: 'json' };
 import { delay } from './fake-delay.js';
 
 const clone = value => structuredClone(value);
