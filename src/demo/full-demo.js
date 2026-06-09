@@ -32,6 +32,13 @@ export default async function fullDemo(app) {
     const demo = AMB.table({
         selector: '#starship-table',
         height: '320px',
+        search: {
+            enabled: true,
+            placeholder: 'Search starships...',
+            filters: {
+                enabled: true
+            }
+        },
         deleteColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this starship?',

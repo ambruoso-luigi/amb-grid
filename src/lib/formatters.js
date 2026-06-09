@@ -139,6 +139,31 @@ export const formatters = {
         };
     },
 
+    checkbox(options = {}) {
+        const normalizedOptions = {
+            checkedValue: true,
+            uncheckedValue: false,
+            checkedLabel: 'Yes',
+            uncheckedLabel: 'No',
+            checkedSymbol: '☑',
+            uncheckedSymbol: '☐',
+            ...options
+        };
+
+        return cell => {
+            const value = getCellValue(cell);
+            const checked = value === normalizedOptions.checkedValue;
+            const symbol = checked
+                ? normalizedOptions.checkedSymbol
+                : normalizedOptions.uncheckedSymbol;
+            const label = checked
+                ? normalizedOptions.checkedLabel
+                : normalizedOptions.uncheckedLabel;
+
+            return `${symbol} ${label}`;
+        };
+    },
+
     largeTextPreview(options = {}) {
         const normalizedOptions = {
             maxLength: 40,

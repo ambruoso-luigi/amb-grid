@@ -5,6 +5,7 @@ import 'vanillajs-datepicker/css/datepicker.min.css';
 import '../ui/floating-message.css';
 import '../ui/confirm-dialog.css';
 import '../ui/lookup-dialog.css';
+import '../ui/search-filters-dialog.css';
 import { AMB } from '../index.js';
 import basicCrud from './basic-crud.js';
 import validation from './validation.js';

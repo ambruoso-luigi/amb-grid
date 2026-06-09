@@ -86,6 +86,45 @@ h2 {
     background: #f4f4f4;
 }
 
+.amb-search-toolbar {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.amb-search-toolbar__input {
+    border: 1px solid #b8bec8;
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: #222;
+    flex: 1 1 auto;
+    font: inherit;
+    min-width: 0;
+    padding: 8px 10px;
+}
+
+.amb-search-toolbar__input:focus {
+    border-color: #6b7cff;
+    outline: none;
+}
+
+.amb-search-toolbar__filters-button {
+    background: #fff;
+    border: 1px solid #b8bec8;
+    border-radius: 4px;
+    color: #222;
+    cursor: pointer;
+    flex: 0 0 auto;
+    font: inherit;
+    padding: 8px 12px;
+}
+
+.amb-search-toolbar__filters-button:hover {
+    background: #f4f6fb;
+}
+
 .teh-delete-button {
     width: 26px;
     height: 26px;
@@ -113,6 +152,49 @@ h2 {
 
 .teh-delete-button--remove {
     color: #333;
+}
+
+.amb-selection-column input[type="checkbox"],
+.amb-selection-checkbox {
+    cursor: pointer;
+    height: 15px;
+    margin: 0;
+    vertical-align: middle;
+    width: 15px;
+}
+
+.amb-checkbox-editor {
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 7px;
+    height: 100%;
+    min-width: 0;
+    padding: 0 6px;
+    width: 100%;
+}
+
+.amb-checkbox-editor__input {
+    cursor: pointer;
+    flex: 0 0 auto;
+    height: 15px;
+    margin: 0;
+    width: 15px;
+}
+
+.amb-checkbox-editor__input:focus {
+    outline: 2px solid #6b7cff;
+    outline-offset: 2px;
+}
+
+.amb-checkbox-editor__label {
+    color: #222;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tabulator-row[data-state="clean"] {

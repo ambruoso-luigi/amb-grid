@@ -19,6 +19,28 @@
     },
     {
       "id": 2,
+      "shipName": "Aster Prime",
+      "registryCode": "AST002",
+      "captainEmail": "prime@example.test",
+      "crewSize": 56,
+      "fuelCapacity": 13900,
+      "launchDate": "21/07/2026",
+      "status": "REPAIR",
+      "notes": "Engine repair queue includes calibration checks before mission clearance."
+    },
+    {
+      "id": 3,
+      "shipName": "Aster Relay",
+      "registryCode": "AST003",
+      "captainEmail": "relay@example.test",
+      "crewSize": 24,
+      "fuelCapacity": 7600,
+      "launchDate": "03/08/2026",
+      "status": "DOCKED",
+      "notes": "Navigation relay calibration scheduled during docked maintenance window."
+    },
+    {
+      "id": 4,
       "shipName": "Vector Halo",
       "registryCode": "VEC220",
       "captainEmail": "vector@example.test",
@@ -29,7 +51,7 @@
       "notes": "Docked for navigation system calibration and fuel balance checks."
     },
     {
-      "id": 3,
+      "id": 5,
       "shipName": "Lumen Arc",
       "registryCode": "LUM404",
       "captainEmail": "lumen@example.test",
@@ -38,6 +60,83 @@
       "launchDate": "02/12/2026",
       "status": "DOCKED",
       "notes": "Ready for deployment. Crew training completed."
+    },
+    {
+      "id": 6,
+      "shipName": "Orion Mesa",
+      "registryCode": "ORI118",
+      "captainEmail": "orion@example.test",
+      "crewSize": 37,
+      "fuelCapacity": 10950.25,
+      "launchDate": "18/01/2027",
+      "status": "ACTIVE",
+      "notes": "Long range mission approved after engine output review."
+    },
+    {
+      "id": 7,
+      "shipName": "Nova Cartographer",
+      "registryCode": "NOV512",
+      "captainEmail": "nova@example.test",
+      "crewSize": 29,
+      "fuelCapacity": 9900,
+      "launchDate": "09/03/2027",
+      "status": "ACTIVE",
+      "notes": "Navigation charts refreshed for the outer rim mission corridor."
+    },
+    {
+      "id": 8,
+      "shipName": "Helix Forge",
+      "registryCode": "HLX730",
+      "captainEmail": "helix@example.test",
+      "crewSize": 44,
+      "fuelCapacity": 13240.6,
+      "launchDate": "27/04/2027",
+      "status": "REPAIR",
+      "notes": "Repair crew replacing engine seals and running pressure calibration."
+    },
+    {
+      "id": 9,
+      "shipName": "Zenith Harbor",
+      "registryCode": "ZEN045",
+      "captainEmail": "zenith@example.test",
+      "crewSize": 12,
+      "fuelCapacity": 6400,
+      "launchDate": "11/05/2027",
+      "status": "DECOMMISSIONED",
+      "notes": "Decommissioned after final archive mission and navigation log transfer."
+    },
+    {
+      "id": 10,
+      "shipName": "Pulse Meridian",
+      "registryCode": "PLS884",
+      "captainEmail": "pulse@example.test",
+      "crewSize": 51,
+      "fuelCapacity": 14575.8,
+      "launchDate": "30/06/2027",
+      "status": "DOCKED",
+      "notes": "Docked for sensor calibration, cargo balance, and mission route audit."
+    },
+    {
+      "id": 11,
+      "shipName": "Quasar Vale",
+      "registryCode": "QSR661",
+      "captainEmail": "quasar@example.test",
+      "crewSize": 33,
+      "fuelCapacity": 10110,
+      "launchDate": "16/08/2027",
+      "status": "ACTIVE",
+      "notes": "Engine response nominal after navigation rehearsal."
+    },
+    {
+      "id": 12,
+      "shipName": "Echo Bastion",
+      "registryCode": "ECH309",
+      "captainEmail": "echo@example.test",
+      "crewSize": 7,
+      "fuelCapacity": 5200.4,
+      "launchDate": "24/10/2027",
+      "status": "DECOMMISSIONED",
+      "notes": "Stored for museum mission program with repair history retained."
     }
   ]
 }
