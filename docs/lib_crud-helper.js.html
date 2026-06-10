@@ -1,4 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/crud-helper.js</title>
 
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/crud-helper.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
 import { LOOKUP_METADATA_FIELD, rollbackLookupMetadata } from './lookup-metadata.js';
 
 /**
@@ -177,7 +205,7 @@ export class CrudHelper {
     _isRowNumberingEnabled() {
         const rowNumbering = this._getRowNumberingOptions();
 
-        return Boolean(rowNumbering && rowNumbering.enabled);
+        return Boolean(rowNumbering &amp;&amp; rowNumbering.enabled);
     }
 
     _getRowNumberField() {
@@ -193,7 +221,7 @@ export class CrudHelper {
     }
 
     _getRowTempId(row) {
-        const data = row && row.getData ? row.getData() : {};
+        const data = row &amp;&amp; row.getData ? row.getData() : {};
 
         return data[this._getTempIdField()];
     }
@@ -246,7 +274,7 @@ export class CrudHelper {
         });
 
         return rowNumbers.reduce((max, rowNumber) => {
-            return Number.isFinite(rowNumber) && rowNumber > max ? rowNumber : max;
+            return Number.isFinite(rowNumber) &amp;&amp; rowNumber > max ? rowNumber : max;
         }, 0);
     }
 
@@ -259,7 +287,7 @@ export class CrudHelper {
         this.table.getRows().forEach(row => {
             const data = row.getData();
 
-            if (data[field] !== undefined && data[field] !== null) return;
+            if (data[field] !== undefined &amp;&amp; data[field] !== null) return;
 
             this._patchRow(row, {
                 [field]: nextRowNumber
@@ -291,7 +319,7 @@ export class CrudHelper {
         const idField = this.options.idField;
         const tempIdField = this._getTempIdField();
 
-        if (this._isMissingId(nextRowData[idField]) && !nextRowData[tempIdField]) {
+        if (this._isMissingId(nextRowData[idField]) &amp;&amp; !nextRowData[tempIdField]) {
             nextRowData[tempIdField] = this._createTempId();
         }
 
@@ -299,8 +327,8 @@ export class CrudHelper {
 
         if (
             this._isRowNumberingEnabled()
-            && this.options.renumberOnAdd
-            && (nextRowData[field] === undefined || nextRowData[field] === null)
+            &amp;&amp; this.options.renumberOnAdd
+            &amp;&amp; (nextRowData[field] === undefined || nextRowData[field] === null)
         ) {
             nextRowData[field] = this._getMaxRowNumber() + 1;
         }
@@ -339,7 +367,7 @@ export class CrudHelper {
             }
         };
 
-        if (deleteResult && typeof deleteResult.then === 'function') {
+        if (deleteResult &amp;&amp; typeof deleteResult.then === 'function') {
             deleteResult.then(renumber);
             return;
         }
@@ -353,7 +381,7 @@ export class CrudHelper {
         const resetData = {};
 
         Object.keys(currentData).forEach(field => {
-            if (!(field in restoredData) && field !== this.options.stateField) {
+            if (!(field in restoredData) &amp;&amp; field !== this.options.stateField) {
                 resetData[field] = undefined;
             }
         });
@@ -482,7 +510,7 @@ export class CrudHelper {
 
         const fields = this.modifiedCells.get(this._getRowKey(row));
 
-        return Boolean(fields && fields.size > 0);
+        return Boolean(fields &amp;&amp; fields.size > 0);
     }
 
     _syncCellState(cell) {
@@ -525,7 +553,7 @@ export class CrudHelper {
      *
      * @private
      * @param {*} id - Row identifier.
-     * @returns {Map<string, string>} Cell error messages grouped by field.
+     * @returns {Map&lt;string, string>} Cell error messages grouped by field.
      */
     _getCellErrorMap(id) {
         if (!this.cellErrors.has(id)) {
@@ -542,7 +570,7 @@ export class CrudHelper {
     _hasCellErrors(id) {
         const errors = this.cellErrors.get(id);
 
-        return Boolean(errors && errors.size > 0);
+        return Boolean(errors &amp;&amp; errors.size > 0);
     }
 
     _validateCell(cell) {
@@ -610,7 +638,7 @@ export class CrudHelper {
             delete rowElement.dataset.rowError;
         }
 
-        if (this.options.errorStyle.highlightRowOnCellError && this._hasCellErrors(key)) {
+        if (this.options.errorStyle.highlightRowOnCellError &amp;&amp; this._hasCellErrors(key)) {
             rowElement.dataset.hasCellError = 'true';
         } else {
             delete rowElement.dataset.hasCellError;
@@ -782,7 +810,7 @@ export class CrudHelper {
     getRowErrors() {
         return Array.from(this.rowErrors, ([key, message]) => {
             const row = this.findRowByKey(key);
-            const data = row && row.getData ? row.getData() : {};
+            const data = row &amp;&amp; row.getData ? row.getData() : {};
 
             return {
                 key,
@@ -804,7 +832,7 @@ export class CrudHelper {
 
         this.cellErrors.forEach((fields, key) => {
             const row = this.findRowByKey(key);
-            const data = row && row.getData ? row.getData() : {};
+            const data = row &amp;&amp; row.getData ? row.getData() : {};
 
             fields.forEach((message, field) => {
                 errors.push({
@@ -892,7 +920,7 @@ export class CrudHelper {
         const key = this._getRowKey(row);
         const errors = this.cellErrors.get(key);
 
-        const hadError = Boolean(errors && errors.has(field));
+        const hadError = Boolean(errors &amp;&amp; errors.has(field));
 
         if (errors) {
             errors.delete(field);
@@ -903,7 +931,7 @@ export class CrudHelper {
         }
 
         const cell = this._getCell(row, field);
-        const cellElement = cell && cell.getElement();
+        const cellElement = cell &amp;&amp; cell.getElement();
 
         if (cellElement) {
             delete cellElement.dataset.cellError;
@@ -947,7 +975,7 @@ export class CrudHelper {
         if (errors) {
             Array.from(errors).forEach(([field, message]) => {
                 const cell = this._getCell(row, field);
-                const cellElement = cell && cell.getElement();
+                const cellElement = cell &amp;&amp; cell.getElement();
 
                 if (cellElement) {
                     delete cellElement.dataset.cellError;
@@ -1064,14 +1092,14 @@ export class CrudHelper {
         const clearedCellErrors = this.clearRowErrors(identifier);
         const clearedRowError = this.clearRowError(identifier);
 
-        return clearedCellErrors && clearedRowError;
+        return clearedCellErrors &amp;&amp; clearedRowError;
     }
 
     /**
      * Add a new row and mark it as inserted.
      *
      * @param {object} data - Row data to insert.
-     * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one.
+     * @returns {object|Promise&lt;object>} Tabulator row component, or a promise resolving to one.
      */
     addRow(data) {
         const rowData = this._assignInternalFieldsOnAdd({
@@ -1081,7 +1109,7 @@ export class CrudHelper {
 
         const result = this.table.addRow(rowData);
 
-        if (result && typeof result.then === 'function') {
+        if (result &amp;&amp; typeof result.then === 'function') {
             return result.then(row => {
                 this._applyRowState(row, ROW_STATE.NEW);
                 return row;
@@ -1123,7 +1151,7 @@ export class CrudHelper {
             const data = row.getData();
             const id = data[this.options.idField];
 
-            if (!this._isMissingId(id) && id === identifier) return true;
+            if (!this._isMissingId(id) &amp;&amp; id === identifier) return true;
 
             return data[this._getTempIdField()] === identifier;
         }) || null;
@@ -1193,8 +1221,8 @@ export class CrudHelper {
         const rowNumberField = this._getRowNumberField();
 
         (mappings || []).forEach(mapping => {
-            const tempId = mapping && mapping.tempId;
-            const id = mapping && mapping.id;
+            const tempId = mapping &amp;&amp; mapping.tempId;
+            const id = mapping &amp;&amp; mapping.id;
 
             if (this._isMissingId(id)) {
                 result.invalid.push({
@@ -1214,7 +1242,7 @@ export class CrudHelper {
 
             const duplicate = this.findRowById(id);
 
-            if (duplicate && duplicate !== row) {
+            if (duplicate &amp;&amp; duplicate !== row) {
                 result.duplicates.push({
                     tempId,
                     id,
@@ -1414,7 +1442,7 @@ export class CrudHelper {
         const key = this._getRowKey(row);
         const state = this._getBaseRowState(row);
 
-        if (state === ROW_STATE.NEW && this._isMissingId(id)) {
+        if (state === ROW_STATE.NEW &amp;&amp; this._isMissingId(id)) {
             return false;
         }
 
@@ -1453,7 +1481,7 @@ export class CrudHelper {
     /**
      * Mark multiple pending rows as saved after a successful backend confirmation.
      *
-     * @param {Array.<*>} ids - Row identifiers to mark as saved.
+     * @param {Array.&lt;*>} ids - Row identifiers to mark as saved.
      * @returns {boolean} True only when every row was marked successfully.
      */
     markRowsSaved(ids) {
@@ -1475,7 +1503,7 @@ export class CrudHelper {
         };
 
         report.validChangedRows.forEach(row => {
-            if (row.state === ROW_STATE.NEW && this._isMissingId(row.id)) {
+            if (row.state === ROW_STATE.NEW &amp;&amp; this._isMissingId(row.id)) {
                 result.skipped.push({
                     tempId: row.tempId,
                     reason: 'missing-backend-id'
@@ -1628,7 +1656,7 @@ export class CrudHelper {
                 hasChanges,
                 hasErrors,
                 isValid: !hasErrors,
-                isSaveCandidate: hasChanges && !hasErrors,
+                isSaveCandidate: hasChanges &amp;&amp; !hasErrors,
                 rowError,
                 cellErrors,
                 changedFields,
@@ -1722,7 +1750,7 @@ export class CrudHelper {
             || changes.deleted.length > 0;
 
         return {
-            canSave: hasPayloadChanges && !report.hasErrors,
+            canSave: hasPayloadChanges &amp;&amp; !report.hasErrors,
             hasChanges: report.hasChanges,
             hasErrors: report.hasErrors,
             summary: {
@@ -1760,7 +1788,7 @@ export class CrudHelper {
 
         const key = this._getRowKey(row);
 
-        if (!this.originalRows.has(key) && !data[originalDataField]) {
+        if (!this.originalRows.has(key) &amp;&amp; !data[originalDataField]) {
             this._patchRow(row, {
                 [originalDataField]: this._cleanHelperFields(data)
             });
@@ -1797,3 +1825,26 @@ export class CrudHelper {
         }
     }
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#lookup">lookup</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 10 2026 14:04:31 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

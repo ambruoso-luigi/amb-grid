@@ -1,4 +1,32 @@
-import TomSelect from 'tom-select';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/editors.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/editors.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import TomSelect from 'tom-select';
 import Datepicker from 'vanillajs-datepicker/Datepicker';
 import { parsers } from './parsers.js';
 import { ensureLookupMetadata, setLookupMetadata } from './lookup-metadata.js';
@@ -36,7 +64,7 @@ const normalizeIntegerInput = (value, options = {}) => {
             return;
         }
 
-        if (allowNegative && character === '-' && normalizedValue === '') {
+        if (allowNegative &amp;&amp; character === '-' &amp;&amp; normalizedValue === '') {
             normalizedValue = '-';
         }
     });
@@ -56,22 +84,22 @@ const normalizeDecimalInput = (value, options = {}) => {
     Array.from(String(value)).forEach(character => {
         let nextCharacter = character;
 
-        if (shouldNormalizeSeparator && decimalSeparator === ',' && character === '.') {
+        if (shouldNormalizeSeparator &amp;&amp; decimalSeparator === ',' &amp;&amp; character === '.') {
             nextCharacter = ',';
         }
 
-        if (shouldNormalizeSeparator && decimalSeparator === '.' && character === ',') {
+        if (shouldNormalizeSeparator &amp;&amp; decimalSeparator === '.' &amp;&amp; character === ',') {
             nextCharacter = '.';
         }
 
-        if (allowNegative && nextCharacter === '-' && normalizedValue === '') {
+        if (allowNegative &amp;&amp; nextCharacter === '-' &amp;&amp; normalizedValue === '') {
             normalizedValue = '-';
             return;
         }
 
         if (/\d/.test(nextCharacter)) {
             if (hasSeparator) {
-                if (options.decimalDigits !== undefined && decimalCount >= options.decimalDigits) {
+                if (options.decimalDigits !== undefined &amp;&amp; decimalCount >= options.decimalDigits) {
                     return;
                 }
 
@@ -80,7 +108,7 @@ const normalizeDecimalInput = (value, options = {}) => {
                 return;
             }
 
-            if (options.integerDigits !== undefined && integerCount >= options.integerDigits) {
+            if (options.integerDigits !== undefined &amp;&amp; integerCount >= options.integerDigits) {
                 return;
             }
 
@@ -89,7 +117,7 @@ const normalizeDecimalInput = (value, options = {}) => {
             return;
         }
 
-        if (nextCharacter === decimalSeparator && !hasSeparator) {
+        if (nextCharacter === decimalSeparator &amp;&amp; !hasSeparator) {
             hasSeparator = true;
             normalizedValue += nextCharacter;
         }
@@ -147,11 +175,11 @@ const countDigits = value => {
 };
 
 const getDateCursorPosition = (normalizedValue, digitCount) => {
-    if (digitCount <= 0) return 0;
+    if (digitCount &lt;= 0) return 0;
 
     let currentDigitCount = 0;
 
-    for (let index = 0; index < normalizedValue.length; index += 1) {
+    for (let index = 0; index &lt; normalizedValue.length; index += 1) {
         if (/\d/.test(normalizedValue[index])) {
             currentDigitCount += 1;
         }
@@ -181,8 +209,8 @@ const normalizeSelectOption = (option, options) => {
         };
     }
 
-    const value = option && option[options.valueField];
-    const label = option && option[options.labelField];
+    const value = option &amp;&amp; option[options.valueField];
+    const label = option &amp;&amp; option[options.labelField];
 
     return {
         value: value === null || value === undefined ? '' : String(value),
@@ -191,7 +219,7 @@ const normalizeSelectOption = (option, options) => {
 };
 
 const getLookupOptionValue = (item, valueField) => {
-    const value = item && item[valueField];
+    const value = item &amp;&amp; item[valueField];
 
     return value === null || value === undefined ? '' : String(value);
 };
@@ -278,7 +306,7 @@ export const editors = {
      * Native select editor. Saves the selected option value as a string.
      *
      * @param {object} [options] - Select editor options.
-     * @param {Array<string|object>} [options.options=[]] - Available options.
+     * @param {Array&lt;string|object>} [options.options=[]] - Available options.
      * @param {boolean} [options.allowEmpty=true] - Add an empty option.
      * @param {string} [options.emptyLabel=''] - Label for the empty option.
      * @param {string} [options.valueField='value'] - Value field for object options.
@@ -358,42 +386,42 @@ export const editors = {
             showCodeOnlyInEditor: true,
             ...options
         };
-        const valueField = lookupInstance && lookupInstance.valueField
+        const valueField = lookupInstance &amp;&amp; lookupInstance.valueField
             ? lookupInstance.valueField
             : normalizedOptions.valueField || 'value';
-        const labelField = lookupInstance && lookupInstance.labelField
+        const labelField = lookupInstance &amp;&amp; lookupInstance.labelField
             ? lookupInstance.labelField
             : normalizedOptions.labelField || 'label';
         const codeField = normalizedOptions.codeField || valueField;
         const descriptionField = normalizedOptions.descriptionField || labelField;
         const renderDefaultOption = (item, escape) => `
-            <div class="amb-lookup-option">
-                <span class="amb-lookup-option__code">${escape(item[codeField] ?? '')}</span>
-                <span class="amb-lookup-option__description">${escape(item[descriptionField] ?? '')}</span>
-            </div>
+            &lt;div class="amb-lookup-option">
+                &lt;span class="amb-lookup-option__code">${escape(item[codeField] ?? '')}&lt;/span>
+                &lt;span class="amb-lookup-option__description">${escape(item[descriptionField] ?? '')}&lt;/span>
+            &lt;/div>
         `;
         const renderDefaultItem = (item, escape) => {
             const code = escape(item[codeField] ?? '');
             const description = escape(item[descriptionField] ?? '');
 
             if (normalizedOptions.showCodeOnlyInEditor) {
-                return `<div class="amb-lookup-item">${code}</div>`;
+                return `&lt;div class="amb-lookup-item">${code}&lt;/div>`;
             }
 
             return `
-                <div class="amb-lookup-option">
-                    <span class="amb-lookup-option__code">${code}</span>
-                    <span class="amb-lookup-option__description">${description}</span>
-                </div>
+                &lt;div class="amb-lookup-option">
+                    &lt;span class="amb-lookup-option__code">${code}&lt;/span>
+                    &lt;span class="amb-lookup-option__description">${description}&lt;/span>
+                &lt;/div>
             `;
         };
 
         return (cell, onRendered, success, cancel) => {
             const select = document.createElement('select');
             const initialValue = getInitialValue(cell);
-            const row = cell.getRow && cell.getRow();
-            const rowData = row && row.getData ? row.getData() : undefined;
-            const field = cell.getField && cell.getField();
+            const row = cell.getRow &amp;&amp; cell.getRow();
+            const rowData = row &amp;&amp; row.getData ? row.getData() : undefined;
+            const field = cell.getField &amp;&amp; cell.getField();
             let tomSelect = null;
             let closed = false;
             let initializing = false;
@@ -491,7 +519,7 @@ export const editors = {
                     tomSelect.open();
                     tomSelect.focus();
                 } catch {
-                    if (!closed && tomSelect && initialValue) {
+                    if (!closed &amp;&amp; tomSelect &amp;&amp; initialValue) {
                         addRawOption(initialValue);
                         tomSelect.refreshOptions(false);
                         tomSelect.open();
@@ -526,7 +554,7 @@ export const editors = {
                     onChange: value => {
                         if (initializing || closed) return;
 
-                        if (value === '' && normalizedOptions.allowEmpty) {
+                        if (value === '' &amp;&amp; normalizedOptions.allowEmpty) {
                             closeWithSuccess('');
                             return;
                         }
@@ -548,7 +576,7 @@ export const editors = {
                     }
                 });
 
-                if (normalizedOptions.dropdownWidth && tomSelect.dropdown) {
+                if (normalizedOptions.dropdownWidth &amp;&amp; tomSelect.dropdown) {
                     tomSelect.dropdown.style.width = `${normalizedOptions.dropdownWidth}px`;
                 }
 
@@ -585,7 +613,7 @@ export const editors = {
      * @param {boolean} [options.autoCompleteOnTab=true] - Accept a suggestion with Tab.
      * @param {string} [options.invalidMessage='Invalid lookup code'] - Error message for invalid typed codes.
      * @param {object} [options.context] - Context passed to lookup loads.
-     * @param {Array<object>} [options.columns] - Dialog columns.
+     * @param {Array&lt;object>} [options.columns] - Dialog columns.
      * @param {string} [options.valueField] - Stored value field override.
      * @param {string} [options.labelField] - Display label field override.
      * @returns {Function} Tabulator editor.
@@ -617,10 +645,10 @@ export const editors = {
             invalidMessage: 'Invalid lookup code',
             ...options
         };
-        const valueField = lookupInstance && lookupInstance.valueField
+        const valueField = lookupInstance &amp;&amp; lookupInstance.valueField
             ? lookupInstance.valueField
             : normalizedOptions.valueField || 'value';
-        const labelField = lookupInstance && lookupInstance.labelField
+        const labelField = lookupInstance &amp;&amp; lookupInstance.labelField
             ? lookupInstance.labelField
             : normalizedOptions.labelField || 'label';
 
@@ -629,9 +657,9 @@ export const editors = {
             const input = document.createElement('input');
             const button = document.createElement('button');
             const initialValue = getInitialValue(cell);
-            const row = cell.getRow && cell.getRow();
-            const rowData = row && row.getData ? row.getData() : undefined;
-            const field = cell.getField && cell.getField();
+            const row = cell.getRow &amp;&amp; cell.getRow();
+            const rowData = row &amp;&amp; row.getData ? row.getData() : undefined;
+            const field = cell.getField &amp;&amp; cell.getField();
             const context = normalizedOptions.context || {};
             let closed = false;
             let dialogOpen = false;
@@ -696,7 +724,7 @@ export const editors = {
             };
 
             const setCellLookupDescription = description => {
-                const cellElement = cell && cell.getElement && cell.getElement();
+                const cellElement = cell &amp;&amp; cell.getElement &amp;&amp; cell.getElement();
 
                 if (!cellElement) return;
 
@@ -704,7 +732,7 @@ export const editors = {
             };
 
             const closeWithLookupItem = (value, item) => {
-                const description = item && item[labelField];
+                const description = item &amp;&amp; item[labelField];
 
                 setLookupMetadata(rowData, field, value, description);
                 setCellLookupDescription(description);
@@ -740,7 +768,7 @@ export const editors = {
                 autoCompleteRequestId = requestId;
                 hasAutoCompleteSuggestion = false;
 
-                if (typedValue.length < normalizedOptions.autoCompleteMinChars) return;
+                if (typedValue.length &lt; normalizedOptions.autoCompleteMinChars) return;
 
                 try {
                     const items = await loadLookup(typedValue);
@@ -769,13 +797,13 @@ export const editors = {
                 const metadata = ensureLookupMetadata(rowData, field);
 
                 if (metadata.initial) {
-                    setCellLookupDescription(metadata.current && metadata.current.description);
+                    setCellLookupDescription(metadata.current &amp;&amp; metadata.current.description);
                     return;
                 }
 
                 try {
                     const item = await findExactItem(initialValue);
-                    const description = item && item[labelField];
+                    const description = item &amp;&amp; item[labelField];
 
                     setLookupMetadata(rowData, field, initialValue, description || '', {
                         setInitial: true
@@ -834,9 +862,9 @@ export const editors = {
             input.addEventListener('keydown', event => {
                 if (
                     event.key === 'Tab'
-                    && normalizedOptions.autoCompleteOnTab
-                    && hasAutoCompleteSuggestion
-                    && input.selectionStart < input.selectionEnd
+                    &amp;&amp; normalizedOptions.autoCompleteOnTab
+                    &amp;&amp; hasAutoCompleteSuggestion
+                    &amp;&amp; input.selectionStart &lt; input.selectionEnd
                 ) {
                     event.preventDefault();
                     input.setSelectionRange(input.value.length, input.value.length);
@@ -1151,7 +1179,7 @@ export const editors = {
                     return;
                 }
 
-                if (event.key === 'Enter' && event.ctrlKey) {
+                if (event.key === 'Enter' &amp;&amp; event.ctrlKey) {
                     event.preventDefault();
                     closeWithSuccess();
                 }
@@ -1229,12 +1257,12 @@ export const editors = {
                     return;
                 }
 
-                if (normalizedOptions.min !== undefined && numberValue < normalizedOptions.min) {
+                if (normalizedOptions.min !== undefined &amp;&amp; numberValue &lt; normalizedOptions.min) {
                     cancel();
                     return;
                 }
 
-                if (normalizedOptions.max !== undefined && numberValue > normalizedOptions.max) {
+                if (normalizedOptions.max !== undefined &amp;&amp; numberValue > normalizedOptions.max) {
                     cancel();
                     return;
                 }
@@ -1336,12 +1364,12 @@ export const editors = {
                     return;
                 }
 
-                if (normalizedOptions.min !== undefined && numberValue < normalizedOptions.min) {
+                if (normalizedOptions.min !== undefined &amp;&amp; numberValue &lt; normalizedOptions.min) {
                     cancel();
                     return;
                 }
 
-                if (normalizedOptions.max !== undefined && numberValue > normalizedOptions.max) {
+                if (normalizedOptions.max !== undefined &amp;&amp; numberValue > normalizedOptions.max) {
                     cancel();
                     return;
                 }
@@ -1482,7 +1510,7 @@ export const editors = {
 
                 input.addEventListener('input', sanitizeInput);
                 input.addEventListener('changeDate', event => {
-                    const date = event.detail && event.detail.date;
+                    const date = event.detail &amp;&amp; event.detail.date;
 
                     if (!date) return;
 
@@ -1507,10 +1535,10 @@ export const editors = {
 
                         const activeElement = document.activeElement;
                         const isPickerFocused = activeElement
-                            && activeElement.closest
-                            && activeElement.closest('.datepicker');
+                            &amp;&amp; activeElement.closest
+                            &amp;&amp; activeElement.closest('.datepicker');
 
-                        if (isPickerFocused || (datepicker && datepicker.active)) {
+                        if (isPickerFocused || (datepicker &amp;&amp; datepicker.active)) {
                             return;
                         }
 
@@ -1600,3 +1628,26 @@ export const editors = {
 };
 
 export { normalizeDecimalInput, normalizeDateInput, parseDecimalValue };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#lookup">lookup</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 10 2026 14:04:31 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

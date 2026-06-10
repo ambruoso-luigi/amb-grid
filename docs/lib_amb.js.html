@@ -1,4 +1,32 @@
-import { TabulatorFull as Tabulator } from 'tabulator-tables';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/amb.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/amb.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { CrudHelper, ROW_STATE } from './crud-helper.js';
 import { CellMessageBinder } from '../ui/cell-message-binder.js';
 import { FloatingMessage } from '../ui/floating-message.js';
@@ -160,7 +188,7 @@ const extractValidationRules = (field, validation = {}, messages = DEFAULT_MESSA
         extractedValidators.push(validators.maxLength(length, message));
     }
 
-    if (validation.custom && typeof validation.custom.validate === 'function') {
+    if (validation.custom &amp;&amp; typeof validation.custom.validate === 'function') {
         extractedValidators.push(validators.custom(
             validation.custom.message || DEFAULT_VALIDATION_MESSAGES.custom,
             validation.custom.validate
@@ -183,7 +211,7 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
             ...tabulatorColumn
         } = column;
 
-        if (required && column.field) {
+        if (required &amp;&amp; column.field) {
             extractedValidators.push({
                 field: column.field,
                 ...validators.required(requiredMessage || messages.required || DEFAULT_MESSAGES.required)
@@ -197,7 +225,7 @@ const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) => {
             });
         });
 
-        if (validator && column.field) {
+        if (validator &amp;&amp; column.field) {
             extractedValidators.push({
                 field: column.field,
                 message: validator.message,
@@ -227,7 +255,7 @@ const configureLookupEditors = (columns, getCrud) => {
 
         const id = data[crud.options.idField];
 
-        if (id !== null && id !== undefined && id !== '') return id;
+        if (id !== null &amp;&amp; id !== undefined &amp;&amp; id !== '') return id;
 
         return data[crud.options.tempIdField];
     };
@@ -235,16 +263,16 @@ const configureLookupEditors = (columns, getCrud) => {
     (columns || []).forEach(column => {
         if (
             column.editor
-            && column.editor._ambEditorType === 'lookup'
-            && typeof column.editor._ambSetLookupErrorHandlers === 'function'
+            &amp;&amp; column.editor._ambEditorType === 'lookup'
+            &amp;&amp; typeof column.editor._ambSetLookupErrorHandlers === 'function'
         ) {
             column.editor._ambSetLookupErrorHandlers({
                 markInvalid(cell, message) {
                     const crud = getCrud();
-                    const row = cell && cell.getRow && cell.getRow();
-                    const data = row && row.getData ? row.getData() : null;
+                    const row = cell &amp;&amp; cell.getRow &amp;&amp; cell.getRow();
+                    const data = row &amp;&amp; row.getData ? row.getData() : null;
                     const identifier = getCrudRowIdentifier(crud, data);
-                    const field = cell && cell.getField && cell.getField();
+                    const field = cell &amp;&amp; cell.getField &amp;&amp; cell.getField();
 
                     if (!crud || identifier === null || identifier === undefined || !field) return;
 
@@ -252,10 +280,10 @@ const configureLookupEditors = (columns, getCrud) => {
                 },
                 clearInvalid(cell) {
                     const crud = getCrud();
-                    const row = cell && cell.getRow && cell.getRow();
-                    const data = row && row.getData ? row.getData() : null;
+                    const row = cell &amp;&amp; cell.getRow &amp;&amp; cell.getRow();
+                    const data = row &amp;&amp; row.getData ? row.getData() : null;
                     const identifier = getCrudRowIdentifier(crud, data);
-                    const field = cell && cell.getField && cell.getField();
+                    const field = cell &amp;&amp; cell.getField &amp;&amp; cell.getField();
 
                     if (!crud || identifier === null || identifier === undefined || !field) return;
 
@@ -287,7 +315,7 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const getRowIdentifier = (crud, data) => {
         const id = data[crud.options.idField];
 
-        if (id !== null && id !== undefined && id !== '') return id;
+        if (id !== null &amp;&amp; id !== undefined &amp;&amp; id !== '') return id;
 
         return data[crud.options.tempIdField];
     };
@@ -325,8 +353,8 @@ const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 
     const updateRowButton = row => {
-        const rowElement = row && row.getElement && row.getElement();
-        const button = rowElement && rowElement.querySelector('.teh-delete-button');
+        const rowElement = row &amp;&amp; row.getElement &amp;&amp; row.getElement();
+        const button = rowElement &amp;&amp; rowElement.querySelector('.teh-delete-button');
 
         if (!button) return;
 
@@ -501,7 +529,7 @@ const getTableElement = selector => {
 
 const getSearchColumnTitle = column => {
     if (!column) return '';
-    if (typeof column.title === 'string' && column.title.trim() !== '') return column.title;
+    if (typeof column.title === 'string' &amp;&amp; column.title.trim() !== '') return column.title;
 
     return column.field || '';
 };
@@ -565,15 +593,15 @@ const createSearchToolbar = (selector, searchOptions) => {
 
 const getSearchableValues = (data, field) => {
     const values = [];
-    const value = data && data[field];
+    const value = data &amp;&amp; data[field];
     const lookupDescription = data
-        && data._ambLookup
-        && data._ambLookup[field]
-        && data._ambLookup[field].current
+        &amp;&amp; data._ambLookup
+        &amp;&amp; data._ambLookup[field]
+        &amp;&amp; data._ambLookup[field].current
         ? data._ambLookup[field].current.description
         : '';
 
-    if (value !== null && value !== undefined) {
+    if (value !== null &amp;&amp; value !== undefined) {
         values.push(String(value));
     }
 
@@ -653,7 +681,7 @@ const createSearchController = ({
     const setSearchQuery = query => {
         searchState.query = String(query || '');
 
-        if (toolbar && toolbar.input && toolbar.input.value !== searchState.query) {
+        if (toolbar &amp;&amp; toolbar.input &amp;&amp; toolbar.input.value !== searchState.query) {
             toolbar.input.value = searchState.query;
         }
 
@@ -708,7 +736,7 @@ const createSearchController = ({
             cancelText: 'Cancel'
         });
 
-        if (result && result.applied) {
+        if (result &amp;&amp; result.applied) {
             setSearchFields(result.selectedFields || []);
         }
     };
@@ -766,7 +794,7 @@ const createSearchController = ({
 };
 
 const createLookupDescriptionBinder = (table, floatingMessage) => {
-    const tableElement = table && table.element;
+    const tableElement = table &amp;&amp; table.element;
 
     if (!tableElement) {
         return () => {};
@@ -775,22 +803,22 @@ const createLookupDescriptionBinder = (table, floatingMessage) => {
     let activeCellElement = null;
 
     const findLookupCell = target => {
-        return target && target.closest
+        return target &amp;&amp; target.closest
             ? target.closest('.tabulator-cell[data-lookup-field]')
             : null;
     };
 
     const getRowForElement = rowElement => {
-        return table.getRows().find(row => row.getElement && row.getElement() === rowElement) || null;
+        return table.getRows().find(row => row.getElement &amp;&amp; row.getElement() === rowElement) || null;
     };
 
     const getLookupDescription = cellElement => {
         const rowElement = cellElement.closest('.tabulator-row');
         const row = getRowForElement(rowElement);
         const field = cellElement.dataset.lookupField;
-        const metadata = row && getLookupMetadata(row.getData(), field);
+        const metadata = row &amp;&amp; getLookupMetadata(row.getData(), field);
 
-        return metadata && metadata.current ? metadata.current.description : '';
+        return metadata &amp;&amp; metadata.current ? metadata.current.description : '';
     };
 
     const showDescription = event => {
@@ -832,7 +860,7 @@ const createLookupDescriptionBinder = (table, floatingMessage) => {
 };
 
 const createLargeTextBinder = (table, floatingMessage) => {
-    const tableElement = table && table.element;
+    const tableElement = table &amp;&amp; table.element;
 
     if (!tableElement) {
         return () => {};
@@ -841,21 +869,21 @@ const createLargeTextBinder = (table, floatingMessage) => {
     let activeCellElement = null;
 
     const findLargeTextCell = target => {
-        return target && target.closest
+        return target &amp;&amp; target.closest
             ? target.closest('.tabulator-cell[data-large-text-field]')
             : null;
     };
 
     const getRowForElement = rowElement => {
-        return table.getRows().find(row => row.getElement && row.getElement() === rowElement) || null;
+        return table.getRows().find(row => row.getElement &amp;&amp; row.getElement() === rowElement) || null;
     };
 
     const getFullText = cellElement => {
         const rowElement = cellElement.closest('.tabulator-row');
         const row = getRowForElement(rowElement);
         const field = cellElement.dataset.largeTextField;
-        const rowData = row && row.getData ? row.getData() : null;
-        const value = rowData && field ? rowData[field] : '';
+        const rowData = row &amp;&amp; row.getData ? row.getData() : null;
+        const value = rowData &amp;&amp; field ? rowData[field] : '';
 
         if (value === null || value === undefined || value === '') return '';
 
@@ -1012,11 +1040,11 @@ export const AMB = {
         let searchController = null;
         const confirmDialog = new ConfirmDialog();
         const selectionColumnController = createSelectionColumn(selectionColumn);
-        const deleteColumnController = deleteColumn && deleteColumn.enabled
+        const deleteColumnController = deleteColumn &amp;&amp; deleteColumn.enabled
             ? createDeleteColumn(deleteColumn, () => crud, confirmDialog)
             : null;
 
-        if (selectionColumnController && normalizedOptions.selectableRows === undefined) {
+        if (selectionColumnController &amp;&amp; normalizedOptions.selectableRows === undefined) {
             normalizedOptions.selectableRows = selectionColumnController.selectableRows;
         }
 
@@ -1148,3 +1176,26 @@ export const AMB = {
         };
     }
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#lookup">lookup</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 10 2026 14:04:31 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

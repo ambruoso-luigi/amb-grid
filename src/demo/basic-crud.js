@@ -1,16 +1,22 @@
 import { AMB } from '../index.js';
 
 export default function basicCrud(app) {
-    let nextNoteId = 4;
+    let nextNoteNumber = 4;
+
+    const getNextNoteId = () => {
+        const value = String(nextNoteNumber).padStart(3, '0');
+
+        nextNoteNumber += 1;
+        return `NT-${value}`;
+    };
 
     app.innerHTML = `
         <h2>Basic CRUD</h2>
         <div class="toolbar">
-            <button type="button" id="add-note">Add note</button>
-            <button type="button" id="save-valid">Mark valid changes saved</button>
-            <button type="button" id="show-report">Show report</button>
-            <button type="button" id="show-selected">Show selected</button>
-            <button type="button" id="clear-selection">Clear selection</button>
+            <button type="button" id="action-add-row">Add row</button>
+            <button type="button" id="action-save">Save</button>
+            <button type="button" id="action-show-report">Show report</button>
+            <button type="button" id="action-show-selected">Show selected</button>
         </div>
         <div id="basic-table"></div>
         <pre class="demo-output" id="basic-output"></pre>
@@ -30,15 +36,15 @@ export default function basicCrud(app) {
             mode: 'multiple'
         },
         data: [
-            { id: 1, title: 'Welcome note', tag: 'intro', archived: 'N' },
-            { id: 2, title: 'Shortcut idea', tag: 'idea', archived: 'N' },
-            { id: 3, title: 'Release checklist', tag: 'todo', archived: 'Y' }
+            { id: 'NT-001', title: 'Welcome note', tag: 'intro', archived: 'N' },
+            { id: 'NT-002', title: 'Shortcut idea', tag: 'idea', archived: 'N' },
+            { id: 'NT-003', title: 'Release checklist', tag: 'todo', archived: 'Y' }
         ],
         layout: 'fitColumns',
         columns: [
             { title: 'ID', field: 'id', width: 80 },
             { title: 'Temp ID', field: '_ambTempId', width: 130 },
-            { title: '#', field: '_ambRowNumber', width: 70 },
+            { title: 'Row No.', field: '_ambRowNumber', width: 90 },
             { title: 'State', field: '_state', width: 100 },
             { title: 'Title', field: 'title', editor: AMB.editors.text({ trim: true }) },
             { title: 'Tag', field: 'tag', editor: AMB.editors.text({ lowercase: true, trim: true }) },
@@ -65,10 +71,10 @@ export default function basicCrud(app) {
     const { crud } = demo;
     const output = app.querySelector('#basic-output');
 
-    app.querySelector('#add-note').addEventListener('click', () => {
+    app.querySelector('#action-add-row').addEventListener('click', () => {
         crud.addRow({ id: null, title: '', tag: '', archived: 'N' });
     });
-    app.querySelector('#save-valid').addEventListener('click', () => {
+    app.querySelector('#action-save').addEventListener('click', () => {
         const validateResult = crud.validateAll();
 
         if (!validateResult.isValid) {
@@ -87,7 +93,7 @@ export default function basicCrud(app) {
             })
             .map(item => ({
                 tempId: item._ambTempId,
-                id: nextNoteId++
+                id: getNextNoteId()
             }));
         const applyIdsResult = crud.applyBackendIds(generatedIds);
         const savedResult = crud.markValidChangesSaved();
@@ -100,14 +106,10 @@ export default function basicCrud(app) {
             report: crud.getStateReport()
         }, null, 2);
     });
-    app.querySelector('#show-report').addEventListener('click', () => {
+    app.querySelector('#action-show-report').addEventListener('click', () => {
         output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
     });
-    app.querySelector('#show-selected').addEventListener('click', () => {
-        output.textContent = JSON.stringify(demo.getSelectedRows(), null, 2);
-    });
-    app.querySelector('#clear-selection').addEventListener('click', () => {
-        demo.clearSelection();
+    app.querySelector('#action-show-selected').addEventListener('click', () => {
         output.textContent = JSON.stringify(demo.getSelectedRows(), null, 2);
     });
 

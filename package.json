@@ -1,14 +1,30 @@
 {
-  "name": "tabulator-editable-helper",
-  "version": "0.0.0",
+  "name": "amb-grid",
+  "version": "0.1.0",
+  "description": "A Tabulator-based editable grid helper with CRUD state management, validators, editors, formatters, parsers, lookup dialogs, search filters and demo utilities.",
+  "author": "Luigi Ambruoso",
+  "license": "Apache-2.0",
   "private": true,
   "type": "module",
+  "keywords": [
+    "amb-grid",
+    "tabulator",
+    "editable-grid",
+    "crud",
+    "data-grid",
+    "validators",
+    "formatters",
+    "editors",
+    "lookup"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "docs": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {
+    "jsdoc": "^4.0.5",
     "vite": "^8.0.12"
   },
   "dependencies": {
