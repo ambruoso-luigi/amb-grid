@@ -46,8 +46,36 @@ export default function basicCrud(app) {
             { title: 'Temp ID', field: '_ambTempId', width: 130 },
             { title: 'Row No.', field: '_ambRowNumber', width: 90 },
             { title: 'State', field: '_state', width: 100 },
-            { title: 'Title', field: 'title', editor: AMB.editors.text({ trim: true }) },
-            { title: 'Tag', field: 'tag', editor: AMB.editors.text({ lowercase: true, trim: true }) },
+            {
+                title: 'Title',
+                field: 'title',
+                editor: AMB.editors.text({ trim: true }),
+                required: true,
+                requiredMessage: 'Title is required',
+                validation: {
+                    minLength: {
+                        value: 3,
+                        message: 'Title must be at least 3 characters'
+                    }
+                }
+            },
+            {
+                title: 'Tag',
+                field: 'tag',
+                editor: AMB.editors.text({ lowercase: true, trim: true }),
+                required: true,
+                requiredMessage: 'Tag is required',
+                validation: {
+                    pattern: {
+                        regex: /^[a-z]+$/,
+                        message: 'Tag must contain lowercase letters only'
+                    },
+                    maxLength: {
+                        value: 12,
+                        message: 'Tag must be at most 12 characters'
+                    }
+                }
+            },
             {
                 title: 'Archived',
                 field: 'archived',
@@ -70,22 +98,71 @@ export default function basicCrud(app) {
 
     const { crud } = demo;
     const output = app.querySelector('#basic-output');
+    const partialSaveDialog = new AMB.ConfirmDialog({
+        title: 'Save valid rows?'
+    });
+    const originalDestroy = demo.destroy.bind(demo);
+    const hasValidChanges = payload => {
+        return payload.changes.inserted.length > 0
+            || payload.changes.updated.length > 0
+            || payload.changes.deleted.length > 0;
+    };
+    const getInvalidRowsMessage = validateResult => {
+        const invalidRows = validateResult.rows.filter(row => !row.isValid);
+
+        if (!invalidRows.length) return '';
+
+        return invalidRows.map(row => {
+            const rowLabel = row.rowNumber === null || row.rowNumber === undefined
+                ? 'unknown'
+                : row.rowNumber;
+            const fields = row.errors.map(error => error.field).join(', ');
+
+            return `Row ${rowLabel}: ${fields}`;
+        }).join('\n');
+    };
+
+    demo.destroy = () => {
+        partialSaveDialog.destroy();
+        originalDestroy();
+    };
 
     app.querySelector('#action-add-row').addEventListener('click', () => {
         crud.addRow({ id: null, title: '', tag: '', archived: 'N' });
     });
-    app.querySelector('#action-save').addEventListener('click', () => {
+    app.querySelector('#action-save').addEventListener('click', async () => {
         const validateResult = crud.validateAll();
+        const payloadWithInvalid = crud.getSavePayload({ includeInvalid: true });
+        const payload = crud.getSavePayload();
 
         if (!validateResult.isValid) {
-            output.textContent = JSON.stringify({
-                validateResult,
-                payload: crud.getSavePayload({ includeInvalid: true })
-            }, null, 2);
-            return;
+            if (!hasValidChanges(payload)) {
+                output.textContent = JSON.stringify({
+                    validateResult,
+                    payload: payloadWithInvalid,
+                    report: crud.getStateReport()
+                }, null, 2);
+                return;
+            }
+
+            const invalidRowsMessage = getInvalidRowsMessage(validateResult);
+            const confirmed = await partialSaveDialog.confirm({
+                message: [
+                    'Some rows contain errors and will not be saved. Do you want to save only valid rows?',
+                    invalidRowsMessage ? `Invalid rows:\n${invalidRowsMessage}` : ''
+                ].filter(Boolean).join('\n\n')
+            });
+
+            if (!confirmed) {
+                output.textContent = JSON.stringify({
+                    validateResult,
+                    payload: payloadWithInvalid,
+                    report: crud.getStateReport()
+                }, null, 2);
+                return;
+            }
         }
 
-        const payload = crud.getSavePayload();
         const generatedIds = payload.changes.inserted
             .filter(item => {
                 return item._ambTempId

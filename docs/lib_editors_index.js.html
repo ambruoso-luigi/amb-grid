@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/amb.js</title>
+    <title>JSDoc: Source: lib/editors/index.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/amb.js</h1>
+    <h1 class="page-title">Source: lib/editors/index.js</h1>
 
     
 
@@ -26,39 +26,30 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { ConfirmDialog } from '../ui/confirm-dialog.js';
-import { LookupDialog } from '../ui/lookup-dialog.js';
-import { SearchFiltersDialog } from '../ui/search-filters-dialog.js';
-import { editors } from './editors.js';
-import { formatters } from './formatters.js';
-import { createLookup } from './lookup.js';
-import { parsers } from './parsers.js';
-import { createTable } from './table/index.js';
-import { validators } from './validators.js';
+            <pre class="prettyprint source linenums"><code>import { autocomplete } from './autocomplete-editor.js';
+import { checkbox } from './checkbox-editor.js';
+import { date } from './date-editor.js';
+import { largeText } from './large-text-editor.js';
+import { lookup } from './lookup-editor.js';
+import { decimal, integer } from './number-editors.js';
+import { select } from './select-editor.js';
+import { text } from './text-editor.js';
 
 /**
- * Public AMB Grid namespace.
+ * Editor factories for Tabulator columns.
  *
- * @namespace AMB
- * @property {object} editors - Editor factories for Tabulator columns.
- * @property {object} formatters - Formatter factories for Tabulator columns.
- * @property {object} validators - Validator factories used by CrudHelper.
- * @property {object} parsers - Parser factories used by editors, formatters, and validators.
- * @property {Function} lookup - Primary lookup data source factory.
- * @property {Function} LookupDialog - Lookup selection dialog class.
- * @property {Function} ConfirmDialog - Confirmation dialog class.
- * @property {Function} SearchFiltersDialog - Search filter dialog class.
+ * @namespace editors
  */
-export const AMB = {
-    validators,
-    formatters,
-    editors,
-    parsers,
-    lookup: createLookup,
-    LookupDialog,
-    ConfirmDialog,
-    SearchFiltersDialog,
-    table: createTable
+export const editors = {
+    text,
+    integer,
+    decimal,
+    date,
+    checkbox,
+    select,
+    autocomplete,
+    lookup,
+    largeText
 };
 </code></pre>
         </article>

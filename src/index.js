@@ -5,8 +5,6 @@ export { formatters } from './lib/formatters.js';
 export { editors } from './lib/editors.js';
 export { parsers } from './lib/parsers.js';
 export { createLookup } from './lib/lookup.js';
-export { FloatingMessage } from './ui/floating-message.js';
-export { CellMessageBinder } from './ui/cell-message-binder.js';
 export { ConfirmDialog } from './ui/confirm-dialog.js';
 export { LookupDialog } from './ui/lookup-dialog.js';
 export { SearchFiltersDialog } from './ui/search-filters-dialog.js';

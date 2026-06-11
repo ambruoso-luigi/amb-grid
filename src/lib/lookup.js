@@ -137,6 +137,8 @@ export function createLookup(options = {}) {
 
 /**
  * Alias for {@link createLookup}. Exposed as `AMB.lookup(options)`.
+ * Use `AMB.lookup` as the primary public API; `createLookup` is the equivalent
+ * named export for advanced or direct module usage.
  *
  * @function lookup
  * @param {object} [options] - Lookup options.
