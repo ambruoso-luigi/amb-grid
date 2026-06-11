@@ -296,5 +296,53 @@ export const validators = {
             message,
             validate: validateFn
         };
+    },
+
+    /**
+     * Pass when at least one child validator accepts the value.
+     *
+     * @param {object[]} validatorsList - Validators to evaluate.
+     * @param {string} [message='Value does not match any allowed format'] - Validation message.
+     * @returns {{message: string, validate: Function}} Validator object.
+     */
+    anyOf(validatorsList, message = 'Value does not match any allowed format') {
+        return {
+            message,
+            validate: value => {
+                if (!Array.isArray(validatorsList) || validatorsList.length === 0) {
+                    return false;
+                }
+
+                return validatorsList.some(validator => {
+                    return validator
+                        && typeof validator.validate === 'function'
+                        && validator.validate(value);
+                });
+            }
+        };
+    },
+
+    /**
+     * Pass only when every child validator accepts the value.
+     *
+     * @param {object[]} validatorsList - Validators to evaluate.
+     * @param {string} [message='Value does not satisfy all validation rules'] - Validation message.
+     * @returns {{message: string, validate: Function}} Validator object.
+     */
+    allOf(validatorsList, message = 'Value does not satisfy all validation rules') {
+        return {
+            message,
+            validate: value => {
+                if (!Array.isArray(validatorsList) || validatorsList.length === 0) {
+                    return false;
+                }
+
+                return validatorsList.every(validator => {
+                    return validator
+                        && typeof validator.validate === 'function'
+                        && validator.validate(value);
+                });
+            }
+        };
     }
 };

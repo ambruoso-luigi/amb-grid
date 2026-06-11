@@ -34,6 +34,84 @@ export const createMaxLengthMessage = length => {
     return `Maximum length is ${length}`;
 };
 
+const buildValidatorFromConfig = (config, messages = DEFAULT_MESSAGES) => {
+    if (!config || typeof config !== 'object' || !config.type) return null;
+
+    if (config.type === 'pattern') {
+        if (!config.regex) return null;
+
+        return validators.pattern(
+            config.regex,
+            config.message || DEFAULT_VALIDATION_MESSAGES.pattern
+        );
+    }
+
+    if (config.type === 'email') {
+        return validators.email(config.message || DEFAULT_VALIDATION_MESSAGES.email);
+    }
+
+    if (config.type === 'integer') {
+        return validators.integer(config.message || DEFAULT_VALIDATION_MESSAGES.integer);
+    }
+
+    if (config.type === 'number') {
+        return validators.number(config.message || DEFAULT_VALIDATION_MESSAGES.number);
+    }
+
+    if (config.type === 'date') {
+        const { type, message, ...dateOptions } = config;
+
+        return validators.date(
+            dateOptions,
+            message || DEFAULT_VALIDATION_MESSAGES.date
+        );
+    }
+
+    if (config.type === 'minLength') {
+        return validators.minLength(
+            config.value,
+            config.message || createMinLengthMessage(config.value)
+        );
+    }
+
+    if (config.type === 'maxLength') {
+        return validators.maxLength(
+            config.value,
+            config.message || createMaxLengthMessage(config.value)
+        );
+    }
+
+    if (config.type === 'range') {
+        return validators.range(
+            config.min,
+            config.max,
+            config.message || createRangeMessage(config.min, config.max)
+        );
+    }
+
+    if (config.type === 'min') {
+        return validators.min(
+            config.value,
+            config.message || createMinMessage(config.value)
+        );
+    }
+
+    if (config.type === 'max') {
+        return validators.max(
+            config.value,
+            config.message || createMaxMessage(config.value)
+        );
+    }
+
+    if (config.type === 'required') {
+        return validators.required(
+            config.message || messages.required || DEFAULT_MESSAGES.required
+        );
+    }
+
+    return null;
+};
+
 export const extractValidationRules = (field, validation = {}, messages = DEFAULT_MESSAGES) => {
     const extractedValidators = [];
 
@@ -152,6 +230,28 @@ export const extractValidationRules = (field, validation = {}, messages = DEFAUL
         extractedValidators.push(validators.custom(
             validation.custom.message || DEFAULT_VALIDATION_MESSAGES.custom,
             validation.custom.validate
+        ));
+    }
+
+    if (validation.anyOf) {
+        const childValidators = (validation.anyOf.validators || [])
+            .map(config => buildValidatorFromConfig(config, messages))
+            .filter(Boolean);
+
+        extractedValidators.push(validators.anyOf(
+            childValidators,
+            validation.anyOf.message
+        ));
+    }
+
+    if (validation.allOf) {
+        const childValidators = (validation.allOf.validators || [])
+            .map(config => buildValidatorFromConfig(config, messages))
+            .filter(Boolean);
+
+        extractedValidators.push(validators.allOf(
+            childValidators,
+            validation.allOf.message
         ));
     }
 
