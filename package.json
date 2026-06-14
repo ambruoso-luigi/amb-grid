@@ -4,7 +4,6 @@
   "description": "A Tabulator-based editable grid helper with CRUD state management, validators, editors, formatters, parsers, lookup dialogs, search filters and demo utilities.",
   "author": "Luigi Ambruoso",
   "license": "Apache-2.0",
-  "private": true,
   "type": "module",
   "keywords": [
     "amb-grid",

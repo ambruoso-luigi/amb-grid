@@ -1,74 +1,156 @@
-# tabulator-editable-helper
+# AMB Grid
 
-Editable helper layer built on top of [Tabulator](https://tabulator.info/).
+AMB Grid is an editable grid helper built on top of [Tabulator](https://tabulator.info/).
 
-This project adds utilities for building editable, data-driven grids with CRUD state tracking, validation, custom editors, formatters, lookup dialogs, search tools and save payload helpers.
+The project provides reusable components and utilities for building data-driven web applications with editable tables, CRUD state tracking, validation, lookup dialogs, search tools and save payload generation.
 
 ## Project Status
 
 ⚠️ Early Preview / Work in Progress
 
-This project is currently under active development.
+AMB Grid is currently under active development.
 
 The API is not yet considered stable and breaking changes may occur before version 1.0.
 
-It is suitable for experiments, prototypes and internal evaluation, but it should not be considered production-ready yet.
+This repository is being published early to collect feedback and validate design decisions while development continues.
+
+## Quick Start
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Build the project:
+
+```bash
+npm run build
+```
+
+Generate documentation:
+
+```bash
+npm run docs
+```
 
 ## Features
 
-- CRUD row state tracking
-- New, modified, deleted and saved row states
-- Rollback support
-- Delete and remove-new row actions
-- Validation system
-- Built-in validators
-- Validator combinators: `anyOf` and `allOf`
-- Custom editors
-- Custom formatters
-- Date parsing and formatting helpers
-- Lookup dialog support
-- Autocomplete support
-- Large text popup editor
-- Row selection column
-- Search and filters
-- Save payload generation
-- Temporary row ids and backend id mapping
-
-## Main Concepts
-
 ### CRUD State Tracking
 
-The helper tracks row changes and can generate payloads for save operations.
+Track row changes automatically:
 
-Rows can be marked as:
+* Clean
+* New
+* Modified
+* Deleted
+* Saved
 
-- clean
-- new
-- modified
-- deleted
-- saved
+Additional capabilities:
 
-### Validation
+* Rollback support
+* Delete actions
+* Remove-new actions
+* State reporting
+* Save payload generation
 
-Validation can be triggered when editing cells or manually by calling validation methods.
+### Validation Framework
 
-The library includes validators for common formats and also supports custom validation rules.
+Built-in validation support including:
 
-### Editors and Formatters
+* Required fields
+* Email validation
+* Numeric validation
+* Pattern validation
+* Minimum and maximum values
+* Minimum and maximum length
+* Custom validators
 
-The project includes reusable editors and formatters for common grid scenarios, including numeric fields, dates, checkboxes, lookup fields and long text fields.
+Validator combinators:
 
-### Lookup Fields
+* `anyOf(...)`
+* `allOf(...)`
 
-Lookup fields can store a code while showing supporting descriptions through dialogs or hover messages.
+### Editors
+
+Reusable editors for common scenarios:
+
+* Text
+* Integer
+* Decimal
+* Checkbox
+* Date
+* Select
+* Lookup
+* Large text
+
+### Formatters
+
+Formatting helpers for:
+
+* Numbers
+* Dates
+* Lookup values
+* Custom display logic
+
+### Lookup System
+
+Lookup fields with support for:
+
+* Dialog selection
+* Code validation
+* Description management
+* Autocomplete integration
+* Hover descriptions
+
+### Search and Filters
+
+Integrated tools for:
+
+* Global search
+* Column filters
+* Active filter tracking
+
+### Large Text Editor
+
+Popup editor designed for:
+
+* Notes
+* Comments
+* Descriptions
+* Long text fields
+
+without increasing row height.
 
 ### Backend Integration
 
-The helper supports temporary ids for new rows and provides a way to apply backend-generated ids after saving.
+Support for:
+
+* Temporary row identifiers
+* Backend-generated identifiers
+* Save payload generation
+* Identifier synchronization after save
 
 ## Documentation
 
-Generated documentation is available in the `docs` folder.
+Generated API documentation is available in the `docs` folder.
+
+## Roadmap
+
+The following areas are currently under active development:
+
+* Additional validators
+* Additional formatters
+* International data formats
+* Enhanced lookup capabilities
+* Improved documentation
+* Additional demo pages
 
 ## License
 
