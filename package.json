@@ -1,7 +1,7 @@
 {
   "name": "amb-grid",
   "version": "0.1.0",
-  "description": "A Tabulator-based editable grid helper with CRUD state management, validators, editors, formatters, parsers, lookup dialogs, search filters and demo utilities.",
+  "description": "A framework-agnostic CRUD grid system for editable business data, powered by Tabulator.",
   "author": "Luigi Ambruoso",
   "license": "Apache-2.0",
   "type": "module",

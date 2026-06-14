@@ -1,8 +1,10 @@
 # AMB Grid
 
-AMB Grid is an editable grid helper built on top of [Tabulator](https://tabulator.info/).
+AMB Grid is a framework-agnostic CRUD grid system for editable business data, powered by [Tabulator](https://tabulator.info/).
 
-The project provides reusable components and utilities for building data-driven web applications with editable tables, CRUD state tracking, validation, lookup dialogs, search tools and save payload generation.
+It is not just a Tabulator helper, plugin, or wrapper. Tabulator is the table engine; AMB Grid is the CRUD application layer around it, handling row state, validation, rollback, lookup behavior, save payloads, and lifecycle cleanup.
+
+The core is framework-agnostic and suitable for both legacy/server-rendered pages and modern application shells that need to mount and dispose editable data grids.
 
 ## Project Status
 
@@ -140,6 +142,31 @@ Support for:
 ## Documentation
 
 Generated API documentation is available in the `docs` folder.
+
+## Lifecycle and cleanup
+
+AMB Grid exposes two cleanup levels:
+
+* `grid.destroy()` releases the complete AMB-managed grid returned by `AMB.table(...)`. It detaches AMB bindings, lookup and large-text hover helpers, search helpers, messages, dialogs, the CRUD helper, and then destroys the Tabulator table when Tabulator exposes `table.destroy()`.
+* `grid.crud.destroy()` releases only the CRUD layer. It removes the Tabulator event handlers registered by `CrudHelper`, clears internal tracking maps, validators, errors and custom subscriptions, and does not destroy the Tabulator table.
+
+Use `grid.destroy()` when a page section, modal, tab, or view owns the whole grid:
+
+```js
+const grid = AMB.table({ selector: '#people', data, columns });
+
+// later, when the page section/modal/view is disposed
+grid.destroy();
+```
+
+Use `grid.crud.destroy()` only when you created or manage the Tabulator table separately and want to detach the CRUD layer without disposing the table:
+
+```js
+const crud = new CrudHelper(table);
+
+// later, detach only the CRUD layer
+crud.destroy();
+```
 
 ## Roadmap
 

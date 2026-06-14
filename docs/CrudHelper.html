@@ -945,7 +945,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1128">line 1128</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1141">line 1141</a>
     </li></ul></dd>
     
 
@@ -1291,7 +1291,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1232">line 1232</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1245">line 1245</a>
     </li></ul></dd>
     
 
@@ -1455,7 +1455,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1115">line 1115</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1128">line 1128</a>
     </li></ul></dd>
     
 
@@ -1637,7 +1637,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line935">line 935</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line948">line 948</a>
     </li></ul></dd>
     
 
@@ -1796,7 +1796,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1075">line 1075</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1088">line 1088</a>
     </li></ul></dd>
     
 
@@ -1955,7 +1955,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line987">line 987</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1000">line 1000</a>
     </li></ul></dd>
     
 
@@ -2114,7 +2114,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1367">line 1367</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1380">line 1380</a>
     </li></ul></dd>
     
 
@@ -2180,10 +2180,17 @@
 
 
 <div class="description">
-    Release CrudHelper event subscriptions and internal tracking state.
+    Release the CRUD layer attached to the Tabulator table.
 
-This does not destroy the Tabulator table. Callers that own the table
-should destroy it separately after releasing the helper.
+Removes the Tabulator event handlers registered by this CrudHelper,
+clears tracking state for original rows, modified cells, validation
+errors, cell validators, and custom CrudHelper subscriptions. The method
+is safe to call more than once.
+
+This does not destroy the Tabulator table and does not call
+`table.destroy()`. It is intended for lifecycle cleanup in modals, tabs,
+dynamic page sections, SPA views, or grid reinitialization flows where
+the table engine may be owned separately from the CRUD layer.
 </div>
 
 
@@ -2227,7 +2234,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line793">line 793</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line806">line 806</a>
     </li></ul></dd>
     
 
@@ -2254,6 +2261,14 @@ should destroy it separately after releasing the helper.
 
 
 
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>const crud = new CrudHelper(table);
+
+// later, detach only the CRUD layer
+crud.destroy();</code></pre>
 
 
 
@@ -2364,7 +2379,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1153">line 1153</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1166">line 1166</a>
     </li></ul></dd>
     
 
@@ -2526,7 +2541,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1171">line 1171</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1184">line 1184</a>
     </li></ul></dd>
     
 
@@ -2639,7 +2654,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line854">line 854</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line867">line 867</a>
     </li></ul></dd>
     
 
@@ -2749,7 +2764,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1577">line 1577</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1590">line 1590</a>
     </li></ul></dd>
     
 
@@ -2859,7 +2874,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line818">line 818</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line831">line 831</a>
     </li></ul></dd>
     
 
@@ -2969,7 +2984,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line834">line 834</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line847">line 847</a>
     </li></ul></dd>
     
 
@@ -3248,7 +3263,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1764">line 1764</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1777">line 1777</a>
     </li></ul></dd>
     
 
@@ -3363,7 +3378,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1650">line 1650</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1663">line 1663</a>
     </li></ul></dd>
     
 
@@ -3678,7 +3693,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line884">line 884</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line897">line 897</a>
     </li></ul></dd>
     
 
@@ -3860,7 +3875,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1033">line 1033</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1046">line 1046</a>
     </li></ul></dd>
     
 
@@ -4019,7 +4034,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1456">line 1456</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1469">line 1469</a>
     </li></ul></dd>
     
 
@@ -4178,7 +4193,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1511">line 1511</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1524">line 1524</a>
     </li></ul></dd>
     
 
@@ -4288,7 +4303,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1522">line 1522</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1535">line 1535</a>
     </li></ul></dd>
     
 
@@ -4926,7 +4941,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1397">line 1397</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1410">line 1410</a>
     </li></ul></dd>
     
 
@@ -5108,7 +5123,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1568">line 1568</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1581">line 1581</a>
     </li></ul></dd>
     
 
@@ -5290,7 +5305,7 @@ should destroy it separately after releasing the helper.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1347">line 1347</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line1360">line 1360</a>
     </li></ul></dd>
     
 
@@ -5635,7 +5650,7 @@ should destroy it separately after releasing the helper.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jun 14 2026 20:14:49 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jun 14 2026 21:44:41 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

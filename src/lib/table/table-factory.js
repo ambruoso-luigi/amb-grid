@@ -98,12 +98,35 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
 };
 
 /**
- * Create an AMB-managed Tabulator table.
+ * Controller returned by `AMB.table(...)`.
+ *
+ * `destroy()` releases the full AMB-managed grid: AMB event bindings, lookup
+ * and large-text hover helpers, search helpers, floating messages, dialogs,
+ * the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
+ * `table.destroy()`.
+ *
+ * @typedef {object} AMBTableController
+ * @property {object} table - Raw Tabulator table instance.
+ * @property {CrudHelper} crud - CRUD application layer for row state, validation, rollback, and save payloads.
+ * @property {Function} getSelectedRows - Return currently selected row data.
+ * @property {Function} clearSelection - Clear the Tabulator row selection.
+ * @property {Function} selectRow - Select a row by backend id or AMB temporary id.
+ * @property {Function} deselectRow - Deselect a row by backend id or AMB temporary id.
+ * @property {Function} setSearchQuery - Set the global search query.
+ * @property {Function} clearSearch - Clear global search state.
+ * @property {Function} getSearchState - Return search query and selected search fields.
+ * @property {Function} setSearchFields - Set the active search fields.
+ * @property {Function} destroy - Destroy the complete AMB-managed grid, including the Tabulator table.
+ */
+
+/**
+ * Create an AMB-managed CRUD grid powered by a Tabulator table.
  *
  * The returned object exposes the raw Tabulator instance as `table` and a
- * CrudHelper instance as `crud`. AMB.table also wires column validators into
- * CrudHelper, optional delete and selection columns, lookup hover messages,
- * large text hover previews, and optional table search.
+ * CrudHelper instance as `crud`. Tabulator provides the table engine; AMB Grid
+ * provides the CRUD application layer, column validation, rollback handling,
+ * lookup behavior, save payloads, optional row action and selection columns,
+ * hover messages, large text previews, search helpers, and lifecycle cleanup.
  *
  * Column validators can be provided with `validator`, `required`, or a
  * structured `validation` object. Most validators do not imply required:
@@ -143,19 +166,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
  * @param {object} [options.messages] - Shared UI and validation messages.
  * @param {string} [options.messages.required='This field is required'] - Default required message.
- * @returns {{
- *   table: object,
- *   crud: CrudHelper,
- *   getSelectedRows: Function,
- *   clearSelection: Function,
- *   selectRow: Function,
- *   deselectRow: Function,
- *   setSearchQuery: Function,
- *   clearSearch: Function,
- *   getSearchState: Function,
- *   setSearchFields: Function,
- *   destroy: Function
- * }} AMB table controller.
+ * @returns {AMBTableController} AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.
  *
  * Underscored fields on the returned controller are internal integration
  * objects and are not part of the stable public API.
@@ -167,6 +178,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  *     { title: 'Name', field: 'name', editor: AMB.editors.text(), required: true }
  *   ]
  * });
+ *
+ * // later, when the page section/modal/view is disposed
+ * grid.destroy();
  */
 export function createTable(options = {}) {
     const {

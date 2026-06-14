@@ -1691,7 +1691,7 @@
     
 
     
-    <h4 class="name" id="createTable"><span class="type-signature"></span>createTable<span class="signature">(options)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="createTable"><span class="type-signature"></span>createTable<span class="signature">(options)</span><span class="type-signature"> &rarr; {<a href="global.html#AMBTableController">AMBTableController</a>}</span></h4>
     
 
     
@@ -1699,12 +1699,13 @@
 
 
 <div class="description">
-    Create an AMB-managed Tabulator table.
+    Create an AMB-managed CRUD grid powered by a Tabulator table.
 
 The returned object exposes the raw Tabulator instance as `table` and a
-CrudHelper instance as `crud`. AMB.table also wires column validators into
-CrudHelper, optional delete and selection columns, lookup hover messages,
-large text hover previews, and optional table search.
+CrudHelper instance as `crud`. Tabulator provides the table engine; AMB Grid
+provides the CRUD application layer, column validation, rollback handling,
+lookup behavior, save payloads, optional row action and selection columns,
+hover messages, large text previews, search helpers, and lifecycle cleanup.
 
 Column validators can be provided with `validator`, `required`, or a
 structured `validation` object. Most validators do not imply required:
@@ -3264,7 +3265,7 @@ when empty values should fail validation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line171">line 171</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line185">line 185</a>
     </li></ul></dd>
     
 
@@ -3293,7 +3294,7 @@ when empty values should fail validation.
 
         
 <div class="param-desc">
-    AMB table controller.
+    AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.
 
 Underscored fields on the returned controller are internal integration
 objects and are not part of the stable public API.
@@ -3307,7 +3308,7 @@ objects and are not part of the stable public API.
     </dt>
     <dd>
         
-<span class="param-type">Object</span>
+<span class="param-type"><a href="global.html#AMBTableController">AMBTableController</a></span>
 
 
     </dd>
@@ -3326,7 +3327,10 @@ objects and are not part of the stable public API.
   columns: [
     { title: 'Name', field: 'name', editor: AMB.editors.text(), required: true }
   ]
-});</code></pre>
+});
+
+// later, when the page section/modal/view is disposed
+grid.destroy();</code></pre>
 
 
 
@@ -7016,6 +7020,369 @@ named export for advanced or direct module usage.
     
 
     
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="AMBTableController">AMBTableController</h4>
+
+
+
+
+<div class="description">
+    Controller returned by `AMB.table(...)`.
+
+`destroy()` releases the full AMB-managed grid: AMB event bindings, lookup
+and large-text hover helpers, search helpers, floating messages, dialogs,
+the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
+`table.destroy()`.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Raw Tabulator table instance.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>crud</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html">CrudHelper</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">CRUD application layer for row state, validation, rollback, and save payloads.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>getSelectedRows</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Return currently selected row data.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearSelection</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Clear the Tabulator row selection.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>selectRow</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Select a row by backend id or AMB temporary id.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>deselectRow</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Deselect a row by backend id or AMB temporary id.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setSearchQuery</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Set the global search query.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearSearch</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Clear global search state.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>getSearchState</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Return search query and selected search fields.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setSearchFields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Set the active search fields.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>destroy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Destroy the complete AMB-managed grid, including the Tabulator table.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line100">line 100</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+    
 
     
 </article>
@@ -7034,7 +7401,7 @@ named export for advanced or direct module usage.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jun 14 2026 20:14:49 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jun 14 2026 21:44:41 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>
