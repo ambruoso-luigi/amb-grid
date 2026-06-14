@@ -333,6 +333,7 @@ export function createTable(options = {}) {
             cellMessageBinder.destroy();
             floatingMessage.destroy();
             confirmDialog.destroy();
+            crud.destroy();
 
             if (typeof table.destroy === 'function') {
                 table.destroy();

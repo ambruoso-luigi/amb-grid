@@ -89,6 +89,8 @@ export class CrudHelper {
         this.cellValidators = new Map();
         this.rowErrors = new Map();
         this.eventHandlers = new Map();
+        this.tabulatorEventHandlers = new Map();
+        this.isDestroyed = false;
         this.nextTempIdNumber = 1;
 
         this._captureInitialSnapshot();
@@ -96,27 +98,47 @@ export class CrudHelper {
     }
 
     _enableTracking() {
-        this.table.on('tableBuilt', () => {
-            this._captureInitialSnapshot();
-        });
+        if (!this.table || typeof this.table.on !== 'function') return;
 
-        this.table.on('cellEdited', (cell) => {
-            const row = cell.getRow();
-            const state = this._getBaseRowState(row);
+        const tableBuiltHandler = () => {
+            this._handleTableBuilt();
+        };
+        const cellEditedHandler = cell => {
+            this._handleCellEdited(cell);
+        };
 
-            if (state === ROW_STATE.NEW || state === ROW_STATE.DELETED) {
-                this._clearCellState(cell);
-                this._validateCell(cell);
-                return;
-            }
+        this.tabulatorEventHandlers.set('tableBuilt', tableBuiltHandler);
+        this.tabulatorEventHandlers.set('cellEdited', cellEditedHandler);
+        this.table.on('tableBuilt', tableBuiltHandler);
+        this.table.on('cellEdited', cellEditedHandler);
+    }
 
-            this._syncCellState(cell);
-            this._applyConsistentRowState(row);
+    _handleTableBuilt() {
+        if (this.isDestroyed) return;
+
+        this._captureInitialSnapshot();
+    }
+
+    _handleCellEdited(cell) {
+        if (this.isDestroyed) return;
+
+        const row = cell.getRow();
+        const state = this._getBaseRowState(row);
+
+        if (state === ROW_STATE.NEW || state === ROW_STATE.DELETED) {
+            this._clearCellState(cell);
             this._validateCell(cell);
-        });
+            return;
+        }
+
+        this._syncCellState(cell);
+        this._applyConsistentRowState(row);
+        this._validateCell(cell);
     }
 
     _captureInitialSnapshot() {
+        if (!this.table || typeof this.table.getRows !== 'function') return;
+
         this._assignMissingRowNumbers();
         this._assignMissingTempIds();
 
@@ -729,6 +751,10 @@ export class CrudHelper {
      * @returns {Function} Function that removes the subscription.
      */
     on(eventName, callback) {
+        if (this.isDestroyed) {
+            return () => {};
+        }
+
         if (!this.eventHandlers.has(eventName)) {
             this.eventHandlers.set(eventName, new Set());
         }
@@ -756,6 +782,32 @@ export class CrudHelper {
         if (callbacks.size === 0) {
             this.eventHandlers.delete(eventName);
         }
+    }
+
+    /**
+     * Release CrudHelper event subscriptions and internal tracking state.
+     *
+     * This does not destroy the Tabulator table. Callers that own the table
+     * should destroy it separately after releasing the helper.
+     */
+    destroy() {
+        if (this.isDestroyed) return;
+
+        this.isDestroyed = true;
+
+        if (this.table && typeof this.table.off === 'function') {
+            this.tabulatorEventHandlers.forEach((handler, eventName) => {
+                this.table.off(eventName, handler);
+            });
+        }
+
+        this.tabulatorEventHandlers.clear();
+        this.originalRows.clear();
+        this.modifiedCells.clear();
+        this.cellErrors.clear();
+        this.cellValidators.clear();
+        this.rowErrors.clear();
+        this.eventHandlers.clear();
     }
 
     /**
