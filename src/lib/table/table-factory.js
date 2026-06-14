@@ -1,5 +1,5 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
-import { CrudHelper } from '../crud-helper.js';
+import { CrudHelper, ROW_STATE } from '../crud-helper.js';
 import { CellMessageBinder } from '../../ui/cell-message-binder.js';
 import { FloatingMessage } from '../../ui/floating-message.js';
 import { ConfirmDialog } from '../../ui/confirm-dialog.js';
@@ -58,6 +58,45 @@ const configureLookupEditors = (columns, getCrud) => {
     });
 };
 
+const isDeletedRow = (cell, getCrud) => {
+    const crud = getCrud();
+    const row = cell && cell.getRow && cell.getRow();
+    const data = row && row.getData ? row.getData() : null;
+    const stateField = crud ? crud.options.stateField : '_state';
+
+    return Boolean(data && (data[stateField] || ROW_STATE.CLEAN) === ROW_STATE.DELETED);
+};
+
+const wrapEditableForDeletedRows = (columns, getCrud) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) {
+            nextColumn.columns = wrapEditableForDeletedRows(nextColumn.columns, getCrud);
+        }
+
+        if (!nextColumn.editor) return nextColumn;
+
+        const originalEditable = nextColumn.editable;
+
+        nextColumn.editable = cell => {
+            if (isDeletedRow(cell, getCrud)) return false;
+
+            if (typeof originalEditable === 'function') {
+                return originalEditable(cell);
+            }
+
+            if (originalEditable !== undefined) {
+                return originalEditable;
+            }
+
+            return true;
+        };
+
+        return nextColumn;
+    });
+};
+
 /**
  * Create an AMB-managed Tabulator table.
  *
@@ -77,6 +116,18 @@ const configureLookupEditors = (columns, getCrud) => {
  * @param {object[]} [options.columns] - Tabulator columns plus AMB validation metadata.
  * @param {object} [options.deleteColumn] - Optional row action column.
  * @param {boolean} [options.deleteColumn.enabled=false] - Add the delete/rollback/remove column.
+ * @param {object} [options.deleteColumn.actions] - Action visibility flags.
+ * @param {boolean} [options.deleteColumn.actions.delete=true] - Show delete for clean/saved rows.
+ * @param {boolean} [options.deleteColumn.actions.rollback=true] - Show rollback for modified/deleted rows.
+ * @param {boolean} [options.deleteColumn.actions.removeNew=true] - Show remove for new rows.
+ * @param {object} [options.deleteColumn.icons] - Action button text/icon overrides.
+ * @param {string} [options.deleteColumn.icons.delete='🗑'] - Delete button text/icon.
+ * @param {string} [options.deleteColumn.icons.rollback='↶'] - Rollback button text/icon.
+ * @param {string} [options.deleteColumn.icons.removeNew='×'] - Remove new-row button text/icon.
+ * @param {object} [options.deleteColumn.labels] - Action button aria-label overrides.
+ * @param {string} [options.deleteColumn.labels.delete='Delete row'] - Delete button aria-label.
+ * @param {string} [options.deleteColumn.labels.rollback='Rollback row'] - Rollback button aria-label.
+ * @param {string} [options.deleteColumn.labels.removeNew='Remove new row'] - Remove new-row button aria-label.
  * @param {string} [options.deleteColumn.confirmDeleteMessage] - Confirmation text before deleting a clean row.
  * @param {string} [options.deleteColumn.confirmRollbackMessage] - Confirmation text before rolling back a changed row.
  * @param {string} [options.deleteColumn.confirmRemoveNewMessage] - Confirmation text before removing an unsaved row.
@@ -133,6 +184,7 @@ export function createTable(options = {}) {
         ...messages
     };
     const extracted = extractColumnValidators(columns, normalizedMessages);
+    const dataColumns = wrapEditableForDeletedRows(extracted.columns, () => crud);
     const normalizedOptions = { ...tabulatorOptions };
     let crud = null;
     let unsubscribeDeleteColumn = null;
@@ -153,7 +205,7 @@ export function createTable(options = {}) {
         normalizedOptions.columns = [
             ...(selectionColumnController ? [selectionColumnController.column] : []),
             ...(deleteColumnController ? [deleteColumnController.column] : []),
-            ...extracted.columns
+            ...dataColumns
         ];
 
         configureLookupEditors(normalizedOptions.columns, () => crud);
@@ -168,7 +220,7 @@ export function createTable(options = {}) {
     searchController = createSearchController({
         selector,
         search,
-        columns: extracted.columns,
+        columns: dataColumns,
         table,
         floatingMessage
     });

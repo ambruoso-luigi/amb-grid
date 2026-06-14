@@ -22,6 +22,20 @@ const getDecimalParts = normalizedValue => {
     };
 };
 
+const normalizeUniqueValue = (value, options) => {
+    let normalizedValue = String(value);
+
+    if (options.trim !== false) {
+        normalizedValue = normalizedValue.trim();
+    }
+
+    if (options.caseSensitive === false) {
+        normalizedValue = normalizedValue.toUpperCase();
+    }
+
+    return normalizedValue;
+};
+
 /**
  * Validator factories for AMB Grid and CrudHelper.
  *
@@ -76,6 +90,72 @@ export const validators = {
                 if (isEmptyValue(value)) return true;
 
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value));
+            }
+        };
+    },
+
+    /**
+     * Validate non-empty values as syntactically valid IBANs.
+     *
+     * Spaces are ignored and values are uppercased before validation. This does
+     * not perform checksum validation.
+     *
+     * @param {string} [message='Invalid IBAN'] - Validation message.
+     * @returns {{message: string, validate: Function}} Validator object.
+     */
+    iban(message = 'Invalid IBAN') {
+        return {
+            message,
+            validate: value => {
+                if (isEmptyValue(value)) return true;
+
+                const normalizedValue = String(value).replace(/\s+/g, '').toUpperCase();
+
+                return /^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(normalizedValue);
+            }
+        };
+    },
+
+    /**
+     * Validate non-empty values as syntactically valid Italian IBANs.
+     *
+     * Spaces are ignored and values are uppercased before validation. This does
+     * not perform checksum validation.
+     *
+     * @param {string} [message='Invalid Italian IBAN'] - Validation message.
+     * @returns {{message: string, validate: Function}} Validator object.
+     */
+    italianIban(message = 'Invalid Italian IBAN') {
+        return {
+            message,
+            validate: value => {
+                if (isEmptyValue(value)) return true;
+
+                const normalizedValue = String(value).replace(/\s+/g, '').toUpperCase();
+
+                return /^IT[0-9]{2}[A-Z][0-9]{10}[A-Z0-9]{12}$/.test(normalizedValue);
+            }
+        };
+    },
+
+    /**
+     * Validate non-empty values as syntactically valid Italian Codice Fiscale values.
+     *
+     * Values are trimmed and uppercased before validation. This does not perform
+     * homocodia or check digit validation.
+     *
+     * @param {string} [message='Invalid Codice Fiscale'] - Validation message.
+     * @returns {{message: string, validate: Function}} Validator object.
+     */
+    codiceFiscale(message = 'Invalid Codice Fiscale') {
+        return {
+            message,
+            validate: value => {
+                if (isEmptyValue(value)) return true;
+
+                const normalizedValue = String(value).trim().toUpperCase();
+
+                return /^[A-Z]{6}[0-9]{2}[ABCDEHLMPRST][0-9]{2}[A-Z][0-9]{3}[A-Z]$/.test(normalizedValue);
             }
         };
     },
@@ -171,7 +251,7 @@ export const validators = {
      * Validate date values using the AMB date parser.
      *
      * @param {object} [options] - Date validation options.
-     * @param {'dd/mm/yyyy'|'yyyy-mm-dd'|'yyyymmdd'|Date|string} [options.format='dd/mm/yyyy'] - Expected input format.
+     * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'|Date|string} [options.format='dd/mm/yyyy'] - Expected input format.
      * @param {boolean} [options.allowEmpty=true] - Whether empty values are valid.
      * @param {string} [message='Invalid date'] - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
@@ -280,6 +360,55 @@ export const validators = {
                 if (isEmptyValue(value)) return true;
 
                 return String(value).length <= length;
+            }
+        };
+    },
+
+    /**
+     * Validate that a non-empty value is unique within the current column.
+     *
+     * When used by AMB.table, the field is inferred from the edited cell. Empty
+     * values are valid unless combined with `required`.
+     *
+     * @param {object|string} [options] - Unique validation options or explicit field name.
+     * @param {string} [options.field] - Field to compare. Defaults to the current cell field.
+     * @param {boolean} [options.caseSensitive=true] - Whether string comparisons are case-sensitive.
+     * @param {boolean} [options.trim=true] - Whether string values are trimmed before comparison.
+     * @param {string} [message='Value must be unique'] - Validation message.
+     * @returns {{message: string, validate: Function}} Validator object.
+     */
+    unique(options = {}, message = 'Value must be unique') {
+        const normalizedOptions = typeof options === 'string'
+            ? { field: options }
+            : {
+                caseSensitive: true,
+                trim: true,
+                ...options
+            };
+
+        return {
+            message,
+            validate: (value, rowData, cell, helper) => {
+                if (isEmptyValue(value)) return true;
+                if (!helper || !helper.table || typeof helper.table.getRows !== 'function') return true;
+
+                const field = normalizedOptions.field
+                    || (cell && typeof cell.getField === 'function' ? cell.getField() : null);
+                const currentRow = cell && typeof cell.getRow === 'function' ? cell.getRow() : null;
+
+                if (!field) return true;
+
+                const normalizedValue = normalizeUniqueValue(value, normalizedOptions);
+
+                return !helper.table.getRows().some(row => {
+                    if (row === currentRow) return false;
+
+                    const data = row && typeof row.getData === 'function' ? row.getData() : null;
+
+                    if (!data || isEmptyValue(data[field])) return false;
+
+                    return normalizeUniqueValue(data[field], normalizedOptions) === normalizedValue;
+                });
             }
         };
     },

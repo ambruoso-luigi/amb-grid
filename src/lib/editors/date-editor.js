@@ -2,17 +2,73 @@ import Datepicker from 'vanillajs-datepicker/Datepicker';
 import { parsers } from '../parsers.js';
 import { focusInput, getInitialValue } from './shared.js';
 
+const normalizeDateFormat = format => {
+    const aliases = {
+        iso: 'yyyy-mm-dd',
+        ISO: 'yyyy-mm-dd',
+        it: 'dd/mm/yyyy',
+        IT: 'dd/mm/yyyy',
+        legacy: 'yyyymmdd'
+    };
+
+    return aliases[format] || format;
+};
+
 const getDateFormatParts = format => {
-    if (format === 'dd/mm/yyyy') {
+    const normalizedFormat = normalizeDateFormat(format);
+
+    if (normalizedFormat === 'dd/mm/yyyy') {
         return {
             separator: '/',
             groups: [2, 2, 4]
         };
     }
 
-    if (format === 'yyyy-mm-dd') {
+    if (normalizedFormat === 'dd-mm-yyyy') {
         return {
             separator: '-',
+            groups: [2, 2, 4]
+        };
+    }
+
+    if (normalizedFormat === 'dd.mm.yyyy') {
+        return {
+            separator: '.',
+            groups: [2, 2, 4]
+        };
+    }
+
+    if (normalizedFormat === 'mm/dd/yyyy') {
+        return {
+            separator: '/',
+            groups: [2, 2, 4]
+        };
+    }
+
+    if (normalizedFormat === 'mm-dd-yyyy') {
+        return {
+            separator: '-',
+            groups: [2, 2, 4]
+        };
+    }
+
+    if (normalizedFormat === 'yyyy-mm-dd') {
+        return {
+            separator: '-',
+            groups: [4, 2, 2]
+        };
+    }
+
+    if (normalizedFormat === 'yyyy/mm/dd') {
+        return {
+            separator: '/',
+            groups: [4, 2, 2]
+        };
+    }
+
+    if (normalizedFormat === 'yyyymmdd') {
+        return {
+            separator: '',
             groups: [4, 2, 2]
         };
     }
@@ -39,7 +95,9 @@ export const normalizeDateInput = (value, format) => {
         offset += groupLength;
     });
 
-    return groups.join(formatParts.separator).slice(0, 10);
+    const maxLength = formatParts.separator === '' ? 8 : 10;
+
+    return groups.join(formatParts.separator).slice(0, maxLength);
 };
 
 const countDigits = value => {
@@ -68,7 +126,7 @@ const getDateCursorPosition = (normalizedValue, digitCount) => {
      * Date editor. Saves a date string in the configured format.
      *
      * @param {object} [options] - Date editor options.
-     * @param {'dd/mm/yyyy'|'yyyy-mm-dd'} [options.format='dd/mm/yyyy'] - Input and saved date format.
+     * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'} [options.format='dd/mm/yyyy'] - Input and saved date format.
      * @param {boolean} [options.allowEmpty=true] - Save an empty string for empty input.
      * @param {boolean} [options.picker=false] - Open a date picker while editing.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
@@ -82,6 +140,7 @@ export function date(options = {}) {
             selectOnFocus: false,
             ...options
         };
+        const pickerFormat = normalizeDateFormat(normalizedOptions.format);
 
         return (cell, onRendered, success, cancel) => {
             const input = document.createElement('input');
@@ -98,7 +157,9 @@ export function date(options = {}) {
                 : initialParsedValue === null
                     ? initialValue
                     : initialParsedValue;
-            input.maxLength = 10;
+            input.maxLength = pickerFormat === 'yyyymmdd'
+                ? 8
+                : 10;
 
             if (normalizedOptions.picker) {
                 let datepicker = null;
@@ -181,7 +242,7 @@ export function date(options = {}) {
 
                     if (!date) return;
 
-                    const formattedValue = Datepicker.formatDate(date, normalizedOptions.format);
+                    const formattedValue = Datepicker.formatDate(date, pickerFormat);
 
                     input.value = formattedValue;
                     closeWithSuccess(formattedValue);
@@ -216,7 +277,7 @@ export function date(options = {}) {
                 onRendered(() => {
                     datepicker = new Datepicker(input, {
                         autohide: true,
-                        format: normalizedOptions.format,
+                        format: pickerFormat,
                         container: document.body
                     });
                     input.focus();

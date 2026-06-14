@@ -129,7 +129,7 @@ export const formatters = {
     /**
      * Date formatter using AMB date parsers.
      *
-     * @param {'dd/mm/yyyy'|'yyyy-mm-dd'|'yyyymmdd'} [format='dd/mm/yyyy'] - Display format.
+     * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'} [format='dd/mm/yyyy'] - Display format.
      * @param {object} [options] - Parser format overrides.
      * @param {string|Date} [options.inputFormat] - Source date format.
      * @param {string} [options.outputFormat] - Display date format.

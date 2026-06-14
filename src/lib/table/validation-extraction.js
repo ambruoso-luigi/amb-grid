@@ -5,13 +5,17 @@ export const DEFAULT_MESSAGES = {
 };
 
 export const DEFAULT_VALIDATION_MESSAGES = {
+    codiceFiscale: 'Invalid Codice Fiscale',
     date: 'Invalid date',
     decimal: 'Invalid decimal value',
     email: 'Invalid email address',
+    iban: 'Invalid IBAN',
     integer: 'Value must be an integer',
+    italianIban: 'Invalid Italian IBAN',
     number: 'Value must be a number',
     pattern: 'Invalid format',
-    custom: 'Invalid value'
+    custom: 'Invalid value',
+    unique: 'Value must be unique'
 };
 
 export const createRangeMessage = (min, max) => {
@@ -48,6 +52,27 @@ const buildValidatorFromConfig = (config, messages = DEFAULT_MESSAGES) => {
 
     if (config.type === 'email') {
         return validators.email(config.message || DEFAULT_VALIDATION_MESSAGES.email);
+    }
+
+    if (config.type === 'iban') {
+        return validators.iban(config.message || DEFAULT_VALIDATION_MESSAGES.iban);
+    }
+
+    if (config.type === 'italianIban') {
+        return validators.italianIban(config.message || DEFAULT_VALIDATION_MESSAGES.italianIban);
+    }
+
+    if (config.type === 'codiceFiscale') {
+        return validators.codiceFiscale(config.message || DEFAULT_VALIDATION_MESSAGES.codiceFiscale);
+    }
+
+    if (config.type === 'unique') {
+        const { type, message, ...uniqueOptions } = config;
+
+        return validators.unique(
+            uniqueOptions,
+            message || DEFAULT_VALIDATION_MESSAGES.unique
+        );
     }
 
     if (config.type === 'integer') {
@@ -140,6 +165,45 @@ export const extractValidationRules = (field, validation = {}, messages = DEFAUL
         const message = validation.email.message || DEFAULT_VALIDATION_MESSAGES.email;
 
         extractedValidators.push(validators.email(message));
+    }
+
+    if (validation.iban) {
+        const message = validation.iban === true
+            ? DEFAULT_VALIDATION_MESSAGES.iban
+            : validation.iban.message || DEFAULT_VALIDATION_MESSAGES.iban;
+
+        extractedValidators.push(validators.iban(message));
+    }
+
+    if (validation.italianIban) {
+        const message = validation.italianIban === true
+            ? DEFAULT_VALIDATION_MESSAGES.italianIban
+            : validation.italianIban.message || DEFAULT_VALIDATION_MESSAGES.italianIban;
+
+        extractedValidators.push(validators.italianIban(message));
+    }
+
+    if (validation.codiceFiscale) {
+        const message = validation.codiceFiscale === true
+            ? DEFAULT_VALIDATION_MESSAGES.codiceFiscale
+            : validation.codiceFiscale.message || DEFAULT_VALIDATION_MESSAGES.codiceFiscale;
+
+        extractedValidators.push(validators.codiceFiscale(message));
+    }
+
+    if (validation.unique) {
+        const uniqueValidation = validation.unique === true
+            ? {}
+            : validation.unique;
+        const { message, ...uniqueOptions } = uniqueValidation;
+
+        extractedValidators.push(validators.unique(
+            {
+                field,
+                ...uniqueOptions
+            },
+            message || DEFAULT_VALIDATION_MESSAGES.unique
+        ));
     }
 
     if (validation.number) {

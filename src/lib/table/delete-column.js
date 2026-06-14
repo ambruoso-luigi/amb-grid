@@ -5,6 +5,24 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const confirmRollbackMessage = deleteColumn.confirmRollbackMessage;
     const confirmRemoveNewMessage = deleteColumn.confirmRemoveNewMessage;
     const confirmProvider = deleteColumn.confirmProvider;
+    const actions = {
+        delete: true,
+        rollback: true,
+        removeNew: true,
+        ...deleteColumn.actions
+    };
+    const icons = {
+        delete: '🗑',
+        rollback: '↶',
+        removeNew: '×',
+        ...deleteColumn.icons
+    };
+    const labels = {
+        delete: 'Delete row',
+        rollback: 'Rollback row',
+        removeNew: 'Remove new row',
+        ...deleteColumn.labels
+    };
 
     const getRowState = row => {
         const crud = getCrud();
@@ -22,55 +40,67 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         return data[crud.options.tempIdField];
     };
 
-    const getButtonConfig = state => {
+    const getActionConfig = state => {
         if (state === ROW_STATE.NEW) {
+            if (!actions.removeNew) return null;
+
             return {
-                text: '×',
-                label: 'Remove new row',
-                className: 'teh-delete-button--remove'
+                action: 'remove-new',
+                icon: icons.removeNew,
+                label: labels.removeNew,
+                className: 'amb-row-action-button--remove-new'
             };
         }
 
-        if (state === ROW_STATE.MODIFIED) {
+        if (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED) {
+            if (!actions.rollback) return null;
+
             return {
-                text: '↶',
-                label: 'Rollback modified row',
-                className: 'teh-delete-button--rollback'
+                action: 'rollback',
+                icon: icons.rollback,
+                label: labels.rollback,
+                className: 'amb-row-action-button--rollback'
             };
         }
 
-        if (state === ROW_STATE.DELETED) {
-            return {
-                text: '↶',
-                label: 'Rollback deleted row',
-                className: 'teh-delete-button--rollback'
-            };
-        }
+        if (!actions.delete) return null;
 
         return {
-            text: '🗑',
-            label: 'Delete row',
-            className: 'teh-delete-button--delete'
+            action: 'delete',
+            icon: icons.delete,
+            label: labels.delete,
+            className: 'amb-row-action-button--delete'
         };
+    };
+
+    const createActionsContainer = state => {
+        const container = document.createElement('div');
+        const config = getActionConfig(state);
+
+        container.className = 'amb-row-actions';
+
+        if (!config) return container;
+
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.className = `amb-row-action-button ${config.className}`;
+        button.dataset.action = config.action;
+        button.textContent = config.icon;
+        button.setAttribute('aria-label', config.label);
+
+        container.append(button);
+
+        return container;
     };
 
     const updateRowButton = row => {
         const rowElement = row && row.getElement && row.getElement();
-        const button = rowElement && rowElement.querySelector('.teh-delete-button');
+        const container = rowElement && rowElement.querySelector('.amb-row-actions');
 
-        if (!button) return;
+        if (!container) return;
 
-        const state = getRowState(row);
-        const config = getButtonConfig(state);
-
-        button.classList.remove(
-            'teh-delete-button--delete',
-            'teh-delete-button--rollback',
-            'teh-delete-button--remove'
-        );
-        button.classList.add(config.className);
-        button.textContent = config.text;
-        button.setAttribute('aria-label', config.label);
+        container.replaceWith(createActionsContainer(getRowState(row)));
     };
 
     const scheduleRowButtonUpdate = row => {
@@ -95,32 +125,30 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             hozAlign: 'center',
             headerSort: false,
             formatter: cell => {
-                const state = getRowState(cell.getRow());
-                const config = getButtonConfig(state);
-                const button = document.createElement('button');
-
-                button.type = 'button';
-                button.className = `teh-delete-button ${config.className}`;
-                button.textContent = config.text;
-                button.setAttribute('aria-label', config.label);
-
-                return button;
+                return createActionsContainer(getRowState(cell.getRow()));
             },
             cellClick: async (event, cell) => {
-                event.preventDefault();
-                event.stopPropagation();
+                const target = event.target;
+                const actionElement = target && typeof target.closest === 'function'
+                    ? target.closest('[data-action]')
+                    : null;
+
+                if (!actionElement) return;
 
                 const crud = getCrud();
 
                 if (!crud) return;
 
+                event.preventDefault();
+                event.stopPropagation();
+
                 const row = cell.getRow();
                 const data = row.getData();
-                const id = data[crud.options.idField];
                 const identifier = getRowIdentifier(crud, data);
                 const state = getRowState(row);
+                const action = actionElement.dataset.action;
 
-                if (state === ROW_STATE.NEW) {
+                if (action === 'remove-new' && state === ROW_STATE.NEW) {
                     const confirmed = await requestConfirmation({
                         action: 'remove-new',
                         message: confirmRemoveNewMessage,
@@ -129,16 +157,14 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                         id: identifier
                     });
 
-                    if (!confirmed) {
-                        return;
-                    }
+                    if (!confirmed) return;
 
                     crud.deleteRow(identifier);
                     scheduleRowButtonUpdate(row);
                     return;
                 }
 
-                if (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED) {
+                if (action === 'rollback' && (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED)) {
                     const confirmed = await requestConfirmation({
                         action: 'rollback',
                         message: confirmRollbackMessage,
@@ -147,12 +173,17 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                         id: identifier
                     });
 
-                    if (!confirmed) {
-                        return;
-                    }
+                    if (!confirmed) return;
 
                     crud.rollbackRow(identifier);
                     scheduleRowButtonUpdate(row);
+                    return;
+                }
+
+                if (
+                    action !== 'delete'
+                    || (state !== ROW_STATE.CLEAN && state !== ROW_STATE.SAVED)
+                ) {
                     return;
                 }
 
@@ -164,9 +195,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                     id: identifier
                 });
 
-                if (!confirmed) {
-                    return;
-                }
+                if (!confirmed) return;
 
                 crud.deleteRow(identifier);
                 scheduleRowButtonUpdate(row);

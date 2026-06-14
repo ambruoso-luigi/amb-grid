@@ -42,6 +42,18 @@ const padDatePart = value => {
     return String(value).padStart(2, '0');
 };
 
+const normalizeDateFormat = format => {
+    const aliases = {
+        iso: 'yyyy-mm-dd',
+        ISO: 'yyyy-mm-dd',
+        it: 'dd/mm/yyyy',
+        IT: 'dd/mm/yyyy',
+        legacy: 'yyyymmdd'
+    };
+
+    return aliases[format] || format;
+};
+
 const isValidDateParts = (year, month, day) => {
     const date = new Date(year, month - 1, day);
 
@@ -51,7 +63,9 @@ const isValidDateParts = (year, month, day) => {
 };
 
 const parseDateValue = (value, inputFormat) => {
-    if (inputFormat === Date || inputFormat === 'Date') {
+    const normalizedInputFormat = normalizeDateFormat(inputFormat);
+
+    if (normalizedInputFormat === Date || normalizedInputFormat === 'Date') {
         if (!(value instanceof Date) || !Number.isFinite(value.getTime())) return null;
 
         return {
@@ -67,21 +81,56 @@ const parseDateValue = (value, inputFormat) => {
     let month;
     let day;
 
-    if (inputFormat === 'dd/mm/yyyy') {
+    if (normalizedInputFormat === 'dd/mm/yyyy') {
         match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(stringValue);
         if (!match) return null;
 
         day = Number(match[1]);
         month = Number(match[2]);
         year = Number(match[3]);
-    } else if (inputFormat === 'yyyy-mm-dd') {
+    } else if (normalizedInputFormat === 'dd-mm-yyyy') {
+        match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+
+        day = Number(match[1]);
+        month = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedInputFormat === 'dd.mm.yyyy') {
+        match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+
+        day = Number(match[1]);
+        month = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedInputFormat === 'mm/dd/yyyy') {
+        match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+
+        month = Number(match[1]);
+        day = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedInputFormat === 'mm-dd-yyyy') {
+        match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+
+        month = Number(match[1]);
+        day = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedInputFormat === 'yyyy-mm-dd') {
         match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(stringValue);
         if (!match) return null;
 
         year = Number(match[1]);
         month = Number(match[2]);
         day = Number(match[3]);
-    } else if (inputFormat === 'yyyymmdd') {
+    } else if (normalizedInputFormat === 'yyyy/mm/dd') {
+        match = /^(\d{4})\/(\d{2})\/(\d{2})$/.exec(stringValue);
+        if (!match) return null;
+
+        year = Number(match[1]);
+        month = Number(match[2]);
+        day = Number(match[3]);
+    } else if (normalizedInputFormat === 'yyyymmdd') {
         match = /^(\d{4})(\d{2})(\d{2})$/.exec(stringValue);
         if (!match) return null;
 
@@ -98,22 +147,43 @@ const parseDateValue = (value, inputFormat) => {
 };
 
 const formatDateValue = ({ year, month, day }, outputFormat) => {
+    const normalizedOutputFormat = normalizeDateFormat(outputFormat);
     const formattedMonth = padDatePart(month);
     const formattedDay = padDatePart(day);
 
-    if (outputFormat === 'dd/mm/yyyy') {
+    if (normalizedOutputFormat === 'dd/mm/yyyy') {
         return `${formattedDay}/${formattedMonth}/${year}`;
     }
 
-    if (outputFormat === 'yyyy-mm-dd') {
+    if (normalizedOutputFormat === 'dd-mm-yyyy') {
+        return `${formattedDay}-${formattedMonth}-${year}`;
+    }
+
+    if (normalizedOutputFormat === 'dd.mm.yyyy') {
+        return `${formattedDay}.${formattedMonth}.${year}`;
+    }
+
+    if (normalizedOutputFormat === 'mm/dd/yyyy') {
+        return `${formattedMonth}/${formattedDay}/${year}`;
+    }
+
+    if (normalizedOutputFormat === 'mm-dd-yyyy') {
+        return `${formattedMonth}-${formattedDay}-${year}`;
+    }
+
+    if (normalizedOutputFormat === 'yyyy-mm-dd') {
         return `${year}-${formattedMonth}-${formattedDay}`;
     }
 
-    if (outputFormat === 'yyyymmdd') {
+    if (normalizedOutputFormat === 'yyyy/mm/dd') {
+        return `${year}/${formattedMonth}/${formattedDay}`;
+    }
+
+    if (normalizedOutputFormat === 'yyyymmdd') {
         return `${year}${formattedMonth}${formattedDay}`;
     }
 
-    if (outputFormat === 'Date') {
+    if (normalizedOutputFormat === 'Date') {
         return new Date(year, month - 1, day);
     }
 
@@ -129,12 +199,14 @@ export const parsers = {
     /**
      * Create a strict date parser.
      *
-     * Supports `dd/mm/yyyy`, `yyyy-mm-dd`, `yyyymmdd`, and `Date`.
+     * Supports `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, `mm/dd/yyyy`,
+     * `mm-dd-yyyy`, `yyyy-mm-dd`, `yyyy/mm/dd`, `yyyymmdd`, `Date`, and the
+     * `it`, `iso`, and `legacy` aliases.
      * Invalid dates return `null`; empty values follow `allowEmpty`.
      *
      * @param {object} [options] - Date parser options.
-     * @param {'dd/mm/yyyy'|'yyyy-mm-dd'|'yyyymmdd'|Date|string} [options.inputFormat='dd/mm/yyyy'] - Expected input format.
-     * @param {'dd/mm/yyyy'|'yyyy-mm-dd'|'yyyymmdd'|'Date'} [options.outputFormat='yyyy-mm-dd'] - Returned format.
+     * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'|Date|string} [options.inputFormat='dd/mm/yyyy'] - Expected input format.
+     * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'|'Date'} [options.outputFormat='yyyy-mm-dd'] - Returned format.
      * @param {boolean} [options.allowEmpty=true] - Whether empty values parse as an empty string.
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.
      */
@@ -175,7 +247,7 @@ export const parsers = {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Jun 11 2026 22:42:36 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jun 12 2026 15:40:56 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>
