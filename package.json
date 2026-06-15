@@ -19,12 +19,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview",
     "docs": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {
     "jsdoc": "^4.0.5",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "tabulator-tables": "^6.4.0",
