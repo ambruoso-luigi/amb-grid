@@ -28,17 +28,32 @@ const buildReadableReport = ({ validateResult, stateReport }) => {
     lines.push('What happened:');
     lines.push('AMB Grid evaluated the registered validators for each field and marked the cells that failed.');
     lines.push('');
-    lines.push('Errors:');
+    lines.push('Errors by row:');
+
+    const errorsByRow = new Map();
 
     errors.forEach(error => {
         const rowLabel = error.rowNumber !== null && error.rowNumber !== undefined
-            ? `row ${error.rowNumber}`
-            : `id ${error.id || error.key || 'unknown'}`;
-        const valueLabel = error.value !== undefined
-            ? ` (value: ${JSON.stringify(error.value)})`
-            : '';
+            ? `Row ${error.rowNumber}`
+            : `ID ${error.id || error.key || 'unknown'}`;
 
-        lines.push(`- ${rowLabel}, ${error.field}: ${error.message}${valueLabel}`);
+        if (!errorsByRow.has(rowLabel)) {
+            errorsByRow.set(rowLabel, []);
+        }
+
+        errorsByRow.get(rowLabel).push(error);
+    });
+
+    errorsByRow.forEach((rowErrors, rowLabel) => {
+        lines.push(`- ${rowLabel}`);
+
+        rowErrors.forEach(error => {
+            const valueLabel = error.value !== undefined
+                ? ` (value: ${JSON.stringify(error.value)})`
+                : '';
+
+            lines.push(`  - ${error.field}: ${error.message}${valueLabel}`);
+        });
     });
 
     lines.push('');
@@ -247,6 +262,17 @@ const validationData = [
         fiscalIdOrVat: '90817263544',
         iban: 'IT89L0326812345000009990001',
         documentNumber: 'DOC1010'
+    },
+    {
+        id: 11,
+        alias: 'Ledger',
+        email: 'ledger@example.test',
+        accessCode: 'LDG011',
+        fiscalCode: 'LDRPLA84D22H501S',
+        vatNumber: '74185296301',
+        fiscalIdOrVat: 'LDRPLA84D22H501S',
+        iban: 'IT41M0310412345000002223334',
+        documentNumber: 'DOC1011'
     }
 ];
 
@@ -259,7 +285,17 @@ const anomalyPatches = [
     { id: 7, vatNumber: '123' },
     { id: 8, fiscalIdOrVat: 'ABC123' },
     { id: 9, iban: 'IT00X123' },
-    { id: 10, documentNumber: 'TMP12345' }
+    { id: 10, documentNumber: 'TMP12345' },
+    {
+        id: 11,
+        alias: 'Atlas',
+        email: 'ledger.example.test',
+        accessCode: 'LDG11',
+        fiscalCode: 'ABC123',
+        fiscalIdOrVat: 'ABC123',
+        iban: 'IT41M03104',
+        documentNumber: 'TMP2040'
+    }
 ];
 
 export default function validation(app) {
