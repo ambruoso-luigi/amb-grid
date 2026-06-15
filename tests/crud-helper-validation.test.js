@@ -174,6 +174,60 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.cellErrors.has(2)).toBe(true);
     });
 
+    test('validateAll ignores deleted rows by default', () => {
+        const { crud } = createCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Atlas', _state: ROW_STATE.DELETED }
+        ]);
+
+        const result = crud.validateAll();
+
+        expect(result.isValid).toBe(true);
+        expect(result.rows).toHaveLength(1);
+        expect(result.rows[0].id).toBe(1);
+        expect(result.errors).toEqual([]);
+        expect(crud.cellErrors.size).toBe(0);
+    });
+
+    test('validateAll can include deleted rows for technical audits', () => {
+        const { crud } = createCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Atlas', _state: ROW_STATE.DELETED }
+        ]);
+
+        const result = crud.validateAll({ includeDeleted: true });
+
+        expect(result.isValid).toBe(false);
+        expect(result.rows).toHaveLength(2);
+        expect(result.errors).toEqual([
+            expect.objectContaining({
+                id: 2,
+                field: 'alias',
+                value: 'Atlas'
+            })
+        ]);
+        expect(crud.cellErrors.size).toBe(0);
+    });
+
+    test('validateChanges still validates only new and modified rows', () => {
+        const { crud } = createCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Atlas', _state: ROW_STATE.NEW },
+            { id: 3, alias: 'Atlas', _state: ROW_STATE.MODIFIED },
+            { id: 4, alias: 'Atlas', _state: ROW_STATE.DELETED }
+        ]);
+
+        const result = crud.validateChanges();
+
+        expect(result.isValid).toBe(false);
+        expect(result.rows.map(row => row.id)).toEqual([2, 3]);
+        expect(result.errors.map(error => error.id)).toEqual([2, 3]);
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.has(2)).toBe(true);
+        expect(crud.cellErrors.has(3)).toBe(true);
+        expect(crud.cellErrors.has(4)).toBe(false);
+    });
+
     test('rollback clears errors from the affected row', () => {
         const { crud } = createCrud([
             { id: 1, alias: 'Atlas' },

@@ -736,12 +736,22 @@ export class CrudHelper {
     }
 
     /**
-     * Validate all rows with registered cell validators without changing row state.
+     * Validate all active rows with registered cell validators without changing row state.
      *
+     * @param {object} [options] - Validation options.
+     * @param {boolean} [options.includeDeleted=false] - Include rows marked as deleted in the technical audit result.
      * @returns {{isValid: boolean, rows: object[], errors: object[]}}
      */
-    validateAll() {
+    validateAll(options = {}) {
+        const normalizedOptions = {
+            includeDeleted: false,
+            ...options
+        };
         const rows = this.table.getRows()
+            .filter(row => {
+                return normalizedOptions.includeDeleted
+                    || this._getBaseRowState(row) !== ROW_STATE.DELETED;
+            })
             .map(row => this.validateRow(this._getRowKey(row)))
             .filter(Boolean);
 

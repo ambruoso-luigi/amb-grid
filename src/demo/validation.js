@@ -308,7 +308,7 @@ const anomalyPatches = [
 export default function validation(app) {
     app.innerHTML = `
         <h2>Validation</h2>
-        <p class="demo-note">Most validations run when you leave an edited cell. For demo purposes, this page also provides a full-table audit and a changed/new rows validation flow for CRUD save scenarios.</p>
+        <p class="demo-note">Most validations run when you leave an edited cell. For demo purposes, this page also provides a changed/new rows validation flow for CRUD save scenarios and a full-table audit for debug, imports, or global checks.</p>
         <div class="demo-note">
             <strong>Validation rules:</strong>
             <ul>
@@ -322,11 +322,11 @@ export default function validation(app) {
                 <li>Passport/Document: 6-20 alphanumeric characters; custom rule rejects TMP prefixes</li>
             </ul>
             <p>Format-specific validators in this demo are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.</p>
-            <p><strong>Validate all</strong> audits the whole table. <strong>Validate changed rows</strong> validates only new or modified rows, while clean rows remain available as comparison context for validators such as unique.</p>
+            <p><strong>Validate changed rows</strong> validates only new or modified rows, while clean rows remain available as comparison context for validators such as unique. <strong>Full table audit</strong> checks the entire active table for debug, import, or global verification scenarios.</p>
         </div>
         <div class="toolbar">
-            <button type="button" id="action-validate-all">Validate all</button>
             <button type="button" id="action-validate-changes">Validate changed rows</button>
+            <button type="button" id="action-full-table-audit">Full table audit</button>
             <button type="button" id="action-create-anomalies">Create anomalies</button>
             <button type="button" id="action-show-report">Show report</button>
         </div>
@@ -570,12 +570,12 @@ export default function validation(app) {
         }
     };
 
-    app.querySelector('#action-validate-all').addEventListener('click', () => {
-        openValidationReport(crud.validateAll(), 'summary', 'full');
-    });
-
     app.querySelector('#action-validate-changes').addEventListener('click', () => {
         openValidationReport(crud.validateChanges(), 'summary', 'changes');
+    });
+
+    app.querySelector('#action-full-table-audit').addEventListener('click', () => {
+        openValidationReport(crud.validateAll(), 'summary', 'full');
     });
 
     app.querySelector('#action-create-anomalies').addEventListener('click', () => {
