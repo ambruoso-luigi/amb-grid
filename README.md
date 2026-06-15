@@ -91,6 +91,8 @@ Validator combinators:
 
 Format-specific validators are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.
 
+For CRUD save flows, `crud.validateChanges()` validates only new and modified rows while still allowing cross-row validators such as `unique` to compare against clean rows. `crud.validateAll()` remains available as a full-table audit.
+
 ### Editors
 
 Reusable editors for common scenarios:

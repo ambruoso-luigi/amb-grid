@@ -714,15 +714,7 @@ export class CrudHelper {
         };
     }
 
-    /**
-     * Validate all rows with registered cell validators without changing row state.
-     *
-     * @returns {{isValid: boolean, rows: object[], errors: object[]}}
-     */
-    validateAll() {
-        const rows = this.table.getRows()
-            .map(row => this.validateRow(this._getRowKey(row)))
-            .filter(Boolean);
+    _buildValidationResult(rows) {
         const errors = [];
 
         rows.forEach(rowResult => {
@@ -741,6 +733,40 @@ export class CrudHelper {
             rows,
             errors
         };
+    }
+
+    /**
+     * Validate all rows with registered cell validators without changing row state.
+     *
+     * @returns {{isValid: boolean, rows: object[], errors: object[]}}
+     */
+    validateAll() {
+        const rows = this.table.getRows()
+            .map(row => this.validateRow(this._getRowKey(row)))
+            .filter(Boolean);
+
+        return this._buildValidationResult(rows);
+    }
+
+    /**
+     * Validate only rows with pending insert/update changes.
+     *
+     * Clean, saved, and deleted rows can still be used by cross-row validators
+     * such as `unique`, but they are not validated or marked by this method.
+     *
+     * @returns {{isValid: boolean, rows: object[], errors: object[]}}
+     */
+    validateChanges() {
+        const rows = this.table.getRows()
+            .filter(row => {
+                const state = this._getBaseRowState(row);
+
+                return state === ROW_STATE.NEW || state === ROW_STATE.MODIFIED;
+            })
+            .map(row => this.validateRow(this._getRowKey(row)))
+            .filter(Boolean);
+
+        return this._buildValidationResult(rows);
     }
 
     /**

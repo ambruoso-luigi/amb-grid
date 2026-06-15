@@ -6,11 +6,16 @@ const hasReservedDocumentPrefix = value => {
     return !String(value).toUpperCase().startsWith('TMP');
 };
 
-const buildReadableReport = ({ validateResult, stateReport }) => {
+const buildReadableReport = ({ validateResult, stateReport, validationScope }) => {
     const errors = validateResult ? validateResult.errors : stateReport.errors.cells;
+    const scopeLabel = validationScope === 'full'
+        ? 'full table validation'
+        : validationScope === 'changes'
+            ? 'changed/new rows validation'
+            : 'current validation state';
     const lines = [
         validateResult
-            ? `Validation result: ${validateResult.isValid ? 'valid' : 'invalid'}`
+            ? `Validation result (${scopeLabel}): ${validateResult.isValid ? 'valid' : 'invalid'}`
             : 'Current validation state',
         `Rows with errors: ${stateReport.errorRowsCount}`,
         `Cell errors: ${errors.length}`,
@@ -26,7 +31,9 @@ const buildReadableReport = ({ validateResult, stateReport }) => {
     }
 
     lines.push('What happened:');
-    lines.push('AMB Grid evaluated the registered validators for each field and marked the cells that failed.');
+    lines.push(validationScope === 'full'
+        ? 'AMB Grid evaluated the registered validators for the full table and marked every cell that failed.'
+        : 'AMB Grid evaluated the registered validators for changed/new rows only; clean rows can still be used as comparison context.');
     lines.push('');
     lines.push('Errors by row:');
 
@@ -57,7 +64,7 @@ const buildReadableReport = ({ validateResult, stateReport }) => {
     });
 
     lines.push('');
-    lines.push('The JSON tab contains the raw validateAll() result and CrudHelper state report for integration/debugging.');
+    lines.push('The JSON tab contains the raw validation result and CrudHelper state report for integration/debugging.');
 
     return lines.join('\n');
 };
@@ -301,7 +308,7 @@ const anomalyPatches = [
 export default function validation(app) {
     app.innerHTML = `
         <h2>Validation</h2>
-        <p class="demo-note">Most validations run when you leave an edited cell. For demo purposes, this page also provides actions to validate every row at once, including cells that were never edited.</p>
+        <p class="demo-note">Most validations run when you leave an edited cell. For demo purposes, this page also provides a full-table audit and a changed/new rows validation flow for CRUD save scenarios.</p>
         <div class="demo-note">
             <strong>Validation rules:</strong>
             <ul>
@@ -315,9 +322,11 @@ export default function validation(app) {
                 <li>Passport/Document: 6-20 alphanumeric characters; custom rule rejects TMP prefixes</li>
             </ul>
             <p>Format-specific validators in this demo are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.</p>
+            <p><strong>Validate all</strong> audits the whole table. <strong>Validate changed rows</strong> validates only new or modified rows, while clean rows remain available as comparison context for validators such as unique.</p>
         </div>
         <div class="toolbar">
             <button type="button" id="action-validate-all">Validate all</button>
+            <button type="button" id="action-validate-changes">Validate changed rows</button>
             <button type="button" id="action-create-anomalies">Create anomalies</button>
             <button type="button" id="action-show-report">Show report</button>
         </div>
@@ -545,9 +554,10 @@ export default function validation(app) {
     const reportDialog = createReportDialog();
     const originalDestroy = demo.destroy;
 
-    const openValidationReport = (validateResult, mode = 'summary') => {
+    const openValidationReport = (validateResult, mode = 'summary', validationScope = 'changes') => {
         reportDialog.open({
             validateResult,
+            validationScope,
             stateReport: crud.getStateReport()
         }, mode);
     };
@@ -561,7 +571,11 @@ export default function validation(app) {
     };
 
     app.querySelector('#action-validate-all').addEventListener('click', () => {
-        openValidationReport(crud.validateAll(), 'summary');
+        openValidationReport(crud.validateAll(), 'summary', 'full');
+    });
+
+    app.querySelector('#action-validate-changes').addEventListener('click', () => {
+        openValidationReport(crud.validateChanges(), 'summary', 'changes');
     });
 
     app.querySelector('#action-create-anomalies').addEventListener('click', () => {
@@ -570,13 +584,14 @@ export default function validation(app) {
         });
 
         window.setTimeout(() => {
-            openValidationReport(crud.validateAll(), 'summary');
+            openValidationReport(crud.validateChanges(), 'summary', 'changes');
         }, 0);
     });
 
     app.querySelector('#action-show-report').addEventListener('click', () => {
         reportDialog.open({
             validateResult: null,
+            validationScope: 'state',
             stateReport: crud.getStateReport()
         }, 'json');
     });
