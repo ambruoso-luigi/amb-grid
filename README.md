@@ -30,6 +30,12 @@ Start the development server:
 npm run dev
 ```
 
+Run tests:
+
+```bash
+npm test
+```
+
 Build the project:
 
 ```bash
