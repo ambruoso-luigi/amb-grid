@@ -6,13 +6,59 @@ const hasReservedDocumentPrefix = value => {
     return !String(value).toUpperCase().startsWith('TMP');
 };
 
+const buildReadableReport = ({ validateResult, stateReport }) => {
+    const errors = validateResult ? validateResult.errors : stateReport.errors.cells;
+    const lines = [
+        validateResult
+            ? `Validation result: ${validateResult.isValid ? 'valid' : 'invalid'}`
+            : 'Current validation state',
+        `Rows with errors: ${stateReport.errorRowsCount}`,
+        `Cell errors: ${errors.length}`,
+        `Changed rows: ${stateReport.changedRowsCount}`,
+        ''
+    ];
+
+    if (errors.length === 0) {
+        lines.push('No validation errors are currently tracked.');
+        lines.push('');
+        lines.push('Edit a cell, or use Create anomalies to generate a few intentional validation failures.');
+        return lines.join('\n');
+    }
+
+    lines.push('What happened:');
+    lines.push('AMB Grid evaluated the registered validators for each field and marked the cells that failed.');
+    lines.push('');
+    lines.push('Errors:');
+
+    errors.forEach(error => {
+        const rowLabel = error.rowNumber !== null && error.rowNumber !== undefined
+            ? `row ${error.rowNumber}`
+            : `id ${error.id || error.key || 'unknown'}`;
+        const valueLabel = error.value !== undefined
+            ? ` (value: ${JSON.stringify(error.value)})`
+            : '';
+
+        lines.push(`- ${rowLabel}, ${error.field}: ${error.message}${valueLabel}`);
+    });
+
+    lines.push('');
+    lines.push('The JSON tab contains the raw validateAll() result and CrudHelper state report for integration/debugging.');
+
+    return lines.join('\n');
+};
+
 const createReportDialog = () => {
     const overlay = document.createElement('div');
     const dialog = document.createElement('div');
+    const header = document.createElement('div');
     const title = document.createElement('h3');
-    const report = document.createElement('pre');
+    const tabs = document.createElement('div');
+    const summaryButton = document.createElement('button');
+    const jsonButton = document.createElement('button');
+    const content = document.createElement('pre');
     const actions = document.createElement('div');
     const closeButton = document.createElement('button');
+    let currentPayload = null;
 
     overlay.className = 'validation-report-dialog';
     overlay.hidden = true;
@@ -20,19 +66,41 @@ const createReportDialog = () => {
     dialog.setAttribute('role', 'dialog');
     dialog.setAttribute('aria-modal', 'true');
     dialog.setAttribute('aria-labelledby', 'validation-report-dialog-title');
+    header.className = 'validation-report-dialog__header';
     title.id = 'validation-report-dialog-title';
     title.className = 'validation-report-dialog__title';
     title.textContent = 'Validation report';
-    report.className = 'validation-report-dialog__content';
+    tabs.className = 'validation-report-dialog__tabs';
+    summaryButton.type = 'button';
+    summaryButton.className = 'validation-report-dialog__tab';
+    summaryButton.textContent = 'Summary';
+    jsonButton.type = 'button';
+    jsonButton.className = 'validation-report-dialog__tab';
+    jsonButton.textContent = 'JSON';
+    content.className = 'validation-report-dialog__content';
     actions.className = 'validation-report-dialog__actions';
     closeButton.type = 'button';
     closeButton.className = 'validation-report-dialog__button';
     closeButton.textContent = 'Close';
 
+    tabs.append(summaryButton, jsonButton);
+    header.append(title, tabs);
     actions.append(closeButton);
-    dialog.append(title, report, actions);
+    dialog.append(header, content, actions);
     overlay.append(dialog);
     document.body.append(overlay);
+
+    const setMode = mode => {
+        if (!currentPayload) return;
+
+        const isJson = mode === 'json';
+
+        summaryButton.classList.toggle('is-active', !isJson);
+        jsonButton.classList.toggle('is-active', isJson);
+        content.textContent = isJson
+            ? JSON.stringify(currentPayload, null, 2)
+            : buildReadableReport(currentPayload);
+    };
 
     const close = () => {
         overlay.hidden = true;
@@ -45,6 +113,8 @@ const createReportDialog = () => {
         }
     }
 
+    summaryButton.addEventListener('click', () => setMode('summary'));
+    jsonButton.addEventListener('click', () => setMode('json'));
     closeButton.addEventListener('click', close);
     overlay.addEventListener('click', event => {
         if (event.target === overlay) {
@@ -53,10 +123,11 @@ const createReportDialog = () => {
     });
 
     return {
-        open(content) {
-            report.textContent = content;
+        open(payload, mode = 'summary') {
+            currentPayload = payload;
             overlay.hidden = false;
             document.addEventListener('keydown', handleKeyDown);
+            setMode(mode);
             closeButton.focus();
         },
         destroy() {
@@ -66,30 +137,155 @@ const createReportDialog = () => {
     };
 };
 
+const validationData = [
+    {
+        id: 1,
+        alias: 'Atlas',
+        email: 'atlas@example.test',
+        accessCode: 'ATL001',
+        fiscalCode: 'RSSMRA80A01H501U',
+        vatNumber: '12345678901',
+        fiscalIdOrVat: 'RSSMRA80A01H501U',
+        iban: 'IT60X0542811101000000123456',
+        documentNumber: 'DOC1001'
+    },
+    {
+        id: 2,
+        alias: 'Beacon',
+        email: 'beacon@example.test',
+        accessCode: 'BCN002',
+        fiscalCode: 'BNCLGU85C10F205Z',
+        vatNumber: '98765432109',
+        fiscalIdOrVat: '98765432109',
+        iban: 'IT23A0306909606100000123456',
+        documentNumber: 'DOC1002'
+    },
+    {
+        id: 3,
+        alias: 'Cobalt',
+        email: 'cobalt@example.test',
+        accessCode: 'CBL003',
+        fiscalCode: 'VRDLGI90B15F205X',
+        vatNumber: '11122233344',
+        fiscalIdOrVat: 'VRDLGI90B15F205X',
+        iban: 'IT45B0503412345000009876543',
+        documentNumber: 'DOC1003'
+    },
+    {
+        id: 4,
+        alias: 'Delta',
+        email: 'delta@example.test',
+        accessCode: 'DLT004',
+        fiscalCode: 'PLLMRC76D20H501Y',
+        vatNumber: '55566677788',
+        fiscalIdOrVat: '55566677788',
+        iban: 'IT12C0200812345000007654321',
+        documentNumber: 'DOC1004'
+    },
+    {
+        id: 5,
+        alias: 'Echo',
+        email: 'echo@example.test',
+        accessCode: 'ECH005',
+        fiscalCode: 'GLLMRC88E15H501Q',
+        vatNumber: '24681357901',
+        fiscalIdOrVat: 'GLLMRC88E15H501Q',
+        iban: 'IT98D0335901600100000987654',
+        documentNumber: 'DOC1005'
+    },
+    {
+        id: 6,
+        alias: 'Forge',
+        email: 'forge@example.test',
+        accessCode: 'FRG006',
+        fiscalCode: 'FRNLCU92M20F205D',
+        vatNumber: '13579246801',
+        fiscalIdOrVat: '13579246801',
+        iban: 'IT77E0623012345000001112223',
+        documentNumber: 'DOC1006'
+    },
+    {
+        id: 7,
+        alias: 'Harbor',
+        email: 'harbor@example.test',
+        accessCode: 'HRB007',
+        fiscalCode: 'MRARSS79P10H501K',
+        vatNumber: '10293847561',
+        fiscalIdOrVat: 'MRARSS79P10H501K',
+        iban: 'IT31F0103012345000003334445',
+        documentNumber: 'DOC1007'
+    },
+    {
+        id: 8,
+        alias: 'Iris',
+        email: 'iris@example.test',
+        accessCode: 'IRS008',
+        fiscalCode: 'NTNGPP83T01F205L',
+        vatNumber: '56473829101',
+        fiscalIdOrVat: '56473829101',
+        iban: 'IT54G0306912345000005556667',
+        documentNumber: 'DOC1008'
+    },
+    {
+        id: 9,
+        alias: 'Juniper',
+        email: 'juniper@example.test',
+        accessCode: 'JNP009',
+        fiscalCode: 'SNTPLA91C30H501V',
+        vatNumber: '01928374655',
+        fiscalIdOrVat: 'SNTPLA91C30H501V',
+        iban: 'IT66H0501812345000007778889',
+        documentNumber: 'DOC1009'
+    },
+    {
+        id: 10,
+        alias: 'Keystone',
+        email: 'keystone@example.test',
+        accessCode: 'KYS010',
+        fiscalCode: 'RZZLRA86A12F205M',
+        vatNumber: '90817263544',
+        fiscalIdOrVat: '90817263544',
+        iban: 'IT89L0326812345000009990001',
+        documentNumber: 'DOC1010'
+    }
+];
+
+const anomalyPatches = [
+    { id: 2, alias: 'Atlas' },
+    { id: 3, alias: '' },
+    { id: 4, email: 'bad-email' },
+    { id: 5, accessCode: 'x1' },
+    { id: 6, fiscalCode: 'ABC123' },
+    { id: 7, vatNumber: '123' },
+    { id: 8, fiscalIdOrVat: 'ABC123' },
+    { id: 9, iban: 'IT00X123' },
+    { id: 10, documentNumber: 'TMP12345' }
+];
+
 export default function validation(app) {
     app.innerHTML = `
         <h2>Validation</h2>
-        <p class="demo-note">Most validations run when you leave an edited cell. For demo purposes, this page also provides a Validate all button to validate every row at once, including cells that were never edited.</p>
+        <p class="demo-note">Most validations run when you leave an edited cell. For demo purposes, this page also provides actions to validate every row at once, including cells that were never edited.</p>
         <div class="demo-note">
             <strong>Validation rules:</strong>
             <ul>
                 <li>Alias: required, unique, 3-20 characters</li>
-                <li>Email: valid email format</li>
-                <li>Access Code: 3 uppercase letters + 3 digits, e.g. ABC001</li>
-                <li>Codice Fiscale: Italian fiscal code format, e.g. RSSMRA80A01H501U</li>
-                <li>Partita IVA: exactly 11 digits, e.g. 12345678901</li>
-                <li>Codice Fiscale / Partita IVA: accepts either a valid Codice Fiscale or a valid Partita IVA using AMB.validators.anyOf.</li>
-                <li>International IBAN: international IBAN syntax, spaces allowed, e.g. GB82 WEST 1234 5698 7654 32</li>
-                <li>Italian IBAN: Italian IBAN syntax, e.g. IT60X0542811101000000123456</li>
+                <li>Email: valid email syntax</li>
+                <li>Access Code: modular example: the editor uppercases input, then a pattern validator checks 3 letters + 3 digits, e.g. ABC001</li>
+                <li>Codice Fiscale: syntactic Italian fiscal code format, e.g. RSSMRA80A01H501U</li>
+                <li>Partita IVA: syntactic 11-digit format, e.g. 12345678901</li>
+                <li>Codice Fiscale / Partita IVA: accepts either a syntactic Codice Fiscale or an 11-digit Partita IVA using AMB.validators.anyOf</li>
+                <li>Italian IBAN: syntactic Italian IBAN format, spaces ignored by the validator; no checksum, bank, account, official, fiscal, or existence check is performed</li>
                 <li>Passport/Document: 6-20 alphanumeric characters; custom rule rejects TMP prefixes</li>
             </ul>
+            <p>Format-specific validators in this demo are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.</p>
         </div>
         <div class="toolbar">
             <button type="button" id="action-validate-all">Validate all</button>
+            <button type="button" id="action-create-anomalies">Create anomalies</button>
             <button type="button" id="action-show-report">Show report</button>
         </div>
         <div id="validation-table"></div>
-        <pre class="demo-output" id="validation-output"></pre>
         <style>
             .validation-report-dialog[hidden] {
                 display: none;
@@ -121,11 +317,44 @@ export default function validation(app) {
                 width: min(960px, calc(100vw - 48px));
             }
 
+            .validation-report-dialog__header {
+                align-items: center;
+                display: flex;
+                gap: 12px;
+                justify-content: space-between;
+            }
+
             .validation-report-dialog__title {
                 color: #172033;
                 font-size: 18px;
                 line-height: 1.25;
                 margin: 0;
+            }
+
+            .validation-report-dialog__tabs {
+                display: inline-flex;
+                gap: 6px;
+            }
+
+            .validation-report-dialog__tab,
+            .validation-report-dialog__button {
+                background: #ffffff;
+                border: 1px solid #b8bec8;
+                border-radius: 5px;
+                color: #222;
+                cursor: pointer;
+                font: inherit;
+                padding: 8px 12px;
+            }
+
+            .validation-report-dialog__tab:hover,
+            .validation-report-dialog__button:hover,
+            .validation-report-dialog__tab.is-active {
+                background: #f4f6fb;
+            }
+
+            .validation-report-dialog__tab.is-active {
+                border-color: #6b7cff;
             }
 
             .validation-report-dialog__content {
@@ -145,26 +374,12 @@ export default function validation(app) {
                 display: flex;
                 justify-content: flex-end;
             }
-
-            .validation-report-dialog__button {
-                background: #ffffff;
-                border: 1px solid #b8bec8;
-                border-radius: 5px;
-                color: #222;
-                cursor: pointer;
-                font: inherit;
-                padding: 8px 12px;
-            }
-
-            .validation-report-dialog__button:hover {
-                background: #f4f6fb;
-            }
         </style>
     `;
 
     const demo = AMB.table({
         selector: '#validation-table',
-        height: '360px',
+        height: '420px',
         deleteColumn: {
             enabled: true,
             actions: {
@@ -176,83 +391,10 @@ export default function validation(app) {
             confirmRollbackMessage: 'Rollback this row?',
             confirmRemoveNewMessage: 'Remove this new row?'
         },
-        data: [
-            {
-                id: 1,
-                alias: 'Nova',
-                email: 'nova@example.test',
-                accessCode: 'ABC001',
-                fiscalCode: 'RSSMRA80A01H501U',
-                vatNumber: '12345678901',
-                fiscalIdOrVat: 'RSSMRA80A01H501U',
-                internationalIban: 'GB82 WEST 1234 5698 7654 32',
-                iban: 'IT60X0542811101000000123456',
-                documentNumber: 'YA123456'
-            },
-            {
-                id: 2,
-                alias: 'Quill',
-                email: 'quill@example.test',
-                accessCode: 'QIL220',
-                fiscalCode: 'BNCLGU85C10F205Z',
-                vatNumber: '98765432109',
-                fiscalIdOrVat: '98765432109',
-                internationalIban: 'DE89 3704 0044 0532 0130 00',
-                iban: 'IT23A0306909606100000123456',
-                documentNumber: 'P1234567'
-            },
-            {
-                id: 3,
-                alias: '',
-                email: 'bad-email',
-                accessCode: 'x1',
-                fiscalCode: 'ABC123',
-                vatNumber: '123',
-                fiscalIdOrVat: 'ABC123',
-                internationalIban: 'ABC123',
-                iban: 'IT123',
-                documentNumber: 'A1'
-            },
-            {
-                id: 4,
-                alias: 'Iris',
-                email: 'iris@example.test',
-                accessCode: 'IRS004',
-                fiscalCode: 'VRDLGI90B15F205X',
-                vatNumber: '11122233344',
-                fiscalIdOrVat: '11122233344',
-                internationalIban: 'FR14 2004 1010 0505 0001 3M02 606',
-                iban: 'IT60X0542811101000000123456',
-                documentNumber: 'TMP12345'
-            },
-            {
-                id: 5,
-                alias: 'Io',
-                email: 'io@example.test',
-                accessCode: 'IOA005',
-                fiscalCode: 'PLLMRC76D20H501Y',
-                vatNumber: '55566677788',
-                fiscalIdOrVat: 'PLLMRC76D20H501Y',
-                internationalIban: 'GB82WEST12345698765432',
-                iban: 'IT00X123',
-                documentNumber: 'DOC789'
-            },
-            {
-                id: 6,
-                alias: 'VeryLongAliasOverTwenty',
-                email: 'mira@example.test',
-                accessCode: 'MIR006',
-                fiscalCode: 'RSSMRA80A01H501U',
-                vatNumber: '12345678901',
-                fiscalIdOrVat: 'not-valid',
-                internationalIban: 'NL91 ABNA 0417 1643 00',
-                iban: 'IT23A0306909606100000123456',
-                documentNumber: 'Z9PASS88'
-            }
-        ],
+        data: validationData,
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', width: 80 },
+            { title: 'ID', field: 'id', width: 70 },
             {
                 title: 'Alias',
                 field: 'alias',
@@ -337,16 +479,6 @@ export default function validation(app) {
                 }
             },
             {
-                title: 'International IBAN',
-                field: 'internationalIban',
-                editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 42 }),
-                validation: {
-                    iban: {
-                        message: 'Enter a valid international IBAN'
-                    }
-                }
-            },
-            {
                 title: 'Italian IBAN',
                 field: 'iban',
                 editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 27 }),
@@ -374,9 +506,15 @@ export default function validation(app) {
         ]
     });
     const { crud } = demo;
-    const output = app.querySelector('#validation-output');
     const reportDialog = createReportDialog();
     const originalDestroy = demo.destroy;
+
+    const openValidationReport = (validateResult, mode = 'summary') => {
+        reportDialog.open({
+            validateResult,
+            stateReport: crud.getStateReport()
+        }, mode);
+    };
 
     demo.destroy = () => {
         reportDialog.destroy();
@@ -387,16 +525,24 @@ export default function validation(app) {
     };
 
     app.querySelector('#action-validate-all').addEventListener('click', () => {
-        const validateResult = crud.validateAll();
+        openValidationReport(crud.validateAll(), 'summary');
+    });
 
-        output.textContent = JSON.stringify({
-            validateResult,
-            report: crud.getStateReport()
-        }, null, 2);
+    app.querySelector('#action-create-anomalies').addEventListener('click', () => {
+        anomalyPatches.forEach(({ id, ...patch }) => {
+            crud.updateRow(id, patch);
+        });
+
+        window.setTimeout(() => {
+            openValidationReport(crud.validateAll(), 'summary');
+        }, 0);
     });
 
     app.querySelector('#action-show-report').addEventListener('click', () => {
-        reportDialog.open(JSON.stringify(crud.getStateReport(), null, 2));
+        reportDialog.open({
+            validateResult: null,
+            stateReport: crud.getStateReport()
+        }, 'json');
     });
 
     return demo;

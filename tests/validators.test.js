@@ -11,6 +11,9 @@ const createCell = (field, row) => ({
 });
 
 const createHelper = rows => ({
+    options: {
+        stateField: '_state'
+    },
     table: {
         getRows: () => rows
     }
@@ -106,6 +109,53 @@ describe('validators.unique', () => {
             .toBe(true);
         expect(validators.unique().validate(null, currentRow.getData(), cell, helper))
             .toBe(true);
+    });
+
+    test('blocks duplicates on clean or modified rows', () => {
+        const currentRow = createRow({ code: 'ABC', _state: 'clean' });
+        const cleanDuplicate = createRow({ code: 'ABC', _state: 'clean' });
+        const modifiedDuplicate = createRow({ code: 'ABC', _state: 'modified' });
+        const cell = createCell('code', currentRow);
+
+        expect(validators.unique().validate('ABC', currentRow.getData(), cell, createHelper([currentRow, cleanDuplicate])))
+            .toBe(false);
+        expect(validators.unique().validate('ABC', currentRow.getData(), cell, createHelper([currentRow, modifiedDuplicate])))
+            .toBe(false);
+    });
+
+    test('ignores deleted duplicate rows by default', () => {
+        const currentRow = createRow({ code: 'ABC', _state: 'clean' });
+        const deletedDuplicate = createRow({ code: 'ABC', _state: 'deleted' });
+        const cell = createCell('code', currentRow);
+        const helper = createHelper([currentRow, deletedDuplicate]);
+
+        expect(validators.unique().validate('ABC', currentRow.getData(), cell, helper))
+            .toBe(true);
+    });
+
+    test('can include deleted rows in duplicate checks', () => {
+        const currentRow = createRow({ code: 'ABC', _state: 'clean' });
+        const deletedDuplicate = createRow({ code: 'ABC', _state: 'deleted' });
+        const cell = createCell('code', currentRow);
+        const helper = createHelper([currentRow, deletedDuplicate]);
+
+        expect(validators.unique({ includeDeleted: true }).validate('ABC', currentRow.getData(), cell, helper))
+            .toBe(false);
+    });
+
+    test('detects a duplicate again after a deleted row is rolled back', () => {
+        const currentRow = createRow({ code: 'ABC', _state: 'clean' });
+        const restoredData = { code: 'ABC', _state: 'deleted' };
+        const restoredRow = createRow(restoredData);
+        const cell = createCell('code', currentRow);
+        const helper = createHelper([currentRow, restoredRow]);
+        const unique = validators.unique();
+
+        expect(unique.validate('ABC', currentRow.getData(), cell, helper)).toBe(true);
+
+        restoredData._state = 'clean';
+
+        expect(unique.validate('ABC', currentRow.getData(), cell, helper)).toBe(false);
     });
 
     test('ignores rows without data or without the compared field', () => {

@@ -78,12 +78,17 @@ Built-in validation support including:
 * Pattern validation
 * Minimum and maximum values
 * Minimum and maximum length
+* Unique values
+* Codice Fiscale syntax
+* IBAN syntax
 * Custom validators
 
 Validator combinators:
 
 * `anyOf(...)`
 * `allOf(...)`
+
+Format-specific validators are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization or business rules.
 
 ### Editors
 

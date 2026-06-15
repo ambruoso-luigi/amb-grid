@@ -36,6 +36,17 @@ const normalizeUniqueValue = (value, options) => {
     return normalizedValue;
 };
 
+const isDeletedUniqueRow = (row, helper, options) => {
+    if (options.includeDeleted) return false;
+
+    const data = row && typeof row.getData === 'function' ? row.getData() : null;
+    const stateField = helper && helper.options && helper.options.stateField
+        ? helper.options.stateField
+        : '_state';
+
+    return Boolean(data && data[stateField] === 'deleted');
+};
+
 /**
  * Validator factories for AMB Grid and CrudHelper.
  *
@@ -98,7 +109,7 @@ export const validators = {
      * Validate non-empty values as syntactically valid IBANs.
      *
      * Spaces are ignored and values are uppercased before validation. This does
-     * not perform checksum validation.
+     * not perform checksum, bank, account, official, or existence validation.
      *
      * @param {string} [message='Invalid IBAN'] - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
@@ -120,7 +131,7 @@ export const validators = {
      * Validate non-empty values as syntactically valid Italian IBANs.
      *
      * Spaces are ignored and values are uppercased before validation. This does
-     * not perform checksum validation.
+     * not perform checksum, bank, account, official, or existence validation.
      *
      * @param {string} [message='Invalid Italian IBAN'] - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
@@ -142,7 +153,7 @@ export const validators = {
      * Validate non-empty values as syntactically valid Italian Codice Fiscale values.
      *
      * Values are trimmed and uppercased before validation. This does not perform
-     * homocodia or check digit validation.
+     * homocodia, check digit, fiscal, official, or existence validation.
      *
      * @param {string} [message='Invalid Codice Fiscale'] - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
@@ -368,12 +379,14 @@ export const validators = {
      * Validate that a non-empty value is unique within the current column.
      *
      * When used by AMB.table, the field is inferred from the edited cell. Empty
-     * values are valid unless combined with `required`.
+     * values are valid unless combined with `required`. Rows marked as deleted
+     * are ignored by default so pending deletions do not block reuse of a value.
      *
      * @param {object|string} [options] - Unique validation options or explicit field name.
      * @param {string} [options.field] - Field to compare. Defaults to the current cell field.
      * @param {boolean} [options.caseSensitive=true] - Whether string comparisons are case-sensitive.
      * @param {boolean} [options.trim=true] - Whether string values are trimmed before comparison.
+     * @param {boolean} [options.includeDeleted=false] - Include rows marked as deleted in the comparison.
      * @param {string} [message='Value must be unique'] - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
      */
@@ -382,6 +395,7 @@ export const validators = {
             ? { field: options }
             : {
                 caseSensitive: true,
+                includeDeleted: false,
                 trim: true,
                 ...options
             };
@@ -402,6 +416,7 @@ export const validators = {
 
                 return !helper.table.getRows().some(row => {
                     if (row === currentRow) return false;
+                    if (isDeletedUniqueRow(row, helper, normalizedOptions)) return false;
 
                     const data = row && typeof row.getData === 'function' ? row.getData() : null;
 
