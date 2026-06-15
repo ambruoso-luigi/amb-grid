@@ -45,6 +45,21 @@ const stringifyValue = value => {
 };
 
 /**
+ * Escape text for safe insertion into formatter HTML output.
+ *
+ * @param {*} value - Value to stringify and escape.
+ * @returns {string} HTML-escaped text.
+ */
+export const escapeHtmlText = value => {
+    return stringifyValue(value)
+        .replaceAll('&amp;', '&amp;amp;')
+        .replaceAll('&lt;', '&amp;lt;')
+        .replaceAll('>', '&amp;gt;')
+        .replaceAll('"', '&amp;quot;')
+        .replaceAll("'", '&amp;#39;');
+};
+
+/**
  * Formatter factories for Tabulator columns.
  *
  * @namespace formatters
@@ -57,7 +72,7 @@ export const formatters = {
      */
     text() {
         return cell => {
-            return stringifyValue(getCellValue(cell));
+            return escapeHtmlText(getCellValue(cell));
         };
     },
 
@@ -68,7 +83,7 @@ export const formatters = {
      */
     uppercase() {
         return cell => {
-            return stringifyValue(getCellValue(cell)).toUpperCase();
+            return escapeHtmlText(stringifyValue(getCellValue(cell)).toUpperCase());
         };
     },
 
@@ -79,7 +94,7 @@ export const formatters = {
      */
     lowercase() {
         return cell => {
-            return stringifyValue(getCellValue(cell)).toLowerCase();
+            return escapeHtmlText(stringifyValue(getCellValue(cell)).toLowerCase());
         };
     },
 
@@ -99,7 +114,7 @@ export const formatters = {
             const numberValue = Number(value);
 
             if (!Number.isFinite(numberValue)) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             const { locale = 'it-IT', ...formatOptions } = options;
@@ -137,7 +152,7 @@ export const formatters = {
             const numberValue = Number(value);
 
             if (!Number.isFinite(numberValue)) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             const {
@@ -175,7 +190,7 @@ export const formatters = {
             }).parse(value);
 
             if (parsedValue === null) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             return parsedValue;
@@ -198,7 +213,7 @@ export const formatters = {
             const numberValue = Number(value);
 
             if (!Number.isFinite(numberValue)) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             const { locale = 'it-IT', ...formatOptions } = options;
@@ -222,9 +237,9 @@ export const formatters = {
         return cell => {
             const value = getCellValue(cell);
 
-            if (isEmptyValue(value)) return placeholder;
+            if (isEmptyValue(value)) return escapeHtmlText(placeholder);
 
-            return stringifyValue(value);
+            return escapeHtmlText(value);
         };
     },
 
@@ -261,7 +276,7 @@ export const formatters = {
                 ? normalizedOptions.checkedLabel
                 : normalizedOptions.uncheckedLabel;
 
-            return `${symbol} ${label}`;
+            return `${escapeHtmlText(symbol)} ${escapeHtmlText(label)}`;
         };
     },
 
@@ -293,9 +308,9 @@ export const formatters = {
             const text = stringifyValue(value).replace(/\s+/g, ' ').trim();
 
             if (text === '') return '';
-            if (text.length &lt;= normalizedOptions.maxLength) return text;
+            if (text.length &lt;= normalizedOptions.maxLength) return escapeHtmlText(text);
 
-            return `${text.slice(0, normalizedOptions.maxLength)}${normalizedOptions.ellipsis}`;
+            return escapeHtmlText(`${text.slice(0, normalizedOptions.maxLength)}${normalizedOptions.ellipsis}`);
         };
     }
 };
@@ -309,13 +324,13 @@ export const formatters = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jun 14 2026 21:44:41 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Jun 15 2026 08:24:07 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -4,7 +4,7 @@ AMB Grid is a framework-agnostic CRUD grid system for editable business data, po
 
 It is not just a Tabulator helper, plugin, or wrapper. Tabulator is the table engine; AMB Grid is the CRUD application layer around it, handling row state, validation, rollback, lookup behavior, save payloads, and lifecycle cleanup.
 
-The core is framework-agnostic and suitable for both legacy/server-rendered pages and modern application shells that need to mount and dispose editable data grids.
+The core is framework-agnostic and suitable for both legacy/server-rendered pages and modern frontend applications that need to mount and dispose editable data grids.
 
 ## Project Status
 
@@ -143,6 +143,14 @@ Support for:
 
 Generated API documentation is available in the `docs` folder.
 
+## Security
+
+AMB Grid escapes textual formatter output by default and generates structured CRUD payloads, not SQL queries.
+
+Backend applications receiving AMB Grid payloads must still perform server-side validation, authorization checks and SQL injection prevention using parameterized queries, prepared statements, safe ORM methods or properly constructed stored procedures.
+
+See [Security notes](docs/security.md).
+
 ## Lifecycle and cleanup
 
 AMB Grid exposes two cleanup levels:
@@ -170,14 +178,16 @@ crud.destroy();
 
 ## Roadmap
 
-The following areas are currently under active development:
+The following areas are currently being stabilized before a first serious release:
 
-* Additional validators
-* Additional formatters
-* International data formats
-* Enhanced lookup capabilities
-* Improved documentation
-* Additional demo pages
+* CRUD state management
+* Safe textual formatters
+* Lifecycle and cleanup behavior
+* Save payload generation
+* Backend identifier synchronization
+* Documentation and security notes
+* Legacy-friendly and modern integration demos
+* Basic automated tests for the core behavior
 
 ## License
 

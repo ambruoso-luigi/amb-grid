@@ -17,6 +17,21 @@ const stringifyValue = value => {
 };
 
 /**
+ * Escape text for safe insertion into formatter HTML output.
+ *
+ * @param {*} value - Value to stringify and escape.
+ * @returns {string} HTML-escaped text.
+ */
+export const escapeHtmlText = value => {
+    return stringifyValue(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+};
+
+/**
  * Formatter factories for Tabulator columns.
  *
  * @namespace formatters
@@ -29,7 +44,7 @@ export const formatters = {
      */
     text() {
         return cell => {
-            return stringifyValue(getCellValue(cell));
+            return escapeHtmlText(getCellValue(cell));
         };
     },
 
@@ -40,7 +55,7 @@ export const formatters = {
      */
     uppercase() {
         return cell => {
-            return stringifyValue(getCellValue(cell)).toUpperCase();
+            return escapeHtmlText(stringifyValue(getCellValue(cell)).toUpperCase());
         };
     },
 
@@ -51,7 +66,7 @@ export const formatters = {
      */
     lowercase() {
         return cell => {
-            return stringifyValue(getCellValue(cell)).toLowerCase();
+            return escapeHtmlText(stringifyValue(getCellValue(cell)).toLowerCase());
         };
     },
 
@@ -71,7 +86,7 @@ export const formatters = {
             const numberValue = Number(value);
 
             if (!Number.isFinite(numberValue)) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             const { locale = 'it-IT', ...formatOptions } = options;
@@ -109,7 +124,7 @@ export const formatters = {
             const numberValue = Number(value);
 
             if (!Number.isFinite(numberValue)) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             const {
@@ -147,7 +162,7 @@ export const formatters = {
             }).parse(value);
 
             if (parsedValue === null) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             return parsedValue;
@@ -170,7 +185,7 @@ export const formatters = {
             const numberValue = Number(value);
 
             if (!Number.isFinite(numberValue)) {
-                return stringifyValue(value);
+                return escapeHtmlText(value);
             }
 
             const { locale = 'it-IT', ...formatOptions } = options;
@@ -194,9 +209,9 @@ export const formatters = {
         return cell => {
             const value = getCellValue(cell);
 
-            if (isEmptyValue(value)) return placeholder;
+            if (isEmptyValue(value)) return escapeHtmlText(placeholder);
 
-            return stringifyValue(value);
+            return escapeHtmlText(value);
         };
     },
 
@@ -233,7 +248,7 @@ export const formatters = {
                 ? normalizedOptions.checkedLabel
                 : normalizedOptions.uncheckedLabel;
 
-            return `${symbol} ${label}`;
+            return `${escapeHtmlText(symbol)} ${escapeHtmlText(label)}`;
         };
     },
 
@@ -265,9 +280,9 @@ export const formatters = {
             const text = stringifyValue(value).replace(/\s+/g, ' ').trim();
 
             if (text === '') return '';
-            if (text.length <= normalizedOptions.maxLength) return text;
+            if (text.length <= normalizedOptions.maxLength) return escapeHtmlText(text);
 
-            return `${text.slice(0, normalizedOptions.maxLength)}${normalizedOptions.ellipsis}`;
+            return escapeHtmlText(`${text.slice(0, normalizedOptions.maxLength)}${normalizedOptions.ellipsis}`);
         };
     }
 };
