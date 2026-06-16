@@ -60,6 +60,37 @@ h2 {
     white-space: pre-wrap;
 }
 
+.demo-table-wrap {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 12px;
+    overflow: auto;
+}
+
+.demo-table {
+    border-collapse: collapse;
+    min-width: 720px;
+    width: 100%;
+}
+
+.demo-table th,
+.demo-table td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.demo-table th {
+    background: #f7f7f7;
+    color: #172033;
+    font-weight: 600;
+}
+
+.demo-table td {
+    color: #222;
+}
+
 .demo-grid {
     display: grid;
     gap: 16px;

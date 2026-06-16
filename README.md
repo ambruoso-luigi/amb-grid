@@ -128,11 +128,14 @@ Parsers may perform small syntactic checks to avoid incoherent transformations, 
 
 DB-oriented parser helpers include:
 
+* Parsers / payload normalizers for backend-oriented values: decimal strings, integer strings, MySQL-like dates/datetimes, and common string normalizers
 * Decimal normalization, for example `-123.123,01` to `"-123123.01"`
 * Integer normalization
 * Date normalization to `YYYY-MM-DD`
 * DateTime normalization to `YYYY-MM-DD HH:MM:SS`
 * String normalizers such as trim, uppercase, digits-only, IBAN, and fiscal-code normalization
+
+Parsers normalize values for payload/backend submission; validators check whether values are acceptable.
 
 Numeric DB parsers return normalized strings by default, not JavaScript numbers, to avoid precision surprises when dealing with decimal or monetary values.
 
