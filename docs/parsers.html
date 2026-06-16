@@ -127,7 +127,8 @@ rules, permissions, or backend validation.</div>
 <div class="description">
     Create a strict date parser.Supports `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, `mm/dd/yyyy`,
 `mm-dd-yyyy`, `yyyy-mm-dd`, `yyyy/mm/dd`, `yyyymmdd`, `Date`, and the
-`it`, `iso`, and `legacy` aliases.
+`it`, `iso`, and `legacy` aliases. Separated formats accept one or two
+digits for day/month; compact `yyyymmdd` stays strictly eight digits.
 Invalid dates return `null`; empty values follow `allowEmpty`.
 </div>
 
@@ -449,7 +450,7 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line274">line 274</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line275">line 275</a>
     </li></ul></dd>
     
 
@@ -771,7 +772,7 @@ this parser. Timestamp-oriented parsers may be added later.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line452">line 452</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line453">line 453</a>
     </li></ul></dd>
     
 
@@ -1094,7 +1095,7 @@ when a data source can be ambiguous.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line421">line 421</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line422">line 422</a>
     </li></ul></dd>
     
 
@@ -1615,7 +1616,7 @@ validation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line315">line 315</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line316">line 316</a>
     </li></ul></dd>
     
 
@@ -1725,7 +1726,7 @@ validation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line542">line 542</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line543">line 543</a>
     </li></ul></dd>
     
 
@@ -1835,7 +1836,7 @@ validation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line503">line 503</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line504">line 504</a>
     </li></ul></dd>
     
 
@@ -1945,7 +1946,7 @@ validation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line568">line 568</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line569">line 569</a>
     </li></ul></dd>
     
 
@@ -2055,7 +2056,7 @@ validation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line555">line 555</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line556">line 556</a>
     </li></ul></dd>
     
 
@@ -2496,7 +2497,7 @@ and should be normalized with string normalizers instead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line382">line 382</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line383">line 383</a>
     </li></ul></dd>
     
 
@@ -2606,7 +2607,7 @@ and should be normalized with string normalizers instead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line529">line 529</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line530">line 530</a>
     </li></ul></dd>
     
 
@@ -2716,7 +2717,7 @@ and should be normalized with string normalizers instead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line490">line 490</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line491">line 491</a>
     </li></ul></dd>
     
 
@@ -2826,7 +2827,7 @@ and should be normalized with string normalizers instead.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line516">line 516</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line517">line 517</a>
     </li></ul></dd>
     
 
@@ -2900,7 +2901,7 @@ and should be normalized with string normalizers instead.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Jun 16 2026 21:57:49 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Jun 16 2026 22:41:40 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -47,6 +47,50 @@ const isDeletedUniqueRow = (row, helper, options) => {
     return Boolean(data && data[stateField] === 'deleted');
 };
 
+const DATE_RANGE_FORMATS = [
+    'dd/mm/yyyy',
+    'dd-mm-yyyy',
+    'dd.mm.yyyy',
+    'mm/dd/yyyy',
+    'mm-dd-yyyy',
+    'yyyy-mm-dd',
+    'yyyy/mm/dd',
+    'yyyymmdd',
+    Date
+];
+
+const parseDateForRange = (value, preferredFormat) => {
+    const preferredDate = parsers.date({
+        inputFormat: preferredFormat,
+        outputFormat: 'Date',
+        allowEmpty: false
+    }).parse(value);
+
+    if (preferredDate instanceof Date && Number.isFinite(preferredDate.getTime())) {
+        return preferredDate;
+    }
+
+    for (const format of DATE_RANGE_FORMATS) {
+        if (format === preferredFormat) continue;
+
+        const parsedDate = parsers.date({
+            inputFormat: format,
+            outputFormat: 'Date',
+            allowEmpty: false
+        }).parse(value);
+
+        if (parsedDate instanceof Date && Number.isFinite(parsedDate.getTime())) {
+            return parsedDate;
+        }
+    }
+
+    return null;
+};
+
+const getDateTime = date => {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+};
+
 /**
  * Validator factories for AMB Grid and CrudHelper.
  *
@@ -264,6 +308,8 @@ export const validators = {
      * @param {object} [options] - Date validation options.
      * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'|Date|string} [options.format='dd/mm/yyyy'] - Expected input format.
      * @param {boolean} [options.allowEmpty=true] - Whether empty values are valid.
+     * @param {string|Date} [options.minDate] - Earliest allowed date.
+     * @param {string|Date} [options.maxDate] - Latest allowed date.
      * @param {string} [message='Invalid date'] - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
      */
@@ -278,6 +324,12 @@ export const validators = {
             outputFormat: 'Date',
             allowEmpty: normalizedOptions.allowEmpty
         });
+        const minDate = normalizedOptions.minDate
+            ? parseDateForRange(normalizedOptions.minDate, normalizedOptions.format)
+            : null;
+        const maxDate = normalizedOptions.maxDate
+            ? parseDateForRange(normalizedOptions.maxDate, normalizedOptions.format)
+            : null;
 
         return {
             message,
@@ -286,8 +338,21 @@ export const validators = {
 
                 const parsedValue = parser.parse(value);
 
-                return parsedValue instanceof Date
-                    && Number.isFinite(parsedValue.getTime());
+                if (!(parsedValue instanceof Date) || !Number.isFinite(parsedValue.getTime())) {
+                    return false;
+                }
+
+                const valueTime = getDateTime(parsedValue);
+
+                if (minDate && valueTime < getDateTime(minDate)) {
+                    return false;
+                }
+
+                if (maxDate && valueTime > getDateTime(maxDate)) {
+                    return false;
+                }
+
+                return true;
             }
         };
     },

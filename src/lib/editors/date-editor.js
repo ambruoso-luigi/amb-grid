@@ -78,10 +78,17 @@ const getDateFormatParts = format => {
 
 export const normalizeDateInput = (value, format) => {
     const formatParts = getDateFormatParts(format);
+    const stringValue = String(value);
 
-    if (!formatParts) return String(value);
+    if (!formatParts) return stringValue;
 
-    const digits = String(value).replace(/\D/g, '').slice(0, 8);
+    if (formatParts.separator !== '' && stringValue.includes(formatParts.separator)) {
+        return stringValue
+            .replace(new RegExp(`[^\\d\\${formatParts.separator}]`, 'g'), '')
+            .slice(0, 10);
+    }
+
+    const digits = stringValue.replace(/\D/g, '').slice(0, 8);
     const groups = [];
     let offset = 0;
 
@@ -122,12 +129,77 @@ const getDateCursorPosition = (normalizedValue, digitCount) => {
     return normalizedValue.length;
 };
 
+const DATE_OPTION_FORMATS = [
+    'dd/mm/yyyy',
+    'dd-mm-yyyy',
+    'dd.mm.yyyy',
+    'mm/dd/yyyy',
+    'mm-dd-yyyy',
+    'yyyy-mm-dd',
+    'yyyy/mm/dd',
+    'yyyymmdd',
+    Date
+];
+
+const parseDateOption = (value, preferredFormat) => {
+    if (!value) return null;
+
+    const preferredDate = parsers.date({
+        inputFormat: preferredFormat,
+        outputFormat: 'Date',
+        allowEmpty: false
+    }).parse(value);
+
+    if (preferredDate instanceof Date && Number.isFinite(preferredDate.getTime())) {
+        return preferredDate;
+    }
+
+    for (const format of DATE_OPTION_FORMATS) {
+        if (format === preferredFormat) continue;
+
+        const parsedDate = parsers.date({
+            inputFormat: format,
+            outputFormat: 'Date',
+            allowEmpty: false
+        }).parse(value);
+
+        if (parsedDate instanceof Date && Number.isFinite(parsedDate.getTime())) {
+            return parsedDate;
+        }
+    }
+
+    return null;
+};
+
+const createPickerOptions = options => {
+    const pickerOptions = {
+        autohide: true,
+        format: normalizeDateFormat(options.format),
+        container: document.body
+    };
+    const minDate = parseDateOption(options.minDate, options.format);
+    const maxDate = parseDateOption(options.maxDate, options.format);
+
+    if (minDate) {
+        pickerOptions.minDate = minDate;
+    }
+
+    if (maxDate) {
+        pickerOptions.maxDate = maxDate;
+    }
+
+    return pickerOptions;
+};
+
     /**
      * Date editor. Saves a date string in the configured format.
      *
      * @param {object} [options] - Date editor options.
      * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'} [options.format='dd/mm/yyyy'] - Input and saved date format.
      * @param {boolean} [options.allowEmpty=true] - Save an empty string for empty input.
+     * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - What to do when the typed value is invalid.
+     * @param {string|Date} [options.minDate] - Earliest date passed to the picker when enabled.
+     * @param {string|Date} [options.maxDate] - Latest date passed to the picker when enabled.
      * @param {boolean} [options.picker=false] - Open a date picker while editing.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Tabulator editor.
@@ -136,6 +208,7 @@ export function date(options = {}) {
         const normalizedOptions = {
             format: 'dd/mm/yyyy',
             allowEmpty: true,
+            invalidBehavior: 'commitRaw',
             picker: false,
             selectOnFocus: false,
             ...options
@@ -205,7 +278,12 @@ export function date(options = {}) {
                             return;
                         }
 
-                        closeWithCancel();
+                        if (normalizedOptions.invalidBehavior === 'cancel') {
+                            closeWithCancel();
+                            return;
+                        }
+
+                        closeWithSuccess(value);
                         return;
                     }
 
@@ -216,7 +294,12 @@ export function date(options = {}) {
                     }).parse(value);
 
                     if (parsedValue === null) {
-                        closeWithCancel();
+                        if (normalizedOptions.invalidBehavior === 'cancel') {
+                            closeWithCancel();
+                            return;
+                        }
+
+                        closeWithSuccess(value);
                         return;
                     }
 
@@ -275,11 +358,7 @@ export function date(options = {}) {
                 });
 
                 onRendered(() => {
-                    datepicker = new Datepicker(input, {
-                        autohide: true,
-                        format: pickerFormat,
-                        container: document.body
-                    });
+                    datepicker = new Datepicker(input, createPickerOptions(normalizedOptions));
                     input.focus();
 
                     if (normalizedOptions.selectOnFocus) {
@@ -316,7 +395,12 @@ export function date(options = {}) {
                         return;
                     }
 
-                    cancel();
+                    if (normalizedOptions.invalidBehavior === 'cancel') {
+                        cancel();
+                        return;
+                    }
+
+                    success(value);
                     return;
                 }
 
@@ -327,7 +411,12 @@ export function date(options = {}) {
                 }).parse(value);
 
                 if (parsedValue === null) {
-                    cancel();
+                    if (normalizedOptions.invalidBehavior === 'cancel') {
+                        cancel();
+                        return;
+                    }
+
+                    success(value);
                     return;
                 }
 

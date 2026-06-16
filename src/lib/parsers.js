@@ -76,49 +76,49 @@ const parseDateValue = (value, inputFormat) => {
     let day;
 
     if (normalizedInputFormat === 'dd/mm/yyyy') {
-        match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(stringValue);
+        match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(stringValue);
         if (!match) return null;
 
         day = Number(match[1]);
         month = Number(match[2]);
         year = Number(match[3]);
     } else if (normalizedInputFormat === 'dd-mm-yyyy') {
-        match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(stringValue);
+        match = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(stringValue);
         if (!match) return null;
 
         day = Number(match[1]);
         month = Number(match[2]);
         year = Number(match[3]);
     } else if (normalizedInputFormat === 'dd.mm.yyyy') {
-        match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(stringValue);
+        match = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(stringValue);
         if (!match) return null;
 
         day = Number(match[1]);
         month = Number(match[2]);
         year = Number(match[3]);
     } else if (normalizedInputFormat === 'mm/dd/yyyy') {
-        match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(stringValue);
+        match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(stringValue);
         if (!match) return null;
 
         month = Number(match[1]);
         day = Number(match[2]);
         year = Number(match[3]);
     } else if (normalizedInputFormat === 'mm-dd-yyyy') {
-        match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(stringValue);
+        match = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(stringValue);
         if (!match) return null;
 
         month = Number(match[1]);
         day = Number(match[2]);
         year = Number(match[3]);
     } else if (normalizedInputFormat === 'yyyy-mm-dd') {
-        match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(stringValue);
+        match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(stringValue);
         if (!match) return null;
 
         year = Number(match[1]);
         month = Number(match[2]);
         day = Number(match[3]);
     } else if (normalizedInputFormat === 'yyyy/mm/dd') {
-        match = /^(\d{4})\/(\d{2})\/(\d{2})$/.exec(stringValue);
+        match = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/.exec(stringValue);
         if (!match) return null;
 
         year = Number(match[1]);
@@ -262,7 +262,8 @@ export const parsers = {
      *
      * Supports `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, `mm/dd/yyyy`,
      * `mm-dd-yyyy`, `yyyy-mm-dd`, `yyyy/mm/dd`, `yyyymmdd`, `Date`, and the
-     * `it`, `iso`, and `legacy` aliases.
+     * `it`, `iso`, and `legacy` aliases. Separated formats accept one or two
+     * digits for day/month; compact `yyyymmdd` stays strictly eight digits.
      * Invalid dates return `null`; empty values follow `allowEmpty`.
      *
      * @param {object} [options] - Date parser options.

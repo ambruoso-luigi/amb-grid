@@ -183,3 +183,32 @@ describe('validators.unique', () => {
             .toBe(true);
     });
 });
+
+describe('validators.date', () => {
+    test('accepts real dates with one or two digit day and month', () => {
+        const validator = validators.date({
+            format: 'dd/mm/yyyy'
+        });
+
+        expect(validator.validate('20/7/2026')).toBe(true);
+        expect(validator.validate('5/6/2026')).toBe(true);
+        expect(validator.validate('31/02/2026')).toBe(false);
+    });
+
+    test('respects minDate and maxDate', () => {
+        const validator = validators.date({
+            format: 'dd/mm/yyyy',
+            minDate: '2026-01-01',
+            maxDate: '2026-12-31'
+        });
+
+        expect(validator.validate('20/7/2026')).toBe(true);
+        expect(validator.validate('31/12/2025')).toBe(false);
+        expect(validator.validate('01/01/2027')).toBe(false);
+    });
+
+    test('handles empty values according to allowEmpty', () => {
+        expect(validators.date({ allowEmpty: true }).validate('')).toBe(true);
+        expect(validators.date({ allowEmpty: false }).validate('')).toBe(false);
+    });
+});

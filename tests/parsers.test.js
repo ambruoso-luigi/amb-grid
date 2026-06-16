@@ -62,11 +62,17 @@ describe('parsers.dateToPayload', () => {
         const parser = parsers.dateToPayload();
 
         expect(parser.parse('16/06/2026')).toBe('2026-06-16');
+        expect(parser.parse('20/7/2026')).toBe('2026-07-20');
+        expect(parser.parse('5/6/2026')).toBe('2026-06-05');
         expect(parser.parse('16-06-2026')).toBe('2026-06-16');
         expect(parser.parse('16.06.2026')).toBe('2026-06-16');
         expect(parser.parse('2026-06-16')).toBe('2026-06-16');
+        expect(parser.parse('2026-06-5')).toBe('2026-06-05');
+        expect(parser.parse('2026-6-5')).toBe('2026-06-05');
         expect(parser.parse('2026/06/16')).toBe('2026-06-16');
         expect(parser.parse('20260616')).toBe('2026-06-16');
+        expect(parser.parse('2026720')).toBe(null);
+        expect(parser.parse('2026072')).toBe(null);
     });
 
     test('validates real calendar dates', () => {
@@ -93,10 +99,13 @@ describe('parsers.dateTimeToPayload', () => {
         const parser = parsers.dateTimeToPayload();
 
         expect(parser.parse('16/06/2026 14:30')).toBe('2026-06-16 14:30:00');
+        expect(parser.parse('20/7/2026 14:30')).toBe('2026-07-20 14:30:00');
         expect(parser.parse('16/06/2026 14:30:25')).toBe('2026-06-16 14:30:25');
         expect(parser.parse('16-06-2026 14:30')).toBe('2026-06-16 14:30:00');
+        expect(parser.parse('2026-06-5 09:05')).toBe('2026-06-05 09:05:00');
         expect(parser.parse('20260616 14:30:25')).toBe('2026-06-16 14:30:25');
         expect(parser.parse('2026-06-16 14:30:25')).toBe('2026-06-16 14:30:25');
+        expect(parser.parse('2026720 14:30')).toBe(null);
     });
 
     test('rejects impossible dates and times', () => {

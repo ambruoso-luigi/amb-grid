@@ -145,6 +145,10 @@ If a date can be ambiguous, configure `inputFormats` explicitly or rely on the d
 
 Do not use integer parsers for codes with leading zeroes. Codes should be treated as strings and normalized with string normalizers.
 
+Date parsers accept separated dates with one or two digit day/month values, such as `20/7/2026` or `2026-06-5`, and normalize output with leading zeroes. Compact `yyyymmdd` input remains strict and does not accept ambiguous shorter values such as `2026720`.
+
+Date editors keep invalid typed values visible by default with `invalidBehavior: 'commitRaw'`, so validators can report the error. Use `invalidBehavior: 'cancel'` for the older cancel-on-invalid behavior. `minDate` and `maxDate` are supported by date editors and validators; the datepicker helps selection but does not replace validation.
+
 ### Lookup System
 
 Lookup fields with support for:
