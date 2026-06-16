@@ -32,10 +32,32 @@
     allowEmpty: true
 };
 
+const DEFAULT_DATE_INPUT_FORMATS = [
+    'dd/mm/yyyy',
+    'dd-mm-yyyy',
+    'dd.mm.yyyy',
+    'mm/dd/yyyy',
+    'mm-dd-yyyy',
+    'yyyy-mm-dd',
+    'yyyy/mm/dd',
+    'yyyymmdd',
+    Date
+];
+
 const isEmptyValue = value => {
     return value === null
         || value === undefined
         || (typeof value === 'string' &amp;&amp; value.trim() === '');
+};
+
+const getEmptyResult = options => {
+    return options.allowEmpty ? options.emptyAs : null;
+};
+
+const stringifyValue = value => {
+    if (value === null || value === undefined) return '';
+
+    return String(value);
 };
 
 const padDatePart = value => {
@@ -190,8 +212,75 @@ const formatDateValue = ({ year, month, day }, outputFormat) => {
     return null;
 };
 
+const parseDateUsingFormats = (value, inputFormats) => {
+    for (const inputFormat of inputFormats) {
+        const dateParts = parseDateValue(value, inputFormat);
+
+        if (dateParts) return dateParts;
+    }
+
+    return null;
+};
+
+const formatMysqlDate = dateParts => {
+    return formatDateValue(dateParts, 'yyyy-mm-dd');
+};
+
+const escapeRegExp = value => {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;');
+};
+
+const normalizeNumericSign = (value, allowNegative) => {
+    if (value.startsWith('-')) {
+        if (!allowNegative) return null;
+
+        return {
+            sign: '-',
+            unsigned: value.slice(1)
+        };
+    }
+
+    if (value.startsWith('+')) {
+        return null;
+    }
+
+    return {
+        sign: '',
+        unsigned: value
+    };
+};
+
+const hasValidThousands = (value, thousandSeparator) => {
+    const separator = escapeRegExp(thousandSeparator);
+    const pattern = new RegExp(`^\\d{1,3}(?:${separator}\\d{3})+$`);
+
+    return pattern.test(value);
+};
+
+const normalizeIntegerPart = (value, options) => {
+    if (value === '') return null;
+
+    if (value.includes(options.thousandSeparator)) {
+        if (!options.allowThousands) return null;
+        if (options.strictThousands &amp;&amp; !hasValidThousands(value, options.thousandSeparator)) return null;
+        if (!options.strictThousands &amp;&amp; value.split(options.thousandSeparator).some(part => part === '')) return null;
+
+        const normalized = value.split(options.thousandSeparator).join('');
+
+        return /^\d+$/.test(normalized) ? normalized : null;
+    }
+
+    return /^\d+$/.test(value) ? value : null;
+};
+
 /**
- * Parser factories used by editors, formatters, and validators.
+ * Parser factories used to normalize values before payload/backend submission.
+ *
+ * Formatters display values, editors let users modify values, validators check
+ * whether values are acceptable, and parsers transform values into predictable
+ * backend-oriented shapes. Parsers may perform small syntactic checks to avoid
+ * incoherent transformations, but they do not replace validators, business
+ * rules, permissions, or backend validation.
  *
  * @namespace parsers
  */
@@ -213,13 +302,14 @@ export const parsers = {
     date(options = {}) {
         const normalizedOptions = {
             ...DEFAULT_DATE_OPTIONS,
+            emptyAs: '',
             ...options
         };
 
         return {
             parse(value) {
                 if (isEmptyValue(value)) {
-                    return normalizedOptions.allowEmpty ? '' : null;
+                    return getEmptyResult(normalizedOptions);
                 }
 
                 const dateParts = parseDateValue(value, normalizedOptions.inputFormat);
@@ -227,6 +317,298 @@ export const parsers = {
                 if (!dateParts) return null;
 
                 return formatDateValue(dateParts, normalizedOptions.outputFormat);
+            }
+        };
+    },
+
+    /**
+     * Normalize a visual decimal value to a DB-oriented decimal string.
+     *
+     * The parser returns strings instead of JavaScript numbers to avoid
+     * precision surprises with decimal and monetary values. It performs
+     * syntactic checks only and does not replace decimal validators or backend
+     * validation.
+     *
+     * @param {object} [options] - Decimal normalization options.
+     * @param {string} [options.decimalSeparator=','] - Visual decimal separator.
+     * @param {string} [options.thousandSeparator='.'] - Visual thousands separator.
+     * @param {boolean} [options.allowThousands=true] - Allow grouped thousands.
+     * @param {boolean} [options.allowNegative=true] - Allow negative values.
+     * @param {boolean} [options.allowEmpty=true] - Allow empty values.
+     * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
+     * @param {boolean} [options.strictThousands=true] - Require coherent thousands grouping.
+     * @param {boolean} [options.allowNormalized=true] - Accept already normalized `123.45` values.
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    decimalToDb(options = {}) {
+        const normalizedOptions = {
+            decimalSeparator: ',',
+            thousandSeparator: '.',
+            allowThousands: true,
+            allowNegative: true,
+            allowEmpty: true,
+            emptyAs: '',
+            strictThousands: true,
+            allowNormalized: true,
+            ...options
+        };
+
+        return {
+            parse(value) {
+                if (isEmptyValue(value)) return getEmptyResult(normalizedOptions);
+
+                const signedValue = normalizeNumericSign(String(value).trim(), normalizedOptions.allowNegative);
+
+                if (!signedValue || signedValue.unsigned === '') return null;
+
+                if (
+                    normalizedOptions.allowNormalized
+                    &amp;&amp; normalizedOptions.decimalSeparator !== '.'
+                    &amp;&amp; !signedValue.unsigned.includes(normalizedOptions.decimalSeparator)
+                    &amp;&amp; /^\d+\.\d+$/.test(signedValue.unsigned)
+                    &amp;&amp; !hasValidThousands(signedValue.unsigned, normalizedOptions.thousandSeparator)
+                ) {
+                    return `${signedValue.sign}${signedValue.unsigned}`;
+                }
+
+                const parts = signedValue.unsigned.split(normalizedOptions.decimalSeparator);
+
+                if (parts.length > 2) return null;
+
+                const integerPart = normalizeIntegerPart(parts[0], normalizedOptions);
+
+                if (integerPart === null) return null;
+
+                if (parts.length === 1) {
+                    return `${signedValue.sign}${integerPart}`;
+                }
+
+                const decimalPart = parts[1];
+
+                if (!/^\d+$/.test(decimalPart)) return null;
+
+                return `${signedValue.sign}${integerPart}.${decimalPart}`;
+            }
+        };
+    },
+
+    /**
+     * Normalize a visual integer value to a DB-oriented integer string.
+     *
+     * Do not use this parser for codes with leading zeroes. Codes are strings
+     * and should be normalized with string normalizers instead.
+     *
+     * @param {object} [options] - Integer normalization options.
+     * @param {string} [options.thousandSeparator='.'] - Visual thousands separator.
+     * @param {boolean} [options.allowThousands=true] - Allow grouped thousands.
+     * @param {boolean} [options.allowNegative=true] - Allow negative values.
+     * @param {boolean} [options.allowEmpty=true] - Allow empty values.
+     * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
+     * @param {boolean} [options.strictThousands=true] - Require coherent thousands grouping.
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    integerToDb(options = {}) {
+        const normalizedOptions = {
+            thousandSeparator: '.',
+            allowThousands: true,
+            allowNegative: true,
+            allowEmpty: true,
+            emptyAs: '',
+            strictThousands: true,
+            ...options
+        };
+
+        return {
+            parse(value) {
+                if (isEmptyValue(value)) return getEmptyResult(normalizedOptions);
+
+                const signedValue = normalizeNumericSign(String(value).trim(), normalizedOptions.allowNegative);
+
+                if (!signedValue || signedValue.unsigned === '') return null;
+
+                const integerPart = normalizeIntegerPart(signedValue.unsigned, normalizedOptions);
+
+                return integerPart === null ? null : `${signedValue.sign}${integerPart}`;
+            }
+        };
+    },
+
+    /**
+     * Normalize supported AMB Grid date formats to `YYYY-MM-DD`.
+     *
+     * Ambiguous values are parsed using the configured `inputFormats` order.
+     * Parsers do not guess user intent; configure `inputFormats` explicitly
+     * when a data source can be ambiguous.
+     *
+     * @param {object} [options] - Date DB normalization options.
+     * @param {Array&lt;string|Date>} [options.inputFormats] - Accepted input formats, in priority order.
+     * @param {boolean} [options.allowEmpty=true] - Allow empty values.
+     * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    dateToMysqlDate(options = {}) {
+        const normalizedOptions = {
+            inputFormats: DEFAULT_DATE_INPUT_FORMATS,
+            allowEmpty: true,
+            emptyAs: '',
+            ...options
+        };
+
+        return {
+            parse(value) {
+                if (isEmptyValue(value)) return getEmptyResult(normalizedOptions);
+
+                const dateParts = parseDateUsingFormats(value, normalizedOptions.inputFormats);
+
+                return dateParts ? formatMysqlDate(dateParts) : null;
+            }
+        };
+    },
+
+    /**
+     * Normalize supported AMB Grid date formats to `YYYY-MM-DD`.
+     *
+     * Alias for `dateToMysqlDate`.
+     *
+     * @param {object} [options] - Date DB normalization options.
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    dateToDb(options = {}) {
+        return parsers.dateToMysqlDate(options);
+    },
+
+    /**
+     * Normalize supported AMB Grid date formats plus time to `YYYY-MM-DD HH:MM:SS`.
+     *
+     * Timezone and Unix timestamp parsing are intentionally out of scope for
+     * this parser. Timestamp-oriented parsers may be added later.
+     *
+     * @param {object} [options] - DateTime DB normalization options.
+     * @param {Array&lt;string|Date>} [options.inputFormats] - Accepted date input formats, in priority order.
+     * @param {boolean} [options.allowEmpty=true] - Allow empty values.
+     * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    dateTimeToMysql(options = {}) {
+        const normalizedOptions = {
+            inputFormats: DEFAULT_DATE_INPUT_FORMATS,
+            allowEmpty: true,
+            emptyAs: '',
+            ...options
+        };
+
+        return {
+            parse(value) {
+                if (isEmptyValue(value)) return getEmptyResult(normalizedOptions);
+
+                const match = /^(.+)\s+(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(String(value).trim());
+
+                if (!match) return null;
+
+                const dateParts = parseDateUsingFormats(match[1], normalizedOptions.inputFormats);
+
+                if (!dateParts) return null;
+
+                const hour = Number(match[2]);
+                const minute = Number(match[3]);
+                const second = match[4] === undefined ? 0 : Number(match[4]);
+
+                if (hour &lt; 0 || hour > 23) return null;
+                if (minute &lt; 0 || minute > 59) return null;
+                if (second &lt; 0 || second > 59) return null;
+
+                return `${formatMysqlDate(dateParts)} ${padDatePart(hour)}:${padDatePart(minute)}:${padDatePart(second)}`;
+            }
+        };
+    },
+
+    /**
+     * Trim leading and trailing whitespace.
+     *
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    trim() {
+        return {
+            parse(value) {
+                return stringifyValue(value).trim();
+            }
+        };
+    },
+
+    /**
+     * Convert empty or whitespace-only values to `null`.
+     *
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    emptyToNull() {
+        return {
+            parse(value) {
+                return isEmptyValue(value) ? null : value;
+            }
+        };
+    },
+
+    /**
+     * Convert text to uppercase.
+     *
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    uppercase() {
+        return {
+            parse(value) {
+                return stringifyValue(value).toUpperCase();
+            }
+        };
+    },
+
+    /**
+     * Remove whitespace characters.
+     *
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    removeSpaces() {
+        return {
+            parse(value) {
+                return stringifyValue(value).replace(/\s+/g, '');
+            }
+        };
+    },
+
+    /**
+     * Keep only decimal digit characters.
+     *
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    digitsOnly() {
+        return {
+            parse(value) {
+                return stringifyValue(value).replace(/\D+/g, '');
+            }
+        };
+    },
+
+    /**
+     * Normalize IBAN text for backend payloads.
+     *
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    ibanToDb() {
+        return {
+            parse(value) {
+                return stringifyValue(value).trim().replace(/\s+/g, '').toUpperCase();
+            }
+        };
+    },
+
+    /**
+     * Normalize Italian Codice Fiscale text for backend payloads.
+     *
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     */
+    fiscalCodeToDb() {
+        return {
+            parse(value) {
+                return stringifyValue(value).trim().replace(/\s+/g, '').toUpperCase();
             }
         };
     }
@@ -247,7 +629,7 @@ export const parsers = {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Jun 15 2026 23:40:48 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Jun 16 2026 14:33:06 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

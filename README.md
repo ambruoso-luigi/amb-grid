@@ -115,6 +115,33 @@ Formatting helpers for:
 * Lookup values
 * Custom display logic
 
+### Parsers
+
+AMB Grid keeps display, editing, validation, and payload normalization separate:
+
+* Formatter: displays a value.
+* Editor: lets the user change a value.
+* Validator: checks whether a value is acceptable.
+* Parser: normalizes a value before payload/backend submission.
+
+Parsers may perform small syntactic checks to avoid incoherent transformations, but they do not replace validators, business rules, authorization, or backend validation.
+
+DB-oriented parser helpers include:
+
+* Decimal normalization, for example `-123.123,01` to `"-123123.01"`
+* Integer normalization
+* Date normalization to `YYYY-MM-DD`
+* DateTime normalization to `YYYY-MM-DD HH:MM:SS`
+* String normalizers such as trim, uppercase, digits-only, IBAN, and fiscal-code normalization
+
+Numeric DB parsers return normalized strings by default, not JavaScript numbers, to avoid precision surprises when dealing with decimal or monetary values.
+
+Date DB parsers normalize the date formats supported by AMB Grid to `YYYY-MM-DD`. DateTime DB parsers normalize to `YYYY-MM-DD HH:MM:SS`.
+
+If a date can be ambiguous, configure `inputFormats` explicitly or rely on the documented format order. Parsers do not guess user intent.
+
+Do not use integer parsers for codes with leading zeroes. Codes should be treated as strings and normalized with string normalizers.
+
 ### Lookup System
 
 Lookup fields with support for:
