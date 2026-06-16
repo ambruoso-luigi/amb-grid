@@ -194,7 +194,7 @@ const parseDateUsingFormats = (value, inputFormats) => {
     return null;
 };
 
-const formatMysqlDate = dateParts => {
+const formatPayloadDate = dateParts => {
     return formatDateValue(dateParts, 'yyyy-mm-dd');
 };
 
@@ -294,7 +294,7 @@ export const parsers = {
     },
 
     /**
-     * Normalize a visual decimal value to a DB-oriented decimal string.
+     * Normalize a visual decimal value to a payload-oriented decimal string.
      *
      * The parser returns strings instead of JavaScript numbers to avoid
      * precision surprises with decimal and monetary values. It performs
@@ -312,7 +312,7 @@ export const parsers = {
      * @param {boolean} [options.allowNormalized=true] - Accept already normalized `123.45` values.
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.
      */
-    decimalToDb(options = {}) {
+    decimalToPayload(options = {}) {
         const normalizedOptions = {
             decimalSeparator: ',',
             thousandSeparator: '.',
@@ -365,7 +365,7 @@ export const parsers = {
     },
 
     /**
-     * Normalize a visual integer value to a DB-oriented integer string.
+     * Normalize a visual integer value to a payload-oriented integer string.
      *
      * Do not use this parser for codes with leading zeroes. Codes are strings
      * and should be normalized with string normalizers instead.
@@ -379,7 +379,7 @@ export const parsers = {
      * @param {boolean} [options.strictThousands=true] - Require coherent thousands grouping.
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.
      */
-    integerToDb(options = {}) {
+    integerToPayload(options = {}) {
         const normalizedOptions = {
             thousandSeparator: '.',
             allowThousands: true,
@@ -406,19 +406,19 @@ export const parsers = {
     },
 
     /**
-     * Normalize supported AMB Grid date formats to `YYYY-MM-DD`.
+     * Normalize supported AMB Grid date formats to canonical payload `YYYY-MM-DD`.
      *
      * Ambiguous values are parsed using the configured `inputFormats` order.
      * Parsers do not guess user intent; configure `inputFormats` explicitly
      * when a data source can be ambiguous.
      *
-     * @param {object} [options] - Date DB normalization options.
+     * @param {object} [options] - Date payload normalization options.
      * @param {Array<string|Date>} [options.inputFormats] - Accepted input formats, in priority order.
      * @param {boolean} [options.allowEmpty=true] - Allow empty values.
      * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.
      */
-    dateToMysqlDate(options = {}) {
+    dateToPayload(options = {}) {
         const normalizedOptions = {
             inputFormats: DEFAULT_DATE_INPUT_FORMATS,
             allowEmpty: true,
@@ -432,36 +432,24 @@ export const parsers = {
 
                 const dateParts = parseDateUsingFormats(value, normalizedOptions.inputFormats);
 
-                return dateParts ? formatMysqlDate(dateParts) : null;
+                return dateParts ? formatPayloadDate(dateParts) : null;
             }
         };
     },
 
     /**
-     * Normalize supported AMB Grid date formats to `YYYY-MM-DD`.
-     *
-     * Alias for `dateToMysqlDate`.
-     *
-     * @param {object} [options] - Date DB normalization options.
-     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
-     */
-    dateToDb(options = {}) {
-        return parsers.dateToMysqlDate(options);
-    },
-
-    /**
-     * Normalize supported AMB Grid date formats plus time to `YYYY-MM-DD HH:MM:SS`.
+     * Normalize supported AMB Grid date formats plus time to canonical payload `YYYY-MM-DD HH:MM:SS`.
      *
      * Timezone and Unix timestamp parsing are intentionally out of scope for
      * this parser. Timestamp-oriented parsers may be added later.
      *
-     * @param {object} [options] - DateTime DB normalization options.
+     * @param {object} [options] - DateTime payload normalization options.
      * @param {Array<string|Date>} [options.inputFormats] - Accepted date input formats, in priority order.
      * @param {boolean} [options.allowEmpty=true] - Allow empty values.
      * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.
      */
-    dateTimeToMysql(options = {}) {
+    dateTimeToPayload(options = {}) {
         const normalizedOptions = {
             inputFormats: DEFAULT_DATE_INPUT_FORMATS,
             allowEmpty: true,
@@ -489,7 +477,7 @@ export const parsers = {
                 if (minute < 0 || minute > 59) return null;
                 if (second < 0 || second > 59) return null;
 
-                return `${formatMysqlDate(dateParts)} ${padDatePart(hour)}:${padDatePart(minute)}:${padDatePart(second)}`;
+                return `${formatPayloadDate(dateParts)} ${padDatePart(hour)}:${padDatePart(minute)}:${padDatePart(second)}`;
             }
         };
     },
@@ -560,11 +548,11 @@ export const parsers = {
     },
 
     /**
-     * Normalize IBAN text for backend payloads.
+     * Normalize IBAN text for payload/backend submission.
      *
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.
      */
-    ibanToDb() {
+    ibanToPayload() {
         return {
             parse(value) {
                 return stringifyValue(value).trim().replace(/\s+/g, '').toUpperCase();
@@ -573,11 +561,11 @@ export const parsers = {
     },
 
     /**
-     * Normalize Italian Codice Fiscale text for backend payloads.
+     * Normalize Italian Codice Fiscale text for payload/backend submission.
      *
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.
      */
-    fiscalCodeToDb() {
+    fiscalCodeToPayload() {
         return {
             parse(value) {
                 return stringifyValue(value).trim().replace(/\s+/g, '').toUpperCase();

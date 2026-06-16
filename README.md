@@ -126,9 +126,9 @@ AMB Grid keeps display, editing, validation, and payload normalization separate:
 
 Parsers may perform small syntactic checks to avoid incoherent transformations, but they do not replace validators, business rules, authorization, or backend validation.
 
-DB-oriented parser helpers include:
+Payload-oriented parser helpers include:
 
-* Parsers / payload normalizers for backend-oriented values: decimal strings, integer strings, MySQL-like dates/datetimes, and common string normalizers
+* Parsers / payload normalizers for backend-oriented values: decimal strings, integer strings, canonical dates/datetimes, and common string normalizers
 * Decimal normalization, for example `-123.123,01` to `"-123123.01"`
 * Integer normalization
 * Date normalization to `YYYY-MM-DD`
@@ -137,9 +137,9 @@ DB-oriented parser helpers include:
 
 Parsers normalize values for payload/backend submission; validators check whether values are acceptable.
 
-Numeric DB parsers return normalized strings by default, not JavaScript numbers, to avoid precision surprises when dealing with decimal or monetary values.
+Numeric payload parsers return normalized strings by default, not JavaScript numbers, to avoid precision surprises with decimal or monetary values.
 
-Date DB parsers normalize the date formats supported by AMB Grid to `YYYY-MM-DD`. DateTime DB parsers normalize to `YYYY-MM-DD HH:MM:SS`.
+Date payload parsers normalize supported AMB Grid date formats to `YYYY-MM-DD`. DateTime payload parsers normalize to `YYYY-MM-DD HH:MM:SS`.
 
 If a date can be ambiguous, configure `inputFormats` explicitly or rely on the documented format order. Parsers do not guess user intent.
 

@@ -591,7 +591,11 @@ export class CrudHelper {
         this.markCellError(key, field, failedValidator.message);
     }
 
-    _validateField(row, field) {
+    _validateField(row, field, options = {}) {
+        const normalizedOptions = {
+            markDeletedErrors: true,
+            ...options
+        };
         const validators = this.cellValidators.get(field);
 
         if (!validators || validators.length === 0) return null;
@@ -609,7 +613,9 @@ export class CrudHelper {
             return null;
         }
 
-        this.markCellError(key, field, failedValidator.message);
+        if (normalizedOptions.markDeletedErrors || this._getBaseRowState(row) !== ROW_STATE.DELETED) {
+            this.markCellError(key, field, failedValidator.message);
+        }
 
         return {
             field,
@@ -679,9 +685,11 @@ export class CrudHelper {
      * Validate every registered cell validator for one row without changing row state.
      *
      * @param {*} id - Row identifier.
+     * @param {object} [options] - Validation options.
+     * @param {boolean} [options.markDeletedErrors=true] - Whether deleted rows should receive visual error markers.
      * @returns {object|null} Row validation result, or null when the row is not found.
      */
-    validateRow(identifier) {
+    validateRow(identifier, options = {}) {
         const row = this.findRowByKey(identifier);
 
         if (!row) {
@@ -698,7 +706,7 @@ export class CrudHelper {
         this.cellValidators.forEach((validators, field) => {
             if (!validators || validators.length === 0) return;
 
-            const error = this._validateField(row, field);
+            const error = this._validateField(row, field, options);
 
             if (error) {
                 errors.push(error);
@@ -752,7 +760,9 @@ export class CrudHelper {
                 return normalizedOptions.includeDeleted
                     || this._getBaseRowState(row) !== ROW_STATE.DELETED;
             })
-            .map(row => this.validateRow(this._getRowKey(row)))
+            .map(row => this.validateRow(this._getRowKey(row), {
+                markDeletedErrors: !normalizedOptions.includeDeleted
+            }))
             .filter(Boolean);
 
         return this._buildValidationResult(rows);

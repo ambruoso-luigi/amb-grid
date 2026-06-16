@@ -3,44 +3,44 @@ import { AMB } from '../index.js';
 const parserExamples = [
     {
         input: '-123.123,01',
-        parserName: 'decimalToDb()',
-        createParser: () => AMB.parsers.decimalToDb(),
-        note: 'DB decimal string, not a JavaScript Number'
+        parserName: 'decimalToPayload()',
+        createParser: () => AMB.parsers.decimalToPayload(),
+        note: 'Payload decimal string, not a JavaScript Number'
     },
     {
         input: '1.234',
-        parserName: 'integerToDb()',
-        createParser: () => AMB.parsers.integerToDb(),
+        parserName: 'integerToPayload()',
+        createParser: () => AMB.parsers.integerToPayload(),
         note: 'Integer payload string'
     },
     {
         input: '16/06/2026',
-        parserName: 'dateToMysqlDate()',
-        createParser: () => AMB.parsers.dateToMysqlDate(),
+        parserName: 'dateToPayload()',
+        createParser: () => AMB.parsers.dateToPayload(),
         note: 'Date normalized to YYYY-MM-DD'
     },
     {
         input: '20260616',
-        parserName: 'dateToMysqlDate()',
-        createParser: () => AMB.parsers.dateToMysqlDate(),
+        parserName: 'dateToPayload()',
+        createParser: () => AMB.parsers.dateToPayload(),
         note: 'Compact legacy-style date input'
     },
     {
         input: '16/06/2026 14:30',
-        parserName: 'dateTimeToMysql()',
-        createParser: () => AMB.parsers.dateTimeToMysql(),
+        parserName: 'dateTimeToPayload()',
+        createParser: () => AMB.parsers.dateTimeToPayload(),
         note: 'DateTime normalized to YYYY-MM-DD HH:MM:SS'
     },
     {
         input: 'it60 x054 2811 1010 0000 0123 456',
-        parserName: 'ibanToDb()',
-        createParser: () => AMB.parsers.ibanToDb(),
+        parserName: 'ibanToPayload()',
+        createParser: () => AMB.parsers.ibanToPayload(),
         note: 'Trim, remove spaces, uppercase'
     },
     {
         input: 'rss mra 80a01 h501u',
-        parserName: 'fiscalCodeToDb()',
-        createParser: () => AMB.parsers.fiscalCodeToDb(),
+        parserName: 'fiscalCodeToPayload()',
+        createParser: () => AMB.parsers.fiscalCodeToPayload(),
         note: 'Trim, remove spaces, uppercase'
     },
     {
@@ -57,9 +57,9 @@ const parserExamples = [
     },
     {
         input: '12.34,56',
-        parserName: 'decimalToDb()',
-        createParser: () => AMB.parsers.decimalToDb(),
-        note: 'Bad thousands grouping'
+        parserName: 'decimalToPayload()',
+        createParser: () => AMB.parsers.decimalToPayload(),
+        note: 'Invalid thousands grouping'
     }
 ];
 
