@@ -151,6 +151,8 @@ Date editors keep invalid typed values visible by default with `invalidBehavior:
 
 Date validators can distinguish syntax errors, impossible calendar dates, values before `minDate`, values after `maxDate`, and required empty values. Existing boolean validators remain supported; validators may also return `{ isValid, message, code }` for dynamic messages.
 
+With `picker: true`, the datepicker limits calendar selection but does not block or clean manual input. Manual invalid or out-of-range values are committed with `commitRaw` and then reported by validators; use `invalidBehavior: 'cancel'` for restrictive editing.
+
 ### Lookup System
 
 Lookup fields with support for:

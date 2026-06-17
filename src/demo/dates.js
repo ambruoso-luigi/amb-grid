@@ -54,9 +54,10 @@ export default function dates(app) {
                 <li>Compact date accepts exactly <code>YYYYMMDD</code>.</li>
                 <li>Invalid typed values stay visible so validation can report them.</li>
                 <li>All date columns enforce an allowed range from <code>01/01/2025</code> to <code>31/12/2027</code>.</li>
-                <li>Picker limits and validation limits are aligned.</li>
+                <li>The picker limits calendar selection, but manual input is still committed and validated by AMB Grid.</li>
             </ul>
-            <p>Try <code>20/7/2026</code>, <code>2026-06-5</code>, <code>31/02/2026</code>, <code>2026720</code>, or <code>01/01/2028</code>.</p>
+            <p>In <strong>Picker date</strong>, try <code>31/02/2026</code>, <code>01/01/2028</code>, or <code>20/022</code>: the typed value should stay visible, then validation explains the error.</p>
+            <p>Also try <code>20/7/2026</code>, <code>2026-06-5</code>, or compact <code>2026720</code>.</p>
         </div>
         <div class="toolbar">
             <button type="button" id="action-validate-dates">Validate dates</button>

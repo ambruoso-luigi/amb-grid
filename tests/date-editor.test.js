@@ -133,4 +133,36 @@ describe('date editor commit behavior', () => {
             value: '20/07/2026'
         });
     });
+
+    test('commits manual invalid picker input as raw with commitRaw', () => {
+        expect(parseDateEditorValue('31/02/2026', {
+            format: 'dd/mm/yyyy',
+            picker: true,
+            invalidBehavior: 'commitRaw'
+        })).toEqual({
+            action: 'success',
+            value: '31/02/2026'
+        });
+
+        expect(parseDateEditorValue('20/022', {
+            format: 'dd/mm/yyyy',
+            picker: true,
+            invalidBehavior: 'commitRaw'
+        })).toEqual({
+            action: 'success',
+            value: '20/022'
+        });
+    });
+
+    test('manual out-of-range picker input remains committed for validation', () => {
+        expect(parseDateEditorValue('01/01/2028', {
+            format: 'dd/mm/yyyy',
+            picker: true,
+            minDate: '2025-01-01',
+            maxDate: '2027-12-31'
+        })).toEqual({
+            action: 'success',
+            value: '01/01/2028'
+        });
+    });
 });
