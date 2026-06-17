@@ -91,6 +91,107 @@ const getDateTime = date => {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 };
 
+const normalizeDateFormat = format => {
+    const aliases = {
+        iso: 'yyyy-mm-dd',
+        ISO: 'yyyy-mm-dd',
+        it: 'dd/mm/yyyy',
+        IT: 'dd/mm/yyyy',
+        legacy: 'yyyymmdd'
+    };
+
+    return aliases[format] || format;
+};
+
+const getDateSyntaxParts = (value, format) => {
+    if (value instanceof Date) {
+        return Number.isFinite(value.getTime())
+            ? {
+                year: value.getFullYear(),
+                month: value.getMonth() + 1,
+                day: value.getDate()
+            }
+            : null;
+    }
+
+    const stringValue = String(value).trim();
+    const normalizedFormat = normalizeDateFormat(format);
+    let match;
+    let year;
+    let month;
+    let day;
+
+    if (normalizedFormat === 'dd/mm/yyyy') {
+        match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+        day = Number(match[1]);
+        month = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedFormat === 'dd-mm-yyyy') {
+        match = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+        day = Number(match[1]);
+        month = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedFormat === 'dd.mm.yyyy') {
+        match = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+        day = Number(match[1]);
+        month = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedFormat === 'mm/dd/yyyy') {
+        match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+        month = Number(match[1]);
+        day = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedFormat === 'mm-dd-yyyy') {
+        match = /^(\d{1,2})-(\d{1,2})-(\d{4})$/.exec(stringValue);
+        if (!match) return null;
+        month = Number(match[1]);
+        day = Number(match[2]);
+        year = Number(match[3]);
+    } else if (normalizedFormat === 'yyyy-mm-dd') {
+        match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(stringValue);
+        if (!match) return null;
+        year = Number(match[1]);
+        month = Number(match[2]);
+        day = Number(match[3]);
+    } else if (normalizedFormat === 'yyyy/mm/dd') {
+        match = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/.exec(stringValue);
+        if (!match) return null;
+        year = Number(match[1]);
+        month = Number(match[2]);
+        day = Number(match[3]);
+    } else if (normalizedFormat === 'yyyymmdd') {
+        match = /^(\d{4})(\d{2})(\d{2})$/.exec(stringValue);
+        if (!match) return null;
+        year = Number(match[1]);
+        month = Number(match[2]);
+        day = Number(match[3]);
+    } else {
+        return null;
+    }
+
+    return { year, month, day };
+};
+
+const isValidDateParts = ({ year, month, day }) => {
+    const date = new Date(year, month - 1, day);
+
+    return date.getFullYear() === year
+        && date.getMonth() === month - 1
+        && date.getDate() === day;
+};
+
+const validationResultIsValid = result => {
+    if (result && typeof result === 'object') {
+        return result.isValid !== false;
+    }
+
+    return result !== false;
+};
+
 /**
  * Validator factories for AMB Grid and CrudHelper.
  *
@@ -156,7 +257,7 @@ export const validators = {
      * not perform checksum, bank, account, official, or existence validation.
      *
      * @param {string} [message='Invalid IBAN'] - Validation message.
-     * @returns {{message: string, validate: Function}} Validator object.
+     * @returns {{message: string, validate: Function}} Validator object. Date validation may return `{ isValid, message, code }`.
      */
     iban(message = 'Invalid IBAN') {
         return {
@@ -310,6 +411,12 @@ export const validators = {
      * @param {boolean} [options.allowEmpty=true] - Whether empty values are valid.
      * @param {string|Date} [options.minDate] - Earliest allowed date.
      * @param {string|Date} [options.maxDate] - Latest allowed date.
+     * @param {object} [options.messages] - Date error messages by category.
+     * @param {string} [options.messages.syntax] - Message for unrecognized or incomplete date input.
+     * @param {string} [options.messages.calendar] - Message for impossible calendar dates.
+     * @param {string} [options.messages.minDate] - Message for dates before `minDate`.
+     * @param {string} [options.messages.maxDate] - Message for dates after `maxDate`.
+     * @param {string} [options.messages.required] - Message for empty values when `allowEmpty` is false.
      * @param {string} [message='Invalid date'] - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
      */
@@ -317,6 +424,7 @@ export const validators = {
         const normalizedOptions = {
             format: 'dd/mm/yyyy',
             allowEmpty: true,
+            messages: {},
             ...options
         };
         const parser = parsers.date({
@@ -334,25 +442,72 @@ export const validators = {
         return {
             message,
             validate: value => {
-                if (isEmptyValue(value) && normalizedOptions.allowEmpty) return true;
+                const messages = {
+                    syntax: message,
+                    calendar: message,
+                    minDate: message,
+                    maxDate: message,
+                    required: message,
+                    ...normalizedOptions.messages
+                };
+
+                if (isEmptyValue(value)) {
+                    return normalizedOptions.allowEmpty
+                        ? { isValid: true }
+                        : {
+                            isValid: false,
+                            code: 'required',
+                            message: messages.required
+                        };
+                }
+
+                const syntaxParts = getDateSyntaxParts(value, normalizedOptions.format);
+
+                if (!syntaxParts) {
+                    return {
+                        isValid: false,
+                        code: 'syntax',
+                        message: messages.syntax
+                    };
+                }
+
+                if (!isValidDateParts(syntaxParts)) {
+                    return {
+                        isValid: false,
+                        code: 'calendar',
+                        message: messages.calendar
+                    };
+                }
 
                 const parsedValue = parser.parse(value);
 
                 if (!(parsedValue instanceof Date) || !Number.isFinite(parsedValue.getTime())) {
-                    return false;
+                    return {
+                        isValid: false,
+                        code: 'syntax',
+                        message: messages.syntax
+                    };
                 }
 
                 const valueTime = getDateTime(parsedValue);
 
                 if (minDate && valueTime < getDateTime(minDate)) {
-                    return false;
+                    return {
+                        isValid: false,
+                        code: 'minDate',
+                        message: messages.minDate
+                    };
                 }
 
                 if (maxDate && valueTime > getDateTime(maxDate)) {
-                    return false;
+                    return {
+                        isValid: false,
+                        code: 'maxDate',
+                        message: messages.maxDate
+                    };
                 }
 
-                return true;
+                return { isValid: true };
             }
         };
     },
@@ -525,7 +680,7 @@ export const validators = {
                 return validatorsList.some(validator => {
                     return validator
                         && typeof validator.validate === 'function'
-                        && validator.validate(value);
+                        && validationResultIsValid(validator.validate(value));
                 });
             }
         };
@@ -549,7 +704,7 @@ export const validators = {
                 return validatorsList.every(validator => {
                     return validator
                         && typeof validator.validate === 'function'
-                        && validator.validate(value);
+                        && validationResultIsValid(validator.validate(value));
                 });
             }
         };

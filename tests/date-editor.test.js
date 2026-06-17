@@ -27,6 +27,28 @@ describe('date editor input normalization', () => {
         });
     });
 
+    test('continues auto-formatting after auto-inserted separators', () => {
+        expect(normalizeDateInputChange({
+            value: '20/072',
+            format: 'dd/mm/yyyy',
+            selectionStart: 6,
+            inputType: 'insertText'
+        })).toEqual({
+            value: '20/07/2',
+            selectionStart: 7
+        });
+
+        expect(normalizeDateInputChange({
+            value: '2026-060',
+            format: 'yyyy-mm-dd',
+            selectionStart: 8,
+            inputType: 'insertText'
+        })).toEqual({
+            value: '2026-06-0',
+            selectionStart: 9
+        });
+    });
+
     test('preserves manually typed separators', () => {
         expect(normalizeDateInputChange({
             value: '20/7/2026',

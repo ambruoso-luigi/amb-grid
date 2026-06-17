@@ -74,6 +74,27 @@ const getDateFormatParts = format => {
     return null;
 };
 
+const isCompatibleAutoFormattedValue = (value, normalizedValue, separator) => {
+    let normalizedIndex = 0;
+
+    for (const character of value) {
+        while (
+            normalizedValue[normalizedIndex] === separator
+            && character !== separator
+        ) {
+            normalizedIndex += 1;
+        }
+
+        if (character !== normalizedValue[normalizedIndex]) {
+            return false;
+        }
+
+        normalizedIndex += 1;
+    }
+
+    return true;
+};
+
 export const normalizeDateInput = (value, format) => {
     const formatParts = getDateFormatParts(format);
     const stringValue = String(value);
@@ -134,17 +155,20 @@ export const normalizeDateInputChange = ({
     const typingForward = inputType === 'insertText'
         || inputType === 'insertCompositionText'
         || inputType === undefined;
-    const hasManualSeparator = stringValue.includes(formatParts.separator);
-    const digitsOnly = /^\d+$/.test(stringValue);
+    const digits = stringValue.replace(/\D/g, '');
+    const normalizedValue = normalizeDateInput(digits, format);
+    const isCompatibleAutoFormattedPrefix = isCompatibleAutoFormattedValue(
+        stringValue,
+        normalizedValue,
+        formatParts.separator
+    );
 
-    if (!digitsOnly || !cursorAtEnd || !typingForward || hasManualSeparator) {
+    if (!cursorAtEnd || !typingForward || !isCompatibleAutoFormattedPrefix) {
         return {
             value: stringValue,
             selectionStart: selectionStart || stringValue.length
         };
     }
-
-    const normalizedValue = normalizeDateInput(stringValue, format);
 
     return {
         value: normalizedValue,

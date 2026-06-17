@@ -190,25 +190,71 @@ describe('validators.date', () => {
             format: 'dd/mm/yyyy'
         });
 
-        expect(validator.validate('20/7/2026')).toBe(true);
-        expect(validator.validate('5/6/2026')).toBe(true);
-        expect(validator.validate('31/02/2026')).toBe(false);
+        expect(validator.validate('20/7/2026')).toEqual({ isValid: true });
+        expect(validator.validate('5/6/2026')).toEqual({ isValid: true });
+        expect(validator.validate('31/02/2026')).toEqual({
+            isValid: false,
+            code: 'calendar',
+            message: 'Invalid date'
+        });
     });
 
     test('respects minDate and maxDate', () => {
         const validator = validators.date({
             format: 'dd/mm/yyyy',
             minDate: '2026-01-01',
-            maxDate: '2026-12-31'
+            maxDate: '2026-12-31',
+            messages: {
+                minDate: 'Too early',
+                maxDate: 'Too late'
+            }
         });
 
-        expect(validator.validate('20/7/2026')).toBe(true);
-        expect(validator.validate('31/12/2025')).toBe(false);
-        expect(validator.validate('01/01/2027')).toBe(false);
+        expect(validator.validate('20/7/2026')).toEqual({ isValid: true });
+        expect(validator.validate('31/12/2025')).toEqual({
+            isValid: false,
+            code: 'minDate',
+            message: 'Too early'
+        });
+        expect(validator.validate('01/01/2027')).toEqual({
+            isValid: false,
+            code: 'maxDate',
+            message: 'Too late'
+        });
     });
 
     test('handles empty values according to allowEmpty', () => {
-        expect(validators.date({ allowEmpty: true }).validate('')).toBe(true);
-        expect(validators.date({ allowEmpty: false }).validate('')).toBe(false);
+        expect(validators.date({ allowEmpty: true }).validate('')).toEqual({ isValid: true });
+        expect(validators.date({
+            allowEmpty: false,
+            messages: {
+                required: 'Date is required'
+            }
+        }).validate('')).toEqual({
+            isValid: false,
+            code: 'required',
+            message: 'Date is required'
+        });
+    });
+
+    test('distinguishes syntax errors from calendar errors', () => {
+        const validator = validators.date({
+            format: 'legacy',
+            messages: {
+                syntax: 'Use exactly YYYYMMDD',
+                calendar: 'Date does not exist'
+            }
+        });
+
+        expect(validator.validate('2026720')).toEqual({
+            isValid: false,
+            code: 'syntax',
+            message: 'Use exactly YYYYMMDD'
+        });
+        expect(validator.validate('20260231')).toEqual({
+            isValid: false,
+            code: 'calendar',
+            message: 'Date does not exist'
+        });
     });
 });

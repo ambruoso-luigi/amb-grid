@@ -209,6 +209,33 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.cellErrors.size).toBe(0);
     });
 
+    test('uses dynamic validator messages and codes when provided', () => {
+        const { table } = createTableMock([
+            { id: 1, alias: 'Atlas' }
+        ]);
+        const crud = new CrudHelper(table);
+
+        crud.addCellValidator('alias', 'Fallback message', () => {
+            return {
+                isValid: false,
+                message: 'Dynamic message',
+                code: 'dynamic-code'
+            };
+        });
+
+        const result = crud.validateAll();
+
+        expect(result.errors).toEqual([
+            expect.objectContaining({
+                id: 1,
+                field: 'alias',
+                message: 'Dynamic message',
+                code: 'dynamic-code'
+            })
+        ]);
+        expect(crud.cellErrors.get(1).get('alias')).toBe('Dynamic message');
+    });
+
     test('validateChanges still validates only new and modified rows', () => {
         const { crud } = createCrud([
             { id: 1, alias: 'Atlas' },

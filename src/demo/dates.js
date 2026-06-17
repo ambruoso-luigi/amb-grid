@@ -3,14 +3,43 @@ import { AMB } from '../index.js';
 const minDate = '2025-01-01';
 const maxDate = '2027-12-31';
 
-const createDateValidation = (format, message) => ({
+const createDateValidation = (format, messages) => ({
     date: {
         format,
         minDate,
         maxDate,
-        message
+        message: 'Invalid date',
+        messages
     }
 });
+
+const buildDateReport = result => {
+    const lines = [
+        `Validation result: ${result.isValid ? 'valid' : 'invalid'}`,
+        `Errors: ${result.errors.length}`,
+        ''
+    ];
+
+    if (result.errors.length === 0) {
+        lines.push('No date validation errors.');
+        return lines.join('\n');
+    }
+
+    result.errors.forEach(error => {
+        const rowLabel = error.rowNumber !== null && error.rowNumber !== undefined
+            ? `Row ${error.rowNumber}`
+            : `ID ${error.id || error.tempId || 'unknown'}`;
+        const codeLabel = error.code ? ` [${error.code}]` : '';
+
+        lines.push(`- ${rowLabel}, ${error.field}${codeLabel}: ${error.message}`);
+    });
+
+    lines.push('');
+    lines.push('Raw validation result:');
+    lines.push(JSON.stringify(result, null, 2));
+
+    return lines.join('\n');
+};
 
 export default function dates(app) {
     app.innerHTML = `
@@ -81,7 +110,12 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('dd/mm/yyyy'),
                 validation: createDateValidation(
                     'dd/mm/yyyy',
-                    'Enter a real date between 01/01/2025 and 31/12/2027'
+                    {
+                        syntax: 'Use D/M/YYYY or DD/MM/YYYY',
+                        calendar: 'Enter a real calendar date',
+                        minDate: 'Date must be on or after 01/01/2025',
+                        maxDate: 'Date must be on or before 31/12/2027'
+                    }
                 )
             },
             {
@@ -97,7 +131,12 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('dd/mm/yyyy'),
                 validation: createDateValidation(
                     'dd/mm/yyyy',
-                    'Pick or enter a real date between 01/01/2025 and 31/12/2027'
+                    {
+                        syntax: 'Use D/M/YYYY or DD/MM/YYYY',
+                        calendar: 'Enter a real calendar date',
+                        minDate: 'Date must be on or after 01/01/2025',
+                        maxDate: 'Date must be on or before 31/12/2027'
+                    }
                 )
             },
             {
@@ -112,7 +151,12 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('iso'),
                 validation: createDateValidation(
                     'iso',
-                    'Enter a real ISO-style date between 2025-01-01 and 2027-12-31'
+                    {
+                        syntax: 'Use YYYY-M-D or YYYY-MM-DD',
+                        calendar: 'Enter a real calendar date',
+                        minDate: 'Date must be on or after 2025-01-01',
+                        maxDate: 'Date must be on or before 2027-12-31'
+                    }
                 )
             },
             {
@@ -127,7 +171,12 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('legacy'),
                 validation: createDateValidation(
                     'legacy',
-                    'Enter exactly 8 digits for a real date in range, e.g. 20260720'
+                    {
+                        syntax: 'Use exactly 8 digits in YYYYMMDD format',
+                        calendar: 'Enter a real calendar date',
+                        minDate: 'Date must be on or after 20250101',
+                        maxDate: 'Date must be on or before 20271231'
+                    }
                 )
             }
         ]
@@ -138,10 +187,7 @@ export default function dates(app) {
     app.querySelector('#action-validate-dates').addEventListener('click', () => {
         const result = demo.crud.validateAll();
 
-        output.textContent = JSON.stringify({
-            isValid: result.isValid,
-            errors: result.errors
-        }, null, 2);
+        output.textContent = buildDateReport(result);
     });
 
     return demo;

@@ -567,6 +567,24 @@ export class CrudHelper {
         return Boolean(errors && errors.size > 0);
     }
 
+    _evaluateValidator(validator, value, rowData, cell) {
+        const result = validator.validateFn(value, rowData, cell, this);
+
+        if (result && typeof result === 'object') {
+            return {
+                isValid: result.isValid !== false,
+                message: result.message || validator.message,
+                code: result.code
+            };
+        }
+
+        return {
+            isValid: result !== false,
+            message: validator.message,
+            code: undefined
+        };
+    }
+
     _validateCell(cell) {
         if (!cell) return;
 
@@ -579,8 +597,16 @@ export class CrudHelper {
         const rowData = row.getData();
         const key = this._getRowKey(row);
         const value = cell.getValue();
+        let failedResult = null;
         const failedValidator = validators.find(validator => {
-            return !validator.validateFn(value, rowData, cell, this);
+            const result = this._evaluateValidator(validator, value, rowData, cell);
+
+            if (!result.isValid) {
+                failedResult = result;
+                return true;
+            }
+
+            return false;
         });
 
         if (!failedValidator) {
@@ -588,7 +614,7 @@ export class CrudHelper {
             return;
         }
 
-        this.markCellError(key, field, failedValidator.message);
+        this.markCellError(key, field, failedResult.message);
     }
 
     _validateField(row, field, options = {}) {
@@ -604,8 +630,16 @@ export class CrudHelper {
         const rowData = row.getData();
         const key = this._getRowKey(row);
         const value = rowData[field];
+        let failedResult = null;
         const failedValidator = validators.find(validator => {
-            return !validator.validateFn(value, rowData, cell, this);
+            const result = this._evaluateValidator(validator, value, rowData, cell);
+
+            if (!result.isValid) {
+                failedResult = result;
+                return true;
+            }
+
+            return false;
         });
 
         if (!failedValidator) {
@@ -614,14 +648,20 @@ export class CrudHelper {
         }
 
         if (normalizedOptions.markDeletedErrors || this._getBaseRowState(row) !== ROW_STATE.DELETED) {
-            this.markCellError(key, field, failedValidator.message);
+            this.markCellError(key, field, failedResult.message);
         }
 
-        return {
+        const error = {
             field,
-            message: failedValidator.message,
+            message: failedResult.message,
             value
         };
+
+        if (failedResult.code) {
+            error.code = failedResult.code;
+        }
+
+        return error;
     }
 
     _syncRowErrorAttribute(row) {
