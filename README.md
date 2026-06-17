@@ -153,7 +153,7 @@ Date validators can distinguish syntax errors, impossible calendar dates, values
 
 With `picker: true`, the datepicker limits calendar selection but does not block or clean manual input. Manual invalid or out-of-range values are committed with `commitRaw` and then reported by validators; use `invalidBehavior: 'cancel'` for restrictive editing.
 
-Use `AMB.date.createConfig(...)` to define date format, range, payload format, editor mode and messages once, then pass the returned pieces to formatter, editor, validator and parser configuration. `mode: 'manualWithPickerButton'` is the recommended mode; `picker: true` maps to this stable mode. `mode: 'manual'` disables the picker, while `mode: 'pickerOnly'` allows calendar-only selection. The datepicker does not own manual input and selected picker dates are inserted using the column format.
+Use `AMB.date.createConfig(...)` to define date format, range, payload format, editor mode and messages once, then pass the returned pieces to formatter, editor, validator and parser configuration. `mode: 'manualWithPickerButton'` is the recommended mode; `picker: true` maps to this stable mode. `mode: 'manual'` disables the picker, while `mode: 'pickerOnly'` allows calendar-only selection. The datepicker opens only from the calendar button, does not own manual input, and inserts selected dates using the column format.
 
 ### Lookup System
 

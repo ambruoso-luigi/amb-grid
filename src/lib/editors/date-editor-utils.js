@@ -12,6 +12,22 @@ export const normalizeDateFormat = format => {
     return aliases[format] || format;
 };
 
+export const normalizeDateEditorOptions = (options = {}) => {
+    const mode = options.mode
+        || (options.picker === true ? 'manualWithPickerButton' : 'manual');
+
+    return {
+        format: 'dd/mm/yyyy',
+        allowEmpty: true,
+        invalidBehavior: 'commitRaw',
+        mode,
+        picker: false,
+        selectOnFocus: false,
+        ...options,
+        mode
+    };
+};
+
 const getDateFormatParts = format => {
     const normalizedFormat = normalizeDateFormat(format);
 
@@ -213,4 +229,12 @@ export const parseDateEditorValue = (value, options = {}) => {
         action: 'success',
         value: parsedValue
     };
+};
+
+export const formatPickerDate = (value, format) => {
+    return parsers.date({
+        inputFormat: Date,
+        outputFormat: format,
+        allowEmpty: false
+    }).parse(value);
 };

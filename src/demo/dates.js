@@ -104,7 +104,7 @@ export default function dates(app) {
                 <li>Compact date accepts exactly <code>YYYYMMDD</code>.</li>
                 <li>Invalid typed values stay visible so validation can report them.</li>
                 <li>All date columns enforce an allowed range from <code>01/01/2025</code> to <code>31/12/2027</code>.</li>
-                <li>The picker limits calendar selection, but manual input is still committed and validated by AMB Grid.</li>
+                <li>The picker opens only from the calendar button, limits calendar selection, and never owns the manual input.</li>
                 <li>Date columns use <code>AMB.date.createConfig(...)</code> so format and limits are declared once.</li>
                 <li>Picker-only date uses <code>DD-MM-YYYY</code> to show that selected dates follow the column format.</li>
             </ul>

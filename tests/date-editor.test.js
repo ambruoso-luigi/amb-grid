@@ -1,8 +1,30 @@
 import { describe, expect, test } from 'vitest';
 import {
+    formatPickerDate,
+    normalizeDateEditorOptions,
     normalizeDateInputChange,
     parseDateEditorValue
 } from '../src/lib/editors/date-editor-utils.js';
+
+describe('date editor modes', () => {
+    test('maps picker true to manualWithPickerButton', () => {
+        expect(normalizeDateEditorOptions({ picker: true }).mode)
+            .toBe('manualWithPickerButton');
+    });
+
+    test('preserves explicit manual and pickerOnly modes', () => {
+        expect(normalizeDateEditorOptions({ mode: 'manual' }).mode).toBe('manual');
+        expect(normalizeDateEditorOptions({ mode: 'pickerOnly' }).mode).toBe('pickerOnly');
+    });
+
+    test('formats picker selections with the configured column format', () => {
+        const selectedDate = new Date(2026, 6, 20);
+
+        expect(formatPickerDate(selectedDate, 'dd/mm/yyyy')).toBe('20/07/2026');
+        expect(formatPickerDate(selectedDate, 'yyyy-mm-dd')).toBe('2026-07-20');
+        expect(formatPickerDate(selectedDate, 'dd-mm-yyyy')).toBe('20-07-2026');
+    });
+});
 
 describe('date editor input normalization', () => {
     test('auto-inserts separators only for linear digit typing', () => {

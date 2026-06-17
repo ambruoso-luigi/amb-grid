@@ -117,6 +117,40 @@ h2 {
     background: #f4f4f4;
 }
 
+.amb-date-editor-wrapper {
+    align-items: stretch;
+    display: inline-flex;
+    position: relative;
+    width: 100%;
+}
+
+.amb-date-editor {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.amb-date-editor-picker-button {
+    background: #fff;
+    border: 1px solid #aaa;
+    border-left: 0;
+    cursor: pointer;
+    padding: 0 8px;
+}
+
+.amb-date-editor-picker-button:hover {
+    background: #f4f4f4;
+}
+
+.amb-date-editor-picker-anchor {
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    width: 1px;
+}
+
 .amb-search-toolbar {
     align-items: center;
     display: flex;

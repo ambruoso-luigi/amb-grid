@@ -1,7 +1,9 @@
 import Datepicker from 'vanillajs-datepicker/Datepicker';
 import { parsers } from '../parsers.js';
 import {
+    formatPickerDate,
     normalizeDateFormat,
+    normalizeDateEditorOptions,
     normalizeDateInputChange,
     parseDateEditorValue
 } from './date-editor-utils.js';
@@ -69,13 +71,6 @@ const createPickerOptions = options => {
     return pickerOptions;
 };
 
-const getDateEditorMode = options => {
-    if (options.mode) return options.mode;
-    if (options.picker) return 'manualWithPickerButton';
-
-    return 'manual';
-};
-
     /**
      * Date editor. Saves a date string in the configured format.
      *
@@ -85,22 +80,13 @@ const getDateEditorMode = options => {
      * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - What to do when the typed value is invalid.
      * @param {string|Date} [options.minDate] - Earliest date passed to the picker when enabled.
      * @param {string|Date} [options.maxDate] - Latest date passed to the picker when enabled.
-     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode] - Editing mode.
+     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode] - Editing mode. Picker modes open the calendar only from the side button.
      * @param {boolean} [options.picker=false] - Backward-compatible shortcut for `mode: 'manualWithPickerButton'`.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Tabulator editor.
      */
 export function date(options = {}) {
-        const normalizedOptions = {
-            format: 'dd/mm/yyyy',
-            allowEmpty: true,
-            invalidBehavior: 'commitRaw',
-            mode: null,
-            picker: false,
-            selectOnFocus: false,
-            ...options
-        };
-        normalizedOptions.mode = getDateEditorMode(normalizedOptions);
+        const normalizedOptions = normalizeDateEditorOptions(options);
         const pickerFormat = normalizeDateFormat(normalizedOptions.format);
 
         return (cell, onRendered, success, cancel) => {
@@ -133,30 +119,15 @@ export function date(options = {}) {
                 input.className = 'amb-date-editor';
                 input.readOnly = normalizedOptions.mode === 'pickerOnly';
                 wrapper.className = 'amb-date-editor-wrapper';
-                wrapper.style.alignItems = 'stretch';
-                wrapper.style.display = 'inline-flex';
-                wrapper.style.position = 'relative';
-                wrapper.style.width = '100%';
-                input.style.flex = '1 1 auto';
-                input.style.minWidth = '0';
                 pickerButton.type = 'button';
                 pickerButton.className = 'amb-date-editor-picker-button';
                 pickerButton.setAttribute('aria-label', 'Open date picker');
-                pickerButton.textContent = '▾';
-                pickerButton.style.border = '1px solid #aaa';
-                pickerButton.style.borderLeft = '0';
-                pickerButton.style.cursor = 'pointer';
-                pickerButton.style.padding = '0 8px';
+                pickerButton.title = 'Open date picker';
+                pickerButton.textContent = '\u{1F4C5}';
                 pickerInput.type = 'text';
                 pickerInput.tabIndex = -1;
                 pickerInput.setAttribute('aria-hidden', 'true');
-                pickerInput.style.height = '1px';
-                pickerInput.style.opacity = '0';
-                pickerInput.style.pointerEvents = 'none';
-                pickerInput.style.position = 'absolute';
-                pickerInput.style.right = '0';
-                pickerInput.style.top = '100%';
-                pickerInput.style.width = '1px';
+                pickerInput.className = 'amb-date-editor-picker-anchor';
                 wrapper.append(input, pickerButton, pickerInput);
 
                 const destroyDatepicker = () => {
@@ -208,7 +179,7 @@ export function date(options = {}) {
                     }).parse(input.value);
 
                     pickerInput.value = parsedValue instanceof Date && Number.isFinite(parsedValue.getTime())
-                        ? Datepicker.formatDate(parsedValue, pickerFormat)
+                        ? formatPickerDate(parsedValue, normalizedOptions.format)
                         : '';
                     datepicker.show();
                 };
@@ -231,7 +202,7 @@ export function date(options = {}) {
 
                     if (!date) return;
 
-                    const formattedValue = Datepicker.formatDate(date, pickerFormat);
+                    const formattedValue = formatPickerDate(date, normalizedOptions.format);
 
                     input.value = formattedValue;
                     closeWithSuccess(formattedValue);
@@ -290,8 +261,6 @@ export function date(options = {}) {
                     } else {
                         input.setSelectionRange(input.value.length, input.value.length);
                     }
-
-                    showPicker();
                 });
 
                 return wrapper;
