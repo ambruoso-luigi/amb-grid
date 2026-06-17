@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/date.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/date.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const DATE_FORMAT_INPUT_ALIASES = {
+    'dd/mm/yyyy': ['dd/mm/yyyy'],
+    'dd-mm-yyyy': ['dd-mm-yyyy'],
+    'dd.mm.yyyy': ['dd.mm.yyyy'],
+    'mm/dd/yyyy': ['mm/dd/yyyy'],
+    'mm-dd-yyyy': ['mm-dd-yyyy'],
+    'yyyy-mm-dd': ['yyyy-mm-dd'],
+    'yyyy/mm/dd': ['yyyy/mm/dd'],
+    yyyymmdd: ['yyyymmdd'],
+    it: ['dd/mm/yyyy'],
+    iso: ['yyyy-mm-dd'],
+    legacy: ['yyyymmdd']
+};
+
+const normalizeMode = options => {
+    if (options.mode) return options.mode;
+    if (options.picker === true) return 'manualWithPickerButton';
+
+    return 'manualWithPickerButton';
+};
+
+const getInputFormats = options => {
+    if (Array.isArray(options.inputFormats) &amp;&amp; options.inputFormats.length > 0) {
+        return options.inputFormats;
+    }
+
+    return DATE_FORMAT_INPUT_ALIASES[options.editFormat]
+        || DATE_FORMAT_INPUT_ALIASES[options.format]
+        || [options.editFormat || options.format];
+};
+
+/**
+ * Date helper utilities.
+ *
+ * @namespace AMB.date
+ */
+export const date = {
+    /**
+     * Create a shared date configuration for formatter, editor, validator, and parser.
+     *
+     * `format` is a shorthand for display and edit formats. The datepicker
+     * helps selection, but AMB Grid keeps manual input, validation, formatting,
+     * and payload normalization as separate steps.
+     *
+     * @param {object} [options] - Date configuration options.
+     * @param {string} [options.format='dd/mm/yyyy'] - Shared display/edit format.
+     * @param {string} [options.displayFormat] - Formatter output format.
+     * @param {string} [options.editFormat] - Editor and validator input format.
+     * @param {string[]} [options.inputFormats] - Parser input formats.
+     * @param {string} [options.payloadFormat='yyyy-mm-dd'] - Payload date format.
+     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode='manualWithPickerButton'] - Date editor mode.
+     * @param {string|Date} [options.minDate] - Earliest allowed date.
+     * @param {string|Date} [options.maxDate] - Latest allowed date.
+     * @param {boolean} [options.allowEmpty=true] - Whether empty values are accepted.
+     * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Invalid manual input behavior.
+     * @param {object} [options.messages] - Date validation messages by category.
+     * @returns {{format: string, displayFormat: string, editFormat: string, inputFormats: string[], payloadFormat: string, mode: string, formatter: string, editor: object, validator: object, parser: object, picker: object}}
+     */
+    createConfig(options = {}) {
+        const format = options.format || 'dd/mm/yyyy';
+        const displayFormat = options.displayFormat || format;
+        const editFormat = options.editFormat || format;
+        const payloadFormat = options.payloadFormat || 'yyyy-mm-dd';
+        const mode = normalizeMode(options);
+        const allowEmpty = options.allowEmpty !== undefined ? options.allowEmpty : true;
+        const invalidBehavior = options.invalidBehavior || 'commitRaw';
+        const inputFormats = getInputFormats({
+            ...options,
+            format,
+            editFormat
+        });
+
+        return {
+            format,
+            displayFormat,
+            editFormat,
+            inputFormats,
+            payloadFormat,
+            mode,
+            formatter: displayFormat,
+            editor: {
+                format: editFormat,
+                allowEmpty,
+                invalidBehavior,
+                minDate: options.minDate,
+                maxDate: options.maxDate,
+                mode
+            },
+            validator: {
+                format: editFormat,
+                allowEmpty,
+                minDate: options.minDate,
+                maxDate: options.maxDate,
+                messages: options.messages
+            },
+            parser: {
+                inputFormats,
+                outputFormat: payloadFormat,
+                allowEmpty,
+                emptyAs: options.emptyAs
+            },
+            picker: {
+                mode,
+                format: editFormat,
+                minDate: options.minDate,
+                maxDate: options.maxDate
+            }
+        };
+    }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 17 2026 22:58:45 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

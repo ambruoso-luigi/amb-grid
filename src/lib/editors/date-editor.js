@@ -69,6 +69,13 @@ const createPickerOptions = options => {
     return pickerOptions;
 };
 
+const getDateEditorMode = options => {
+    if (options.mode) return options.mode;
+    if (options.picker) return 'manualWithPickerButton';
+
+    return 'manual';
+};
+
     /**
      * Date editor. Saves a date string in the configured format.
      *
@@ -78,7 +85,8 @@ const createPickerOptions = options => {
      * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - What to do when the typed value is invalid.
      * @param {string|Date} [options.minDate] - Earliest date passed to the picker when enabled.
      * @param {string|Date} [options.maxDate] - Latest date passed to the picker when enabled.
-     * @param {boolean} [options.picker=false] - Open a date picker while editing. Picker selection is limited by min/max, but manual input is still committed according to `invalidBehavior`.
+     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode] - Editing mode.
+     * @param {boolean} [options.picker=false] - Backward-compatible shortcut for `mode: 'manualWithPickerButton'`.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Tabulator editor.
      */
@@ -87,10 +95,12 @@ export function date(options = {}) {
             format: 'dd/mm/yyyy',
             allowEmpty: true,
             invalidBehavior: 'commitRaw',
+            mode: null,
             picker: false,
             selectOnFocus: false,
             ...options
         };
+        normalizedOptions.mode = getDateEditorMode(normalizedOptions);
         const pickerFormat = normalizeDateFormat(normalizedOptions.format);
 
         return (cell, onRendered, success, cancel) => {
@@ -113,7 +123,7 @@ export function date(options = {}) {
                 ? 8
                 : 10;
 
-            if (normalizedOptions.picker) {
+            if (normalizedOptions.mode === 'manualWithPickerButton' || normalizedOptions.mode === 'pickerOnly') {
                 const pickerButton = document.createElement('button');
                 const pickerInput = document.createElement('input');
                 let datepicker = null;
@@ -121,6 +131,7 @@ export function date(options = {}) {
                 let blurTimeout = null;
 
                 input.className = 'amb-date-editor';
+                input.readOnly = normalizedOptions.mode === 'pickerOnly';
                 wrapper.className = 'amb-date-editor-wrapper';
                 wrapper.style.alignItems = 'stretch';
                 wrapper.style.display = 'inline-flex';
@@ -230,6 +241,18 @@ export function date(options = {}) {
                 });
                 pickerButton.addEventListener('click', showPicker);
                 input.addEventListener('keydown', event => {
+                    if (normalizedOptions.mode === 'pickerOnly') {
+                        if (event.key === 'Enter') {
+                            showPicker();
+                        }
+
+                        if (event.key === 'Escape') {
+                            closeWithCancel();
+                        }
+
+                        return;
+                    }
+
                     if (event.key === 'Enter') {
                         commit();
                         return;

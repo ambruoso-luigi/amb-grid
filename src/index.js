@@ -4,6 +4,7 @@ export { validators } from './lib/validators.js';
 export { formatters } from './lib/formatters.js';
 export { editors } from './lib/editors.js';
 export { parsers } from './lib/parsers.js';
+export { date } from './lib/date.js';
 export { createLookup } from './lib/lookup.js';
 export { ConfirmDialog } from './ui/confirm-dialog.js';
 export { LookupDialog } from './ui/lookup-dialog.js';

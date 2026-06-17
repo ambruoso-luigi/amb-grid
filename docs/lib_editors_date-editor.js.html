@@ -97,6 +97,13 @@ const createPickerOptions = options => {
     return pickerOptions;
 };
 
+const getDateEditorMode = options => {
+    if (options.mode) return options.mode;
+    if (options.picker) return 'manualWithPickerButton';
+
+    return 'manual';
+};
+
     /**
      * Date editor. Saves a date string in the configured format.
      *
@@ -106,7 +113,8 @@ const createPickerOptions = options => {
      * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - What to do when the typed value is invalid.
      * @param {string|Date} [options.minDate] - Earliest date passed to the picker when enabled.
      * @param {string|Date} [options.maxDate] - Latest date passed to the picker when enabled.
-     * @param {boolean} [options.picker=false] - Open a date picker while editing. Picker selection is limited by min/max, but manual input is still committed according to `invalidBehavior`.
+     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode] - Editing mode.
+     * @param {boolean} [options.picker=false] - Backward-compatible shortcut for `mode: 'manualWithPickerButton'`.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Tabulator editor.
      */
@@ -115,10 +123,12 @@ export function date(options = {}) {
             format: 'dd/mm/yyyy',
             allowEmpty: true,
             invalidBehavior: 'commitRaw',
+            mode: null,
             picker: false,
             selectOnFocus: false,
             ...options
         };
+        normalizedOptions.mode = getDateEditorMode(normalizedOptions);
         const pickerFormat = normalizeDateFormat(normalizedOptions.format);
 
         return (cell, onRendered, success, cancel) => {
@@ -141,7 +151,7 @@ export function date(options = {}) {
                 ? 8
                 : 10;
 
-            if (normalizedOptions.picker) {
+            if (normalizedOptions.mode === 'manualWithPickerButton' || normalizedOptions.mode === 'pickerOnly') {
                 const pickerButton = document.createElement('button');
                 const pickerInput = document.createElement('input');
                 let datepicker = null;
@@ -149,6 +159,7 @@ export function date(options = {}) {
                 let blurTimeout = null;
 
                 input.className = 'amb-date-editor';
+                input.readOnly = normalizedOptions.mode === 'pickerOnly';
                 wrapper.className = 'amb-date-editor-wrapper';
                 wrapper.style.alignItems = 'stretch';
                 wrapper.style.display = 'inline-flex';
@@ -258,6 +269,18 @@ export function date(options = {}) {
                 });
                 pickerButton.addEventListener('click', showPicker);
                 input.addEventListener('keydown', event => {
+                    if (normalizedOptions.mode === 'pickerOnly') {
+                        if (event.key === 'Enter') {
+                            showPicker();
+                        }
+
+                        if (event.key === 'Escape') {
+                            closeWithCancel();
+                        }
+
+                        return;
+                    }
+
                     if (event.key === 'Enter') {
                         commit();
                         return;
@@ -354,13 +377,13 @@ export function date(options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 17 2026 17:19:11 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 17 2026 22:58:45 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

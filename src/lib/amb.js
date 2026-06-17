@@ -1,4 +1,5 @@
 import { ConfirmDialog } from '../ui/confirm-dialog.js';
+import { date } from './date.js';
 import { LookupDialog } from '../ui/lookup-dialog.js';
 import { SearchFiltersDialog } from '../ui/search-filters-dialog.js';
 import { editors } from './editors.js';
@@ -16,6 +17,7 @@ import { validators } from './validators.js';
  * @property {object} formatters - Formatter factories for Tabulator columns.
  * @property {object} validators - Validator factories used by CrudHelper.
  * @property {object} parsers - Parser factories used by editors, formatters, and validators.
+ * @property {object} date - Date configuration helpers.
  * @property {Function} lookup - Primary lookup data source factory.
  * @property {Function} LookupDialog - Lookup selection dialog class.
  * @property {Function} ConfirmDialog - Confirmation dialog class.
@@ -26,6 +28,7 @@ export const AMB = {
     formatters,
     editors,
     parsers,
+    date,
     lookup: createLookup,
     LookupDialog,
     ConfirmDialog,

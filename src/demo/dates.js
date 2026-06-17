@@ -3,13 +3,63 @@ import { AMB } from '../index.js';
 const minDate = '2025-01-01';
 const maxDate = '2027-12-31';
 
-const createDateValidation = (format, messages) => ({
-    date: {
-        format,
-        minDate,
-        maxDate,
-        message: 'Invalid date',
-        messages
+const dateItManual = AMB.date.createConfig({
+    format: 'dd/mm/yyyy',
+    minDate,
+    maxDate,
+    mode: 'manual',
+    messages: {
+        syntax: 'Use D/M/YYYY or DD/MM/YYYY',
+        calendar: 'Enter a real calendar date',
+        minDate: 'Date must be on or after 01/01/2025',
+        maxDate: 'Date must be on or before 31/12/2027'
+    }
+});
+
+const dateItPicker = AMB.date.createConfig({
+    format: 'dd/mm/yyyy',
+    minDate,
+    maxDate,
+    mode: 'manualWithPickerButton',
+    messages: dateItManual.validator.messages
+});
+
+const dateIsoManual = AMB.date.createConfig({
+    format: 'iso',
+    minDate,
+    maxDate,
+    mode: 'manual',
+    messages: {
+        syntax: 'Use YYYY-M-D or YYYY-MM-DD',
+        calendar: 'Enter a real calendar date',
+        minDate: 'Date must be on or after 2025-01-01',
+        maxDate: 'Date must be on or before 2027-12-31'
+    }
+});
+
+const dateCompactManual = AMB.date.createConfig({
+    format: 'legacy',
+    minDate,
+    maxDate,
+    mode: 'manual',
+    messages: {
+        syntax: 'Use exactly 8 digits in YYYYMMDD format',
+        calendar: 'Enter a real calendar date',
+        minDate: 'Date must be on or after 20250101',
+        maxDate: 'Date must be on or before 20271231'
+    }
+});
+
+const dateDashPickerOnly = AMB.date.createConfig({
+    format: 'dd-mm-yyyy',
+    minDate,
+    maxDate,
+    mode: 'pickerOnly',
+    messages: {
+        syntax: 'Use DD-MM-YYYY',
+        calendar: 'Enter a real calendar date',
+        minDate: 'Date must be on or after 01-01-2025',
+        maxDate: 'Date must be on or before 31-12-2027'
     }
 });
 
@@ -55,6 +105,8 @@ export default function dates(app) {
                 <li>Invalid typed values stay visible so validation can report them.</li>
                 <li>All date columns enforce an allowed range from <code>01/01/2025</code> to <code>31/12/2027</code>.</li>
                 <li>The picker limits calendar selection, but manual input is still committed and validated by AMB Grid.</li>
+                <li>Date columns use <code>AMB.date.createConfig(...)</code> so format and limits are declared once.</li>
+                <li>Picker-only date uses <code>DD-MM-YYYY</code> to show that selected dates follow the column format.</li>
             </ul>
             <p>In <strong>Picker date</strong>, try <code>31/02/2026</code>, <code>01/01/2028</code>, or <code>20/022</code>: the typed value should stay visible, then validation explains the error.</p>
             <p>Also try <code>20/7/2026</code>, <code>2026-06-5</code>, or compact <code>2026720</code>.</p>
@@ -76,7 +128,8 @@ export default function dates(app) {
                 manualDate: '05/06/2026',
                 pickerDate: '12/06/2026',
                 isoDate: '2026-06-05',
-                compactDate: '20260605'
+                compactDate: '20260605',
+                pickerOnlyDate: '15-06-2026'
             },
             {
                 id: 2,
@@ -84,7 +137,8 @@ export default function dates(app) {
                 manualDate: '20/07/2026',
                 pickerDate: '21/07/2026',
                 isoDate: '2026-07-20',
-                compactDate: '20260720'
+                compactDate: '20260720',
+                pickerOnlyDate: '22-07-2026'
             },
             {
                 id: 3,
@@ -92,7 +146,8 @@ export default function dates(app) {
                 manualDate: '',
                 pickerDate: '',
                 isoDate: '',
-                compactDate: ''
+                compactDate: '',
+                pickerOnlyDate: ''
             }
         ],
         layout: 'fitColumns',
@@ -102,83 +157,47 @@ export default function dates(app) {
             {
                 title: 'Manual date',
                 field: 'manualDate',
-                editor: AMB.editors.date({
-                    format: 'dd/mm/yyyy',
-                    allowEmpty: true,
-                    minDate,
-                    maxDate
-                }),
-                formatter: AMB.formatters.date('dd/mm/yyyy'),
-                validation: createDateValidation(
-                    'dd/mm/yyyy',
-                    {
-                        syntax: 'Use D/M/YYYY or DD/MM/YYYY',
-                        calendar: 'Enter a real calendar date',
-                        minDate: 'Date must be on or after 01/01/2025',
-                        maxDate: 'Date must be on or before 31/12/2027'
-                    }
-                )
+                editor: AMB.editors.date(dateItManual.editor),
+                formatter: AMB.formatters.date(dateItManual.formatter),
+                validation: {
+                    date: dateItManual.validator
+                }
             },
             {
                 title: 'Picker date',
                 field: 'pickerDate',
-                editor: AMB.editors.date({
-                    format: 'dd/mm/yyyy',
-                    allowEmpty: true,
-                    picker: true,
-                    minDate,
-                    maxDate
-                }),
-                formatter: AMB.formatters.date('dd/mm/yyyy'),
-                validation: createDateValidation(
-                    'dd/mm/yyyy',
-                    {
-                        syntax: 'Use D/M/YYYY or DD/MM/YYYY',
-                        calendar: 'Enter a real calendar date',
-                        minDate: 'Date must be on or after 01/01/2025',
-                        maxDate: 'Date must be on or before 31/12/2027'
-                    }
-                )
+                editor: AMB.editors.date(dateItPicker.editor),
+                formatter: AMB.formatters.date(dateItPicker.formatter),
+                validation: {
+                    date: dateItPicker.validator
+                }
             },
             {
                 title: 'ISO-style date',
                 field: 'isoDate',
-                editor: AMB.editors.date({
-                    format: 'iso',
-                    allowEmpty: true,
-                    minDate,
-                    maxDate
-                }),
-                formatter: AMB.formatters.date('iso'),
-                validation: createDateValidation(
-                    'iso',
-                    {
-                        syntax: 'Use YYYY-M-D or YYYY-MM-DD',
-                        calendar: 'Enter a real calendar date',
-                        minDate: 'Date must be on or after 2025-01-01',
-                        maxDate: 'Date must be on or before 2027-12-31'
-                    }
-                )
+                editor: AMB.editors.date(dateIsoManual.editor),
+                formatter: AMB.formatters.date(dateIsoManual.formatter),
+                validation: {
+                    date: dateIsoManual.validator
+                }
             },
             {
                 title: 'Compact date',
                 field: 'compactDate',
-                editor: AMB.editors.date({
-                    format: 'legacy',
-                    allowEmpty: true,
-                    minDate,
-                    maxDate
-                }),
-                formatter: AMB.formatters.date('legacy'),
-                validation: createDateValidation(
-                    'legacy',
-                    {
-                        syntax: 'Use exactly 8 digits in YYYYMMDD format',
-                        calendar: 'Enter a real calendar date',
-                        minDate: 'Date must be on or after 20250101',
-                        maxDate: 'Date must be on or before 20271231'
-                    }
-                )
+                editor: AMB.editors.date(dateCompactManual.editor),
+                formatter: AMB.formatters.date(dateCompactManual.formatter),
+                validation: {
+                    date: dateCompactManual.validator
+                }
+            },
+            {
+                title: 'Picker-only date',
+                field: 'pickerOnlyDate',
+                editor: AMB.editors.date(dateDashPickerOnly.editor),
+                formatter: AMB.formatters.date(dateDashPickerOnly.formatter),
+                validation: {
+                    date: dateDashPickerOnly.validator
+                }
             }
         ]
     });

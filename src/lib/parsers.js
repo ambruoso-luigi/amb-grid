@@ -307,6 +307,7 @@ export const parsers = {
      * @param {string} [options.thousandSeparator='.'] - Visual thousands separator.
      * @param {boolean} [options.allowThousands=true] - Allow grouped thousands.
      * @param {boolean} [options.allowNegative=true] - Allow negative values.
+     * @param {string} [options.outputFormat='yyyy-mm-dd'] - Returned payload date format.
      * @param {boolean} [options.allowEmpty=true] - Allow empty values.
      * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
      * @param {boolean} [options.strictThousands=true] - Require coherent thousands grouping.
@@ -422,6 +423,7 @@ export const parsers = {
     dateToPayload(options = {}) {
         const normalizedOptions = {
             inputFormats: DEFAULT_DATE_INPUT_FORMATS,
+            outputFormat: 'yyyy-mm-dd',
             allowEmpty: true,
             emptyAs: '',
             ...options
@@ -433,7 +435,9 @@ export const parsers = {
 
                 const dateParts = parseDateUsingFormats(value, normalizedOptions.inputFormats);
 
-                return dateParts ? formatPayloadDate(dateParts) : null;
+                return dateParts
+                    ? formatDateValue(dateParts, normalizedOptions.outputFormat)
+                    : null;
             }
         };
     },

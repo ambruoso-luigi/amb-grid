@@ -92,6 +92,13 @@ describe('parsers.dateToPayload', () => {
         expect(parsers.dateToPayload({ inputFormats: ['dd/mm/yyyy', 'mm/dd/yyyy'] }).parse('06/07/2026'))
             .toBe('2026-07-06');
     });
+
+    test('can use a configured payload output format', () => {
+        expect(parsers.dateToPayload({
+            inputFormats: ['dd/mm/yyyy'],
+            outputFormat: 'yyyymmdd'
+        }).parse('20/7/2026')).toBe('20260720');
+    });
 });
 
 describe('parsers.dateTimeToPayload', () => {
