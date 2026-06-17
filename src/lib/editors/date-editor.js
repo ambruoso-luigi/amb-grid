@@ -1,133 +1,11 @@
 import Datepicker from 'vanillajs-datepicker/Datepicker';
 import { parsers } from '../parsers.js';
+import {
+    normalizeDateFormat,
+    normalizeDateInputChange,
+    parseDateEditorValue
+} from './date-editor-utils.js';
 import { focusInput, getInitialValue } from './shared.js';
-
-const normalizeDateFormat = format => {
-    const aliases = {
-        iso: 'yyyy-mm-dd',
-        ISO: 'yyyy-mm-dd',
-        it: 'dd/mm/yyyy',
-        IT: 'dd/mm/yyyy',
-        legacy: 'yyyymmdd'
-    };
-
-    return aliases[format] || format;
-};
-
-const getDateFormatParts = format => {
-    const normalizedFormat = normalizeDateFormat(format);
-
-    if (normalizedFormat === 'dd/mm/yyyy') {
-        return {
-            separator: '/',
-            groups: [2, 2, 4]
-        };
-    }
-
-    if (normalizedFormat === 'dd-mm-yyyy') {
-        return {
-            separator: '-',
-            groups: [2, 2, 4]
-        };
-    }
-
-    if (normalizedFormat === 'dd.mm.yyyy') {
-        return {
-            separator: '.',
-            groups: [2, 2, 4]
-        };
-    }
-
-    if (normalizedFormat === 'mm/dd/yyyy') {
-        return {
-            separator: '/',
-            groups: [2, 2, 4]
-        };
-    }
-
-    if (normalizedFormat === 'mm-dd-yyyy') {
-        return {
-            separator: '-',
-            groups: [2, 2, 4]
-        };
-    }
-
-    if (normalizedFormat === 'yyyy-mm-dd') {
-        return {
-            separator: '-',
-            groups: [4, 2, 2]
-        };
-    }
-
-    if (normalizedFormat === 'yyyy/mm/dd') {
-        return {
-            separator: '/',
-            groups: [4, 2, 2]
-        };
-    }
-
-    if (normalizedFormat === 'yyyymmdd') {
-        return {
-            separator: '',
-            groups: [4, 2, 2]
-        };
-    }
-
-    return null;
-};
-
-export const normalizeDateInput = (value, format) => {
-    const formatParts = getDateFormatParts(format);
-    const stringValue = String(value);
-
-    if (!formatParts) return stringValue;
-
-    if (formatParts.separator !== '' && stringValue.includes(formatParts.separator)) {
-        return stringValue
-            .replace(new RegExp(`[^\\d\\${formatParts.separator}]`, 'g'), '')
-            .slice(0, 10);
-    }
-
-    const digits = stringValue.replace(/\D/g, '').slice(0, 8);
-    const groups = [];
-    let offset = 0;
-
-    formatParts.groups.forEach(groupLength => {
-        const group = digits.slice(offset, offset + groupLength);
-
-        if (group) {
-            groups.push(group);
-        }
-
-        offset += groupLength;
-    });
-
-    const maxLength = formatParts.separator === '' ? 8 : 10;
-
-    return groups.join(formatParts.separator).slice(0, maxLength);
-};
-
-const countDigits = value => {
-    return (String(value).match(/\d/g) || []).length;
-};
-
-const getDateCursorPosition = (normalizedValue, digitCount) => {
-    if (digitCount <= 0) return 0;
-
-    let currentDigitCount = 0;
-
-    for (let index = 0; index < normalizedValue.length; index += 1) {
-        if (/\d/.test(normalizedValue[index])) {
-            currentDigitCount += 1;
-        }
-
-        if (currentDigitCount >= digitCount) {
-            return index + 1;
-        }
-    }
-
-    return normalizedValue.length;
-};
 
 const DATE_OPTION_FORMATS = [
     'dd/mm/yyyy',
@@ -270,53 +148,26 @@ export function date(options = {}) {
                 };
 
                 const commit = () => {
-                    const value = input.value;
+                    const result = parseDateEditorValue(input.value, normalizedOptions);
 
-                    if (value === '') {
-                        if (normalizedOptions.allowEmpty) {
-                            closeWithSuccess('');
-                            return;
-                        }
-
-                        if (normalizedOptions.invalidBehavior === 'cancel') {
-                            closeWithCancel();
-                            return;
-                        }
-
-                        closeWithSuccess(value);
+                    if (result.action === 'cancel') {
+                        closeWithCancel();
                         return;
                     }
 
-                    const parsedValue = parsers.date({
-                        inputFormat: normalizedOptions.format,
-                        outputFormat: normalizedOptions.format,
-                        allowEmpty: normalizedOptions.allowEmpty
-                    }).parse(value);
-
-                    if (parsedValue === null) {
-                        if (normalizedOptions.invalidBehavior === 'cancel') {
-                            closeWithCancel();
-                            return;
-                        }
-
-                        closeWithSuccess(value);
-                        return;
-                    }
-
-                    closeWithSuccess(parsedValue);
+                    closeWithSuccess(result.value);
                 };
 
-                const sanitizeInput = () => {
-                    const previousValue = input.value;
-                    const previousSelectionStart = input.selectionStart || 0;
-                    const digitsBeforeCaret = countDigits(previousValue.slice(0, previousSelectionStart));
-                    const normalizedValue = normalizeDateInput(previousValue, normalizedOptions.format);
+                const sanitizeInput = event => {
+                    const nextValue = normalizeDateInputChange({
+                        value: input.value,
+                        format: normalizedOptions.format,
+                        selectionStart: input.selectionStart || input.value.length,
+                        inputType: event && event.inputType
+                    });
 
-                    input.value = normalizedValue;
-                    input.setSelectionRange(
-                        getDateCursorPosition(normalizedValue, digitsBeforeCaret),
-                        getDateCursorPosition(normalizedValue, digitsBeforeCaret)
-                    );
+                    input.value = nextValue.value;
+                    input.setSelectionRange(nextValue.selectionStart, nextValue.selectionStart);
                 };
 
                 input.addEventListener('input', sanitizeInput);
@@ -373,54 +224,27 @@ export function date(options = {}) {
                 return input;
             }
 
-            const sanitizeInput = () => {
-                const previousValue = input.value;
-                const previousSelectionStart = input.selectionStart || 0;
-                const digitsBeforeCaret = countDigits(previousValue.slice(0, previousSelectionStart));
-                const normalizedValue = normalizeDateInput(previousValue, normalizedOptions.format);
+            const sanitizeInput = event => {
+                const nextValue = normalizeDateInputChange({
+                    value: input.value,
+                    format: normalizedOptions.format,
+                    selectionStart: input.selectionStart || input.value.length,
+                    inputType: event && event.inputType
+                });
 
-                input.value = normalizedValue;
-                input.setSelectionRange(
-                    getDateCursorPosition(normalizedValue, digitsBeforeCaret),
-                    getDateCursorPosition(normalizedValue, digitsBeforeCaret)
-                );
+                input.value = nextValue.value;
+                input.setSelectionRange(nextValue.selectionStart, nextValue.selectionStart);
             };
 
             const commit = () => {
-                const value = input.value;
+                const result = parseDateEditorValue(input.value, normalizedOptions);
 
-                if (value === '') {
-                    if (normalizedOptions.allowEmpty) {
-                        success('');
-                        return;
-                    }
-
-                    if (normalizedOptions.invalidBehavior === 'cancel') {
-                        cancel();
-                        return;
-                    }
-
-                    success(value);
+                if (result.action === 'cancel') {
+                    cancel();
                     return;
                 }
 
-                const parsedValue = parsers.date({
-                    inputFormat: normalizedOptions.format,
-                    outputFormat: normalizedOptions.format,
-                    allowEmpty: normalizedOptions.allowEmpty
-                }).parse(value);
-
-                if (parsedValue === null) {
-                    if (normalizedOptions.invalidBehavior === 'cancel') {
-                        cancel();
-                        return;
-                    }
-
-                    success(value);
-                    return;
-                }
-
-                success(parsedValue);
+                success(result.value);
             };
 
             input.addEventListener('input', sanitizeInput);

@@ -1,7 +1,7 @@
 import { AMB } from '../index.js';
 
-const minDate = '2026-01-01';
-const maxDate = '2026-12-31';
+const minDate = '2025-01-01';
+const maxDate = '2027-12-31';
 
 const createDateValidation = (format, message) => ({
     date: {
@@ -16,7 +16,19 @@ export default function dates(app) {
     app.innerHTML = `
         <h2>Dates</h2>
         <p class="demo-note">This demo focuses on date editors, the datepicker, and validation. Invalid typed dates stay visible so validators can report errors.</p>
-        <p class="demo-note">Date limits are enforced by validation and, when enabled, passed to the picker. Try <code>20/7/2026</code>, <code>2026-06-5</code>, <code>31/02/2026</code>, <code>2026720</code>, or <code>01/01/2027</code>.</p>
+        <div class="demo-note">
+            <strong>Supported behavior:</strong>
+            <ul>
+                <li>Manual date accepts <code>D/M/YYYY</code> and <code>DD/MM/YYYY</code>.</li>
+                <li>ISO-style date accepts <code>YYYY-M-D</code> and <code>YYYY-MM-DD</code>.</li>
+                <li>Auto separators are applied only when typing digits from left to right.</li>
+                <li>Compact date accepts exactly <code>YYYYMMDD</code>.</li>
+                <li>Invalid typed values stay visible so validation can report them.</li>
+                <li>All date columns enforce an allowed range from <code>01/01/2025</code> to <code>31/12/2027</code>.</li>
+                <li>Picker limits and validation limits are aligned.</li>
+            </ul>
+            <p>Try <code>20/7/2026</code>, <code>2026-06-5</code>, <code>31/02/2026</code>, <code>2026720</code>, or <code>01/01/2028</code>.</p>
+        </div>
         <div class="toolbar">
             <button type="button" id="action-validate-dates">Validate dates</button>
         </div>
@@ -69,7 +81,7 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('dd/mm/yyyy'),
                 validation: createDateValidation(
                     'dd/mm/yyyy',
-                    'Enter a real date between 01/01/2026 and 31/12/2026'
+                    'Enter a real date between 01/01/2025 and 31/12/2027'
                 )
             },
             {
@@ -85,7 +97,7 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('dd/mm/yyyy'),
                 validation: createDateValidation(
                     'dd/mm/yyyy',
-                    'Pick or enter a real date between 01/01/2026 and 31/12/2026'
+                    'Pick or enter a real date between 01/01/2025 and 31/12/2027'
                 )
             },
             {
@@ -100,7 +112,7 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('iso'),
                 validation: createDateValidation(
                     'iso',
-                    'Enter a real ISO-style date between 2026-01-01 and 2026-12-31'
+                    'Enter a real ISO-style date between 2025-01-01 and 2027-12-31'
                 )
             },
             {
@@ -115,7 +127,7 @@ export default function dates(app) {
                 formatter: AMB.formatters.date('legacy'),
                 validation: createDateValidation(
                     'legacy',
-                    'Enter exactly 8 digits for a real 2026 date, e.g. 20260720'
+                    'Enter exactly 8 digits for a real date in range, e.g. 20260720'
                 )
             }
         ]
