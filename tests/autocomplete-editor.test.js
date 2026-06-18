@@ -3,7 +3,8 @@ import {
     filterAutocompleteItems,
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
-    moveAutocompleteActiveIndex,
+    getAutocompleteSuggestionValues,
+    getAwesompleteOptions,
     normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
@@ -69,6 +70,24 @@ describe('autocomplete suggestions', () => {
             'Item 7'
         ]);
     });
+
+    test('maps maxOptions to Awesomplete maxItems', () => {
+        expect(getAwesompleteOptions(['Low', 'Medium'], {}).maxItems).toBe(10);
+        expect(getAwesompleteOptions(['Low', 'Medium'], {
+            maxOptions: 1
+        }).maxItems).toBe(1);
+    });
+
+    test('passes plain text values to Awesomplete', () => {
+        expect(getAutocompleteSuggestionValues([
+            'urgent',
+            10,
+            null
+        ])).toEqual([
+            'urgent',
+            '10'
+        ]);
+    });
 });
 
 describe('autocomplete native input behavior', () => {
@@ -78,74 +97,37 @@ describe('autocomplete native input behavior', () => {
     });
 
     test('leaves Delete and Backspace to the native input', () => {
-        expect(getAutocompleteKeyAction({
-            key: 'Delete',
-            activeIndex: -1,
-            suggestionCount: 3
-        })).toEqual({
+        expect(getAutocompleteKeyAction('Delete')).toEqual({
             action: 'native',
             preventDefault: false
         });
-        expect(getAutocompleteKeyAction({
-            key: 'Backspace',
-            activeIndex: -1,
-            suggestionCount: 3
-        })).toEqual({
+        expect(getAutocompleteKeyAction('Backspace')).toEqual({
             action: 'native',
             preventDefault: false
         });
     });
 
-    test('moves through suggestions with ArrowDown and ArrowUp', () => {
-        expect(moveAutocompleteActiveIndex({
-            activeIndex: -1,
-            direction: 1,
-            suggestionCount: 3
-        })).toBe(0);
-        expect(moveAutocompleteActiveIndex({
-            activeIndex: 0,
-            direction: 1,
-            suggestionCount: 3
-        })).toBe(1);
-        expect(moveAutocompleteActiveIndex({
-            activeIndex: -1,
-            direction: -1,
-            suggestionCount: 3
-        })).toBe(2);
-        expect(moveAutocompleteActiveIndex({
-            activeIndex: 2,
-            direction: -1,
-            suggestionCount: 3
-        })).toBe(1);
+    test('delegates ArrowDown and ArrowUp to Awesomplete', () => {
+        expect(getAutocompleteKeyAction('ArrowDown')).toEqual({
+            action: 'suggestions',
+            preventDefault: false
+        });
+        expect(getAutocompleteKeyAction('ArrowUp')).toEqual({
+            action: 'suggestions',
+            preventDefault: false
+        });
     });
 
-    test('Enter commits the active suggestion or current input', () => {
-        expect(getAutocompleteKeyAction({
-            key: 'Enter',
-            activeIndex: 1,
-            suggestionCount: 3
-        })).toEqual({
-            action: 'commitSuggestion',
-            activeIndex: 1,
-            preventDefault: true
-        });
-        expect(getAutocompleteKeyAction({
-            key: 'Enter',
-            activeIndex: -1,
-            suggestionCount: 3
-        })).toEqual({
-            action: 'commitInput',
+    test('Enter commits the current input when Awesomplete did not select first', () => {
+        expect(getAutocompleteKeyAction('Enter')).toEqual({
+            action: 'commit',
             preventDefault: true
         });
     });
 
     test('Tab commits without blocking Tabulator navigation', () => {
-        expect(getAutocompleteKeyAction({
-            key: 'Tab',
-            activeIndex: 0,
-            suggestionCount: 3
-        })).toEqual({
-            action: 'commitInput',
+        expect(getAutocompleteKeyAction('Tab')).toEqual({
+            action: 'commit',
             preventDefault: false
         });
     });

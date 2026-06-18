@@ -47,6 +47,27 @@ export const normalizeAutocompleteItems = (items, valueField = 'value', labelFie
         .filter(item => item && typeof item === 'object');
 };
 
+export const getAutocompleteSuggestionValues = values => {
+    if (!Array.isArray(values)) return [];
+
+    return values
+        .filter(value => value !== null && value !== undefined)
+        .map(value => String(value));
+};
+
+export const getAwesompleteOptions = (values, options = {}) => {
+    const normalizedOptions = normalizeAutocompleteOptions(options);
+
+    return {
+        list: getAutocompleteSuggestionValues(values),
+        minChars: 0,
+        maxItems: normalizedOptions.maxOptions,
+        autoFirst: false,
+        sort: false,
+        tabSelect: false
+    };
+};
+
 export const filterAutocompleteItems = (
     items,
     query,
@@ -72,57 +93,24 @@ export const getAutocompleteCursorPosition = value => {
     return String(value ?? '').length;
 };
 
-export const moveAutocompleteActiveIndex = ({
-    activeIndex,
-    direction,
-    suggestionCount
-}) => {
-    if (suggestionCount <= 0) return -1;
-
-    if (direction > 0) {
-        return activeIndex < 0
-            ? 0
-            : Math.min(activeIndex + 1, suggestionCount - 1);
-    }
-
-    return activeIndex < 0
-        ? suggestionCount - 1
-        : Math.max(activeIndex - 1, 0);
-};
-
-export const getAutocompleteKeyAction = ({
-    key,
-    activeIndex,
-    suggestionCount
-}) => {
+export const getAutocompleteKeyAction = key => {
     if (key === 'ArrowDown' || key === 'ArrowUp') {
         return {
-            action: 'navigate',
-            activeIndex: moveAutocompleteActiveIndex({
-                activeIndex,
-                direction: key === 'ArrowDown' ? 1 : -1,
-                suggestionCount
-            }),
-            preventDefault: true
+            action: 'suggestions',
+            preventDefault: false
         };
     }
 
     if (key === 'Enter') {
-        return activeIndex >= 0 && activeIndex < suggestionCount
-            ? {
-                action: 'commitSuggestion',
-                activeIndex,
-                preventDefault: true
-            }
-            : {
-                action: 'commitInput',
-                preventDefault: true
-            };
+        return {
+            action: 'commit',
+            preventDefault: true
+        };
     }
 
     if (key === 'Tab') {
         return {
-            action: 'commitInput',
+            action: 'commit',
             preventDefault: false
         };
     }

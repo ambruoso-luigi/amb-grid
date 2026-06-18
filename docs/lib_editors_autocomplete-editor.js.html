@@ -26,109 +26,50 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import {
-    filterAutocompleteItems,
+            <pre class="prettyprint source linenums"><code>import Awesomplete from 'awesomplete';
+import {
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
-    normalizeAutocompleteItems,
+    getAutocompleteSuggestionValues,
+    getAwesompleteOptions,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
-import { getInitialValue, getLookupOptionValue } from './shared.js';
+import { getInitialValue } from './shared.js';
 
 /**
- * Native text editor that suggests values from a list while the user types.
+ * Native text editor with suggestions provided by Awesomplete.
  *
- * @param {Array&lt;string>|object} values - Suggested strings. A source object
- * with a `load` function remains supported for compatibility.
+ * Awesomplete only displays and selects suggestions. AMB Grid owns the input
+ * value, commit behavior, and validation lifecycle.
+ *
+ * @param {Array&lt;string>} values - Suggested text values.
  * @param {object} [options] - Autocomplete options.
  * @param {boolean} [options.allowEmpty=true] - Allow saving an empty string.
  * @param {boolean} [options.allowCustomValue=false] - Allow values not present in the suggestions.
  * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected suggestion.
  * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit.
- * @param {number} [options.maxOptions=10] - Maximum matching options shown.
- * @param {number} [options.dropdownWidth=420] - Dropdown width in pixels.
+ * @param {number} [options.maxOptions=10] - Maximum matching suggestions shown through Awesomplete `maxItems`.
  * @param {string} [options.placeholder] - Native input placeholder.
- * @param {string} [options.valueField] - Stored value field override.
- * @param {string} [options.labelField] - Display label field override.
- * @param {object} [options.context] - Context passed to a compatible custom source.
  * @returns {Function} Tabulator editor.
  */
 export function autocomplete(values, options = {}) {
     const normalizedOptions = normalizeAutocompleteOptions(options);
-    const valueField = values &amp;&amp; values.valueField
-        ? values.valueField
-        : normalizedOptions.valueField || 'value';
-    const labelField = values &amp;&amp; values.labelField
-        ? values.labelField
-        : normalizedOptions.labelField || 'label';
-    const staticItems = Array.isArray(values)
-        ? normalizeAutocompleteItems(values, valueField, labelField)
-        : null;
+    const suggestionValues = getAutocompleteSuggestionValues(values);
 
     return (cell, onRendered, success, cancel) => {
         const input = document.createElement('input');
-        const dropdown = document.createElement('div');
-        const initialValue = getInitialValue(cell);
-        const row = cell.getRow &amp;&amp; cell.getRow();
-        const rowData = row &amp;&amp; row.getData ? row.getData() : undefined;
-        const field = cell.getField &amp;&amp; cell.getField();
-        let suggestions = [];
-        let activeIndex = -1;
+        let awesomplete = null;
         let closed = false;
         let blurTimeout = null;
-        let loadToken = 0;
 
         input.type = 'text';
-        input.value = initialValue;
+        input.value = getInitialValue(cell);
         input.className = 'amb-autocomplete-editor';
-        input.autocomplete = 'off';
-        input.setAttribute('role', 'combobox');
-        input.setAttribute('aria-autocomplete', 'list');
-        input.setAttribute('aria-expanded', 'false');
 
         if (normalizedOptions.placeholder) {
             input.placeholder = normalizedOptions.placeholder;
         }
-
-        dropdown.className = 'amb-autocomplete-dropdown';
-        dropdown.setAttribute('role', 'listbox');
-        dropdown.hidden = true;
-
-        const positionDropdown = () => {
-            if (dropdown.hidden) return;
-
-            const rect = input.getBoundingClientRect();
-            const width = normalizedOptions.dropdownWidth || rect.width;
-
-            dropdown.style.left = `${rect.left + window.scrollX}px`;
-            dropdown.style.top = `${rect.bottom + window.scrollY}px`;
-            dropdown.style.width = `${Math.max(width, rect.width)}px`;
-        };
-
-        const hideDropdown = () => {
-            dropdown.hidden = true;
-            input.setAttribute('aria-expanded', 'false');
-            input.removeAttribute('aria-activedescendant');
-        };
-
-        const updateActiveSuggestion = () => {
-            dropdown.querySelectorAll('.amb-autocomplete-option').forEach((option, index) => {
-                const isActive = index === activeIndex;
-
-                option.classList.toggle('is-active', isActive);
-                option.setAttribute('aria-selected', String(isActive));
-
-                if (isActive) {
-                    input.setAttribute('aria-activedescendant', option.id);
-                    option.scrollIntoView({ block: 'nearest' });
-                }
-            });
-
-            if (activeIndex &lt; 0) {
-                input.removeAttribute('aria-activedescendant');
-            }
-        };
 
         const cleanup = () => {
             if (blurTimeout) {
@@ -136,9 +77,10 @@ export function autocomplete(values, options = {}) {
                 blurTimeout = null;
             }
 
-            window.removeEventListener('resize', positionDropdown);
-            window.removeEventListener('scroll', positionDropdown, true);
-            dropdown.remove();
+            if (awesomplete) {
+                awesomplete.destroy();
+                awesomplete = null;
+            }
         };
 
         const closeWithSuccess = value => {
@@ -157,23 +99,17 @@ export function autocomplete(values, options = {}) {
             cancel();
         };
 
-        const getSuggestionValue = item => getLookupOptionValue(item, valueField);
+        const findExactSuggestion = value => {
+            const normalizedValue = String(value ?? '').trim().toLowerCase();
 
-        const getExactSuggestionValue = typedValue => {
-            const normalizedTypedValue = String(typedValue).trim().toLowerCase();
-            const exactItem = (staticItems || suggestions).find(item => {
-                const value = String(item[valueField] ?? '').trim().toLowerCase();
-                const label = String(item[labelField] ?? '').trim().toLowerCase();
-
-                return value === normalizedTypedValue || label === normalizedTypedValue;
-            });
-
-            return exactItem ? getSuggestionValue(exactItem) : '';
+            return suggestionValues.find(suggestion => {
+                return suggestion.trim().toLowerCase() === normalizedValue;
+            }) || '';
         };
 
         const commit = selectedValue => {
             const result = resolveAutocompleteCommit({
-                selectedValue: selectedValue || getExactSuggestionValue(input.value),
+                selectedValue: selectedValue || findExactSuggestion(input.value),
                 typedValue: input.value,
                 options: normalizedOptions
             });
@@ -186,129 +122,16 @@ export function autocomplete(values, options = {}) {
             closeWithSuccess(result.value);
         };
 
-        const selectSuggestion = index => {
-            const item = suggestions[index];
+        const handleKeydown = event => {
+            if (closed) return;
 
-            if (!item) {
-                commit();
-                return;
-            }
-
-            const value = getSuggestionValue(item);
-
-            input.value = value;
-            commit(value);
-        };
-
-        const renderSuggestions = items => {
-            suggestions = items;
-            activeIndex = -1;
-            dropdown.replaceChildren();
-
-            items.forEach((item, index) => {
-                const option = document.createElement('div');
-
-                option.id = `amb-autocomplete-option-${Math.random().toString(36).slice(2)}`;
-                option.className = 'amb-autocomplete-option';
-                option.textContent = String(item[labelField] ?? item[valueField] ?? '');
-                option.setAttribute('role', 'option');
-                option.setAttribute('aria-selected', 'false');
-                option.addEventListener('mousedown', event => {
-                    event.preventDefault();
-                });
-                option.addEventListener('mouseenter', () => {
-                    activeIndex = index;
-                    updateActiveSuggestion();
-                });
-                option.addEventListener('click', () => {
-                    selectSuggestion(index);
-                });
-                dropdown.append(option);
-            });
-
-            if (items.length === 0) {
-                hideDropdown();
-                return;
-            }
-
-            dropdown.hidden = false;
-            input.setAttribute('aria-expanded', 'true');
-            positionDropdown();
-        };
-
-        const loadSuggestions = async query => {
-            if (staticItems) {
-                return filterAutocompleteItems(
-                    staticItems,
-                    query,
-                    normalizedOptions.maxOptions,
-                    valueField,
-                    labelField
-                );
-            }
-
-            if (!values || typeof values.load !== 'function') {
-                return [];
-            }
-
-            const items = await values.load({
-                query,
-                rowData,
-                field,
-                context: normalizedOptions.context || {}
-            });
-
-            return filterAutocompleteItems(
-                items,
-                query,
-                normalizedOptions.maxOptions,
-                valueField,
-                labelField
-            );
-        };
-
-        const refreshSuggestions = async () => {
-            const token = loadToken + 1;
-
-            loadToken = token;
-
-            try {
-                const items = await loadSuggestions(input.value);
-
-                if (closed || token !== loadToken) return;
-
-                renderSuggestions(items);
-            } catch {
-                if (!closed &amp;&amp; token === loadToken) {
-                    renderSuggestions([]);
-                }
-            }
-        };
-
-        input.addEventListener('input', refreshSuggestions);
-        input.addEventListener('keydown', event => {
-            const action = getAutocompleteKeyAction({
-                key: event.key,
-                activeIndex,
-                suggestionCount: suggestions.length
-            });
+            const action = getAutocompleteKeyAction(event.key);
 
             if (action.preventDefault) {
                 event.preventDefault();
             }
 
-            if (action.action === 'navigate') {
-                activeIndex = action.activeIndex;
-                updateActiveSuggestion();
-                return;
-            }
-
-            if (action.action === 'commitSuggestion') {
-                selectSuggestion(action.activeIndex);
-                return;
-            }
-
-            if (action.action === 'commitInput') {
+            if (action.action === 'commit') {
                 commit();
                 return;
             }
@@ -316,26 +139,38 @@ export function autocomplete(values, options = {}) {
             if (action.action === 'cancel') {
                 closeWithCancel();
             }
-        });
-        input.addEventListener('blur', () => {
+        };
+
+        const handleBlur = () => {
             blurTimeout = window.setTimeout(() => {
                 if (!closed) {
                     commit();
                 }
             }, 0);
+        };
+
+        input.addEventListener('awesomplete-selectcomplete', event => {
+            const selectedValue = event.text &amp;&amp; event.text.value !== undefined
+                ? String(event.text.value)
+                : input.value;
+
+            input.value = selectedValue;
+            commit(selectedValue);
         });
 
-        document.body.append(dropdown);
-        window.addEventListener('resize', positionDropdown);
-        window.addEventListener('scroll', positionDropdown, true);
-
         onRendered(() => {
+            awesomplete = new Awesomplete(
+                input,
+                getAwesompleteOptions(suggestionValues, normalizedOptions)
+            );
+            input.addEventListener('keydown', handleKeydown);
+            input.addEventListener('blur', handleBlur);
             input.focus();
 
             const cursorPosition = getAutocompleteCursorPosition(input.value);
 
             input.setSelectionRange(cursorPosition, cursorPosition);
-            refreshSuggestions();
+            awesomplete.evaluate();
         });
 
         return input;
@@ -357,7 +192,7 @@ export function autocomplete(values, options = {}) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Jun 18 2026 19:36:31 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Jun 18 2026 19:48:39 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

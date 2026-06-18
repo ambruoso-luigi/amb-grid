@@ -1,5 +1,6 @@
 import '../style.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
+import 'awesomplete/awesomplete.css';
 import 'vanillajs-datepicker/css/datepicker.min.css';
 import '../ui/floating-message.css';
 import '../ui/confirm-dialog.css';

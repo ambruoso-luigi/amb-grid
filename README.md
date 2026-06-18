@@ -168,7 +168,7 @@ Lookup fields with support for:
 
 ### Autocomplete
 
-`AMB.editors.autocomplete(values, options)` is a native text input with a lightweight AMB-managed suggestion dropdown. The selected or typed text is stored directly; the dropdown never owns the value and there is no hidden associated value.
+`AMB.editors.autocomplete(values, options)` is a native text input with suggestions powered by Awesomplete. Awesomplete is used only as a lightweight suggestion engine: the selected or typed text is stored directly, the dropdown never owns the value, and there is no hidden associated value.
 
 `maxOptions` defaults to `10` and limits the number of matching suggestions shown. It can be overridden, for example with `AMB.editors.autocomplete(values, { maxOptions: 15 })`.
 
