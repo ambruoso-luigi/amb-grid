@@ -1,12 +1,10 @@
 import { describe, expect, test, vi } from 'vitest';
 import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
 import {
-    filterAutocompleteItems,
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
     getAutocompleteSuggestionValues,
     getAwesompleteOptions,
-    normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from '../src/lib/editors/autocomplete-editor-utils.js';
@@ -606,38 +604,13 @@ describe('autocomplete editor lifecycle', () => {
 });
 
 describe('autocomplete suggestions', () => {
-    test('normalizes simple string suggestions', () => {
-        expect(normalizeAutocompleteItems([
+    test('passes a simple list of text suggestions to Awesomplete', () => {
+        expect(getAutocompleteSuggestionValues([
             'Human Resources',
             'Finance'
         ])).toEqual([
-            { value: 'Human Resources', label: 'Human Resources' },
-            { value: 'Finance', label: 'Finance' }
-        ]);
-    });
-
-    test('preserves object suggestions and supports custom field names', () => {
-        const item = { code: 'HR', description: 'Human Resources' };
-
-        expect(normalizeAutocompleteItems([item], 'code', 'description')).toEqual([item]);
-        expect(normalizeAutocompleteItems(['Operations'], 'code', 'description')).toEqual([
-            { code: 'Operations', description: 'Operations' }
-        ]);
-    });
-
-    test('returns only the first maxOptions matching values', () => {
-        const values = Array.from({ length: 100 }, (_, index) => `Item ${index + 1}`);
-        const matches = filterAutocompleteItems(values, 'Item', 7);
-
-        expect(matches).toHaveLength(7);
-        expect(matches.map(item => item.value)).toEqual([
-            'Item 1',
-            'Item 2',
-            'Item 3',
-            'Item 4',
-            'Item 5',
-            'Item 6',
-            'Item 7'
+            'Human Resources',
+            'Finance'
         ]);
     });
 
@@ -648,14 +621,13 @@ describe('autocomplete suggestions', () => {
         }).maxItems).toBe(1);
     });
 
-    test('passes plain text values to Awesomplete', () => {
+    test('stores suggestion text directly without a separate hidden value', () => {
         expect(getAutocompleteSuggestionValues([
             'urgent',
-            10,
-            null
+            'review'
         ])).toEqual([
             'urgent',
-            '10'
+            'review'
         ]);
     });
 });

@@ -48,6 +48,16 @@ Generate documentation:
 npm run docs
 ```
 
+## Third-party components
+
+AMB Grid is framework-agnostic and uses a small set of focused frontend libraries:
+
+* [Tabulator](https://tabulator.info/): table rendering engine.
+* [Awesomplete](https://leaverou.github.io/awesomplete/): lightweight text suggestions for autocomplete editors.
+* [vanillajs-datepicker](https://mymth.github.io/vanillajs-datepicker/): calendar picker for date editors.
+
+These components provide focused UI behavior. AMB Grid owns CRUD state, validation, payload generation, editor commit rules, and lifecycle cleanup.
+
 ## Features
 
 ### CRUD State Tracking
@@ -104,6 +114,7 @@ Reusable editors for common scenarios:
 * Checkbox
 * Date
 * Select
+* Autocomplete
 * Lookup
 * Large text
 
@@ -163,12 +174,11 @@ Lookup fields with support for:
 * Dialog selection
 * Code validation
 * Description management
-* Autocomplete integration
 * Hover descriptions
 
 ### Autocomplete
 
-`AMB.editors.autocomplete(values, options)` is a native text input with suggestions powered by Awesomplete. Awesomplete is used only as a lightweight suggestion engine: the selected or typed text is stored directly, the dropdown never owns the value, and there is no hidden associated value.
+`AMB.editors.autocomplete(values, options)` is a native text input with suggestions from a simple string list, powered by Awesomplete. Awesomplete is only the lightweight suggestion engine: the selected or typed text is stored directly, the dropdown never owns the value, and there is no hidden associated data.
 
 `maxOptions` defaults to `10` and limits the number of matching suggestions shown. It can be overridden, for example with `AMB.editors.autocomplete(values, { maxOptions: 15 })`.
 
@@ -178,7 +188,7 @@ Selected and typed values are trimmed only on commit by default with `trimInput:
 
 `allowedValues` is synchronous and intended for static lists. Async validation is not included at this stage.
 
-Code/description business fields are a separate, more specialized use case. Autocomplete intentionally focuses on plain text suggestions.
+Autocomplete intentionally remains a local plain-text editor. It does not perform remote lookup or asynchronous validation.
 
 ### Search and Filters
 

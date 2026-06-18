@@ -26,27 +26,6 @@ export const normalizeAutocompleteInput = (value, options = {}) => {
     return normalizedOptions.trimInput ? stringValue.trim() : stringValue;
 };
 
-export const normalizeAutocompleteItem = (item, valueField = 'value', labelField = 'label') => {
-    if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
-        const value = String(item);
-
-        return {
-            [valueField]: value,
-            [labelField]: value
-        };
-    }
-
-    return item;
-};
-
-export const normalizeAutocompleteItems = (items, valueField = 'value', labelField = 'label') => {
-    if (!Array.isArray(items)) return [];
-
-    return items
-        .map(item => normalizeAutocompleteItem(item, valueField, labelField))
-        .filter(item => item && typeof item === 'object');
-};
-
 export const getAutocompleteSuggestionValues = values => {
     if (!Array.isArray(values)) return [];
 
@@ -66,27 +45,6 @@ export const getAwesompleteOptions = (values, options = {}) => {
         sort: false,
         tabSelect: false
     };
-};
-
-export const filterAutocompleteItems = (
-    items,
-    query,
-    maxOptions,
-    valueField = 'value',
-    labelField = 'label'
-) => {
-    const normalizedQuery = String(query || '').trim().toLowerCase();
-    const normalizedItems = normalizeAutocompleteItems(items, valueField, labelField);
-    const matches = normalizedQuery === ''
-        ? normalizedItems
-        : normalizedItems.filter(item => {
-            const value = String(item[valueField] ?? '').toLowerCase();
-            const label = String(item[labelField] ?? '').toLowerCase();
-
-            return value.includes(normalizedQuery) || label.includes(normalizedQuery);
-        });
-
-    return matches.slice(0, maxOptions);
 };
 
 export const getAutocompleteCursorPosition = value => {

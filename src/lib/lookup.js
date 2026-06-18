@@ -21,7 +21,7 @@ const normalizeResult = result => {
 };
 
 /**
- * Create a lookup data source for autocomplete and lookup editors.
+ * Create a data source for the specialized lookup editor.
  *
  * Results are cached by query unless disabled. Editor calls pass `query`,
  * `rowData`, `field`, and `context` to the loader.

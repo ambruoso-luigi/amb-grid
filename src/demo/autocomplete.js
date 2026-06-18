@@ -79,7 +79,7 @@ const buildReport = result => {
 export default function autocomplete(app) {
     app.innerHTML = `
         <h2>Autocomplete</h2>
-        <p class="demo-note">Autocomplete suggests values from a list while the user types. Columns can allow custom values or require one of the suggested values.</p>
+        <p class="demo-note">Autocomplete suggests text from simple string lists. The typed or selected text is stored directly, with no separate hidden value.</p>
         <div class="toolbar">
             <button type="button" id="action-validate-autocomplete">Validate autocomplete</button>
             <button type="button" id="action-create-autocomplete-anomalies">Create autocomplete anomalies</button>

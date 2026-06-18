@@ -11,10 +11,12 @@ import {
 import { getInitialValue } from './shared.js';
 
 /**
- * Native text editor with suggestions provided by Awesomplete.
+ * Native text editor with suggestions from a simple string list.
  *
- * Awesomplete only displays and selects suggestions. AMB Grid owns the input
- * value, commit behavior, and validation lifecycle.
+ * Awesomplete provides lightweight suggestion display and keyboard navigation.
+ * AMB Grid owns the text value, commit rules, validation, CRUD state, and
+ * lifecycle cleanup. Suggestions have no separate hidden associated data, and
+ * this editor does not perform remote lookup or asynchronous validation.
  *
  * @param {Array<string>} values - Suggested text values.
  * @param {object} [options] - Autocomplete options.
