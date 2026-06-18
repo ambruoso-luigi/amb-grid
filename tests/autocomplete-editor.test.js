@@ -1,4 +1,5 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
+import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
 import {
     filterAutocompleteItems,
     getAutocompleteCursorPosition,
@@ -9,6 +10,128 @@ import {
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from '../src/lib/editors/autocomplete-editor-utils.js';
+
+const awesompleteMock = vi.hoisted(() => ({
+    instances: []
+}));
+
+vi.mock('awesomplete', () => ({
+    default: class AwesompleteMock {
+        constructor(input, options) {
+            this.input = input;
+            this.options = options;
+            this.container = {
+                contains: target => target === input || target?.insideAutocomplete === true
+            };
+            this.destroy = vi.fn();
+            this.evaluate = vi.fn();
+            awesompleteMock.instances.push(this);
+        }
+    }
+}));
+
+const { autocomplete } = await import('../src/lib/editors/autocomplete-editor.js');
+
+class EventTargetMock {
+    constructor() {
+        this.listeners = new Map();
+    }
+
+    addEventListener(type, listener, options) {
+        if (!this.listeners.has(type)) {
+            this.listeners.set(type, []);
+        }
+
+        this.listeners.get(type).push({ listener, options });
+    }
+
+    removeEventListener(type, listener, options) {
+        const listeners = this.listeners.get(type) || [];
+
+        this.listeners.set(type, listeners.filter(entry => {
+            return entry.listener !== listener || entry.options !== options;
+        }));
+    }
+
+    dispatch(type, event = {}) {
+        const dispatchedEvent = {
+            target: this,
+            preventDefault: vi.fn(),
+            ...event
+        };
+
+        [...(this.listeners.get(type) || [])].forEach(({ listener }) => {
+            listener(dispatchedEvent);
+        });
+
+        return dispatchedEvent;
+    }
+}
+
+class InputMock extends EventTargetMock {
+    constructor() {
+        super();
+        this.className = '';
+        this.placeholder = '';
+        this.type = '';
+        this.value = '';
+        this.focus = vi.fn();
+        this.setSelectionRange = vi.fn();
+    }
+}
+
+const createClassList = () => {
+    const values = new Set();
+
+    return {
+        add: vi.fn(value => values.add(value)),
+        remove: vi.fn(value => values.delete(value)),
+        contains: value => values.has(value)
+    };
+};
+
+const createEditorHarness = (options = {}, initialValue = 'Finance') => {
+    const originalDocument = globalThis.document;
+    const documentMock = new EventTargetMock();
+    const cellElement = {
+        classList: createClassList(),
+        dataset: {}
+    };
+    const cell = {
+        getElement: () => cellElement,
+        getValue: () => initialValue
+    };
+    const success = vi.fn();
+    const cancel = vi.fn();
+    let render = null;
+
+    documentMock.createElement = vi.fn(() => new InputMock());
+    globalThis.document = documentMock;
+    awesompleteMock.instances.length = 0;
+
+    const input = autocomplete(['Finance', 'Human Resources'], options)(
+        cell,
+        callback => {
+            render = callback;
+        },
+        success,
+        cancel
+    );
+
+    render();
+
+    return {
+        cancel,
+        cell,
+        cellElement,
+        documentMock,
+        input,
+        restore: () => {
+            globalThis.document = originalDocument;
+        },
+        success
+    };
+};
 
 describe('autocomplete editor options', () => {
     test('provides stable strict defaults', () => {
@@ -32,6 +155,195 @@ describe('autocomplete editor options', () => {
         expect(normalizeAutocompleteOptions({
             maxOptions: 0
         }).maxOptions).toBe(10);
+    });
+});
+
+describe('autocomplete editor lifecycle', () => {
+    test('commits the typed value on Enter', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            harness.input.value = 'Operations';
+            const event = harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(harness.success).toHaveBeenCalledWith('Operations');
+            expect(harness.cancel).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('commits on Tab without preventing Tabulator navigation', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            harness.input.value = 'Operations';
+            const event = harness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(harness.success).toHaveBeenCalledWith('Operations');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('commits synchronously on blur and before an outside cell mousedown', () => {
+        const blurHarness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            blurHarness.input.value = 'Operations';
+            blurHarness.input.dispatch('blur');
+
+            expect(blurHarness.success).toHaveBeenCalledWith('Operations');
+        } finally {
+            blurHarness.restore();
+        }
+
+        const clickHarness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            clickHarness.input.value = 'Legal';
+            clickHarness.documentMock.dispatch('mousedown', {
+                target: { cell: 'next' }
+            });
+
+            expect(clickHarness.success).toHaveBeenCalledWith('Legal');
+        } finally {
+            clickHarness.restore();
+        }
+    });
+
+    test('does not commit an Awesomplete menu mousedown before selection completes', () => {
+        const harness = createEditorHarness();
+
+        try {
+            harness.input.value = 'Fin';
+            harness.documentMock.dispatch('mousedown', {
+                target: { insideAutocomplete: true }
+            });
+
+            expect(harness.success).not.toHaveBeenCalled();
+
+            harness.input.dispatch('awesomplete-selectcomplete', {
+                text: { value: 'Finance' }
+            });
+
+            expect(harness.success).toHaveBeenCalledWith('Finance');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('commits custom and commitRaw values according to options', () => {
+        const customHarness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            customHarness.input.value = 'Custom department';
+            customHarness.input.dispatch('blur');
+
+            expect(customHarness.success).toHaveBeenCalledWith('Custom department');
+        } finally {
+            customHarness.restore();
+        }
+
+        const rawHarness = createEditorHarness({
+            allowCustomValue: false,
+            invalidBehavior: 'commitRaw'
+        });
+
+        try {
+            rawHarness.input.value = 'Unknown department';
+            rawHarness.input.dispatch('blur');
+
+            expect(rawHarness.success).toHaveBeenCalledWith('Unknown department');
+        } finally {
+            rawHarness.restore();
+        }
+    });
+
+    test('removes the temporary overflow class after commit', () => {
+        const harness = createEditorHarness();
+
+        try {
+            expect(harness.cellElement.classList.contains(
+                'amb-autocomplete-cell--editing'
+            )).toBe(true);
+
+            harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(harness.cellElement.classList.contains(
+                'amb-autocomplete-cell--editing'
+            )).toBe(false);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('a committed value is visible to CrudHelper through cellEdited', () => {
+        const originalDocument = globalThis.document;
+        const documentMock = new EventTargetMock();
+        const handlers = new Map();
+        const rowData = {
+            id: 1,
+            department: 'Finance'
+        };
+        const cellElement = {
+            classList: createClassList(),
+            dataset: {}
+        };
+        const rowElement = { dataset: {} };
+        const row = {
+            getCell: () => cell,
+            getCells: () => [cell],
+            getData: () => rowData,
+            getElement: () => rowElement,
+            update: patch => Object.assign(rowData, patch)
+        };
+        const cell = {
+            getElement: () => cellElement,
+            getField: () => 'department',
+            getRow: () => row,
+            getValue: () => rowData.department
+        };
+        const table = {
+            getRows: () => [row],
+            on: (eventName, handler) => handlers.set(eventName, handler)
+        };
+
+        documentMock.createElement = vi.fn(() => new InputMock());
+        globalThis.document = documentMock;
+        awesompleteMock.instances.length = 0;
+
+        try {
+            const crud = new CrudHelper(table, {
+                rowNumbering: { enabled: false }
+            });
+            let render = null;
+            const input = autocomplete(['Finance', 'Human Resources'])(
+                cell,
+                callback => {
+                    render = callback;
+                },
+                value => {
+                    rowData.department = value;
+                    handlers.get('cellEdited')(cell);
+                },
+                vi.fn()
+            );
+
+            render();
+            input.value = 'Human Resources';
+            input.dispatch('awesomplete-selectcomplete', {
+                text: { value: 'Human Resources' }
+            });
+
+            expect(rowData.department).toBe('Human Resources');
+            expect(rowData._state).toBe(ROW_STATE.MODIFIED);
+            expect(crud.modifiedCells.get(1)).toEqual(new Set(['department']));
+        } finally {
+            globalThis.document = originalDocument;
+        }
     });
 });
 

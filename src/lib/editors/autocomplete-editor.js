@@ -1,4 +1,5 @@
 import Awesomplete from 'awesomplete';
+import 'awesomplete/awesomplete.css';
 import {
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
@@ -33,7 +34,7 @@ export function autocomplete(values, options = {}) {
         const input = document.createElement('input');
         let awesomplete = null;
         let closed = false;
-        let blurTimeout = null;
+        let cellElement = null;
 
         input.type = 'text';
         input.value = getInitialValue(cell);
@@ -44,9 +45,14 @@ export function autocomplete(values, options = {}) {
         }
 
         const cleanup = () => {
-            if (blurTimeout) {
-                window.clearTimeout(blurTimeout);
-                blurTimeout = null;
+            document.removeEventListener('mousedown', handleDocumentMouseDown, true);
+            input.removeEventListener('keydown', handleKeydown);
+            input.removeEventListener('blur', handleBlur);
+            input.removeEventListener('awesomplete-selectcomplete', handleSelectComplete);
+
+            if (cellElement) {
+                cellElement.classList.remove('amb-autocomplete-cell--editing');
+                cellElement = null;
             }
 
             if (awesomplete) {
@@ -113,22 +119,35 @@ export function autocomplete(values, options = {}) {
             }
         };
 
-        const handleBlur = () => {
-            blurTimeout = window.setTimeout(() => {
-                if (!closed) {
-                    commit();
-                }
-            }, 0);
+        const handleDocumentMouseDown = event => {
+            if (closed) return;
+
+            const editorContainer = awesomplete && awesomplete.container;
+
+            if (
+                event.target === input
+                || (editorContainer && editorContainer.contains(event.target))
+            ) {
+                return;
+            }
+
+            commit();
         };
 
-        input.addEventListener('awesomplete-selectcomplete', event => {
+        const handleBlur = () => {
+            commit();
+        };
+
+        const handleSelectComplete = event => {
             const selectedValue = event.text && event.text.value !== undefined
                 ? String(event.text.value)
                 : input.value;
 
             input.value = selectedValue;
             commit(selectedValue);
-        });
+        };
+
+        input.addEventListener('awesomplete-selectcomplete', handleSelectComplete);
 
         onRendered(() => {
             awesomplete = new Awesomplete(
@@ -137,6 +156,16 @@ export function autocomplete(values, options = {}) {
             );
             input.addEventListener('keydown', handleKeydown);
             input.addEventListener('blur', handleBlur);
+            document.addEventListener('mousedown', handleDocumentMouseDown, true);
+
+            cellElement = typeof cell.getElement === 'function'
+                ? cell.getElement()
+                : null;
+
+            if (cellElement) {
+                cellElement.classList.add('amb-autocomplete-cell--editing');
+            }
+
             input.focus();
 
             const cursorPosition = getAutocompleteCursorPosition(input.value);
