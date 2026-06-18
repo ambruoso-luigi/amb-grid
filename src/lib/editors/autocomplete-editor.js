@@ -1,5 +1,6 @@
 import TomSelect from 'tom-select';
 import {
+    filterAutocompleteItems,
     normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
@@ -7,32 +8,33 @@ import {
 import { createLookupOption, createSelectOption, getInitialValue, getLookupOptionValue } from './shared.js';
 
     /**
-     * Autocomplete editor backed by an AMB lookup instance.
+     * Text editor that suggests values from a list while the user types.
      *
-     * @param {object} lookupInstance - Lookup instance created with `AMB.lookup`.
+     * @param {Array<string>|object} values - Suggested strings. A source object
+     * with a `load` function remains supported for compatibility.
      * @param {object} [options] - Autocomplete options.
      * @param {boolean} [options.allowEmpty=true] - Allow saving an empty string.
-     * @param {boolean} [options.allowCustomValue=false] - Allow values not present in lookup suggestions.
-     * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected lookup option.
-     * @param {number} [options.maxOptions=20] - Maximum dropdown options shown.
+     * @param {boolean} [options.allowCustomValue=false] - Allow values not present in the suggestions.
+     * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected suggestion.
+     * @param {number} [options.maxOptions=10] - Maximum matching options shown.
      * @param {number} [options.dropdownWidth=420] - Dropdown width in pixels.
      * @param {string} [options.valueField] - Stored value field override.
      * @param {string} [options.labelField] - Display label field override.
-     * @param {object} [options.context] - Context passed to the lookup loader.
+     * @param {object} [options.context] - Context passed to a compatible custom source.
      * @param {Function} [options.renderOption] - Custom Tom Select option renderer.
      * @param {Function} [options.renderItem] - Custom Tom Select selected item renderer.
      * @returns {Function} Tabulator editor.
      *
-     * Lookup results may be strings or objects. Strings are normalized to
-     * `{ value: text, label: text }` before being passed to Tom Select.
+     * String values are normalized internally for Tom Select. The text selected
+     * or typed by the user is the value stored in the cell.
      */
-export function autocomplete(lookupInstance, options = {}) {
+export function autocomplete(values, options = {}) {
         const normalizedOptions = normalizeAutocompleteOptions(options);
-        const valueField = lookupInstance && lookupInstance.valueField
-            ? lookupInstance.valueField
+        const valueField = values && values.valueField
+            ? values.valueField
             : normalizedOptions.valueField || 'value';
-        const labelField = lookupInstance && lookupInstance.labelField
-            ? lookupInstance.labelField
+        const labelField = values && values.labelField
+            ? values.labelField
             : normalizedOptions.labelField || 'label';
         const renderDefaultOption = (item, escape) => {
             return `<div class="amb-autocomplete-option">${escape(item[labelField] ?? '')}</div>`;
@@ -98,19 +100,30 @@ export function autocomplete(lookupInstance, options = {}) {
                 closeWithSuccess(result.value);
             };
 
-            const loadLookup = async query => {
-                if (!lookupInstance || typeof lookupInstance.load !== 'function') {
+            const loadSuggestions = async query => {
+                if (Array.isArray(values)) {
+                    return filterAutocompleteItems(
+                        values,
+                        query,
+                        normalizedOptions.maxOptions,
+                        valueField,
+                        labelField
+                    );
+                }
+
+                if (!values || typeof values.load !== 'function') {
                     return [];
                 }
 
-                const items = await lookupInstance.load({
+                const items = await values.load({
                     query,
                     rowData,
                     field,
                     context: normalizedOptions.context || {}
                 });
 
-                return normalizeAutocompleteItems(items, valueField, labelField);
+                return normalizeAutocompleteItems(items, valueField, labelField)
+                    .slice(0, normalizedOptions.maxOptions);
             };
 
             const setValueSilently = value => {
@@ -139,7 +152,7 @@ export function autocomplete(lookupInstance, options = {}) {
                 if (!tomSelect || closed) return;
 
                 try {
-                    const items = await loadLookup('');
+                    const items = await loadSuggestions('');
 
                     if (closed || !tomSelect) return;
 
@@ -189,7 +202,7 @@ export function autocomplete(lookupInstance, options = {}) {
                     dropdownParent: 'body',
                     load: async (query, callback) => {
                         try {
-                            callback(await loadLookup(query));
+                            callback(await loadSuggestions(query));
                         } catch {
                             callback([]);
                         }

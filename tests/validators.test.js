@@ -261,10 +261,14 @@ describe('validators.date', () => {
 
 describe('validators.allowedValues', () => {
     test('accepts listed values and rejects unknown values', () => {
-        const validator = validators.allowedValues(['HR', 'IT', 'FIN']);
+        const validator = validators.allowedValues([
+            'Human Resources',
+            'Information Technology',
+            'Finance'
+        ]);
 
-        expect(validator.validate('IT')).toBe(true);
-        expect(validator.validate('XXX')).toBe(false);
+        expect(validator.validate('Finance')).toBe(true);
+        expect(validator.validate('Unknown department')).toBe(false);
     });
 
     test('allows empty values', () => {

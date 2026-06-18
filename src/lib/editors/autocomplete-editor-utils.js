@@ -1,12 +1,20 @@
-export const normalizeAutocompleteOptions = (options = {}) => ({
-    allowEmpty: true,
-    allowCustomValue: false,
-    invalidBehavior: 'commitRaw',
-    maxOptions: 20,
-    dropdownWidth: 420,
-    showCodeOnlyInEditor: true,
-    ...options
-});
+export const normalizeAutocompleteOptions = (options = {}) => {
+    const normalizedOptions = {
+        allowEmpty: true,
+        allowCustomValue: false,
+        invalidBehavior: 'commitRaw',
+        maxOptions: 10,
+        dropdownWidth: 420,
+        ...options
+    };
+    const maxOptions = Number(normalizedOptions.maxOptions);
+
+    normalizedOptions.maxOptions = Number.isFinite(maxOptions) && maxOptions > 0
+        ? Math.floor(maxOptions)
+        : 10;
+
+    return normalizedOptions;
+};
 
 export const normalizeAutocompleteItem = (item, valueField = 'value', labelField = 'label') => {
     if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
@@ -27,6 +35,27 @@ export const normalizeAutocompleteItems = (items, valueField = 'value', labelFie
     return items
         .map(item => normalizeAutocompleteItem(item, valueField, labelField))
         .filter(item => item && typeof item === 'object');
+};
+
+export const filterAutocompleteItems = (
+    items,
+    query,
+    maxOptions,
+    valueField = 'value',
+    labelField = 'label'
+) => {
+    const normalizedQuery = String(query || '').trim().toLowerCase();
+    const normalizedItems = normalizeAutocompleteItems(items, valueField, labelField);
+    const matches = normalizedQuery === ''
+        ? normalizedItems
+        : normalizedItems.filter(item => {
+            const value = String(item[valueField] ?? '').toLowerCase();
+            const label = String(item[labelField] ?? '').toLowerCase();
+
+            return value.includes(normalizedQuery) || label.includes(normalizedQuery);
+        });
+
+    return matches.slice(0, maxOptions);
 };
 
 export const resolveAutocompleteCommit = ({

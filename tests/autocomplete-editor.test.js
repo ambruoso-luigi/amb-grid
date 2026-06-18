@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+    filterAutocompleteItems,
     normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
@@ -11,13 +12,25 @@ describe('autocomplete editor options', () => {
             allowEmpty: true,
             allowCustomValue: false,
             invalidBehavior: 'commitRaw',
-            maxOptions: 20,
+            maxOptions: 10,
             dropdownWidth: 420
         }));
     });
+
+    test('supports a maxOptions override', () => {
+        expect(normalizeAutocompleteOptions({
+            maxOptions: 15
+        }).maxOptions).toBe(15);
+    });
+
+    test('falls back to 10 for invalid maxOptions values', () => {
+        expect(normalizeAutocompleteOptions({
+            maxOptions: 0
+        }).maxOptions).toBe(10);
+    });
 });
 
-describe('autocomplete lookup results', () => {
+describe('autocomplete suggestions', () => {
     test('normalizes simple string suggestions for Tom Select', () => {
         expect(normalizeAutocompleteItems([
             'Human Resources',
@@ -36,10 +49,26 @@ describe('autocomplete lookup results', () => {
             { code: 'Operations', description: 'Operations' }
         ]);
     });
+
+    test('returns only the first maxOptions matching values', () => {
+        const values = Array.from({ length: 100 }, (_, index) => `Item ${index + 1}`);
+        const matches = filterAutocompleteItems(values, 'Item', 7);
+
+        expect(matches).toHaveLength(7);
+        expect(matches.map(item => item.value)).toEqual([
+            'Item 1',
+            'Item 2',
+            'Item 3',
+            'Item 4',
+            'Item 5',
+            'Item 6',
+            'Item 7'
+        ]);
+    });
 });
 
 describe('autocomplete commit behavior', () => {
-    test('commits selected lookup values', () => {
+    test('commits selected suggested values', () => {
         expect(resolveAutocompleteCommit({
             selectedValue: 'IT',
             typedValue: 'Information',

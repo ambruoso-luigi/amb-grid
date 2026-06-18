@@ -168,13 +168,15 @@ Lookup fields with support for:
 
 ### Autocomplete
 
-`AMB.editors.autocomplete(...)` is a text editor that uses Tom Select and an `AMB.lookup(...)` instance to suggest values while the user types. Lookup loaders may return simple strings; the editor normalizes them to `{ value, label }` options internally.
+`AMB.editors.autocomplete(values, options)` suggests values from a string list while the user types. The selected or typed text is stored directly; there is no hidden associated value.
 
-The lookup supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
+`maxOptions` defaults to `10` and limits the number of matching suggestions shown. It can be overridden, for example with `AMB.editors.autocomplete(values, { maxOptions: 15 })`.
 
-`allowedValues` is synchronous and intended for static lists. Async or server-side lookup validation is not included at this stage.
+The list supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
 
-Code/description business lookups are a separate, more specialized use case. The autocomplete API and demo intentionally focus on plain text suggestions.
+`allowedValues` is synchronous and intended for static lists. Async validation is not included at this stage.
+
+Code/description business fields are a separate, more specialized use case. Autocomplete intentionally focuses on plain text suggestions.
 
 ### Search and Filters
 

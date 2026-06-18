@@ -25,7 +25,7 @@ const examples = [
     { id: 'validation', label: 'Validation', mount: validation },
     { id: 'numeric', label: 'Numeric', mount: numeric },
     { id: 'dates', label: 'Dates', mount: dates },
-    { id: 'autocomplete', label: 'Lookup / Autocomplete', mount: autocomplete },
+    { id: 'autocomplete', label: 'Autocomplete', mount: autocomplete },
     { id: 'parsers', label: 'Parsers', mount: parsers },
     { id: 'row-states', label: 'Row states', mount: rowStates },
     { id: 'multiple-tables', label: 'Multiple tables', mount: multipleTables },

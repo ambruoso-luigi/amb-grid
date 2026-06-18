@@ -8,13 +8,6 @@ const departments = [
     'Legal'
 ];
 
-const priorities = [
-    'Low',
-    'Medium',
-    'High',
-    'Critical'
-];
-
 const tags = [
     'urgent',
     'internal',
@@ -23,18 +16,38 @@ const tags = [
     'blocked'
 ];
 
-const createStaticLookup = items => AMB.lookup({
-    cache: {
-        enabled: false
-    },
-    load: ({ query }) => {
-        const normalizedQuery = String(query || '').trim().toLowerCase();
-
-        if (normalizedQuery === '') return items;
-
-        return items.filter(item => item.toLowerCase().includes(normalizedQuery));
-    }
-});
+const cities = [
+    'Amsterdam',
+    'Athens',
+    'Barcelona',
+    'Berlin',
+    'Bologna',
+    'Brussels',
+    'Budapest',
+    'Copenhagen',
+    'Dublin',
+    'Florence',
+    'Frankfurt',
+    'Geneva',
+    'Hamburg',
+    'Helsinki',
+    'Lisbon',
+    'London',
+    'Madrid',
+    'Milan',
+    'Munich',
+    'Naples',
+    'Oslo',
+    'Paris',
+    'Prague',
+    'Rome',
+    'Stockholm',
+    'Turin',
+    'Valencia',
+    'Venice',
+    'Vienna',
+    'Warsaw'
+];
 
 const buildReport = result => {
     const lines = [
@@ -44,7 +57,7 @@ const buildReport = result => {
     ];
 
     if (result.errors.length === 0) {
-        lines.push('All strict autocomplete values are allowed. Free tags, including custom values, are accepted.');
+        lines.push('Strict values are allowed and custom free values are accepted.');
         return lines.join('\n');
     }
 
@@ -57,21 +70,16 @@ const buildReport = result => {
     });
 
     lines.push('');
-    lines.push('Unknown strict values remain visible in the grid and are reported above.');
-    lines.push('The custom free tag is accepted.');
+    lines.push('Unknown strict values remain visible and are reported above.');
+    lines.push('Custom values in the free column are accepted.');
 
     return lines.join('\n');
 };
 
 export default function autocomplete(app) {
-    const departmentLookup = createStaticLookup(departments);
-    const priorityLookup = createStaticLookup(priorities);
-    const tagLookup = createStaticLookup(tags);
-
     app.innerHTML = `
-        <h2>Lookup / Autocomplete</h2>
-        <p class="demo-note">Autocomplete uses lookup data to suggest values while editing. Strict columns keep unknown typed values visible so validation can report them; free columns accept custom values.</p>
-        <p class="demo-note">The lookup supplies suggestions, the editor handles input, and the validator decides whether the stored value is acceptable.</p>
+        <h2>Autocomplete</h2>
+        <p class="demo-note">Autocomplete suggests values from a list while the user types. Columns can allow custom values or require one of the suggested values.</p>
         <div class="toolbar">
             <button type="button" id="action-validate-autocomplete">Validate autocomplete</button>
             <button type="button" id="action-create-autocomplete-anomalies">Create autocomplete anomalies</button>
@@ -84,10 +92,10 @@ export default function autocomplete(app) {
         selector: '#autocomplete-table',
         height: '340px',
         data: [
-            { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', priority: 'Medium', tag: 'internal' },
-            { id: 2, task: 'Review access controls', department: 'Information Technology', priority: 'High', tag: 'review' },
-            { id: 3, task: 'Check monthly close', department: 'Finance', priority: 'Critical', tag: 'urgent' },
-            { id: 4, task: 'Update support workflow', department: 'Operations', priority: 'Low', tag: 'external' }
+            { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', tag: 'internal', city: 'Milan' },
+            { id: 2, task: 'Review access controls', department: 'Information Technology', tag: 'review', city: 'Berlin' },
+            { id: 3, task: 'Check monthly close', department: 'Finance', tag: 'urgent', city: 'London' },
+            { id: 4, task: 'Update support workflow', department: 'Operations', tag: 'external', city: 'Rome' }
         ],
         layout: 'fitColumns',
         columns: [
@@ -100,11 +108,10 @@ export default function autocomplete(app) {
             {
                 title: 'Department strict',
                 field: 'department',
-                editor: AMB.editors.autocomplete(departmentLookup, {
+                editor: AMB.editors.autocomplete(departments, {
                     allowEmpty: true,
                     allowCustomValue: false,
                     invalidBehavior: 'commitRaw',
-                    maxOptions: 20,
                     placeholder: 'Type to search...'
                 }),
                 validation: {
@@ -117,31 +124,21 @@ export default function autocomplete(app) {
                 }
             },
             {
-                title: 'Priority strict',
-                field: 'priority',
-                editor: AMB.editors.autocomplete(priorityLookup, {
-                    allowEmpty: true,
-                    allowCustomValue: false,
-                    invalidBehavior: 'commitRaw',
-                    maxOptions: 20,
-                    placeholder: 'Type to search...'
-                }),
-                validation: {
-                    allowedValues: {
-                        values: priorities,
-                        trim: true,
-                        caseSensitive: false,
-                        message: 'Choose a priority from the list'
-                    }
-                }
-            },
-            {
                 title: 'Free tag',
                 field: 'tag',
-                editor: AMB.editors.autocomplete(tagLookup, {
+                editor: AMB.editors.autocomplete(tags, {
                     allowEmpty: true,
                     allowCustomValue: true,
-                    maxOptions: 20,
+                    placeholder: 'Type or add a tag...'
+                })
+            },
+            {
+                title: 'City (max 5)',
+                field: 'city',
+                editor: AMB.editors.autocomplete(cities, {
+                    allowEmpty: true,
+                    allowCustomValue: true,
+                    maxOptions: 5,
                     placeholder: 'Type to search...'
                 })
             }
@@ -156,7 +153,6 @@ export default function autocomplete(app) {
     app.querySelector('#action-create-autocomplete-anomalies').addEventListener('click', () => {
         demo.crud.updateRow(2, {
             department: 'Unknown department',
-            priority: 'Very high',
             tag: 'custom-note'
         });
 
