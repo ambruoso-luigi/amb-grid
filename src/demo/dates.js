@@ -106,6 +106,7 @@ export default function dates(app) {
                 <li>All date columns enforce an allowed range from <code>01/01/2025</code> to <code>31/12/2027</code>.</li>
                 <li>The picker opens only from the calendar button, limits calendar selection, and never owns the manual input.</li>
                 <li>Date columns use <code>AMB.date.createConfig(...)</code> so format and limits are declared once.</li>
+                <li>Picker-only date opens the calendar immediately when the cell enters edit mode, without showing an input or button.</li>
                 <li>Picker-only date uses <code>DD-MM-YYYY</code> to show that selected dates follow the column format.</li>
             </ul>
             <p>In <strong>Picker date</strong>, try <code>31/02/2026</code>, <code>01/01/2028</code>, or <code>20/022</code>: the typed value should stay visible, then validation explains the error.</p>

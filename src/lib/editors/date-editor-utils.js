@@ -28,6 +28,14 @@ export const normalizeDateEditorOptions = (options = {}) => {
     };
 };
 
+export const getDateEditorBehavior = mode => {
+    return {
+        hasManualInput: mode !== 'pickerOnly',
+        hasPickerButton: mode === 'manualWithPickerButton',
+        autoOpenPicker: mode === 'pickerOnly'
+    };
+};
+
 const getDateFormatParts = format => {
     const normalizedFormat = normalizeDateFormat(format);
 

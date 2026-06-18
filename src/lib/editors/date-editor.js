@@ -2,6 +2,7 @@ import Datepicker from 'vanillajs-datepicker/Datepicker';
 import { parsers } from '../parsers.js';
 import {
     formatPickerDate,
+    getDateEditorBehavior,
     normalizeDateFormat,
     normalizeDateEditorOptions,
     normalizeDateInputChange,
@@ -80,13 +81,14 @@ const createPickerOptions = options => {
      * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - What to do when the typed value is invalid.
      * @param {string|Date} [options.minDate] - Earliest date passed to the picker when enabled.
      * @param {string|Date} [options.maxDate] - Latest date passed to the picker when enabled.
-     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode] - Editing mode. Picker modes open the calendar only from the side button.
+     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode] - Editing mode. `manualWithPickerButton` opens from its side button; `pickerOnly` opens immediately on render.
      * @param {boolean} [options.picker=false] - Backward-compatible shortcut for `mode: 'manualWithPickerButton'`.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Tabulator editor.
      */
 export function date(options = {}) {
         const normalizedOptions = normalizeDateEditorOptions(options);
+        const editorBehavior = getDateEditorBehavior(normalizedOptions.mode);
         const pickerFormat = normalizeDateFormat(normalizedOptions.format);
 
         return (cell, onRendered, success, cancel) => {
@@ -117,8 +119,11 @@ export function date(options = {}) {
                 let blurTimeout = null;
 
                 input.className = 'amb-date-editor';
-                input.readOnly = normalizedOptions.mode === 'pickerOnly';
                 wrapper.className = 'amb-date-editor-wrapper';
+                wrapper.classList.toggle(
+                    'amb-date-editor-wrapper--picker-only',
+                    normalizedOptions.mode === 'pickerOnly'
+                );
                 pickerButton.type = 'button';
                 pickerButton.className = 'amb-date-editor-picker-button';
                 pickerButton.setAttribute('aria-label', 'Open date picker');
@@ -128,7 +133,16 @@ export function date(options = {}) {
                 pickerInput.tabIndex = -1;
                 pickerInput.setAttribute('aria-hidden', 'true');
                 pickerInput.className = 'amb-date-editor-picker-anchor';
-                wrapper.append(input, pickerButton, pickerInput);
+
+                if (editorBehavior.hasManualInput) {
+                    wrapper.append(input);
+                }
+
+                if (editorBehavior.hasPickerButton) {
+                    wrapper.append(pickerButton);
+                }
+
+                wrapper.append(pickerInput);
 
                 const destroyDatepicker = () => {
                     if (blurTimeout) {
@@ -196,7 +210,9 @@ export function date(options = {}) {
                     input.setSelectionRange(nextValue.selectionStart, nextValue.selectionStart);
                 };
 
-                input.addEventListener('input', sanitizeInput);
+                if (editorBehavior.hasManualInput) {
+                    input.addEventListener('input', sanitizeInput);
+                }
                 pickerInput.addEventListener('changeDate', event => {
                     const date = event.detail && event.detail.date;
 
@@ -207,59 +223,61 @@ export function date(options = {}) {
                     input.value = formattedValue;
                     closeWithSuccess(formattedValue);
                 });
-                pickerButton.addEventListener('mousedown', event => {
-                    event.preventDefault();
-                });
-                pickerButton.addEventListener('click', showPicker);
-                input.addEventListener('keydown', event => {
-                    if (normalizedOptions.mode === 'pickerOnly') {
+                pickerInput.addEventListener('hide', closeWithCancel);
+
+                if (editorBehavior.hasPickerButton) {
+                    pickerButton.addEventListener('mousedown', event => {
+                        event.preventDefault();
+                    });
+                    pickerButton.addEventListener('click', showPicker);
+                }
+
+                if (editorBehavior.hasManualInput) {
+                    input.addEventListener('keydown', event => {
                         if (event.key === 'Enter') {
-                            showPicker();
+                            commit();
+                            return;
                         }
 
                         if (event.key === 'Escape') {
                             closeWithCancel();
                         }
+                    });
+                    input.addEventListener('blur', () => {
+                        blurTimeout = window.setTimeout(() => {
+                            if (closed) return;
 
-                        return;
-                    }
+                            const activeElement = document.activeElement;
+                            const isPickerFocused = activeElement
+                                && activeElement.closest
+                                && activeElement.closest('.datepicker');
+                            const isInternalPickerControl = activeElement === pickerButton
+                                || activeElement === pickerInput;
 
-                    if (event.key === 'Enter') {
-                        commit();
-                        return;
-                    }
+                            if (isInternalPickerControl || isPickerFocused || (datepicker && datepicker.active)) {
+                                return;
+                            }
 
-                    if (event.key === 'Escape') {
-                        closeWithCancel();
-                    }
-                });
-                input.addEventListener('blur', () => {
-                    blurTimeout = window.setTimeout(() => {
-                        if (closed) return;
-
-                        const activeElement = document.activeElement;
-                        const isPickerFocused = activeElement
-                            && activeElement.closest
-                            && activeElement.closest('.datepicker');
-                        const isInternalPickerControl = activeElement === pickerButton
-                            || activeElement === pickerInput;
-
-                        if (isInternalPickerControl || isPickerFocused || (datepicker && datepicker.active)) {
-                            return;
-                        }
-
-                        commit();
-                    }, 300);
-                });
+                            commit();
+                        }, 300);
+                    });
+                }
 
                 onRendered(() => {
                     datepicker = new Datepicker(pickerInput, createPickerOptions(normalizedOptions));
-                    input.focus();
 
-                    if (normalizedOptions.selectOnFocus) {
-                        input.select();
-                    } else {
-                        input.setSelectionRange(input.value.length, input.value.length);
+                    if (editorBehavior.hasManualInput) {
+                        input.focus();
+
+                        if (normalizedOptions.selectOnFocus) {
+                            input.select();
+                        } else {
+                            input.setSelectionRange(input.value.length, input.value.length);
+                        }
+                    }
+
+                    if (editorBehavior.autoOpenPicker) {
+                        showPicker();
                     }
                 });
 

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
     formatPickerDate,
+    getDateEditorBehavior,
     normalizeDateEditorOptions,
     normalizeDateInputChange,
     parseDateEditorValue
@@ -15,6 +16,24 @@ describe('date editor modes', () => {
     test('preserves explicit manual and pickerOnly modes', () => {
         expect(normalizeDateEditorOptions({ mode: 'manual' }).mode).toBe('manual');
         expect(normalizeDateEditorOptions({ mode: 'pickerOnly' }).mode).toBe('pickerOnly');
+    });
+
+    test('describes controls and auto-open behavior for each mode', () => {
+        expect(getDateEditorBehavior('manual')).toEqual({
+            hasManualInput: true,
+            hasPickerButton: false,
+            autoOpenPicker: false
+        });
+        expect(getDateEditorBehavior('manualWithPickerButton')).toEqual({
+            hasManualInput: true,
+            hasPickerButton: true,
+            autoOpenPicker: false
+        });
+        expect(getDateEditorBehavior('pickerOnly')).toEqual({
+            hasManualInput: false,
+            hasPickerButton: false,
+            autoOpenPicker: true
+        });
     });
 
     test('formats picker selections with the configured column format', () => {
