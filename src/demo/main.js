@@ -11,6 +11,7 @@ import basicCrud from './basic-crud.js';
 import validation from './validation.js';
 import numeric from './numeric.js';
 import dates from './dates.js';
+import autocomplete from './autocomplete.js';
 import parsers from './parsers.js';
 import rowStates from './row-states.js';
 import multipleTables from './multiple-tables.js';
@@ -24,6 +25,7 @@ const examples = [
     { id: 'validation', label: 'Validation', mount: validation },
     { id: 'numeric', label: 'Numeric', mount: numeric },
     { id: 'dates', label: 'Dates', mount: dates },
+    { id: 'autocomplete', label: 'Lookup / Autocomplete', mount: autocomplete },
     { id: 'parsers', label: 'Parsers', mount: parsers },
     { id: 'row-states', label: 'Row states', mount: rowStates },
     { id: 'multiple-tables', label: 'Multiple tables', mount: multipleTables },

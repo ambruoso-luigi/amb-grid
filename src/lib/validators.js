@@ -649,6 +649,52 @@ export const validators = {
     },
 
     /**
+     * Validate that a non-empty value belongs to a static allowed-values list.
+     *
+     * Empty values remain valid unless combined with `required`. This validator
+     * is synchronous and does not call lookup loaders or backend services.
+     *
+     * @param {Array<*>} values - Allowed values.
+     * @param {object} [options] - Comparison options.
+     * @param {boolean} [options.caseSensitive=true] - Whether string comparison is case-sensitive.
+     * @param {boolean} [options.trim=true] - Trim string values before comparison.
+     * @param {string} [message='Choose a value from the list'] - Validation message.
+     * @returns {{message: string, validate: Function}} Validator object.
+     */
+    allowedValues(values, options = {}, message = 'Choose a value from the list') {
+        const normalizedOptions = {
+            caseSensitive: true,
+            trim: true,
+            ...options
+        };
+        const normalizeValue = value => {
+            if (typeof value !== 'string') return value;
+
+            let normalizedValue = normalizedOptions.trim ? value.trim() : value;
+
+            if (!normalizedOptions.caseSensitive) {
+                normalizedValue = normalizedValue.toLowerCase();
+            }
+
+            return normalizedValue;
+        };
+        const normalizedValues = Array.isArray(values)
+            ? values.map(normalizeValue)
+            : [];
+
+        return {
+            message,
+            validate: value => {
+                if (isEmptyValue(value)) return true;
+
+                return normalizedValues.some(allowedValue => {
+                    return Object.is(allowedValue, normalizeValue(value));
+                });
+            }
+        };
+    },
+
+    /**
      * Create a custom validator.
      *
      * @param {string} message - Validation message.

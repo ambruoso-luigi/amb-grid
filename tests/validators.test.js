@@ -258,3 +258,27 @@ describe('validators.date', () => {
         });
     });
 });
+
+describe('validators.allowedValues', () => {
+    test('accepts listed values and rejects unknown values', () => {
+        const validator = validators.allowedValues(['HR', 'IT', 'FIN']);
+
+        expect(validator.validate('IT')).toBe(true);
+        expect(validator.validate('XXX')).toBe(false);
+    });
+
+    test('allows empty values', () => {
+        const validator = validators.allowedValues(['HR']);
+
+        expect(validator.validate('')).toBe(true);
+        expect(validator.validate(null)).toBe(true);
+    });
+
+    test('trims by default and supports case-insensitive comparison', () => {
+        expect(validators.allowedValues(['IT']).validate(' IT ')).toBe(true);
+        expect(validators.allowedValues(
+            ['IT'],
+            { caseSensitive: false }
+        ).validate('it')).toBe(true);
+    });
+});

@@ -82,6 +82,7 @@ Built-in validation support including:
 * Format/syntax validators
 * Codice Fiscale syntax
 * Italian IBAN syntax
+* Static allowed-values validation
 * Custom validators
 
 Validator combinators:
@@ -164,6 +165,14 @@ Lookup fields with support for:
 * Description management
 * Autocomplete integration
 * Hover descriptions
+
+### Autocomplete
+
+`AMB.editors.autocomplete(...)` uses Tom Select and an `AMB.lookup(...)` instance to suggest values while the user types.
+
+The lookup supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
+
+`allowedValues` is synchronous and intended for static lists. Async or server-side lookup validation is not included at this stage.
 
 ### Search and Filters
 

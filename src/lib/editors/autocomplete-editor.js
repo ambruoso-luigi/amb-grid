@@ -1,4 +1,8 @@
 import TomSelect from 'tom-select';
+import {
+    normalizeAutocompleteOptions,
+    resolveAutocompleteCommit
+} from './autocomplete-editor-utils.js';
 import { createLookupOption, createSelectOption, getInitialValue, getLookupOptionValue } from './shared.js';
 
     /**
@@ -7,6 +11,8 @@ import { createLookupOption, createSelectOption, getInitialValue, getLookupOptio
      * @param {object} lookupInstance - Lookup instance created with `AMB.lookup`.
      * @param {object} [options] - Autocomplete options.
      * @param {boolean} [options.allowEmpty=true] - Allow saving an empty string.
+     * @param {boolean} [options.allowCustomValue=false] - Allow values not present in lookup suggestions.
+     * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected lookup option.
      * @param {number} [options.maxOptions=20] - Maximum dropdown options shown.
      * @param {number} [options.dropdownWidth=420] - Dropdown width in pixels.
      * @param {boolean} [options.showCodeOnlyInEditor=true] - Show only the code after selection.
@@ -20,13 +26,7 @@ import { createLookupOption, createSelectOption, getInitialValue, getLookupOptio
      * @returns {Function} Tabulator editor.
      */
 export function autocomplete(lookupInstance, options = {}) {
-        const normalizedOptions = {
-            allowEmpty: true,
-            maxOptions: 20,
-            dropdownWidth: 420,
-            showCodeOnlyInEditor: true,
-            ...options
-        };
+        const normalizedOptions = normalizeAutocompleteOptions(options);
         const valueField = lookupInstance && lookupInstance.valueField
             ? lookupInstance.valueField
             : normalizedOptions.valueField || 'value';
@@ -94,6 +94,25 @@ export function autocomplete(lookupInstance, options = {}) {
                 closed = true;
                 cancel();
                 destroyTomSelect();
+            };
+
+            const commitCurrentValue = typedValue => {
+                const result = resolveAutocompleteCommit({
+                    selectedValue: tomSelect ? tomSelect.getValue() : '',
+                    typedValue: typedValue !== undefined
+                        ? typedValue
+                        : tomSelect && tomSelect.control_input
+                            ? tomSelect.control_input.value
+                            : '',
+                    options: normalizedOptions
+                });
+
+                if (result.action === 'cancel') {
+                    closeWithCancel();
+                    return;
+                }
+
+                closeWithSuccess(result.value);
             };
 
             const loadLookup = async query => {
@@ -176,7 +195,9 @@ export function autocomplete(lookupInstance, options = {}) {
                     searchField: [labelField, valueField],
                     placeholder: normalizedOptions.placeholder,
                     maxOptions: normalizedOptions.maxOptions,
-                    create: false,
+                    create: normalizedOptions.allowCustomValue
+                        ? input => createLookupOption(input, input, valueField, labelField)
+                        : false,
                     persist: false,
                     closeAfterSelect: true,
                     openOnFocus: true,
@@ -208,11 +229,7 @@ export function autocomplete(lookupInstance, options = {}) {
                         blurTimeout = window.setTimeout(() => {
                             if (closed) return;
 
-                            const value = tomSelect ? tomSelect.getValue() : '';
-
-                            if (value === '') {
-                                closeWithCancel();
-                            }
+                            commitCurrentValue();
                         }, 200);
                     }
                 });
@@ -222,6 +239,17 @@ export function autocomplete(lookupInstance, options = {}) {
                 }
 
                 tomSelect.control_input.addEventListener('keydown', event => {
+                    if (event.key === 'Enter') {
+                        const typedValue = tomSelect.control_input.value;
+
+                        window.setTimeout(() => {
+                            if (!closed) {
+                                commitCurrentValue(typedValue);
+                            }
+                        }, 0);
+                        return;
+                    }
+
                     if (event.key === 'Escape') {
                         closeWithCancel();
                     }

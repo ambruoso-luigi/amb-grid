@@ -5,6 +5,7 @@ export const DEFAULT_MESSAGES = {
 };
 
 export const DEFAULT_VALIDATION_MESSAGES = {
+    allowedValues: 'Choose a value from the list',
     codiceFiscale: 'Invalid Codice Fiscale',
     date: 'Invalid date',
     decimal: 'Invalid decimal value',
@@ -72,6 +73,16 @@ const buildValidatorFromConfig = (config, messages = DEFAULT_MESSAGES) => {
         return validators.unique(
             uniqueOptions,
             message || DEFAULT_VALIDATION_MESSAGES.unique
+        );
+    }
+
+    if (config.type === 'allowedValues') {
+        const { type, values, message, ...allowedValuesOptions } = config;
+
+        return validators.allowedValues(
+            values,
+            allowedValuesOptions,
+            message || DEFAULT_VALIDATION_MESSAGES.allowedValues
         );
     }
 
@@ -203,6 +214,23 @@ export const extractValidationRules = (field, validation = {}, messages = DEFAUL
                 ...uniqueOptions
             },
             message || DEFAULT_VALIDATION_MESSAGES.unique
+        ));
+    }
+
+    if (validation.allowedValues) {
+        const allowedValuesValidation = Array.isArray(validation.allowedValues)
+            ? { values: validation.allowedValues }
+            : validation.allowedValues;
+        const {
+            values,
+            message,
+            ...allowedValuesOptions
+        } = allowedValuesValidation;
+
+        extractedValidators.push(validators.allowedValues(
+            values,
+            allowedValuesOptions,
+            message || DEFAULT_VALIDATION_MESSAGES.allowedValues
         ));
     }
 
