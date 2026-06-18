@@ -47,7 +47,7 @@ export function autocomplete(values, options = {}) {
 
         const cleanup = () => {
             document.removeEventListener('mousedown', handleDocumentMouseDown, true);
-            input.removeEventListener('keydown', handleKeydown);
+            input.removeEventListener('keydown', handleKeydown, true);
             input.removeEventListener('blur', handleBlur);
             input.removeEventListener('input', handleInput);
             input.removeEventListener('awesomplete-highlight', handleHighlight);
@@ -129,6 +129,28 @@ export function autocomplete(values, options = {}) {
                 event.preventDefault();
             }
 
+            if (action.stopPropagation) {
+                event.stopPropagation();
+
+                if (typeof event.stopImmediatePropagation === 'function') {
+                    event.stopImmediatePropagation();
+                }
+            }
+
+            if (action.action === 'suggestions') {
+                if (!awesomplete.opened) {
+                    awesomplete.evaluate();
+                }
+
+                if (event.key === 'ArrowDown') {
+                    awesomplete.next();
+                } else {
+                    awesomplete.previous();
+                }
+
+                return;
+            }
+
             if (action.action === 'commit') {
                 commit();
                 return;
@@ -182,7 +204,7 @@ export function autocomplete(values, options = {}) {
                 input,
                 getAwesompleteOptions(suggestionValues, normalizedOptions)
             );
-            input.addEventListener('keydown', handleKeydown);
+            input.addEventListener('keydown', handleKeydown, true);
             input.addEventListener('blur', handleBlur);
             document.addEventListener('mousedown', handleDocumentMouseDown, true);
 

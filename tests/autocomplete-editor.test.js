@@ -21,6 +21,7 @@ vi.mock('awesomplete', () => ({
             this.input = input;
             this.options = options;
             this.index = -1;
+            this.isOpened = false;
             this.suggestions = options.list.map(value => ({
                 label: value,
                 value
@@ -29,12 +30,42 @@ vi.mock('awesomplete', () => ({
                 contains: target => target === input || target?.insideAutocomplete === true
             };
             this.destroy = vi.fn();
-            this.evaluate = vi.fn();
+            this.evaluate = vi.fn(() => {
+                this.isOpened = this.suggestions.length > 0;
+            });
             awesompleteMock.instances.push(this);
+        }
+
+        get opened() {
+            return this.isOpened;
         }
 
         get selected() {
             return this.index >= 0;
+        }
+
+        next() {
+            if (this.suggestions.length === 0) return;
+
+            this.index = this.index < this.suggestions.length - 1
+                ? this.index + 1
+                : 0;
+            this.highlight();
+        }
+
+        previous() {
+            if (this.suggestions.length === 0) return;
+
+            this.index = this.index > 0
+                ? this.index - 1
+                : this.suggestions.length - 1;
+            this.highlight();
+        }
+
+        highlight() {
+            this.input.dispatch('awesomplete-highlight', {
+                text: this.suggestions[this.index]
+            });
         }
     }
 }));
@@ -66,6 +97,8 @@ class EventTargetMock {
         const dispatchedEvent = {
             target: this,
             preventDefault: vi.fn(),
+            stopImmediatePropagation: vi.fn(),
+            stopPropagation: vi.fn(),
             ...event
         };
 
@@ -396,17 +429,64 @@ describe('autocomplete editor lifecycle', () => {
         }
     });
 
-    test('ArrowUp and ArrowDown navigate suggestions without committing', () => {
-        const harness = createEditorHarness({ allowCustomValue: true });
+    test('ArrowUp and ArrowDown stay inside suggestions and update the highlight', () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            '',
+            ['Mario Rossi', 'Maria Bianchi']
+        );
 
         try {
-            const downEvent = harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            const firstDownEvent = harness.input.dispatch('keydown', {
+                key: 'ArrowDown'
+            });
+            expect(firstDownEvent.preventDefault).toHaveBeenCalledOnce();
+            expect(firstDownEvent.stopPropagation).toHaveBeenCalledOnce();
+            expect(harness.awesomplete.index).toBe(0);
+
+            const secondDownEvent = harness.input.dispatch('keydown', {
+                key: 'ArrowDown'
+            });
+            expect(secondDownEvent.preventDefault).toHaveBeenCalledOnce();
+            expect(secondDownEvent.stopPropagation).toHaveBeenCalledOnce();
+            expect(harness.awesomplete.index).toBe(1);
+
             const upEvent = harness.input.dispatch('keydown', { key: 'ArrowUp' });
 
-            expect(downEvent.preventDefault).not.toHaveBeenCalled();
-            expect(upEvent.preventDefault).not.toHaveBeenCalled();
+            expect(upEvent.preventDefault).toHaveBeenCalledOnce();
+            expect(upEvent.stopPropagation).toHaveBeenCalledOnce();
+            expect(harness.awesomplete.index).toBe(0);
             expect(harness.success).not.toHaveBeenCalled();
             expect(harness.cancel).not.toHaveBeenCalled();
+
+            const tabEvent = harness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(tabEvent.preventDefault).not.toHaveBeenCalled();
+            expect(tabEvent.stopPropagation).not.toHaveBeenCalled();
+            expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('ArrowDown evaluates a closed dropdown before highlighting the first item', () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            '',
+            ['Mario Rossi']
+        );
+
+        try {
+            harness.awesomplete.isOpened = false;
+            harness.awesomplete.index = -1;
+            harness.awesomplete.evaluate.mockClear();
+
+            const event = harness.input.dispatch('keydown', { key: 'ArrowDown' });
+
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
+            expect(harness.awesomplete.evaluate).toHaveBeenCalledOnce();
+            expect(harness.awesomplete.index).toBe(0);
         } finally {
             harness.restore();
         }
@@ -419,6 +499,7 @@ describe('autocomplete editor lifecycle', () => {
             const event = harness.input.dispatch('keydown', { key: 'Escape' });
 
             expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
             expect(harness.cancel).toHaveBeenCalledOnce();
             expect(harness.success).not.toHaveBeenCalled();
         } finally {
@@ -599,11 +680,13 @@ describe('autocomplete native input behavior', () => {
     test('delegates ArrowDown and ArrowUp to Awesomplete', () => {
         expect(getAutocompleteKeyAction('ArrowDown')).toEqual({
             action: 'suggestions',
-            preventDefault: false
+            preventDefault: true,
+            stopPropagation: true
         });
         expect(getAutocompleteKeyAction('ArrowUp')).toEqual({
             action: 'suggestions',
-            preventDefault: false
+            preventDefault: true,
+            stopPropagation: true
         });
     });
 
@@ -618,6 +701,14 @@ describe('autocomplete native input behavior', () => {
         expect(getAutocompleteKeyAction('Tab')).toEqual({
             action: 'commit',
             preventDefault: false
+        });
+    });
+
+    test('Escape cancels without reaching Tabulator', () => {
+        expect(getAutocompleteKeyAction('Escape')).toEqual({
+            action: 'cancel',
+            preventDefault: true,
+            stopPropagation: true
         });
     });
 });

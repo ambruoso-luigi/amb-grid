@@ -97,7 +97,8 @@ export const getAutocompleteKeyAction = key => {
     if (key === 'ArrowDown' || key === 'ArrowUp') {
         return {
             action: 'suggestions',
-            preventDefault: false
+            preventDefault: true,
+            stopPropagation: true
         };
     }
 
@@ -118,7 +119,8 @@ export const getAutocompleteKeyAction = key => {
     if (key === 'Escape') {
         return {
             action: 'cancel',
-            preventDefault: true
+            preventDefault: true,
+            stopPropagation: true
         };
     }
 
