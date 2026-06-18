@@ -8,6 +8,27 @@ export const normalizeAutocompleteOptions = (options = {}) => ({
     ...options
 });
 
+export const normalizeAutocompleteItem = (item, valueField = 'value', labelField = 'label') => {
+    if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {
+        const value = String(item);
+
+        return {
+            [valueField]: value,
+            [labelField]: value
+        };
+    }
+
+    return item;
+};
+
+export const normalizeAutocompleteItems = (items, valueField = 'value', labelField = 'label') => {
+    if (!Array.isArray(items)) return [];
+
+    return items
+        .map(item => normalizeAutocompleteItem(item, valueField, labelField))
+        .filter(item => item && typeof item === 'object');
+};
+
 export const resolveAutocompleteCommit = ({
     selectedValue,
     typedValue,

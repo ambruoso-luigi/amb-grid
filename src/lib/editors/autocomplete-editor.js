@@ -1,5 +1,6 @@
 import TomSelect from 'tom-select';
 import {
+    normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
@@ -15,15 +16,15 @@ import { createLookupOption, createSelectOption, getInitialValue, getLookupOptio
      * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected lookup option.
      * @param {number} [options.maxOptions=20] - Maximum dropdown options shown.
      * @param {number} [options.dropdownWidth=420] - Dropdown width in pixels.
-     * @param {boolean} [options.showCodeOnlyInEditor=true] - Show only the code after selection.
      * @param {string} [options.valueField] - Stored value field override.
      * @param {string} [options.labelField] - Display label field override.
-     * @param {string} [options.codeField] - Field rendered as the code.
-     * @param {string} [options.descriptionField] - Field rendered as the description.
      * @param {object} [options.context] - Context passed to the lookup loader.
      * @param {Function} [options.renderOption] - Custom Tom Select option renderer.
      * @param {Function} [options.renderItem] - Custom Tom Select selected item renderer.
      * @returns {Function} Tabulator editor.
+     *
+     * Lookup results may be strings or objects. Strings are normalized to
+     * `{ value: text, label: text }` before being passed to Tom Select.
      */
 export function autocomplete(lookupInstance, options = {}) {
         const normalizedOptions = normalizeAutocompleteOptions(options);
@@ -33,28 +34,11 @@ export function autocomplete(lookupInstance, options = {}) {
         const labelField = lookupInstance && lookupInstance.labelField
             ? lookupInstance.labelField
             : normalizedOptions.labelField || 'label';
-        const codeField = normalizedOptions.codeField || valueField;
-        const descriptionField = normalizedOptions.descriptionField || labelField;
-        const renderDefaultOption = (item, escape) => `
-            <div class="amb-lookup-option">
-                <span class="amb-lookup-option__code">${escape(item[codeField] ?? '')}</span>
-                <span class="amb-lookup-option__description">${escape(item[descriptionField] ?? '')}</span>
-            </div>
-        `;
+        const renderDefaultOption = (item, escape) => {
+            return `<div class="amb-autocomplete-option">${escape(item[labelField] ?? '')}</div>`;
+        };
         const renderDefaultItem = (item, escape) => {
-            const code = escape(item[codeField] ?? '');
-            const description = escape(item[descriptionField] ?? '');
-
-            if (normalizedOptions.showCodeOnlyInEditor) {
-                return `<div class="amb-lookup-item">${code}</div>`;
-            }
-
-            return `
-                <div class="amb-lookup-option">
-                    <span class="amb-lookup-option__code">${code}</span>
-                    <span class="amb-lookup-option__description">${description}</span>
-                </div>
-            `;
+            return `<div class="amb-autocomplete-item">${escape(item[labelField] ?? item[valueField] ?? '')}</div>`;
         };
 
         return (cell, onRendered, success, cancel) => {
@@ -67,6 +51,7 @@ export function autocomplete(lookupInstance, options = {}) {
             let closed = false;
             let initializing = false;
             let blurTimeout = null;
+            let lastTypedValue = '';
 
             const destroyTomSelect = () => {
                 if (blurTimeout) {
@@ -101,9 +86,7 @@ export function autocomplete(lookupInstance, options = {}) {
                     selectedValue: tomSelect ? tomSelect.getValue() : '',
                     typedValue: typedValue !== undefined
                         ? typedValue
-                        : tomSelect && tomSelect.control_input
-                            ? tomSelect.control_input.value
-                            : '',
+                        : lastTypedValue,
                     options: normalizedOptions
                 });
 
@@ -120,12 +103,14 @@ export function autocomplete(lookupInstance, options = {}) {
                     return [];
                 }
 
-                return lookupInstance.load({
+                const items = await lookupInstance.load({
                     query,
                     rowData,
                     field,
                     context: normalizedOptions.context || {}
                 });
+
+                return normalizeAutocompleteItems(items, valueField, labelField);
             };
 
             const setValueSilently = value => {
@@ -238,10 +223,14 @@ export function autocomplete(lookupInstance, options = {}) {
                     tomSelect.dropdown.style.width = `${normalizedOptions.dropdownWidth}px`;
                 }
 
+                tomSelect.control_input.addEventListener('input', event => {
+                    lastTypedValue = event.target.value;
+                });
                 tomSelect.control_input.addEventListener('keydown', event => {
                     if (event.key === 'Enter') {
                         const typedValue = tomSelect.control_input.value;
 
+                        lastTypedValue = typedValue;
                         window.setTimeout(() => {
                             if (!closed) {
                                 commitCurrentValue(typedValue);

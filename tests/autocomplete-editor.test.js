@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+    normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from '../src/lib/editors/autocomplete-editor-utils.js';
@@ -13,6 +14,27 @@ describe('autocomplete editor options', () => {
             maxOptions: 20,
             dropdownWidth: 420
         }));
+    });
+});
+
+describe('autocomplete lookup results', () => {
+    test('normalizes simple string suggestions for Tom Select', () => {
+        expect(normalizeAutocompleteItems([
+            'Human Resources',
+            'Finance'
+        ])).toEqual([
+            { value: 'Human Resources', label: 'Human Resources' },
+            { value: 'Finance', label: 'Finance' }
+        ]);
+    });
+
+    test('preserves object suggestions and supports custom field names', () => {
+        const item = { code: 'HR', description: 'Human Resources' };
+
+        expect(normalizeAutocompleteItems([item], 'code', 'description')).toEqual([item]);
+        expect(normalizeAutocompleteItems(['Operations'], 'code', 'description')).toEqual([
+            { code: 'Operations', description: 'Operations' }
+        ]);
     });
 });
 
@@ -74,6 +96,17 @@ describe('autocomplete commit behavior', () => {
             typedValue: '',
             options: {
                 allowEmpty: true
+            }
+        })).toEqual({
+            action: 'success',
+            value: ''
+        });
+        expect(resolveAutocompleteCommit({
+            selectedValue: '',
+            typedValue: '',
+            options: {
+                allowEmpty: false,
+                invalidBehavior: 'commitRaw'
             }
         })).toEqual({
             action: 'success',

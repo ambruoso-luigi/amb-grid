@@ -73,7 +73,7 @@ export function createLookup(options = {}) {
      * @param {object} [params.rowData] - Current grid row data, when called by an editor.
      * @param {string} [params.field] - Current grid field, when called by an editor.
      * @param {object} [params.context] - Per-call context overriding the default context.
-     * @returns {Promise<object[]>} Lookup rows.
+     * @returns {Promise<Array<object|string>>} Lookup suggestions.
      */
     const load = async (params = {}) => {
         const normalizedParams = createParams(params);

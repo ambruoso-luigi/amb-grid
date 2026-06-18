@@ -281,4 +281,15 @@ describe('validators.allowedValues', () => {
             { caseSensitive: false }
         ).validate('it')).toBe(true);
     });
+
+    test('supports disabled trimming and case-sensitive comparison', () => {
+        expect(validators.allowedValues(
+            ['IT'],
+            { trim: false }
+        ).validate(' IT ')).toBe(false);
+        expect(validators.allowedValues(
+            ['IT'],
+            { caseSensitive: true }
+        ).validate('it')).toBe(false);
+    });
 });

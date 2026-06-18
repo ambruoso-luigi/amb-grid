@@ -1,31 +1,29 @@
 import { AMB } from '../index.js';
 
 const departments = [
-    { code: 'HR', label: 'Human Resources' },
-    { code: 'IT', label: 'Information Technology' },
-    { code: 'FIN', label: 'Finance' },
-    { code: 'OPS', label: 'Operations' },
-    { code: 'LEG', label: 'Legal' }
+    'Human Resources',
+    'Information Technology',
+    'Finance',
+    'Operations',
+    'Legal'
 ];
 
-const costCenters = [
-    { code: 'CC100', label: 'Administration' },
-    { code: 'CC200', label: 'Sales Operations' },
-    { code: 'CC300', label: 'Product Support' },
-    { code: 'CC400', label: 'Internal Tools' }
+const priorities = [
+    'Low',
+    'Medium',
+    'High',
+    'Critical'
 ];
 
 const tags = [
-    { code: 'urgent', label: 'Urgent' },
-    { code: 'internal', label: 'Internal' },
-    { code: 'external', label: 'External' },
-    { code: 'review', label: 'Review' },
-    { code: 'blocked', label: 'Blocked' }
+    'urgent',
+    'internal',
+    'external',
+    'review',
+    'blocked'
 ];
 
 const createStaticLookup = items => AMB.lookup({
-    valueField: 'code',
-    labelField: 'label',
     cache: {
         enabled: false
     },
@@ -34,10 +32,7 @@ const createStaticLookup = items => AMB.lookup({
 
         if (normalizedQuery === '') return items;
 
-        return items.filter(item => {
-            return item.code.toLowerCase().includes(normalizedQuery)
-                || item.label.toLowerCase().includes(normalizedQuery);
-        });
+        return items.filter(item => item.toLowerCase().includes(normalizedQuery));
     }
 });
 
@@ -49,7 +44,7 @@ const buildReport = result => {
     ];
 
     if (result.errors.length === 0) {
-        lines.push('All strict autocomplete values are allowed.');
+        lines.push('All strict autocomplete values are allowed. Free tags, including custom values, are accepted.');
         return lines.join('\n');
     }
 
@@ -61,12 +56,16 @@ const buildReport = result => {
         lines.push(`- ${rowLabel}, ${error.field}: ${error.message}`);
     });
 
+    lines.push('');
+    lines.push('Unknown strict values remain visible in the grid and are reported above.');
+    lines.push('The custom free tag is accepted.');
+
     return lines.join('\n');
 };
 
 export default function autocomplete(app) {
     const departmentLookup = createStaticLookup(departments);
-    const costCenterLookup = createStaticLookup(costCenters);
+    const priorityLookup = createStaticLookup(priorities);
     const tagLookup = createStaticLookup(tags);
 
     app.innerHTML = `
@@ -85,10 +84,10 @@ export default function autocomplete(app) {
         selector: '#autocomplete-table',
         height: '340px',
         data: [
-            { id: 1, task: 'Prepare onboarding pack', department: 'HR', costCenter: 'CC100', tag: 'internal' },
-            { id: 2, task: 'Review access controls', department: 'IT', costCenter: 'CC400', tag: 'review' },
-            { id: 3, task: 'Check monthly close', department: 'FIN', costCenter: 'CC100', tag: 'urgent' },
-            { id: 4, task: 'Update support workflow', department: 'OPS', costCenter: 'CC300', tag: 'custom-note' }
+            { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', priority: 'Medium', tag: 'internal' },
+            { id: 2, task: 'Review access controls', department: 'Information Technology', priority: 'High', tag: 'review' },
+            { id: 3, task: 'Check monthly close', department: 'Finance', priority: 'Critical', tag: 'urgent' },
+            { id: 4, task: 'Update support workflow', department: 'Operations', priority: 'Low', tag: 'external' }
         ],
         layout: 'fitColumns',
         columns: [
@@ -105,34 +104,34 @@ export default function autocomplete(app) {
                     allowEmpty: true,
                     allowCustomValue: false,
                     invalidBehavior: 'commitRaw',
-                    codeField: 'code',
-                    descriptionField: 'label'
+                    maxOptions: 20,
+                    placeholder: 'Type to search...'
                 }),
                 validation: {
                     allowedValues: {
-                        values: departments.map(item => item.code),
+                        values: departments,
                         trim: true,
-                        caseSensitive: true,
-                        message: 'Choose a department from the lookup'
+                        caseSensitive: false,
+                        message: 'Choose a department from the list'
                     }
                 }
             },
             {
-                title: 'Cost center strict',
-                field: 'costCenter',
-                editor: AMB.editors.autocomplete(costCenterLookup, {
+                title: 'Priority strict',
+                field: 'priority',
+                editor: AMB.editors.autocomplete(priorityLookup, {
                     allowEmpty: true,
                     allowCustomValue: false,
                     invalidBehavior: 'commitRaw',
-                    codeField: 'code',
-                    descriptionField: 'label'
+                    maxOptions: 20,
+                    placeholder: 'Type to search...'
                 }),
                 validation: {
                     allowedValues: {
-                        values: costCenters.map(item => item.code),
+                        values: priorities,
                         trim: true,
-                        caseSensitive: true,
-                        message: 'Choose a cost center from the lookup'
+                        caseSensitive: false,
+                        message: 'Choose a priority from the list'
                     }
                 }
             },
@@ -142,8 +141,8 @@ export default function autocomplete(app) {
                 editor: AMB.editors.autocomplete(tagLookup, {
                     allowEmpty: true,
                     allowCustomValue: true,
-                    codeField: 'code',
-                    descriptionField: 'label'
+                    maxOptions: 20,
+                    placeholder: 'Type to search...'
                 })
             }
         ]
@@ -156,8 +155,8 @@ export default function autocomplete(app) {
 
     app.querySelector('#action-create-autocomplete-anomalies').addEventListener('click', () => {
         demo.crud.updateRow(2, {
-            department: 'XXX',
-            costCenter: 'CC999',
+            department: 'Unknown department',
+            priority: 'Very high',
             tag: 'custom-note'
         });
 

@@ -168,11 +168,13 @@ Lookup fields with support for:
 
 ### Autocomplete
 
-`AMB.editors.autocomplete(...)` uses Tom Select and an `AMB.lookup(...)` instance to suggest values while the user types.
+`AMB.editors.autocomplete(...)` is a text editor that uses Tom Select and an `AMB.lookup(...)` instance to suggest values while the user types. Lookup loaders may return simple strings; the editor normalizes them to `{ value, label }` options internally.
 
 The lookup supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
 
 `allowedValues` is synchronous and intended for static lists. Async or server-side lookup validation is not included at this stage.
+
+Code/description business lookups are a separate, more specialized use case. The autocomplete API and demo intentionally focus on plain text suggestions.
 
 ### Search and Filters
 
