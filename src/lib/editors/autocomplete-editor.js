@@ -35,6 +35,7 @@ export function autocomplete(values, options = {}) {
         let awesomplete = null;
         let closed = false;
         let cellElement = null;
+        let highlightedValue = '';
 
         input.type = 'text';
         input.value = getInitialValue(cell);
@@ -48,6 +49,8 @@ export function autocomplete(values, options = {}) {
             document.removeEventListener('mousedown', handleDocumentMouseDown, true);
             input.removeEventListener('keydown', handleKeydown);
             input.removeEventListener('blur', handleBlur);
+            input.removeEventListener('input', handleInput);
+            input.removeEventListener('awesomplete-highlight', handleHighlight);
             input.removeEventListener('awesomplete-selectcomplete', handleSelectComplete);
 
             if (cellElement) {
@@ -77,17 +80,34 @@ export function autocomplete(values, options = {}) {
             cancel();
         };
 
-        const findExactSuggestion = value => {
-            const normalizedValue = String(value ?? '').trim().toLowerCase();
+        const getSuggestionValue = suggestion => {
+            if (suggestion === null || suggestion === undefined) return '';
 
-            return suggestionValues.find(suggestion => {
-                return suggestion.trim().toLowerCase() === normalizedValue;
-            }) || '';
+            return suggestion.value !== undefined
+                ? String(suggestion.value)
+                : String(suggestion);
+        };
+
+        const getHighlightedValue = () => {
+            if (
+                awesomplete
+                && awesomplete.selected
+                && awesomplete.index >= 0
+                && awesomplete.suggestions
+            ) {
+                return getSuggestionValue(
+                    awesomplete.suggestions[awesomplete.index]
+                );
+            }
+
+            return highlightedValue;
         };
 
         const commit = selectedValue => {
             const result = resolveAutocompleteCommit({
-                selectedValue: selectedValue || findExactSuggestion(input.value),
+                selectedValue: selectedValue === undefined
+                    ? getHighlightedValue()
+                    : selectedValue,
                 typedValue: input.value,
                 options: normalizedOptions
             });
@@ -138,15 +158,23 @@ export function autocomplete(values, options = {}) {
             commit();
         };
 
+        const handleInput = () => {
+            highlightedValue = '';
+        };
+
+        const handleHighlight = event => {
+            highlightedValue = getSuggestionValue(event.text);
+        };
+
         const handleSelectComplete = event => {
-            const selectedValue = event.text && event.text.value !== undefined
-                ? String(event.text.value)
-                : input.value;
+            const selectedValue = getSuggestionValue(event.text) || input.value;
 
             input.value = selectedValue;
             commit(selectedValue);
         };
 
+        input.addEventListener('input', handleInput);
+        input.addEventListener('awesomplete-highlight', handleHighlight);
         input.addEventListener('awesomplete-selectcomplete', handleSelectComplete);
 
         onRendered(() => {

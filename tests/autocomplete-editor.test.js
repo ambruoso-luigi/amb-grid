@@ -20,12 +20,21 @@ vi.mock('awesomplete', () => ({
         constructor(input, options) {
             this.input = input;
             this.options = options;
+            this.index = -1;
+            this.suggestions = options.list.map(value => ({
+                label: value,
+                value
+            }));
             this.container = {
                 contains: target => target === input || target?.insideAutocomplete === true
             };
             this.destroy = vi.fn();
             this.evaluate = vi.fn();
             awesompleteMock.instances.push(this);
+        }
+
+        get selected() {
+            return this.index >= 0;
         }
     }
 }));
@@ -90,7 +99,11 @@ const createClassList = () => {
     };
 };
 
-const createEditorHarness = (options = {}, initialValue = 'Finance') => {
+const createEditorHarness = (
+    options = {},
+    initialValue = 'Finance',
+    values = ['Finance', 'Human Resources']
+) => {
     const originalDocument = globalThis.document;
     const documentMock = new EventTargetMock();
     const cellElement = {
@@ -109,7 +122,7 @@ const createEditorHarness = (options = {}, initialValue = 'Finance') => {
     globalThis.document = documentMock;
     awesompleteMock.instances.length = 0;
 
-    const input = autocomplete(['Finance', 'Human Resources'], options)(
+    const input = autocomplete(values, options)(
         cell,
         callback => {
             render = callback;
@@ -126,6 +139,7 @@ const createEditorHarness = (options = {}, initialValue = 'Finance') => {
         cellElement,
         documentMock,
         input,
+        awesomplete: awesompleteMock.instances[0],
         restore: () => {
             globalThis.document = originalDocument;
         },
@@ -159,30 +173,89 @@ describe('autocomplete editor options', () => {
 });
 
 describe('autocomplete editor lifecycle', () => {
-    test('commits the typed value on Enter', () => {
+    test('Enter without a highlighted suggestion commits the raw typed value', () => {
         const harness = createEditorHarness({ allowCustomValue: true });
 
         try {
-            harness.input.value = 'Operations';
+            harness.input.value = 'Mar';
             const event = harness.input.dispatch('keydown', { key: 'Enter' });
 
             expect(event.preventDefault).toHaveBeenCalledOnce();
-            expect(harness.success).toHaveBeenCalledWith('Operations');
+            expect(harness.success).toHaveBeenCalledWith('Mar');
             expect(harness.cancel).not.toHaveBeenCalled();
         } finally {
             harness.restore();
         }
     });
 
-    test('commits on Tab without preventing Tabulator navigation', () => {
+    test('Tab without a highlighted suggestion commits raw text and stays unblocked', () => {
         const harness = createEditorHarness({ allowCustomValue: true });
 
         try {
-            harness.input.value = 'Operations';
+            harness.input.value = 'Mar';
             const event = harness.input.dispatch('keydown', { key: 'Tab' });
 
             expect(event.preventDefault).not.toHaveBeenCalled();
-            expect(harness.success).toHaveBeenCalledWith('Operations');
+            expect(harness.success).toHaveBeenCalledWith('Mar');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Tab with a highlighted suggestion commits it and stays unblocked', () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            '',
+            ['Mario Rossi', 'Maria Bianchi']
+        );
+
+        try {
+            harness.input.value = 'Mar';
+            harness.awesomplete.index = 0;
+            const event = harness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Enter with a highlighted suggestion commits it', () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            '',
+            ['Mario Rossi', 'Maria Bianchi']
+        );
+
+        try {
+            harness.input.value = 'Mar';
+            harness.awesomplete.index = 0;
+            const event = harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('uses the Awesomplete highlight event when selected state is unavailable', () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            '',
+            ['Mario Rossi']
+        );
+
+        try {
+            harness.input.value = 'Mar';
+            harness.input.dispatch('awesomplete-highlight', {
+                text: { value: 'Mario Rossi' }
+            });
+            const event = harness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
         } finally {
             harness.restore();
         }
@@ -235,7 +308,125 @@ describe('autocomplete editor lifecycle', () => {
         }
     });
 
-    test('commits custom and commitRaw values according to options', () => {
+    test('strict commitRaw commits text outside the suggestion list on Tab', () => {
+        const harness = createEditorHarness({
+            allowCustomValue: false,
+            invalidBehavior: 'commitRaw'
+        });
+
+        try {
+            harness.input.value = 'Pippo Pluto';
+            const event = harness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(harness.success).toHaveBeenCalledWith('Pippo Pluto');
+            expect(harness.cancel).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('strict cancel rejects raw text on Tab without blocking navigation', () => {
+        const harness = createEditorHarness({
+            allowCustomValue: false,
+            invalidBehavior: 'cancel'
+        });
+
+        try {
+            harness.input.value = 'Pippo Pluto';
+            const event = harness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(harness.cancel).toHaveBeenCalledOnce();
+            expect(harness.success).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('typing an exact suggestion is still raw unless it was highlighted', () => {
+        const harness = createEditorHarness({
+            allowCustomValue: false,
+            invalidBehavior: 'cancel'
+        });
+
+        try {
+            harness.input.value = 'Finance';
+            harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(harness.cancel).toHaveBeenCalledOnce();
+            expect(harness.success).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('input clears a previously tracked highlighted suggestion', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            harness.input.dispatch('awesomplete-highlight', {
+                text: { value: 'Finance' }
+            });
+            harness.input.value = 'Mar';
+            harness.input.dispatch('input');
+            harness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(harness.success).toHaveBeenCalledWith('Mar');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Delete and Backspace remain native input operations', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            harness.input.value = 'Mar';
+            const deleteEvent = harness.input.dispatch('keydown', { key: 'Delete' });
+            const backspaceEvent = harness.input.dispatch('keydown', { key: 'Backspace' });
+
+            expect(deleteEvent.preventDefault).not.toHaveBeenCalled();
+            expect(backspaceEvent.preventDefault).not.toHaveBeenCalled();
+            expect(harness.input.value).toBe('Mar');
+            expect(harness.success).not.toHaveBeenCalled();
+            expect(harness.cancel).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('ArrowUp and ArrowDown navigate suggestions without committing', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            const downEvent = harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            const upEvent = harness.input.dispatch('keydown', { key: 'ArrowUp' });
+
+            expect(downEvent.preventDefault).not.toHaveBeenCalled();
+            expect(upEvent.preventDefault).not.toHaveBeenCalled();
+            expect(harness.success).not.toHaveBeenCalled();
+            expect(harness.cancel).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Escape cancels the edit', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            const event = harness.input.dispatch('keydown', { key: 'Escape' });
+
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(harness.cancel).toHaveBeenCalledOnce();
+            expect(harness.success).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('commits custom values according to options', () => {
         const customHarness = createEditorHarness({ allowCustomValue: true });
 
         try {
@@ -245,20 +436,6 @@ describe('autocomplete editor lifecycle', () => {
             expect(customHarness.success).toHaveBeenCalledWith('Custom department');
         } finally {
             customHarness.restore();
-        }
-
-        const rawHarness = createEditorHarness({
-            allowCustomValue: false,
-            invalidBehavior: 'commitRaw'
-        });
-
-        try {
-            rawHarness.input.value = 'Unknown department';
-            rawHarness.input.dispatch('blur');
-
-            expect(rawHarness.success).toHaveBeenCalledWith('Unknown department');
-        } finally {
-            rawHarness.restore();
         }
     });
 
