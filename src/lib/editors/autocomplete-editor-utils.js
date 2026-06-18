@@ -3,6 +3,7 @@ export const normalizeAutocompleteOptions = (options = {}) => {
         allowEmpty: true,
         allowCustomValue: false,
         invalidBehavior: 'commitRaw',
+        trimInput: true,
         maxOptions: 10,
         dropdownWidth: 420,
         ...options
@@ -14,6 +15,15 @@ export const normalizeAutocompleteOptions = (options = {}) => {
         : 10;
 
     return normalizedOptions;
+};
+
+export const normalizeAutocompleteInput = (value, options = {}) => {
+    const normalizedOptions = normalizeAutocompleteOptions(options);
+    const stringValue = value === null || value === undefined
+        ? ''
+        : String(value);
+
+    return normalizedOptions.trimInput ? stringValue.trim() : stringValue;
 };
 
 export const normalizeAutocompleteItem = (item, valueField = 'value', labelField = 'label') => {
@@ -64,12 +74,8 @@ export const resolveAutocompleteCommit = ({
     options = {}
 }) => {
     const normalizedOptions = normalizeAutocompleteOptions(options);
-    const selected = selectedValue === null || selectedValue === undefined
-        ? ''
-        : String(selectedValue);
-    const typed = typedValue === null || typedValue === undefined
-        ? ''
-        : String(typedValue);
+    const selected = normalizeAutocompleteInput(selectedValue, normalizedOptions);
+    const typed = normalizeAutocompleteInput(typedValue, normalizedOptions);
 
     if (selected !== '') {
         return {
@@ -99,4 +105,17 @@ export const resolveAutocompleteCommit = ({
     return normalizedOptions.invalidBehavior === 'commitRaw'
         ? { action: 'success', value: '' }
         : { action: 'cancel' };
+};
+
+export const resolveAutocompleteChange = (value, options = {}) => {
+    const normalizedValue = normalizeAutocompleteInput(value, options);
+
+    if (normalizedValue === '') {
+        return { action: 'continue' };
+    }
+
+    return {
+        action: 'success',
+        value: normalizedValue
+    };
 };

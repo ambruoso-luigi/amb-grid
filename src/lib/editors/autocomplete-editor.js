@@ -3,6 +3,7 @@ import {
     filterAutocompleteItems,
     normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
+    resolveAutocompleteChange,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
 import { createLookupOption, createSelectOption, getInitialValue, getLookupOptionValue } from './shared.js';
@@ -16,6 +17,7 @@ import { createLookupOption, createSelectOption, getInitialValue, getLookupOptio
      * @param {boolean} [options.allowEmpty=true] - Allow saving an empty string.
      * @param {boolean} [options.allowCustomValue=false] - Allow values not present in the suggestions.
      * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected suggestion.
+     * @param {boolean} [options.trimInput=true] - Trim selected and typed text before commit.
      * @param {number} [options.maxOptions=10] - Maximum matching options shown.
      * @param {number} [options.dropdownWidth=420] - Dropdown width in pixels.
      * @param {string} [options.valueField] - Stored value field override.
@@ -214,13 +216,10 @@ export function autocomplete(values, options = {}) {
                     onChange: value => {
                         if (initializing || closed) return;
 
-                        if (value === '' && normalizedOptions.allowEmpty) {
-                            closeWithSuccess('');
-                            return;
-                        }
+                        const result = resolveAutocompleteChange(value, normalizedOptions);
 
-                        if (value !== '') {
-                            closeWithSuccess(value);
+                        if (result.action === 'success') {
+                            closeWithSuccess(result.value);
                         }
                     },
                     onBlur: () => {

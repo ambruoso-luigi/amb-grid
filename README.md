@@ -174,6 +174,8 @@ Lookup fields with support for:
 
 The list supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
 
+Selected and typed values are trimmed by default with `trimInput: true`; set `trimInput: false` to preserve surrounding whitespace. Clearing a value keeps the editor open until Enter or blur. At commit, `allowEmpty` and `invalidBehavior` determine whether an empty string is saved or the edit is cancelled.
+
 `allowedValues` is synchronous and intended for static lists. Async validation is not included at this stage.
 
 Code/description business fields are a separate, more specialized use case. Autocomplete intentionally focuses on plain text suggestions.

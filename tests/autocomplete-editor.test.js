@@ -3,6 +3,7 @@ import {
     filterAutocompleteItems,
     normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
+    resolveAutocompleteChange,
     resolveAutocompleteCommit
 } from '../src/lib/editors/autocomplete-editor-utils.js';
 
@@ -12,6 +13,7 @@ describe('autocomplete editor options', () => {
             allowEmpty: true,
             allowCustomValue: false,
             invalidBehavior: 'commitRaw',
+            trimInput: true,
             maxOptions: 10,
             dropdownWidth: 420
         }));
@@ -68,6 +70,14 @@ describe('autocomplete suggestions', () => {
 });
 
 describe('autocomplete commit behavior', () => {
+    test('keeps editing when clearing an existing value', () => {
+        expect(resolveAutocompleteChange('', {
+            allowEmpty: true
+        })).toEqual({
+            action: 'continue'
+        });
+    });
+
     test('commits selected suggested values', () => {
         expect(resolveAutocompleteCommit({
             selectedValue: 'IT',
@@ -150,6 +160,43 @@ describe('autocomplete commit behavior', () => {
             }
         })).toEqual({
             action: 'cancel'
+        });
+    });
+
+    test('trims selected and custom values by default', () => {
+        expect(resolveAutocompleteChange('Finance ', {})).toEqual({
+            action: 'success',
+            value: 'Finance'
+        });
+        expect(resolveAutocompleteCommit({
+            selectedValue: '',
+            typedValue: 'custom-note ',
+            options: {
+                allowCustomValue: true
+            }
+        })).toEqual({
+            action: 'success',
+            value: 'custom-note'
+        });
+    });
+
+    test('preserves whitespace when trimInput is false', () => {
+        expect(resolveAutocompleteChange('Finance ', {
+            trimInput: false
+        })).toEqual({
+            action: 'success',
+            value: 'Finance '
+        });
+        expect(resolveAutocompleteCommit({
+            selectedValue: '',
+            typedValue: 'custom-note ',
+            options: {
+                allowCustomValue: true,
+                trimInput: false
+            }
+        })).toEqual({
+            action: 'success',
+            value: 'custom-note '
         });
     });
 });
