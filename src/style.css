@@ -156,6 +156,46 @@ h2 {
     width: 1px;
 }
 
+.amb-autocomplete-editor {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border: 1px solid #4f8cff;
+    border-radius: 3px;
+    padding: 6px 8px;
+    font: inherit;
+    background: #fff;
+    color: inherit;
+    outline: none;
+}
+
+.amb-autocomplete-dropdown {
+    position: absolute;
+    z-index: 10000;
+    max-height: 240px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    border: 1px solid #c7ced8;
+    border-radius: 3px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 14%);
+}
+
+.amb-autocomplete-dropdown[hidden] {
+    display: none;
+}
+
+.amb-autocomplete-option {
+    padding: 7px 9px;
+    cursor: pointer;
+    color: #1f2937;
+}
+
+.amb-autocomplete-option:hover,
+.amb-autocomplete-option.is-active {
+    background: #eaf2ff;
+}
+
 .amb-search-toolbar {
     align-items: center;
     display: flex;

@@ -68,6 +68,78 @@ export const filterAutocompleteItems = (
     return matches.slice(0, maxOptions);
 };
 
+export const getAutocompleteCursorPosition = value => {
+    return String(value ?? '').length;
+};
+
+export const moveAutocompleteActiveIndex = ({
+    activeIndex,
+    direction,
+    suggestionCount
+}) => {
+    if (suggestionCount <= 0) return -1;
+
+    if (direction > 0) {
+        return activeIndex < 0
+            ? 0
+            : Math.min(activeIndex + 1, suggestionCount - 1);
+    }
+
+    return activeIndex < 0
+        ? suggestionCount - 1
+        : Math.max(activeIndex - 1, 0);
+};
+
+export const getAutocompleteKeyAction = ({
+    key,
+    activeIndex,
+    suggestionCount
+}) => {
+    if (key === 'ArrowDown' || key === 'ArrowUp') {
+        return {
+            action: 'navigate',
+            activeIndex: moveAutocompleteActiveIndex({
+                activeIndex,
+                direction: key === 'ArrowDown' ? 1 : -1,
+                suggestionCount
+            }),
+            preventDefault: true
+        };
+    }
+
+    if (key === 'Enter') {
+        return activeIndex >= 0 && activeIndex < suggestionCount
+            ? {
+                action: 'commitSuggestion',
+                activeIndex,
+                preventDefault: true
+            }
+            : {
+                action: 'commitInput',
+                preventDefault: true
+            };
+    }
+
+    if (key === 'Tab') {
+        return {
+            action: 'commitInput',
+            preventDefault: false
+        };
+    }
+
+    if (key === 'Escape') {
+        return {
+            action: 'cancel',
+            preventDefault: true
+        };
+    }
+
+    return {
+        action: 'native',
+        preventDefault: false
+    };
+};
+
 export const resolveAutocompleteCommit = ({
     selectedValue,
     typedValue,
@@ -105,17 +177,4 @@ export const resolveAutocompleteCommit = ({
     return normalizedOptions.invalidBehavior === 'commitRaw'
         ? { action: 'success', value: '' }
         : { action: 'cancel' };
-};
-
-export const resolveAutocompleteChange = (value, options = {}) => {
-    const normalizedValue = normalizeAutocompleteInput(value, options);
-
-    if (normalizedValue === '') {
-        return { action: 'continue' };
-    }
-
-    return {
-        action: 'success',
-        value: normalizedValue
-    };
 };

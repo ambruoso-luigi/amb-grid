@@ -1,9 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import {
     filterAutocompleteItems,
+    getAutocompleteCursorPosition,
+    getAutocompleteKeyAction,
+    moveAutocompleteActiveIndex,
     normalizeAutocompleteItems,
     normalizeAutocompleteOptions,
-    resolveAutocompleteChange,
     resolveAutocompleteCommit
 } from '../src/lib/editors/autocomplete-editor-utils.js';
 
@@ -33,7 +35,7 @@ describe('autocomplete editor options', () => {
 });
 
 describe('autocomplete suggestions', () => {
-    test('normalizes simple string suggestions for Tom Select', () => {
+    test('normalizes simple string suggestions', () => {
         expect(normalizeAutocompleteItems([
             'Human Resources',
             'Finance'
@@ -69,15 +71,87 @@ describe('autocomplete suggestions', () => {
     });
 });
 
-describe('autocomplete commit behavior', () => {
-    test('keeps editing when clearing an existing value', () => {
-        expect(resolveAutocompleteChange('', {
-            allowEmpty: true
+describe('autocomplete native input behavior', () => {
+    test('places the initial cursor at the end of the value', () => {
+        expect(getAutocompleteCursorPosition('Finance')).toBe(7);
+        expect(getAutocompleteCursorPosition('')).toBe(0);
+    });
+
+    test('leaves Delete and Backspace to the native input', () => {
+        expect(getAutocompleteKeyAction({
+            key: 'Delete',
+            activeIndex: -1,
+            suggestionCount: 3
         })).toEqual({
-            action: 'continue'
+            action: 'native',
+            preventDefault: false
+        });
+        expect(getAutocompleteKeyAction({
+            key: 'Backspace',
+            activeIndex: -1,
+            suggestionCount: 3
+        })).toEqual({
+            action: 'native',
+            preventDefault: false
         });
     });
 
+    test('moves through suggestions with ArrowDown and ArrowUp', () => {
+        expect(moveAutocompleteActiveIndex({
+            activeIndex: -1,
+            direction: 1,
+            suggestionCount: 3
+        })).toBe(0);
+        expect(moveAutocompleteActiveIndex({
+            activeIndex: 0,
+            direction: 1,
+            suggestionCount: 3
+        })).toBe(1);
+        expect(moveAutocompleteActiveIndex({
+            activeIndex: -1,
+            direction: -1,
+            suggestionCount: 3
+        })).toBe(2);
+        expect(moveAutocompleteActiveIndex({
+            activeIndex: 2,
+            direction: -1,
+            suggestionCount: 3
+        })).toBe(1);
+    });
+
+    test('Enter commits the active suggestion or current input', () => {
+        expect(getAutocompleteKeyAction({
+            key: 'Enter',
+            activeIndex: 1,
+            suggestionCount: 3
+        })).toEqual({
+            action: 'commitSuggestion',
+            activeIndex: 1,
+            preventDefault: true
+        });
+        expect(getAutocompleteKeyAction({
+            key: 'Enter',
+            activeIndex: -1,
+            suggestionCount: 3
+        })).toEqual({
+            action: 'commitInput',
+            preventDefault: true
+        });
+    });
+
+    test('Tab commits without blocking Tabulator navigation', () => {
+        expect(getAutocompleteKeyAction({
+            key: 'Tab',
+            activeIndex: 0,
+            suggestionCount: 3
+        })).toEqual({
+            action: 'commitInput',
+            preventDefault: false
+        });
+    });
+});
+
+describe('autocomplete commit behavior', () => {
     test('commits selected suggested values', () => {
         expect(resolveAutocompleteCommit({
             selectedValue: 'IT',
@@ -164,7 +238,11 @@ describe('autocomplete commit behavior', () => {
     });
 
     test('trims selected and custom values by default', () => {
-        expect(resolveAutocompleteChange('Finance ', {})).toEqual({
+        expect(resolveAutocompleteCommit({
+            selectedValue: 'Finance ',
+            typedValue: '',
+            options: {}
+        })).toEqual({
             action: 'success',
             value: 'Finance'
         });
@@ -181,8 +259,12 @@ describe('autocomplete commit behavior', () => {
     });
 
     test('preserves whitespace when trimInput is false', () => {
-        expect(resolveAutocompleteChange('Finance ', {
-            trimInput: false
+        expect(resolveAutocompleteCommit({
+            selectedValue: 'Finance ',
+            typedValue: '',
+            options: {
+                trimInput: false
+            }
         })).toEqual({
             action: 'success',
             value: 'Finance '

@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "tabulator-tables": "^6.4.0",
-    "tom-select": "^2.6.1",
     "vanillajs-datepicker": "^1.3.4"
   }
 }

@@ -168,13 +168,13 @@ Lookup fields with support for:
 
 ### Autocomplete
 
-`AMB.editors.autocomplete(values, options)` suggests values from a string list while the user types. The selected or typed text is stored directly; there is no hidden associated value.
+`AMB.editors.autocomplete(values, options)` is a native text input with a lightweight AMB-managed suggestion dropdown. The selected or typed text is stored directly; the dropdown never owns the value and there is no hidden associated value.
 
 `maxOptions` defaults to `10` and limits the number of matching suggestions shown. It can be overridden, for example with `AMB.editors.autocomplete(values, { maxOptions: 15 })`.
 
 The list supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
 
-Selected and typed values are trimmed by default with `trimInput: true`; set `trimInput: false` to preserve surrounding whitespace. Clearing a value keeps the editor open until Enter or blur. At commit, `allowEmpty` and `invalidBehavior` determine whether an empty string is saved or the edit is cancelled.
+Selected and typed values are trimmed only on commit by default with `trimInput: true`; set `trimInput: false` to preserve surrounding whitespace. Backspace and Delete retain native input behavior. Arrow keys navigate suggestions, Enter commits, Escape cancels, and Tab commits without blocking Tabulator navigation. At commit, `allowEmpty` and `invalidBehavior` determine whether an empty string is saved or the edit is cancelled.
 
 `allowedValues` is synchronous and intended for static lists. Async validation is not included at this stage.
 
