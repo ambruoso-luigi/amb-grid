@@ -76,6 +76,71 @@ const createCrud = rowsData => {
 };
 
 describe('CrudHelper validation lifecycle', () => {
+    test('updates and validates multiple lookup-mapped fields atomically', () => {
+        const { table } = createTableMock([
+            {
+                id: 1,
+                istatCode: '065116',
+                municipality: 'Salerno',
+                province: 'SA',
+                postalCode: '84121'
+            }
+        ]);
+        const crud = new CrudHelper(table);
+
+        crud.addCellValidator('istatCode', 'ISTAT code is required', value => Boolean(value));
+        crud.addCellValidator('postalCode', 'Postal code is required', value => Boolean(value));
+
+        crud.updateRowFields(1, {
+            istatCode: '065078',
+            municipality: 'Nocera Inferiore',
+            province: 'SA',
+            postalCode: '84014'
+        });
+
+        const row = crud.findRowById(1);
+        const payload = crud.getSavePayload();
+
+        expect(row.getData()).toEqual(expect.objectContaining({
+            istatCode: '065078',
+            municipality: 'Nocera Inferiore',
+            province: 'SA',
+            postalCode: '84014',
+            _state: ROW_STATE.MODIFIED
+        }));
+        expect(crud.cellErrors.size).toBe(0);
+        expect(payload.changes.updated[0].changedFields).toEqual(
+            expect.arrayContaining(['istatCode', 'municipality', 'postalCode'])
+        );
+
+        crud.rollbackRow(1);
+
+        expect(row.getData()).toEqual(expect.objectContaining({
+            istatCode: '065116',
+            municipality: 'Salerno',
+            province: 'SA',
+            postalCode: '84121',
+            _state: ROW_STATE.CLEAN
+        }));
+    });
+
+    test('keeps new rows new and refuses lookup patches on deleted rows', () => {
+        const { table } = createTableMock([
+            { id: null, _ambTempId: 'amb-temp-1', municipality: '', _state: ROW_STATE.NEW },
+            { id: 2, municipality: 'Salerno', _state: ROW_STATE.DELETED }
+        ]);
+        const crud = new CrudHelper(table);
+
+        crud.updateRowFields('amb-temp-1', { municipality: 'Nocera Inferiore' });
+
+        expect(crud.findRowByKey('amb-temp-1').getData()).toEqual(expect.objectContaining({
+            municipality: 'Nocera Inferiore',
+            _state: ROW_STATE.NEW
+        }));
+        expect(crud.updateRowFields(2, { municipality: 'Nocera Inferiore' })).toBeNull();
+        expect(crud.findRowById(2).getData().municipality).toBe('Salerno');
+    });
+
     test('validateChanges marks only a modified row that duplicates a clean row', () => {
         const { crud } = createCrud([
             { id: 1, alias: 'Atlas' },

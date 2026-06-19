@@ -175,6 +175,51 @@ Lookup fields with support for:
 * Code validation
 * Description management
 * Hover descriptions
+* Record-based multifield mapping
+
+Record-based lookups keep dialog presentation separate from row mapping. A
+technical key may be hidden from the end user and still populate the grid row:
+
+```js
+const municipalities = AMB.lookup({
+  keyField: 'istatCode',
+  valueField: 'istatCode',
+  labelField: 'municipalityName',
+  columns: [
+    { field: 'municipalityName', title: 'Municipality', visible: true },
+    { field: 'province', title: 'Province', visible: true },
+    { field: 'region', title: 'Region', visible: true },
+    { field: 'postalCode', title: 'Postal Code', visible: true },
+    { field: 'istatCode', title: 'ISTAT Code', visible: false }
+  ],
+  search: { fields: 'visible' },
+  mapToRow: {
+    istatCode: 'istatCode',
+    municipality: 'municipalityName',
+    province: 'province',
+    region: 'region',
+    postalCode: 'postalCode'
+  },
+  load: () => municipalityRecords
+});
+```
+
+`mapToRow` uses `{ gridRowField: lookupRecordField }`. `keyField` is required
+and validated for presence and uniqueness when records load. At least one
+lookup column must declare `visible: true`. The modal displays and searches
+only visible columns, while selection resolves the complete indexed record.
+All mapped values pass through the AMB CRUD lifecycle, including row state,
+field validation, rollback, and save payload generation.
+
+The municipality demo loads its JSON as a separate static demo asset, so the
+dataset is not imported by the library core or included in the AMB Grid runtime
+bundle. Municipality identifiers and administrative names are generated from
+the official ISTAT municipality workbook. Postal codes are a limited demo
+overlay and are not an official ISTAT field.
+
+> This dataset is provided for demonstration purposes only. It may be
+> incomplete, outdated, or inaccurate. Do not use it as an official source for
+> production systems.
 
 ### Autocomplete
 

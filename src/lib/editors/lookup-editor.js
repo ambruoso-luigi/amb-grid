@@ -47,11 +47,15 @@ export function lookup(lookupInstance, options = {}) {
             autoCompleteMinChars: 1,
             autoCompleteOnTab: true,
             invalidMessage: 'Invalid lookup code',
+            columns: lookupInstance && lookupInstance.columns,
+            search: lookupInstance && lookupInstance.search,
+            mapToRow: lookupInstance && lookupInstance.mapToRow,
             ...options
         };
+        const keyField = lookupInstance && lookupInstance.keyField;
         const valueField = lookupInstance && lookupInstance.valueField
             ? lookupInstance.valueField
-            : normalizedOptions.valueField || 'value';
+            : normalizedOptions.valueField || keyField || 'value';
         const labelField = lookupInstance && lookupInstance.labelField
             ? lookupInstance.labelField
             : normalizedOptions.labelField || 'label';
@@ -142,6 +146,39 @@ export function lookup(lookupInstance, options = {}) {
                 setCellLookupDescription(description);
                 clearInvalidCode();
                 closeWithSuccess(value);
+            };
+
+            const applyMappedRecord = selected => {
+                const mapToRow = normalizedOptions.mapToRow;
+
+                if (!mapToRow || !selected) return null;
+
+                const selectedKey = keyField ? selected[keyField] : null;
+                const completeRecord = keyField
+                    && lookupInstance
+                    && typeof lookupInstance.getByKey === 'function'
+                    ? lookupInstance.getByKey(selectedKey)
+                    : selected;
+
+                if (!completeRecord) {
+                    throw new Error(`Lookup record "${selectedKey}" is not available in the record index`);
+                }
+
+                const patch = {};
+
+                Object.entries(mapToRow).forEach(([rowField, recordField]) => {
+                    patch[rowField] = completeRecord[recordField];
+                });
+
+                if (typeof normalizedOptions.applyRecord === 'function') {
+                    return normalizedOptions.applyRecord(cell, patch, completeRecord);
+                }
+
+                if (row && typeof row.update === 'function') {
+                    return row.update(patch);
+                }
+
+                return null;
             };
 
             const loadLookup = async query => {
@@ -319,14 +356,28 @@ export function lookup(lookupInstance, options = {}) {
                 dialogOpen = true;
 
                 try {
-                    const selected = await normalizedOptions.dialog.open({
-                        title: normalizedOptions.dialogTitle || 'Search value',
-                        columns: normalizedOptions.dialogColumns || [
+                    const configuredColumns = normalizedOptions.columns;
+                    const visibleColumns = configuredColumns
+                        ? configuredColumns.filter(column => {
+                            return column && column.field && column.visible === true;
+                        })
+                        : normalizedOptions.dialogColumns || [
                             { field: valueField, title: 'Code', width: 140 },
                             { field: labelField, title: 'Description' }
-                        ],
+                        ];
+                    const searchFields = normalizedOptions.search
+                        && normalizedOptions.search.fields !== 'visible'
+                        && Array.isArray(normalizedOptions.search.fields)
+                        ? normalizedOptions.search.fields.filter(searchField => {
+                            return visibleColumns.some(column => column.field === searchField);
+                        })
+                        : visibleColumns.map(column => column.field);
+                    const selected = await normalizedOptions.dialog.open({
+                        title: normalizedOptions.dialogTitle || 'Search value',
+                        columns: visibleColumns,
                         data: await loadLookup(''),
                         valueField,
+                        searchFields,
                         searchPlaceholder: normalizedOptions.searchPlaceholder || 'Search...'
                     });
 
@@ -336,8 +387,18 @@ export function lookup(lookupInstance, options = {}) {
 
                     if (selectedValue === null || selectedValue === undefined) return;
 
-                    input.value = String(selectedValue);
-                    closeWithLookupItem(String(selectedValue), selected);
+                    const mappedEditorField = normalizedOptions.mapToRow
+                        && normalizedOptions.mapToRow[field];
+                    const committedValue = mappedEditorField
+                        ? selected[mappedEditorField]
+                        : selectedValue;
+
+                    const appliedRecord = applyMappedRecord(selected);
+
+                    if (normalizedOptions.mapToRow && appliedRecord === null) return;
+
+                    input.value = String(committedValue ?? '');
+                    closeWithLookupItem(String(committedValue ?? ''), selected);
                 } finally {
                     dialogOpen = false;
                 }
@@ -364,6 +425,7 @@ export function lookup(lookupInstance, options = {}) {
         editor._ambSetLookupErrorHandlers = handlers => {
             normalizedOptions.markInvalid = handlers.markInvalid;
             normalizedOptions.clearInvalid = handlers.clearInvalid;
+            normalizedOptions.applyRecord = handlers.applyRecord;
         };
 
         return editor;

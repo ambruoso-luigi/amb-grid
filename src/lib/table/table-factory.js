@@ -48,6 +48,16 @@ const configureLookupEditors = (columns, getCrud) => {
                     if (!crud || identifier === null || identifier === undefined || !field) return;
 
                     crud.clearCellError(identifier, field);
+                },
+                applyRecord(cell, patch) {
+                    const crud = getCrud();
+                    const row = cell && cell.getRow && cell.getRow();
+                    const data = row && row.getData ? row.getData() : null;
+                    const identifier = getCrudRowIdentifier(crud, data);
+
+                    if (!crud || identifier === null || identifier === undefined) return null;
+
+                    return crud.updateRowFields(identifier, patch);
                 }
             });
         }

@@ -11,6 +11,7 @@ import validation from './validation.js';
 import numeric from './numeric.js';
 import dates from './dates.js';
 import autocomplete from './autocomplete.js';
+import multifieldLookup from './multifield-lookup.js';
 import parsers from './parsers.js';
 import rowStates from './row-states.js';
 import multipleTables from './multiple-tables.js';
@@ -25,6 +26,7 @@ const examples = [
     { id: 'numeric', label: 'Numeric', mount: numeric },
     { id: 'dates', label: 'Dates', mount: dates },
     { id: 'autocomplete', label: 'Autocomplete', mount: autocomplete },
+    { id: 'multifield-lookup', label: 'Multifield lookup', mount: multifieldLookup },
     { id: 'parsers', label: 'Parsers', mount: parsers },
     { id: 'row-states', label: 'Row states', mount: rowStates },
     { id: 'multiple-tables', label: 'Multiple tables', mount: multipleTables },

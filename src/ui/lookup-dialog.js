@@ -13,7 +13,9 @@ const createElement = (tagName, className, text = '') => {
 };
 
 const normalizeColumns = columns => {
-    return (columns || []).filter(column => column && column.field);
+    return (columns || []).filter(column => {
+        return column && column.field && column.visible !== false;
+    });
 };
 
 const getCellValue = (item, field) => {
@@ -22,6 +24,20 @@ const getCellValue = (item, field) => {
     if (value === null || value === undefined) return '';
 
     return String(value);
+};
+
+const getFormattedCellValue = (item, column) => {
+    const value = item && item[column.field];
+
+    if (typeof column.formatter !== 'function') {
+        return getCellValue(item, column.field);
+    }
+
+    const formatted = column.formatter(value, item, column);
+
+    if (formatted === null || formatted === undefined) return '';
+
+    return String(formatted);
 };
 
 /**
@@ -52,6 +68,7 @@ export class LookupDialog {
      * @param {object[]} [options.data=[]] - Lookup rows to display.
      * @param {string} [options.valueField='id'] - Field containing the stored value.
      * @param {string} [options.searchPlaceholder='Search...'] - Search input placeholder.
+     * @param {string[]} [options.searchFields] - Fields used for local filtering. Defaults to displayed columns.
      * @param {number} [options.width=720] - Dialog panel width in pixels.
      * @param {string} [options.noResultsText='No results'] - Text shown when filtering returns no rows.
      * @param {string} [options.selectText='Select'] - Select button text.
@@ -76,6 +93,9 @@ export class LookupDialog {
             ...options
         };
         this.options.columns = normalizeColumns(this.options.columns);
+        this.options.searchFields = Array.isArray(this.options.searchFields)
+            ? this.options.searchFields.filter(Boolean)
+            : this.options.columns.map(column => column.field);
         this.filteredData = [...(this.options.data || [])];
         this.selectedIndex = this.filteredData.length ? 0 : -1;
 
@@ -223,7 +243,7 @@ export class LookupDialog {
             this.options.columns.forEach(column => {
                 const td = document.createElement('td');
 
-                td.textContent = getCellValue(item, column.field);
+                td.textContent = getFormattedCellValue(item, column);
                 row.appendChild(td);
             });
 
@@ -264,8 +284,8 @@ export class LookupDialog {
         this.filteredData = (this.options.data || []).filter(item => {
             if (!normalizedQuery) return true;
 
-            return this.options.columns.some(column => {
-                return getCellValue(item, column.field).toLowerCase().includes(normalizedQuery);
+            return this.options.searchFields.some(field => {
+                return getCellValue(item, field).toLowerCase().includes(normalizedQuery);
             });
         });
         this.selectedIndex = this.filteredData.length ? 0 : -1;

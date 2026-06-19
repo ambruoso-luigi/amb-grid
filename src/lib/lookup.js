@@ -20,6 +20,40 @@ const normalizeResult = result => {
     return Array.isArray(result) ? result : [];
 };
 
+const normalizeRecordConfiguration = options => {
+    const columns = Array.isArray(options.columns) ? options.columns : null;
+    const mapToRow = options.mapToRow && typeof options.mapToRow === 'object'
+        ? { ...options.mapToRow }
+        : null;
+    const recordBased = Boolean(columns || mapToRow || options.keyField);
+
+    if (!recordBased) {
+        return {
+            recordBased: false,
+            keyField: null,
+            columns: null,
+            search: null,
+            mapToRow: null
+        };
+    }
+
+    if (typeof options.keyField !== 'string' || !options.keyField.trim()) {
+        throw new Error('Lookup keyField is required for record-based lookups');
+    }
+
+    if (columns && !columns.some(column => column && column.field && column.visible === true)) {
+        throw new Error('Lookup columns must contain at least one column with visible: true');
+    }
+
+    return {
+        recordBased: true,
+        keyField: options.keyField.trim(),
+        columns: columns ? columns.map(column => ({ ...column })) : null,
+        search: options.search ? { ...options.search } : null,
+        mapToRow
+    };
+};
+
 /**
  * Create a data source for the specialized lookup editor.
  *
@@ -29,16 +63,22 @@ const normalizeResult = result => {
  * @param {object} [options] - Lookup options.
  * @param {string} [options.valueField] - Field containing the stored code/value.
  * @param {string} [options.labelField] - Field containing the display label.
+ * @param {string} [options.keyField] - Required unique technical key for record-based lookups.
+ * @param {object[]} [options.columns] - Lookup dialog columns. Record-based lookups require at least one `visible: true` column.
+ * @param {object} [options.search] - Lookup search configuration.
+ * @param {object} [options.mapToRow] - Mapping from grid row fields to lookup record fields.
  * @param {object} [options.context] - Default context merged into load params.
  * @param {Function} [options.load] - Async or sync loader receiving `{ query, rowData, field, context }`.
  * @param {object} [options.cache] - Cache options.
  * @param {boolean} [options.cache.enabled=true] - Enable in-memory caching.
  * @param {number} [options.cache.ttl] - Cache time to live in milliseconds.
  * @param {Function} [options.cache.key] - Custom cache key function receiving normalized params.
- * @returns {{valueField: string, labelField: string, load: Function, refresh: Function, clearCache: Function}} Lookup instance.
+ * @returns {{valueField: string, labelField: string, keyField: string|null, columns: object[]|null, search: object|null, mapToRow: object|null, getByKey: Function, load: Function, refresh: Function, clearCache: Function}} Lookup instance.
  */
 export function createLookup(options = {}) {
     const cache = new Map();
+    const recordIndex = new Map();
+    const recordConfiguration = normalizeRecordConfiguration(options);
     const cacheOptions = options.cache || {};
     const cacheEnabled = cacheOptions.enabled !== false;
     const hasTtl = cacheOptions.ttl !== undefined && cacheOptions.ttl !== null;
@@ -65,6 +105,37 @@ export function createLookup(options = {}) {
         return Date.now() - entry.timestamp > cacheOptions.ttl;
     };
 
+    const indexRecords = data => {
+        if (!recordConfiguration.recordBased) return data;
+
+        const batchKeys = new Set();
+
+        data.forEach((record, index) => {
+            if (!record || typeof record !== 'object') {
+                throw new Error(`Lookup record at index ${index} must be an object`);
+            }
+
+            const key = record[recordConfiguration.keyField];
+
+            if (key === null || key === undefined || key === '') {
+                throw new Error(
+                    `Lookup record at index ${index} is missing keyField "${recordConfiguration.keyField}"`
+                );
+            }
+
+            if (batchKeys.has(key)) {
+                throw new Error(
+                    `Lookup keyField "${recordConfiguration.keyField}" must be unique; duplicate value "${key}"`
+                );
+            }
+
+            batchKeys.add(key);
+            recordIndex.set(key, record);
+        });
+
+        return data;
+    };
+
     /**
      * Load lookup rows for a query.
      *
@@ -79,7 +150,7 @@ export function createLookup(options = {}) {
         const normalizedParams = createParams(params);
 
         if (!cacheEnabled) {
-            return normalizeResult(loadFn ? await loadFn(normalizedParams) : []);
+            return indexRecords(normalizeResult(loadFn ? await loadFn(normalizedParams) : []));
         }
 
         const key = getCacheKey(normalizedParams);
@@ -93,7 +164,7 @@ export function createLookup(options = {}) {
             cache.delete(key);
         }
 
-        const data = normalizeResult(loadFn ? await loadFn(normalizedParams) : []);
+        const data = indexRecords(normalizeResult(loadFn ? await loadFn(normalizedParams) : []));
 
         cache.set(key, {
             data,
@@ -110,6 +181,7 @@ export function createLookup(options = {}) {
      */
     const clearCache = () => {
         cache.clear();
+        recordIndex.clear();
     };
 
     /**
@@ -129,6 +201,13 @@ export function createLookup(options = {}) {
     return {
         valueField: options.valueField,
         labelField: options.labelField,
+        keyField: recordConfiguration.keyField,
+        columns: recordConfiguration.columns,
+        search: recordConfiguration.search,
+        mapToRow: recordConfiguration.mapToRow,
+        getByKey(key) {
+            return recordIndex.get(key) || null;
+        },
         load,
         clearCache,
         refresh

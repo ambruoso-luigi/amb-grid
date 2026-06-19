@@ -1458,6 +1458,41 @@ export class CrudHelper {
     }
 
     /**
+     * Atomically update multiple fields through the CRUD lifecycle.
+     *
+     * The row is resolved by backend id or AMB temporary id. Deleted rows are
+     * left untouched. Modification tracking and validators are refreshed for
+     * every patched field.
+     *
+     * @param {*} identifier - Backend id or temporary AMB id.
+     * @param {object} data - Partial row data to apply.
+     * @returns {object|null} Updated row, or null when it cannot be updated.
+     */
+    updateRowFields(identifier, data) {
+        const row = this.findRowByKey(identifier);
+
+        if (!row) {
+            console.warn(`Row with ${this._getIdentifierLabel(identifier)} not found`);
+            return null;
+        }
+
+        if (this._getBaseRowState(row) === ROW_STATE.DELETED) {
+            return null;
+        }
+
+        const patch = data && typeof data === 'object' ? data : {};
+
+        this._patchRow(row, patch);
+        this._markRowModified(row);
+
+        Object.keys(patch).forEach(field => {
+            this._validateField(row, field);
+        });
+
+        return row;
+    }
+
+    /**
      * Mark an existing row as deleted, or remove it when it has not been saved yet.
      *
      * @param {*} id - Row identifier.
