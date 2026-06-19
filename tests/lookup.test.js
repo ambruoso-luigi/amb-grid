@@ -129,6 +129,7 @@ describe('multifield lookup editor', () => {
             columns: [
                 { field: 'municipalityName', visible: true },
                 { field: 'province', visible: true },
+                { field: 'region', visible: true },
                 { field: 'postalCode', visible: true },
                 { field: 'istatCode', visible: false }
             ],
@@ -145,9 +146,10 @@ describe('multifield lookup editor', () => {
         const dialog = {
             open: async options => {
                 expect(options.columns.map(column => column.field))
-                    .toEqual(['municipalityName', 'province', 'postalCode']);
+                    .toEqual(['municipalityName', 'province', 'region', 'postalCode']);
                 expect(options.searchFields)
-                    .toEqual(['municipalityName', 'province', 'postalCode']);
+                    .toEqual(['municipalityName', 'province', 'region', 'postalCode']);
+                expect(options.columns.some(column => column.field === 'istatCode')).toBe(false);
                 return record;
             }
         };

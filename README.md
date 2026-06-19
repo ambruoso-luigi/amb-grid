@@ -211,6 +211,12 @@ only visible columns, while selection resolves the complete indexed record.
 All mapped values pass through the AMB CRUD lifecycle, including row state,
 field validation, rollback, and save payload generation.
 
+In the municipality demo, the Municipality cell is the only directly editable
+mapped field because it opens the lookup. Province, Region, Postal Code, ISTAT
+Code, and Cadastral Code are read-only derived fields populated from the
+selected record. Standard AMB row actions remain responsible for rollback,
+removal, and deletion.
+
 The municipality demo loads its JSON as a separate static demo asset, so the
 dataset is not imported by the library core or included in the AMB Grid runtime
 bundle. Municipality identifiers and administrative names are generated from

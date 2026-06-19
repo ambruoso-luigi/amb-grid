@@ -6,6 +6,14 @@ const datasetPath = new URL(
     import.meta.url
 );
 const municipalities = JSON.parse(fs.readFileSync(datasetPath, 'utf8'));
+const demoSource = fs.readFileSync(
+    new URL('../src/demo/multifield-lookup.js', import.meta.url),
+    'utf8'
+);
+const demoMenuSource = fs.readFileSync(
+    new URL('../src/demo/main.js', import.meta.url),
+    'utf8'
+);
 
 describe('Italian municipalities demo dataset', () => {
     test('contains a realistic, uniquely keyed municipality list', () => {
@@ -37,5 +45,13 @@ describe('Italian municipalities demo dataset', () => {
             region: 'CAMPANIA',
             postalCode: '84014'
         });
+    });
+
+    test('keeps the public demo reachable and free of hardcoded row rollback', () => {
+        expect(demoMenuSource).toContain("import multifieldLookup from './multifield-lookup.js'");
+        expect(demoMenuSource).toContain("label: 'Multifield lookup'");
+        expect(demoSource).not.toContain('Rollback first row');
+        expect(demoSource).not.toContain('rollbackRow(1)');
+        expect(demoSource).toContain('This dataset is provided for demonstration purposes only.');
     });
 });

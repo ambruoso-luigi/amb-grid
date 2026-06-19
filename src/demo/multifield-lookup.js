@@ -19,15 +19,15 @@ export default async function multifieldLookup(app) {
     app.innerHTML = `
         <h2>Italian municipality multifield lookup</h2>
         <p>
-            Open the lookup from the Municipality column. The end user sees
-            Municipality, Province, Region, and Postal Code in the dialog.
-            The hidden technical ISTAT code is still mapped to the main grid row.
+            Edit the Municipality cell to open the lookup. Province, Region,
+            Postal Code, ISTAT Code and Cadastral Code are populated from the
+            selected record. The technical codes are hidden from the lookup
+            dialog but remain visible in the main grid.
         </p>
         <p class="demo-warning"><strong>Demo data warning:</strong> ${DATASET_WARNING}</p>
         <div class="toolbar">
             <button type="button" id="municipality-add">Add row</button>
             <button type="button" id="municipality-report">Show payload</button>
-            <button type="button" id="municipality-rollback">Rollback first row</button>
         </div>
         <div id="municipality-table"></div>
         <pre class="demo-output" id="municipality-output">Loading municipality data...</pre>
@@ -87,8 +87,8 @@ export default async function multifieldLookup(app) {
             enabled: true
         },
         columns: [
-            { title: 'ISTAT Code', field: 'istatCode', width: 120 },
-            { title: 'Cadastral Code', field: 'cadastralCode', width: 135 },
+            { title: 'ISTAT Code', field: 'istatCode', width: 120, editable: false },
+            { title: 'Cadastral Code', field: 'cadastralCode', width: 135, editable: false },
             {
                 title: 'Municipality',
                 field: 'municipality',
@@ -99,9 +99,9 @@ export default async function multifieldLookup(app) {
                     searchPlaceholder: 'Search municipality, province, region, or postal code...'
                 })
             },
-            { title: 'Province', field: 'province', required: true, width: 105 },
-            { title: 'Region', field: 'region' },
-            { title: 'Postal Code', field: 'postalCode', width: 120 }
+            { title: 'Province', field: 'province', required: true, width: 105, editable: false },
+            { title: 'Region', field: 'region', editable: false },
+            { title: 'Postal Code', field: 'postalCode', width: 120, editable: false }
         ]
     });
 
@@ -123,11 +123,6 @@ export default async function multifieldLookup(app) {
             includeInvalid: true
         }), null, 2);
     });
-    app.querySelector('#municipality-rollback').addEventListener('click', () => {
-        grid.crud.rollbackRow(1);
-        output.textContent = JSON.stringify(grid.crud.getStateReport(), null, 2);
-    });
-
     return {
         ...grid,
         destroy() {
