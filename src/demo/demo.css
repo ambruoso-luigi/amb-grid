@@ -1,0 +1,126 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #222;
+}
+
+h1 {
+    color: #333;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.demo-page {
+    display: grid;
+    gap: 18px;
+}
+
+.demo-header p,
+.demo-note {
+    color: #555;
+    margin-top: 6px;
+}
+
+.demo-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.demo-menu-button {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    padding: 8px 12px;
+}
+
+.demo-menu-button:hover,
+.demo-menu-button.is-active {
+    background: #eef2ff;
+    border-color: #6b7cff;
+}
+
+.demo-example {
+    min-width: 0;
+}
+
+.demo-output {
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #222;
+    margin-top: 12px;
+    max-height: 260px;
+    overflow: auto;
+    padding: 12px;
+    white-space: pre-wrap;
+}
+
+.demo-warning {
+    background: #fff8e6;
+    border: 1px solid #e0b84f;
+    border-radius: 4px;
+    color: #5f4500;
+    padding: 10px 12px;
+}
+
+.demo-table-wrap {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 12px;
+    overflow: auto;
+}
+
+.demo-table {
+    border-collapse: collapse;
+    min-width: 720px;
+    width: 100%;
+}
+
+.demo-table th,
+.demo-table td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.demo-table th {
+    background: #f7f7f7;
+    color: #172033;
+    font-weight: 600;
+}
+
+.demo-table td {
+    color: #222;
+}
+
+.demo-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.toolbar button {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    padding: 8px 12px;
+}
+
+.toolbar button:hover {
+    background: #f4f4f4;
+}

@@ -3,6 +3,7 @@ import { CrudHelper, ROW_STATE } from '../crud-helper.js';
 import { CellMessageBinder } from '../../ui/cell-message-binder.js';
 import { FloatingMessage } from '../../ui/floating-message.js';
 import { ConfirmDialog } from '../../ui/confirm-dialog.js';
+import { createToolbar } from '../../ui/toolbar.js';
 import { DEFAULT_MESSAGES, extractColumnValidators } from './validation-extraction.js';
 import { createDeleteColumn } from './delete-column.js';
 import { createSelectionColumn } from './selection-column.js';
@@ -126,6 +127,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearSearch - Clear global search state.
  * @property {Function} getSearchState - Return search query and selected search fields.
  * @property {Function} setSearchFields - Set the active search fields.
+ * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
  * @property {Function} destroy - Destroy the complete AMB-managed grid, including the Tabulator table.
  */
 
@@ -174,6 +176,11 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @param {string} [options.search.placeholder='Search...'] - Search input placeholder.
  * @param {object} [options.search.filters] - Search field filter options.
  * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
+ * @param {boolean|object} [options.toolbar=false] - Optional backend-agnostic CRUD toolbar.
+ * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
+ * @param {string[]} [options.toolbar.buttons=['save','reload']] - Base buttons to render.
+ * @param {Function} [options.toolbar.onSave] - Developer callback receiving `{ grid, payload, event }`.
+ * @param {Function} [options.toolbar.onReload] - Developer callback receiving `{ grid, event }`.
  * @param {object} [options.messages] - Shared UI and validation messages.
  * @param {string} [options.messages.required='This field is required'] - Default required message.
  * @returns {AMBTableController} AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.
@@ -200,6 +207,7 @@ export function createTable(options = {}) {
         deleteColumn,
         selectionColumn,
         search,
+        toolbar,
         errorStyle,
         ...tabulatorOptions
     } = options;
@@ -215,6 +223,8 @@ export function createTable(options = {}) {
     let unsubscribeLookupDescriptions = null;
     let unsubscribeLargeText = null;
     let searchController = null;
+    let toolbarController = null;
+    let controller = null;
     const confirmDialog = new ConfirmDialog();
     const selectionColumnController = createSelectionColumn(selectionColumn);
     const deleteColumnController = deleteColumn && deleteColumn.enabled
@@ -241,6 +251,11 @@ export function createTable(options = {}) {
     const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
     unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage);
     unsubscribeLargeText = createLargeTextBinder(table, floatingMessage);
+    toolbarController = createToolbar({
+        selector,
+        toolbar,
+        getGrid: () => controller
+    });
     searchController = createSearchController({
         selector,
         search,
@@ -261,9 +276,10 @@ export function createTable(options = {}) {
         crud.addCellValidator(validator.field, validator.message, validator.validate);
     });
 
-    return {
+    controller = {
         table,
         crud,
+        toolbar: toolbarController,
         /**
          * @private
          * @internal
@@ -334,6 +350,12 @@ export function createTable(options = {}) {
             return true;
         },
         destroy() {
+            if (toolbarController) {
+                toolbarController.destroy();
+                toolbarController = null;
+                controller.toolbar = null;
+            }
+
             if (unsubscribeDeleteColumn) {
                 unsubscribeDeleteColumn();
                 unsubscribeDeleteColumn = null;
@@ -364,4 +386,6 @@ export function createTable(options = {}) {
             }
         }
     };
+
+    return controller;
 }

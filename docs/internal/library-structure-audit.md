@@ -1,5 +1,11 @@
 # AMB Grid library structure audit
 
+> Implementation update: the first post-audit step is complete. Reusable
+> styles now live in `src/amb-grid.css`, demo styles live in
+> `src/demo/demo.css`, and `src/style.css` is a compatibility import. AMB Grid
+> also includes an optional callback-driven Save/Reload toolbar. The npm
+> package and library-build recommendations below remain pending.
+
 ## Executive summary
 
 The repository can evolve into a clean npm library without a structural
@@ -7,9 +13,8 @@ rewrite. The JavaScript boundary is already mostly sound: reusable code lives
 under `src/lib` and `src/ui`, the public module is `src/index.js`, and the Vite
 application starts from `src/main.js` and delegates to `src/demo/main.js`.
 
-The main work before npm publication is packaging, not core refactoring:
+The remaining work before npm publication is packaging, not core refactoring:
 
-- split library CSS from demo/site CSS;
 - add a dedicated library build beside the existing demo build;
 - define package exports and published files;
 - test the public entrypoint and packaged output.
@@ -91,20 +96,19 @@ demo build but is not imported into the JavaScript library graph.
 
 ## 4. CSS separation
 
-`src/style.css` currently contains both demo CSS and reusable library CSS.
-This is the largest structural ambiguity.
+The CSS split proposed by the original audit has now been implemented.
 
-Demo/site rules include:
+`src/demo/demo.css` contains demo/site rules including:
 
 - global `body`, `h1`, and `h2` rules;
 - `.demo-*`;
 - `.toolbar` and `.toolbar button`.
 
-Reusable library rules include:
+`src/amb-grid.css` contains reusable library rules including:
 
 - `.amb-date-*`;
 - `.amb-autocomplete-*` and Awesomplete integration rules;
-- `.amb-search-toolbar*`;
+- `.amb-toolbar*` and `.amb-search-toolbar*`;
 - `.amb-row-*` action rules;
 - `.amb-selection-*`;
 - `.amb-checkbox-*`;
@@ -112,7 +116,7 @@ Reusable library rules include:
 - `.amb-lookup-*`;
 - `.amb-large-text-*`.
 
-Reusable component CSS is already partly separated:
+Reusable component CSS remains organized in:
 
 - `src/ui/lookup-dialog.css`;
 - `src/ui/search-filters-dialog.css`;
@@ -124,20 +128,11 @@ prefix, while newer reusable UI uses `amb-*`. This is a naming consistency
 issue, not a release blocker. Renaming those classes would be a public styling
 change and should be handled separately.
 
-Recommended future split:
-
-- `src/amb-grid.css`: reusable AMB editor, row-state, action, selection, and
-  search styles;
-- `src/demo/demo.css`: globals, `.demo-*`, and `.toolbar`;
-- keep component CSS in `src/ui/*.css`, or aggregate it from one documented
-  library CSS entry.
-
-The package should ultimately expose one documented complete stylesheet, even
-if component files remain internally separate. Tabulator and datepicker CSS
-ownership should also be explicit: either documented as consumer imports or
-included through a deliberate package CSS entry.
-
-No CSS should be moved during this audit.
+`src/amb-grid.css` aggregates those component files. `src/style.css` imports
+both the library and demo styles for temporary compatibility. The future
+package should expose the built equivalent of `src/amb-grid.css` as its
+documented complete stylesheet. Tabulator and datepicker CSS ownership should
+remain an explicit consumer/documentation policy.
 
 ## 5. Package readiness
 
@@ -242,21 +237,19 @@ library build and, ideally, documentation generation or a docs drift check.
 1. Keep `src/index.js` as the intended library entrypoint and document that
    decision.
 2. Treat `src/main.js` and `src/demo/main.js` as demo-only entrypoints.
-3. Inventory the current CSS boundary using the classifications in this report.
+3. Keep the new library/demo CSS boundary stable.
 4. Decide whether `createTable` should become a named public export.
 5. Add a lightweight public-entry/export smoke test.
 
 ### B. Do before npm publication
 
-1. Split demo CSS from library CSS without changing selectors.
-2. Define one complete, documented library stylesheet entry.
-3. Add a dedicated library build and retain a separate demo build.
-4. Define `exports`, `files`, entry fields, side-effect metadata, repository
+1. Add a dedicated library build and retain a separate demo build.
+2. Define `exports`, `files`, entry fields, side-effect metadata, repository
    metadata, and the runtime/peer dependency policy.
-5. Verify the packed artifact and ensure it excludes demos, generated demo
+3. Verify the packed artifact and ensure it excludes demos, generated demo
    data, tests, and internal documentation.
-6. Add package installation/import/CSS instructions to the README.
-7. Extend CI to test the library build and package contents.
+4. Add package installation/import/CSS instructions to the README.
+5. Extend CI to test the library build and package contents.
 
 ### C. Can wait
 
@@ -271,5 +264,5 @@ library build and, ideally, documentation generation or a docs drift check.
 
 The repository is structurally suitable for becoming an npm library. It does
 not need a core rewrite or mass file movement. The JavaScript separation is
-already strong; the remaining work is to make CSS ownership, build outputs,
-and package metadata as explicit as the existing source boundary.
+already strong; CSS ownership is now explicit, leaving build outputs and
+package metadata as the main release-readiness work.

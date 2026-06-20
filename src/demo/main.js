@@ -1,10 +1,7 @@
-import '../style.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 import 'vanillajs-datepicker/css/datepicker.min.css';
-import '../ui/floating-message.css';
-import '../ui/confirm-dialog.css';
-import '../ui/lookup-dialog.css';
-import '../ui/search-filters-dialog.css';
+import '../amb-grid.css';
+import './demo.css';
 import { AMB } from '../index.js';
 import basicCrud from './basic-crud.js';
 import validation from './validation.js';

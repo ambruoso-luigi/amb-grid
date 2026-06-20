@@ -78,6 +78,43 @@ Additional capabilities:
 * State reporting
 * Save payload generation
 
+### Optional CRUD Toolbar
+
+`AMB.table(...)` can render a minimal framework-agnostic toolbar with Save and
+Reload actions. The toolbar never performs `fetch`, AJAX, or backend calls.
+Instead, the developer supplies callbacks owned by the application:
+
+```js
+const grid = AMB.table({
+  selector: '#people',
+  data,
+  columns,
+  toolbar: {
+    enabled: true,
+    buttons: ['save', 'reload'],
+    onSave: async ({ grid, payload }) => {
+      console.log(payload);
+      // Submit payload with your application's backend client.
+    },
+    onReload: async ({ grid }) => {
+      // Reload or replace data using your application's data source.
+    }
+  }
+});
+```
+
+The Save callback receives `grid.crud.getSavePayload()` as `payload`. Reload
+receives the grid controller and leaves data-loading policy entirely to the
+integrating application. Buttons without a configured callback are disabled.
+
+Omit `toolbar`, set `toolbar: false`, or use `toolbar: { enabled: false }` to
+render no toolbar. `toolbar: true` renders the default Save and Reload buttons
+in a safe disabled state until callbacks are configured.
+
+The Basic CRUD demo uses the official toolbar for its save flow. Demo-specific
+actions such as adding rows or printing reports remain outside the library
+toolbar.
+
 ### Validation Framework
 
 Built-in validation support including:
@@ -272,6 +309,10 @@ Support for:
 ## Documentation
 
 Generated API documentation is available in the `docs` folder.
+
+Reusable AMB Grid styles live in `src/amb-grid.css`. Demo/site-only rules live
+in `src/demo/demo.css`. `src/style.css` remains a temporary compatibility file
+that imports both stylesheets.
 
 ## Security
 

@@ -1800,6 +1800,8 @@ when empty values should fail validation.
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -1836,6 +1838,10 @@ when empty values should fail validation.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">CSS selector or element passed to Tabulator.</td>
         </tr>
@@ -1868,6 +1874,10 @@ when empty values should fail validation.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Initial row data.</td>
@@ -1902,6 +1912,10 @@ when empty values should fail validation.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Tabulator columns plus AMB validation metadata.</td>
         </tr>
@@ -1934,6 +1948,10 @@ when empty values should fail validation.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Optional row action column.
@@ -2737,6 +2755,10 @@ when empty values should fail validation.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Optional row selection column.
                 <h6>Properties</h6>
@@ -2919,6 +2941,10 @@ when empty values should fail validation.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Optional client-side search toolbar.
@@ -3142,6 +3168,230 @@ when empty values should fail validation.
 
         <tr>
             
+                <td class="name"><code>toolbar</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Optional backend-agnostic CRUD toolbar.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>enabled</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Render the toolbar.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buttons</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    ['save','reload']
+                
+                </td>
+            
+
+            <td class="description last">Base buttons to render.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onSave</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Developer callback receiving `{ grid, payload, event }`.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onReload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Developer callback receiving `{ grid, event }`.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>messages</code></td>
             
 
@@ -3166,6 +3416,10 @@ when empty values should fail validation.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Shared UI and validation messages.
@@ -3285,7 +3539,7 @@ when empty values should fail validation.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line195">line 195</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line202">line 202</a>
     </li></ul></dd>
     
 
@@ -7495,6 +7749,32 @@ the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
 
         <tr>
             
+                <td class="name"><code>toolbar</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Optional AMB CRUD toolbar controller.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>destroy</code></td>
             
 
@@ -7550,7 +7830,7 @@ the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line110">line 110</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line111">line 111</a>
     </li></ul></dd>
     
 
@@ -7586,7 +7866,7 @@ the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jun 20 2026 07:34:48 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jun 20 2026 08:08:17 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -14,7 +14,6 @@ export default function basicCrud(app) {
         <h2>Basic CRUD</h2>
         <div class="toolbar">
             <button type="button" id="action-add-row">Add row</button>
-            <button type="button" id="action-save">Save</button>
             <button type="button" id="action-show-report">Show report</button>
             <button type="button" id="action-show-selected">Show selected</button>
         </div>
@@ -34,6 +33,10 @@ export default function basicCrud(app) {
         selectionColumn: {
             enabled: true,
             mode: 'multiple'
+        },
+        toolbar: {
+            buttons: ['save'],
+            onSave: handleSave
         },
         data: [
             { id: 'NT-001', title: 'Welcome note', tag: 'intro', archived: 'N' },
@@ -130,7 +133,7 @@ export default function basicCrud(app) {
     app.querySelector('#action-add-row').addEventListener('click', () => {
         crud.addRow({ id: null, title: '', tag: '', archived: 'N' });
     });
-    app.querySelector('#action-save').addEventListener('click', async () => {
+    async function handleSave() {
         const validateResult = crud.validateAll();
         const payloadWithInvalid = crud.getSavePayload({ includeInvalid: true });
         const payload = crud.getSavePayload();
@@ -182,7 +185,7 @@ export default function basicCrud(app) {
             savedResult,
             report: crud.getStateReport()
         }, null, 2);
-    });
+    }
     app.querySelector('#action-show-report').addEventListener('click', () => {
         output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
     });
