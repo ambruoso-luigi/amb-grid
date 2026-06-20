@@ -1,10 +1,14 @@
 import { AMB } from '../index.js';
+import {
+    applyMunicipalitySelection,
+    MUNICIPALITY_LOOKUP_COLUMNS,
+    MUNICIPALITY_MAP_TO_ROW
+} from './multifield-lookup-config.js';
 
 const DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
     + 'It may be incomplete, outdated, or inaccurate. '
     + 'Do not use it as an official source for production systems.';
-
 const loadMunicipalities = async () => {
     const response = await fetch(DATASET_URL);
 
@@ -19,10 +23,10 @@ export default async function multifieldLookup(app) {
     app.innerHTML = `
         <h2>Italian municipality multifield lookup</h2>
         <p>
-            Edit the Municipality cell to open the lookup. Province, Region,
-            Postal Code, ISTAT Code and Cadastral Code are populated from the
-            selected record. The technical codes are hidden from the lookup
-            dialog but remain visible in the main grid.
+            Click the Municipality cell to open the lookup. The municipality
+            cannot be typed manually in this demo: selecting a valid record
+            keeps Municipality, Province, Region, Postal Code, ISTAT Code and
+            Cadastral Code synchronized.
         </p>
         <p class="demo-warning"><strong>Demo data warning:</strong> ${DATASET_WARNING}</p>
         <div class="toolbar">
@@ -47,29 +51,52 @@ export default async function multifieldLookup(app) {
         keyField: 'istatCode',
         valueField: 'istatCode',
         labelField: 'municipalityName',
-        columns: [
-            { field: 'municipalityName', title: 'Municipality', visible: true },
-            { field: 'province', title: 'Province', visible: true, width: 110 },
-            { field: 'region', title: 'Region', visible: true },
-            { field: 'postalCode', title: 'Postal Code', visible: true, width: 120 },
-            { field: 'istatCode', title: 'ISTAT Code', visible: false },
-            { field: 'cadastralCode', title: 'Cadastral Code', visible: false }
-        ],
+        columns: MUNICIPALITY_LOOKUP_COLUMNS,
         search: {
             fields: 'visible'
         },
-        mapToRow: {
-            istatCode: 'istatCode',
-            cadastralCode: 'cadastralCode',
-            municipality: 'municipalityName',
-            province: 'province',
-            region: 'region',
-            postalCode: 'postalCode'
-        },
+        mapToRow: MUNICIPALITY_MAP_TO_ROW,
         load: () => municipalities
     });
     const lookupDialog = new AMB.LookupDialog();
-    const grid = AMB.table({
+    const rowsWithOpenDialog = new WeakSet();
+    let grid = null;
+
+    const openMunicipalityLookup = async cell => {
+        if (!grid) return;
+
+        const row = cell.getRow();
+        const rowData = row.getData();
+        const stateField = grid.crud.options.stateField;
+
+        if (rowData[stateField] === 'deleted' || rowsWithOpenDialog.has(row)) return;
+
+        rowsWithOpenDialog.add(row);
+
+        try {
+            const visibleColumns = municipalityLookup.columns.filter(column => {
+                return column.visible === true;
+            });
+            const selected = await lookupDialog.open({
+                title: 'Select an Italian municipality',
+                columns: visibleColumns,
+                data: await municipalityLookup.load(),
+                valueField: municipalityLookup.keyField,
+                searchFields: visibleColumns.map(column => column.field),
+                searchPlaceholder: 'Search municipality, province, region, or postal code...'
+            });
+
+            applyMunicipalitySelection({
+                selected,
+                rowData,
+                crud: grid.crud
+            });
+        } finally {
+            rowsWithOpenDialog.delete(row);
+        }
+    };
+
+    grid = AMB.table({
         selector: '#municipality-table',
         data: [
             {
@@ -93,11 +120,11 @@ export default async function multifieldLookup(app) {
                 title: 'Municipality',
                 field: 'municipality',
                 required: true,
-                editor: AMB.editors.lookup(municipalityLookup, {
-                    dialog: lookupDialog,
-                    dialogTitle: 'Select an Italian municipality',
-                    searchPlaceholder: 'Search municipality, province, region, or postal code...'
-                })
+                editable: false,
+                cellClick: (event, cell) => {
+                    event.preventDefault?.();
+                    openMunicipalityLookup(cell);
+                }
             },
             { title: 'Province', field: 'province', required: true, width: 105, editable: false },
             { title: 'Region', field: 'region', editable: false },

@@ -4,10 +4,8 @@ import { unzipSync, strFromU8 } from 'fflate';
 
 const DEFAULT_INPUT = 'Elenco-comuni-italiani.xlsx';
 const DEFAULT_OUTPUT = 'public/demo/data/italian-municipalities.demo.json';
-
-// Postal codes are deliberately a small demo overlay. They are not sourced
-// from ISTAT and must not be treated as official or complete.
-const DEMO_POSTAL_CODES = {
+const DEFAULT_POSTAL_CODES_INPUT = 'comuni.json';
+const POSTAL_CODE_OVERRIDES = {
     '001272': '10121',
     '015146': '20121',
     '027042': '30121',
@@ -99,7 +97,17 @@ const findColumn = (fields, matcher, description) => {
     return entry[1];
 };
 
-const normalizeRecords = rows => {
+const createPostalCodeMap = source => {
+    const records = JSON.parse(fs.readFileSync(source, 'utf8'));
+
+    return new Map(records.map(record => {
+        const values = Array.isArray(record.cap) ? record.cap.filter(Boolean) : [];
+
+        return [String(record.codice || '').padStart(6, '0'), values.join(', ')];
+    }));
+};
+
+const normalizeRecords = (rows, postalCodes) => {
     const { fields, rowIndex } = findHeader(rows);
     const columns = {
         istatCode: findColumn(
@@ -139,7 +147,9 @@ const normalizeRecords = rows => {
                 municipalityName: String(row[columns.municipalityName] || ''),
                 province: String(row[columns.province] || ''),
                 region: String(row[columns.region] || '').toUpperCase(),
-                postalCode: DEMO_POSTAL_CODES[istatCode] || ''
+                postalCode: POSTAL_CODE_OVERRIDES[istatCode]
+                    || postalCodes.get(istatCode)
+                    || ''
             };
         })
         .filter(record => record.istatCode !== '000000' && record.municipalityName)
@@ -150,10 +160,26 @@ const normalizeRecords = rows => {
 
 const inputPath = path.resolve(process.argv[2] || DEFAULT_INPUT);
 const outputPath = path.resolve(process.argv[3] || DEFAULT_OUTPUT);
+const postalCodesInputPath = path.resolve(process.argv[4] || DEFAULT_POSTAL_CODES_INPUT);
 const archive = unzipSync(fs.readFileSync(inputPath));
-const records = normalizeRecords(readRows(archive, readSharedStrings(archive)));
+const postalCodes = createPostalCodeMap(postalCodesInputPath);
+const records = normalizeRecords(
+    readRows(archive, readSharedStrings(archive)),
+    postalCodes
+);
+const populatedPostalCodes = records.filter(record => record.postalCode).length;
+const postalCodeCoverage = populatedPostalCodes / records.length;
+
+if (postalCodeCoverage < 0.9) {
+    throw new Error(
+        `Postal-code coverage is too low: ${populatedPostalCodes}/${records.length}`
+    );
+}
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, `${JSON.stringify(records, null, 2)}\n`);
 
-console.log(`Generated ${records.length} demo municipality records in ${outputPath}`);
+console.log(
+    `Generated ${records.length} demo municipality records `
+    + `(${populatedPostalCodes} with postal codes) in ${outputPath}`
+);

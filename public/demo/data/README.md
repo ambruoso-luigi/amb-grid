@@ -9,9 +9,13 @@ regions are generated from the official ISTAT workbook:
 
 <https://www.istat.it/storage/codici-unita-amministrative/Elenco-comuni-italiani.xlsx>
 
-Postal codes are a deliberately limited demo overlay. Empty postal-code values
-mean that no demo value was supplied. Postal codes are not sourced from ISTAT,
-are not used as lookup keys, and are not guaranteed to be complete or current.
+Postal codes are merged by ISTAT code from the community-maintained
+[`matteocontrini/comuni-json`](https://github.com/matteocontrini/comuni-json)
+dataset, whose CAP data was last broadly updated in 2020. Multiple postal codes
+are normalized as a comma-separated string. Postal codes are not sourced from
+ISTAT, are not used as lookup keys, and are not guaranteed to be complete or
+current. The generator rejects postal-code sources covering less than 90% of
+the current ISTAT municipality list.
 
 > This dataset is provided for demonstration purposes only. It may be
 > incomplete, outdated, or inaccurate. Do not use it as an official source for
@@ -20,5 +24,8 @@ are not used as lookup keys, and are not guaranteed to be complete or current.
 Regenerate the JSON after downloading the ISTAT workbook:
 
 ```bash
-npm run demo:data:municipalities -- path/to/Elenco-comuni-italiani.xlsx
+npm run demo:data:municipalities -- \
+  path/to/Elenco-comuni-italiani.xlsx \
+  public/demo/data/italian-municipalities.demo.json \
+  path/to/comuni.json
 ```
