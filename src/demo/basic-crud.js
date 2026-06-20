@@ -49,6 +49,13 @@ export default function basicCrud(app) {
             onSave: handleSave,
             onPayload: handleShowPayload
         },
+        search: {
+            enabled: true,
+            placeholder: 'Search notes...',
+            filters: {
+                enabled: true
+            }
+        },
         data: [
             { id: 'NT-001', title: 'Welcome note', tag: 'intro', archived: 'N' },
             { id: 'NT-002', title: 'Shortcut idea', tag: 'idea', archived: 'N' },

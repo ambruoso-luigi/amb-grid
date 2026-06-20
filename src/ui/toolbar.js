@@ -33,23 +33,28 @@ const ICONS = {
 const BUILT_IN_BUTTONS = {
     add: {
         label: 'Add row',
+        title: 'Add row',
         callback: 'onAdd'
     },
     save: {
         label: 'Save',
+        title: 'Save changes',
         callback: 'onSave',
         includePayload: true
     },
     reload: {
         label: 'Reload',
+        title: 'Reload data',
         callback: 'onReload'
     },
     validate: {
         label: 'Validate',
+        title: 'Validate rows',
         callback: 'onValidate'
     },
     payload: {
         label: 'Show payload',
+        title: 'Show payload',
         callback: 'onPayload',
         includePayload: true
     }
@@ -72,6 +77,7 @@ const normalizeButton = (button, options) => {
         return {
             id: button,
             label: definition.label,
+            title: definition.title,
             icon: ICONS[button],
             callback: options[definition.callback],
             includePayload: definition.includePayload === true
@@ -83,6 +89,7 @@ const normalizeButton = (button, options) => {
     return {
         id: String(button.id),
         label: button.label || String(button.id),
+        title: button.title || button.label || String(button.id),
         icon: button.icon || '',
         callback: typeof button.onClick === 'function' ? button.onClick : null,
         includePayload: button.includePayload === true
@@ -139,7 +146,8 @@ const createButton = definition => {
     button.type = 'button';
     button.dataset.action = definition.id;
     button.disabled = !definition.callback;
-    button.setAttribute('aria-label', definition.label);
+    button.title = definition.title;
+    button.setAttribute('aria-label', definition.title);
 
     icon.className = 'amb-toolbar__button-icon';
     icon.innerHTML = definition.icon;
@@ -180,12 +188,14 @@ export const createToolbar = ({ selector, toolbar, getGrid }) => {
     if (!tableElement || !tableElement.parentNode) return null;
 
     const element = document.createElement('div');
-    const group = document.createElement('div');
+    const actions = document.createElement('div');
+    const searchMount = document.createElement('div');
     const listeners = [];
 
-    element.className = 'amb-toolbar';
-    group.className = 'amb-toolbar__group';
-    element.appendChild(group);
+    element.className = 'amb-toolbar amb-grid-header';
+    actions.className = 'amb-toolbar__group amb-toolbar__actions';
+    searchMount.className = 'amb-toolbar__search';
+    element.append(actions, searchMount);
 
     options.buttons.forEach(definition => {
         const button = createButton(definition);
@@ -217,13 +227,15 @@ export const createToolbar = ({ selector, toolbar, getGrid }) => {
             listeners.push({ button, handler });
         }
 
-        group.appendChild(button);
+        actions.appendChild(button);
     });
 
     tableElement.parentNode.insertBefore(element, tableElement);
 
     return {
         element,
+        actions,
+        searchMount,
         destroy() {
             listeners.forEach(({ button, handler }) => {
                 button.removeEventListener('click', handler);

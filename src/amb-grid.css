@@ -7,14 +7,20 @@
     align-items: center;
     background: #f7f8fb;
     border: 1px solid #d8dce5;
-    border-radius: 6px;
+    border-radius: 6px 6px 0 0;
     box-sizing: border-box;
     display: flex;
     gap: 8px;
-    margin-bottom: 10px;
+    justify-content: space-between;
+    margin-bottom: 0;
     min-height: 48px;
     padding: 7px 8px;
     width: 100%;
+}
+
+.amb-grid-header + .tabulator {
+    border-top: 0;
+    border-radius: 0 0 6px 6px;
 }
 
 .amb-toolbar__group {
@@ -22,6 +28,15 @@
     display: inline-flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+.amb-toolbar__actions {
+    flex: 0 0 auto;
+}
+
+.amb-toolbar__search {
+    flex: 1 1 auto;
+    min-width: 180px;
 }
 
 .amb-toolbar__button {
@@ -36,6 +51,18 @@
     gap: 7px;
     min-height: 34px;
     padding: 7px 11px;
+}
+
+.amb-toolbar__button--add {
+    font-size: 0;
+    justify-content: center;
+    min-width: 34px;
+    padding-inline: 8px;
+}
+
+.amb-toolbar__button--add .amb-toolbar__button-icon {
+    height: 18px;
+    width: 18px;
 }
 
 .amb-toolbar__button:hover:not(:disabled) {
@@ -70,6 +97,10 @@
 
 .amb-toolbar__button-label {
     line-height: 1;
+}
+
+.amb-toolbar__button--add .amb-toolbar__button-label {
+    display: none;
 }
 
 .amb-date-editor-wrapper {
@@ -150,6 +181,15 @@
     width: 100%;
 }
 
+.amb-search-toolbar--integrated {
+    justify-content: flex-end;
+    margin-bottom: 0;
+}
+
+.amb-search-toolbar--integrated .amb-search-toolbar__input {
+    flex: 0 1 420px;
+}
+
 .amb-search-toolbar__input {
     border: 1px solid #b8bec8;
     border-radius: 4px;
@@ -159,6 +199,10 @@
     font: inherit;
     min-width: 0;
     padding: 8px 10px;
+}
+
+.amb-toolbar__search-input {
+    background: #fff;
 }
 
 .amb-search-toolbar__input:focus {
@@ -179,6 +223,36 @@
 
 .amb-search-toolbar__filters-button:hover {
     background: #f4f6fb;
+}
+
+.amb-toolbar__filters-button {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+}
+
+.amb-toolbar__filters-button--active {
+    background: #e6edf8;
+    border-color: #8ca6ce;
+}
+
+@media (max-width: 720px) {
+    .amb-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .amb-toolbar__actions {
+        width: 100%;
+    }
+
+    .amb-search-toolbar--integrated {
+        justify-content: stretch;
+    }
+
+    .amb-search-toolbar--integrated .amb-search-toolbar__input {
+        flex: 1 1 auto;
+    }
 }
 
 .amb-row-actions {

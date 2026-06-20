@@ -4,6 +4,7 @@ import {
     createToolbar,
     normalizeToolbarOptions
 } from '../src/ui/toolbar.js';
+import { createSearchController } from '../src/lib/table/search-controller.js';
 
 class ElementMock {
     constructor(tagName = 'div') {
@@ -38,6 +39,10 @@ class ElementMock {
 
     setAttribute(name, value) {
         this[name] = value;
+    }
+
+    querySelector() {
+        return null;
     }
 
     async dispatch(type) {
@@ -134,6 +139,7 @@ describe('AMB toolbar', () => {
             expect(harness.parent.children[0]).toBe(harness.controller.element);
             expect(saveButton.disabled).toBe(false);
             expect(reloadButton.disabled).toBe(false);
+            expect(saveButton.title).toBe('Save changes');
 
             await saveButton.dispatch('click');
             await reloadButton.dispatch('click');
@@ -169,6 +175,8 @@ describe('AMB toolbar', () => {
 
             expect(group.children.map(button => button.dataset.action))
                 .toEqual(['add', 'save', 'reload']);
+            expect(group.children[0].title).toBe('Add row');
+            expect(group.children[0]['aria-label']).toBe('Add row');
             expect(group.children.every(button => button.disabled)).toBe(true);
 
             harness.controller.destroy();
@@ -252,10 +260,83 @@ describe('AMB toolbar', () => {
 
             expect(harness.parent.children).toHaveLength(2);
             expect(harness.parent.children.filter(element => {
-                return element.className === 'amb-toolbar';
+                return String(element.className || '').includes('amb-toolbar');
             })).toHaveLength(1);
 
             secondController.destroy();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('mounts search and filters inside the toolbar without creating a second bar', () => {
+        const harness = createHarness({
+            buttons: ['add'],
+            onAdd: vi.fn()
+        });
+        const table = {
+            addFilter: vi.fn(),
+            removeFilter: vi.fn()
+        };
+        const floatingMessage = {
+            scheduleShow: vi.fn(),
+            hide: vi.fn()
+        };
+
+        try {
+            const searchController = createSearchController({
+                selector: '#table',
+                search: {
+                    enabled: true,
+                    filters: { enabled: true }
+                },
+                columns: [{ field: 'title', title: 'Title' }],
+                table,
+                floatingMessage,
+                mountElement: harness.controller.searchMount
+            });
+
+            expect(harness.controller.searchMount.children).toHaveLength(1);
+            expect(harness.controller.searchMount.children[0].className)
+                .toContain('amb-search-toolbar--integrated');
+            expect(harness.parent.children.filter(element => {
+                return element.className === 'amb-search-toolbar';
+            })).toHaveLength(0);
+
+            searchController.destroy();
+
+            expect(harness.controller.searchMount.children).toHaveLength(0);
+        } finally {
+            harness.controller.destroy();
+            harness.restore();
+        }
+    });
+
+    test('keeps the standalone search toolbar when the CRUD toolbar is absent', () => {
+        const harness = createHarness(false);
+        const table = {
+            addFilter: vi.fn(),
+            removeFilter: vi.fn()
+        };
+        const floatingMessage = {
+            scheduleShow: vi.fn(),
+            hide: vi.fn()
+        };
+
+        try {
+            const searchController = createSearchController({
+                selector: '#table',
+                search: { enabled: true },
+                columns: [{ field: 'title', title: 'Title' }],
+                table,
+                floatingMessage
+            });
+
+            expect(harness.parent.children[0].className).toBe('amb-search-toolbar');
+            expect(harness.parent.children[1].tagName).toBe('div');
+
+            searchController.destroy();
+            expect(harness.parent.children).toHaveLength(1);
         } finally {
             harness.restore();
         }
@@ -289,6 +370,8 @@ describe('AMB toolbar', () => {
         expect(demoSource).toContain("'add'");
         expect(demoSource).toContain("'save'");
         expect(demoSource).toContain("'payload'");
+        expect(demoSource).toContain("search: {");
+        expect(demoSource).toContain("filters: {");
         expect(demoSource).toContain("id: 'report'");
         expect(demoSource).toContain("id: 'selected'");
         expect(demoSource).not.toContain('id="action-add-row"');

@@ -132,13 +132,20 @@ All callbacks receive `{ grid, event }`. Save and Payload also receive
 `includePayload: true` when a custom action also needs the save payload.
 Buttons without a configured callback are rendered disabled.
 
+When both `toolbar` and `search.enabled` are configured, AMB Grid mounts the
+search input and optional Filters button inside the same grid header. The
+toolbar and Tabulator table are styled as one connected component. If search
+is enabled without the CRUD toolbar, the existing standalone search bar is
+kept for backward compatibility.
+
 Omit `toolbar`, set `toolbar: false`, or use `toolbar: { enabled: false }` to
 render no toolbar. `toolbar: true` renders the default Add, Save, and Reload
 buttons in a safe disabled state until callbacks are configured.
 
 The Basic CRUD demo uses built-in Add, Save, and Payload actions plus simple
-custom Report and Selected buttons. The callbacks remain demo/application
-code; they are not hardcoded into the toolbar component.
+custom Report and Selected buttons, with Search and Filters mounted in the
+same header. The callbacks remain demo/application code; they are not
+hardcoded into the toolbar component.
 
 ### Validation Framework
 

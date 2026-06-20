@@ -57,23 +57,34 @@ export const collectSearchColumns = (columns = []) => {
     return collectedColumns;
 };
 
-export const createSearchToolbar = (selector, searchOptions) => {
+export const createSearchToolbar = (selector, searchOptions, mountElement = null) => {
     const tableElement = getTableElement(selector);
 
-    if (!tableElement || !tableElement.parentNode) return null;
+    if (!mountElement && (!tableElement || !tableElement.parentNode)) return null;
 
     const toolbar = document.createElement('div');
     const input = document.createElement('input');
     const filtersButton = document.createElement('button');
 
-    toolbar.className = 'amb-search-toolbar';
-    input.className = 'amb-search-toolbar__input';
+    toolbar.className = mountElement
+        ? 'amb-search-toolbar amb-search-toolbar--integrated'
+        : 'amb-search-toolbar';
+    input.className = 'amb-search-toolbar__input amb-toolbar__search-input';
     input.type = 'search';
     input.placeholder = searchOptions.placeholder;
 
-    filtersButton.className = 'amb-search-toolbar__filters-button';
+    filtersButton.className = 'amb-search-toolbar__filters-button amb-toolbar__filters-button';
     filtersButton.type = 'button';
-    filtersButton.textContent = 'Filters';
+    filtersButton.title = 'Search filters';
+    filtersButton.setAttribute('aria-label', 'Search filters');
+    filtersButton.innerHTML = `
+        <span class="amb-toolbar__button-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 5h16l-6 7v5l-4 2v-7z"></path>
+            </svg>
+        </span>
+        <span class="amb-search-toolbar__filters-label">Filters</span>
+    `;
 
     toolbar.appendChild(input);
 
@@ -81,7 +92,11 @@ export const createSearchToolbar = (selector, searchOptions) => {
         toolbar.appendChild(filtersButton);
     }
 
-    tableElement.parentNode.insertBefore(toolbar, tableElement);
+    if (mountElement) {
+        mountElement.appendChild(toolbar);
+    } else {
+        tableElement.parentNode.insertBefore(toolbar, tableElement);
+    }
 
     return {
         toolbar,
@@ -116,7 +131,8 @@ export const createSearchController = ({
     search,
     columns,
     table,
-    floatingMessage
+    floatingMessage,
+    mountElement
 }) => {
     const searchOptions = normalizeSearchOptions(search);
 
@@ -125,7 +141,7 @@ export const createSearchController = ({
     }
 
     const availableColumns = collectSearchColumns(columns);
-    const toolbar = createSearchToolbar(selector, searchOptions);
+    const toolbar = createSearchToolbar(selector, searchOptions, mountElement);
     const dialog = new SearchFiltersDialog();
     const searchState = {
         query: '',
@@ -158,9 +174,20 @@ export const createSearchController = ({
 
         const count = searchState.selectedFields.length;
 
-        toolbar.filtersButton.textContent = count > 0
-            ? `Filters (${count})`
-            : 'Filters';
+        const label = toolbar.filtersButton.querySelector
+            ? toolbar.filtersButton.querySelector('.amb-search-toolbar__filters-label')
+            : null;
+        const text = count > 0 ? `Filters (${count})` : 'Filters';
+
+        if (label) {
+            label.textContent = text;
+        } else {
+            toolbar.filtersButton.textContent = text;
+        }
+        toolbar.filtersButton.classList?.toggle(
+            'amb-toolbar__filters-button--active',
+            count > 0
+        );
     };
 
     const applySearch = () => {

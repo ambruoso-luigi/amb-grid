@@ -264,7 +264,8 @@ export function createTable(options = {}) {
         search,
         columns: dataColumns,
         table,
-        floatingMessage
+        floatingMessage,
+        mountElement: toolbarController ? toolbarController.searchMount : null
     });
 
     if (deleteColumnController) {
