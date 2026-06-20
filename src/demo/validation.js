@@ -456,6 +456,7 @@ export default function validation(app) {
                         message: 'Alias must be at most 20 characters'
                     },
                     unique: {
+                        caseSensitive: false,
                         message: 'Alias must be unique'
                     }
                 }
