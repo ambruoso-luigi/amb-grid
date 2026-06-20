@@ -12,10 +12,12 @@ regions are generated from the official ISTAT workbook:
 Postal codes are merged by ISTAT code from the community-maintained
 [`matteocontrini/comuni-json`](https://github.com/matteocontrini/comuni-json)
 dataset, whose CAP data was last broadly updated in 2020. Multiple postal codes
-are normalized as a comma-separated string. Postal codes are not sourced from
-ISTAT, are not used as lookup keys, and are not guaranteed to be complete or
-current. The generator rejects postal-code sources covering less than 90% of
-the current ISTAT municipality list.
+are normalized to the first available value. When a current ISTAT municipality
+cannot be matched directly, the generator tries its cadastral code and then
+uses a demonstration fallback from the same province. As a final safety
+fallback it uses `00000`. This guarantees one non-empty five-character string
+per demo record, but does not guarantee geographic accuracy. Postal codes are
+not sourced from ISTAT and are never used as lookup keys.
 
 > This dataset is provided for demonstration purposes only. It may be
 > incomplete, outdated, or inaccurate. Do not use it as an official source for

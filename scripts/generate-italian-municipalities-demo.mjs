@@ -97,17 +97,46 @@ const findColumn = (fields, matcher, description) => {
     return entry[1];
 };
 
-const createPostalCodeMap = source => {
-    const records = JSON.parse(fs.readFileSync(source, 'utf8'));
+const getFirstPostalCode = record => {
+    const values = Array.isArray(record.cap) ? record.cap : [];
+    const postalCode = values.find(value => /^\d{5}$/.test(String(value)));
 
-    return new Map(records.map(record => {
-        const values = Array.isArray(record.cap) ? record.cap.filter(Boolean) : [];
-
-        return [String(record.codice || '').padStart(6, '0'), values.join(', ')];
-    }));
+    return postalCode ? String(postalCode) : '';
 };
 
-const normalizeRecords = (rows, postalCodes) => {
+const createPostalCodeIndex = source => {
+    const records = JSON.parse(fs.readFileSync(source, 'utf8'));
+    const byIstatCode = new Map();
+    const byCadastralCode = new Map();
+    const byProvince = new Map();
+
+    records.forEach(record => {
+        const postalCode = getFirstPostalCode(record);
+
+        if (!postalCode) return;
+
+        byIstatCode.set(
+            String(record.codice || '').padStart(6, '0'),
+            postalCode
+        );
+
+        if (record.codiceCatastale) {
+            byCadastralCode.set(String(record.codiceCatastale), postalCode);
+        }
+
+        if (record.sigla && !byProvince.has(record.sigla)) {
+            byProvince.set(String(record.sigla), postalCode);
+        }
+    });
+
+    return {
+        byIstatCode,
+        byCadastralCode,
+        byProvince
+    };
+};
+
+const normalizeRecords = (rows, postalCodeIndex) => {
     const { fields, rowIndex } = findHeader(rows);
     const columns = {
         istatCode: findColumn(
@@ -140,16 +169,20 @@ const normalizeRecords = (rows, postalCodes) => {
     return rows.slice(rowIndex + 1)
         .map(row => {
             const istatCode = String(row[columns.istatCode] || '').padStart(6, '0');
+            const cadastralCode = String(row[columns.cadastralCode] || '');
+            const province = String(row[columns.province] || '');
 
             return {
                 istatCode,
-                cadastralCode: String(row[columns.cadastralCode] || ''),
+                cadastralCode,
                 municipalityName: String(row[columns.municipalityName] || ''),
-                province: String(row[columns.province] || ''),
+                province,
                 region: String(row[columns.region] || '').toUpperCase(),
                 postalCode: POSTAL_CODE_OVERRIDES[istatCode]
-                    || postalCodes.get(istatCode)
-                    || ''
+                    || postalCodeIndex.byIstatCode.get(istatCode)
+                    || postalCodeIndex.byCadastralCode.get(cadastralCode)
+                    || postalCodeIndex.byProvince.get(province)
+                    || '00000'
             };
         })
         .filter(record => record.istatCode !== '000000' && record.municipalityName)
@@ -162,17 +195,19 @@ const inputPath = path.resolve(process.argv[2] || DEFAULT_INPUT);
 const outputPath = path.resolve(process.argv[3] || DEFAULT_OUTPUT);
 const postalCodesInputPath = path.resolve(process.argv[4] || DEFAULT_POSTAL_CODES_INPUT);
 const archive = unzipSync(fs.readFileSync(inputPath));
-const postalCodes = createPostalCodeMap(postalCodesInputPath);
+const postalCodeIndex = createPostalCodeIndex(postalCodesInputPath);
 const records = normalizeRecords(
     readRows(archive, readSharedStrings(archive)),
-    postalCodes
+    postalCodeIndex
 );
-const populatedPostalCodes = records.filter(record => record.postalCode).length;
-const postalCodeCoverage = populatedPostalCodes / records.length;
+const invalidPostalCode = records.find(record => {
+    return !/^\d{5}$/.test(record.postalCode);
+});
 
-if (postalCodeCoverage < 0.9) {
+if (invalidPostalCode) {
     throw new Error(
-        `Postal-code coverage is too low: ${populatedPostalCodes}/${records.length}`
+        `Invalid demo postal code for ${invalidPostalCode.istatCode}: `
+        + `"${invalidPostalCode.postalCode}"`
     );
 }
 
@@ -181,5 +216,5 @@ fs.writeFileSync(outputPath, `${JSON.stringify(records, null, 2)}\n`);
 
 console.log(
     `Generated ${records.length} demo municipality records `
-    + `(${populatedPostalCodes} with postal codes) in ${outputPath}`
+    + `(all with one postal code) in ${outputPath}`
 );

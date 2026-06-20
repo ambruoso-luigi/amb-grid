@@ -9,6 +9,8 @@ const DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
     + 'It may be incomplete, outdated, or inaccurate. '
     + 'Do not use it as an official source for production systems.';
+const LOOKUP_OPEN_DELAY = 150;
+
 const loadMunicipalities = async () => {
     const response = await fetch(DATASET_URL);
 
@@ -59,41 +61,74 @@ export default async function multifieldLookup(app) {
         load: () => municipalities
     });
     const lookupDialog = new AMB.LookupDialog();
-    const rowsWithOpenDialog = new WeakSet();
     let grid = null;
+    let pendingLookupTimer = null;
+    let pendingLookupCell = null;
+    let pendingLookupRow = null;
+    let activeLookupRow = null;
+    let destroyed = false;
 
     const openMunicipalityLookup = async cell => {
-        if (!grid) return;
+        if (!grid || destroyed) return;
 
         const row = cell.getRow();
         const rowData = row.getData();
         const stateField = grid.crud.options.stateField;
 
-        if (rowData[stateField] === 'deleted' || rowsWithOpenDialog.has(row)) return;
+        if (rowData[stateField] === 'deleted') return;
 
-        rowsWithOpenDialog.add(row);
+        const visibleColumns = municipalityLookup.columns.filter(column => {
+            return column.visible === true;
+        });
+        const selected = await lookupDialog.open({
+            title: 'Select an Italian municipality',
+            columns: visibleColumns,
+            data: await municipalityLookup.load(),
+            valueField: municipalityLookup.keyField,
+            searchFields: visibleColumns.map(column => column.field),
+            searchPlaceholder: 'Search municipality, province, region, or postal code...'
+        });
 
-        try {
-            const visibleColumns = municipalityLookup.columns.filter(column => {
-                return column.visible === true;
-            });
-            const selected = await lookupDialog.open({
-                title: 'Select an Italian municipality',
-                columns: visibleColumns,
-                data: await municipalityLookup.load(),
-                valueField: municipalityLookup.keyField,
-                searchFields: visibleColumns.map(column => column.field),
-                searchPlaceholder: 'Search municipality, province, region, or postal code...'
-            });
+        if (destroyed) return;
 
-            applyMunicipalitySelection({
-                selected,
-                rowData,
-                crud: grid.crud
-            });
-        } finally {
-            rowsWithOpenDialog.delete(row);
-        }
+        applyMunicipalitySelection({
+            selected,
+            rowData,
+            crud: grid.crud
+        });
+    };
+
+    const scheduleMunicipalityLookup = cell => {
+        if (!grid || destroyed || pendingLookupTimer || activeLookupRow) return;
+
+        const row = cell.getRow();
+        const rowData = row.getData();
+
+        if (rowData[grid.crud.options.stateField] === 'deleted') return;
+
+        // Set the pending guard before the delay so a second click from a
+        // double-click cannot schedule or interact with another dialog.
+        pendingLookupCell = cell;
+        pendingLookupRow = row;
+        pendingLookupTimer = globalThis.setTimeout(async () => {
+            const scheduledCell = pendingLookupCell;
+
+            pendingLookupTimer = null;
+            pendingLookupCell = null;
+            activeLookupRow = pendingLookupRow;
+            pendingLookupRow = null;
+
+            if (destroyed || !scheduledCell) {
+                activeLookupRow = null;
+                return;
+            }
+
+            try {
+                await openMunicipalityLookup(scheduledCell);
+            } finally {
+                activeLookupRow = null;
+            }
+        }, LOOKUP_OPEN_DELAY);
     };
 
     grid = AMB.table({
@@ -123,7 +158,11 @@ export default async function multifieldLookup(app) {
                 editable: false,
                 cellClick: (event, cell) => {
                     event.preventDefault?.();
-                    openMunicipalityLookup(cell);
+                    scheduleMunicipalityLookup(cell);
+                },
+                cellDblClick: event => {
+                    event.preventDefault?.();
+                    event.stopPropagation?.();
                 }
             },
             { title: 'Province', field: 'province', required: true, width: 105, editable: false },
@@ -153,7 +192,22 @@ export default async function multifieldLookup(app) {
     return {
         ...grid,
         destroy() {
-            lookupDialog.destroy();
+            destroyed = true;
+
+            if (pendingLookupTimer) {
+                globalThis.clearTimeout(pendingLookupTimer);
+                pendingLookupTimer = null;
+            }
+
+            pendingLookupCell = null;
+            pendingLookupRow = null;
+
+            if (lookupDialog.resolve) {
+                lookupDialog.close(null);
+            } else {
+                lookupDialog.destroy();
+            }
+
             grid.destroy();
         }
     };
