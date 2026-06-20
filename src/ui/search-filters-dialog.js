@@ -49,7 +49,6 @@ export class SearchFiltersDialog {
      * @param {string} [options.columns[].title] - User-facing label.
      * @param {boolean} [options.columns[].selected=true] - Initial selected state.
      * @param {string} [options.selectAllText='Select All'] - Select-all button text.
-     * @param {string} [options.clearAllText='Clear All'] - Clear-all button text.
      * @param {string} [options.applyText='Apply'] - Apply button text.
      * @param {string} [options.cancelText='Cancel'] - Cancel button text.
      * @param {boolean} [options.caseSensitive=false] - Initial case-sensitive state.
@@ -64,13 +63,12 @@ export class SearchFiltersDialog {
         this.options = {
             title: 'Search Filters',
             columns: [],
-            searchInText: 'Search in:',
+            searchInText: 'Search only in these columns:',
             caseSensitive: false,
             wholeWord: false,
             caseSensitiveText: 'Case sensitive',
             wholeWordText: 'Whole word',
             selectAllText: 'Select All',
-            clearAllText: 'Clear All',
             applyText: 'Apply',
             cancelText: 'Cancel',
             ...options
@@ -139,6 +137,12 @@ export class SearchFiltersDialog {
         });
     }
 
+    keepAtLeastOneSelected(changedInput) {
+        if (changedInput.checked || this.getSelectedFields().length > 0) return;
+
+        changedInput.checked = true;
+    }
+
     render() {
         const overlay = createElement('div', 'amb-search-filters-dialog');
         const panel = createElement('div', 'amb-search-filters-dialog__panel');
@@ -152,7 +156,6 @@ export class SearchFiltersDialog {
         );
         const bulkActions = createElement('div', 'amb-search-filters-dialog__bulk-actions');
         const selectAllButton = createElement('button', 'amb-search-filters-dialog__button', this.options.selectAllText);
-        const clearAllButton = createElement('button', 'amb-search-filters-dialog__button', this.options.clearAllText);
         const list = createElement('div', 'amb-search-filters-dialog__list');
         const optionsGroup = createElement('div', 'amb-search-filters-dialog__options');
         const caseSensitiveOption = createElement('label', 'amb-search-filters-dialog__option');
@@ -174,7 +177,6 @@ export class SearchFiltersDialog {
         const applyButton = createElement('button', 'amb-search-filters-dialog__button amb-search-filters-dialog__button--primary', this.options.applyText);
 
         selectAllButton.type = 'button';
-        clearAllButton.type = 'button';
         cancelButton.type = 'button';
         applyButton.type = 'button';
         caseSensitiveInput.type = 'checkbox';
@@ -183,11 +185,11 @@ export class SearchFiltersDialog {
         wholeWordInput.checked = this.options.wholeWord === true;
 
         header.appendChild(title);
-        bulkActions.append(selectAllButton, clearAllButton);
+        bulkActions.appendChild(selectAllButton);
         caseSensitiveOption.append(caseSensitiveInput, caseSensitiveLabel);
         wholeWordOption.append(wholeWordInput, wholeWordLabel);
         optionsGroup.append(caseSensitiveOption, wholeWordOption);
-        body.append(searchInLabel, bulkActions, list, optionsGroup);
+        body.append(bulkActions, searchInLabel, list, optionsGroup);
         footer.append(cancelButton, applyButton);
         panel.append(header, body, footer);
         overlay.appendChild(panel);
@@ -207,6 +209,9 @@ export class SearchFiltersDialog {
 
             item.append(input, label);
             list.appendChild(item);
+            input.addEventListener('change', () => {
+                this.keepAtLeastOneSelected(input);
+            });
 
             return input;
         });
@@ -217,12 +222,15 @@ export class SearchFiltersDialog {
             }
         });
         selectAllButton.addEventListener('click', () => this.setAll(true));
-        clearAllButton.addEventListener('click', () => this.setAll(false));
         cancelButton.addEventListener('click', () => this.close({ applied: false }));
         applyButton.addEventListener('click', () => {
+            const selectedFields = this.getSelectedFields();
+
+            if (!selectedFields.length) return;
+
             this.close({
                 applied: true,
-                selectedFields: this.getSelectedFields(),
+                selectedFields,
                 caseSensitive: caseSensitiveInput.checked,
                 wholeWord: wholeWordInput.checked
             });

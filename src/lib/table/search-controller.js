@@ -180,17 +180,16 @@ export const createSearchController = ({
     const availableColumns = collectSearchColumns(columns);
     const toolbar = createSearchToolbar(selector, searchOptions, mountElement);
     const dialog = new SearchFiltersDialog();
+    const allFields = availableColumns.map(column => column.field);
     const searchState = {
         query: '',
-        selectedFields: [],
+        selectedFields: [...allFields],
         caseSensitive: searchOptions.caseSensitive === true,
         wholeWord: searchOptions.wholeWord === true
     };
     const searchFilter = data => {
         const query = searchState.query.trim();
-        const fields = searchState.selectedFields.length
-            ? searchState.selectedFields
-            : availableColumns.map(column => column.field);
+        const fields = searchState.selectedFields;
 
         if (!query) return true;
 
@@ -212,14 +211,15 @@ export const createSearchController = ({
         if (!toolbar || !toolbar.filtersButton) return;
 
         const count = searchState.selectedFields.length;
+        const restricted = count < allFields.length;
 
         if (toolbar.filtersCount) {
             toolbar.filtersCount.textContent = String(count);
-            toolbar.filtersCount.hidden = count === 0;
+            toolbar.filtersCount.hidden = !restricted;
         }
         toolbar.filtersButton.classList?.toggle(
             'amb-toolbar__filters-button--active',
-            count > 0 || searchState.caseSensitive || searchState.wholeWord
+            restricted || searchState.caseSensitive || searchState.wholeWord
         );
     };
 
@@ -251,7 +251,9 @@ export const createSearchController = ({
         const allowedFields = new Set(availableColumns.map(column => column.field));
         const nextFields = (fields || []).filter(field => allowedFields.has(field));
 
-        searchState.selectedFields = [...new Set(nextFields)];
+        searchState.selectedFields = nextFields.length
+            ? [...new Set(nextFields)]
+            : [...allFields];
         updateFiltersButton();
         applySearch();
     };
@@ -273,16 +275,17 @@ export const createSearchController = ({
         if (!toolbar || !toolbar.filtersButton) return;
 
         const selectedColumns = getSelectedColumns();
+        const restricted = selectedColumns.length < availableColumns.length;
         const optionMessages = [
             searchState.caseSensitive ? '- Case sensitive' : '',
             searchState.wholeWord ? '- Whole word' : ''
         ].filter(Boolean);
 
-        if (!selectedColumns.length && !optionMessages.length) {
+        if (!restricted && !optionMessages.length) {
             floatingMessage.scheduleShow(toolbar.filtersButton, {
                 type: 'info',
                 title: 'Filters',
-                message: 'Searching all available columns'
+                message: 'Searching all columns'
             });
             return;
         }
@@ -291,7 +294,12 @@ export const createSearchController = ({
             type: 'info',
             title: 'Filters active',
             message: [
-                ...selectedColumns.map(column => `- ${column.title}`),
+                ...(restricted
+                    ? [
+                        'Searching only in:',
+                        ...selectedColumns.map(column => `- ${column.title}`)
+                    ]
+                    : ['Searching all columns']),
                 ...optionMessages
             ].join('\n')
         });
@@ -303,12 +311,11 @@ export const createSearchController = ({
 
     const openFiltersDialog = async () => {
         const selectedFields = new Set(searchState.selectedFields);
-        const searchAllFields = selectedFields.size === 0;
         const result = await dialog.open({
             title: 'Search Filters',
             columns: availableColumns.map(column => ({
                 ...column,
-                selected: searchAllFields || selectedFields.has(column.field)
+                selected: selectedFields.has(column.field)
             })),
             caseSensitive: searchState.caseSensitive,
             wholeWord: searchState.wholeWord,

@@ -19,6 +19,18 @@ class ElementMock {
         this.parentNode = null;
         this.disabled = false;
         this.removed = false;
+        const classValues = new Set();
+
+        this.classList = {
+            toggle: (value, force) => {
+                if (force) {
+                    classValues.add(value);
+                } else {
+                    classValues.delete(value);
+                }
+            },
+            contains: value => classValues.has(value)
+        };
     }
 
     append(...children) {
@@ -414,7 +426,7 @@ describe('AMB toolbar', () => {
 
             expect(searchController.getSearchState()).toEqual({
                 query: 'atlas',
-                selectedFields: [],
+                selectedFields: ['title'],
                 caseSensitive: true,
                 wholeWord: true
             });
@@ -427,6 +439,95 @@ describe('AMB toolbar', () => {
 
             searchController.destroy();
         } finally {
+            harness.restore();
+        }
+    });
+
+    test('normalizes selected fields and updates filter count and active state', async () => {
+        const harness = createHarness({
+            buttons: ['add'],
+            onAdd: vi.fn()
+        });
+        const table = {
+            addFilter: vi.fn(),
+            removeFilter: vi.fn()
+        };
+        const floatingMessage = {
+            scheduleShow: vi.fn(),
+            hide: vi.fn()
+        };
+
+        try {
+            const searchController = createSearchController({
+                selector: '#table',
+                search: {
+                    enabled: true,
+                    filters: { enabled: true }
+                },
+                columns: [
+                    { field: 'title', title: 'Title' },
+                    { field: 'tag', title: 'Tag' }
+                ],
+                table,
+                floatingMessage,
+                mountElement: harness.controller.searchMount
+            });
+            const searchToolbar = harness.controller.searchMount.children[0];
+            const filtersButton = searchToolbar.children[1];
+            const filtersCount = filtersButton.children[1];
+
+            expect(searchController.getSearchState().selectedFields)
+                .toEqual(['title', 'tag']);
+            expect(filtersCount.hidden).toBe(true);
+            expect(filtersButton.classList.contains(
+                'amb-toolbar__filters-button--active'
+            )).toBe(false);
+
+            await filtersButton.dispatch('mouseover');
+            expect(floatingMessage.scheduleShow).toHaveBeenLastCalledWith(
+                filtersButton,
+                expect.objectContaining({
+                    message: 'Searching all columns'
+                })
+            );
+
+            searchController.setSearchFields(['title']);
+
+            expect(filtersCount.hidden).toBe(false);
+            expect(filtersCount.textContent).toBe('1');
+            expect(filtersButton.classList.contains(
+                'amb-toolbar__filters-button--active'
+            )).toBe(true);
+
+            await filtersButton.dispatch('mouseover');
+            expect(floatingMessage.scheduleShow).toHaveBeenLastCalledWith(
+                filtersButton,
+                expect.objectContaining({
+                    message: 'Searching only in:\n- Title'
+                })
+            );
+
+            searchController.setSearchFields([]);
+            expect(searchController.getSearchState().selectedFields)
+                .toEqual(['title', 'tag']);
+
+            searchController.setSearchOptions({ caseSensitive: true });
+            expect(filtersCount.hidden).toBe(true);
+            expect(filtersButton.classList.contains(
+                'amb-toolbar__filters-button--active'
+            )).toBe(true);
+
+            searchController.setSearchOptions({
+                caseSensitive: false,
+                wholeWord: true
+            });
+            expect(filtersButton.classList.contains(
+                'amb-toolbar__filters-button--active'
+            )).toBe(true);
+
+            searchController.destroy();
+        } finally {
+            harness.controller.destroy();
             harness.restore();
         }
     });
@@ -474,9 +575,12 @@ describe('AMB toolbar', () => {
             'utf8'
         );
 
-        expect(dialogSource).toContain("searchInText: 'Search in:'");
+        expect(dialogSource).toContain(
+            "searchInText: 'Search only in these columns:'"
+        );
         expect(dialogSource).toContain("caseSensitiveText: 'Case sensitive'");
         expect(dialogSource).toContain("wholeWordText: 'Whole word'");
+        expect(dialogSource).not.toContain('Clear All');
         expect(dialogSource).toContain('caseSensitive: caseSensitiveInput.checked');
         expect(dialogSource).toContain('wholeWord: wholeWordInput.checked');
     });
@@ -506,7 +610,10 @@ describe('AMB toolbar', () => {
                 ]
             });
 
-            expect(dialog.options.searchInText).toBe('Search in:');
+            expect(dialog.options.searchInText)
+                .toBe('Search only in these columns:');
+            expect(dialog.checkboxes.map(input => input.checked))
+                .toEqual([true, false]);
 
             dialog.caseSensitiveInput.checked = true;
             dialog.wholeWordInput.checked = true;
@@ -524,6 +631,70 @@ describe('AMB toolbar', () => {
                 wholeWord: true
             });
             expect(documentListeners.size).toBe(0);
+        } finally {
+            globalThis.document = originalDocument;
+        }
+    });
+
+    test('filters dialog starts with all columns and prevents deselecting the last one', async () => {
+        const originalDocument = globalThis.document;
+        const body = new ElementMock('body');
+        const documentListeners = new Map();
+
+        globalThis.document = {
+            body,
+            createElement: tagName => new ElementMock(tagName),
+            addEventListener: (type, listener) => documentListeners.set(type, listener),
+            removeEventListener: (type, listener) => {
+                if (documentListeners.get(type) === listener) {
+                    documentListeners.delete(type);
+                }
+            }
+        };
+
+        try {
+            const dialog = new SearchFiltersDialog();
+            const resultPromise = dialog.open({
+                columns: [
+                    { field: 'title', title: 'Title' },
+                    { field: 'tag', title: 'Tag' }
+                ]
+            });
+
+            expect(dialog.checkboxes.map(input => input.checked))
+                .toEqual([true, true]);
+
+            dialog.checkboxes[0].checked = false;
+            await dialog.checkboxes[0].dispatch('change');
+            expect(dialog.checkboxes.map(input => input.checked))
+                .toEqual([false, true]);
+
+            dialog.checkboxes[1].checked = false;
+            await dialog.checkboxes[1].dispatch('change');
+            expect(dialog.checkboxes.map(input => input.checked))
+                .toEqual([false, true]);
+
+            const panel = body.children[0].children[0];
+            const bodyElement = panel.children[1];
+            const bulkActions = bodyElement.children[0];
+            const searchInLabel = bodyElement.children[1];
+            const list = bodyElement.children[2];
+            const footer = panel.children[2];
+            const applyButton = footer.children[1];
+
+            expect(bulkActions.children).toHaveLength(1);
+            expect(searchInLabel.textContent)
+                .toBe('Search only in these columns:');
+            expect(bodyElement.children.indexOf(list))
+                .toBe(bodyElement.children.indexOf(searchInLabel) + 1);
+
+            await applyButton.dispatch('click');
+            await expect(resultPromise).resolves.toEqual({
+                applied: true,
+                selectedFields: ['tag'],
+                caseSensitive: false,
+                wholeWord: false
+            });
         } finally {
             globalThis.document = originalDocument;
         }

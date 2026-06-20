@@ -138,12 +138,15 @@ toolbar and Tabulator table are styled as one connected component. If search
 is enabled without the CRUD toolbar, the existing standalone search bar is
 kept for backward compatibility.
 
-The Filters dialog controls the searched columns and also provides
+The Filters dialog lets end users choose which columns are searched. All
+searchable columns are selected initially; users can uncheck columns to narrow
+the search, but at least one column must remain selected. It also provides
 `Case sensitive` and `Whole word` options, both disabled by default.
-`grid.getSearchState()` returns these options together with the query and
-selected fields. They can be changed programmatically with
-`grid.setSearchOptions({ caseSensitive, wholeWord })`. The Filters control is
-icon-only and shows a compact count when specific columns are selected.
+`grid.getSearchState()` returns the explicit selected-field list and matching
+options together with the query. Matching options can be changed
+programmatically with `grid.setSearchOptions({ caseSensitive, wholeWord })`.
+The Filters control is icon-only and shows a compact column count only when
+the search is restricted to a subset.
 
 When `toolbar` is omitted or set to `true`, the default Add and Save buttons
 are rendered in a safe disabled state until callbacks are configured. Set
