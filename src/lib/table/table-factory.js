@@ -178,9 +178,12 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
  * @param {boolean|object} [options.toolbar=false] - Optional backend-agnostic CRUD toolbar.
  * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
- * @param {string[]} [options.toolbar.buttons=['save','reload']] - Base buttons to render.
+ * @param {Array.<string|object>} [options.toolbar.buttons=['add','save','reload']] - Built-in ids or simple custom button definitions.
+ * @param {Function} [options.toolbar.onAdd] - Developer callback receiving `{ grid, event }`.
  * @param {Function} [options.toolbar.onSave] - Developer callback receiving `{ grid, payload, event }`.
  * @param {Function} [options.toolbar.onReload] - Developer callback receiving `{ grid, event }`.
+ * @param {Function} [options.toolbar.onValidate] - Developer callback receiving `{ grid, event }`.
+ * @param {Function} [options.toolbar.onPayload] - Developer callback receiving `{ grid, payload, event }`.
  * @param {object} [options.messages] - Shared UI and validation messages.
  * @param {string} [options.messages.required='This field is required'] - Default required message.
  * @returns {AMBTableController} AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.

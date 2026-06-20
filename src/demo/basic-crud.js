@@ -12,11 +12,6 @@ export default function basicCrud(app) {
 
     app.innerHTML = `
         <h2>Basic CRUD</h2>
-        <div class="toolbar">
-            <button type="button" id="action-add-row">Add row</button>
-            <button type="button" id="action-show-report">Show report</button>
-            <button type="button" id="action-show-selected">Show selected</button>
-        </div>
         <div id="basic-table"></div>
         <pre class="demo-output" id="basic-output"></pre>
     `;
@@ -35,8 +30,24 @@ export default function basicCrud(app) {
             mode: 'multiple'
         },
         toolbar: {
-            buttons: ['save'],
-            onSave: handleSave
+            buttons: [
+                'add',
+                'save',
+                'payload',
+                {
+                    id: 'report',
+                    label: 'Show report',
+                    onClick: handleShowReport
+                },
+                {
+                    id: 'selected',
+                    label: 'Show selected',
+                    onClick: handleShowSelected
+                }
+            ],
+            onAdd: handleAdd,
+            onSave: handleSave,
+            onPayload: handleShowPayload
         },
         data: [
             { id: 'NT-001', title: 'Welcome note', tag: 'intro', archived: 'N' },
@@ -130,9 +141,22 @@ export default function basicCrud(app) {
         originalDestroy();
     };
 
-    app.querySelector('#action-add-row').addEventListener('click', () => {
+    function handleAdd() {
         crud.addRow({ id: null, title: '', tag: '', archived: 'N' });
-    });
+    }
+
+    function handleShowPayload({ payload }) {
+        output.textContent = JSON.stringify(payload, null, 2);
+    }
+
+    function handleShowReport() {
+        output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
+    }
+
+    function handleShowSelected() {
+        output.textContent = JSON.stringify(demo.getSelectedRows(), null, 2);
+    }
+
     async function handleSave() {
         const validateResult = crud.validateAll();
         const payloadWithInvalid = crud.getSavePayload({ includeInvalid: true });
@@ -186,12 +210,6 @@ export default function basicCrud(app) {
             report: crud.getStateReport()
         }, null, 2);
     }
-    app.querySelector('#action-show-report').addEventListener('click', () => {
-        output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
-    });
-    app.querySelector('#action-show-selected').addEventListener('click', () => {
-        output.textContent = JSON.stringify(demo.getSelectedRows(), null, 2);
-    });
 
     return demo;
 }

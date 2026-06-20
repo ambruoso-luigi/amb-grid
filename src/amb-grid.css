@@ -5,9 +5,15 @@
 
 .amb-toolbar {
     align-items: center;
+    background: #f7f8fb;
+    border: 1px solid #d8dce5;
+    border-radius: 6px;
+    box-sizing: border-box;
     display: flex;
     gap: 8px;
     margin-bottom: 10px;
+    min-height: 48px;
+    padding: 7px 8px;
     width: 100%;
 }
 
@@ -43,6 +49,7 @@
 
 .amb-toolbar__button[data-busy="true"] {
     cursor: progress;
+    opacity: 0.72;
 }
 
 .amb-toolbar__button-icon {

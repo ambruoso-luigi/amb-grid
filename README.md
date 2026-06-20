@@ -80,9 +80,10 @@ Additional capabilities:
 
 ### Optional CRUD Toolbar
 
-`AMB.table(...)` can render a minimal framework-agnostic toolbar with Save and
-Reload actions. The toolbar never performs `fetch`, AJAX, or backend calls.
-Instead, the developer supplies callbacks owned by the application:
+`AMB.table(...)` can render a minimal framework-agnostic CRUD toolbar. Built-in
+button ids are `add`, `save`, `reload`, `validate`, and `payload`. Every action
+is callback-driven: the toolbar never performs `fetch`, AJAX, backend calls,
+row creation, or validation by itself.
 
 ```js
 const grid = AMB.table({
@@ -91,29 +92,53 @@ const grid = AMB.table({
   columns,
   toolbar: {
     enabled: true,
-    buttons: ['save', 'reload'],
+    buttons: [
+      'add',
+      'save',
+      'reload',
+      'validate',
+      'payload',
+      {
+        id: 'selected',
+        label: 'Show selected',
+        onClick: ({ grid }) => {
+          console.log(grid.getSelectedRows());
+        }
+      }
+    ],
+    onAdd: ({ grid }) => {
+      grid.crud.addRow({ id: null, name: '' });
+    },
     onSave: async ({ grid, payload }) => {
       console.log(payload);
       // Submit payload with your application's backend client.
     },
     onReload: async ({ grid }) => {
       // Reload or replace data using your application's data source.
+    },
+    onValidate: ({ grid }) => {
+      console.log(grid.crud.validateAll());
+    },
+    onPayload: ({ grid, payload }) => {
+      console.log(payload);
     }
   }
 });
 ```
 
-The Save callback receives `grid.crud.getSavePayload()` as `payload`. Reload
-receives the grid controller and leaves data-loading policy entirely to the
-integrating application. Buttons without a configured callback are disabled.
+All callbacks receive `{ grid, event }`. Save and Payload also receive
+`payload: grid.crud.getSavePayload()`. A custom button is a small object with
+`id`, `label`, optional inline `icon`, and `onClick`; set
+`includePayload: true` when a custom action also needs the save payload.
+Buttons without a configured callback are rendered disabled.
 
 Omit `toolbar`, set `toolbar: false`, or use `toolbar: { enabled: false }` to
-render no toolbar. `toolbar: true` renders the default Save and Reload buttons
-in a safe disabled state until callbacks are configured.
+render no toolbar. `toolbar: true` renders the default Add, Save, and Reload
+buttons in a safe disabled state until callbacks are configured.
 
-The Basic CRUD demo uses the official toolbar for its save flow. Demo-specific
-actions such as adding rows or printing reports remain outside the library
-toolbar.
+The Basic CRUD demo uses built-in Add, Save, and Payload actions plus simple
+custom Report and Selected buttons. The callbacks remain demo/application
+code; they are not hardcoded into the toolbar component.
 
 ### Validation Framework
 

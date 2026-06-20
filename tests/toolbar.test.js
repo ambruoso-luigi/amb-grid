@@ -167,12 +167,95 @@ describe('AMB toolbar', () => {
         try {
             const group = harness.controller.element.children[0];
 
+            expect(group.children.map(button => button.dataset.action))
+                .toEqual(['add', 'save', 'reload']);
             expect(group.children.every(button => button.disabled)).toBe(true);
 
             harness.controller.destroy();
 
             expect(harness.controller.element.removed).toBe(true);
             expect(harness.parent.children).toHaveLength(1);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('invokes add, validate, payload, and simple custom button callbacks', async () => {
+        const onAdd = vi.fn();
+        const onValidate = vi.fn();
+        const onPayload = vi.fn();
+        const onCustom = vi.fn();
+        const harness = createHarness({
+            buttons: [
+                'add',
+                'validate',
+                'payload',
+                {
+                    id: 'selected',
+                    label: 'Show selected',
+                    onClick: onCustom
+                }
+            ],
+            onAdd,
+            onValidate,
+            onPayload
+        });
+
+        try {
+            const [addButton, validateButton, payloadButton, customButton] =
+                harness.controller.element.children[0].children;
+
+            await addButton.dispatch('click');
+            await validateButton.dispatch('click');
+            await payloadButton.dispatch('click');
+            await customButton.dispatch('click');
+
+            expect(onAdd).toHaveBeenCalledWith(expect.objectContaining({
+                grid: harness.grid
+            }));
+            expect(onValidate).toHaveBeenCalledWith(expect.objectContaining({
+                grid: harness.grid
+            }));
+            expect(onPayload).toHaveBeenCalledWith(expect.objectContaining({
+                grid: harness.grid,
+                payload: expect.objectContaining({
+                    canSave: true
+                })
+            }));
+            expect(onCustom).toHaveBeenCalledWith(expect.objectContaining({
+                grid: harness.grid
+            }));
+        } finally {
+            harness.controller.destroy();
+            harness.restore();
+        }
+    });
+
+    test('can be destroyed and initialized again without duplicate markup', () => {
+        const harness = createHarness({
+            buttons: ['add'],
+            onAdd: vi.fn()
+        });
+
+        try {
+            harness.controller.destroy();
+            expect(harness.parent.children).toHaveLength(1);
+
+            const secondController = createToolbar({
+                selector: '#table',
+                toolbar: {
+                    buttons: ['add'],
+                    onAdd: vi.fn()
+                },
+                getGrid: () => harness.grid
+            });
+
+            expect(harness.parent.children).toHaveLength(2);
+            expect(harness.parent.children.filter(element => {
+                return element.className === 'amb-toolbar';
+            })).toHaveLength(1);
+
+            secondController.destroy();
         } finally {
             harness.restore();
         }
@@ -194,5 +277,22 @@ describe('AMB toolbar', () => {
         expect(compatibilityCss).toBe(
             "@import './amb-grid.css';\n@import './demo/demo.css';\n"
         );
+    });
+
+    test('uses a multi-action toolbar in the Basic CRUD demo', () => {
+        const demoSource = fs.readFileSync(
+            new URL('../src/demo/basic-crud.js', import.meta.url),
+            'utf8'
+        );
+
+        expect(demoSource).toContain("buttons: [");
+        expect(demoSource).toContain("'add'");
+        expect(demoSource).toContain("'save'");
+        expect(demoSource).toContain("'payload'");
+        expect(demoSource).toContain("id: 'report'");
+        expect(demoSource).toContain("id: 'selected'");
+        expect(demoSource).not.toContain('id="action-add-row"');
+        expect(demoSource).not.toContain('id="action-show-report"');
+        expect(demoSource).not.toContain('id="action-show-selected"');
     });
 });
