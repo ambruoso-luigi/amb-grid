@@ -2,6 +2,11 @@ import { AMB } from '../index.js';
 
 export default function basicCrud(app) {
     let nextNoteNumber = 4;
+    const initialData = [
+        { id: 'NT-001', title: 'Welcome note', tag: 'intro', archived: 'N' },
+        { id: 'NT-002', title: 'Shortcut idea', tag: 'idea', archived: 'N' },
+        { id: 'NT-003', title: 'Release checklist', tag: 'todo', archived: 'Y' }
+    ];
 
     const getNextNoteId = () => {
         const value = String(nextNoteNumber).padStart(3, '0');
@@ -32,6 +37,7 @@ export default function basicCrud(app) {
         toolbar: {
             buttons: [
                 'add',
+                'reload',
                 'save',
                 'payload',
                 {
@@ -46,6 +52,7 @@ export default function basicCrud(app) {
                 }
             ],
             onAdd: handleAdd,
+            onReload: handleReload,
             onSave: handleSave,
             onPayload: handleShowPayload
         },
@@ -56,11 +63,7 @@ export default function basicCrud(app) {
                 enabled: true
             }
         },
-        data: [
-            { id: 'NT-001', title: 'Welcome note', tag: 'intro', archived: 'N' },
-            { id: 'NT-002', title: 'Shortcut idea', tag: 'idea', archived: 'N' },
-            { id: 'NT-003', title: 'Release checklist', tag: 'todo', archived: 'Y' }
-        ],
+        data: initialData.map(row => ({ ...row })),
         layout: 'fitColumns',
         columns: [
             { title: 'ID', field: 'id', width: 80 },
@@ -149,7 +152,17 @@ export default function basicCrud(app) {
     };
 
     function handleAdd() {
+        demo.feedback.clear();
         crud.addRow({ id: null, title: '', tag: '', archived: 'N' });
+    }
+
+    async function handleReload() {
+        nextNoteNumber = 4;
+        await demo.table.setData(initialData.map(row => ({ ...row })));
+        demo.feedback.show({
+            type: 'success',
+            message: 'Data reloaded.'
+        });
     }
 
     function handleShowPayload({ payload }) {
@@ -176,6 +189,10 @@ export default function basicCrud(app) {
                     payload: payloadWithInvalid,
                     report: crud.getStateReport()
                 }, null, 2);
+                demo.feedback.show({
+                    type: 'warning',
+                    message: 'There are no valid changes to save.'
+                });
                 return;
             }
 
@@ -197,6 +214,14 @@ export default function basicCrud(app) {
             }
         }
 
+        if (!hasValidChanges(payload)) {
+            demo.feedback.show({
+                type: 'info',
+                message: 'There are no changes to save.'
+            });
+            return;
+        }
+
         const generatedIds = payload.changes.inserted
             .filter(item => {
                 return item._ambTempId
@@ -216,6 +241,10 @@ export default function basicCrud(app) {
             savedResult,
             report: crud.getStateReport()
         }, null, 2);
+        demo.feedback.show({
+            type: 'success',
+            message: 'Changes saved successfully.'
+        });
     }
 
     return demo;

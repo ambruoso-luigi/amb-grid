@@ -1,6 +1,7 @@
 import { ConfirmDialog } from '../ui/confirm-dialog.js';
 import { date } from './date.js';
 import { LookupDialog } from '../ui/lookup-dialog.js';
+import { FeedbackRegion } from '../ui/feedback-region.js';
 import { SearchFiltersDialog } from '../ui/search-filters-dialog.js';
 import { editors } from './editors.js';
 import { formatters } from './formatters.js';
@@ -20,6 +21,7 @@ import { validators } from './validators.js';
  * @property {object} date - Date configuration helpers.
  * @property {Function} lookup - Primary lookup data source factory.
  * @property {Function} LookupDialog - Lookup selection dialog class.
+ * @property {Function} FeedbackRegion - Accessible status region class.
  * @property {Function} ConfirmDialog - Confirmation dialog class.
  * @property {Function} SearchFiltersDialog - Search filter dialog class.
  */
@@ -31,6 +33,7 @@ export const AMB = {
     date,
     lookup: createLookup,
     LookupDialog,
+    FeedbackRegion,
     ConfirmDialog,
     SearchFiltersDialog,
     table: createTable

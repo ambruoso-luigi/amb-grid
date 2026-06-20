@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: ui/feedback-region.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: ui/feedback-region.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const SUPPORTED_TYPES = new Set(['success', 'warning', 'error', 'info']);
+
+/**
+ * Accessible status region used by AMB Grid and its dialogs.
+ */
+export class FeedbackRegion {
+    /**
+     * @param {object} [options] - Feedback region options.
+     * @param {string} [options.className] - Additional component class.
+     */
+    constructor(options = {}) {
+        this.extraClassName = options.className || '';
+        this.element = document.createElement('div');
+        this.titleElement = document.createElement('div');
+        this.messageElement = document.createElement('div');
+
+        this.titleElement.className = 'amb-feedback-region__title';
+        this.messageElement.className = 'amb-feedback-region__message';
+        this.element.append(this.titleElement, this.messageElement);
+        this.clear();
+    }
+
+    /**
+     * Show a feedback message.
+     *
+     * @param {object} options - Message options.
+     * @param {'success'|'warning'|'error'|'info'} [options.type='info'] - Message type.
+     * @param {string} [options.title] - Optional message title.
+     * @param {string} options.message - Human-readable message.
+     * @returns {void}
+     */
+    show({ type = 'info', title = '', message = '' } = {}) {
+        if (!this.element) return;
+
+        const normalizedType = SUPPORTED_TYPES.has(type) ? type : 'info';
+        const urgent = normalizedType === 'warning' || normalizedType === 'error';
+
+        this.element.className = [
+            'amb-feedback-region',
+            this.extraClassName,
+            'amb-feedback-region--visible',
+            `amb-feedback-region--${normalizedType}`
+        ].filter(Boolean).join(' ');
+        this.element.hidden = false;
+        this.element.setAttribute('role', urgent ? 'alert' : 'status');
+        this.element.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+        this.titleElement.textContent = String(title || '');
+        this.titleElement.hidden = !title;
+        this.messageElement.textContent = String(message || '');
+    }
+
+    /**
+     * Hide and empty the feedback region.
+     *
+     * @returns {void}
+     */
+    clear() {
+        if (!this.element) return;
+
+        this.element.className = [
+            'amb-feedback-region',
+            this.extraClassName
+        ].filter(Boolean).join(' ');
+        this.element.hidden = true;
+        this.element.setAttribute('role', 'status');
+        this.element.setAttribute('aria-live', 'polite');
+        this.titleElement.textContent = '';
+        this.titleElement.hidden = true;
+        this.messageElement.textContent = '';
+    }
+
+    /**
+     * Remove the feedback region from the DOM.
+     *
+     * @returns {void}
+     */
+    destroy() {
+        if (!this.element) return;
+
+        this.element.remove();
+        this.element = null;
+        this.titleElement = null;
+        this.messageElement = null;
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jun 20 2026 12:48:35 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: FloatingMessage</title>
+    <title>JSDoc: Class: FeedbackRegion</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: FloatingMessage</h1>
+    <h1 class="page-title">Class: FeedbackRegion</h1>
 
     
 
@@ -28,9 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>FloatingMessage<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>FeedbackRegion<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Floating message shown near a target element.</div>
+            <div class="class-description">Accessible status region used by AMB Grid and its dialogs.</div>
         
     
 </header>
@@ -45,16 +45,12 @@
     
 
     
-    <h4 class="name" id="FloatingMessage"><span class="type-signature"></span>new FloatingMessage<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="FeedbackRegion"><span class="type-signature"></span>new FeedbackRegion<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
 
 
-
-<div class="description">
-    Create a floating message controller.
-</div>
 
 
 
@@ -117,7 +113,7 @@
 
             
 
-            <td class="description last">Message options.
+            <td class="description last">Feedback region options.
                 <h6>Properties</h6>
                 
 
@@ -135,8 +131,6 @@
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -147,13 +141,13 @@
 
         <tr>
             
-                <td class="name"><code>offset</code></td>
+                <td class="name"><code>className</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
             
@@ -172,53 +166,8 @@
             
 
             
-                <td class="default">
-                
-                    8
-                
-                </td>
-            
 
-            <td class="description last">Vertical offset from the target element in pixels.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>hoverDelay</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    300
-                
-                </td>
-            
-
-            <td class="description last">Delay used by `scheduleShow`, in milliseconds.</td>
+            <td class="description last">Additional component class.</td>
         </tr>
 
     
@@ -266,7 +215,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_floating-message.js.html">ui/floating-message.js</a>, <a href="ui_floating-message.js.html#line6">line 6</a>
+        <a href="ui_feedback-region.js.html">ui/feedback-region.js</a>, <a href="ui_feedback-region.js.html#line6">line 6</a>
     </li></ul></dd>
     
 
@@ -307,7 +256,7 @@
         <h3 class="subsection-title">Classes</h3>
 
         <dl>
-            <dt><a href="FloatingMessage.html">FloatingMessage</a></dt>
+            <dt><a href="FeedbackRegion.html">FeedbackRegion</a></dt>
             <dd></dd>
         </dl>
     
@@ -329,6 +278,112 @@
     
 
     
+    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Hide and empty the feedback region.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="ui_feedback-region.js.html">ui/feedback-region.js</a>, <a href="ui_feedback-region.js.html#line57">line 57</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="destroy"><span class="type-signature"></span>destroy<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
@@ -337,7 +392,7 @@
 
 
 <div class="description">
-    Remove the message element and cancel timers.
+    Remove the feedback region from the DOM.
 </div>
 
 
@@ -381,7 +436,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_floating-message.js.html">ui/floating-message.js</a>, <a href="ui_floating-message.js.html#line124">line 124</a>
+        <a href="ui_feedback-region.js.html">ui/feedback-region.js</a>, <a href="ui_feedback-region.js.html#line77">line 77</a>
     </li></ul></dd>
     
 
@@ -435,7 +490,7 @@
     
 
     
-    <h4 class="name" id="hide"><span class="type-signature"></span>hide<span class="signature">()</span><span class="type-signature"> &rarr; {void}</span></h4>
+    <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">(options)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -443,113 +498,7 @@
 
 
 <div class="description">
-    Hide the message and cancel any scheduled display.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_floating-message.js.html">ui/floating-message.js</a>, <a href="ui_floating-message.js.html#line111">line 111</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">void</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="scheduleShow"><span class="type-signature"></span>scheduleShow<span class="signature">(targetElement, messageOptions<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Show a message after the configured hover delay.
+    Show a feedback message.
 </div>
 
 
@@ -573,8 +522,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -587,38 +534,7 @@
 
         <tr>
             
-                <td class="name"><code>targetElement</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">HTMLElement</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Element used for positioning.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>messageOptions</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
@@ -631,218 +547,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
 
             
 
-            <td class="description last">Same options accepted by `show`.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_floating-message.js.html">ui/floating-message.js</a>, <a href="ui_floating-message.js.html#line97">line 97</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">void</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">(targetElement, messageOptions<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Show a message near a target element.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>targetElement</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">HTMLElement</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Element used for positioning.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>messageOptions</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Message content.
+            <td class="description last">Message options.
                 <h6>Properties</h6>
                 
 
@@ -878,16 +586,16 @@
             <td class="type">
             
                 
-<span class="param-type">'error'</span>
+<span class="param-type">'success'</span>
 |
 
 <span class="param-type">'warning'</span>
 |
 
-<span class="param-type">'info'</span>
+<span class="param-type">'error'</span>
 |
 
-<span class="param-type">'success'</span>
+<span class="param-type">'info'</span>
 
 
             
@@ -913,7 +621,7 @@
                 </td>
             
 
-            <td class="description last">Visual message type.</td>
+            <td class="description last">Message type.</td>
         </tr>
 
     
@@ -950,7 +658,7 @@
                 </td>
             
 
-            <td class="description last">Message title.</td>
+            <td class="description last">Optional message title.</td>
         </tr>
 
     
@@ -972,8 +680,6 @@
             
                 <td class="attributes">
                 
-                    &lt;optional><br>
-                
 
                 
 
@@ -987,7 +693,7 @@
                 </td>
             
 
-            <td class="description last">Message body.</td>
+            <td class="description last">Human-readable message.</td>
         </tr>
 
     
@@ -1035,7 +741,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_floating-message.js.html">ui/floating-message.js</a>, <a href="ui_floating-message.js.html#line77">line 77</a>
+        <a href="ui_feedback-region.js.html">ui/feedback-region.js</a>, <a href="ui_feedback-region.js.html#line32">line 32</a>
     </li></ul></dd>
     
 

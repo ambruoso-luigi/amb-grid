@@ -9,6 +9,7 @@ import {
     matchesSearchValue
 } from '../src/lib/table/search-controller.js';
 import { SearchFiltersDialog } from '../src/ui/search-filters-dialog.js';
+import { LookupDialog } from '../src/ui/lookup-dialog.js';
 
 class ElementMock {
     constructor(tagName = 'div') {
@@ -19,6 +20,7 @@ class ElementMock {
         this.parentNode = null;
         this.disabled = false;
         this.removed = false;
+        this.style = {};
         const classValues = new Set();
 
         this.classList = {
@@ -59,6 +61,10 @@ class ElementMock {
 
     querySelector() {
         return null;
+    }
+
+    querySelectorAll() {
+        return [];
     }
 
     focus() {}
@@ -138,7 +144,7 @@ describe('AMB toolbar', () => {
             const buttons = defaultHarness.controller.actions.children;
 
             expect(buttons.map(button => button.dataset.action))
-                .toEqual(['add', 'save']);
+                .toEqual(['add', 'reload', 'save']);
             expect(buttons.every(button => button.disabled)).toBe(true);
         } finally {
             defaultHarness.controller.destroy();
@@ -206,7 +212,7 @@ describe('AMB toolbar', () => {
             const group = harness.controller.element.children[0];
 
             expect(group.children.map(button => button.dataset.action))
-                .toEqual(['add', 'save']);
+                .toEqual(['add', 'reload', 'save']);
             expect(group.children[0].title).toBe('Add row');
             expect(group.children[0]['aria-label']).toBe('Add row');
             expect(group.children.every(button => button.disabled)).toBe(true);
@@ -550,6 +556,23 @@ describe('AMB toolbar', () => {
         );
     });
 
+    test('integrates the official feedback region with the table controller', () => {
+        const tableFactorySource = fs.readFileSync(
+            new URL('../src/lib/table/table-factory.js', import.meta.url),
+            'utf8'
+        );
+        const libraryCss = fs.readFileSync(
+            new URL('../src/amb-grid.css', import.meta.url),
+            'utf8'
+        );
+
+        expect(tableFactorySource)
+            .toContain("import { FeedbackRegion }");
+        expect(tableFactorySource).toContain('feedback,');
+        expect(tableFactorySource).toContain('feedback.destroy()');
+        expect(libraryCss).toContain("@import './ui/feedback-region.css'");
+    });
+
     test('uses a multi-action toolbar in the Basic CRUD demo', () => {
         const demoSource = fs.readFileSync(
             new URL('../src/demo/basic-crud.js', import.meta.url),
@@ -558,12 +581,18 @@ describe('AMB toolbar', () => {
 
         expect(demoSource).toContain("buttons: [");
         expect(demoSource).toContain("'add'");
+        expect(demoSource).toContain("'reload'");
         expect(demoSource).toContain("'save'");
         expect(demoSource).toContain("'payload'");
         expect(demoSource).toContain("search: {");
         expect(demoSource).toContain("filters: {");
         expect(demoSource).toContain("id: 'report'");
         expect(demoSource).toContain("id: 'selected'");
+        expect(demoSource).toContain("onReload: handleReload");
+        expect(demoSource).toContain("message: 'Data reloaded.'");
+        expect(demoSource).toContain(
+            "message: 'Changes saved successfully.'"
+        );
         expect(demoSource).not.toContain('id="action-add-row"');
         expect(demoSource).not.toContain('id="action-show-report"');
         expect(demoSource).not.toContain('id="action-show-selected"');
@@ -619,7 +648,7 @@ describe('AMB toolbar', () => {
             dialog.wholeWordInput.checked = true;
 
             const panel = body.children[0].children[0];
-            const footer = panel.children[2];
+            const footer = panel.children[3];
             const applyButton = footer.children[1];
 
             await applyButton.dispatch('click');
@@ -673,21 +702,37 @@ describe('AMB toolbar', () => {
             await dialog.checkboxes[1].dispatch('change');
             expect(dialog.checkboxes.map(input => input.checked))
                 .toEqual([false, true]);
+            expect(dialog.feedback.element.hidden).toBe(false);
+            expect(dialog.feedback.messageElement.textContent)
+                .toBe('Select at least one column.');
+            expect(dialog.feedback.element.role).toBe('alert');
+            expect(dialog.feedback.element['aria-live']).toBe('assertive');
 
             const panel = body.children[0].children[0];
-            const bodyElement = panel.children[1];
+            const feedbackElement = panel.children[1];
+            const bodyElement = panel.children[2];
             const bulkActions = bodyElement.children[0];
             const searchInLabel = bodyElement.children[1];
             const list = bodyElement.children[2];
-            const footer = panel.children[2];
+            const footer = panel.children[3];
             const applyButton = footer.children[1];
 
+            expect(feedbackElement.className).toContain('amb-dialog-feedback');
             expect(bulkActions.children).toHaveLength(1);
             expect(searchInLabel.textContent)
                 .toBe('Search only in these columns:');
             expect(bodyElement.children.indexOf(list))
                 .toBe(bodyElement.children.indexOf(searchInLabel) + 1);
 
+            dialog.checkboxes.forEach(input => {
+                input.checked = false;
+            });
+            await applyButton.dispatch('click');
+            expect(dialog.overlay).not.toBeNull();
+            expect(dialog.feedback.messageElement.textContent)
+                .toBe('Select at least one column.');
+
+            dialog.checkboxes[1].checked = true;
             await applyButton.dispatch('click');
             await expect(resultPromise).resolves.toEqual({
                 applied: true,
@@ -695,6 +740,80 @@ describe('AMB toolbar', () => {
                 caseSensitive: false,
                 wholeWord: false
             });
+        } finally {
+            globalThis.document = originalDocument;
+        }
+    });
+
+    test('lookup dialog includes feedback and reports no results without selecting a row', async () => {
+        const originalDocument = globalThis.document;
+        const body = new ElementMock('body');
+        const documentListeners = new Map();
+
+        globalThis.document = {
+            body,
+            createElement: tagName => new ElementMock(tagName),
+            addEventListener: (type, listener) => documentListeners.set(type, listener),
+            removeEventListener: (type, listener) => {
+                if (documentListeners.get(type) === listener) {
+                    documentListeners.delete(type);
+                }
+            }
+        };
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title', title: 'Title' }],
+                data: []
+            });
+            const panel = body.children[0].children[0];
+
+            expect(panel.children[1].className)
+                .toContain('amb-dialog-feedback');
+            expect(dialog.feedback.messageElement.textContent)
+                .toBe('No results');
+            expect(dialog.feedback.element.role).toBe('status');
+            expect(dialog.selectedIndex).toBe(-1);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            globalThis.document = originalDocument;
+        }
+    });
+
+    test('lookup dialog does not select the first available row automatically', async () => {
+        const originalDocument = globalThis.document;
+        const body = new ElementMock('body');
+        const documentListeners = new Map();
+
+        globalThis.document = {
+            body,
+            createElement: tagName => new ElementMock(tagName),
+            addEventListener: (type, listener) => documentListeners.set(type, listener),
+            removeEventListener: (type, listener) => {
+                if (documentListeners.get(type) === listener) {
+                    documentListeners.delete(type);
+                }
+            }
+        };
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title', title: 'Title' }],
+                data: [{ title: 'First' }, { title: 'Second' }]
+            });
+
+            expect(dialog.selectedIndex).toBe(-1);
+            expect(dialog.selectButton.disabled).toBe(true);
+
+            dialog.moveSelection(1);
+            expect(dialog.selectedIndex).toBe(0);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
         } finally {
             globalThis.document = originalDocument;
         }

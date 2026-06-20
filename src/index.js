@@ -9,3 +9,4 @@ export { createLookup } from './lib/lookup.js';
 export { ConfirmDialog } from './ui/confirm-dialog.js';
 export { LookupDialog } from './ui/lookup-dialog.js';
 export { SearchFiltersDialog } from './ui/search-filters-dialog.js';
+export { FeedbackRegion } from './ui/feedback-region.js';

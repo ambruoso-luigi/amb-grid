@@ -3,6 +3,7 @@ import { CrudHelper, ROW_STATE } from '../crud-helper.js';
 import { CellMessageBinder } from '../../ui/cell-message-binder.js';
 import { FloatingMessage } from '../../ui/floating-message.js';
 import { ConfirmDialog } from '../../ui/confirm-dialog.js';
+import { FeedbackRegion } from '../../ui/feedback-region.js';
 import { createToolbar } from '../../ui/toolbar.js';
 import { DEFAULT_MESSAGES, extractColumnValidators } from './validation-extraction.js';
 import { createDeleteColumn } from './delete-column.js';
@@ -129,6 +130,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setSearchFields - Set the active search fields.
  * @property {Function} setSearchOptions - Set case-sensitive and whole-word search options.
  * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
+ * @property {FeedbackRegion} feedback - Accessible grid status region.
  * @property {Function} destroy - Destroy the complete AMB-managed grid, including the Tabulator table.
  */
 
@@ -181,7 +183,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
  * @param {boolean|object} [options.toolbar=true] - Backend-agnostic CRUD toolbar. Set `false` to disable.
  * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
- * @param {Array.<string|object>} [options.toolbar.buttons=['add','save']] - Built-in ids or simple custom button definitions.
+ * @param {Array.<string|object>} [options.toolbar.buttons=['add','reload','save']] - Built-in ids or simple custom button definitions.
  * @param {Function} [options.toolbar.onAdd] - Developer callback receiving `{ grid, event }`.
  * @param {Function} [options.toolbar.onSave] - Developer callback receiving `{ grid, payload, event }`.
  * @param {Function} [options.toolbar.onReload] - Developer callback receiving `{ grid, event }`.
@@ -230,6 +232,7 @@ export function createTable(options = {}) {
     let unsubscribeLargeText = null;
     let searchController = null;
     let toolbarController = null;
+    let feedback = null;
     let controller = null;
     const confirmDialog = new ConfirmDialog();
     const selectionColumnController = createSelectionColumn(selectionColumn);
@@ -262,6 +265,19 @@ export function createTable(options = {}) {
         toolbar,
         getGrid: () => controller
     });
+    feedback = new FeedbackRegion({
+        className: [
+            'amb-feedback-region--grid',
+            toolbarController ? 'amb-feedback-region--connected' : ''
+        ].filter(Boolean).join(' ')
+    });
+    const tableElement = typeof selector === 'string'
+        ? document.querySelector(selector)
+        : selector;
+
+    if (tableElement && tableElement.parentNode) {
+        tableElement.parentNode.insertBefore(feedback.element, tableElement);
+    }
     searchController = createSearchController({
         selector,
         search,
@@ -287,6 +303,7 @@ export function createTable(options = {}) {
         table,
         crud,
         toolbar: toolbarController,
+        feedback,
         /**
          * @private
          * @internal
@@ -389,6 +406,12 @@ export function createTable(options = {}) {
             if (searchController) {
                 searchController.destroy();
                 searchController = null;
+            }
+
+            if (feedback) {
+                feedback.destroy();
+                feedback = null;
+                controller.feedback = null;
             }
 
             cellMessageBinder.destroy();

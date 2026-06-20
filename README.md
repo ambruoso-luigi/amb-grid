@@ -94,8 +94,8 @@ const grid = AMB.table({
     enabled: true,
     buttons: [
       'add',
-      'save',
       'reload',
+      'save',
       'validate',
       'payload',
       {
@@ -148,14 +148,33 @@ programmatically with `grid.setSearchOptions({ caseSensitive, wholeWord })`.
 The Filters control is icon-only and shows a compact column count only when
 the search is restricted to a subset.
 
-When `toolbar` is omitted or set to `true`, the default Add and Save buttons
-are rendered in a safe disabled state until callbacks are configured. Set
+When `toolbar` is omitted or set to `true`, the default Add, Reload, and Save
+buttons are rendered in a safe disabled state until callbacks are configured.
+Reload only invokes `onReload`; AMB Grid never makes a hardcoded backend call.
+Set
 `toolbar: false` or `toolbar: { enabled: false }` to opt out completely.
 
-The Basic CRUD demo uses built-in Add, Save, and Payload actions plus simple
-custom Report and Selected buttons, with Search and Filters mounted in the
-same header. The callbacks remain demo/application code; they are not
-hardcoded into the toolbar component.
+Each table controller also exposes an accessible feedback region for status
+messages:
+
+```js
+grid.feedback.show({
+  type: 'success',
+  message: 'Changes saved successfully.'
+});
+
+grid.feedback.clear();
+```
+
+Supported types are `success`, `warning`, `error`, and `info`. Warning and
+error messages use assertive alert semantics; success and info messages use a
+polite status region. The Search Filters dialog uses the same feedback
+component to warn when a user tries to leave zero searchable columns selected.
+
+The Basic CRUD demo uses built-in Add, Reload, Save, and Payload actions plus
+simple custom Report and Selected buttons, with Search and Filters mounted in
+the same header. Save and Reload demonstrate success feedback without
+hardcoding backend behavior into AMB Grid.
 
 ### Validation Framework
 

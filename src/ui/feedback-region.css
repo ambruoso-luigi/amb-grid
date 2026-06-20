@@ -1,0 +1,69 @@
+.amb-feedback-region {
+    border: 1px solid transparent;
+    box-sizing: border-box;
+    color: #263244;
+    display: grid;
+    gap: 2px;
+    line-height: 1.4;
+    padding: 9px 12px;
+    width: 100%;
+}
+
+.amb-feedback-region[hidden] {
+    display: none;
+}
+
+.amb-feedback-region--visible {
+    display: grid;
+}
+
+.amb-feedback-region--success {
+    background: #edf7ef;
+    border-color: #a9cfb0;
+    color: #245b2f;
+}
+
+.amb-feedback-region--warning {
+    background: #fff8df;
+    border-color: #dfc66e;
+    color: #664f00;
+}
+
+.amb-feedback-region--error {
+    background: #fff0f0;
+    border-color: #dca0a0;
+    color: #7b2525;
+}
+
+.amb-feedback-region--info {
+    background: #eef4fa;
+    border-color: #adc3d8;
+    color: #294d6b;
+}
+
+.amb-feedback-region__title {
+    font-weight: 700;
+}
+
+.amb-feedback-region__message {
+    white-space: pre-line;
+}
+
+.amb-feedback-region--grid {
+    font-size: 14px;
+}
+
+.amb-feedback-region--connected {
+    border-left-color: #d8dce5;
+    border-radius: 0;
+    border-right-color: #d8dce5;
+    margin: 0;
+}
+
+.amb-dialog-feedback {
+    border-left: 0;
+    border-radius: 0;
+    border-right: 0;
+    font-size: 13px;
+    padding-inline: 18px;
+}

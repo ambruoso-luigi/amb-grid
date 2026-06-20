@@ -26,7 +26,9 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const createElement = (tagName, className, text = '') => {
+            <pre class="prettyprint source linenums"><code>import { FeedbackRegion } from './feedback-region.js';
+
+const createElement = (tagName, className, text = '') => {
     const element = document.createElement(tagName);
 
     if (className) {
@@ -64,6 +66,7 @@ export class SearchFiltersDialog {
         this.checkboxes = [];
         this.caseSensitiveInput = null;
         this.wholeWordInput = null;
+        this.feedback = null;
         this.keydownHandler = null;
     }
 
@@ -146,6 +149,11 @@ export class SearchFiltersDialog {
             this.overlay = null;
         }
 
+        if (this.feedback) {
+            this.feedback.destroy();
+            this.feedback = null;
+        }
+
         this.resolve = null;
         this.options = null;
         this.checkboxes = [];
@@ -163,12 +171,20 @@ export class SearchFiltersDialog {
         this.checkboxes.forEach(input => {
             input.checked = checked;
         });
+        this.feedback?.clear();
     }
 
     keepAtLeastOneSelected(changedInput) {
-        if (changedInput.checked || this.getSelectedFields().length > 0) return;
+        if (changedInput.checked || this.getSelectedFields().length > 0) {
+            this.feedback?.clear();
+            return;
+        }
 
         changedInput.checked = true;
+        this.feedback?.show({
+            type: 'warning',
+            message: 'Select at least one column.'
+        });
     }
 
     render() {
@@ -176,6 +192,7 @@ export class SearchFiltersDialog {
         const panel = createElement('div', 'amb-search-filters-dialog__panel');
         const header = createElement('div', 'amb-search-filters-dialog__header');
         const title = createElement('h2', 'amb-search-filters-dialog__title', this.options.title);
+        const feedback = new FeedbackRegion({ className: 'amb-dialog-feedback' });
         const body = createElement('div', 'amb-search-filters-dialog__body');
         const searchInLabel = createElement(
             'div',
@@ -219,11 +236,12 @@ export class SearchFiltersDialog {
         optionsGroup.append(caseSensitiveOption, wholeWordOption);
         body.append(bulkActions, searchInLabel, list, optionsGroup);
         footer.append(cancelButton, applyButton);
-        panel.append(header, body, footer);
+        panel.append(header, feedback.element, body, footer);
         overlay.appendChild(panel);
         document.body.appendChild(overlay);
 
         this.overlay = overlay;
+        this.feedback = feedback;
         this.caseSensitiveInput = caseSensitiveInput;
         this.wholeWordInput = wholeWordInput;
         this.checkboxes = this.options.columns.map(column => {
@@ -254,7 +272,13 @@ export class SearchFiltersDialog {
         applyButton.addEventListener('click', () => {
             const selectedFields = this.getSelectedFields();
 
-            if (!selectedFields.length) return;
+            if (!selectedFields.length) {
+                feedback.show({
+                    type: 'warning',
+                    message: 'Select at least one column.'
+                });
+                return;
+            }
 
             this.close({
                 applied: true,
@@ -290,13 +314,13 @@ export class SearchFiltersDialog {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jun 20 2026 11:43:33 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jun 20 2026 12:48:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

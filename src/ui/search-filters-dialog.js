@@ -1,3 +1,5 @@
+import { FeedbackRegion } from './feedback-region.js';
+
 const createElement = (tagName, className, text = '') => {
     const element = document.createElement(tagName);
 
@@ -36,6 +38,7 @@ export class SearchFiltersDialog {
         this.checkboxes = [];
         this.caseSensitiveInput = null;
         this.wholeWordInput = null;
+        this.feedback = null;
         this.keydownHandler = null;
     }
 
@@ -118,6 +121,11 @@ export class SearchFiltersDialog {
             this.overlay = null;
         }
 
+        if (this.feedback) {
+            this.feedback.destroy();
+            this.feedback = null;
+        }
+
         this.resolve = null;
         this.options = null;
         this.checkboxes = [];
@@ -135,12 +143,20 @@ export class SearchFiltersDialog {
         this.checkboxes.forEach(input => {
             input.checked = checked;
         });
+        this.feedback?.clear();
     }
 
     keepAtLeastOneSelected(changedInput) {
-        if (changedInput.checked || this.getSelectedFields().length > 0) return;
+        if (changedInput.checked || this.getSelectedFields().length > 0) {
+            this.feedback?.clear();
+            return;
+        }
 
         changedInput.checked = true;
+        this.feedback?.show({
+            type: 'warning',
+            message: 'Select at least one column.'
+        });
     }
 
     render() {
@@ -148,6 +164,7 @@ export class SearchFiltersDialog {
         const panel = createElement('div', 'amb-search-filters-dialog__panel');
         const header = createElement('div', 'amb-search-filters-dialog__header');
         const title = createElement('h2', 'amb-search-filters-dialog__title', this.options.title);
+        const feedback = new FeedbackRegion({ className: 'amb-dialog-feedback' });
         const body = createElement('div', 'amb-search-filters-dialog__body');
         const searchInLabel = createElement(
             'div',
@@ -191,11 +208,12 @@ export class SearchFiltersDialog {
         optionsGroup.append(caseSensitiveOption, wholeWordOption);
         body.append(bulkActions, searchInLabel, list, optionsGroup);
         footer.append(cancelButton, applyButton);
-        panel.append(header, body, footer);
+        panel.append(header, feedback.element, body, footer);
         overlay.appendChild(panel);
         document.body.appendChild(overlay);
 
         this.overlay = overlay;
+        this.feedback = feedback;
         this.caseSensitiveInput = caseSensitiveInput;
         this.wholeWordInput = wholeWordInput;
         this.checkboxes = this.options.columns.map(column => {
@@ -226,7 +244,13 @@ export class SearchFiltersDialog {
         applyButton.addEventListener('click', () => {
             const selectedFields = this.getSelectedFields();
 
-            if (!selectedFields.length) return;
+            if (!selectedFields.length) {
+                feedback.show({
+                    type: 'warning',
+                    message: 'Select at least one column.'
+                });
+                return;
+            }
 
             this.close({
                 applied: true,

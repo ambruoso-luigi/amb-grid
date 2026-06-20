@@ -2,6 +2,7 @@
 @import './ui/confirm-dialog.css';
 @import './ui/lookup-dialog.css';
 @import './ui/search-filters-dialog.css';
+@import './ui/feedback-region.css';
 
 .amb-toolbar {
     align-items: center;
@@ -19,6 +20,11 @@
 }
 
 .amb-grid-header + .tabulator {
+    border-top: 0;
+    border-radius: 0 0 6px 6px;
+}
+
+.amb-feedback-region--connected + .tabulator {
     border-top: 0;
     border-radius: 0 0 6px 6px;
 }

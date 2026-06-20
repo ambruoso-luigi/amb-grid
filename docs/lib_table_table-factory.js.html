@@ -31,6 +31,7 @@ import { CrudHelper, ROW_STATE } from '../crud-helper.js';
 import { CellMessageBinder } from '../../ui/cell-message-binder.js';
 import { FloatingMessage } from '../../ui/floating-message.js';
 import { ConfirmDialog } from '../../ui/confirm-dialog.js';
+import { FeedbackRegion } from '../../ui/feedback-region.js';
 import { createToolbar } from '../../ui/toolbar.js';
 import { DEFAULT_MESSAGES, extractColumnValidators } from './validation-extraction.js';
 import { createDeleteColumn } from './delete-column.js';
@@ -157,6 +158,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setSearchFields - Set the active search fields.
  * @property {Function} setSearchOptions - Set case-sensitive and whole-word search options.
  * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
+ * @property {FeedbackRegion} feedback - Accessible grid status region.
  * @property {Function} destroy - Destroy the complete AMB-managed grid, including the Tabulator table.
  */
 
@@ -209,7 +211,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
  * @param {boolean|object} [options.toolbar=true] - Backend-agnostic CRUD toolbar. Set `false` to disable.
  * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
- * @param {Array.&lt;string|object>} [options.toolbar.buttons=['add','save']] - Built-in ids or simple custom button definitions.
+ * @param {Array.&lt;string|object>} [options.toolbar.buttons=['add','reload','save']] - Built-in ids or simple custom button definitions.
  * @param {Function} [options.toolbar.onAdd] - Developer callback receiving `{ grid, event }`.
  * @param {Function} [options.toolbar.onSave] - Developer callback receiving `{ grid, payload, event }`.
  * @param {Function} [options.toolbar.onReload] - Developer callback receiving `{ grid, event }`.
@@ -258,6 +260,7 @@ export function createTable(options = {}) {
     let unsubscribeLargeText = null;
     let searchController = null;
     let toolbarController = null;
+    let feedback = null;
     let controller = null;
     const confirmDialog = new ConfirmDialog();
     const selectionColumnController = createSelectionColumn(selectionColumn);
@@ -290,6 +293,19 @@ export function createTable(options = {}) {
         toolbar,
         getGrid: () => controller
     });
+    feedback = new FeedbackRegion({
+        className: [
+            'amb-feedback-region--grid',
+            toolbarController ? 'amb-feedback-region--connected' : ''
+        ].filter(Boolean).join(' ')
+    });
+    const tableElement = typeof selector === 'string'
+        ? document.querySelector(selector)
+        : selector;
+
+    if (tableElement &amp;&amp; tableElement.parentNode) {
+        tableElement.parentNode.insertBefore(feedback.element, tableElement);
+    }
     searchController = createSearchController({
         selector,
         search,
@@ -315,6 +331,7 @@ export function createTable(options = {}) {
         table,
         crud,
         toolbar: toolbarController,
+        feedback,
         /**
          * @private
          * @internal
@@ -419,6 +436,12 @@ export function createTable(options = {}) {
                 searchController = null;
             }
 
+            if (feedback) {
+                feedback.destroy();
+                feedback = null;
+                controller.feedback = null;
+            }
+
             cellMessageBinder.destroy();
             floatingMessage.destroy();
             confirmDialog.destroy();
@@ -442,13 +465,13 @@ export function createTable(options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jun 20 2026 11:43:33 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jun 20 2026 12:48:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

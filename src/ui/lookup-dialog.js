@@ -1,3 +1,5 @@
+import { FeedbackRegion } from './feedback-region.js';
+
 const createElement = (tagName, className, text = '') => {
     const element = document.createElement(tagName);
 
@@ -53,6 +55,7 @@ export class LookupDialog {
         this.options = null;
         this.selectedIndex = -1;
         this.filteredData = [];
+        this.feedback = null;
         this.keydownHandler = null;
     }
 
@@ -97,7 +100,7 @@ export class LookupDialog {
             ? this.options.searchFields.filter(Boolean)
             : this.options.columns.map(column => column.field);
         this.filteredData = [...(this.options.data || [])];
-        this.selectedIndex = this.filteredData.length ? 0 : -1;
+        this.selectedIndex = -1;
 
         this.render();
 
@@ -138,6 +141,11 @@ export class LookupDialog {
             this.overlay = null;
         }
 
+        if (this.feedback) {
+            this.feedback.destroy();
+            this.feedback = null;
+        }
+
         this.resolve = null;
         this.options = null;
         this.filteredData = [];
@@ -149,6 +157,7 @@ export class LookupDialog {
         const panel = createElement('div', 'amb-lookup-dialog__panel');
         const header = createElement('div', 'amb-lookup-dialog__header');
         const title = createElement('h2', 'amb-lookup-dialog__title', this.options.title);
+        const feedback = new FeedbackRegion({ className: 'amb-dialog-feedback' });
         const body = createElement('div', 'amb-lookup-dialog__body');
         const search = createElement('input', 'amb-lookup-dialog__search');
         const tableWrap = createElement('div', 'amb-lookup-dialog__table-wrap');
@@ -170,12 +179,14 @@ export class LookupDialog {
         footer.appendChild(cancelButton);
         footer.appendChild(selectButton);
         panel.appendChild(header);
+        panel.appendChild(feedback.element);
         panel.appendChild(body);
         panel.appendChild(footer);
         overlay.appendChild(panel);
         document.body.appendChild(overlay);
 
         this.overlay = overlay;
+        this.feedback = feedback;
         this.table = table;
         this.search = search;
         this.selectButton = selectButton;
@@ -230,6 +241,12 @@ export class LookupDialog {
             td.textContent = this.options.noResultsText;
             row.appendChild(td);
             tbody.appendChild(row);
+            this.feedback?.show({
+                type: 'info',
+                message: this.options.noResultsText
+            });
+        } else {
+            this.feedback?.clear();
         }
 
         this.filteredData.forEach((item, index) => {
@@ -288,7 +305,7 @@ export class LookupDialog {
                 return getCellValue(item, field).toLowerCase().includes(normalizedQuery);
             });
         });
-        this.selectedIndex = this.filteredData.length ? 0 : -1;
+        this.selectedIndex = -1;
         this.renderTable();
     }
 
@@ -321,6 +338,14 @@ export class LookupDialog {
 
     moveSelection(direction) {
         if (!this.filteredData.length) return;
+
+        if (this.selectedIndex < 0) {
+            this.selectedIndex = direction > 0
+                ? 0
+                : this.filteredData.length - 1;
+            this.updateRowSelection();
+            return;
+        }
 
         this.selectedIndex = Math.max(
             0,

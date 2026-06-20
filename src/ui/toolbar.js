@@ -1,4 +1,4 @@
-const DEFAULT_BUTTONS = ['add', 'save'];
+const DEFAULT_BUTTONS = ['add', 'reload', 'save'];
 
 const ICONS = {
     add: `
