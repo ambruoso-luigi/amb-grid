@@ -1,4 +1,4 @@
-const DEFAULT_BUTTONS = ['add', 'save', 'reload'];
+const DEFAULT_BUTTONS = ['add', 'save'];
 
 const ICONS = {
     add: `
@@ -97,7 +97,7 @@ const normalizeButton = (button, options) => {
 };
 
 export const normalizeToolbarOptions = toolbar => {
-    if (!toolbar) {
+    if (toolbar === false || (toolbar && toolbar.enabled === false)) {
         return {
             enabled: false,
             buttons: [],
@@ -109,7 +109,9 @@ export const normalizeToolbarOptions = toolbar => {
         };
     }
 
-    const options = toolbar === true ? {} : toolbar;
+    const options = toolbar === true || toolbar === undefined || toolbar === null
+        ? {}
+        : toolbar;
     const callbacks = {
         onAdd: typeof options.onAdd === 'function' ? options.onAdd : null,
         onSave: typeof options.onSave === 'function' ? options.onSave : null,
@@ -164,7 +166,7 @@ const createButton = definition => {
 };
 
 /**
- * Create the optional AMB Grid CRUD toolbar.
+ * Create the AMB Grid CRUD header toolbar.
  *
  * Save and Reload are backend-agnostic. They invoke developer callbacks and
  * never perform network requests directly.

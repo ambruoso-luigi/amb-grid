@@ -80,10 +80,10 @@ Additional capabilities:
 
 ### Optional CRUD Toolbar
 
-`AMB.table(...)` can render a minimal framework-agnostic CRUD toolbar. Built-in
-button ids are `add`, `save`, `reload`, `validate`, and `payload`. Every action
-is callback-driven: the toolbar never performs `fetch`, AJAX, backend calls,
-row creation, or validation by itself.
+`AMB.table(...)` renders a minimal framework-agnostic grid header toolbar by
+default. Built-in button ids are `add`, `save`, `reload`, `validate`, and
+`payload`. Every action is callback-driven: the toolbar never performs
+`fetch`, AJAX, backend calls, row creation, or validation by itself.
 
 ```js
 const grid = AMB.table({
@@ -138,9 +138,16 @@ toolbar and Tabulator table are styled as one connected component. If search
 is enabled without the CRUD toolbar, the existing standalone search bar is
 kept for backward compatibility.
 
-Omit `toolbar`, set `toolbar: false`, or use `toolbar: { enabled: false }` to
-render no toolbar. `toolbar: true` renders the default Add, Save, and Reload
-buttons in a safe disabled state until callbacks are configured.
+The Filters dialog controls the searched columns and also provides
+`Case sensitive` and `Whole word` options, both disabled by default.
+`grid.getSearchState()` returns these options together with the query and
+selected fields. They can be changed programmatically with
+`grid.setSearchOptions({ caseSensitive, wholeWord })`. The Filters control is
+icon-only and shows a compact count when specific columns are selected.
+
+When `toolbar` is omitted or set to `true`, the default Add and Save buttons
+are rendered in a safe disabled state until callbacks are configured. Set
+`toolbar: false` or `toolbar: { enabled: false }` to opt out completely.
 
 The Basic CRUD demo uses built-in Add, Save, and Payload actions plus simple
 custom Report and Selected buttons, with Search and Filters mounted in the

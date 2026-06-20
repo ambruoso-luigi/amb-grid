@@ -47,6 +47,12 @@
     gap: 8px;
 }
 
+.amb-search-filters-dialog__section-label {
+    color: #263244;
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .amb-search-filters-dialog__list {
     border: 1px solid #d8dce5;
     border-radius: 4px;
@@ -87,6 +93,21 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.amb-search-filters-dialog__options {
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-top: 12px;
+}
+
+.amb-search-filters-dialog__option {
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 8px;
 }
 
 .amb-search-filters-dialog__footer {

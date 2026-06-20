@@ -228,12 +228,38 @@
 .amb-toolbar__filters-button {
     align-items: center;
     display: inline-flex;
-    gap: 6px;
+    justify-content: center;
+    min-width: 34px;
+    padding-inline: 8px;
+    position: relative;
 }
 
 .amb-toolbar__filters-button--active {
     background: #e6edf8;
     border-color: #8ca6ce;
+}
+
+.amb-toolbar__filters-count {
+    align-items: center;
+    background: #43526a;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    font-size: 9px;
+    font-weight: 700;
+    height: 16px;
+    justify-content: center;
+    line-height: 1;
+    min-width: 16px;
+    padding: 0 3px;
+    position: absolute;
+    right: -5px;
+    top: -6px;
+}
+
+.amb-toolbar__filters-count[hidden] {
+    display: none;
 }
 
 @media (max-width: 720px) {
