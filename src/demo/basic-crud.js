@@ -1,4 +1,28 @@
 import { AMB } from '../index.js';
+import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+
+const countRowsByState = (report, state) => {
+    return report.rows.filter(row => row.state === state).length;
+};
+
+const buildPayloadReport = payload => [
+    `Inserted rows: ${payload.changes.inserted.length}`,
+    `Updated rows: ${payload.changes.updated.length}`,
+    `Deleted rows: ${payload.changes.deleted.length}`,
+    `Has changes: ${payload.hasChanges}`,
+    `Can save: ${payload.canSave}`
+];
+
+const buildStateReport = report => [
+    `Total rows: ${report.totalRows}`,
+    `Clean rows: ${countRowsByState(report, 'clean')}`,
+    `New rows: ${countRowsByState(report, 'new')}`,
+    `Modified rows: ${countRowsByState(report, 'modified')}`,
+    `Deleted rows: ${countRowsByState(report, 'deleted')}`,
+    `Saved rows: ${countRowsByState(report, 'saved')}`,
+    `Error rows: ${report.errorRowsCount}`,
+    `Can save: ${report.validChangedRowsCount > 0 && !report.hasErrors}`
+];
 
 export default function basicCrud(app) {
     let nextNoteNumber = 4;
@@ -18,7 +42,6 @@ export default function basicCrud(app) {
     app.innerHTML = `
         <h2>Basic CRUD</h2>
         <div id="basic-table"></div>
-        <pre class="demo-output" id="basic-output"></pre>
     `;
 
     const demo = AMB.table({
@@ -121,7 +144,7 @@ export default function basicCrud(app) {
     });
 
     const { crud } = demo;
-    const output = app.querySelector('#basic-output');
+    const reportDialog = createDemoReportDialog();
     const partialSaveDialog = new AMB.ConfirmDialog({
         title: 'Save valid rows?'
     });
@@ -147,6 +170,7 @@ export default function basicCrud(app) {
     };
 
     demo.destroy = () => {
+        reportDialog.destroy();
         partialSaveDialog.destroy();
         originalDestroy();
     };
@@ -166,15 +190,37 @@ export default function basicCrud(app) {
     }
 
     function handleShowPayload({ payload }) {
-        output.textContent = JSON.stringify(payload, null, 2);
+        reportDialog.open({
+            title: 'Save payload',
+            reportLines: buildPayloadReport(payload),
+            jsonData: payload
+        });
     }
 
     function handleShowReport() {
-        output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
+        const stateReport = crud.getStateReport();
+
+        reportDialog.open({
+            title: 'Basic CRUD report',
+            reportLines: buildStateReport(stateReport),
+            jsonData: stateReport
+        });
     }
 
     function handleShowSelected() {
-        output.textContent = JSON.stringify(demo.getSelectedRows(), null, 2);
+        const selectedRows = demo.getSelectedRows();
+        const selectedIds = selectedRows
+            .map(row => row.id || row._ambTempId)
+            .filter(Boolean);
+
+        reportDialog.open({
+            title: 'Selected rows',
+            reportLines: [
+                `Selected rows: ${selectedRows.length}`,
+                `Selected IDs: ${selectedIds.length ? selectedIds.join(', ') : 'none'}`
+            ],
+            jsonData: selectedRows
+        });
     }
 
     async function handleSave() {
@@ -184,11 +230,20 @@ export default function basicCrud(app) {
 
         if (!validateResult.isValid) {
             if (!hasValidChanges(payload)) {
-                output.textContent = JSON.stringify({
+                const details = {
                     validateResult,
                     payload: payloadWithInvalid,
                     report: crud.getStateReport()
-                }, null, 2);
+                };
+
+                reportDialog.open({
+                    title: 'Save validation report',
+                    reportLines: [
+                        'There are no valid changes to save.',
+                        `Invalid rows: ${validateResult.rows.filter(row => !row.isValid).length}`
+                    ],
+                    jsonData: details
+                });
                 demo.feedback.show({
                     type: 'warning',
                     message: 'There are no valid changes to save.'
@@ -205,11 +260,20 @@ export default function basicCrud(app) {
             });
 
             if (!confirmed) {
-                output.textContent = JSON.stringify({
+                const details = {
                     validateResult,
                     payload: payloadWithInvalid,
                     report: crud.getStateReport()
-                }, null, 2);
+                };
+
+                reportDialog.open({
+                    title: 'Save cancelled',
+                    reportLines: [
+                        'The partial save was cancelled.',
+                        `Invalid rows: ${validateResult.rows.filter(row => !row.isValid).length}`
+                    ],
+                    jsonData: details
+                });
                 return;
             }
         }
@@ -233,14 +297,24 @@ export default function basicCrud(app) {
             }));
         const applyIdsResult = crud.applyBackendIds(generatedIds);
         const savedResult = crud.markValidChangesSaved();
-
-        output.textContent = JSON.stringify({
+        const saveDetails = {
             payload,
             generatedIds,
             applyIdsResult,
             savedResult,
             report: crud.getStateReport()
-        }, null, 2);
+        };
+
+        reportDialog.open({
+            title: 'Save result',
+            reportLines: [
+                ...buildPayloadReport(payload),
+                `Generated IDs: ${generatedIds.length}`,
+                `Saved rows: ${savedResult.saved.length}`,
+                `Skipped rows: ${savedResult.skipped.length}`
+            ],
+            jsonData: saveDetails
+        });
         demo.feedback.show({
             type: 'success',
             message: 'Changes saved successfully.'

@@ -124,3 +124,131 @@ h2 {
 .toolbar button:hover {
     background: #f4f4f4;
 }
+
+.demo-report-dialog[hidden] {
+    display: none;
+}
+
+.demo-report-dialog {
+    align-items: center;
+    background: rgb(15 23 42 / 42%);
+    box-sizing: border-box;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 24px;
+    position: fixed;
+    z-index: 10030;
+}
+
+.demo-report-dialog__panel {
+    background: #fff;
+    border: 1px solid #d6dde8;
+    border-radius: 8px;
+    box-shadow: 0 18px 48px rgb(15 23 42 / 22%);
+    box-sizing: border-box;
+    display: grid;
+    gap: 14px;
+    max-height: calc(100vh - 48px);
+    max-width: 880px;
+    padding: 18px;
+    width: min(880px, calc(100vw - 48px));
+}
+
+.demo-report-dialog__header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.demo-report-dialog__title {
+    color: #172033;
+    font-size: 18px;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.demo-report-dialog__content {
+    display: grid;
+    gap: 16px;
+    min-height: 0;
+    overflow: auto;
+}
+
+.demo-report-dialog__section {
+    display: grid;
+    gap: 7px;
+    min-height: 0;
+}
+
+.demo-report-dialog__section-title {
+    color: #344054;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.demo-report-dialog__report,
+.demo-report-dialog__json {
+    border: 1px solid #d8dee8;
+    border-radius: 5px;
+    box-sizing: border-box;
+    color: #222;
+    margin: 0;
+    overflow: auto;
+    padding: 12px;
+    white-space: pre-wrap;
+}
+
+.demo-report-dialog__report {
+    background: #fafbfc;
+    font-family: inherit;
+    line-height: 1.5;
+    max-height: 260px;
+}
+
+.demo-report-dialog__json {
+    background: #f4f6f8;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.45;
+    max-height: 340px;
+}
+
+.demo-report-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.demo-report-dialog__button {
+    background: #fff;
+    border: 1px solid #aeb8c6;
+    border-radius: 5px;
+    color: #253044;
+    cursor: pointer;
+    font: inherit;
+    padding: 8px 14px;
+}
+
+.demo-report-dialog__button:hover {
+    background: #eef2f6;
+}
+
+.demo-report-dialog__button:focus-visible {
+    border-color: #315f8f;
+    box-shadow: 0 0 0 3px rgb(49 95 143 / 18%);
+    outline: none;
+}
+
+@media (max-width: 640px) {
+    .demo-report-dialog {
+        padding: 12px;
+    }
+
+    .demo-report-dialog__panel {
+        max-height: calc(100vh - 24px);
+        padding: 14px;
+        width: calc(100vw - 24px);
+    }
+}

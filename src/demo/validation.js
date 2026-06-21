@@ -1,4 +1,5 @@
 import { AMB } from '../index.js';
+import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 
 const hasReservedDocumentPrefix = value => {
     if (value === null || value === undefined || String(value).trim() === '') return true;
@@ -64,99 +65,9 @@ const buildReadableReport = ({ validateResult, stateReport, validationScope }) =
     });
 
     lines.push('');
-    lines.push('The JSON tab contains the raw validation result and CrudHelper state report for integration/debugging.');
+    lines.push('The JSON section below contains the raw validation result and CrudHelper state report for integration/debugging.');
 
     return lines.join('\n');
-};
-
-const createReportDialog = () => {
-    const overlay = document.createElement('div');
-    const dialog = document.createElement('div');
-    const header = document.createElement('div');
-    const title = document.createElement('h3');
-    const tabs = document.createElement('div');
-    const summaryButton = document.createElement('button');
-    const jsonButton = document.createElement('button');
-    const content = document.createElement('pre');
-    const actions = document.createElement('div');
-    const closeButton = document.createElement('button');
-    let currentPayload = null;
-
-    overlay.className = 'validation-report-dialog';
-    overlay.hidden = true;
-    dialog.className = 'validation-report-dialog__panel';
-    dialog.setAttribute('role', 'dialog');
-    dialog.setAttribute('aria-modal', 'true');
-    dialog.setAttribute('aria-labelledby', 'validation-report-dialog-title');
-    header.className = 'validation-report-dialog__header';
-    title.id = 'validation-report-dialog-title';
-    title.className = 'validation-report-dialog__title';
-    title.textContent = 'Validation report';
-    tabs.className = 'validation-report-dialog__tabs';
-    summaryButton.type = 'button';
-    summaryButton.className = 'validation-report-dialog__tab';
-    summaryButton.textContent = 'Summary';
-    jsonButton.type = 'button';
-    jsonButton.className = 'validation-report-dialog__tab';
-    jsonButton.textContent = 'JSON';
-    content.className = 'validation-report-dialog__content';
-    actions.className = 'validation-report-dialog__actions';
-    closeButton.type = 'button';
-    closeButton.className = 'validation-report-dialog__button';
-    closeButton.textContent = 'Close';
-
-    tabs.append(summaryButton, jsonButton);
-    header.append(title, tabs);
-    actions.append(closeButton);
-    dialog.append(header, content, actions);
-    overlay.append(dialog);
-    document.body.append(overlay);
-
-    const setMode = mode => {
-        if (!currentPayload) return;
-
-        const isJson = mode === 'json';
-
-        summaryButton.classList.toggle('is-active', !isJson);
-        jsonButton.classList.toggle('is-active', isJson);
-        content.textContent = isJson
-            ? JSON.stringify(currentPayload, null, 2)
-            : buildReadableReport(currentPayload);
-    };
-
-    const close = () => {
-        overlay.hidden = true;
-        document.removeEventListener('keydown', handleKeyDown);
-    };
-
-    function handleKeyDown(event) {
-        if (event.key === 'Escape') {
-            close();
-        }
-    }
-
-    summaryButton.addEventListener('click', () => setMode('summary'));
-    jsonButton.addEventListener('click', () => setMode('json'));
-    closeButton.addEventListener('click', close);
-    overlay.addEventListener('click', event => {
-        if (event.target === overlay) {
-            close();
-        }
-    });
-
-    return {
-        open(payload, mode = 'summary') {
-            currentPayload = payload;
-            overlay.hidden = false;
-            document.addEventListener('keydown', handleKeyDown);
-            setMode(mode);
-            closeButton.focus();
-        },
-        destroy() {
-            document.removeEventListener('keydown', handleKeyDown);
-            overlay.remove();
-        }
-    };
 };
 
 const validationData = [
@@ -331,95 +242,6 @@ export default function validation(app) {
             <button type="button" id="action-show-report">Show report</button>
         </div>
         <div id="validation-table"></div>
-        <style>
-            .validation-report-dialog[hidden] {
-                display: none;
-            }
-
-            .validation-report-dialog {
-                align-items: center;
-                background: rgb(15 23 42 / 38%);
-                box-sizing: border-box;
-                display: flex;
-                inset: 0;
-                justify-content: center;
-                padding: 24px;
-                position: fixed;
-                z-index: 10030;
-            }
-
-            .validation-report-dialog__panel {
-                background: #ffffff;
-                border: 1px solid #d6dde8;
-                border-radius: 8px;
-                box-shadow: 0 18px 48px rgb(15 23 42 / 22%);
-                box-sizing: border-box;
-                display: grid;
-                gap: 14px;
-                max-height: calc(100vh - 48px);
-                max-width: 960px;
-                padding: 18px;
-                width: min(960px, calc(100vw - 48px));
-            }
-
-            .validation-report-dialog__header {
-                align-items: center;
-                display: flex;
-                gap: 12px;
-                justify-content: space-between;
-            }
-
-            .validation-report-dialog__title {
-                color: #172033;
-                font-size: 18px;
-                line-height: 1.25;
-                margin: 0;
-            }
-
-            .validation-report-dialog__tabs {
-                display: inline-flex;
-                gap: 6px;
-            }
-
-            .validation-report-dialog__tab,
-            .validation-report-dialog__button {
-                background: #ffffff;
-                border: 1px solid #b8bec8;
-                border-radius: 5px;
-                color: #222;
-                cursor: pointer;
-                font: inherit;
-                padding: 8px 12px;
-            }
-
-            .validation-report-dialog__tab:hover,
-            .validation-report-dialog__button:hover,
-            .validation-report-dialog__tab.is-active {
-                background: #f4f6fb;
-            }
-
-            .validation-report-dialog__tab.is-active {
-                border-color: #6b7cff;
-            }
-
-            .validation-report-dialog__content {
-                background: #f7f7f7;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-sizing: border-box;
-                color: #222;
-                margin: 0;
-                max-height: min(620px, calc(100vh - 180px));
-                overflow: auto;
-                padding: 12px;
-                white-space: pre-wrap;
-            }
-
-            .validation-report-dialog__actions {
-                display: flex;
-                justify-content: flex-end;
-            }
-        </style>
     `;
 
     const demo = AMB.table({
@@ -552,31 +374,34 @@ export default function validation(app) {
         ]
     });
     const { crud } = demo;
-    const reportDialog = createReportDialog();
-    const originalDestroy = demo.destroy;
+    const reportDialog = createDemoReportDialog();
+    const originalDestroy = demo.destroy.bind(demo);
 
-    const openValidationReport = (validateResult, mode = 'summary', validationScope = 'changes') => {
-        reportDialog.open({
+    const openValidationReport = (validateResult, validationScope = 'changes') => {
+        const details = {
             validateResult,
             validationScope,
             stateReport: crud.getStateReport()
-        }, mode);
+        };
+
+        reportDialog.open({
+            title: 'Validation report',
+            reportText: buildReadableReport(details),
+            jsonData: details
+        });
     };
 
     demo.destroy = () => {
         reportDialog.destroy();
-
-        if (typeof originalDestroy === 'function') {
-            originalDestroy();
-        }
+        originalDestroy();
     };
 
     app.querySelector('#action-validate-changes').addEventListener('click', () => {
-        openValidationReport(crud.validateChanges(), 'summary', 'changes');
+        openValidationReport(crud.validateChanges(), 'changes');
     });
 
     app.querySelector('#action-full-table-audit').addEventListener('click', () => {
-        openValidationReport(crud.validateAll(), 'summary', 'full');
+        openValidationReport(crud.validateAll(), 'full');
     });
 
     app.querySelector('#action-create-anomalies').addEventListener('click', () => {
@@ -585,16 +410,22 @@ export default function validation(app) {
         });
 
         window.setTimeout(() => {
-            openValidationReport(crud.validateChanges(), 'summary', 'changes');
+            openValidationReport(crud.validateChanges(), 'changes');
         }, 0);
     });
 
     app.querySelector('#action-show-report').addEventListener('click', () => {
-        reportDialog.open({
+        const details = {
             validateResult: null,
             validationScope: 'state',
             stateReport: crud.getStateReport()
-        }, 'json');
+        };
+
+        reportDialog.open({
+            title: 'Validation report',
+            reportText: buildReadableReport(details),
+            jsonData: details.stateReport
+        });
     });
 
     return demo;
