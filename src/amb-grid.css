@@ -33,6 +33,14 @@
     --amb-save-border: #9fbea7;
     --amb-save-text: #285c38;
     --amb-save-hover-bg: #d4e8d9;
+    --amb-reload-bg: #fff7df;
+    --amb-reload-border: #d7bf7d;
+    --amb-reload-text: #6f5310;
+    --amb-reload-hover-bg: #f8ecc7;
+    --amb-add-bg: #f0f4f7;
+    --amb-add-border: #b7c3ce;
+    --amb-add-text: #3f5f78;
+    --amb-add-hover-bg: #e3ebf1;
     --amb-overlay-background: rgb(15 23 42 / 42%);
     --amb-shadow-dropdown: 0 8px 20px rgb(30 41 59 / 14%);
     --amb-shadow-dialog: 0 16px 38px rgb(15 23 42 / 20%);
@@ -118,13 +126,22 @@
 }
 
 .amb-toolbar__button--add {
+    background: var(--amb-add-bg);
+    border-color: var(--amb-add-border);
+    border-radius: var(--amb-radius);
+    color: var(--amb-add-text);
+    flex: 0 0 34px;
     font-size: 0;
     justify-content: center;
+    line-height: 0;
+    min-height: 34px;
     min-width: 34px;
-    padding-inline: 8px;
+    padding: 0;
 }
 
 .amb-toolbar__button--add .amb-toolbar__button-icon {
+    align-items: center;
+    justify-content: center;
     height: 18px;
     width: 18px;
 }
@@ -132,6 +149,12 @@
 .amb-toolbar__button:hover:not(:disabled) {
     background: #eef2f6;
     border-color: #8f9cad;
+}
+
+.amb-toolbar__button--add:hover:not(:disabled) {
+    background: var(--amb-add-hover-bg);
+    border-color: #91a5b5;
+    box-shadow: 0 1px 2px rgb(30 41 59 / 10%);
 }
 
 .amb-toolbar__button:focus-visible,
@@ -184,14 +207,14 @@
 }
 
 .amb-toolbar__button--reload:not(:disabled) {
-    background: var(--amb-color-primary-soft);
-    border-color: #adbfce;
-    color: #355a79;
+    background: var(--amb-reload-bg);
+    border-color: var(--amb-reload-border);
+    color: var(--amb-reload-text);
 }
 
 .amb-toolbar__button--reload:hover:not(:disabled) {
-    background: #dbe6ef;
-    border-color: #91a9bd;
+    background: var(--amb-reload-hover-bg);
+    border-color: #c3a95f;
 }
 
 .amb-toolbar__button-icon svg {
@@ -573,12 +596,11 @@
     white-space: nowrap;
 }
 
-.tabulator-row[data-state="clean"] {
+.tabulator-row[data-state="clean"]:where(.tabulator-row-odd) {
     background-color: var(--amb-row-clean-bg) !important;
 }
 
-.tabulator-row[data-state="clean"]:where(.tabulator-row-even),
-.tabulator-row[data-state="clean"]:where(:not(.tabulator-row-even):not(.tabulator-row-odd):nth-child(even)) {
+.tabulator-row[data-state="clean"]:where(.tabulator-row-even) {
     background-color: var(--amb-row-clean-alt-bg) !important;
 }
 

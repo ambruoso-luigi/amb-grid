@@ -379,6 +379,8 @@ AMB Grid ships with a neutral base stylesheet. Reusable component classes are
 namespaced with `amb-*`, and applications can override the `--amb-*` CSS
 variables without copying the library styles. Demo and site styling remains
 separate from the reusable component stylesheet.
+Clean row zebra striping is controlled by `--amb-row-clean-bg` and
+`--amb-row-clean-alt-bg`.
 
 ## Security
 
