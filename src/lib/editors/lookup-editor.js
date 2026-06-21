@@ -373,12 +373,11 @@ export function lookup(lookupInstance, options = {}) {
                     event.preventDefault();
                     input.setSelectionRange(input.value.length, input.value.length);
                     hasAutoCompleteSuggestion = false;
-                    return;
+                    return commit();
                 }
 
                 if (event.key === 'Enter') {
-                    commit();
-                    return;
+                    return commit();
                 }
 
                 if (event.key === 'Escape') {

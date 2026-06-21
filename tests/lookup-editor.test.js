@@ -312,7 +312,7 @@ describe('lookup editor blur commits', () => {
         });
     });
 
-    test('Tab still accepts a manual autocomplete suggestion', async () => {
+    test('Tab accepts and commits a manual autocomplete suggestion', async () => {
         const harness = createHarness({
             options: {
                 autoComplete: true
@@ -334,6 +334,55 @@ describe('lookup editor blur commits', () => {
         expect(harness.input.value).toBe('REPAIR');
         expect(harness.input.selectionStart).toBe(6);
         expect(harness.input.selectionEnd).toBe(6);
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
+            value: 'REPAIR',
+            description: 'Under repair'
+        });
+
+        await harness.input.dispatch('blur');
+
+        expect(harness.success).toHaveBeenCalledOnce();
+    });
+
+    test('Enter still commits a manual autocomplete suggestion', async () => {
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            }
+        });
+
+        harness.input.value = 'rep';
+        await harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+        await harness.input.dispatch('keydown', {
+            key: 'Enter'
+        });
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(harness.cancel).not.toHaveBeenCalled();
+    });
+
+    test('Tab without an autocomplete suggestion is not intercepted', async () => {
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            }
+        });
+        const preventDefault = vi.fn();
+
+        await harness.input.dispatch('keydown', {
+            key: 'Tab',
+            preventDefault
+        });
+
+        expect(preventDefault).not.toHaveBeenCalled();
         expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
     });
 });
