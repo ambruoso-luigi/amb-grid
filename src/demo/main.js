@@ -11,7 +11,6 @@ import autocomplete from './autocomplete.js';
 import multifieldLookup from './multifield-lookup.js';
 import parsers from './parsers.js';
 import rowStates from './row-states.js';
-import multipleTables from './multiple-tables.js';
 import fullDemo from './full-demo.js';
 
 window.AMB = AMB;
@@ -26,7 +25,6 @@ const examples = [
     { id: 'multifield-lookup', label: 'Multifield lookup', mount: multifieldLookup },
     { id: 'parsers', label: 'Parsers', mount: parsers },
     { id: 'row-states', label: 'Row states', mount: rowStates },
-    { id: 'multiple-tables', label: 'Multiple tables', mount: multipleTables },
     { id: 'full-demo', label: 'Starship Registry', mount: fullDemo }
 ];
 
