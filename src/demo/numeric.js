@@ -11,7 +11,7 @@ export default function numeric(app) {
                     <li>Count: integer value, empty allowed, maximum 10 digits.</li>
                     <li>Measure: decimal value, negative values allowed, up to 3 integer digits and 3 decimal digits.</li>
                     <li>Credits: currency-style decimal value, up to 7 integer digits and 2 decimal digits.</li>
-                    <li>Progress: stored as a ratio and displayed as a percentage with 3 decimal digits.</li>
+                    <li>Progress: stored as a ratio with 3 decimal places and displayed as a percentage with up to 1 decimal digit.</li>
                     <li>Editors constrain typing, while validators still protect the table state and report invalid values.</li>
                 </ul>
             </div>
@@ -24,7 +24,7 @@ export default function numeric(app) {
         height: '260px',
         toolbar: false,
         data: [
-            { id: 1, count: 12, measure: 42.125, credits: 1200.75, progress: 0.456 },
+            { id: 1, count: 12, measure: 42.125, credits: 1200.75, progress: 0.016 },
             { id: 2, count: 4, measure: -3.25, credits: 84, progress: 0.805 },
             { id: 3, count: '', measure: '', credits: '', progress: 0.125 }
         ],
@@ -94,7 +94,9 @@ export default function numeric(app) {
                     integerDigits: 1,
                     decimalDigits: 3
                 }),
-                formatter: AMB.formatters.percent(3),
+                formatter: AMB.formatters.percent(1, {
+                    minimumFractionDigits: 0
+                }),
                 validation: {
                     decimal: {
                         decimalSeparator: '.',

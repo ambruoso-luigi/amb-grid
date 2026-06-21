@@ -59,6 +59,20 @@ describe('safe textual formatters', () => {
             .toBe('12.30');
     });
 
+    test('percent supports optional trailing decimals without changing fixed defaults', () => {
+        const compactPercent = formatters.percent(1, {
+            locale: 'it-IT',
+            minimumFractionDigits: 0
+        });
+
+        expect(compactPercent(createCell(0.016))).toBe('1,6%');
+        expect(compactPercent(createCell(0.125))).toBe('12,5%');
+        expect(compactPercent(createCell(0.805))).toBe('80,5%');
+        expect(compactPercent(createCell(0.01))).toBe('1%');
+        expect(formatters.percent(3, { locale: 'it-IT' })(createCell(0.016)))
+            .toBe('1,600%');
+    });
+
     test('emptyPlaceholder escapes placeholder and non-empty values', () => {
         expect(formatters.emptyPlaceholder('<none>')(createCell('')))
             .toBe('&lt;none&gt;');
