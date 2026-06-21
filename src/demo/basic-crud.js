@@ -225,25 +225,10 @@ export default function basicCrud(app) {
 
     async function handleSave() {
         const validateResult = crud.validateAll();
-        const payloadWithInvalid = crud.getSavePayload({ includeInvalid: true });
         const payload = crud.getSavePayload();
 
         if (!validateResult.isValid) {
             if (!hasValidChanges(payload)) {
-                const details = {
-                    validateResult,
-                    payload: payloadWithInvalid,
-                    report: crud.getStateReport()
-                };
-
-                reportDialog.open({
-                    title: 'Save validation report',
-                    reportLines: [
-                        'There are no valid changes to save.',
-                        `Invalid rows: ${validateResult.rows.filter(row => !row.isValid).length}`
-                    ],
-                    jsonData: details
-                });
                 demo.feedback.show({
                     type: 'warning',
                     message: 'There are no valid changes to save.'
@@ -260,19 +245,9 @@ export default function basicCrud(app) {
             });
 
             if (!confirmed) {
-                const details = {
-                    validateResult,
-                    payload: payloadWithInvalid,
-                    report: crud.getStateReport()
-                };
-
-                reportDialog.open({
-                    title: 'Save cancelled',
-                    reportLines: [
-                        'The partial save was cancelled.',
-                        `Invalid rows: ${validateResult.rows.filter(row => !row.isValid).length}`
-                    ],
-                    jsonData: details
+                demo.feedback.show({
+                    type: 'info',
+                    message: 'Save cancelled.'
                 });
                 return;
             }
@@ -295,26 +270,8 @@ export default function basicCrud(app) {
                 tempId: item._ambTempId,
                 id: getNextNoteId()
             }));
-        const applyIdsResult = crud.applyBackendIds(generatedIds);
-        const savedResult = crud.markValidChangesSaved();
-        const saveDetails = {
-            payload,
-            generatedIds,
-            applyIdsResult,
-            savedResult,
-            report: crud.getStateReport()
-        };
-
-        reportDialog.open({
-            title: 'Save result',
-            reportLines: [
-                ...buildPayloadReport(payload),
-                `Generated IDs: ${generatedIds.length}`,
-                `Saved rows: ${savedResult.saved.length}`,
-                `Skipped rows: ${savedResult.skipped.length}`
-            ],
-            jsonData: saveDetails
-        });
+        crud.applyBackendIds(generatedIds);
+        crud.markValidChangesSaved();
         demo.feedback.show({
             type: 'success',
             message: 'Changes saved successfully.'

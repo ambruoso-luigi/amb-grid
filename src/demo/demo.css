@@ -158,6 +158,7 @@ h2 {
 .demo-report-dialog__header {
     align-items: center;
     display: flex;
+    gap: 12px;
     justify-content: space-between;
 }
 
@@ -168,25 +169,45 @@ h2 {
     margin: 0;
 }
 
-.demo-report-dialog__content {
-    display: grid;
-    gap: 16px;
-    min-height: 0;
-    overflow: auto;
+.demo-report-dialog__tabs {
+    display: inline-flex;
+    gap: 6px;
 }
 
-.demo-report-dialog__section {
-    display: grid;
-    gap: 7px;
-    min-height: 0;
-}
-
-.demo-report-dialog__section-title {
+.demo-report-dialog__tab {
+    background: #fff;
+    border: 1px solid #b8c2cf;
+    border-radius: 5px;
     color: #344054;
-    font-size: 13px;
-    letter-spacing: 0.04em;
-    margin: 0;
-    text-transform: uppercase;
+    cursor: pointer;
+    font: inherit;
+    padding: 7px 12px;
+}
+
+.demo-report-dialog__tab:hover {
+    background: #f4f6f8;
+}
+
+.demo-report-dialog__tab.is-active {
+    background: #e8eef5;
+    border-color: #7d93a8;
+    color: #253f56;
+    font-weight: 600;
+}
+
+.demo-report-dialog__tab:focus-visible {
+    border-color: #315f8f;
+    box-shadow: 0 0 0 3px rgb(49 95 143 / 18%);
+    outline: none;
+}
+
+.demo-report-dialog__content {
+    min-height: 0;
+}
+
+.demo-report-dialog__report[hidden],
+.demo-report-dialog__json[hidden] {
+    display: none;
 }
 
 .demo-report-dialog__report,
@@ -199,13 +220,14 @@ h2 {
     overflow: auto;
     padding: 12px;
     white-space: pre-wrap;
+    width: 100%;
 }
 
 .demo-report-dialog__report {
     background: #fafbfc;
     font-family: inherit;
     line-height: 1.5;
-    max-height: 260px;
+    max-height: min(480px, calc(100vh - 220px));
 }
 
 .demo-report-dialog__json {
@@ -213,7 +235,7 @@ h2 {
     font-family: Consolas, "Courier New", monospace;
     font-size: 12px;
     line-height: 1.45;
-    max-height: 340px;
+    max-height: min(480px, calc(100vh - 220px));
 }
 
 .demo-report-dialog__actions {

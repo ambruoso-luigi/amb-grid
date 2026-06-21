@@ -65,7 +65,7 @@ const buildReadableReport = ({ validateResult, stateReport, validationScope }) =
     });
 
     lines.push('');
-    lines.push('The JSON section below contains the raw validation result and CrudHelper state report for integration/debugging.');
+    lines.push('Use the JSON tab to inspect the raw validation result and CrudHelper state report for integration/debugging.');
 
     return lines.join('\n');
 };
