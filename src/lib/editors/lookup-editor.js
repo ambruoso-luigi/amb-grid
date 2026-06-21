@@ -1,6 +1,6 @@
 import { LookupDialog } from '../../ui/lookup-dialog.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
-import { getInitialValue } from './shared.js';
+import { getInitialValue, getLookupOptionValue } from './shared.js';
 
     /**
      * Lookup code editor with a text input and search dialog button.
@@ -86,11 +86,18 @@ export function lookup(lookupInstance, options = {}) {
             container.appendChild(input);
             container.appendChild(button);
 
-            const getValue = () => {
-                const value = normalizedOptions.trim ? input.value.trim() : input.value;
+            const normalizeValue = rawValue => {
+                const stringValue = rawValue === null || rawValue === undefined
+                    ? ''
+                    : String(rawValue);
+                const value = normalizedOptions.trim
+                    ? stringValue.trim()
+                    : stringValue;
 
                 return normalizedOptions.uppercase ? value.toUpperCase() : value;
             };
+            const normalizedInitialValue = normalizeValue(initialValue);
+            const getValue = () => normalizeValue(input.value);
 
             const closeWithSuccess = value => {
                 if (closed) return;
@@ -197,7 +204,9 @@ export function lookup(lookupInstance, options = {}) {
             const findExactItem = async value => {
                 const items = await loadLookup(value);
 
-                return items.find(item => getLookupOptionValue(item, valueField) === value) || null;
+                return items.find(item => {
+                    return normalizeValue(getLookupOptionValue(item, valueField)) === value;
+                }) || null;
             };
 
             const applyManualAutoComplete = async () => {
@@ -214,13 +223,17 @@ export function lookup(lookupInstance, options = {}) {
                 try {
                     const items = await loadLookup(typedValue);
                     const matchedItem = items.find(item => {
-                        return getLookupOptionValue(item, valueField).startsWith(typedValue);
+                        return normalizeValue(
+                            getLookupOptionValue(item, valueField)
+                        ).startsWith(typedValue);
                     });
 
                     if (closed || requestId !== autoCompleteRequestId) return;
                     if (!matchedItem) return;
 
-                    const matchedValue = getLookupOptionValue(matchedItem, valueField);
+                    const matchedValue = normalizeValue(
+                        getLookupOptionValue(matchedItem, valueField)
+                    );
 
                     if (!matchedValue || matchedValue === typedValue) return;
 
@@ -233,7 +246,7 @@ export function lookup(lookupInstance, options = {}) {
             };
 
             const initializeLookupMetadata = async () => {
-                if (!initialValue) return;
+                if (!normalizedInitialValue) return;
 
                 const metadata = ensureLookupMetadata(rowData, field);
 
@@ -243,15 +256,16 @@ export function lookup(lookupInstance, options = {}) {
                 }
 
                 try {
-                    const item = await findExactItem(initialValue);
+                    const item = await findExactItem(normalizedInitialValue);
                     const description = item && item[labelField];
 
-                    setLookupMetadata(rowData, field, initialValue, description || '', {
+                    setLookupMetadata(rowData, field, normalizedInitialValue, description || '', {
                         setInitial: true
                     });
                     setCellLookupDescription(description);
-                } catch {
-                    setLookupMetadata(rowData, field, initialValue, '', {
+                } catch (error) {
+                    console.error('Lookup metadata initialization failed', error);
+                    setLookupMetadata(rowData, field, normalizedInitialValue, '', {
                         setInitial: true
                     });
                     setCellLookupDescription('');
@@ -262,6 +276,35 @@ export function lookup(lookupInstance, options = {}) {
                 const value = getValue();
 
                 input.value = value;
+
+                if (value === normalizedInitialValue) {
+                    if (value === '') {
+                        clearInvalidCode();
+                        closeWithCancel();
+                        return;
+                    }
+
+                    try {
+                        const item = await findExactItem(value);
+
+                        if (item) {
+                            const description = item[labelField];
+
+                            setLookupMetadata(rowData, field, value, description);
+                            setCellLookupDescription(description);
+                            clearInvalidCode();
+                        } else {
+                            setLookupMetadata(rowData, field, value, '');
+                            setCellLookupDescription('');
+                            markInvalidCode(value);
+                        }
+                    } catch (error) {
+                        console.error('Lookup validation failed', error);
+                    }
+
+                    closeWithCancel();
+                    return;
+                }
 
                 if (value === '') {
                     if (normalizedOptions.allowEmpty) {
@@ -283,8 +326,10 @@ export function lookup(lookupInstance, options = {}) {
                         closeWithLookupItem(value, item);
                         return;
                     }
-                } catch {
-                    // Invalid lookup values are handled by cancelling below.
+                } catch (error) {
+                    console.error('Lookup validation failed', error);
+                    closeWithCancel();
+                    return;
                 }
 
                 setLookupMetadata(rowData, field, value, '');
@@ -326,7 +371,7 @@ export function lookup(lookupInstance, options = {}) {
                 if (dialogOpen) return;
 
                 if (normalizedOptions.validateOnBlur) {
-                    commit();
+                    return commit();
                 }
             });
             button.addEventListener('mousedown', event => {

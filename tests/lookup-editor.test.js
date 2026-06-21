@@ -1,0 +1,187 @@
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { lookup as createLookupEditor } from '../src/lib/editors/lookup-editor.js';
+import { getLookupMetadata } from '../src/lib/lookup-metadata.js';
+
+const records = [
+    { id: 'ACTIVE', description: 'Active' },
+    { id: 'REPAIR', description: 'Under repair' },
+    { id: 'DOCKED', description: 'Docked' }
+];
+
+const createElement = tagName => {
+    const listeners = new Map();
+
+    return {
+        tagName,
+        children: [],
+        dataset: {},
+        value: '',
+        selectionStart: 0,
+        selectionEnd: 0,
+        appendChild(child) {
+            this.children.push(child);
+        },
+        addEventListener(type, listener) {
+            listeners.set(type, listener);
+        },
+        async dispatch(type, event = {}) {
+            return listeners.get(type)?.({
+                preventDefault() {},
+                stopPropagation() {},
+                ...event
+            });
+        },
+        focus() {},
+        select() {},
+        setSelectionRange(start, end) {
+            this.selectionStart = start;
+            this.selectionEnd = end;
+        }
+    };
+};
+
+const createHarness = ({
+    initialValue = 'ACTIVE',
+    options = {},
+    load = ({ query }) => records.filter(record => record.id.includes(query))
+} = {}) => {
+    const rowData = { id: 1, status: initialValue };
+    const cellElement = { dataset: {} };
+    const row = {
+        getData: () => rowData,
+        update: patch => Object.assign(rowData, patch)
+    };
+    const cell = {
+        getValue: () => rowData.status,
+        getField: () => 'status',
+        getRow: () => row,
+        getElement: () => cellElement
+    };
+    const lookupInstance = {
+        valueField: 'id',
+        labelField: 'description',
+        load
+    };
+    const success = vi.fn();
+    const cancel = vi.fn();
+    const markInvalid = vi.fn();
+    const clearInvalid = vi.fn();
+    const editor = createLookupEditor(lookupInstance, {
+        uppercase: true,
+        trim: true,
+        validateOnBlur: true,
+        ...options
+    });
+
+    editor._ambSetLookupErrorHandlers({
+        markInvalid,
+        clearInvalid,
+        applyRecord: vi.fn()
+    });
+
+    const container = editor(cell, () => {}, success, cancel);
+
+    return {
+        cancel,
+        cell,
+        clearInvalid,
+        container,
+        input: container.children[0],
+        markInvalid,
+        rowData,
+        success
+    };
+};
+
+describe('lookup editor blur commits', () => {
+    const originalDocument = globalThis.document;
+
+    beforeEach(() => {
+        globalThis.document = { createElement };
+    });
+
+    afterEach(() => {
+        globalThis.document = originalDocument;
+        vi.restoreAllMocks();
+    });
+
+    test('cancels an unchanged valid value without marking it invalid', async () => {
+        const harness = createHarness();
+
+        await harness.input.dispatch('blur');
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.markInvalid).not.toHaveBeenCalled();
+        expect(harness.clearInvalid).toHaveBeenCalledWith(harness.cell);
+        expect(getLookupMetadata(harness.rowData, 'status')).toEqual({
+            initial: {
+                value: 'ACTIVE',
+                description: 'Active'
+            },
+            current: {
+                value: 'ACTIVE',
+                description: 'Active'
+            }
+        });
+    });
+
+    test('treats trim and uppercase normalization as an unchanged value', async () => {
+        const harness = createHarness();
+
+        harness.input.value = ' active ';
+        await harness.input.dispatch('blur');
+
+        expect(harness.input.value).toBe('ACTIVE');
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.markInvalid).not.toHaveBeenCalled();
+        expect(harness.clearInvalid).toHaveBeenCalledOnce();
+    });
+
+    test('commits a different valid code and updates lookup metadata', async () => {
+        const harness = createHarness();
+
+        harness.input.value = 'repair';
+        await harness.input.dispatch('blur');
+
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(harness.clearInvalid).toHaveBeenCalledWith(harness.cell);
+        expect(harness.markInvalid).not.toHaveBeenCalled();
+        expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
+            value: 'REPAIR',
+            description: 'Under repair'
+        });
+    });
+
+    test('keeps the existing invalid commit behavior for an unknown code', async () => {
+        const harness = createHarness();
+
+        harness.input.value = 'unknown';
+        await harness.input.dispatch('blur');
+
+        expect(harness.success).toHaveBeenCalledWith('UNKNOWN');
+        expect(harness.markInvalid).toHaveBeenCalledWith(
+            harness.cell,
+            'Invalid lookup code'
+        );
+        expect(harness.cancel).not.toHaveBeenCalled();
+    });
+
+    test('keeps manual autocomplete working with normalized lookup values', async () => {
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            }
+        });
+
+        harness.input.value = 'rep';
+        await harness.input.dispatch('input');
+        await Promise.resolve();
+
+        expect(harness.input.value).toBe('REPAIR');
+        expect(harness.input.selectionStart).toBe(3);
+        expect(harness.input.selectionEnd).toBe(6);
+    });
+});
