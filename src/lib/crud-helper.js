@@ -106,11 +106,16 @@ export class CrudHelper {
         const cellEditedHandler = cell => {
             this._handleCellEdited(cell);
         };
+        const renderCompleteHandler = () => {
+            this._applyRowParity();
+        };
 
         this.tabulatorEventHandlers.set('tableBuilt', tableBuiltHandler);
         this.tabulatorEventHandlers.set('cellEdited', cellEditedHandler);
+        this.tabulatorEventHandlers.set('renderComplete', renderCompleteHandler);
         this.table.on('tableBuilt', tableBuiltHandler);
         this.table.on('cellEdited', cellEditedHandler);
+        this.table.on('renderComplete', renderCompleteHandler);
     }
 
     _handleTableBuilt() {
@@ -156,6 +161,31 @@ export class CrudHelper {
             if (!state) {
                 this._applyRowState(row, ROW_STATE.CLEAN);
             }
+        });
+
+        this._applyRowParity();
+    }
+
+    _applyRowParity() {
+        if (
+            this.isDestroyed
+            || !this.table
+            || typeof this.table.getRows !== 'function'
+        ) {
+            return;
+        }
+
+        const rows = this.table.getRows('active');
+
+        if (!Array.isArray(rows)) return;
+
+        rows.forEach((row, index) => {
+            const rowElement = row && row.getElement && row.getElement();
+
+            if (!rowElement || !rowElement.dataset) return;
+
+            rowElement.dataset.state = this._getBaseRowState(row);
+            rowElement.dataset.ambRowParity = index % 2 === 0 ? 'odd' : 'even';
         });
     }
 

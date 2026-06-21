@@ -55,7 +55,7 @@
     --amb-spacing-sm: var(--amb-space-sm);
     --amb-spacing-md: var(--amb-space-md);
     --amb-row-clean-bg: #ffffff;
-    --amb-row-clean-alt-bg: #f7f8fa;
+    --amb-row-clean-alt-bg: #f1f4f7;
     --amb-row-new-bg: #f2f6ff;
     --amb-row-modified-bg: #fff9e8;
     --amb-row-deleted-bg: #f3f4f6;
@@ -596,11 +596,11 @@
     white-space: nowrap;
 }
 
-.tabulator-row[data-state="clean"]:where(.tabulator-row-odd) {
+.tabulator-row[data-state="clean"][data-amb-row-parity="odd"] {
     background-color: var(--amb-row-clean-bg) !important;
 }
 
-.tabulator-row[data-state="clean"]:where(.tabulator-row-even) {
+.tabulator-row[data-state="clean"][data-amb-row-parity="even"] {
     background-color: var(--amb-row-clean-alt-bg) !important;
 }
 

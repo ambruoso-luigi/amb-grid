@@ -1,7 +1,20 @@
 import { describe, expect, test, vi } from 'vitest';
-import { CrudHelper } from '../src/lib/crud-helper.js';
+import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
 
-const createTableMock = () => {
+const createRowMock = (data = {}) => {
+    const element = { dataset: {} };
+
+    return {
+        element,
+        getData: () => data,
+        getElement: () => element,
+        update: patch => {
+            Object.assign(data, patch);
+        }
+    };
+};
+
+const createTableMock = (rows = []) => {
     const handlers = new Map();
     const offCalls = [];
 
@@ -9,7 +22,7 @@ const createTableMock = () => {
         handlers,
         offCalls,
         destroy: vi.fn(),
-        getRows: vi.fn(() => []),
+        getRows: vi.fn(() => rows),
         on: vi.fn((eventName, handler) => {
             handlers.set(eventName, handler);
         }),
@@ -28,13 +41,14 @@ describe('CrudHelper destroy lifecycle', () => {
 
         expect(table.on).toHaveBeenCalledWith('tableBuilt', expect.any(Function));
         expect(table.on).toHaveBeenCalledWith('cellEdited', expect.any(Function));
-        expect(table.handlers.size).toBe(2);
+        expect(table.on).toHaveBeenCalledWith('renderComplete', expect.any(Function));
+        expect(table.handlers.size).toBe(3);
 
         crud.destroy();
 
-        expect(table.off).toHaveBeenCalledTimes(2);
+        expect(table.off).toHaveBeenCalledTimes(3);
         expect(table.offCalls.map(call => call.eventName).sort())
-            .toEqual(['cellEdited', 'tableBuilt']);
+            .toEqual(['cellEdited', 'renderComplete', 'tableBuilt']);
         expect(table.handlers.size).toBe(0);
         expect(table.destroy).not.toHaveBeenCalled();
     });
@@ -53,7 +67,7 @@ describe('CrudHelper destroy lifecycle', () => {
         crud.destroy();
         crud.destroy();
 
-        expect(table.off).toHaveBeenCalledTimes(2);
+        expect(table.off).toHaveBeenCalledTimes(3);
         expect(crud.originalRows.size).toBe(0);
         expect(crud.modifiedCells.size).toBe(0);
         expect(crud.cellErrors.size).toBe(0);
@@ -62,5 +76,31 @@ describe('CrudHelper destroy lifecycle', () => {
         expect(crud.eventHandlers.size).toBe(0);
         expect(crud.tabulatorEventHandlers.size).toBe(0);
         expect(table.destroy).not.toHaveBeenCalled();
+    });
+
+    test('assigns AMB row parity from active row order after each render', () => {
+        const first = createRowMock({ id: 1 });
+        const second = createRowMock({ id: 2, _state: ROW_STATE.MODIFIED });
+        const third = createRowMock({ id: 3, _state: ROW_STATE.DELETED });
+        const rows = [first, second, third];
+        const table = createTableMock(rows);
+        const crud = new CrudHelper(table);
+
+        expect(rows.map(row => row.element.dataset.ambRowParity))
+            .toEqual(['odd', 'even', 'odd']);
+        expect(rows.map(row => row.element.dataset.state))
+            .toEqual([ROW_STATE.CLEAN, ROW_STATE.MODIFIED, ROW_STATE.DELETED]);
+        expect(table.getRows).toHaveBeenCalledWith('active');
+
+        rows.splice(0, rows.length, third, first, second);
+        table.handlers.get('renderComplete')();
+
+        expect(rows.map(row => row.element.dataset.ambRowParity))
+            .toEqual(['odd', 'even', 'odd']);
+        expect(third.element.dataset.ambRowParity).toBe('odd');
+        expect(first.element.dataset.ambRowParity).toBe('even');
+        expect(second.element.dataset.ambRowParity).toBe('odd');
+
+        crud.destroy();
     });
 });
