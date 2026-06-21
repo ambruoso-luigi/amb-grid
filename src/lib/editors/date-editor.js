@@ -3,6 +3,7 @@ import { parsers } from '../parsers.js';
 import {
     formatPickerDate,
     getDateEditorBehavior,
+    isAllowedDateInputKey,
     normalizeDateFormat,
     normalizeDateEditorOptions,
     normalizeDateInputChange,
@@ -234,6 +235,11 @@ export function date(options = {}) {
 
                 if (editorBehavior.hasManualInput) {
                     input.addEventListener('keydown', event => {
+                        if (!isAllowedDateInputKey(event, normalizedOptions.format)) {
+                            event.preventDefault();
+                            return;
+                        }
+
                         if (event.key === 'Enter') {
                             commit();
                             return;
@@ -309,6 +315,11 @@ export function date(options = {}) {
 
             input.addEventListener('input', sanitizeInput);
             input.addEventListener('keydown', event => {
+                if (!isAllowedDateInputKey(event, normalizedOptions.format)) {
+                    event.preventDefault();
+                    return;
+                }
+
                 if (event.key === 'Enter') {
                     commit();
                     return;

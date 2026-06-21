@@ -225,6 +225,12 @@ Formatting helpers for:
 * Lookup values
 * Custom display logic
 
+For ratio values displayed as percentages, use
+`AMB.formatters.percentFromRatio(ratioDecimalDigits)`. It derives the useful
+percentage precision from the stored ratio precision and hides trailing zeros
+by default. `AMB.formatters.percent(decimals)` remains available when fixed
+display precision is required.
+
 ### Parsers
 
 AMB Grid keeps display, editing, validation, and payload normalization separate:

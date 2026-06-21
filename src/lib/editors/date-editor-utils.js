@@ -98,6 +98,52 @@ const getDateFormatParts = format => {
     return null;
 };
 
+export const sanitizeDateInputCharacters = (value, format) => {
+    const formatParts = getDateFormatParts(format);
+    const stringValue = String(value);
+
+    if (!formatParts) return stringValue;
+    if (formatParts.separator === '') return stringValue.replace(/\D/g, '');
+
+    return stringValue.replace(
+        new RegExp(`[^\\d\\${formatParts.separator}]`, 'g'),
+        ''
+    );
+};
+
+export const isAllowedDateInputKey = (event, format) => {
+    if (!event) return true;
+
+    if (event.ctrlKey || event.metaKey) {
+        return ['a', 'c', 'v', 'x', 'y', 'z'].includes(
+            String(event.key).toLowerCase()
+        );
+    }
+
+    const allowedControlKeys = new Set([
+        'Backspace',
+        'Delete',
+        'ArrowLeft',
+        'ArrowRight',
+        'Tab',
+        'Home',
+        'End',
+        'Enter',
+        'Escape'
+    ]);
+
+    if (allowedControlKeys.has(event.key)) return true;
+    if (/^\d$/.test(event.key)) return true;
+
+    const formatParts = getDateFormatParts(format);
+
+    return Boolean(
+        formatParts
+        && formatParts.separator
+        && event.key === formatParts.separator
+    );
+};
+
 const isCompatibleAutoFormattedValue = (value, normalizedValue, separator) => {
     let normalizedIndex = 0;
 
@@ -121,7 +167,7 @@ const isCompatibleAutoFormattedValue = (value, normalizedValue, separator) => {
 
 export const normalizeDateInput = (value, format) => {
     const formatParts = getDateFormatParts(format);
-    const stringValue = String(value);
+    const stringValue = sanitizeDateInputCharacters(value, format);
 
     if (!formatParts) return stringValue;
 
@@ -156,13 +202,22 @@ export const normalizeDateInputChange = ({
     selectionStart,
     inputType
 }) => {
-    const stringValue = String(value);
+    const originalValue = String(value);
     const formatParts = getDateFormatParts(format);
+    const originalSelectionStart = selectionStart === undefined
+        ? originalValue.length
+        : selectionStart;
+    const sanitizedPrefix = sanitizeDateInputCharacters(
+        originalValue.slice(0, originalSelectionStart),
+        format
+    );
+    const stringValue = sanitizeDateInputCharacters(originalValue, format);
+    const sanitizedSelectionStart = sanitizedPrefix.length;
 
     if (!formatParts || stringValue === '') {
         return {
             value: stringValue,
-            selectionStart: stringValue.length
+            selectionStart: Math.min(sanitizedSelectionStart, stringValue.length)
         };
     }
 
@@ -171,11 +226,11 @@ export const normalizeDateInputChange = ({
 
         return {
             value: digits,
-            selectionStart: Math.min(selectionStart || digits.length, digits.length)
+            selectionStart: Math.min(sanitizedSelectionStart, digits.length)
         };
     }
 
-    const cursorAtEnd = selectionStart === stringValue.length;
+    const cursorAtEnd = sanitizedSelectionStart === stringValue.length;
     const typingForward = inputType === 'insertText'
         || inputType === 'insertCompositionText'
         || inputType === undefined;
@@ -190,7 +245,7 @@ export const normalizeDateInputChange = ({
     if (!cursorAtEnd || !typingForward || !isCompatibleAutoFormattedPrefix) {
         return {
             value: stringValue,
-            selectionStart: selectionStart || stringValue.length
+            selectionStart: sanitizedSelectionStart
         };
     }
 

@@ -2,9 +2,11 @@ import { describe, expect, test } from 'vitest';
 import {
     formatPickerDate,
     getDateEditorBehavior,
+    isAllowedDateInputKey,
     normalizeDateEditorOptions,
     normalizeDateInputChange,
-    parseDateEditorValue
+    parseDateEditorValue,
+    sanitizeDateInputCharacters
 } from '../src/lib/editors/date-editor-utils.js';
 
 describe('date editor modes', () => {
@@ -46,6 +48,38 @@ describe('date editor modes', () => {
 });
 
 describe('date editor input normalization', () => {
+    test('allows digits, the configured separator, editing keys, and shortcuts', () => {
+        expect(isAllowedDateInputKey({ key: '2' }, 'dd/mm/yyyy')).toBe(true);
+        expect(isAllowedDateInputKey({ key: '/' }, 'dd/mm/yyyy')).toBe(true);
+        expect(isAllowedDateInputKey({ key: '-', ctrlKey: false }, 'dd/mm/yyyy'))
+            .toBe(false);
+        expect(isAllowedDateInputKey({ key: 'Backspace' }, 'dd/mm/yyyy')).toBe(true);
+        expect(isAllowedDateInputKey({ key: 'ArrowLeft' }, 'dd/mm/yyyy')).toBe(true);
+        expect(isAllowedDateInputKey({ key: 'a', ctrlKey: true }, 'dd/mm/yyyy'))
+            .toBe(true);
+        expect(isAllowedDateInputKey({ key: 'k', ctrlKey: true }, 'dd/mm/yyyy'))
+            .toBe(false);
+        expect(isAllowedDateInputKey({ key: 'k' }, 'dd/mm/yyyy')).toBe(false);
+    });
+
+    test('filters letters and unsupported paste characters predictably', () => {
+        expect(sanitizeDateInputCharacters('20a07b2026', 'dd/mm/yyyy'))
+            .toBe('20072026');
+        expect(sanitizeDateInputCharacters('jj///kk', 'dd/mm/yyyy'))
+            .toBe('///');
+        expect(sanitizeDateInputCharacters('2026/06/05', 'yyyy-mm-dd'))
+            .toBe('20260605');
+        expect(normalizeDateInputChange({
+            value: '20a/07b/2026',
+            format: 'dd/mm/yyyy',
+            selectionStart: 12,
+            inputType: 'insertFromPaste'
+        })).toEqual({
+            value: '20/07/2026',
+            selectionStart: 10
+        });
+    });
+
     test('auto-inserts separators only for linear digit typing', () => {
         expect(normalizeDateInputChange({
             value: '20072026',
@@ -109,6 +143,28 @@ describe('date editor input normalization', () => {
         })).toEqual({
             value: '2026-06-5',
             selectionStart: 9
+        });
+    });
+
+    test('preserves plausible but invalid date input for validation', () => {
+        expect(normalizeDateInputChange({
+            value: '31/02/2026',
+            format: 'dd/mm/yyyy',
+            selectionStart: 10,
+            inputType: 'insertText'
+        })).toEqual({
+            value: '31/02/2026',
+            selectionStart: 10
+        });
+
+        expect(normalizeDateInputChange({
+            value: '20/022',
+            format: 'dd/mm/yyyy',
+            selectionStart: 6,
+            inputType: 'insertFromPaste'
+        })).toEqual({
+            value: '20/022',
+            selectionStart: 6
         });
     });
 

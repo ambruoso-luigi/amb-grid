@@ -50,8 +50,7 @@ describe('Numeric demo configuration', () => {
         expect(measure).toContain('allowNegative: true');
 
         expect(progress.match(/decimalDigits: 3/g)).toHaveLength(2);
-        expect(progress).toContain('AMB.formatters.percent(1, {');
-        expect(progress).toContain('minimumFractionDigits: 0');
+        expect(progress).toContain('AMB.formatters.percentFromRatio(3)');
         expect(progress).toContain('integerDigits: 1');
         expect(source).toContain(
             'Progress: stored as a ratio with 3 decimal places and displayed as a percentage with up to 1 decimal digit.'

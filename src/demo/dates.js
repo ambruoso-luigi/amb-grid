@@ -1,4 +1,5 @@
 import { AMB } from '../index.js';
+import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 
 const minDate = '2025-01-01';
 const maxDate = '2027-12-31';
@@ -84,10 +85,6 @@ const buildDateReport = result => {
         lines.push(`- ${rowLabel}, ${error.field}${codeLabel}: ${error.message}`);
     });
 
-    lines.push('');
-    lines.push('Raw validation result:');
-    lines.push(JSON.stringify(result, null, 2));
-
     return lines.join('\n');
 };
 
@@ -95,33 +92,40 @@ export default function dates(app) {
     app.innerHTML = `
         <h2>Dates</h2>
         <p class="demo-note">This demo focuses on date editors, the datepicker, and validation. Invalid typed dates stay visible so validators can report errors.</p>
-        <div class="demo-note">
-            <strong>Supported behavior:</strong>
-            <ul>
-                <li>Manual date accepts <code>D/M/YYYY</code> and <code>DD/MM/YYYY</code>.</li>
-                <li>ISO-style date accepts <code>YYYY-M-D</code> and <code>YYYY-MM-DD</code>.</li>
-                <li>Auto separators are applied only when typing digits from left to right.</li>
-                <li>Compact date accepts exactly <code>YYYYMMDD</code>.</li>
-                <li>Invalid typed values stay visible so validation can report them.</li>
-                <li>All date columns enforce an allowed range from <code>01/01/2025</code> to <code>31/12/2027</code>.</li>
-                <li>The picker opens only from the calendar button, limits calendar selection, and never owns the manual input.</li>
-                <li>Date columns use <code>AMB.date.createConfig(...)</code> so format and limits are declared once.</li>
-                <li>Picker-only date opens the calendar immediately when the cell enters edit mode, without showing an input or button.</li>
-                <li>Picker-only date uses <code>DD-MM-YYYY</code> to show that selected dates follow the column format.</li>
-            </ul>
-            <p>In <strong>Picker date</strong>, try <code>31/02/2026</code>, <code>01/01/2028</code>, or <code>20/022</code>: the typed value should stay visible, then validation explains the error.</p>
-            <p>Also try <code>20/7/2026</code>, <code>2026-06-5</code>, or compact <code>2026720</code>.</p>
-        </div>
-        <div class="toolbar">
-            <button type="button" id="action-validate-dates">Validate dates</button>
-        </div>
+        <details class="demo-disclosure">
+            <summary class="demo-disclosure__summary">Supported behavior</summary>
+            <div class="demo-disclosure__content">
+                <ul class="demo-rules-list">
+                    <li>Manual date accepts <code>D/M/YYYY</code> and <code>DD/MM/YYYY</code>.</li>
+                    <li>ISO-style date accepts <code>YYYY-M-D</code> and <code>YYYY-MM-DD</code>.</li>
+                    <li>Manual inputs accept only digits and the separator configured for the column.</li>
+                    <li>Auto separators are applied only when typing digits from left to right.</li>
+                    <li>Compact date accepts exactly <code>YYYYMMDD</code>.</li>
+                    <li>Invalid but plausible typed values stay visible so validation can report them.</li>
+                    <li>All date columns enforce an allowed range from <code>01/01/2025</code> to <code>31/12/2027</code>.</li>
+                    <li>The picker opens only from the calendar button, limits calendar selection, and never owns the manual input.</li>
+                    <li>Date columns use <code>AMB.date.createConfig(...)</code> so format and limits are declared once.</li>
+                    <li>Picker-only date opens immediately and stores the configured <code>DD-MM-YYYY</code> format.</li>
+                </ul>
+                <p>Try <code>31/02/2026</code>, <code>01/01/2028</code>, or <code>20/022</code>: the typed value stays visible, then validation explains the error.</p>
+            </div>
+        </details>
         <div id="dates-table"></div>
-        <pre class="demo-output" id="dates-output"></pre>
     `;
 
     const demo = AMB.table({
         selector: '#dates-table',
         height: '320px',
+        toolbar: {
+            buttons: [
+                {
+                    id: 'validate-dates',
+                    label: 'Validate dates',
+                    title: 'Validate date values',
+                    onClick: handleValidateDates
+                }
+            ]
+        },
         data: [
             {
                 id: 1,
@@ -203,13 +207,23 @@ export default function dates(app) {
         ]
     });
 
-    const output = app.querySelector('#dates-output');
+    const reportDialog = createDemoReportDialog();
+    const originalDestroy = demo.destroy.bind(demo);
 
-    app.querySelector('#action-validate-dates').addEventListener('click', () => {
+    demo.destroy = () => {
+        reportDialog.destroy();
+        originalDestroy();
+    };
+
+    function handleValidateDates() {
         const result = demo.crud.validateAll();
 
-        output.textContent = buildDateReport(result);
-    });
+        reportDialog.open({
+            title: 'Date validation report',
+            reportText: buildDateReport(result),
+            jsonData: result
+        });
+    }
 
     return demo;
 }

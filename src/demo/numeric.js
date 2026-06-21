@@ -89,17 +89,15 @@ export default function numeric(app) {
                 title: 'Progress',
                 field: 'progress',
                 editor: AMB.editors.decimal({
-                    decimalSeparator: '.',
+                    decimalSeparator: ',',
                     allowEmpty: true,
                     integerDigits: 1,
                     decimalDigits: 3
                 }),
-                formatter: AMB.formatters.percent(1, {
-                    minimumFractionDigits: 0
-                }),
+                formatter: AMB.formatters.percentFromRatio(3),
                 validation: {
                     decimal: {
-                        decimalSeparator: '.',
+                        decimalSeparator: ',',
                         integerDigits: 1,
                         decimalDigits: 3,
                         message: 'Use a ratio with up to 1 integer digit and 3 decimal digits'

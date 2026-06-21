@@ -200,6 +200,31 @@ export const formatters = {
     },
 
     /**
+     * Percentage formatter for values stored as ratios with fixed decimal precision.
+     *
+     * The maximum displayed percentage precision is derived from the stored
+     * ratio precision: `max(0, ratioDecimalDigits - 2)`. Trailing fractional
+     * zeros are hidden by default.
+     *
+     * @param {number} [ratioDecimalDigits=2] - Maximum decimal digits stored in the ratio.
+     * @param {object} [options] - Locale and Intl options.
+     * @returns {Function} Tabulator formatter.
+     * @example
+     * formatter: AMB.formatters.percentFromRatio(3)
+     */
+    percentFromRatio(ratioDecimalDigits = 2, options = {}) {
+        const normalizedRatioDigits = Number.isFinite(Number(ratioDecimalDigits))
+            ? Math.max(0, Math.trunc(Number(ratioDecimalDigits)))
+            : 2;
+        const displayDecimalDigits = Math.max(0, normalizedRatioDigits - 2);
+
+        return formatters.percent(displayDecimalDigits, {
+            minimumFractionDigits: 0,
+            ...options
+        });
+    },
+
+    /**
      * Placeholder formatter for empty values.
      *
      * @param {string} [placeholder='-'] - Text used for null, undefined, or empty string.

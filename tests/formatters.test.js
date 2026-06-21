@@ -59,16 +59,28 @@ describe('safe textual formatters', () => {
             .toBe('12.30');
     });
 
-    test('percent supports optional trailing decimals without changing fixed defaults', () => {
-        const compactPercent = formatters.percent(1, {
-            locale: 'it-IT',
-            minimumFractionDigits: 0
-        });
+    test('formats stored ratios with derived percentage precision', () => {
+        const threeDigitRatio = formatters.percentFromRatio(3);
 
-        expect(compactPercent(createCell(0.016))).toBe('1,6%');
-        expect(compactPercent(createCell(0.125))).toBe('12,5%');
-        expect(compactPercent(createCell(0.805))).toBe('80,5%');
-        expect(compactPercent(createCell(0.01))).toBe('1%');
+        expect(threeDigitRatio(createCell(0.016))).toBe('1,6%');
+        expect(threeDigitRatio(createCell(0.125))).toBe('12,5%');
+        expect(threeDigitRatio(createCell(0.805))).toBe('80,5%');
+        expect(threeDigitRatio(createCell(0.01))).toBe('1%');
+        expect(formatters.percentFromRatio(2)(createCell(0.12))).toBe('12%');
+        expect(formatters.percentFromRatio(2)(createCell(0.01))).toBe('1%');
+        expect(formatters.percentFromRatio(4)(createCell(0.1234))).toBe('12,34%');
+        expect(formatters.percentFromRatio(3)(createCell(null))).toBe('');
+        expect(formatters.percentFromRatio(3)(createCell(undefined))).toBe('');
+        expect(formatters.percentFromRatio(3)(createCell(''))).toBe('');
+        expect(formatters.percentFromRatio(3)(createCell('<bad>')))
+            .toBe('&lt;bad&gt;');
+        expect(formatters.percentFromRatio(3, {
+            locale: 'it-IT',
+            minimumFractionDigits: 1
+        })(createCell(0.01))).toBe('1,0%');
+    });
+
+    test('keeps explicit percent precision fixed', () => {
         expect(formatters.percent(3, { locale: 'it-IT' })(createCell(0.016)))
             .toBe('1,600%');
     });
