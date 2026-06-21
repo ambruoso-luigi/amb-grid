@@ -16,6 +16,7 @@ export function text(options = {}) {
             const input = document.createElement('input');
 
             input.type = 'text';
+            input.className = 'amb-cell-editor';
             input.value = getInitialValue(cell);
 
             if (options.maxLength !== undefined) {

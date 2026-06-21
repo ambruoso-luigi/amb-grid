@@ -24,6 +24,8 @@ export function select(options = {}) {
         return (cell, onRendered, success, cancel) => {
             const select = document.createElement('select');
 
+            select.className = 'amb-cell-editor amb-cell-editor--select';
+
             if (normalizedOptions.allowEmpty) {
                 select.appendChild(createSelectOption({
                     value: '',

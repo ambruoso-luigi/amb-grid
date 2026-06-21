@@ -375,6 +375,11 @@ Reusable AMB Grid styles live in `src/amb-grid.css`. Demo/site-only rules live
 in `src/demo/demo.css`. `src/style.css` remains a temporary compatibility file
 that imports both stylesheets.
 
+AMB Grid ships with a neutral base stylesheet. Reusable component classes are
+namespaced with `amb-*`, and applications can override the `--amb-*` CSS
+variables without copying the library styles. Demo and site styling remains
+separate from the reusable component stylesheet.
+
 ## Security
 
 AMB Grid escapes textual formatter output by default and generates structured CRUD payloads, not SQL queries.

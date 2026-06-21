@@ -1,80 +1,85 @@
 .amb-lookup-dialog {
     align-items: center;
-    background: rgb(17 24 39 / 0.38);
+    background: var(--amb-overlay-background);
     display: flex;
     inset: 0;
     justify-content: center;
-    padding: 24px;
+    padding: var(--amb-space-lg);
     position: fixed;
     z-index: 10080;
 }
 
 .amb-lookup-dialog__panel {
-    background: #fff;
-    border: 1px solid #d4d8e1;
-    border-radius: 6px;
-    box-shadow: 0 18px 44px rgb(15 23 42 / 0.24);
+    background: var(--amb-color-surface);
+    border: 1px solid var(--amb-color-border);
+    border-radius: var(--amb-radius-lg);
+    box-shadow: var(--amb-shadow-dialog);
+    color: var(--amb-color-text);
     display: flex;
     flex-direction: column;
     max-height: min(680px, calc(100vh - 48px));
-    max-width: calc(100vw - 48px);
+    max-width: calc(100vw - 40px);
     overflow: hidden;
     width: 720px;
 }
 
 .amb-lookup-dialog__header {
-    border-bottom: 1px solid #e5e7eb;
-    padding: 14px 18px;
+    background: var(--amb-color-surface-muted);
+    border-bottom: 1px solid var(--amb-color-border);
+    padding: 13px var(--amb-space-lg);
 }
 
 .amb-lookup-dialog__title {
-    color: #111827;
-    font-size: 18px;
+    color: var(--amb-color-text);
+    font-size: 17px;
     font-weight: 700;
     margin: 0;
 }
 
 .amb-lookup-dialog__body {
     display: grid;
-    gap: 12px;
+    gap: var(--amb-space-md);
     min-height: 0;
-    padding: 14px 18px;
+    padding: 14px var(--amb-space-lg);
 }
 
 .amb-lookup-dialog__search {
-    border: 1px solid #b8bec8;
-    border-radius: 4px;
+    background: var(--amb-color-surface);
+    border: 1px solid var(--amb-color-border-strong);
+    border-radius: var(--amb-radius-sm);
     box-sizing: border-box;
-    color: #222;
+    color: var(--amb-color-text);
     font: inherit;
     padding: 8px 10px;
     width: 100%;
 }
 
-.amb-lookup-dialog__search:focus {
-    border-color: #6b7cff;
+.amb-lookup-dialog__search:focus-visible {
+    border-color: var(--amb-color-focus);
+    box-shadow: var(--amb-focus-ring);
     outline: none;
 }
 
 .amb-lookup-dialog__table-wrap {
-    border: 1px solid #d8dce5;
-    border-radius: 4px;
+    border: 1px solid var(--amb-color-border);
+    border-radius: var(--amb-radius-sm);
     max-height: 420px;
     overflow: auto;
+    scrollbar-color: var(--amb-color-border-strong) transparent;
 }
 
 .amb-lookup-dialog__table {
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: var(--amb-font-size);
     table-layout: fixed;
     width: 100%;
 }
 
 .amb-lookup-dialog__table th,
 .amb-lookup-dialog__table td {
-    border-bottom: 1px solid #e8ebf1;
-    border-right: 1px solid #eef1f5;
-    padding: 11px 12px;
+    border-bottom: 1px solid #e4e8ee;
+    border-right: 1px solid #edf0f4;
+    padding: 9px 11px;
     text-align: left;
     vertical-align: top;
 }
@@ -85,9 +90,9 @@
 }
 
 .amb-lookup-dialog__table th {
-    background: #eef2f7;
-    border-bottom: 2px solid #cfd6e3;
-    color: #263244;
+    background: #eef2f6;
+    border-bottom: 1px solid var(--amb-color-border-strong);
+    color: var(--amb-color-text);
     font-weight: 700;
     position: sticky;
     top: 0;
@@ -95,7 +100,7 @@
 }
 
 .amb-lookup-dialog__table td:first-child {
-    color: #1f2937;
+    color: var(--amb-color-text);
     font-family: Consolas, "Courier New", monospace;
     font-weight: 600;
     width: 140px;
@@ -103,40 +108,44 @@
 
 .amb-lookup-dialog__row {
     cursor: pointer;
+    transition: background-color 90ms ease, box-shadow 90ms ease;
 }
 
 .amb-lookup-dialog__row:hover {
-    background: #f7f9fc;
+    background: var(--amb-color-surface-muted);
 }
 
 .amb-lookup-dialog__row--selected,
 .amb-lookup-dialog__row--selected:hover {
-    background: #e6edf8;
+    background: var(--amb-color-primary-soft);
+    box-shadow: inset 3px 0 0 var(--amb-color-primary);
 }
 
 .amb-lookup-dialog__empty-cell {
-    color: #6b7280;
+    color: var(--amb-color-muted);
     font-style: italic;
     padding: 18px 10px;
     text-align: center;
 }
 
 .amb-lookup-dialog__footer {
-    border-top: 1px solid #e5e7eb;
+    background: var(--amb-color-surface-muted);
+    border-top: 1px solid var(--amb-color-border);
     display: flex;
-    gap: 8px;
+    gap: var(--amb-space-sm);
     justify-content: flex-end;
-    padding: 12px 18px;
+    padding: 10px var(--amb-space-lg);
 }
 
 .amb-lookup-dialog__button {
-    background: #fff;
-    border: 1px solid #b8bec8;
-    border-radius: 4px;
-    color: #222;
+    background: var(--amb-color-surface);
+    border: 1px solid var(--amb-color-border-strong);
+    border-radius: var(--amb-radius-sm);
+    color: var(--amb-color-text);
     cursor: pointer;
     font: inherit;
     padding: 8px 12px;
+    transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .amb-lookup-dialog__button:disabled {
@@ -147,7 +156,7 @@
 }
 
 .amb-lookup-dialog__button:hover {
-    background: #f4f6fb;
+    background: #e9edf2;
 }
 
 .amb-lookup-dialog__button:disabled:hover {
@@ -155,13 +164,20 @@
 }
 
 .amb-lookup-dialog__button--primary {
-    background: #43526a;
-    border-color: #43526a;
+    background: var(--amb-color-primary);
+    border-color: var(--amb-color-primary);
     color: #fff;
 }
 
 .amb-lookup-dialog__button--primary:hover {
-    background: #354258;
+    background: var(--amb-color-primary-hover);
+    border-color: var(--amb-color-primary-hover);
+}
+
+.amb-lookup-dialog__button:focus-visible {
+    border-color: var(--amb-color-focus);
+    box-shadow: var(--amb-focus-ring);
+    outline: none;
 }
 
 .amb-lookup-dialog__button--primary:disabled,
@@ -169,4 +185,30 @@
     background: #e5e7eb;
     border-color: #d1d5db;
     color: #9ca3af;
+}
+
+@media (max-width: 640px) {
+    .amb-lookup-dialog {
+        align-items: stretch;
+        padding: 12px;
+    }
+
+    .amb-lookup-dialog__panel {
+        max-height: calc(100vh - 24px);
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .amb-lookup-dialog__body {
+        padding: 12px;
+    }
+
+    .amb-lookup-dialog__table th,
+    .amb-lookup-dialog__table td {
+        padding: 8px;
+    }
+
+    .amb-lookup-dialog__footer {
+        flex-wrap: wrap;
+    }
 }

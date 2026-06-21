@@ -5,8 +5,8 @@
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.28);
-    padding: 20px;
+    background: var(--amb-overlay-background);
+    padding: var(--amb-space-lg);
 }
 
 .teh-confirm-dialog--visible {
@@ -15,23 +15,24 @@
 
 .teh-confirm-dialog__panel {
     width: min(420px, 100%);
-    border: 1px solid #d8d8d8;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
-    padding: 20px;
+    border: 1px solid var(--amb-color-border);
+    border-radius: var(--amb-radius-lg);
+    background: var(--amb-color-surface);
+    box-shadow: var(--amb-shadow-dialog);
+    color: var(--amb-color-text);
+    padding: var(--amb-space-lg);
 }
 
 .teh-confirm-dialog__title {
     margin: 0 0 10px;
-    color: #222;
-    font-size: 18px;
+    color: var(--amb-color-text);
+    font-size: 17px;
     line-height: 1.3;
 }
 
 .teh-confirm-dialog__message {
     margin: 0;
-    color: #444;
+    color: var(--amb-color-muted);
     font-size: 14px;
     line-height: 1.5;
 }
@@ -39,30 +40,52 @@
 .teh-confirm-dialog__actions {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
-    margin-top: 20px;
+    gap: var(--amb-space-sm);
+    margin-top: 18px;
 }
 
 .teh-confirm-dialog__button {
-    border: 1px solid #b8b8b8;
-    border-radius: 4px;
-    background: #fff;
-    color: #222;
+    border: 1px solid var(--amb-color-border-strong);
+    border-radius: var(--amb-radius-sm);
+    background: var(--amb-color-surface);
+    color: var(--amb-color-text);
     cursor: pointer;
     font: inherit;
     padding: 8px 12px;
+    transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .teh-confirm-dialog__button:hover {
-    background: #f5f5f5;
+    background: var(--amb-color-surface-muted);
+}
+
+.teh-confirm-dialog__button:focus-visible {
+    border-color: var(--amb-color-focus);
+    box-shadow: var(--amb-focus-ring);
+    outline: none;
 }
 
 .teh-confirm-dialog__button--confirm {
-    border-color: #8a1f1f;
-    background: #8a1f1f;
+    border-color: var(--amb-color-danger);
+    background: var(--amb-color-danger);
     color: #fff;
 }
 
 .teh-confirm-dialog__button--confirm:hover {
-    background: #741919;
+    background: #793535;
+    border-color: #793535;
+}
+
+@media (max-width: 520px) {
+    .teh-confirm-dialog {
+        padding: 12px;
+    }
+
+    .teh-confirm-dialog__panel {
+        padding: 16px;
+    }
+
+    .teh-confirm-dialog__actions {
+        flex-wrap: wrap;
+    }
 }

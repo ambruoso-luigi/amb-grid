@@ -99,6 +99,7 @@ export function integer(options = {}) {
             const input = document.createElement('input');
 
             input.type = 'text';
+            input.className = 'amb-cell-editor amb-cell-editor--number';
             input.inputMode = 'numeric';
             input.value = normalizeIntegerInput(getInitialValue(cell), normalizedOptions);
 
@@ -199,6 +200,7 @@ export function decimal(options = {}) {
             const input = document.createElement('input');
 
             input.type = 'text';
+            input.className = 'amb-cell-editor amb-cell-editor--number';
             input.inputMode = 'decimal';
             input.value = normalizeDecimalInput(
                 normalizedOptions.decimalSeparator === ','

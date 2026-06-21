@@ -1,12 +1,27 @@
 .amb-feedback-region {
     border: 1px solid transparent;
+    border-left-width: 4px;
     box-sizing: border-box;
-    color: #263244;
+    color: var(--amb-color-text);
     display: grid;
-    gap: 2px;
-    line-height: 1.4;
-    padding: 9px 12px;
+    gap: 2px 9px;
+    grid-template-columns: 8px minmax(0, 1fr);
+    line-height: var(--amb-line-height);
+    padding: 8px 12px;
     width: 100%;
+}
+
+.amb-feedback-region::before {
+    align-self: start;
+    background: currentColor;
+    border-radius: 999px;
+    content: "";
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    height: 7px;
+    margin-top: 6px;
+    opacity: 0.8;
+    width: 7px;
 }
 
 .amb-feedback-region[hidden] {
@@ -18,52 +33,58 @@
 }
 
 .amb-feedback-region--success {
-    background: #edf7ef;
-    border-color: #a9cfb0;
-    color: #245b2f;
+    background: var(--amb-color-success-soft);
+    border-color: #9fc4a8;
+    border-left-color: var(--amb-color-success);
+    color: #2d5d3a;
 }
 
 .amb-feedback-region--warning {
-    background: #fff8df;
-    border-color: #dfc66e;
-    color: #664f00;
+    background: var(--amb-color-warning-soft);
+    border-color: #ddc77f;
+    border-left-color: var(--amb-color-warning);
+    color: #674f0d;
 }
 
 .amb-feedback-region--error {
-    background: #fff0f0;
-    border-color: #dca0a0;
-    color: #7b2525;
+    background: var(--amb-color-danger-soft);
+    border-color: #d7a5a5;
+    border-left-color: var(--amb-color-danger);
+    color: #773737;
 }
 
 .amb-feedback-region--info {
-    background: #eef4fa;
-    border-color: #adc3d8;
-    color: #294d6b;
+    background: var(--amb-color-info-soft);
+    border-color: #adc2d3;
+    border-left-color: var(--amb-color-info);
+    color: #315672;
 }
 
 .amb-feedback-region__title {
     font-weight: 700;
+    grid-column: 2;
 }
 
 .amb-feedback-region__message {
+    grid-column: 2;
     white-space: pre-line;
 }
 
 .amb-feedback-region--grid {
-    font-size: 14px;
+    font-size: var(--amb-font-size);
 }
 
 .amb-feedback-region--connected {
-    border-left-color: #d8dce5;
+    border-left-width: 4px;
     border-radius: 0;
-    border-right-color: #d8dce5;
+    border-right-color: var(--amb-color-border);
     margin: 0;
 }
 
 .amb-dialog-feedback {
-    border-left: 0;
+    border-left-width: 4px;
     border-radius: 0;
     border-right: 0;
-    font-size: 13px;
+    font-size: var(--amb-font-size-sm);
     padding-inline: 18px;
 }
