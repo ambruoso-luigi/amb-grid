@@ -41,6 +41,20 @@ export default function basicCrud(app) {
 
     app.innerHTML = `
         <h2>Basic CRUD</h2>
+        <p class="demo-note">Edit rows, add new records, mark rows for deletion, and inspect the generated save payload. AMB Grid tracks row states and builds a backend-ready CRUD payload without performing backend calls by itself.</p>
+        <details class="demo-disclosure">
+            <summary class="demo-disclosure__summary">Basic CRUD behavior</summary>
+            <div class="demo-disclosure__content">
+                <ul class="demo-rules-list">
+                    <li>Add Row creates a new client-side row.</li>
+                    <li>Editing a cell marks the row as modified.</li>
+                    <li>Delete marks existing rows for deletion and removes unsaved new rows.</li>
+                    <li>Save validates changes, builds the payload, and simulates backend confirmation.</li>
+                    <li>Show payload, Show report, and Show selected open the demo report dialog.</li>
+                    <li>AMB Grid does not perform backend requests directly; application callbacks decide how to persist data.</li>
+                </ul>
+            </div>
+        </details>
         <div id="basic-table"></div>
     `;
 

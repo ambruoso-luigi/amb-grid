@@ -52,6 +52,71 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain('Summary');
     });
 
+    test('configures Validation with useful toolbar actions only', () => {
+        const source = readSource('../src/demo/validation.js');
+        const toolbarSource = source.slice(
+            source.indexOf('toolbar: {'),
+            source.indexOf('data: validationData')
+        );
+        const createAnomaliesHandler = source.slice(
+            source.indexOf('async function handleCreateAnomalies()'),
+            source.indexOf('function handleShowReport()')
+        );
+
+        expect(toolbarSource).toContain("id: 'create-anomalies'");
+        expect(toolbarSource).toContain("label: 'Create anomalies'");
+        expect(toolbarSource).toContain("id: 'show-report'");
+        expect(toolbarSource).toContain("label: 'Show report'");
+        expect(toolbarSource).toContain("id: 'reset-data'");
+        expect(toolbarSource).toContain("label: 'Reset data'");
+        expect(toolbarSource).not.toContain("'add'");
+        expect(toolbarSource).not.toContain("'reload'");
+        expect(toolbarSource).not.toContain("'save'");
+        expect(source).not.toContain('id="action-validate-changes"');
+        expect(source).not.toContain('id="action-full-table-audit"');
+        expect(source).not.toContain('id="action-create-anomalies"');
+        expect(source).not.toContain('id="action-show-report"');
+        expect(createAnomaliesHandler).not.toContain('reportDialog.open');
+        expect(createAnomaliesHandler).toContain('crud.validateChanges()');
+        expect(createAnomaliesHandler).toContain(
+            'Anomalies created. Check highlighted cells or open the report.'
+        );
+        expect(source).toContain('crud.rollbackRow(row.key)');
+        expect(source).toContain("message: 'Validation demo data reset.'");
+    });
+
+    test('keeps demo guidance compact in closed disclosures', () => {
+        const validationSource = readSource('../src/demo/validation.js');
+        const basicCrudSource = readSource('../src/demo/basic-crud.js');
+        const demoCss = readSource('../src/demo/demo.css');
+
+        expect(validationSource).toContain(
+            'Use the toolbar to create intentional validation errors, inspect the report, or reset the demo data.'
+        );
+        expect(validationSource).toContain(
+            '<summary class="demo-disclosure__summary">Validation rules and limits</summary>'
+        );
+        expect(basicCrudSource).toContain(
+            '<summary class="demo-disclosure__summary">Basic CRUD behavior</summary>'
+        );
+        expect(validationSource).not.toContain('<details class="demo-disclosure" open>');
+        expect(basicCrudSource).not.toContain('<details class="demo-disclosure" open>');
+        expect(demoCss).toContain('.demo-disclosure__summary');
+        expect(demoCss).toContain('.demo-rules-list');
+    });
+
+    test('shows Row beside the built-in Add icon without changing accessibility text', () => {
+        const toolbarSource = readSource('../src/ui/toolbar.js');
+        const libraryCss = readSource('../src/amb-grid.css');
+
+        expect(toolbarSource).toContain("label: 'Row'");
+        expect(toolbarSource).toContain("title: 'Add row'");
+        expect(libraryCss).not.toContain(
+            '.amb-toolbar__button--add .amb-toolbar__button-label {\n    display: none;'
+        );
+        expect(libraryCss).not.toContain('.amb-toolbar__button--add {\n    font-size: 0;');
+    });
+
     test('keeps report dialog styling in demo CSS only', () => {
         const demoCss = readSource('../src/demo/demo.css');
         const libraryCss = readSource('../src/amb-grid.css');

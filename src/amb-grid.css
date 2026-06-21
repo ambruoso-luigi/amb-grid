@@ -130,13 +130,12 @@
     border-color: var(--amb-add-border);
     border-radius: var(--amb-radius);
     color: var(--amb-add-text);
-    flex: 0 0 34px;
-    font-size: 0;
+    flex: 0 0 auto;
     justify-content: center;
-    line-height: 0;
+    line-height: 1;
     min-height: 34px;
-    min-width: 34px;
-    padding: 0;
+    min-width: 58px;
+    padding: 6px 10px 6px 8px;
 }
 
 .amb-toolbar__button--add .amb-toolbar__button-icon {
@@ -229,10 +228,6 @@
 
 .amb-toolbar__button-label {
     line-height: 1;
-}
-
-.amb-toolbar__button--add .amb-toolbar__button-label {
-    display: none;
 }
 
 .amb-date-editor-wrapper {

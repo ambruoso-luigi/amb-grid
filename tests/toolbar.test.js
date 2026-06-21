@@ -215,6 +215,7 @@ describe('AMB toolbar', () => {
                 .toEqual(['add', 'reload', 'save']);
             expect(group.children[0].title).toBe('Add row');
             expect(group.children[0]['aria-label']).toBe('Add row');
+            expect(group.children[0].children[1].textContent).toBe('Row');
             expect(group.children.every(button => button.disabled)).toBe(true);
 
             harness.controller.destroy();

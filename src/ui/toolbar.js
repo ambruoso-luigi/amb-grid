@@ -31,7 +31,7 @@ const ICONS = {
 
 const BUILT_IN_BUTTONS = {
     add: {
-        label: 'Add row',
+        label: 'Row',
         title: 'Add row',
         callback: 'onAdd'
     },

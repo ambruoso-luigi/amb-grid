@@ -219,28 +219,23 @@ const anomalyPatches = [
 export default function validation(app) {
     app.innerHTML = `
         <h2>Validation</h2>
-        <p class="demo-note">Most validations run when you leave an edited cell. For demo purposes, this page also provides a changed/new rows validation flow for CRUD save scenarios and a full-table audit for debug, imports, or global checks.</p>
-        <div class="demo-note">
-            <strong>Validation rules:</strong>
-            <ul>
-                <li>Alias: required, unique, 3-20 characters</li>
-                <li>Email: valid email syntax</li>
-                <li>Access Code: modular example: the editor uppercases input, then a pattern validator checks 3 letters + 3 digits, e.g. ABC001</li>
-                <li>Codice Fiscale: syntactic Italian fiscal code format, e.g. RSSMRA80A01H501U</li>
-                <li>Partita IVA: syntactic 11-digit format, e.g. 12345678901</li>
-                <li>Codice Fiscale / Partita IVA: accepts either a syntactic Codice Fiscale or an 11-digit Partita IVA using AMB.validators.anyOf</li>
-                <li>Italian IBAN: syntactic Italian IBAN format, spaces ignored by the validator; no checksum, bank, account, official, fiscal, or existence check is performed</li>
-                <li>Passport/Document: 6-20 alphanumeric characters; custom rule rejects TMP prefixes</li>
-            </ul>
-            <p>Format-specific validators in this demo are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.</p>
-            <p><strong>Validate changed rows</strong> validates only new or modified rows, while clean rows remain available as comparison context for validators such as unique. <strong>Full table audit</strong> checks the entire active table for debug, import, or global verification scenarios.</p>
-        </div>
-        <div class="toolbar">
-            <button type="button" id="action-validate-changes">Validate changed rows</button>
-            <button type="button" id="action-full-table-audit">Full table audit</button>
-            <button type="button" id="action-create-anomalies">Create anomalies</button>
-            <button type="button" id="action-show-report">Show report</button>
-        </div>
+        <p class="demo-note">Most validations run when you leave an edited cell. Use the toolbar to create intentional validation errors, inspect the report, or reset the demo data.</p>
+        <details class="demo-disclosure">
+            <summary class="demo-disclosure__summary">Validation rules and limits</summary>
+            <div class="demo-disclosure__content">
+                <ul class="demo-rules-list">
+                    <li>Alias: required, unique, 3-20 characters</li>
+                    <li>Email: valid email syntax</li>
+                    <li>Access Code: modular example: the editor uppercases input, then a pattern validator checks 3 letters + 3 digits, e.g. ABC001</li>
+                    <li>Codice Fiscale: syntactic Italian fiscal code format, e.g. RSSMRA80A01H501U</li>
+                    <li>Partita IVA: syntactic 11-digit format, e.g. 12345678901</li>
+                    <li>Codice Fiscale / Partita IVA: accepts either a syntactic Codice Fiscale or an 11-digit Partita IVA using AMB.validators.anyOf</li>
+                    <li>Italian IBAN: syntactic Italian IBAN format, spaces ignored by the validator; no checksum, bank, account, official, fiscal, or existence check is performed</li>
+                    <li>Passport/Document: 6-20 alphanumeric characters; custom rule rejects TMP prefixes</li>
+                </ul>
+                <p>Format-specific validators in this demo are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.</p>
+            </div>
+        </details>
         <div id="validation-table"></div>
     `;
 
@@ -257,6 +252,28 @@ export default function validation(app) {
             confirmDeleteMessage: 'Delete this row?',
             confirmRollbackMessage: 'Rollback this row?',
             confirmRemoveNewMessage: 'Remove this new row?'
+        },
+        toolbar: {
+            buttons: [
+                {
+                    id: 'create-anomalies',
+                    label: 'Create anomalies',
+                    title: 'Create intentional validation errors',
+                    onClick: handleCreateAnomalies
+                },
+                {
+                    id: 'show-report',
+                    label: 'Show report',
+                    title: 'Show validation report',
+                    onClick: handleShowReport
+                },
+                {
+                    id: 'reset-data',
+                    label: 'Reset data',
+                    title: 'Reset validation demo data',
+                    onClick: handleResetData
+                }
+            ]
         },
         data: validationData,
         layout: 'fitColumns',
@@ -377,10 +394,10 @@ export default function validation(app) {
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
 
-    const openValidationReport = (validateResult, validationScope = 'changes') => {
+    const openValidationReport = () => {
         const details = {
-            validateResult,
-            validationScope,
+            validateResult: null,
+            validationScope: 'state',
             stateReport: crud.getStateReport()
         };
 
@@ -396,37 +413,37 @@ export default function validation(app) {
         originalDestroy();
     };
 
-    app.querySelector('#action-validate-changes').addEventListener('click', () => {
-        openValidationReport(crud.validateChanges(), 'changes');
-    });
+    async function handleCreateAnomalies() {
+        demo.feedback.clear();
 
-    app.querySelector('#action-full-table-audit').addEventListener('click', () => {
-        openValidationReport(crud.validateAll(), 'full');
-    });
-
-    app.querySelector('#action-create-anomalies').addEventListener('click', () => {
         anomalyPatches.forEach(({ id, ...patch }) => {
             crud.updateRow(id, patch);
         });
 
-        window.setTimeout(() => {
-            openValidationReport(crud.validateChanges(), 'changes');
-        }, 0);
-    });
-
-    app.querySelector('#action-show-report').addEventListener('click', () => {
-        const details = {
-            validateResult: null,
-            validationScope: 'state',
-            stateReport: crud.getStateReport()
-        };
-
-        reportDialog.open({
-            title: 'Validation report',
-            reportText: buildReadableReport(details),
-            jsonData: details.stateReport
+        await new Promise(resolve => window.setTimeout(resolve, 0));
+        crud.validateChanges();
+        demo.feedback.show({
+            type: 'warning',
+            message: 'Anomalies created. Check highlighted cells or open the report.'
         });
-    });
+    }
+
+    function handleShowReport() {
+        openValidationReport();
+    }
+
+    async function handleResetData() {
+        demo.feedback.clear();
+        crud.getStateReport().rows.forEach(row => {
+            crud.rollbackRow(row.key);
+        });
+
+        await new Promise(resolve => window.setTimeout(resolve, 0));
+        demo.feedback.show({
+            type: 'success',
+            message: 'Validation demo data reset.'
+        });
+    }
 
     return demo;
 }
