@@ -87,6 +87,7 @@ const createHarness = ({
         clearInvalid,
         container,
         input: container.children[0],
+        load: lookupInstance.load,
         markInvalid,
         rowData,
         success
@@ -183,5 +184,156 @@ describe('lookup editor blur commits', () => {
         expect(harness.input.value).toBe('REPAIR');
         expect(harness.input.selectionStart).toBe(3);
         expect(harness.input.selectionEnd).toBe(6);
+    });
+
+    test.each([
+        ['Backspace', 'deleteContentBackward'],
+        ['Delete', 'deleteContentForward'],
+        ['Cut', 'deleteByCut']
+    ])('%s input does not trigger manual autocomplete', async (key, inputType) => {
+        const load = vi.fn(({ query }) => {
+            return records.filter(record => record.id.includes(query));
+        });
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            },
+            load
+        });
+
+        await Promise.resolve();
+        load.mockClear();
+        harness.input.value = 'ACTIV';
+
+        if (key !== 'Cut') {
+            await harness.input.dispatch('keydown', { key });
+        }
+        await harness.input.dispatch('input', { inputType });
+        await Promise.resolve();
+
+        expect(harness.input.value).toBe('ACTIV');
+        expect(load).not.toHaveBeenCalled();
+    });
+
+    test('deleting invalidates a pending autocomplete request', async () => {
+        let resolveAutoComplete;
+        const load = vi.fn(({ query }) => {
+            if (query === 'REP') {
+                return new Promise(resolve => {
+                    resolveAutoComplete = resolve;
+                });
+            }
+
+            return records.filter(record => record.id.includes(query));
+        });
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            },
+            load
+        });
+
+        await Promise.resolve();
+        harness.input.value = 'rep';
+        const pendingInput = harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+
+        harness.input.value = 're';
+        await harness.input.dispatch('input', {
+            inputType: 'deleteContentBackward'
+        });
+        resolveAutoComplete([records[1]]);
+        await pendingInput;
+
+        expect(harness.input.value).toBe('RE');
+        expect(harness.input.selectionStart).toBe(0);
+        expect(harness.input.selectionEnd).toBe(0);
+    });
+
+    test('commits an empty value after clearing all text when empty is allowed', async () => {
+        const harness = createHarness({
+            options: {
+                allowEmpty: true,
+                autoComplete: true
+            }
+        });
+
+        harness.input.value = '';
+        await harness.input.dispatch('input', {
+            inputType: 'deleteContentBackward'
+        });
+        await harness.input.dispatch('blur');
+
+        expect(harness.input.value).toBe('');
+        expect(harness.success).toHaveBeenCalledWith('');
+        expect(harness.clearInvalid).toHaveBeenCalledWith(harness.cell);
+        expect(harness.markInvalid).not.toHaveBeenCalled();
+        expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
+            value: '',
+            description: ''
+        });
+    });
+
+    test('select-all delete stays empty and commits the empty value', async () => {
+        const load = vi.fn(({ query }) => {
+            return records.filter(record => record.id.includes(query));
+        });
+        const harness = createHarness({
+            options: {
+                allowEmpty: true,
+                autoComplete: true
+            },
+            load
+        });
+
+        await Promise.resolve();
+        load.mockClear();
+        harness.input.selectionStart = 0;
+        harness.input.selectionEnd = harness.input.value.length;
+        harness.input.value = '';
+
+        await harness.input.dispatch('keydown', { key: 'Delete' });
+        await harness.input.dispatch('input', {
+            inputType: 'deleteContentForward'
+        });
+        await Promise.resolve();
+
+        expect(harness.input.value).toBe('');
+        expect(load).not.toHaveBeenCalled();
+
+        await harness.input.dispatch('blur');
+
+        expect(harness.success).toHaveBeenCalledWith('');
+        expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
+            value: '',
+            description: ''
+        });
+    });
+
+    test('Tab still accepts a manual autocomplete suggestion', async () => {
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            }
+        });
+        const preventDefault = vi.fn();
+
+        harness.input.value = 'rep';
+        await harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+        await harness.input.dispatch('keydown', {
+            key: 'Tab',
+            preventDefault
+        });
+
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(harness.input.value).toBe('REPAIR');
+        expect(harness.input.selectionStart).toBe(6);
+        expect(harness.input.selectionEnd).toBe(6);
+        expect(harness.success).not.toHaveBeenCalled();
     });
 });

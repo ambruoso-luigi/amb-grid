@@ -209,6 +209,11 @@ export function lookup(lookupInstance, options = {}) {
                 }) || null;
             };
 
+            const invalidateManualAutoComplete = () => {
+                autoCompleteRequestId += 1;
+                hasAutoCompleteSuggestion = false;
+            };
+
             const applyManualAutoComplete = async () => {
                 if (!normalizedOptions.autoComplete || closed) return;
 
@@ -338,14 +343,27 @@ export function lookup(lookupInstance, options = {}) {
                 closeWithSuccess(value);
             };
 
-            input.addEventListener('input', () => {
+            input.addEventListener('input', event => {
                 if (normalizedOptions.uppercase) {
                     input.value = input.value.toUpperCase();
+                }
+
+                const isDeleteInput = typeof event.inputType === 'string'
+                    && event.inputType.startsWith('delete');
+
+                if (isDeleteInput || input.value === '') {
+                    invalidateManualAutoComplete();
+                    return;
                 }
 
                 applyManualAutoComplete();
             });
             input.addEventListener('keydown', event => {
+                if (event.key === 'Backspace' || event.key === 'Delete') {
+                    invalidateManualAutoComplete();
+                    return;
+                }
+
                 if (
                     event.key === 'Tab'
                     && normalizedOptions.autoCompleteOnTab
