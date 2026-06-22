@@ -73,7 +73,6 @@ export function lookup(lookupInstance, options = {}) {
             let dialogOpen = false;
             let autoCompleteRequestId = 0;
             let hasAutoCompleteSuggestion = false;
-            let navigationScheduled = false;
             let tabCommitInProgress = false;
 
             container.className = 'amb-lookup-editor';
@@ -138,6 +137,12 @@ export function lookup(lookupInstance, options = {}) {
                 if (typeof normalizedOptions.clearInvalid === 'function') {
                     normalizedOptions.clearInvalid(cell);
                 }
+            };
+
+            const markInvalidCodeAfterClose = value => {
+                globalThis.setTimeout(() => {
+                    markInvalidCode(value);
+                }, 0);
             };
 
             const setCellLookupDescription = description => {
@@ -291,8 +296,10 @@ export function lookup(lookupInstance, options = {}) {
                         return;
                     }
 
+                    let item = null;
+
                     try {
-                        const item = await findExactItem(value);
+                        item = await findExactItem(value);
 
                         if (item) {
                             const description = item[labelField];
@@ -303,13 +310,16 @@ export function lookup(lookupInstance, options = {}) {
                         } else {
                             setLookupMetadata(rowData, field, value, '');
                             setCellLookupDescription('');
-                            markInvalidCode(value);
                         }
                     } catch (error) {
                         console.error('Lookup validation failed', error);
                     }
 
                     closeWithCancel();
+
+                    if (!item) {
+                        markInvalidCodeAfterClose(value);
+                    }
                     return;
                 }
 
@@ -341,85 +351,32 @@ export function lookup(lookupInstance, options = {}) {
 
                 setLookupMetadata(rowData, field, value, '');
                 setCellLookupDescription('');
-                markInvalidCode(value);
                 closeWithSuccess(value);
+                markInvalidCodeAfterClose(value);
             };
 
-            const resolveManualAutoCompleteBeforeCommit = async () => {
-                const typedValue = getValue();
+            const commitFromTab = async () => {
+                if (closed || tabCommitInProgress) return;
 
-                if (!normalizedOptions.autoComplete || !typedValue) return;
-
-                const requestId = autoCompleteRequestId + 1;
-
-                autoCompleteRequestId = requestId;
+                tabCommitInProgress = true;
 
                 if (
                     hasAutoCompleteSuggestion
                     && input.selectionStart < input.selectionEnd
                 ) {
-                    input.setSelectionRange(input.value.length, input.value.length);
-                    hasAutoCompleteSuggestion = false;
-                    return;
+                    const cursorPosition = normalizedOptions.autoCompleteOnTab
+                        ? input.value.length
+                        : input.selectionStart;
+
+                    if (!normalizedOptions.autoCompleteOnTab) {
+                        input.value = input.value.slice(0, cursorPosition);
+                    }
+
+                    input.setSelectionRange(cursorPosition, cursorPosition);
                 }
 
-                hasAutoCompleteSuggestion = false;
-
-                if (typedValue.length < normalizedOptions.autoCompleteMinChars) return;
-
-                try {
-                    const items = await loadLookup(typedValue);
-
-                    if (closed || requestId !== autoCompleteRequestId) return;
-
-                    const exactItem = items.find(item => {
-                        return normalizeValue(
-                            getLookupOptionValue(item, valueField)
-                        ) === typedValue;
-                    });
-                    const matchedItem = exactItem || items.find(item => {
-                        return normalizeValue(
-                            getLookupOptionValue(item, valueField)
-                        ).startsWith(typedValue);
-                    });
-
-                    if (!matchedItem) return;
-
-                    const matchedValue = normalizeValue(
-                        getLookupOptionValue(matchedItem, valueField)
-                    );
-
-                    if (!matchedValue) return;
-
-                    input.value = matchedValue;
-                    input.setSelectionRange(matchedValue.length, matchedValue.length);
-                } catch {
-                    // Commit keeps the existing validation behavior if resolution fails.
-                }
-            };
-
-            const commitAndNavigate = async direction => {
-                if (closed || navigationScheduled || tabCommitInProgress) return;
-
-                const table = cell && cell.getTable && cell.getTable();
-
-                tabCommitInProgress = true;
-                await resolveManualAutoCompleteBeforeCommit();
+                invalidateManualAutoComplete();
                 await commit();
-
-                if (!table || navigationScheduled) return;
-
-                navigationScheduled = true;
-                globalThis.setTimeout(() => {
-                    if (direction === 'prev' && typeof table.navigatePrev === 'function') {
-                        table.navigatePrev();
-                        return;
-                    }
-
-                    if (direction === 'next' && typeof table.navigateNext === 'function') {
-                        table.navigateNext();
-                    }
-                }, 0);
             };
 
             input.addEventListener('input', event => {
@@ -444,8 +401,7 @@ export function lookup(lookupInstance, options = {}) {
                 }
 
                 if (event.key === 'Tab') {
-                    event.preventDefault();
-                    return commitAndNavigate(event.shiftKey ? 'prev' : 'next');
+                    return commitFromTab();
                 }
 
                 if (event.key === 'Enter') {
