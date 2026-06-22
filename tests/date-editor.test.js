@@ -11,6 +11,7 @@ import {
 } from '../src/lib/editors/date-editor-utils.js';
 
 const datepickerState = vi.hoisted(() => ({
+    focusedDate: new Date(2026, 6, 20),
     instances: []
 }));
 
@@ -23,7 +24,10 @@ vi.mock('vanillajs-datepicker/Datepicker', () => ({
             this.show = vi.fn(() => {
                 this.active = true;
             });
-            this.destroy = vi.fn();
+            this.getFocusedDate = vi.fn(() => new Date(datepickerState.focusedDate));
+            this.destroy = vi.fn(() => {
+                this.active = false;
+            });
             datepickerState.instances.push(this);
         }
     }
@@ -308,6 +312,7 @@ const createElement = tagName => {
         async dispatch(type, event = {}) {
             const dispatchedEvent = {
                 preventDefault: vi.fn(),
+                stopImmediatePropagation: vi.fn(),
                 stopPropagation: vi.fn(),
                 ...event
             };
@@ -327,7 +332,7 @@ const createElement = tagName => {
     };
 };
 
-const createPickerHarness = () => {
+const createPickerHarness = (options = {}) => {
     const table = {
         navigateNext: vi.fn(),
         navigatePrev: vi.fn()
@@ -378,9 +383,11 @@ const createPickerHarness = () => {
     const cancel = vi.fn();
     const editor = createDateEditor({
         format: 'dd/mm/yyyy',
-        picker: true
+        picker: true,
+        ...options
     });
     const wrapper = editor(cell, callback => callback(), success, cancel);
+    const isPickerOnly = options.mode === 'pickerOnly';
 
     return {
         afterDateCell,
@@ -389,10 +396,10 @@ const createPickerHarness = () => {
         displayCell,
         fuelCell,
         hiddenCell,
-        input: wrapper.children[0],
+        input: isPickerOnly ? null : wrapper.children[0],
         notesCell,
-        pickerButton: wrapper.children[1],
-        pickerInput: wrapper.children[2],
+        pickerButton: isPickerOnly ? null : wrapper.children[1],
+        pickerInput: isPickerOnly ? wrapper.children[0] : wrapper.children[2],
         success,
         table
     };
@@ -407,6 +414,7 @@ describe('date editor picker keyboard navigation', () => {
     const originalWindow = globalThis.window;
 
     beforeEach(() => {
+        datepickerState.focusedDate = new Date(2026, 6, 20);
         datepickerState.instances.length = 0;
         globalThis.document = {
             activeElement: null,
@@ -503,5 +511,89 @@ describe('date editor picker keyboard navigation', () => {
         await harness.pickerButton.dispatch('click');
 
         expect(datepicker.show).toHaveBeenCalledOnce();
+    });
+
+    test('pickerOnly opens the picker on render', () => {
+        createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+        const datepicker = datepickerState.instances[0];
+
+        expect(datepicker.show).toHaveBeenCalledOnce();
+        expect(datepicker.active).toBe(true);
+    });
+
+    test('pickerOnly Tab commits the focused date, closes, and navigates next', async () => {
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+        const datepicker = datepickerState.instances[0];
+        const event = await harness.pickerInput.dispatch('keydown', {
+            key: 'Tab'
+        });
+
+        await flushDeferred();
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+        expect(datepicker.getFocusedDate).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('20/07/2026');
+        expect(datepicker.destroy).toHaveBeenCalledOnce();
+        expect(datepicker.active).toBe(false);
+        expect(harness.afterDateCell.edit).toHaveBeenCalledOnce();
+    });
+
+    test('pickerOnly Shift+Tab commits the focused date and navigates previous', async () => {
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+        const event = await harness.pickerInput.dispatch('keydown', {
+            key: 'Tab',
+            shiftKey: true
+        });
+
+        await flushDeferred();
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('20/07/2026');
+        expect(harness.fuelCell.edit).toHaveBeenCalledOnce();
+        expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
+    });
+
+    test('pickerOnly changeDate commits without forced navigation', async () => {
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+
+        await harness.pickerInput.dispatch('changeDate', {
+            detail: {
+                date: new Date(2026, 7, 9)
+            }
+        });
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledWith('09/08/2026');
+        expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
+        expect(harness.fuelCell.edit).not.toHaveBeenCalled();
+    });
+
+    test('pickerOnly hide cancels without navigation', async () => {
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+
+        await harness.pickerInput.dispatch('hide');
+        await flushDeferred();
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
+        expect(harness.fuelCell.edit).not.toHaveBeenCalled();
     });
 });

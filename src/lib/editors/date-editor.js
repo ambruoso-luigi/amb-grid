@@ -256,6 +256,34 @@ export function date(options = {}) {
                     navigateAfterClose(direction);
                 };
 
+                const commitFocusedPickerDateFromTab = direction => {
+                    if (
+                        closed
+                        || tabCommitInProgress
+                        || !datepicker
+                        || !datepicker.active
+                        || typeof datepicker.getFocusedDate !== 'function'
+                    ) {
+                        return;
+                    }
+
+                    const focusedDate = datepicker.getFocusedDate();
+
+                    if (!(focusedDate instanceof Date) || !Number.isFinite(focusedDate.getTime())) {
+                        return;
+                    }
+
+                    tabCommitInProgress = true;
+                    const formattedValue = formatPickerDate(
+                        focusedDate,
+                        normalizedOptions.format
+                    );
+
+                    input.value = formattedValue;
+                    closeWithSuccess(formattedValue);
+                    navigateAfterClose(direction);
+                };
+
                 const showPicker = () => {
                     if (!datepicker) return;
 
@@ -297,6 +325,24 @@ export function date(options = {}) {
                     closeWithSuccess(formattedValue);
                 });
                 pickerInput.addEventListener('hide', closeWithCancel);
+                pickerInput.addEventListener('keydown', event => {
+                    if (
+                        normalizedOptions.mode !== 'pickerOnly'
+                        || event.key !== 'Tab'
+                        || !datepicker
+                        || !datepicker.active
+                    ) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
+                    commitFocusedPickerDateFromTab(event.shiftKey ? 'prev' : 'next');
+                });
 
                 if (editorBehavior.hasPickerButton) {
                     pickerButton.addEventListener('mousedown', event => {
