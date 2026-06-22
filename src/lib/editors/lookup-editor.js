@@ -73,6 +73,7 @@ export function lookup(lookupInstance, options = {}) {
             let dialogOpen = false;
             let autoCompleteRequestId = 0;
             let hasAutoCompleteSuggestion = false;
+            let navigationScheduled = false;
 
             container.className = 'amb-lookup-editor';
             input.className = 'amb-lookup-editor__input';
@@ -343,6 +344,28 @@ export function lookup(lookupInstance, options = {}) {
                 closeWithSuccess(value);
             };
 
+            const commitAndNavigate = async direction => {
+                if (closed || navigationScheduled) return;
+
+                const table = cell && cell.getTable && cell.getTable();
+
+                await commit();
+
+                if (!table || navigationScheduled) return;
+
+                navigationScheduled = true;
+                globalThis.setTimeout(() => {
+                    if (direction === 'prev' && typeof table.navigatePrev === 'function') {
+                        table.navigatePrev();
+                        return;
+                    }
+
+                    if (direction === 'next' && typeof table.navigateNext === 'function') {
+                        table.navigateNext();
+                    }
+                }, 0);
+            };
+
             input.addEventListener('input', event => {
                 if (normalizedOptions.uppercase) {
                     input.value = input.value.toUpperCase();
@@ -364,16 +387,19 @@ export function lookup(lookupInstance, options = {}) {
                     return;
                 }
 
-                if (
-                    event.key === 'Tab'
-                    && normalizedOptions.autoCompleteOnTab
-                    && hasAutoCompleteSuggestion
-                    && input.selectionStart < input.selectionEnd
-                ) {
+                if (event.key === 'Tab') {
                     event.preventDefault();
-                    input.setSelectionRange(input.value.length, input.value.length);
-                    hasAutoCompleteSuggestion = false;
-                    return commit();
+
+                    if (
+                        normalizedOptions.autoCompleteOnTab
+                        && hasAutoCompleteSuggestion
+                        && input.selectionStart < input.selectionEnd
+                    ) {
+                        input.setSelectionRange(input.value.length, input.value.length);
+                        hasAutoCompleteSuggestion = false;
+                    }
+
+                    return commitAndNavigate(event.shiftKey ? 'prev' : 'next');
                 }
 
                 if (event.key === 'Enter') {

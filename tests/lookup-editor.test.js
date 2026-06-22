@@ -51,11 +51,16 @@ const createHarness = ({
         getData: () => rowData,
         update: patch => Object.assign(rowData, patch)
     };
+    const table = {
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
+    };
     const cell = {
         getValue: () => rowData.status,
         getField: () => 'status',
         getRow: () => row,
-        getElement: () => cellElement
+        getElement: () => cellElement,
+        getTable: () => table
     };
     const lookupInstance = {
         valueField: 'id',
@@ -90,9 +95,14 @@ const createHarness = ({
         load: lookupInstance.load,
         markInvalid,
         rowData,
-        success
+        success,
+        table
     };
 };
+
+const flushNavigation = () => new Promise(resolve => {
+    globalThis.setTimeout(resolve, 0);
+});
 
 describe('lookup editor blur commits', () => {
     const originalDocument = globalThis.document;
@@ -312,7 +322,7 @@ describe('lookup editor blur commits', () => {
         });
     });
 
-    test('Tab accepts and commits a manual autocomplete suggestion', async () => {
+    test('Tab accepts and commits a manual autocomplete suggestion, then navigates next', async () => {
         const harness = createHarness({
             options: {
                 autoComplete: true
@@ -329,6 +339,7 @@ describe('lookup editor blur commits', () => {
             key: 'Tab',
             preventDefault
         });
+        await flushNavigation();
 
         expect(preventDefault).toHaveBeenCalledOnce();
         expect(harness.input.value).toBe('REPAIR');
@@ -337,6 +348,8 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
         expect(harness.cancel).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.table.navigatePrev).not.toHaveBeenCalled();
         expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
             value: 'REPAIR',
             description: 'Under repair'
@@ -347,7 +360,58 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledOnce();
     });
 
-    test('Enter still commits a manual autocomplete suggestion', async () => {
+    test('Shift+Tab accepts and commits a manual autocomplete suggestion, then navigates previous', async () => {
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            }
+        });
+        const preventDefault = vi.fn();
+
+        harness.input.value = 'rep';
+        await harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+        await harness.input.dispatch('keydown', {
+            key: 'Tab',
+            shiftKey: true,
+            preventDefault
+        });
+        await flushNavigation();
+
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(harness.input.value).toBe('REPAIR');
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+    });
+
+    test('Tab without an autocomplete suggestion commits the current value and navigates next', async () => {
+        const harness = createHarness({
+            initialValue: 'REPAIR',
+            options: {
+                autoComplete: true
+            }
+        });
+        const preventDefault = vi.fn();
+
+        harness.input.value = 'docked';
+        await harness.input.dispatch('keydown', {
+            key: 'Tab',
+            preventDefault
+        });
+        await flushNavigation();
+
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('DOCKED');
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
+    test('Enter still commits a manual autocomplete suggestion without navigating', async () => {
         const harness = createHarness({
             options: {
                 autoComplete: true
@@ -366,23 +430,7 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
         expect(harness.cancel).not.toHaveBeenCalled();
-    });
-
-    test('Tab without an autocomplete suggestion is not intercepted', async () => {
-        const harness = createHarness({
-            options: {
-                autoComplete: true
-            }
-        });
-        const preventDefault = vi.fn();
-
-        await harness.input.dispatch('keydown', {
-            key: 'Tab',
-            preventDefault
-        });
-
-        expect(preventDefault).not.toHaveBeenCalled();
-        expect(harness.success).not.toHaveBeenCalled();
-        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 });
