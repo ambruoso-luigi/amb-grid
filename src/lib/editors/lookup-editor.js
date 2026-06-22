@@ -74,6 +74,7 @@ export function lookup(lookupInstance, options = {}) {
             let autoCompleteRequestId = 0;
             let hasAutoCompleteSuggestion = false;
             let navigationScheduled = false;
+            let tabCommitInProgress = false;
 
             container.className = 'amb-lookup-editor';
             input.className = 'amb-lookup-editor__input';
@@ -344,11 +345,66 @@ export function lookup(lookupInstance, options = {}) {
                 closeWithSuccess(value);
             };
 
+            const resolveManualAutoCompleteBeforeCommit = async () => {
+                const typedValue = getValue();
+
+                if (!normalizedOptions.autoComplete || !typedValue) return;
+
+                const requestId = autoCompleteRequestId + 1;
+
+                autoCompleteRequestId = requestId;
+
+                if (
+                    hasAutoCompleteSuggestion
+                    && input.selectionStart < input.selectionEnd
+                ) {
+                    input.setSelectionRange(input.value.length, input.value.length);
+                    hasAutoCompleteSuggestion = false;
+                    return;
+                }
+
+                hasAutoCompleteSuggestion = false;
+
+                if (typedValue.length < normalizedOptions.autoCompleteMinChars) return;
+
+                try {
+                    const items = await loadLookup(typedValue);
+
+                    if (closed || requestId !== autoCompleteRequestId) return;
+
+                    const exactItem = items.find(item => {
+                        return normalizeValue(
+                            getLookupOptionValue(item, valueField)
+                        ) === typedValue;
+                    });
+                    const matchedItem = exactItem || items.find(item => {
+                        return normalizeValue(
+                            getLookupOptionValue(item, valueField)
+                        ).startsWith(typedValue);
+                    });
+
+                    if (!matchedItem) return;
+
+                    const matchedValue = normalizeValue(
+                        getLookupOptionValue(matchedItem, valueField)
+                    );
+
+                    if (!matchedValue) return;
+
+                    input.value = matchedValue;
+                    input.setSelectionRange(matchedValue.length, matchedValue.length);
+                } catch {
+                    // Commit keeps the existing validation behavior if resolution fails.
+                }
+            };
+
             const commitAndNavigate = async direction => {
-                if (closed || navigationScheduled) return;
+                if (closed || navigationScheduled || tabCommitInProgress) return;
 
                 const table = cell && cell.getTable && cell.getTable();
 
+                tabCommitInProgress = true;
+                await resolveManualAutoCompleteBeforeCommit();
                 await commit();
 
                 if (!table || navigationScheduled) return;
@@ -389,16 +445,6 @@ export function lookup(lookupInstance, options = {}) {
 
                 if (event.key === 'Tab') {
                     event.preventDefault();
-
-                    if (
-                        normalizedOptions.autoCompleteOnTab
-                        && hasAutoCompleteSuggestion
-                        && input.selectionStart < input.selectionEnd
-                    ) {
-                        input.setSelectionRange(input.value.length, input.value.length);
-                        hasAutoCompleteSuggestion = false;
-                    }
-
                     return commitAndNavigate(event.shiftKey ? 'prev' : 'next');
                 }
 
@@ -411,7 +457,7 @@ export function lookup(lookupInstance, options = {}) {
                 }
             });
             input.addEventListener('blur', () => {
-                if (dialogOpen) return;
+                if (dialogOpen || tabCommitInProgress) return;
 
                 if (normalizedOptions.validateOnBlur) {
                     return commit();
