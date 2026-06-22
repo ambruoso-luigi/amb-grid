@@ -26,7 +26,7 @@ const DATE_OPTION_FORMATS = [
 const debugDateEditor = (eventName, details = {}) => {
     if (globalThis.__AMB_DEBUG_DATE_EDITOR__ !== true) return;
 
-    console.debug('[AMB date editor]', eventName, details);
+    console.log('[AMB date editor]', eventName, details);
 
     if (globalThis.__AMB_DEBUG_DATE_EDITOR_BREAK__ === true) {
         debugger;

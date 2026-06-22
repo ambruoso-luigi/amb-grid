@@ -695,7 +695,7 @@ describe('date editor picker keyboard navigation', () => {
     });
 
     test('date editor debug is silent by default', () => {
-        const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+        const debugSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
         createPickerHarness({
             mode: 'pickerOnly',
@@ -708,7 +708,7 @@ describe('date editor picker keyboard navigation', () => {
 
     test('pickerOnly debug logs document capture without blocking arrow keys', async () => {
         globalThis.__AMB_DEBUG_DATE_EDITOR__ = true;
-        const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+        const debugSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
         const harness = createPickerHarness({
             mode: 'pickerOnly',
             picker: false
@@ -741,7 +741,7 @@ describe('date editor picker keyboard navigation', () => {
 
     test('pickerOnly debug listener is removed after success', async () => {
         globalThis.__AMB_DEBUG_DATE_EDITOR__ = true;
-        vi.spyOn(console, 'debug').mockImplementation(() => {});
+        vi.spyOn(console, 'log').mockImplementation(() => {});
         const harness = createPickerHarness({
             mode: 'pickerOnly',
             picker: false
@@ -760,7 +760,7 @@ describe('date editor picker keyboard navigation', () => {
 
     test('pickerInput debug logs keydown without changing behavior', async () => {
         globalThis.__AMB_DEBUG_DATE_EDITOR__ = true;
-        const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+        const debugSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
         const harness = createPickerHarness({
             mode: 'pickerOnly',
             picker: false
