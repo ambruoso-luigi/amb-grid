@@ -15,7 +15,9 @@
       "fuelCapacity": 12500.5,
       "launchDate": "05/06/2026",
       "status": "ACTIVE",
-      "notes": "Requires engine inspection before the next deep-space mission."
+      "afterDateNote": "Checked",
+      "notes": "Requires engine inspection before the next deep-space mission.",
+      "finalText": "Ready"
     },
     {
       "id": 2,
@@ -26,7 +28,9 @@
       "fuelCapacity": 13900,
       "launchDate": "21/07/2026",
       "status": "REPAIR",
-      "notes": "Engine repair queue includes calibration checks before mission clearance."
+      "afterDateNote": "Checked",
+      "notes": "Engine repair queue includes calibration checks before mission clearance.",
+      "finalText": "Ready"
     },
     {
       "id": 3,
@@ -37,7 +41,9 @@
       "fuelCapacity": 7600,
       "launchDate": "03/08/2026",
       "status": "DOCKED",
-      "notes": "Navigation relay calibration scheduled during docked maintenance window."
+      "afterDateNote": "Checked",
+      "notes": "Navigation relay calibration scheduled during docked maintenance window.",
+      "finalText": "Ready"
     },
     {
       "id": 4,
@@ -48,7 +54,9 @@
       "fuelCapacity": 8800,
       "launchDate": "14/09/2026",
       "status": "REPAIR",
-      "notes": "Docked for navigation system calibration and fuel balance checks."
+      "afterDateNote": "Checked",
+      "notes": "Docked for navigation system calibration and fuel balance checks.",
+      "finalText": "Ready"
     },
     {
       "id": 5,
@@ -59,7 +67,9 @@
       "fuelCapacity": 15120.75,
       "launchDate": "02/12/2026",
       "status": "DOCKED",
-      "notes": "Ready for deployment. Crew training completed."
+      "afterDateNote": "Checked",
+      "notes": "Ready for deployment. Crew training completed.",
+      "finalText": "Ready"
     },
     {
       "id": 6,
@@ -70,7 +80,9 @@
       "fuelCapacity": 10950.25,
       "launchDate": "18/01/2027",
       "status": "ACTIVE",
-      "notes": "Long range mission approved after engine output review."
+      "afterDateNote": "Checked",
+      "notes": "Long range mission approved after engine output review.",
+      "finalText": "Ready"
     },
     {
       "id": 7,
@@ -81,7 +93,9 @@
       "fuelCapacity": 9900,
       "launchDate": "09/03/2027",
       "status": "ACTIVE",
-      "notes": "Navigation charts refreshed for the outer rim mission corridor."
+      "afterDateNote": "Checked",
+      "notes": "Navigation charts refreshed for the outer rim mission corridor.",
+      "finalText": "Ready"
     },
     {
       "id": 8,
@@ -92,7 +106,9 @@
       "fuelCapacity": 13240.6,
       "launchDate": "27/04/2027",
       "status": "REPAIR",
-      "notes": "Repair crew replacing engine seals and running pressure calibration."
+      "afterDateNote": "Checked",
+      "notes": "Repair crew replacing engine seals and running pressure calibration.",
+      "finalText": "Ready"
     },
     {
       "id": 9,
@@ -103,7 +119,9 @@
       "fuelCapacity": 6400,
       "launchDate": "11/05/2027",
       "status": "DECOMMISSIONED",
-      "notes": "Decommissioned after final archive mission and navigation log transfer."
+      "afterDateNote": "Checked",
+      "notes": "Decommissioned after final archive mission and navigation log transfer.",
+      "finalText": "Ready"
     },
     {
       "id": 10,
@@ -114,7 +132,9 @@
       "fuelCapacity": 14575.8,
       "launchDate": "30/06/2027",
       "status": "DOCKED",
-      "notes": "Docked for sensor calibration, cargo balance, and mission route audit."
+      "afterDateNote": "Checked",
+      "notes": "Docked for sensor calibration, cargo balance, and mission route audit.",
+      "finalText": "Ready"
     },
     {
       "id": 11,
@@ -125,7 +145,9 @@
       "fuelCapacity": 10110,
       "launchDate": "16/08/2027",
       "status": "ACTIVE",
-      "notes": "Engine response nominal after navigation rehearsal."
+      "afterDateNote": "Checked",
+      "notes": "Engine response nominal after navigation rehearsal.",
+      "finalText": "Ready"
     },
     {
       "id": 12,
@@ -136,7 +158,9 @@
       "fuelCapacity": 5200.4,
       "launchDate": "24/10/2027",
       "status": "DECOMMISSIONED",
-      "notes": "Stored for museum mission program with repair history retained."
+      "afterDateNote": "Checked",
+      "notes": "Stored for museum mission program with repair history retained.",
+      "finalText": "Ready"
     }
   ]
 }

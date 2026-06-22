@@ -18,16 +18,6 @@ export default async function fullDemo(app) {
     output.textContent = 'Loading...';
 
     const starships = await fakeApi.getStarships();
-    const statuses = await fakeApi.getStatuses();
-    const statusLabels = Object.fromEntries(
-        statuses.map(item => [item.id, item.description])
-    );
-    const statusLookup = AMB.lookup({
-        valueField: 'id',
-        labelField: 'description',
-        load: async ({ query }) => fakeApi.searchStatuses(query)
-    });
-    const lookupDialog = new AMB.LookupDialog();
 
     const demo = AMB.table({
         selector: '#starship-table',
@@ -104,49 +94,9 @@ export default async function fullDemo(app) {
                 }
             },
             {
-                title: 'Status',
-                field: 'status',
-                required: true,
-                editor: AMB.editors.lookup(statusLookup, {
-                    uppercase: true,
-                    allowEmpty: true,
-                    dialog: lookupDialog,
-                    dialogTitle: 'Search status',
-                    invalidMessage: 'Unknown status code',
-                    autoComplete: true,
-                    dialogColumns: [
-                        { field: 'id', title: 'Code', width: 140 },
-                        { field: 'description', title: 'Description' }
-                    ]
-                }),
-                formatter: cell => {
-                    const value = cell.getValue();
-                    const cellElement = cell.getElement();
-                    const description = statusLabels[value] || '';
-                    const rowData = cell.getRow().getData();
-                    const field = cell.getField();
-
-                    if (!rowData._ambLookup) {
-                        rowData._ambLookup = {};
-                    }
-
-                    if (!rowData._ambLookup[field]) {
-                        rowData._ambLookup[field] = {
-                            initial: {
-                                value: value || '',
-                                description
-                            },
-                            current: {
-                                value: value || '',
-                                description
-                            }
-                        };
-                    }
-
-                    cellElement.dataset.lookupField = field;
-
-                    return value || '';
-                }
+                title: 'After Date',
+                field: 'afterDateNote',
+                editor: AMB.editors.text({ trim: true })
             },
             {
                 title: 'Notes',
@@ -157,6 +107,11 @@ export default async function fullDemo(app) {
                     title: 'Edit notes',
                     rows: 10
                 })
+            },
+            {
+                title: 'Final Text',
+                field: 'finalText',
+                editor: AMB.editors.text({ trim: true })
             }
         ]
     });
@@ -175,8 +130,9 @@ export default async function fullDemo(app) {
             crewSize: '',
             fuelCapacity: '',
             launchDate: '',
-            status: '',
-            notes: ''
+            afterDateNote: '',
+            notes: '',
+            finalText: ''
         });
     });
     saveButton.addEventListener('click', async () => {
@@ -234,7 +190,6 @@ export default async function fullDemo(app) {
     return {
         ...demo,
         destroy() {
-            lookupDialog.destroy();
             demo.destroy();
         }
     };
