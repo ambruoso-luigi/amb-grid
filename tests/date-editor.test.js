@@ -415,6 +415,8 @@ describe('date editor picker keyboard navigation', () => {
     let documentListeners;
 
     beforeEach(() => {
+        delete globalThis.__AMB_DEBUG_DATE_EDITOR__;
+        delete globalThis.__AMB_DEBUG_DATE_EDITOR_BREAK__;
         datepickerState.focusedDate = new Date(2026, 6, 20);
         datepickerState.instances.length = 0;
         documentListeners = [];
@@ -453,6 +455,8 @@ describe('date editor picker keyboard navigation', () => {
     });
 
     afterEach(() => {
+        delete globalThis.__AMB_DEBUG_DATE_EDITOR__;
+        delete globalThis.__AMB_DEBUG_DATE_EDITOR_BREAK__;
         globalThis.document = originalDocument;
         globalThis.window = originalWindow;
         vi.restoreAllMocks();
@@ -688,5 +692,93 @@ describe('date editor picker keyboard navigation', () => {
             true
         );
         expect(documentListeners).toHaveLength(0);
+    });
+
+    test('date editor debug is silent by default', () => {
+        const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+        createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+
+        expect(debugSpy).not.toHaveBeenCalled();
+        expect(documentListeners).toHaveLength(1);
+    });
+
+    test('pickerOnly debug logs document capture without blocking arrow keys', async () => {
+        globalThis.__AMB_DEBUG_DATE_EDITOR__ = true;
+        const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+        const event = await globalThis.document.dispatch('keydown', {
+            key: 'ArrowUp',
+            target: {
+                className: 'datepicker-cell focused',
+                tagName: 'SPAN'
+            }
+        });
+
+        expect(documentListeners).toHaveLength(2);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(debugSpy).toHaveBeenCalledWith(
+            '[AMB date editor]',
+            'document keydown capture',
+            expect.objectContaining({
+                key: 'ArrowUp',
+                pickerActive: true
+            })
+        );
+
+        await harness.pickerInput.dispatch('hide');
+
+        expect(documentListeners).toHaveLength(0);
+    });
+
+    test('pickerOnly debug listener is removed after success', async () => {
+        globalThis.__AMB_DEBUG_DATE_EDITOR__ = true;
+        vi.spyOn(console, 'debug').mockImplementation(() => {});
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+
+        await harness.pickerInput.dispatch('changeDate', {
+            detail: {
+                date: new Date(2026, 7, 9)
+            }
+        });
+
+        expect(harness.success).toHaveBeenCalledWith('09/08/2026');
+        expect(documentListeners).toHaveLength(0);
+        expect(globalThis.document.removeEventListener).toHaveBeenCalledTimes(2);
+    });
+
+    test('pickerInput debug logs keydown without changing behavior', async () => {
+        globalThis.__AMB_DEBUG_DATE_EDITOR__ = true;
+        const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+        const event = await harness.pickerInput.dispatch('keydown', {
+            key: 'ArrowLeft',
+            target: harness.pickerInput
+        });
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(debugSpy).toHaveBeenCalledWith(
+            '[AMB date editor]',
+            'pickerInput keydown',
+            expect.objectContaining({
+                key: 'ArrowLeft',
+                pickerActive: true
+            })
+        );
     });
 });
