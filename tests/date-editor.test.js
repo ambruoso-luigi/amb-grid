@@ -334,7 +334,9 @@ const createPickerHarness = () => {
     };
     const cell = {
         getValue: () => '20/07/2026',
-        getTable: () => table
+        getTable: () => table,
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
     };
     const success = vi.fn();
     const cancel = vi.fn();
@@ -346,6 +348,7 @@ const createPickerHarness = () => {
 
     return {
         cancel,
+        cell,
         input: wrapper.children[0],
         pickerButton: wrapper.children[1],
         pickerInput: wrapper.children[2],
@@ -393,7 +396,9 @@ describe('date editor picker keyboard navigation', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('20/07/2026');
-        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.cell.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
@@ -408,7 +413,9 @@ describe('date editor picker keyboard navigation', () => {
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
-        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
+        expect(harness.cell.navigatePrev).toHaveBeenCalledOnce();
+        expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigatePrev).not.toHaveBeenCalled();
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
     });
 
@@ -421,8 +428,24 @@ describe('date editor picker keyboard navigation', () => {
         await flushDeferred();
 
         expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+        expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
+    test('Escape cancels without navigating', async () => {
+        const harness = createPickerHarness();
+
+        await harness.input.dispatch('keydown', {
+            key: 'Escape'
+        });
+        await flushDeferred();
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+        expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
     });
 
     test('picker button is outside the tab order and still opens the picker', async () => {

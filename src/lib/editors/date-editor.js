@@ -192,16 +192,24 @@ export function date(options = {}) {
 
                     const table = cell && cell.getTable && cell.getTable();
 
-                    if (!table) return;
-
                     navigationScheduled = true;
                     globalThis.setTimeout(() => {
-                        if (direction === 'prev' && typeof table.navigatePrev === 'function') {
+                        if (direction === 'prev' && cell && typeof cell.navigatePrev === 'function') {
+                            cell.navigatePrev();
+                            return;
+                        }
+
+                        if (direction === 'next' && cell && typeof cell.navigateNext === 'function') {
+                            cell.navigateNext();
+                            return;
+                        }
+
+                        if (direction === 'prev' && table && typeof table.navigatePrev === 'function') {
                             table.navigatePrev();
                             return;
                         }
 
-                        if (direction === 'next' && typeof table.navigateNext === 'function') {
+                        if (direction === 'next' && table && typeof table.navigateNext === 'function') {
                             table.navigateNext();
                         }
                     }, 0);
