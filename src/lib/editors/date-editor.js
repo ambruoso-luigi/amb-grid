@@ -120,6 +120,8 @@ export function date(options = {}) {
                 let blurTimeout = null;
                 let tabCommitInProgress = false;
                 let navigationScheduled = false;
+                let pickerKeyboardListenerAttached = false;
+                let handlePickerDocumentKeydown = null;
 
                 input.className = 'amb-date-editor';
                 wrapper.className = 'amb-date-editor-wrapper';
@@ -148,7 +150,20 @@ export function date(options = {}) {
 
                 wrapper.append(pickerInput);
 
+                const removePickerKeyboardListener = () => {
+                    if (!pickerKeyboardListenerAttached || !handlePickerDocumentKeydown) return;
+
+                    document.removeEventListener(
+                        'keydown',
+                        handlePickerDocumentKeydown,
+                        true
+                    );
+                    pickerKeyboardListenerAttached = false;
+                };
+
                 const destroyDatepicker = () => {
+                    removePickerKeyboardListener();
+
                     if (blurTimeout) {
                         window.clearTimeout(blurTimeout);
                         blurTimeout = null;
@@ -284,6 +299,38 @@ export function date(options = {}) {
                     navigateAfterClose(direction);
                 };
 
+                handlePickerDocumentKeydown = event => {
+                    if (
+                        normalizedOptions.mode !== 'pickerOnly'
+                        || closed
+                        || !datepicker
+                        || !datepicker.active
+                        || event.key !== 'Tab'
+                    ) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    commitFocusedPickerDateFromTab(event.shiftKey ? 'prev' : 'next');
+                };
+
+                const addPickerKeyboardListener = () => {
+                    if (
+                        normalizedOptions.mode !== 'pickerOnly'
+                        || pickerKeyboardListenerAttached
+                    ) {
+                        return;
+                    }
+
+                    document.addEventListener(
+                        'keydown',
+                        handlePickerDocumentKeydown,
+                        true
+                    );
+                    pickerKeyboardListenerAttached = true;
+                };
+
                 const showPicker = () => {
                     if (!datepicker) return;
 
@@ -297,6 +344,10 @@ export function date(options = {}) {
                         ? formatPickerDate(parsedValue, normalizedOptions.format)
                         : '';
                     datepicker.show();
+
+                    if (datepicker.active) {
+                        addPickerKeyboardListener();
+                    }
                 };
 
                 const sanitizeInput = event => {
@@ -325,24 +376,6 @@ export function date(options = {}) {
                     closeWithSuccess(formattedValue);
                 });
                 pickerInput.addEventListener('hide', closeWithCancel);
-                pickerInput.addEventListener('keydown', event => {
-                    if (
-                        normalizedOptions.mode !== 'pickerOnly'
-                        || event.key !== 'Tab'
-                        || !datepicker
-                        || !datepicker.active
-                    ) {
-                        return;
-                    }
-
-                    event.preventDefault();
-
-                    if (typeof event.stopImmediatePropagation === 'function') {
-                        event.stopImmediatePropagation();
-                    }
-
-                    commitFocusedPickerDateFromTab(event.shiftKey ? 'prev' : 'next');
-                });
 
                 if (editorBehavior.hasPickerButton) {
                     pickerButton.addEventListener('mousedown', event => {

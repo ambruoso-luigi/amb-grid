@@ -412,14 +412,39 @@ const flushDeferred = () => new Promise(resolve => {
 describe('date editor picker keyboard navigation', () => {
     const originalDocument = globalThis.document;
     const originalWindow = globalThis.window;
+    let documentListeners;
 
     beforeEach(() => {
         datepickerState.focusedDate = new Date(2026, 6, 20);
         datepickerState.instances.length = 0;
+        documentListeners = [];
         globalThis.document = {
             activeElement: null,
+            addEventListener: vi.fn((type, listener, capture) => {
+                documentListeners.push({ capture, listener, type });
+            }),
             body: {},
-            createElement
+            createElement,
+            removeEventListener: vi.fn((type, listener, capture) => {
+                documentListeners = documentListeners.filter(entry => {
+                    return entry.type !== type
+                        || entry.listener !== listener
+                        || entry.capture !== capture;
+                });
+            }),
+            async dispatch(type, event = {}) {
+                const dispatchedEvent = {
+                    preventDefault: vi.fn(),
+                    stopPropagation: vi.fn(),
+                    ...event
+                };
+
+                documentListeners
+                    .filter(entry => entry.type === type)
+                    .forEach(entry => entry.listener(dispatchedEvent));
+
+                return dispatchedEvent;
+            }
         };
         globalThis.window = {
             clearTimeout: globalThis.clearTimeout,
@@ -522,36 +547,47 @@ describe('date editor picker keyboard navigation', () => {
 
         expect(datepicker.show).toHaveBeenCalledOnce();
         expect(datepicker.active).toBe(true);
+        expect(globalThis.document.addEventListener).toHaveBeenCalledWith(
+            'keydown',
+            expect.any(Function),
+            true
+        );
     });
 
-    test('pickerOnly Tab commits the focused date, closes, and navigates next', async () => {
+    test('pickerOnly document Tab commits the focused date, closes, and navigates next', async () => {
         const harness = createPickerHarness({
             mode: 'pickerOnly',
             picker: false
         });
         const datepicker = datepickerState.instances[0];
-        const event = await harness.pickerInput.dispatch('keydown', {
+        const event = await globalThis.document.dispatch('keydown', {
             key: 'Tab'
         });
 
         await flushDeferred();
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
-        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
         expect(datepicker.getFocusedDate).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('20/07/2026');
         expect(datepicker.destroy).toHaveBeenCalledOnce();
         expect(datepicker.active).toBe(false);
         expect(harness.afterDateCell.edit).toHaveBeenCalledOnce();
+        expect(globalThis.document.removeEventListener).toHaveBeenCalledWith(
+            'keydown',
+            expect.any(Function),
+            true
+        );
+        expect(documentListeners).toHaveLength(0);
     });
 
-    test('pickerOnly Shift+Tab commits the focused date and navigates previous', async () => {
+    test('pickerOnly document Shift+Tab commits the focused date and navigates previous', async () => {
         const harness = createPickerHarness({
             mode: 'pickerOnly',
             picker: false
         });
-        const event = await harness.pickerInput.dispatch('keydown', {
+        const event = await globalThis.document.dispatch('keydown', {
             key: 'Tab',
             shiftKey: true
         });
@@ -562,6 +598,56 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).toHaveBeenCalledWith('20/07/2026');
         expect(harness.fuelCell.edit).toHaveBeenCalledOnce();
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
+    });
+
+    test('pickerOnly document ArrowUp is left to the datepicker', async () => {
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+        const event = await globalThis.document.dispatch('keydown', {
+            key: 'ArrowUp'
+        });
+
+        await flushDeferred();
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
+        expect(harness.fuelCell.edit).not.toHaveBeenCalled();
+    });
+
+    test('pickerOnly replaces the keyboard listener cleanly between rows', async () => {
+        const firstHarness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+
+        await firstHarness.pickerInput.dispatch('hide');
+
+        expect(documentListeners).toHaveLength(0);
+
+        const secondHarness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+        const arrowEvent = await globalThis.document.dispatch('keydown', {
+            key: 'ArrowUp'
+        });
+        const tabEvent = await globalThis.document.dispatch('keydown', {
+            key: 'Tab'
+        });
+
+        await flushDeferred();
+
+        expect(documentListeners).toHaveLength(0);
+        expect(arrowEvent.preventDefault).not.toHaveBeenCalled();
+        expect(tabEvent.preventDefault).toHaveBeenCalledOnce();
+        expect(firstHarness.success).not.toHaveBeenCalled();
+        expect(secondHarness.success).toHaveBeenCalledWith('20/07/2026');
+        expect(secondHarness.afterDateCell.edit).toHaveBeenCalledOnce();
     });
 
     test('pickerOnly changeDate commits without forced navigation', async () => {
@@ -580,6 +666,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).toHaveBeenCalledWith('09/08/2026');
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
         expect(harness.fuelCell.edit).not.toHaveBeenCalled();
+        expect(documentListeners).toHaveLength(0);
     });
 
     test('pickerOnly hide cancels without navigation', async () => {
@@ -595,5 +682,11 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).not.toHaveBeenCalled();
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
         expect(harness.fuelCell.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.removeEventListener).toHaveBeenCalledWith(
+            'keydown',
+            expect.any(Function),
+            true
+        );
+        expect(documentListeners).toHaveLength(0);
     });
 });
