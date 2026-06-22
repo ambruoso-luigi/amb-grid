@@ -332,12 +332,48 @@ const createPickerHarness = () => {
         navigateNext: vi.fn(),
         navigatePrev: vi.fn()
     };
+    const createRowCell = editor => ({
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor })
+        })
+    });
+    const fuelCell = createRowCell('number');
+    const hiddenCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({
+                editor: 'text',
+                visible: false
+            })
+        })
+    };
+    const displayCell = createRowCell(false);
+    const afterDateCell = createRowCell('text');
+    const notesCell = createRowCell('textarea');
+    let rowCells = [];
+    const row = {
+        getCells: () => rowCells
+    };
     const cell = {
         getValue: () => '20/07/2026',
         getTable: () => table,
+        getRow: () => row,
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'date' })
+        }),
         navigateNext: vi.fn(),
         navigatePrev: vi.fn()
     };
+
+    rowCells = [
+        fuelCell,
+        cell,
+        hiddenCell,
+        displayCell,
+        afterDateCell,
+        notesCell
+    ];
     const success = vi.fn();
     const cancel = vi.fn();
     const editor = createDateEditor({
@@ -347,9 +383,14 @@ const createPickerHarness = () => {
     const wrapper = editor(cell, callback => callback(), success, cancel);
 
     return {
+        afterDateCell,
         cancel,
         cell,
+        displayCell,
+        fuelCell,
+        hiddenCell,
         input: wrapper.children[0],
+        notesCell,
         pickerButton: wrapper.children[1],
         pickerInput: wrapper.children[2],
         success,
@@ -396,7 +437,11 @@ describe('date editor picker keyboard navigation', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('20/07/2026');
-        expect(harness.cell.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.afterDateCell.edit).toHaveBeenCalledOnce();
+        expect(harness.hiddenCell.edit).not.toHaveBeenCalled();
+        expect(harness.displayCell.edit).not.toHaveBeenCalled();
+        expect(harness.notesCell.edit).not.toHaveBeenCalled();
+        expect(harness.cell.navigateNext).not.toHaveBeenCalled();
         expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
@@ -413,7 +458,8 @@ describe('date editor picker keyboard navigation', () => {
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
-        expect(harness.cell.navigatePrev).toHaveBeenCalledOnce();
+        expect(harness.fuelCell.edit).toHaveBeenCalledOnce();
+        expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
         expect(harness.cell.navigateNext).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
