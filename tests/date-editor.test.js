@@ -1,4 +1,5 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { date as createDateEditor } from '../src/lib/editors/date-editor.js';
 import {
     formatPickerDate,
     getDateEditorBehavior,
@@ -8,6 +9,25 @@ import {
     parseDateEditorValue,
     sanitizeDateInputCharacters
 } from '../src/lib/editors/date-editor-utils.js';
+
+const datepickerState = vi.hoisted(() => ({
+    instances: []
+}));
+
+vi.mock('vanillajs-datepicker/Datepicker', () => ({
+    default: class Datepicker {
+        constructor(element, options) {
+            this.element = element;
+            this.options = options;
+            this.active = false;
+            this.show = vi.fn(() => {
+                this.active = true;
+            });
+            this.destroy = vi.fn();
+            datepickerState.instances.push(this);
+        }
+    }
+}));
 
 describe('date editor modes', () => {
     test('maps picker true to manualWithPickerButton', () => {
@@ -261,5 +281,158 @@ describe('date editor commit behavior', () => {
             action: 'success',
             value: '01/01/2028'
         });
+    });
+});
+
+const createElement = tagName => {
+    const listeners = new Map();
+
+    return {
+        tagName,
+        children: [],
+        classList: {
+            toggle() {}
+        },
+        value: '',
+        selectionStart: 0,
+        selectionEnd: 0,
+        append(...children) {
+            this.children.push(...children);
+        },
+        setAttribute(name, value) {
+            this[name] = value;
+        },
+        addEventListener(type, listener) {
+            listeners.set(type, listener);
+        },
+        async dispatch(type, event = {}) {
+            const dispatchedEvent = {
+                preventDefault: vi.fn(),
+                stopPropagation: vi.fn(),
+                ...event
+            };
+
+            await listeners.get(type)?.(dispatchedEvent);
+            return dispatchedEvent;
+        },
+        focus() {},
+        select() {},
+        setSelectionRange(start, end) {
+            this.selectionStart = start;
+            this.selectionEnd = end;
+        },
+        closest() {
+            return null;
+        }
+    };
+};
+
+const createPickerHarness = () => {
+    const table = {
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
+    };
+    const cell = {
+        getValue: () => '20/07/2026',
+        getTable: () => table
+    };
+    const success = vi.fn();
+    const cancel = vi.fn();
+    const editor = createDateEditor({
+        format: 'dd/mm/yyyy',
+        picker: true
+    });
+    const wrapper = editor(cell, callback => callback(), success, cancel);
+
+    return {
+        cancel,
+        input: wrapper.children[0],
+        pickerButton: wrapper.children[1],
+        pickerInput: wrapper.children[2],
+        success,
+        table
+    };
+};
+
+const flushDeferred = () => new Promise(resolve => {
+    globalThis.setTimeout(resolve, 0);
+});
+
+describe('date editor picker keyboard navigation', () => {
+    const originalDocument = globalThis.document;
+    const originalWindow = globalThis.window;
+
+    beforeEach(() => {
+        datepickerState.instances.length = 0;
+        globalThis.document = {
+            activeElement: null,
+            body: {},
+            createElement
+        };
+        globalThis.window = {
+            clearTimeout: globalThis.clearTimeout,
+            setTimeout: globalThis.setTimeout
+        };
+    });
+
+    afterEach(() => {
+        globalThis.document = originalDocument;
+        globalThis.window = originalWindow;
+        vi.restoreAllMocks();
+    });
+
+    test('Tab commits and navigates next without a duplicate blur commit', async () => {
+        const harness = createPickerHarness();
+        const event = await harness.input.dispatch('keydown', {
+            key: 'Tab'
+        });
+
+        await harness.input.dispatch('blur');
+        await flushDeferred();
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('20/07/2026');
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
+    test('Shift+Tab commits and navigates previous', async () => {
+        const harness = createPickerHarness();
+        const event = await harness.input.dispatch('keydown', {
+            key: 'Tab',
+            shiftKey: true
+        });
+
+        await flushDeferred();
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+    });
+
+    test('Enter commits without forcing navigation', async () => {
+        const harness = createPickerHarness();
+
+        await harness.input.dispatch('keydown', {
+            key: 'Enter'
+        });
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
+    test('picker button is outside the tab order and still opens the picker', async () => {
+        const harness = createPickerHarness();
+        const datepicker = datepickerState.instances[0];
+
+        expect(harness.pickerButton.tabIndex).toBe(-1);
+
+        await harness.pickerButton.dispatch('click');
+
+        expect(datepicker.show).toHaveBeenCalledOnce();
     });
 });

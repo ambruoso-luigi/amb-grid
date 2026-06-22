@@ -114,7 +114,6 @@ export default async function fullDemo(app) {
                     dialogTitle: 'Search status',
                     invalidMessage: 'Unknown status code',
                     autoComplete: true,
-                    autoCompleteOnTab: false,
                     dialogColumns: [
                         { field: 'id', title: 'Code', width: 140 },
                         { field: 'description', title: 'Description' }

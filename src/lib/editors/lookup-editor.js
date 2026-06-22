@@ -73,7 +73,9 @@ export function lookup(lookupInstance, options = {}) {
             let dialogOpen = false;
             let autoCompleteRequestId = 0;
             let hasAutoCompleteSuggestion = false;
+            let manualAutoCompleteTypedValue = '';
             let tabCommitInProgress = false;
+            let navigationScheduled = false;
 
             container.className = 'amb-lookup-editor';
             input.className = 'amb-lookup-editor__input';
@@ -219,6 +221,7 @@ export function lookup(lookupInstance, options = {}) {
             const invalidateManualAutoComplete = () => {
                 autoCompleteRequestId += 1;
                 hasAutoCompleteSuggestion = false;
+                manualAutoCompleteTypedValue = '';
             };
 
             const applyManualAutoComplete = async () => {
@@ -229,6 +232,7 @@ export function lookup(lookupInstance, options = {}) {
 
                 autoCompleteRequestId = requestId;
                 hasAutoCompleteSuggestion = false;
+                manualAutoCompleteTypedValue = '';
 
                 if (typedValue.length < normalizedOptions.autoCompleteMinChars) return;
 
@@ -252,6 +256,7 @@ export function lookup(lookupInstance, options = {}) {
                     input.value = matchedValue;
                     input.setSelectionRange(typedValue.length, matchedValue.length);
                     hasAutoCompleteSuggestion = true;
+                    manualAutoCompleteTypedValue = typedValue;
                 } catch {
                     // Manual autocomplete is opportunistic; validation still happens on commit.
                 }
@@ -355,7 +360,27 @@ export function lookup(lookupInstance, options = {}) {
                 markInvalidCodeAfterClose(value);
             };
 
-            const commitFromTab = async () => {
+            const navigateAfterClose = direction => {
+                if (navigationScheduled) return;
+
+                const table = cell && cell.getTable && cell.getTable();
+
+                if (!table) return;
+
+                navigationScheduled = true;
+                globalThis.setTimeout(() => {
+                    if (direction === 'prev' && typeof table.navigatePrev === 'function') {
+                        table.navigatePrev();
+                        return;
+                    }
+
+                    if (direction === 'next' && typeof table.navigateNext === 'function') {
+                        table.navigateNext();
+                    }
+                }, 0);
+            };
+
+            const commitFromTab = async direction => {
                 if (closed || tabCommitInProgress) return;
 
                 tabCommitInProgress = true;
@@ -364,19 +389,17 @@ export function lookup(lookupInstance, options = {}) {
                     hasAutoCompleteSuggestion
                     && input.selectionStart < input.selectionEnd
                 ) {
-                    const cursorPosition = normalizedOptions.autoCompleteOnTab
-                        ? input.value.length
-                        : input.selectionStart;
+                    const committedValue = normalizedOptions.autoCompleteOnTab
+                        ? input.value
+                        : manualAutoCompleteTypedValue;
 
-                    if (!normalizedOptions.autoCompleteOnTab) {
-                        input.value = input.value.slice(0, cursorPosition);
-                    }
-
-                    input.setSelectionRange(cursorPosition, cursorPosition);
+                    input.value = committedValue;
+                    input.setSelectionRange(committedValue.length, committedValue.length);
                 }
 
                 invalidateManualAutoComplete();
                 await commit();
+                navigateAfterClose(direction);
             };
 
             input.addEventListener('input', event => {
@@ -401,7 +424,8 @@ export function lookup(lookupInstance, options = {}) {
                 }
 
                 if (event.key === 'Tab') {
-                    return commitFromTab();
+                    event.preventDefault();
+                    return commitFromTab(event.shiftKey ? 'prev' : 'next');
                 }
 
                 if (event.key === 'Enter') {

@@ -410,7 +410,7 @@ describe('lookup editor blur commits', () => {
         await Promise.resolve();
         await flushDeferred();
 
-        expect(preventDefault).not.toHaveBeenCalled();
+        expect(preventDefault).toHaveBeenCalledOnce();
         expect(harness.input.value).toBe('REP');
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REP');
@@ -419,11 +419,11 @@ describe('lookup editor blur commits', () => {
             harness.cell,
             'Invalid lookup code'
         );
-        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
-    test('Tab accepts an applied autocomplete suggestion only when enabled', async () => {
+    test('Tab accepts a visible autocomplete suggestion and navigates next', async () => {
         const harness = createHarness({
             options: {
                 autoComplete: true
@@ -440,15 +440,16 @@ describe('lookup editor blur commits', () => {
             key: 'Tab',
             preventDefault
         });
+        await flushDeferred();
 
-        expect(preventDefault).not.toHaveBeenCalled();
+        expect(preventDefault).toHaveBeenCalledOnce();
         expect(harness.input.value).toBe('REPAIR');
         expect(harness.input.selectionStart).toBe(6);
         expect(harness.input.selectionEnd).toBe(6);
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
         expect(harness.cancel).not.toHaveBeenCalled();
-        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
         expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
             value: 'REPAIR',
@@ -460,7 +461,7 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledOnce();
     });
 
-    test('Tab with autocomplete acceptance disabled commits only the typed prefix', async () => {
+    test('Tab can conservatively keep the typed prefix when autocomplete acceptance is disabled', async () => {
         const harness = createHarness({
             options: {
                 autoComplete: true,
@@ -480,16 +481,16 @@ describe('lookup editor blur commits', () => {
         });
         await flushDeferred();
 
-        expect(preventDefault).not.toHaveBeenCalled();
+        expect(preventDefault).toHaveBeenCalledOnce();
         expect(harness.input.value).toBe('REP');
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REP');
         expect(harness.markInvalid).toHaveBeenCalledOnce();
-        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
-    test('Tab commits a complete valid value once without forcing navigation', async () => {
+    test('Tab commits a complete valid value once and navigates next', async () => {
         const harness = createHarness();
         const preventDefault = vi.fn();
 
@@ -499,12 +500,32 @@ describe('lookup editor blur commits', () => {
             preventDefault
         });
         await harness.input.dispatch('blur');
+        await flushDeferred();
 
-        expect(preventDefault).not.toHaveBeenCalled();
+        expect(preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
-        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
+    test('Shift+Tab commits a complete valid value and navigates previous', async () => {
+        const harness = createHarness();
+        const preventDefault = vi.fn();
+
+        harness.input.value = 'repair';
+        await harness.input.dispatch('keydown', {
+            key: 'Tab',
+            shiftKey: true,
+            preventDefault
+        });
+        await flushDeferred();
+
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
     });
 
     test('Tab with an invalid value keeps the existing invalid commit behavior', async () => {
@@ -528,7 +549,7 @@ describe('lookup editor blur commits', () => {
             'Invalid lookup code'
         );
         expect(harness.cancel).not.toHaveBeenCalled();
-        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
     });
 
     test('Enter still commits a manual autocomplete suggestion without navigating', async () => {

@@ -118,6 +118,8 @@ export function date(options = {}) {
                 let datepicker = null;
                 let closed = false;
                 let blurTimeout = null;
+                let tabCommitInProgress = false;
+                let navigationScheduled = false;
 
                 input.className = 'amb-date-editor';
                 wrapper.className = 'amb-date-editor-wrapper';
@@ -126,6 +128,7 @@ export function date(options = {}) {
                     normalizedOptions.mode === 'pickerOnly'
                 );
                 pickerButton.type = 'button';
+                pickerButton.tabIndex = -1;
                 pickerButton.className = 'amb-date-editor-picker-button';
                 pickerButton.setAttribute('aria-label', 'Open date picker');
                 pickerButton.title = 'Open date picker';
@@ -184,6 +187,34 @@ export function date(options = {}) {
                     closeWithSuccess(result.value);
                 };
 
+                const navigateAfterClose = direction => {
+                    if (navigationScheduled) return;
+
+                    const table = cell && cell.getTable && cell.getTable();
+
+                    if (!table) return;
+
+                    navigationScheduled = true;
+                    globalThis.setTimeout(() => {
+                        if (direction === 'prev' && typeof table.navigatePrev === 'function') {
+                            table.navigatePrev();
+                            return;
+                        }
+
+                        if (direction === 'next' && typeof table.navigateNext === 'function') {
+                            table.navigateNext();
+                        }
+                    }, 0);
+                };
+
+                const commitFromTab = direction => {
+                    if (closed || tabCommitInProgress) return;
+
+                    tabCommitInProgress = true;
+                    commit();
+                    navigateAfterClose(direction);
+                };
+
                 const showPicker = () => {
                     if (!datepicker) return;
 
@@ -240,6 +271,12 @@ export function date(options = {}) {
                             return;
                         }
 
+                        if (event.key === 'Tab') {
+                            event.preventDefault();
+                            commitFromTab(event.shiftKey ? 'prev' : 'next');
+                            return;
+                        }
+
                         if (event.key === 'Enter') {
                             commit();
                             return;
@@ -250,6 +287,8 @@ export function date(options = {}) {
                         }
                     });
                     input.addEventListener('blur', () => {
+                        if (tabCommitInProgress) return;
+
                         blurTimeout = window.setTimeout(() => {
                             if (closed) return;
 
