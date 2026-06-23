@@ -88,6 +88,23 @@ const buildDateReport = result => {
     return lines.join('\n');
 };
 
+const debugDateEditorCall = (label, options) => {
+    const editor = AMB.editors.date(options);
+
+    return (cell, onRendered, success, cancel) => {
+        console.log('[Dates demo] date editor called', {
+            label,
+            field: cell && cell.getField && cell.getField(),
+            value: cell && cell.getValue && cell.getValue(),
+            debugFlag: window.__AMB_DEBUG_DATE_EDITOR__
+        });
+
+        debugger;
+
+        return editor(cell, onRendered, success, cancel);
+    };
+};
+
 export default function dates(app) {
     app.innerHTML = `
         <h2>Dates</h2>
@@ -198,7 +215,7 @@ export default function dates(app) {
             {
                 title: 'Picker-only date',
                 field: 'pickerOnlyDate',
-                editor: AMB.editors.date(dateDashPickerOnly.editor),
+                editor: debugDateEditorCall('pickerOnlyDate', dateDashPickerOnly.editor),
                 formatter: AMB.formatters.date(dateDashPickerOnly.formatter),
                 validation: {
                     date: dateDashPickerOnly.validator
