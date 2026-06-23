@@ -19,6 +19,7 @@
     --amb-color-primary: #557a9b;
     --amb-color-primary-hover: #466b8c;
     --amb-color-primary-soft: #e7eef5;
+    --amb-color-surface-subtle: #f8fafc;
     --amb-color-success: #39704a;
     --amb-color-success-soft: #f0f7f2;
     --amb-color-warning: #806214;
@@ -311,6 +312,27 @@
     right: 0;
     top: 100%;
     width: 1px;
+}
+
+.tabulator-row .tabulator-cell.amb-cell--actionable {
+    color: var(--amb-color-info);
+    cursor: pointer;
+    transition: background-color 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
+.tabulator-row .tabulator-cell.amb-cell--actionable:hover {
+    background-color: var(--amb-color-info-soft);
+    color: var(--amb-color-primary-hover);
+}
+
+.tabulator-row .tabulator-cell.amb-cell--actionable:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--amb-color-focus);
+    outline: none;
+}
+
+.tabulator-row .tabulator-cell.amb-cell--derived {
+    background-color: var(--amb-color-surface-subtle);
+    color: var(--amb-color-text-muted);
 }
 
 .tabulator-row .tabulator-cell.amb-autocomplete-cell--editing {
