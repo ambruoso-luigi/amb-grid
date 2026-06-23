@@ -198,6 +198,7 @@ export default function dates(app) {
             {
                 title: 'Picker-only date',
                 field: 'pickerOnlyDate',
+                cssClass: 'amb-cell--readonly-actionable amb-cell--actionable amb-cell--picker-only',
                 editor: AMB.editors.date(dateDashPickerOnly.editor),
                 formatter: AMB.formatters.date(dateDashPickerOnly.formatter),
                 validation: {

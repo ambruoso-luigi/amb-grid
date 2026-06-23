@@ -66,11 +66,14 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).toContain('cellDblClick:');
         expect(demoSource).toContain('editable: false');
         expect(demoSource).toContain('pendingLookupTimer');
-        expect(demoSource).toContain('LOOKUP_OPEN_DELAY = 150');
+        expect(demoSource).toContain('LOOKUP_OPEN_DELAY = 0');
         expect(demoSource).toContain('globalThis.setTimeout(');
+        expect(demoSource).toContain('restoreLookupOriginFocus(cell)');
         expect(demoSource).toContain('globalThis.clearTimeout(pendingLookupTimer)');
         expect(demoSource).toContain('event.stopPropagation?.()');
         expect(demoSource).toContain('applyMunicipalitySelection({');
+        expect(demoSource).toContain("cssClass: 'amb-cell--readonly-actionable amb-cell--actionable'");
+        expect(demoSource).toContain("cssClass: 'amb-cell--readonly-passive amb-cell--derived'");
         expect(demoSource).toContain('This dataset is provided for demonstration purposes only.');
     });
 

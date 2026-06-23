@@ -20,6 +20,13 @@
     --amb-color-primary-hover: #466b8c;
     --amb-color-primary-soft: #e7eef5;
     --amb-color-surface-subtle: #f8fafc;
+    --amb-readonly-passive-bg: var(--amb-color-surface-subtle);
+    --amb-readonly-passive-text: var(--amb-color-text-muted);
+    --amb-readonly-passive-border: var(--amb-color-border);
+    --amb-readonly-actionable-bg: var(--amb-color-info-soft);
+    --amb-readonly-actionable-text: var(--amb-color-info);
+    --amb-readonly-actionable-hover-bg: var(--amb-color-primary-soft);
+    --amb-readonly-actionable-border: var(--amb-color-primary);
     --amb-color-success: #39704a;
     --amb-color-success-soft: #f0f7f2;
     --amb-color-warning: #806214;
@@ -314,25 +321,34 @@
     width: 1px;
 }
 
-.tabulator-row .tabulator-cell.amb-cell--actionable {
-    color: var(--amb-color-info);
+.tabulator-row .tabulator-cell.amb-cell--readonly-actionable,
+.tabulator-row .tabulator-cell.amb-cell--actionable,
+.tabulator-row .tabulator-cell.amb-cell--picker-only {
+    background-color: var(--amb-readonly-actionable-bg);
+    box-shadow: inset 3px 0 0 var(--amb-readonly-actionable-border);
+    color: var(--amb-readonly-actionable-text);
     cursor: pointer;
     transition: background-color 120ms ease, box-shadow 120ms ease, color 120ms ease;
 }
 
-.tabulator-row .tabulator-cell.amb-cell--actionable:hover {
-    background-color: var(--amb-color-info-soft);
-    color: var(--amb-color-primary-hover);
+.tabulator-row .tabulator-cell.amb-cell--readonly-actionable:hover,
+.tabulator-row .tabulator-cell.amb-cell--actionable:hover,
+.tabulator-row .tabulator-cell.amb-cell--picker-only:hover {
+    background-color: var(--amb-readonly-actionable-hover-bg);
 }
 
-.tabulator-row .tabulator-cell.amb-cell--actionable:focus-visible {
+.tabulator-row .tabulator-cell.amb-cell--readonly-actionable:focus-visible,
+.tabulator-row .tabulator-cell.amb-cell--actionable:focus-visible,
+.tabulator-row .tabulator-cell.amb-cell--picker-only:focus-visible {
     box-shadow: inset 0 0 0 2px var(--amb-color-focus);
     outline: none;
 }
 
+.tabulator-row .tabulator-cell.amb-cell--readonly-passive,
 .tabulator-row .tabulator-cell.amb-cell--derived {
-    background-color: var(--amb-color-surface-subtle);
-    color: var(--amb-color-text-muted);
+    background-color: var(--amb-readonly-passive-bg);
+    box-shadow: inset 3px 0 0 var(--amb-readonly-passive-border);
+    color: var(--amb-readonly-passive-text);
 }
 
 .tabulator-row .tabulator-cell.amb-autocomplete-cell--editing {
