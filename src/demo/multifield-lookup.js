@@ -10,7 +10,6 @@ const DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
     + 'It may be incomplete, outdated, or inaccurate. '
     + 'Do not use it as an official source for production systems.';
-const LOOKUP_OPEN_DELAY = 0;
 const createInitialData = () => [
     {
         id: 1,
@@ -149,15 +148,13 @@ export default async function multifieldLookup(app) {
     });
     const lookupDialog = new AMB.LookupDialog();
     let grid = null;
-    let pendingLookupTimer = null;
-    let pendingLookupCell = null;
-    let pendingLookupRow = null;
-    let activeLookupRow = null;
+    let lookupOpening = false;
+    let lookupOpen = false;
     let destroyed = false;
     const reportDialog = createDemoReportDialog();
 
     const openMunicipalityLookup = async cell => {
-        if (!grid || destroyed) return;
+        if (!grid || destroyed || lookupOpening || lookupOpen) return;
 
         const row = cell.getRow();
         const rowData = row.getData();
@@ -165,62 +162,39 @@ export default async function multifieldLookup(app) {
 
         if (rowData[stateField] === 'deleted') return;
 
-        const visibleColumns = municipalityLookup.columns.filter(column => {
-            return column.visible === true;
-        });
-        const selected = await lookupDialog.open({
-            title: 'Select an Italian municipality',
-            columns: visibleColumns,
-            data: await municipalityLookup.load(),
-            valueField: municipalityLookup.keyField,
-            searchFields: visibleColumns.map(column => column.field),
-            searchPlaceholder: 'Search municipality, province, region, or postal code...'
-        });
+        lookupOpening = true;
 
-        if (destroyed) return;
+        try {
+            const visibleColumns = municipalityLookup.columns.filter(column => {
+                return column.visible === true;
+            });
 
-        const applied = applyMunicipalitySelection({
-            selected,
-            rowData,
-            crud: grid.crud
-        });
+            lookupOpen = true;
+            grid.feedback.clear();
+            const selected = await lookupDialog.open({
+                title: 'Select an Italian municipality',
+                columns: visibleColumns,
+                data: municipalities,
+                valueField: municipalityLookup.keyField,
+                searchFields: visibleColumns.map(column => column.field),
+                searchPlaceholder: 'Search municipality, province, region, or postal code...'
+            });
 
-        if (applied) {
-            restoreLookupOriginFocus(cell);
+            if (destroyed) return;
+
+            const applied = applyMunicipalitySelection({
+                selected,
+                rowData,
+                crud: grid.crud
+            });
+
+            if (applied) {
+                restoreLookupOriginFocus(cell);
+            }
+        } finally {
+            lookupOpening = false;
+            lookupOpen = false;
         }
-    };
-
-    const scheduleMunicipalityLookup = cell => {
-        if (!grid || destroyed || pendingLookupTimer || activeLookupRow) return;
-
-        const row = cell.getRow();
-        const rowData = row.getData();
-
-        if (rowData[grid.crud.options.stateField] === 'deleted') return;
-
-        // Set the pending guard before the delay so a second click from a
-        // double-click cannot schedule or interact with another dialog.
-        pendingLookupCell = cell;
-        pendingLookupRow = row;
-        pendingLookupTimer = globalThis.setTimeout(async () => {
-            const scheduledCell = pendingLookupCell;
-
-            pendingLookupTimer = null;
-            pendingLookupCell = null;
-            activeLookupRow = pendingLookupRow;
-            pendingLookupRow = null;
-
-            if (destroyed || !scheduledCell) {
-                activeLookupRow = null;
-                return;
-            }
-
-            try {
-                await openMunicipalityLookup(scheduledCell);
-            } finally {
-                activeLookupRow = null;
-            }
-        }, LOOKUP_OPEN_DELAY);
     };
 
     grid = AMB.table({
@@ -254,7 +228,8 @@ export default async function multifieldLookup(app) {
                 cssClass: 'amb-cell--readonly-actionable amb-cell--actionable',
                 cellClick: (event, cell) => {
                     event.preventDefault?.();
-                    scheduleMunicipalityLookup(cell);
+                    event.stopPropagation?.();
+                    openMunicipalityLookup(cell);
                 },
                 cellDblClick: event => {
                     event.preventDefault?.();
@@ -327,14 +302,6 @@ export default async function multifieldLookup(app) {
         destroy() {
             destroyed = true;
             reportDialog.destroy();
-
-            if (pendingLookupTimer) {
-                globalThis.clearTimeout(pendingLookupTimer);
-                pendingLookupTimer = null;
-            }
-
-            pendingLookupCell = null;
-            pendingLookupRow = null;
 
             if (lookupDialog.resolve) {
                 lookupDialog.close(null);
