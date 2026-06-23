@@ -298,75 +298,22 @@ export function date(options = {}) {
                     navigateAfterClose(direction);
                 };
 
-                const focusPickerDay = () => {
+                const keepPickerArrowInsideEditor = event => {
                     if (
                         normalizedOptions.mode !== 'pickerOnly'
-                        || closed
                         || !datepicker
                         || !datepicker.active
+                        || (
+                            event.key !== 'ArrowUp'
+                            && event.key !== 'ArrowDown'
+                            && event.key !== 'ArrowLeft'
+                            && event.key !== 'ArrowRight'
+                        )
                     ) {
-                        return false;
+                        return;
                     }
 
-                    const pickerElement = datepicker.pickerElement;
-
-                    if (!pickerElement || typeof pickerElement.querySelector !== 'function') {
-                        return false;
-                    }
-
-                    const selectors = [
-                        '.datepicker-cell.day.focused',
-                        '.datepicker-cell.day.selected',
-                        '.datepicker-cell.day.today',
-                        '.datepicker-cell.day:not(.disabled)'
-                    ];
-                    let dayElement = null;
-
-                    for (const selector of selectors) {
-                        dayElement = pickerElement.querySelector(selector);
-                        if (dayElement) break;
-                    }
-
-                    if (!dayElement || typeof dayElement.focus !== 'function') {
-                        return false;
-                    }
-
-                    dayElement.tabIndex = 0;
-
-                    try {
-                        dayElement.focus({ preventScroll: true });
-                    } catch {
-                        dayElement.focus();
-                    }
-
-                    return true;
-                };
-
-                const schedulePickerFocusCheck = () => {
-                    globalThis.setTimeout(() => {
-                        if (
-                            normalizedOptions.mode !== 'pickerOnly'
-                            || closed
-                            || !datepicker
-                            || !datepicker.active
-                        ) {
-                            return;
-                        }
-
-                        const pickerElement = datepicker.pickerElement;
-                        const activeElement = document.activeElement;
-                        const isPickerButton = activeElement
-                            && typeof activeElement.matches === 'function'
-                            && activeElement.matches('.datepicker button, .datepicker .button');
-                        const isInsidePicker = pickerElement
-                            && activeElement
-                            && typeof pickerElement.contains === 'function'
-                            && pickerElement.contains(activeElement);
-
-                        if (isPickerButton || !isInsidePicker) {
-                            focusPickerDay();
-                        }
-                    }, 0);
+                    event.stopPropagation();
                 };
 
                 handlePickerDocumentKeydown = event => {
@@ -376,16 +323,6 @@ export function date(options = {}) {
                         || !datepicker
                         || !datepicker.active
                     ) {
-                        return;
-                    }
-
-                    if (
-                        event.key === 'ArrowUp'
-                        || event.key === 'ArrowDown'
-                        || event.key === 'ArrowLeft'
-                        || event.key === 'ArrowRight'
-                    ) {
-                        schedulePickerFocusCheck();
                         return;
                     }
 
@@ -430,7 +367,11 @@ export function date(options = {}) {
                         addPickerKeyboardListener();
 
                         if (normalizedOptions.mode === 'pickerOnly') {
-                            focusPickerDay();
+                            try {
+                                pickerInput.focus({ preventScroll: true });
+                            } catch {
+                                pickerInput.focus();
+                            }
                         }
                     }
                 };
@@ -515,6 +456,7 @@ export function date(options = {}) {
 
                 onRendered(() => {
                     datepicker = new Datepicker(pickerInput, createPickerOptions(normalizedOptions));
+                    pickerInput.addEventListener('keydown', keepPickerArrowInsideEditor);
 
                     if (editorBehavior.hasManualInput) {
                         input.focus();

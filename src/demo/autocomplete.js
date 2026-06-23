@@ -1,4 +1,5 @@
 import { AMB } from '../index.js';
+import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 
 const departments = [
     'Administration',
@@ -108,32 +109,60 @@ const buildReport = result => {
     return lines.join('\n');
 };
 
+const createAutocompleteData = () => [
+    { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', requiredDepartment: 'Administration', tag: 'internal', city: 'Milan' },
+    { id: 2, task: 'Review access controls', department: 'Information Technology', requiredDepartment: 'Security', tag: 'review', city: 'Berlin' },
+    { id: 3, task: 'Check monthly close', department: 'Finance', requiredDepartment: 'Accounting', tag: 'urgent', city: 'London' },
+    { id: 4, task: 'Update support workflow', department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' }
+];
+
 export default function autocomplete(app) {
     app.innerHTML = `
         <h2>Autocomplete</h2>
-        <p class="demo-note">Autocomplete suggests text from simple string lists. The typed or selected text is stored directly, with no separate hidden value.</p>
-        <ul class="demo-note">
-            <li><strong>Free autocomplete:</strong> custom values are allowed.</li>
-            <li><strong>Strict autocomplete:</strong> values outside the list stay visible and are reported by validation.</li>
-            <li><strong>Required strict autocomplete:</strong> empty and unknown values are reported by validation.</li>
-            <li><strong>Long list:</strong> only the first five matches are shown.</li>
-        </ul>
-        <div class="toolbar">
-            <button type="button" id="action-create-autocomplete-anomalies">Create autocomplete anomalies</button>
-        </div>
+        <p class="demo-note">Autocomplete helps users choose suggested values while keeping AMB Grid in control of commit rules, validation, and row state.</p>
+        <details class="demo-disclosure">
+            <summary class="demo-disclosure__summary">Autocomplete behavior</summary>
+            <div class="demo-disclosure__content">
+                <ul class="demo-rules-list">
+                    <li>Strict autocomplete requires one of the suggested values.</li>
+                    <li>Free autocomplete accepts custom values.</li>
+                    <li>Suggestions are filtered while typing and can be selected with the keyboard.</li>
+                    <li>Unknown strict values remain visible and are reported by validation.</li>
+                    <li>Custom values in the free tag and city columns are accepted.</li>
+                    <li>City shows at most five matching suggestions.</li>
+                    <li>AMB Grid owns commit behavior, validation, CRUD state, and payload generation.</li>
+                </ul>
+            </div>
+        </details>
         <div id="autocomplete-table"></div>
-        <pre class="demo-output" id="autocomplete-output"></pre>
     `;
 
     const demo = AMB.table({
         selector: '#autocomplete-table',
         height: '340px',
-        data: [
-            { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', requiredDepartment: 'Administration', tag: 'internal', city: 'Milan' },
-            { id: 2, task: 'Review access controls', department: 'Information Technology', requiredDepartment: 'Security', tag: 'review', city: 'Berlin' },
-            { id: 3, task: 'Check monthly close', department: 'Finance', requiredDepartment: 'Accounting', tag: 'urgent', city: 'London' },
-            { id: 4, task: 'Update support workflow', department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' }
-        ],
+        toolbar: {
+            buttons: [
+                {
+                    id: 'validate-autocomplete',
+                    label: 'Validate autocomplete',
+                    title: 'Validate autocomplete values',
+                    onClick: handleValidateAutocomplete
+                },
+                {
+                    id: 'create-autocomplete-anomalies',
+                    label: 'Create anomalies',
+                    title: 'Create invalid strict autocomplete values',
+                    onClick: handleCreateAutocompleteAnomalies
+                },
+                {
+                    id: 'reset-autocomplete',
+                    label: 'Reset data',
+                    title: 'Reset autocomplete demo data',
+                    onClick: handleResetAutocomplete
+                }
+            ]
+        },
+        data: createAutocompleteData(),
         layout: 'fitColumns',
         columns: [
             { title: 'ID', field: 'id', width: 70 },
@@ -202,9 +231,26 @@ export default function autocomplete(app) {
             }
         ]
     });
-    const output = app.querySelector('#autocomplete-output');
+    const reportDialog = createDemoReportDialog();
+    const originalDestroy = demo.destroy.bind(demo);
 
-    app.querySelector('#action-create-autocomplete-anomalies').addEventListener('click', () => {
+    demo.destroy = () => {
+        reportDialog.destroy();
+        originalDestroy();
+    };
+
+    function handleValidateAutocomplete() {
+        const result = demo.crud.validateAll();
+
+        reportDialog.open({
+            title: 'Autocomplete validation report',
+            reportText: buildReport(result),
+            jsonData: result
+        });
+    }
+
+    async function handleCreateAutocompleteAnomalies() {
+        demo.feedback.clear();
         demo.crud.updateRow(2, {
             department: 'Unknown department',
             requiredDepartment: '',
@@ -214,10 +260,22 @@ export default function autocomplete(app) {
             requiredDepartment: 'Unknown department'
         });
 
-        window.setTimeout(() => {
-            output.textContent = buildReport(demo.crud.validateChanges());
-        }, 0);
-    });
+        await new Promise(resolve => window.setTimeout(resolve, 0));
+        demo.crud.validateChanges();
+        demo.feedback.show({
+            type: 'warning',
+            message: 'Autocomplete anomalies created. Validate to inspect the report.'
+        });
+    }
+
+    async function handleResetAutocomplete() {
+        demo.feedback.clear();
+        await demo.table.setData(createAutocompleteData());
+        demo.feedback.show({
+            type: 'success',
+            message: 'Autocomplete demo data reset.'
+        });
+    }
 
     return demo;
 }

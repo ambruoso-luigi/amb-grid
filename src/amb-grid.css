@@ -248,7 +248,8 @@
 }
 
 .amb-cell-editor,
-.amb-date-editor {
+.amb-date-editor,
+.amb-autocomplete-editor {
     background: var(--amb-color-surface);
     border: 1px solid var(--amb-color-focus);
     border-radius: var(--amb-radius-sm);
@@ -312,42 +313,30 @@
     width: 1px;
 }
 
-.amb-autocomplete-editor {
-    background: var(--amb-color-surface);
-    border: 1px solid var(--amb-color-focus);
-    border-radius: var(--amb-radius-sm);
-    box-sizing: border-box;
-    box-shadow: var(--amb-focus-ring);
-    color: var(--amb-color-text);
-    font: inherit;
-    height: 100%;
-    outline: none;
-    padding: 6px 8px;
-    width: 100%;
-}
-
 .tabulator-row .tabulator-cell.amb-autocomplete-cell--editing {
     overflow: visible;
-    z-index: 12;
+    z-index: 20;
 }
 
 .amb-autocomplete-cell--editing .awesomplete {
+    height: 100%;
     position: relative;
     width: 100%;
-    height: 100%;
     z-index: 10000;
 }
 
 .amb-autocomplete-cell--editing .awesomplete > ul {
     background: var(--amb-color-surface);
     border: 1px solid var(--amb-color-border);
-    border-radius: var(--amb-radius-sm);
+    border-radius: var(--amb-radius);
     box-shadow: var(--amb-shadow-dropdown);
     color: var(--amb-color-text);
     margin: 5px 0 0;
     max-height: 240px;
+    overscroll-behavior: contain;
     overflow-y: auto;
     padding: var(--amb-space-xs);
+    scrollbar-gutter: stable;
     text-shadow: none;
     transform: none;
     transition: opacity 100ms ease, visibility 100ms ease;
@@ -365,6 +354,7 @@
 }
 
 .amb-autocomplete-cell--editing .awesomplete > ul > li {
+    border-left: 3px solid transparent;
     border-radius: var(--amb-radius-sm);
     color: var(--amb-color-text);
     cursor: pointer;
@@ -380,7 +370,7 @@
 
 .amb-autocomplete-cell--editing .awesomplete > ul > li[aria-selected="true"] {
     background: var(--amb-color-primary-soft);
-    box-shadow: inset 3px 0 0 var(--amb-color-primary);
+    border-left-color: var(--amb-color-primary);
     color: var(--amb-color-text);
 }
 
@@ -388,7 +378,7 @@
 .amb-autocomplete-cell--editing .awesomplete li:hover mark,
 .amb-autocomplete-cell--editing .awesomplete li[aria-selected="true"] mark {
     background: transparent;
-    color: #294f70;
+    color: var(--amb-color-primary);
     font-weight: 700;
     text-decoration: underline;
     text-decoration-color: rgb(85 122 155 / 35%);

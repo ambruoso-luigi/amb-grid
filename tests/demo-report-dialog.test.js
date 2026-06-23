@@ -52,6 +52,26 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain('Summary');
     });
 
+    test('uses the shared report dialog and integrated toolbar in Autocomplete', () => {
+        const source = readSource('../src/demo/autocomplete.js');
+
+        expect(source).toContain(
+            "import { createDemoReportDialog } from './utils/demo-report-dialog.js'"
+        );
+        expect(source).toContain(
+            '<summary class="demo-disclosure__summary">Autocomplete behavior</summary>'
+        );
+        expect(source).toContain("label: 'Validate autocomplete'");
+        expect(source).toContain("label: 'Create anomalies'");
+        expect(source).toContain("label: 'Reset data'");
+        expect(source).toContain("title: 'Autocomplete validation report'");
+        expect(source).toContain('data: createAutocompleteData()');
+        expect(source).toContain('await demo.table.setData(createAutocompleteData())');
+        expect(source).toContain('reportDialog.destroy()');
+        expect(source).not.toContain('id="autocomplete-output"');
+        expect(source).not.toContain('id="action-create-autocomplete-anomalies"');
+    });
+
     test('configures Validation with useful toolbar actions only', () => {
         const source = readSource('../src/demo/validation.js');
         const toolbarSource = source.slice(
