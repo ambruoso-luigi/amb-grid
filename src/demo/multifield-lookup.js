@@ -228,12 +228,7 @@ export default async function multifieldLookup(app) {
         data: createInitialData(),
         toolbar: {
             buttons: [
-                {
-                    id: 'add',
-                    label: 'Add row',
-                    title: 'Add row',
-                    onClick: handleAddRow
-                },
+                'add',
                 'payload',
                 {
                     id: 'reset-data',
@@ -242,6 +237,7 @@ export default async function multifieldLookup(app) {
                     onClick: handleResetData
                 }
             ],
+            onAdd: handleAddRow,
             onPayload: handleShowPayload
         },
         layout: 'fitColumns',

@@ -18,6 +18,10 @@ const demoMenuSource = fs.readFileSync(
     new URL('../src/demo/main.js', import.meta.url),
     'utf8'
 );
+const libraryCss = fs.readFileSync(
+    new URL('../src/amb-grid.css', import.meta.url),
+    'utf8'
+);
 
 describe('Italian municipalities demo dataset', () => {
     test('contains a realistic, uniquely keyed municipality list', () => {
@@ -72,9 +76,23 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).toContain('globalThis.clearTimeout(pendingLookupTimer)');
         expect(demoSource).toContain('event.stopPropagation?.()');
         expect(demoSource).toContain('applyMunicipalitySelection({');
+        expect(demoSource).toContain("'add'");
+        expect(demoSource).toContain('onAdd: handleAddRow');
+        expect(demoSource).not.toContain("label: 'Add row'");
+        expect(demoSource).not.toContain('onClick: handleAddRow');
         expect(demoSource).toContain("cssClass: 'amb-cell--readonly-actionable amb-cell--actionable'");
         expect(demoSource).toContain("cssClass: 'amb-cell--readonly-passive amb-cell--derived'");
         expect(demoSource).toContain('This dataset is provided for demonstration purposes only.');
+    });
+
+    test('keeps readonly visual utilities zebra-safe by default', () => {
+        expect(libraryCss).toContain('--amb-readonly-passive-marker');
+        expect(libraryCss).toContain('--amb-readonly-actionable-marker');
+        expect(libraryCss).toContain('--amb-readonly-actionable-hover-bg: transparent');
+        expect(libraryCss).toContain('box-shadow: inset 3px 0 0 var(--amb-readonly-passive-marker)');
+        expect(libraryCss).toContain('box-shadow: inset 3px 0 0 var(--amb-readonly-actionable-marker)');
+        expect(libraryCss).not.toContain('--amb-readonly-passive-bg');
+        expect(libraryCss).not.toContain('--amb-readonly-actionable-bg');
     });
 
     test('builds one complete synchronized patch from the selected record', () => {

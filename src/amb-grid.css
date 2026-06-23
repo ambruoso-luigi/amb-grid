@@ -20,13 +20,12 @@
     --amb-color-primary-hover: #466b8c;
     --amb-color-primary-soft: #e7eef5;
     --amb-color-surface-subtle: #f8fafc;
-    --amb-readonly-passive-bg: var(--amb-color-surface-subtle);
     --amb-readonly-passive-text: var(--amb-color-text-muted);
-    --amb-readonly-passive-border: var(--amb-color-border);
-    --amb-readonly-actionable-bg: var(--amb-color-info-soft);
+    --amb-readonly-passive-marker: var(--amb-color-border-strong);
     --amb-readonly-actionable-text: var(--amb-color-info);
-    --amb-readonly-actionable-hover-bg: var(--amb-color-primary-soft);
-    --amb-readonly-actionable-border: var(--amb-color-primary);
+    --amb-readonly-actionable-marker: var(--amb-color-primary);
+    --amb-readonly-actionable-hover-text: var(--amb-color-primary-hover);
+    --amb-readonly-actionable-hover-bg: transparent;
     --amb-color-success: #39704a;
     --amb-color-success-soft: #f0f7f2;
     --amb-color-warning: #806214;
@@ -324,8 +323,7 @@
 .tabulator-row .tabulator-cell.amb-cell--readonly-actionable,
 .tabulator-row .tabulator-cell.amb-cell--actionable,
 .tabulator-row .tabulator-cell.amb-cell--picker-only {
-    background-color: var(--amb-readonly-actionable-bg);
-    box-shadow: inset 3px 0 0 var(--amb-readonly-actionable-border);
+    box-shadow: inset 3px 0 0 var(--amb-readonly-actionable-marker);
     color: var(--amb-readonly-actionable-text);
     cursor: pointer;
     transition: background-color 120ms ease, box-shadow 120ms ease, color 120ms ease;
@@ -335,19 +333,21 @@
 .tabulator-row .tabulator-cell.amb-cell--actionable:hover,
 .tabulator-row .tabulator-cell.amb-cell--picker-only:hover {
     background-color: var(--amb-readonly-actionable-hover-bg);
+    color: var(--amb-readonly-actionable-hover-text);
 }
 
 .tabulator-row .tabulator-cell.amb-cell--readonly-actionable:focus-visible,
 .tabulator-row .tabulator-cell.amb-cell--actionable:focus-visible,
 .tabulator-row .tabulator-cell.amb-cell--picker-only:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--amb-color-focus);
+    box-shadow:
+        inset 3px 0 0 var(--amb-readonly-actionable-marker),
+        inset 0 0 0 2px var(--amb-color-focus);
     outline: none;
 }
 
 .tabulator-row .tabulator-cell.amb-cell--readonly-passive,
 .tabulator-row .tabulator-cell.amb-cell--derived {
-    background-color: var(--amb-readonly-passive-bg);
-    box-shadow: inset 3px 0 0 var(--amb-readonly-passive-border);
+    box-shadow: inset 3px 0 0 var(--amb-readonly-passive-marker);
     color: var(--amb-readonly-passive-text);
 }
 
