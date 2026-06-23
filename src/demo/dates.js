@@ -92,6 +92,9 @@ const debugDateEditorCall = (label, options) => {
     const editor = AMB.editors.date(options);
 
     return (cell, onRendered, success, cancel) => {
+        window.__AMB_DEBUG_DATE_EDITOR__ = true;
+        window.__AMB_DEBUG_DATE_EDITOR_BREAK__ = false;
+
         console.log('[Dates demo] date editor called', {
             label,
             field: cell && cell.getField && cell.getField(),
