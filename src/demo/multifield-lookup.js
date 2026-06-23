@@ -148,13 +148,12 @@ export default async function multifieldLookup(app) {
     });
     const lookupDialog = new AMB.LookupDialog();
     let grid = null;
-    let lookupOpening = false;
-    let lookupOpen = false;
+    let lookupBusy = false;
     let destroyed = false;
     const reportDialog = createDemoReportDialog();
 
     const openMunicipalityLookup = async cell => {
-        if (!grid || destroyed || lookupOpening || lookupOpen) return;
+        if (!grid || destroyed || lookupBusy) return;
 
         const row = cell.getRow();
         const rowData = row.getData();
@@ -162,14 +161,13 @@ export default async function multifieldLookup(app) {
 
         if (rowData[stateField] === 'deleted') return;
 
-        lookupOpening = true;
+        lookupBusy = true;
 
         try {
             const visibleColumns = municipalityLookup.columns.filter(column => {
                 return column.visible === true;
             });
 
-            lookupOpen = true;
             grid.feedback.clear();
             const selected = await lookupDialog.open({
                 title: 'Select an Italian municipality',
@@ -192,8 +190,7 @@ export default async function multifieldLookup(app) {
                 restoreLookupOriginFocus(cell);
             }
         } finally {
-            lookupOpening = false;
-            lookupOpen = false;
+            lookupBusy = false;
         }
     };
 
