@@ -574,4 +574,56 @@ describe('lookup editor blur commits', () => {
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
+
+    test('forwards dialogOptions while preserving editor-calculated dialog fields', async () => {
+        const dialog = {
+            open: vi.fn(async () => records[2])
+        };
+        const harness = createHarness({
+            options: {
+                dialog,
+                dialogTitle: 'Search status',
+                dialogColumns: [
+                    { field: 'id', title: 'Code' },
+                    { field: 'description', title: 'Description' }
+                ],
+                dialogOptions: {
+                    closeOnBackdropClick: false,
+                    destroyOnClose: true,
+                    pagination: {
+                        enabled: true,
+                        pageSize: 10,
+                        controls: 'full'
+                    },
+                    title: 'Ignored title',
+                    columns: [{ field: 'ignored' }],
+                    data: [{ id: 'IGNORED' }],
+                    searchFields: ['ignored']
+                }
+            }
+        });
+
+        await harness.container.children[1].dispatch('click');
+
+        expect(dialog.open).toHaveBeenCalledOnce();
+        expect(dialog.open).toHaveBeenCalledWith({
+            closeOnBackdropClick: false,
+            destroyOnClose: true,
+            pagination: {
+                enabled: true,
+                pageSize: 10,
+                controls: 'full'
+            },
+            title: 'Search status',
+            columns: [
+                { field: 'id', title: 'Code' },
+                { field: 'description', title: 'Description' }
+            ],
+            data: records,
+            valueField: 'id',
+            searchFields: ['id', 'description'],
+            searchPlaceholder: 'Search...'
+        });
+        expect(harness.success).toHaveBeenCalledWith('DOCKED');
+    });
 });

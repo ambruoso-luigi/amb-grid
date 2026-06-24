@@ -20,6 +20,7 @@ import { getInitialValue, getLookupOptionValue } from './shared.js';
      * @param {Array<object>} [options.columns] - Dialog columns.
      * @param {string} [options.valueField] - Stored value field override.
      * @param {string} [options.labelField] - Display label field override.
+     * @param {object} [options.dialogOptions] - Options forwarded to `LookupDialog.open`. Editor-calculated title, columns, data, and search fields take precedence.
      * @returns {Function} Tabulator editor.
      * @example
      * const products = AMB.lookup({
@@ -50,6 +51,7 @@ export function lookup(lookupInstance, options = {}) {
             columns: lookupInstance && lookupInstance.columns,
             search: lookupInstance && lookupInstance.search,
             mapToRow: lookupInstance && lookupInstance.mapToRow,
+            dialogOptions: {},
             ...options
         };
         const keyField = lookupInstance && lookupInstance.keyField;
@@ -487,6 +489,7 @@ export function lookup(lookupInstance, options = {}) {
                         })
                         : visibleColumns.map(column => column.field);
                     const selected = await normalizedOptions.dialog.open({
+                        ...normalizedOptions.dialogOptions,
                         title: normalizedOptions.dialogTitle || 'Search value',
                         columns: visibleColumns,
                         data: await loadLookup(''),

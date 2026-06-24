@@ -18,6 +18,20 @@ export default async function fullDemo(app) {
     output.textContent = 'Loading...';
 
     const starships = await fakeApi.getStarships();
+    const statusLookup = AMB.lookup({
+        keyField: 'id',
+        valueField: 'id',
+        labelField: 'description',
+        columns: [
+            { field: 'id', title: 'Code', visible: true, width: 140 },
+            { field: 'description', title: 'Description', visible: true }
+        ],
+        search: {
+            fields: 'visible'
+        },
+        load: ({ query }) => fakeApi.searchStatuses(query)
+    });
+    const statusDialog = new AMB.LookupDialog();
 
     const demo = AMB.table({
         selector: '#starship-table',
@@ -78,6 +92,30 @@ export default async function fullDemo(app) {
                 }
             },
             {
+                title: 'Status',
+                field: 'status',
+                required: true,
+                editor: AMB.editors.lookup(statusLookup, {
+                    uppercase: true,
+                    allowEmpty: true,
+                    dialog: statusDialog,
+                    dialogTitle: 'Search status',
+                    invalidMessage: 'Unknown status code',
+                    autoComplete: true,
+                    autoCompleteMinChars: 1,
+                    autoCompleteOnTab: true,
+                    dialogOptions: {
+                        closeOnBackdropClick: false,
+                        pagination: {
+                            enabled: true,
+                            pageSize: 10,
+                            controls: 'full'
+                        },
+                        destroyOnClose: true
+                    }
+                })
+            },
+            {
                 title: 'Launch Date',
                 field: 'launchDate',
                 editor: AMB.editors.date({
@@ -129,6 +167,7 @@ export default async function fullDemo(app) {
             captainEmail: '',
             crewSize: '',
             fuelCapacity: '',
+            status: '',
             launchDate: '',
             afterDateNote: '',
             notes: '',
@@ -190,6 +229,12 @@ export default async function fullDemo(app) {
     return {
         ...demo,
         destroy() {
+            if (statusDialog.resolve) {
+                statusDialog.close(null);
+            } else {
+                statusDialog.destroy();
+            }
+
             demo.destroy();
         }
     };

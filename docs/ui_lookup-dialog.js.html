@@ -69,12 +69,16 @@ const normalizePagination = (pagination, pageSize) => {
             &amp;&amp; pagination.enabled !== false
         );
     const configuredPageSize = paginationOptions.pageSize ?? pageSize;
+    const controls = paginationOptions.controls === 'simple'
+        ? 'simple'
+        : 'full';
 
     return {
         enabled: Boolean(enabled),
         pageSize: Number.isInteger(configuredPageSize) &amp;&amp; configuredPageSize > 0
             ? configuredPageSize
-            : DEFAULT_PAGE_SIZE
+            : DEFAULT_PAGE_SIZE,
+        controls
     };
 };
 
@@ -115,8 +119,10 @@ export class LookupDialog {
         this.table = null;
         this.paginationElement = null;
         this.paginationSummary = null;
+        this.firstPageButton = null;
         this.previousPageButton = null;
         this.nextPageButton = null;
+        this.lastPageButton = null;
         this.cancelButton = null;
         this.selectButton = null;
     }
@@ -139,6 +145,7 @@ export class LookupDialog {
      * @param {boolean|object} [options.pagination=false] - Enable client-side pagination. Search always filters the complete dataset.
      * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using object configuration.
      * @param {number} [options.pagination.pageSize=100] - Rows rendered per page.
+     * @param {'simple'|'full'} [options.pagination.controls='full'] - Show Previous/Next or First/Previous/Next/Last controls.
      * @param {number} [options.pageSize=100] - Rows per page when `pagination: true`.
      * @param {boolean} [options.destroyOnClose=true] - Destroy markup on close. Set false to reuse the shell; call `destroy()` when finished so retained data can be released.
      * @param {number} [options.initialRenderLimit] - Legacy non-paginated render limit. Prefer `pagination`.
@@ -262,8 +269,10 @@ export class LookupDialog {
         this.table = null;
         this.paginationElement = null;
         this.paginationSummary = null;
+        this.firstPageButton = null;
         this.previousPageButton = null;
         this.nextPageButton = null;
+        this.lastPageButton = null;
         this.cancelButton = null;
         this.selectButton = null;
     }
@@ -281,15 +290,25 @@ export class LookupDialog {
         const pagination = createElement('div', 'amb-lookup-pagination');
         const paginationSummary = createElement('div', 'amb-lookup-pagination__summary');
         const paginationActions = createElement('div', 'amb-lookup-pagination__actions');
+        const firstPageButton = createElement(
+            'button',
+            'amb-lookup-dialog__button amb-lookup-pagination__button amb-lookup-pagination__button--first',
+            '\u00AB'
+        );
         const previousPageButton = createElement(
             'button',
-            'amb-lookup-dialog__button amb-lookup-pagination__button',
-            'Previous'
+            'amb-lookup-dialog__button amb-lookup-pagination__button amb-lookup-pagination__button--previous',
+            '\u2039'
         );
         const nextPageButton = createElement(
             'button',
-            'amb-lookup-dialog__button amb-lookup-pagination__button',
-            'Next'
+            'amb-lookup-dialog__button amb-lookup-pagination__button amb-lookup-pagination__button--next',
+            '\u203A'
+        );
+        const lastPageButton = createElement(
+            'button',
+            'amb-lookup-dialog__button amb-lookup-pagination__button amb-lookup-pagination__button--last',
+            '\u00BB'
         );
         const footer = createElement('div', 'amb-lookup-dialog__footer');
         const cancelButton = createElement('button', 'amb-lookup-dialog__button');
@@ -299,10 +318,18 @@ export class LookupDialog {
         );
 
         search.type = 'search';
+        firstPageButton.type = 'button';
+        firstPageButton.setAttribute('aria-label', 'First lookup page');
+        firstPageButton.title = 'First page';
         previousPageButton.type = 'button';
         previousPageButton.setAttribute('aria-label', 'Previous lookup page');
+        previousPageButton.title = 'Previous page';
         nextPageButton.type = 'button';
         nextPageButton.setAttribute('aria-label', 'Next lookup page');
+        nextPageButton.title = 'Next page';
+        lastPageButton.type = 'button';
+        lastPageButton.setAttribute('aria-label', 'Last lookup page');
+        lastPageButton.title = 'Last page';
         paginationSummary.setAttribute('role', 'status');
         paginationSummary.setAttribute('aria-live', 'polite');
         cancelButton.type = 'button';
@@ -310,8 +337,10 @@ export class LookupDialog {
 
         header.appendChild(title);
         tableWrap.appendChild(table);
+        paginationActions.appendChild(firstPageButton);
         paginationActions.appendChild(previousPageButton);
         paginationActions.appendChild(nextPageButton);
+        paginationActions.appendChild(lastPageButton);
         pagination.appendChild(paginationSummary);
         pagination.appendChild(paginationActions);
         body.appendChild(search);
@@ -335,8 +364,10 @@ export class LookupDialog {
         this.search = search;
         this.paginationElement = pagination;
         this.paginationSummary = paginationSummary;
+        this.firstPageButton = firstPageButton;
         this.previousPageButton = previousPageButton;
         this.nextPageButton = nextPageButton;
+        this.lastPageButton = lastPageButton;
         this.cancelButton = cancelButton;
         this.selectButton = selectButton;
 
@@ -351,8 +382,12 @@ export class LookupDialog {
         cancelButton.addEventListener('click', () => this.close(null));
         selectButton.addEventListener('click', () => this.selectCurrent());
         search.addEventListener('input', () => this.filter(search.value));
+        firstPageButton.addEventListener('click', () => this.goToPage(1));
         previousPageButton.addEventListener('click', () => this.changePage(-1));
         nextPageButton.addEventListener('click', () => this.changePage(1));
+        lastPageButton.addEventListener('click', () => {
+            this.goToPage(this.getRenderState().pageCount);
+        });
     }
 
     render() {
@@ -368,6 +403,10 @@ export class LookupDialog {
         this.cancelButton.textContent = this.options.cancelText;
         this.selectButton.textContent = this.options.selectText;
         this.paginationElement.hidden = !this.options.pagination.enabled;
+        const fullPaginationControls = this.options.pagination.controls === 'full';
+
+        this.firstPageButton.hidden = !fullPaginationControls;
+        this.lastPageButton.hidden = !fullPaginationControls;
 
         this.renderTable();
         this.keydownHandler = event => this.handleKeydown(event);
@@ -458,9 +497,14 @@ export class LookupDialog {
             ? renderState.startIndex + 1
             : 0;
 
-        this.paginationSummary.textContent = `Showing ${firstResult}-${renderState.endIndex} of ${renderState.totalCount} results`;
-        this.previousPageButton.disabled = this.currentPage &lt;= 1;
-        this.nextPageButton.disabled = this.currentPage >= renderState.pageCount;
+        const atFirstPage = this.currentPage &lt;= 1;
+        const atLastPage = this.currentPage >= renderState.pageCount;
+
+        this.paginationSummary.textContent = `Showing ${firstResult}-${renderState.endIndex} of ${renderState.totalCount} results | Page ${this.currentPage} of ${renderState.pageCount}`;
+        this.firstPageButton.disabled = atFirstPage;
+        this.previousPageButton.disabled = atFirstPage;
+        this.nextPageButton.disabled = atLastPage;
+        this.lastPageButton.disabled = atLastPage;
     }
 
     renderTable() {
@@ -534,11 +578,14 @@ export class LookupDialog {
     changePage(direction) {
         if (!this.options.pagination.enabled) return;
 
+        this.goToPage(this.currentPage + direction);
+    }
+
+    goToPage(pageNumber) {
+        if (!this.options.pagination.enabled) return;
+
         const renderState = this.getRenderState();
-        const nextPage = Math.min(
-            Math.max(this.currentPage + direction, 1),
-            renderState.pageCount
-        );
+        const nextPage = Math.min(Math.max(pageNumber, 1), renderState.pageCount);
 
         if (nextPage === this.currentPage) return;
 
@@ -653,7 +700,7 @@ export class LookupDialog {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 24 2026 16:15:33 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 24 2026 17:09:24 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

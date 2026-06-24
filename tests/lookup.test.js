@@ -390,7 +390,8 @@ describe('LookupDialog filtering', () => {
 
             expect(dialog.options.pagination).toEqual({
                 enabled: false,
-                pageSize: 100
+                pageSize: 100,
+                controls: 'full'
             });
             expect(dialog.table.children[1].children).toHaveLength(3);
             expect(dialog.paginationElement.hidden).toBe(true);
@@ -426,9 +427,11 @@ describe('LookupDialog filtering', () => {
             expect(getRows()).toHaveLength(2);
             expect(getRows()[0].children[0].textContent).toBe('First');
             expect(dialog.paginationSummary.textContent)
-                .toBe('Showing 1-2 of 5 results');
+                .toBe('Showing 1-2 of 5 results | Page 1 of 3');
+            expect(dialog.firstPageButton.disabled).toBe(true);
             expect(dialog.previousPageButton.disabled).toBe(true);
             expect(dialog.nextPageButton.disabled).toBe(false);
+            expect(dialog.lastPageButton.disabled).toBe(false);
 
             await dialog.nextPageButton.dispatch('click');
 
@@ -436,9 +439,11 @@ describe('LookupDialog filtering', () => {
             expect(getRows()).toHaveLength(2);
             expect(getRows()[0].children[0].textContent).toBe('Third');
             expect(dialog.paginationSummary.textContent)
-                .toBe('Showing 3-4 of 5 results');
+                .toBe('Showing 3-4 of 5 results | Page 2 of 3');
+            expect(dialog.firstPageButton.disabled).toBe(false);
             expect(dialog.previousPageButton.disabled).toBe(false);
             expect(dialog.nextPageButton.disabled).toBe(false);
+            expect(dialog.lastPageButton.disabled).toBe(false);
 
             await dialog.previousPageButton.dispatch('click');
 
@@ -486,9 +491,11 @@ describe('LookupDialog filtering', () => {
             expect(getRows()[0].children[0].textContent)
                 .toBe('Target beyond page one');
             expect(dialog.paginationSummary.textContent)
-                .toBe('Showing 1-1 of 1 results');
+                .toBe('Showing 1-1 of 1 results | Page 1 of 1');
+            expect(dialog.firstPageButton.disabled).toBe(true);
             expect(dialog.previousPageButton.disabled).toBe(true);
             expect(dialog.nextPageButton.disabled).toBe(true);
+            expect(dialog.lastPageButton.disabled).toBe(true);
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
@@ -513,7 +520,7 @@ describe('LookupDialog filtering', () => {
             expect(dialog.options.pagination.pageSize).toBe(100);
             expect(dialog.table.children[1].children).toHaveLength(100);
             expect(dialog.paginationSummary.textContent)
-                .toBe('Showing 1-100 of 101 results');
+                .toBe('Showing 1-100 of 101 results | Page 1 of 2');
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
@@ -561,6 +568,98 @@ describe('LookupDialog filtering', () => {
 
             dialog.destroy();
             expect(harness.body.children).toHaveLength(0);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('supports full pagination controls and first/last navigation', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: Array.from({ length: 5 }, (_, index) => ({
+                    title: `Result ${index + 1}`
+                })),
+                pagination: {
+                    enabled: true,
+                    pageSize: 2,
+                    controls: 'full'
+                }
+            });
+            const buttons = [
+                dialog.firstPageButton,
+                dialog.previousPageButton,
+                dialog.nextPageButton,
+                dialog.lastPageButton
+            ];
+
+            expect(buttons.map(button => button.textContent))
+                .toEqual(['\u00AB', '\u2039', '\u203A', '\u00BB']);
+            expect(buttons.map(button => button['aria-label'])).toEqual([
+                'First lookup page',
+                'Previous lookup page',
+                'Next lookup page',
+                'Last lookup page'
+            ]);
+            expect(buttons.map(button => button.title)).toEqual([
+                'First page',
+                'Previous page',
+                'Next page',
+                'Last page'
+            ]);
+            expect(buttons.every(button => button.hidden === false)).toBe(true);
+
+            await dialog.lastPageButton.dispatch('click');
+
+            expect(dialog.currentPage).toBe(3);
+            expect(dialog.firstPageButton.disabled).toBe(false);
+            expect(dialog.previousPageButton.disabled).toBe(false);
+            expect(dialog.nextPageButton.disabled).toBe(true);
+            expect(dialog.lastPageButton.disabled).toBe(true);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 5-5 of 5 results | Page 3 of 3');
+
+            await dialog.firstPageButton.dispatch('click');
+
+            expect(dialog.currentPage).toBe(1);
+            expect(dialog.firstPageButton.disabled).toBe(true);
+            expect(dialog.previousPageButton.disabled).toBe(true);
+            expect(dialog.nextPageButton.disabled).toBe(false);
+            expect(dialog.lastPageButton.disabled).toBe(false);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('simple pagination shows only previous and next controls', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: [{ title: 'First' }, { title: 'Second' }],
+                pagination: {
+                    enabled: true,
+                    pageSize: 1,
+                    controls: 'simple'
+                }
+            });
+
+            expect(dialog.options.pagination.controls).toBe('simple');
+            expect(dialog.firstPageButton.hidden).toBe(true);
+            expect(dialog.previousPageButton.hidden).toBe(false);
+            expect(dialog.nextPageButton.hidden).toBe(false);
+            expect(dialog.lastPageButton.hidden).toBe(true);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
         } finally {
             harness.restore();
         }

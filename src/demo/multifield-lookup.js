@@ -175,7 +175,8 @@ export default async function multifieldLookup(app) {
             closeOnBackdropClick: false,
             pagination: {
                 enabled: true,
-                pageSize: 100
+                pageSize: 100,
+                controls: 'full'
             },
             valueField: municipalityLookup.keyField,
             searchFields: visibleColumns.map(column => column.field),

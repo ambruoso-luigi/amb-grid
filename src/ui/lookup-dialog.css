@@ -156,8 +156,15 @@
 }
 
 .amb-lookup-pagination__button {
-    min-width: 78px;
-    padding-block: 6px;
+    font-size: 18px;
+    line-height: 1;
+    min-height: 30px;
+    min-width: 34px;
+    padding: 5px 8px;
+}
+
+.amb-lookup-pagination__button[hidden] {
+    display: none;
 }
 
 .amb-lookup-dialog__footer {
