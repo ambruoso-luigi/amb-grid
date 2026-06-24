@@ -82,6 +82,8 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).toContain('event.stopPropagation?.()');
         expect(demoSource).toContain('applyMunicipalitySelection({');
         expect(demoSource).toContain('data: await municipalityLookup.load()');
+        expect(demoSource).toContain('closeOnBackdropClick: false');
+        expect(demoSource).toContain('initialRenderLimit: 150');
         expect(demoSource).toContain("'add'");
         expect(demoSource).toContain('onAdd: handleAddRow');
         expect(demoSource).not.toContain("label: 'Add row'");

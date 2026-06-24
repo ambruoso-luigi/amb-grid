@@ -73,6 +73,8 @@ export class LookupDialog {
      * @param {string} [options.searchPlaceholder='Search...'] - Search input placeholder.
      * @param {string[]} [options.searchFields] - Fields used for local filtering. Defaults to displayed columns.
      * @param {number} [options.width=720] - Dialog panel width in pixels.
+     * @param {boolean} [options.closeOnBackdropClick=true] - Close when the backdrop is pressed.
+     * @param {number} [options.initialRenderLimit] - Maximum rows rendered at once. Filtering still uses the complete dataset.
      * @param {string} [options.noResultsText='No results'] - Text shown when filtering returns no rows.
      * @param {string} [options.selectText='Select'] - Select button text.
      * @param {string} [options.cancelText='Cancel'] - Cancel button text.
@@ -90,11 +92,18 @@ export class LookupDialog {
             valueField: 'id',
             searchPlaceholder: 'Search...',
             width: 720,
+            closeOnBackdropClick: true,
+            initialRenderLimit: null,
             noResultsText: 'No results',
             selectText: 'Select',
             cancelText: 'Cancel',
             ...options
         };
+        this.options.closeOnBackdropClick = this.options.closeOnBackdropClick !== false;
+        this.options.initialRenderLimit = Number.isInteger(this.options.initialRenderLimit)
+            && this.options.initialRenderLimit > 0
+            ? this.options.initialRenderLimit
+            : null;
         this.options.columns = normalizeColumns(this.options.columns);
         this.options.searchFields = Array.isArray(this.options.searchFields)
             ? this.options.searchFields.filter(Boolean)
@@ -192,7 +201,10 @@ export class LookupDialog {
         this.selectButton = selectButton;
 
         overlay.addEventListener('mousedown', event => {
-            if (event.target === overlay) {
+            if (
+                this.options.closeOnBackdropClick
+                && event.target === overlay
+            ) {
                 this.close(null);
             }
         });
@@ -212,10 +224,48 @@ export class LookupDialog {
         this.selectButton.disabled = this.selectedIndex < 0;
     }
 
+    getRenderedData() {
+        if (!this.options.initialRenderLimit) {
+            return this.filteredData;
+        }
+
+        return this.filteredData.slice(0, this.options.initialRenderLimit);
+    }
+
+    updateResultsFeedback(renderedCount) {
+        const totalCount = this.filteredData.length;
+
+        if (!totalCount) {
+            this.feedback?.show({
+                type: 'info',
+                message: this.options.noResultsText
+            });
+            return;
+        }
+
+        if (renderedCount < totalCount) {
+            const hasQuery = Boolean(
+                this.search
+                && String(this.search.value || '').trim()
+            );
+
+            this.feedback?.show({
+                type: 'info',
+                message: hasQuery
+                    ? `Showing first ${renderedCount} of ${totalCount} matching results. Refine your search to narrow the list.`
+                    : `Showing first ${renderedCount} of ${totalCount} results. Search to narrow the list.`
+            });
+            return;
+        }
+
+        this.feedback?.clear();
+    }
+
     renderTable() {
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
         const tbody = document.createElement('tbody');
+        const renderedData = this.getRenderedData();
 
         this.options.columns.forEach(column => {
             const th = document.createElement('th');
@@ -241,15 +291,11 @@ export class LookupDialog {
             td.textContent = this.options.noResultsText;
             row.appendChild(td);
             tbody.appendChild(row);
-            this.feedback?.show({
-                type: 'info',
-                message: this.options.noResultsText
-            });
-        } else {
-            this.feedback?.clear();
         }
 
-        this.filteredData.forEach((item, index) => {
+        this.updateResultsFeedback(renderedData.length);
+
+        renderedData.forEach((item, index) => {
             const row = document.createElement('tr');
 
             row.className = index === this.selectedIndex
@@ -337,19 +383,21 @@ export class LookupDialog {
     }
 
     moveSelection(direction) {
-        if (!this.filteredData.length) return;
+        const renderedCount = this.getRenderedData().length;
+
+        if (!renderedCount) return;
 
         if (this.selectedIndex < 0) {
             this.selectedIndex = direction > 0
                 ? 0
-                : this.filteredData.length - 1;
+                : renderedCount - 1;
             this.updateRowSelection();
             return;
         }
 
         this.selectedIndex = Math.max(
             0,
-            Math.min(this.filteredData.length - 1, this.selectedIndex + direction)
+            Math.min(renderedCount - 1, this.selectedIndex + direction)
         );
         this.updateRowSelection();
     }

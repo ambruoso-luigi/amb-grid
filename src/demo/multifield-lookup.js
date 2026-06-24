@@ -172,6 +172,8 @@ export default async function multifieldLookup(app) {
             title: 'Select an Italian municipality',
             columns: visibleColumns,
             data: await municipalityLookup.load(),
+            closeOnBackdropClick: false,
+            initialRenderLimit: 150,
             valueField: municipalityLookup.keyField,
             searchFields: visibleColumns.map(column => column.field),
             searchPlaceholder: 'Search municipality, province, region, or postal code...'
