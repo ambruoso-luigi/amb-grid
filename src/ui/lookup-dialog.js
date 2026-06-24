@@ -1,5 +1,7 @@
 import { FeedbackRegion } from './feedback-region.js';
 
+const DEFAULT_PAGE_SIZE = 100;
+
 const createElement = (tagName, className, text = '') => {
     const element = document.createElement(tagName);
 
@@ -26,6 +28,26 @@ const getCellValue = (item, field) => {
     if (value === null || value === undefined) return '';
 
     return String(value);
+};
+
+const normalizePagination = (pagination, pageSize) => {
+    const paginationOptions = pagination && typeof pagination === 'object'
+        ? pagination
+        : {};
+    const enabled = pagination === true
+        || (
+            pagination
+            && typeof pagination === 'object'
+            && pagination.enabled !== false
+        );
+    const configuredPageSize = paginationOptions.pageSize ?? pageSize;
+
+    return {
+        enabled: Boolean(enabled),
+        pageSize: Number.isInteger(configuredPageSize) && configuredPageSize > 0
+            ? configuredPageSize
+            : DEFAULT_PAGE_SIZE
+    };
 };
 
 const getFormattedCellValue = (item, column) => {
@@ -57,6 +79,18 @@ export class LookupDialog {
         this.filteredData = [];
         this.feedback = null;
         this.keydownHandler = null;
+        this.currentPage = 1;
+        this.panel = null;
+        this.titleElement = null;
+        this.search = null;
+        this.tableWrap = null;
+        this.table = null;
+        this.paginationElement = null;
+        this.paginationSummary = null;
+        this.previousPageButton = null;
+        this.nextPageButton = null;
+        this.cancelButton = null;
+        this.selectButton = null;
     }
 
     /**
@@ -74,7 +108,12 @@ export class LookupDialog {
      * @param {string[]} [options.searchFields] - Fields used for local filtering. Defaults to displayed columns.
      * @param {number} [options.width=720] - Dialog panel width in pixels.
      * @param {boolean} [options.closeOnBackdropClick=true] - Close when the backdrop is pressed.
-     * @param {number} [options.initialRenderLimit] - Maximum rows rendered at once. Filtering still uses the complete dataset.
+     * @param {boolean|object} [options.pagination=false] - Enable client-side pagination. Search always filters the complete dataset.
+     * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using object configuration.
+     * @param {number} [options.pagination.pageSize=100] - Rows rendered per page.
+     * @param {number} [options.pageSize=100] - Rows per page when `pagination: true`.
+     * @param {boolean} [options.destroyOnClose=true] - Destroy markup on close. Set false to reuse the shell; call `destroy()` when finished so retained data can be released.
+     * @param {number} [options.initialRenderLimit] - Legacy non-paginated render limit. Prefer `pagination`.
      * @param {string} [options.noResultsText='No results'] - Text shown when filtering returns no rows.
      * @param {string} [options.selectText='Select'] - Select button text.
      * @param {string} [options.cancelText='Cancel'] - Cancel button text.
@@ -93,6 +132,9 @@ export class LookupDialog {
             searchPlaceholder: 'Search...',
             width: 720,
             closeOnBackdropClick: true,
+            pagination: false,
+            pageSize: DEFAULT_PAGE_SIZE,
+            destroyOnClose: true,
             initialRenderLimit: null,
             noResultsText: 'No results',
             selectText: 'Select',
@@ -100,6 +142,11 @@ export class LookupDialog {
             ...options
         };
         this.options.closeOnBackdropClick = this.options.closeOnBackdropClick !== false;
+        this.options.destroyOnClose = this.options.destroyOnClose !== false;
+        this.options.pagination = normalizePagination(
+            this.options.pagination,
+            this.options.pageSize
+        );
         this.options.initialRenderLimit = Number.isInteger(this.options.initialRenderLimit)
             && this.options.initialRenderLimit > 0
             ? this.options.initialRenderLimit
@@ -110,6 +157,7 @@ export class LookupDialog {
             : this.options.columns.map(column => column.field);
         this.filteredData = [...(this.options.data || [])];
         this.selectedIndex = -1;
+        this.currentPage = 1;
 
         this.render();
 
@@ -127,11 +175,33 @@ export class LookupDialog {
     close(value) {
         const resolve = this.resolve;
 
-        this.destroy();
+        if (this.options?.destroyOnClose === false) {
+            this.deactivate();
+        } else {
+            this.destroy();
+        }
 
         if (resolve) {
             resolve(value);
         }
+    }
+
+    deactivate() {
+        this.removeKeydownHandler();
+
+        if (this.overlay) {
+            this.overlay.hidden = true;
+        }
+
+        this.resolve = null;
+        this.selectedIndex = -1;
+    }
+
+    removeKeydownHandler() {
+        if (!this.keydownHandler) return;
+
+        document.removeEventListener('keydown', this.keydownHandler);
+        this.keydownHandler = null;
     }
 
     /**
@@ -140,10 +210,7 @@ export class LookupDialog {
      * @returns {void}
      */
     destroy() {
-        if (this.keydownHandler) {
-            document.removeEventListener('keydown', this.keydownHandler);
-            this.keydownHandler = null;
-        }
+        this.removeKeydownHandler();
 
         if (this.overlay) {
             this.overlay.remove();
@@ -159,32 +226,69 @@ export class LookupDialog {
         this.options = null;
         this.filteredData = [];
         this.selectedIndex = -1;
+        this.currentPage = 1;
+        this.panel = null;
+        this.titleElement = null;
+        this.search = null;
+        this.tableWrap = null;
+        this.table = null;
+        this.paginationElement = null;
+        this.paginationSummary = null;
+        this.previousPageButton = null;
+        this.nextPageButton = null;
+        this.cancelButton = null;
+        this.selectButton = null;
     }
 
-    render() {
+    createStructure() {
         const overlay = createElement('div', 'amb-lookup-dialog');
         const panel = createElement('div', 'amb-lookup-dialog__panel');
         const header = createElement('div', 'amb-lookup-dialog__header');
-        const title = createElement('h2', 'amb-lookup-dialog__title', this.options.title);
+        const title = createElement('h2', 'amb-lookup-dialog__title');
         const feedback = new FeedbackRegion({ className: 'amb-dialog-feedback' });
         const body = createElement('div', 'amb-lookup-dialog__body');
         const search = createElement('input', 'amb-lookup-dialog__search');
         const tableWrap = createElement('div', 'amb-lookup-dialog__table-wrap');
         const table = createElement('table', 'amb-lookup-dialog__table');
+        const pagination = createElement('div', 'amb-lookup-pagination');
+        const paginationSummary = createElement('div', 'amb-lookup-pagination__summary');
+        const paginationActions = createElement('div', 'amb-lookup-pagination__actions');
+        const previousPageButton = createElement(
+            'button',
+            'amb-lookup-dialog__button amb-lookup-pagination__button',
+            'Previous'
+        );
+        const nextPageButton = createElement(
+            'button',
+            'amb-lookup-dialog__button amb-lookup-pagination__button',
+            'Next'
+        );
         const footer = createElement('div', 'amb-lookup-dialog__footer');
-        const cancelButton = createElement('button', 'amb-lookup-dialog__button', this.options.cancelText);
-        const selectButton = createElement('button', 'amb-lookup-dialog__button amb-lookup-dialog__button--primary', this.options.selectText);
+        const cancelButton = createElement('button', 'amb-lookup-dialog__button');
+        const selectButton = createElement(
+            'button',
+            'amb-lookup-dialog__button amb-lookup-dialog__button--primary'
+        );
 
         search.type = 'search';
-        search.placeholder = this.options.searchPlaceholder;
+        previousPageButton.type = 'button';
+        previousPageButton.setAttribute('aria-label', 'Previous lookup page');
+        nextPageButton.type = 'button';
+        nextPageButton.setAttribute('aria-label', 'Next lookup page');
+        paginationSummary.setAttribute('role', 'status');
+        paginationSummary.setAttribute('aria-live', 'polite');
         cancelButton.type = 'button';
         selectButton.type = 'button';
-        panel.style.width = `${this.options.width}px`;
 
         header.appendChild(title);
         tableWrap.appendChild(table);
+        paginationActions.appendChild(previousPageButton);
+        paginationActions.appendChild(nextPageButton);
+        pagination.appendChild(paginationSummary);
+        pagination.appendChild(paginationActions);
         body.appendChild(search);
         body.appendChild(tableWrap);
+        body.appendChild(pagination);
         footer.appendChild(cancelButton);
         footer.appendChild(selectButton);
         panel.appendChild(header);
@@ -195,9 +299,17 @@ export class LookupDialog {
         document.body.appendChild(overlay);
 
         this.overlay = overlay;
+        this.panel = panel;
+        this.titleElement = title;
         this.feedback = feedback;
+        this.tableWrap = tableWrap;
         this.table = table;
         this.search = search;
+        this.paginationElement = pagination;
+        this.paginationSummary = paginationSummary;
+        this.previousPageButton = previousPageButton;
+        this.nextPageButton = nextPageButton;
+        this.cancelButton = cancelButton;
         this.selectButton = selectButton;
 
         overlay.addEventListener('mousedown', event => {
@@ -211,11 +323,28 @@ export class LookupDialog {
         cancelButton.addEventListener('click', () => this.close(null));
         selectButton.addEventListener('click', () => this.selectCurrent());
         search.addEventListener('input', () => this.filter(search.value));
-        this.keydownHandler = event => this.handleKeydown(event);
-        document.addEventListener('keydown', this.keydownHandler);
+        previousPageButton.addEventListener('click', () => this.changePage(-1));
+        nextPageButton.addEventListener('click', () => this.changePage(1));
+    }
+
+    render() {
+        if (!this.overlay) {
+            this.createStructure();
+        }
+
+        this.overlay.hidden = false;
+        this.panel.style.width = `${this.options.width}px`;
+        this.titleElement.textContent = this.options.title;
+        this.search.placeholder = this.options.searchPlaceholder;
+        this.search.value = '';
+        this.cancelButton.textContent = this.options.cancelText;
+        this.selectButton.textContent = this.options.selectText;
+        this.paginationElement.hidden = !this.options.pagination.enabled;
 
         this.renderTable();
-        search.focus();
+        this.keydownHandler = event => this.handleKeydown(event);
+        document.addEventListener('keydown', this.keydownHandler);
+        this.search.focus();
     }
 
     updateSelectButton() {
@@ -224,18 +353,48 @@ export class LookupDialog {
         this.selectButton.disabled = this.selectedIndex < 0;
     }
 
-    getRenderedData() {
-        if (!this.options.initialRenderLimit) {
-            return this.filteredData;
-        }
-
-        return this.filteredData.slice(0, this.options.initialRenderLimit);
-    }
-
-    updateResultsFeedback(renderedCount) {
+    getRenderState() {
         const totalCount = this.filteredData.length;
 
-        if (!totalCount) {
+        if (this.options.pagination.enabled) {
+            const pageCount = Math.max(
+                1,
+                Math.ceil(totalCount / this.options.pagination.pageSize)
+            );
+
+            this.currentPage = Math.min(Math.max(this.currentPage, 1), pageCount);
+
+            const startIndex = (this.currentPage - 1)
+                * this.options.pagination.pageSize;
+            const endIndex = Math.min(
+                startIndex + this.options.pagination.pageSize,
+                totalCount
+            );
+
+            return {
+                data: this.filteredData.slice(startIndex, endIndex),
+                startIndex,
+                endIndex,
+                pageCount,
+                totalCount
+            };
+        }
+
+        const endIndex = this.options.initialRenderLimit
+            ? Math.min(this.options.initialRenderLimit, totalCount)
+            : totalCount;
+
+        return {
+            data: this.filteredData.slice(0, endIndex),
+            startIndex: 0,
+            endIndex,
+            pageCount: 1,
+            totalCount
+        };
+    }
+
+    updateResultsFeedback(renderState) {
+        if (!renderState.totalCount) {
             this.feedback?.show({
                 type: 'info',
                 message: this.options.noResultsText
@@ -243,7 +402,10 @@ export class LookupDialog {
             return;
         }
 
-        if (renderedCount < totalCount) {
+        if (
+            !this.options.pagination.enabled
+            && renderState.endIndex < renderState.totalCount
+        ) {
             const hasQuery = Boolean(
                 this.search
                 && String(this.search.value || '').trim()
@@ -252,8 +414,8 @@ export class LookupDialog {
             this.feedback?.show({
                 type: 'info',
                 message: hasQuery
-                    ? `Showing first ${renderedCount} of ${totalCount} matching results. Refine your search to narrow the list.`
-                    : `Showing first ${renderedCount} of ${totalCount} results. Search to narrow the list.`
+                    ? `Showing first ${renderState.endIndex} of ${renderState.totalCount} matching results. Refine your search to narrow the list.`
+                    : `Showing first ${renderState.endIndex} of ${renderState.totalCount} results. Search to narrow the list.`
             });
             return;
         }
@@ -261,11 +423,23 @@ export class LookupDialog {
         this.feedback?.clear();
     }
 
+    updatePagination(renderState) {
+        if (!this.options.pagination.enabled) return;
+
+        const firstResult = renderState.totalCount
+            ? renderState.startIndex + 1
+            : 0;
+
+        this.paginationSummary.textContent = `Showing ${firstResult}-${renderState.endIndex} of ${renderState.totalCount} results`;
+        this.previousPageButton.disabled = this.currentPage <= 1;
+        this.nextPageButton.disabled = this.currentPage >= renderState.pageCount;
+    }
+
     renderTable() {
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
         const tbody = document.createElement('tbody');
-        const renderedData = this.getRenderedData();
+        const renderState = this.getRenderState();
 
         this.options.columns.forEach(column => {
             const th = document.createElement('th');
@@ -293,9 +467,11 @@ export class LookupDialog {
             tbody.appendChild(row);
         }
 
-        this.updateResultsFeedback(renderedData.length);
+        this.updateResultsFeedback(renderState);
+        this.updatePagination(renderState);
 
-        renderedData.forEach((item, index) => {
+        renderState.data.forEach((item, offset) => {
+            const index = renderState.startIndex + offset;
             const row = document.createElement('tr');
 
             row.className = index === this.selectedIndex
@@ -327,6 +503,26 @@ export class LookupDialog {
         this.updateSelectButton();
     }
 
+    changePage(direction) {
+        if (!this.options.pagination.enabled) return;
+
+        const renderState = this.getRenderState();
+        const nextPage = Math.min(
+            Math.max(this.currentPage + direction, 1),
+            renderState.pageCount
+        );
+
+        if (nextPage === this.currentPage) return;
+
+        this.currentPage = nextPage;
+        this.selectedIndex = -1;
+        this.renderTable();
+
+        if (this.tableWrap) {
+            this.tableWrap.scrollTop = 0;
+        }
+    }
+
     updateRowSelection() {
         if (!this.table) return;
 
@@ -352,11 +548,12 @@ export class LookupDialog {
             });
         });
         this.selectedIndex = -1;
+        this.currentPage = 1;
         this.renderTable();
     }
 
     handleKeydown(event) {
-        if (!this.overlay) return;
+        if (!this.overlay || this.overlay.hidden) return;
 
         if (event.key === 'Escape') {
             event.preventDefault();
@@ -383,21 +580,25 @@ export class LookupDialog {
     }
 
     moveSelection(direction) {
-        const renderedCount = this.getRenderedData().length;
+        const renderState = this.getRenderState();
+        const renderedCount = renderState.data.length;
 
         if (!renderedCount) return;
 
-        if (this.selectedIndex < 0) {
+        if (
+            this.selectedIndex < renderState.startIndex
+            || this.selectedIndex >= renderState.endIndex
+        ) {
             this.selectedIndex = direction > 0
-                ? 0
-                : renderedCount - 1;
+                ? renderState.startIndex
+                : renderState.endIndex - 1;
             this.updateRowSelection();
             return;
         }
 
         this.selectedIndex = Math.max(
-            0,
-            Math.min(renderedCount - 1, this.selectedIndex + direction)
+            renderState.startIndex,
+            Math.min(renderState.endIndex - 1, this.selectedIndex + direction)
         );
         this.updateRowSelection();
     }

@@ -9,6 +9,10 @@
     z-index: 10080;
 }
 
+.amb-lookup-dialog[hidden] {
+    display: none;
+}
+
 .amb-lookup-dialog__panel {
     background: var(--amb-color-surface);
     border: 1px solid var(--amb-color-border);
@@ -128,6 +132,34 @@
     text-align: center;
 }
 
+.amb-lookup-pagination {
+    align-items: center;
+    border-top: 1px solid var(--amb-color-border);
+    display: flex;
+    gap: var(--amb-space-md);
+    justify-content: space-between;
+    padding-top: var(--amb-space-sm);
+}
+
+.amb-lookup-pagination[hidden] {
+    display: none;
+}
+
+.amb-lookup-pagination__summary {
+    color: var(--amb-color-muted);
+    font-size: var(--amb-font-size-sm);
+}
+
+.amb-lookup-pagination__actions {
+    display: flex;
+    gap: var(--amb-space-xs);
+}
+
+.amb-lookup-pagination__button {
+    min-width: 78px;
+    padding-block: 6px;
+}
+
 .amb-lookup-dialog__footer {
     background: var(--amb-color-surface-muted);
     border-top: 1px solid var(--amb-color-border);
@@ -210,5 +242,14 @@
 
     .amb-lookup-dialog__footer {
         flex-wrap: wrap;
+    }
+
+    .amb-lookup-pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .amb-lookup-pagination__actions {
+        justify-content: flex-end;
     }
 }

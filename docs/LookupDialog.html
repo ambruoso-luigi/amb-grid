@@ -97,7 +97,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line48">line 48</a>
+        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line70">line 70</a>
     </li></ul></dd>
     
 
@@ -264,7 +264,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line127">line 127</a>
+        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line175">line 175</a>
     </li></ul></dd>
     
 
@@ -370,7 +370,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line142">line 142</a>
+        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line212">line 212</a>
     </li></ul></dd>
     
 
@@ -961,6 +961,234 @@
 
         <tr>
             
+                <td class="name"><code>pagination</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Enable client-side pagination. Search always filters the complete dataset.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>enabled</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Enable pagination when using object configuration.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    100
+                
+                </td>
+            
+
+            <td class="description last">Rows rendered per page.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    100
+                
+                </td>
+            
+
+            <td class="description last">Rows per page when `pagination: true`.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>destroyOnClose</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Destroy markup on close. Set false to reuse the shell; call `destroy()` when finished so retained data can be released.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>initialRenderLimit</code></td>
             
 
@@ -991,7 +1219,7 @@
                 </td>
             
 
-            <td class="description last">Maximum rows rendered at once. Filtering still uses the complete dataset.</td>
+            <td class="description last">Legacy non-paginated render limit. Prefer `pagination`.</td>
         </tr>
 
     
@@ -1156,7 +1384,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line83">line 83</a>
+        <a href="ui_lookup-dialog.js.html">ui/lookup-dialog.js</a>, <a href="ui_lookup-dialog.js.html#line122">line 122</a>
     </li></ul></dd>
     
 
@@ -1230,7 +1458,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 24 2026 08:09:14 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jun 24 2026 16:15:33 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

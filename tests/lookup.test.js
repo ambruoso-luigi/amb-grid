@@ -23,6 +23,20 @@ class DialogElementMock {
         this.removed = false;
         this._className = '';
         this._innerHTML = '';
+        const classes = new Set();
+
+        this.classList = {
+            toggle: (className, force) => {
+                if (force) {
+                    classes.add(className);
+                } else {
+                    classes.delete(className);
+                }
+
+                this.className = [...classes].join(' ');
+            },
+            contains: className => classes.has(className)
+        };
     }
 
     get className() {
@@ -355,6 +369,198 @@ describe('LookupDialog filtering', () => {
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('renders all rows by default without pagination', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: [
+                    { title: 'First' },
+                    { title: 'Second' },
+                    { title: 'Third' }
+                ]
+            });
+
+            expect(dialog.options.pagination).toEqual({
+                enabled: false,
+                pageSize: 100
+            });
+            expect(dialog.table.children[1].children).toHaveLength(3);
+            expect(dialog.paginationElement.hidden).toBe(true);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('paginates results and navigates between pages', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: [
+                    { title: 'First' },
+                    { title: 'Second' },
+                    { title: 'Third' },
+                    { title: 'Fourth' },
+                    { title: 'Fifth' }
+                ],
+                pagination: {
+                    enabled: true,
+                    pageSize: 2
+                }
+            });
+            const getRows = () => dialog.table.children[1].children;
+
+            expect(getRows()).toHaveLength(2);
+            expect(getRows()[0].children[0].textContent).toBe('First');
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-2 of 5 results');
+            expect(dialog.previousPageButton.disabled).toBe(true);
+            expect(dialog.nextPageButton.disabled).toBe(false);
+
+            await dialog.nextPageButton.dispatch('click');
+
+            expect(dialog.currentPage).toBe(2);
+            expect(getRows()).toHaveLength(2);
+            expect(getRows()[0].children[0].textContent).toBe('Third');
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 3-4 of 5 results');
+            expect(dialog.previousPageButton.disabled).toBe(false);
+            expect(dialog.nextPageButton.disabled).toBe(false);
+
+            await dialog.previousPageButton.dispatch('click');
+
+            expect(dialog.currentPage).toBe(1);
+            expect(getRows()[0].children[0].textContent).toBe('First');
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('searches the complete dataset and resets pagination to page one', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: [
+                    { title: 'Alpha' },
+                    { title: 'Beta' },
+                    { title: 'Gamma' },
+                    { title: 'Target beyond page one' }
+                ],
+                pagination: true,
+                pageSize: 2
+            });
+            const getRows = () => dialog.table.children[1].children;
+
+            expect(dialog.options.pagination.pageSize).toBe(2);
+
+            await dialog.nextPageButton.dispatch('click');
+            expect(dialog.currentPage).toBe(2);
+
+            dialog.search.value = 'Target';
+            await dialog.search.dispatch('input');
+
+            expect(dialog.currentPage).toBe(1);
+            expect(dialog.filteredData).toEqual([
+                { title: 'Target beyond page one' }
+            ]);
+            expect(getRows()).toHaveLength(1);
+            expect(getRows()[0].children[0].textContent)
+                .toBe('Target beyond page one');
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-1 of 1 results');
+            expect(dialog.previousPageButton.disabled).toBe(true);
+            expect(dialog.nextPageButton.disabled).toBe(true);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('uses a default page size of 100 when pagination is enabled', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: Array.from({ length: 101 }, (_, index) => ({
+                    title: `Result ${index + 1}`
+                })),
+                pagination: true
+            });
+
+            expect(dialog.options.pagination.pageSize).toBe(100);
+            expect(dialog.table.children[1].children).toHaveLength(100);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-100 of 101 results');
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('can retain and reuse the dialog shell across closes', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const firstResultPromise = dialog.open({
+                title: 'First lookup',
+                columns: [{ field: 'title' }],
+                data: [{ title: 'First' }],
+                destroyOnClose: false
+            });
+            const retainedOverlay = dialog.overlay;
+
+            dialog.close(null);
+            await expect(firstResultPromise).resolves.toBeNull();
+
+            expect(retainedOverlay.hidden).toBe(true);
+            expect(harness.body.children).toHaveLength(1);
+
+            const secondResultPromise = dialog.open({
+                title: 'Second lookup',
+                columns: [{ field: 'title' }],
+                data: [{ title: 'Updated' }],
+                destroyOnClose: false
+            });
+
+            expect(dialog.overlay).toBe(retainedOverlay);
+            expect(dialog.overlay.hidden).toBe(false);
+            expect(dialog.titleElement.textContent).toBe('Second lookup');
+            expect(dialog.search.value).toBe('');
+            expect(dialog.currentPage).toBe(1);
+            expect(dialog.table.children[1].children[0].children[0].textContent)
+                .toBe('Updated');
+
+            dialog.close(null);
+            await expect(secondResultPromise).resolves.toBeNull();
+
+            dialog.destroy();
+            expect(harness.body.children).toHaveLength(0);
         } finally {
             harness.restore();
         }

@@ -83,7 +83,10 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).toContain('applyMunicipalitySelection({');
         expect(demoSource).toContain('data: await municipalityLookup.load()');
         expect(demoSource).toContain('closeOnBackdropClick: false');
-        expect(demoSource).toContain('initialRenderLimit: 150');
+        expect(demoSource).toContain('pagination: {');
+        expect(demoSource).toContain('enabled: true');
+        expect(demoSource).toContain('pageSize: 100');
+        expect(demoSource).not.toContain('initialRenderLimit: 150');
         expect(demoSource).toContain("'add'");
         expect(demoSource).toContain('onAdd: handleAddRow');
         expect(demoSource).not.toContain("label: 'Add row'");

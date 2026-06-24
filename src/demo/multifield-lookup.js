@@ -173,7 +173,10 @@ export default async function multifieldLookup(app) {
             columns: visibleColumns,
             data: await municipalityLookup.load(),
             closeOnBackdropClick: false,
-            initialRenderLimit: 150,
+            pagination: {
+                enabled: true,
+                pageSize: 100
+            },
             valueField: municipalityLookup.keyField,
             searchFields: visibleColumns.map(column => column.field),
             searchPlaceholder: 'Search municipality, province, region, or postal code...'
