@@ -111,6 +111,21 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.findRowById(2).getData()._state).toBe(ROW_STATE.SAVED);
     });
 
+    test('does not mark modified rows with errors as saved', () => {
+        const { crud } = createCrud([
+            { id: 1, alias: 'Atlas' }
+        ]);
+
+        crud.updateRowFields(1, { alias: 'Comet' });
+        crud.markCellError(1, 'alias', 'Manual demo error');
+
+        const result = crud.markValidChangesSaved();
+
+        expect(result.saved).toHaveLength(0);
+        expect(crud.findRowById(1).getData()._state).toBe(ROW_STATE.MODIFIED);
+        expect(crud.getStateReport().invalidChangedRows).toHaveLength(1);
+    });
+
     test('updates and validates multiple lookup-mapped fields atomically', () => {
         const { table } = createTableMock([
             {

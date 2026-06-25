@@ -5,6 +5,17 @@ const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
 
+const buildErrorDetails = report => {
+    return report.rows
+        .filter(row => row.hasErrors)
+        .map(row => {
+            const errorCount = row.cellErrors.length + (row.rowError ? 1 : 0);
+            const label = errorCount === 1 ? 'error' : 'errors';
+
+            return `Row ${row.rowNumber ?? 'n/a'}: ${errorCount} ${label}`;
+        });
+};
+
 const buildStateReport = report => [
     'Row states report',
     '',
@@ -22,12 +33,14 @@ const buildStateReport = report => [
     '',
     `Rows with errors: ${report.errorRowsCount}`,
     `Cell errors: ${report.errors.cells.length}`,
+    `Row errors: ${report.errors.rows.length}`,
+    ...buildErrorDetails(report),
     '',
     'Use Add row to create a new row.',
     'Edit Item, Category, Owner, or Note to create a modified row.',
     'Use the delete column to mark an existing row as deleted.',
     'Use Save to simulate backend confirmation and mark valid changes as saved.',
-    'Use Create error to mark a demo cell error without changing lifecycle state.'
+    'Use Create error to modify two rows and attach demo errors.'
 ];
 
 const buildRowNumbersReport = report => [
@@ -43,13 +56,14 @@ const buildRowNumbersReport = report => [
 export default function rowStates(app) {
     let nextId = 7;
     let crud = null;
+    const errorCounts = new Map();
     const initialData = [
-        { id: 1, item: 'Clean sample', category: 'Inventory', owner: 'Ops', note: 'Ready' },
-        { id: 2, item: 'Tracked sample', category: 'Quality', owner: 'QA', note: 'Editable' },
-        { id: 3, item: 'Review sample', category: 'Backoffice', owner: 'Admin', note: 'Pending' },
-        { id: 4, item: 'Reference sample', category: 'System', owner: 'System', note: 'Reference data' },
-        { id: 5, item: 'Audit sample', category: 'Compliance', owner: 'Audit', note: 'Needs review' },
-        { id: 6, item: 'Stable sample', category: 'Operations', owner: 'Ops', note: 'Stable' }
+        { id: 1, item: 'Clean sample', category: 'Inventory', owner: 'Ops', note: 'Ready', _state: 'clean' },
+        { id: 2, item: 'Tracked sample', category: 'Quality', owner: 'QA', note: 'Editable', _state: 'clean' },
+        { id: 3, item: 'Review sample', category: 'Backoffice', owner: 'Admin', note: 'Pending', _state: 'clean' },
+        { id: 4, item: 'Reference sample', category: 'System', owner: 'System', note: 'Reference data', _state: 'clean' },
+        { id: 5, item: 'Audit sample', category: 'Compliance', owner: 'Audit', note: 'Needs review', _state: 'clean' },
+        { id: 6, item: 'Stable sample', category: 'Operations', owner: 'Ops', note: 'Stable', _state: 'clean' }
     ];
 
     app.innerHTML = `
@@ -65,9 +79,11 @@ export default function rowStates(app) {
                     <li><code>modified</code>: an editable value differs from its original value.</li>
                     <li><code>deleted</code>: the standard delete column marked an existing row for deletion.</li>
                     <li><code>saved</code>: valid new or modified data was confirmed through the normal Save callback.</li>
-                    <li>An error is not a lifecycle state. Health reports errors separately, so a <code>clean</code>, <code>new</code>, or <code>modified</code> row can also show <code>Error</code>.</li>
-                    <li>Create error uses <code>markCellError</code>; row 1 remains <code>clean</code> while Health changes to <code>Error</code>.</li>
+                    <li>An error is not a lifecycle state. The Errors column counts active row and cell error markers separately.</li>
+                    <li>Create error intentionally modifies rows 1 and 4 before adding errors, so both rows enter the <code>modified</code> lifecycle state.</li>
+                    <li>Row 1 receives one cell error; non-consecutive row 4 receives two cell errors. The report shows their detailed counts.</li>
                     <li>Save acts only on valid <code>new</code>, <code>modified</code>, or <code>deleted</code> rows. With no changed rows, Save leaves lifecycle states unchanged.</li>
+                    <li>Reload restores the six initial rows, clears all errors, resets lifecycle states to <code>clean</code>, and resets Errors to zero.</li>
                     <li><code>_ambTempId</code>: temporary identifier assigned to new rows before backend confirmation.</li>
                     <li><code>_ambRowNumber</code>: stable row number used by reports and validation feedback.</li>
                     <li><code>_state</code>: internal lifecycle state exposed here only for demonstration.</li>
@@ -90,6 +106,13 @@ export default function rowStates(app) {
             buttons: [
                 'add',
                 'save',
+                'reload',
+                {
+                    id: 'state-error',
+                    label: 'Create error',
+                    title: 'Create demo errors',
+                    onClick: handleCreateError
+                },
                 {
                     id: 'state-report',
                     label: 'Report',
@@ -101,16 +124,11 @@ export default function rowStates(app) {
                     label: 'Row numbers',
                     title: 'Show row number report',
                     onClick: handleShowRowNumbers
-                },
-                {
-                    id: 'state-error',
-                    label: 'Create error',
-                    title: 'Create a demo cell error',
-                    onClick: handleCreateError
                 }
             ],
             onAdd: handleAdd,
-            onSave: handleSave
+            onSave: handleSave,
+            onReload: handleReload
         },
         data: initialData.map(row => ({ ...row })),
         layout: 'fitColumns',
@@ -140,10 +158,10 @@ export default function rowStates(app) {
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
-                title: 'Health',
-                field: '_ambHealth',
+                title: 'Errors',
+                field: '_ambErrorCount',
                 width: 90,
-                formatter: formatHealth,
+                formatter: formatErrorCount,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             { title: 'Item', field: 'item', editor: AMB.editors.text({ trim: true }) },
@@ -171,35 +189,41 @@ export default function rowStates(app) {
         });
     };
 
-    function formatHealth(cell) {
-        if (!crud) return 'OK';
-
+    function getRowKey(cell) {
         const data = cell.getRow().getData();
-        const reportRow = crud.getStateReport().rows.find(row => {
-            if (data.id !== null && data.id !== undefined && data.id !== '') {
-                return row.id === data.id;
-            }
 
-            return row.tempId === data._ambTempId;
-        });
-
-        return reportRow?.hasErrors ? 'Error' : 'OK';
+        return data.id ?? data._ambTempId;
     }
 
-    function refreshHealth() {
-        const reportRows = crud.getStateReport().rows;
+    function formatErrorCount(cell) {
+        return errorCounts.get(getRowKey(cell)) || 0;
+    }
 
-        reportRows.forEach(reportRow => {
-            const row = crud.findRowByKey(reportRow.key);
-            const healthCell = row
-                && typeof row.getCell === 'function'
-                && row.getCell('_ambHealth');
-            const healthElement = healthCell
-                && typeof healthCell.getElement === 'function'
-                && healthCell.getElement();
+    function updateErrorCounts() {
+        errorCounts.clear();
 
-            if (healthElement) {
-                healthElement.textContent = reportRow.hasErrors ? 'Error' : 'OK';
+        const errors = crud.getStateReport().errors;
+
+        [...errors.cells, ...errors.rows].forEach(error => {
+            const key = error.id ?? error.tempId ?? error.key;
+
+            errorCounts.set(key, (errorCounts.get(key) || 0) + 1);
+        });
+    }
+
+    function refreshErrorCounts() {
+        updateErrorCounts();
+
+        demo.table.getRows().forEach(row => {
+            const errorCell = row.getCell('_ambErrorCount');
+            const errorElement = errorCell
+                && typeof errorCell.getElement === 'function'
+                && errorCell.getElement();
+
+            if (errorElement) {
+                errorElement.textContent = String(
+                    errorCounts.get(row.getData().id ?? row.getData()._ambTempId) || 0
+                );
             }
         });
     }
@@ -256,11 +280,42 @@ export default function rowStates(app) {
     }
 
     function handleCreateError() {
+        demo.feedback.clear();
+
+        crud.updateRowFields(1, {
+            note: 'Manual error injected in this row'
+        });
         crud.markCellError(1, 'note', 'Manual demo error');
-        refreshHealth();
+
+        crud.updateRowFields(4, {
+            owner: 'Invalid owner',
+            note: 'Two demo errors injected'
+        });
+        crud.markCellError(4, 'owner', 'Owner is not valid for this demo');
+        crud.markCellError(4, 'note', 'Note requires review');
+
+        refreshErrorCounts();
         demo.feedback.show({
             type: 'warning',
-            message: 'A manual error was added to row 1. Lifecycle remains clean; Health is now Error.'
+            message: 'Demo errors were added: row 1 has 1 error, row 4 has 2 errors. Affected rows are modified.'
+        });
+    }
+
+    async function handleReload() {
+        demo.feedback.clear();
+        reportDialog.close();
+
+        crud.getStateReport().rows.forEach(row => {
+            crud.rollbackRow(row.key);
+        });
+
+        errorCounts.clear();
+        nextId = 7;
+        await demo.table.setData(initialData.map(row => ({ ...row })));
+        refreshErrorCounts();
+        demo.feedback.show({
+            type: 'success',
+            message: 'Initial row states data reloaded.'
         });
     }
 
