@@ -76,6 +76,41 @@ const createCrud = rowsData => {
 };
 
 describe('CrudHelper validation lifecycle', () => {
+    test('keeps lifecycle state separate from manual cell errors', () => {
+        const { crud } = createCrud([
+            { id: 1, alias: 'Atlas' }
+        ]);
+
+        crud.markCellError(1, 'alias', 'Manual demo error');
+
+        const row = crud.getStateReport().rows[0];
+
+        expect(crud.findRowById(1).getData()._state).toBe(ROW_STATE.CLEAN);
+        expect(row.state).toBe(ROW_STATE.CLEAN);
+        expect(row.hasErrors).toBe(true);
+        expect(row.cellErrors).toEqual([
+            { field: 'alias', message: 'Manual demo error' }
+        ]);
+    });
+
+    test('marks changed valid rows as saved without changing clean rows', () => {
+        const { crud } = createCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' }
+        ]);
+
+        crud.updateRowFields(2, { alias: 'Comet' });
+
+        expect(crud.findRowById(1).getData()._state).toBe(ROW_STATE.CLEAN);
+        expect(crud.findRowById(2).getData()._state).toBe(ROW_STATE.MODIFIED);
+
+        const result = crud.markValidChangesSaved();
+
+        expect(result.saved).toHaveLength(1);
+        expect(crud.findRowById(1).getData()._state).toBe(ROW_STATE.CLEAN);
+        expect(crud.findRowById(2).getData()._state).toBe(ROW_STATE.SAVED);
+    });
+
     test('updates and validates multiple lookup-mapped fields atomically', () => {
         const { table } = createTableMock([
             {
