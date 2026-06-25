@@ -376,16 +376,57 @@ export function lookup(lookupInstance, options = {}) {
 
                 const table = cell && cell.getTable && cell.getTable();
 
-                if (!table) return;
-
                 navigationScheduled = true;
                 globalThis.setTimeout(() => {
-                    if (direction === 'prev' && typeof table.navigatePrev === 'function') {
+                    const row = cell && cell.getRow && cell.getRow();
+                    const cells = row && typeof row.getCells === 'function'
+                        ? row.getCells()
+                        : [];
+                    const currentIndex = cells.indexOf(cell);
+                    const step = direction === 'prev' ? -1 : 1;
+
+                    if (currentIndex !== -1) {
+                        for (
+                            let index = currentIndex + step;
+                            index >= 0 && index < cells.length;
+                            index += step
+                        ) {
+                            const candidate = cells[index];
+                            const column = candidate
+                                && candidate.getColumn
+                                && candidate.getColumn();
+                            const definition = column
+                                && column.getDefinition
+                                && column.getDefinition();
+                            const hasEditor = definition
+                                && definition.visible !== false
+                                && definition.editable !== false
+                                && definition.editor !== undefined
+                                && definition.editor !== null
+                                && definition.editor !== false;
+
+                            if (!hasEditor || typeof candidate.edit !== 'function') continue;
+
+                            if (candidate.edit() !== false) return;
+                        }
+                    }
+
+                    if (direction === 'prev' && cell && typeof cell.navigatePrev === 'function') {
+                        cell.navigatePrev();
+                        return;
+                    }
+
+                    if (direction === 'next' && cell && typeof cell.navigateNext === 'function') {
+                        cell.navigateNext();
+                        return;
+                    }
+
+                    if (direction === 'prev' && table && typeof table.navigatePrev === 'function') {
                         table.navigatePrev();
                         return;
                     }
 
-                    if (direction === 'next' && typeof table.navigateNext === 'function') {
+                    if (direction === 'next' && table && typeof table.navigateNext === 'function') {
                         table.navigateNext();
                     }
                 }, 0);

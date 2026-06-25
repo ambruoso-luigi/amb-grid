@@ -43,6 +43,7 @@
      * @param {boolean} [options.horizontalScroll=false] - Keep long lines on one line.
      * @param {string} [options.resize='vertical'] - CSS resize value for the textarea.
      * @param {boolean} [options.closeOnBackdropClick=true] - Close the editor when the backdrop is pressed.
+     * @param {'default'|'save-and-navigate'} [options.tabBehavior='default'] - Keep normal textarea Tab behavior or save and navigate to the adjacent editable cell.
      * @returns {Function} Tabulator editor.
      * @example
      * {
@@ -66,6 +67,7 @@ export function largeText(options = {}) {
             horizontalScroll: false,
             resize: 'vertical',
             closeOnBackdropClick: true,
+            tabBehavior: 'default',
             ...options
         };
 
@@ -79,6 +81,7 @@ export function largeText(options = {}) {
             const cancelButton = document.createElement('button');
             const saveButton = document.createElement('button');
             let closed = false;
+            let navigationScheduled = false;
 
             placeholder.textContent = '';
             overlay.className = 'amb-large-text-editor';
@@ -142,6 +145,72 @@ export function largeText(options = {}) {
                 destroyPopup();
             };
 
+            const navigateAfterClose = direction => {
+                if (navigationScheduled) return;
+
+                const table = cell &amp;&amp; cell.getTable &amp;&amp; cell.getTable();
+
+                navigationScheduled = true;
+                globalThis.setTimeout(() => {
+                    const row = cell &amp;&amp; cell.getRow &amp;&amp; cell.getRow();
+                    const cells = row &amp;&amp; typeof row.getCells === 'function'
+                        ? row.getCells()
+                        : [];
+                    const currentIndex = cells.indexOf(cell);
+                    const step = direction === 'prev' ? -1 : 1;
+
+                    if (currentIndex !== -1) {
+                        for (
+                            let index = currentIndex + step;
+                            index >= 0 &amp;&amp; index &lt; cells.length;
+                            index += step
+                        ) {
+                            const candidate = cells[index];
+                            const column = candidate
+                                &amp;&amp; candidate.getColumn
+                                &amp;&amp; candidate.getColumn();
+                            const definition = column
+                                &amp;&amp; column.getDefinition
+                                &amp;&amp; column.getDefinition();
+                            const hasEditor = definition
+                                &amp;&amp; definition.visible !== false
+                                &amp;&amp; definition.editable !== false
+                                &amp;&amp; definition.editor !== undefined
+                                &amp;&amp; definition.editor !== null
+                                &amp;&amp; definition.editor !== false;
+
+                            if (!hasEditor || typeof candidate.edit !== 'function') continue;
+
+                            if (candidate.edit() !== false) return;
+                        }
+                    }
+
+                    if (direction === 'prev' &amp;&amp; cell &amp;&amp; typeof cell.navigatePrev === 'function') {
+                        cell.navigatePrev();
+                        return;
+                    }
+
+                    if (direction === 'next' &amp;&amp; cell &amp;&amp; typeof cell.navigateNext === 'function') {
+                        cell.navigateNext();
+                        return;
+                    }
+
+                    if (direction === 'prev' &amp;&amp; table &amp;&amp; typeof table.navigatePrev === 'function') {
+                        table.navigatePrev();
+                        return;
+                    }
+
+                    if (direction === 'next' &amp;&amp; table &amp;&amp; typeof table.navigateNext === 'function') {
+                        table.navigateNext();
+                    }
+                }, 0);
+            };
+
+            const saveAndNavigate = direction => {
+                closeWithSuccess();
+                navigateAfterClose(direction);
+            };
+
             cancelButton.addEventListener('click', closeWithCancel);
             saveButton.addEventListener('click', closeWithSuccess);
             overlay.addEventListener('mousedown', event => {
@@ -155,6 +224,16 @@ export function largeText(options = {}) {
                 closeWithCancel();
             });
             textarea.addEventListener('keydown', event => {
+                if (
+                    event.key === 'Tab'
+                    &amp;&amp; normalizedOptions.tabBehavior === 'save-and-navigate'
+                ) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    saveAndNavigate(event.shiftKey ? 'prev' : 'next');
+                    return;
+                }
+
                 if (event.key === 'Escape') {
                     event.preventDefault();
                     closeWithCancel();
@@ -193,7 +272,7 @@ export function largeText(options = {}) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Jun 25 2026 09:11:40 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Jun 25 2026 18:13:53 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

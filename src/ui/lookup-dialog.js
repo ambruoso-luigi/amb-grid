@@ -44,13 +44,15 @@ const normalizePagination = (pagination, pageSize) => {
     const controls = paginationOptions.controls === 'simple'
         ? 'simple'
         : 'full';
+    const hideWhenSinglePage = paginationOptions.hideWhenSinglePage !== false;
 
     return {
         enabled: Boolean(enabled),
         pageSize: Number.isInteger(configuredPageSize) && configuredPageSize > 0
             ? configuredPageSize
             : DEFAULT_PAGE_SIZE,
-        controls
+        controls,
+        hideWhenSinglePage
     };
 };
 
@@ -118,6 +120,7 @@ export class LookupDialog {
      * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using object configuration.
      * @param {number} [options.pagination.pageSize=100] - Rows rendered per page.
      * @param {'simple'|'full'} [options.pagination.controls='full'] - Show Previous/Next or First/Previous/Next/Last controls.
+     * @param {boolean} [options.pagination.hideWhenSinglePage=true] - Hide pagination controls when the filtered result fits on one page.
      * @param {number} [options.pageSize=100] - Rows per page when `pagination: true`.
      * @param {boolean} [options.destroyOnClose=true] - Destroy markup on close. Set false to reuse the shell; call `destroy()` when finished so retained data can be released.
      * @param {number} [options.initialRenderLimit] - Legacy non-paginated render limit. Prefer `pagination`.
@@ -464,6 +467,9 @@ export class LookupDialog {
 
     updatePagination(renderState) {
         if (!this.options.pagination.enabled) return;
+
+        this.paginationElement.hidden = this.options.pagination.hideWhenSinglePage
+            && renderState.pageCount <= 1;
 
         const firstResult = renderState.totalCount
             ? renderState.startIndex + 1

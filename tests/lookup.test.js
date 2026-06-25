@@ -391,10 +391,61 @@ describe('LookupDialog filtering', () => {
             expect(dialog.options.pagination).toEqual({
                 enabled: false,
                 pageSize: 100,
-                controls: 'full'
+                controls: 'full',
+                hideWhenSinglePage: true
             });
             expect(dialog.table.children[1].children).toHaveLength(3);
             expect(dialog.paginationElement.hidden).toBe(true);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('hides enabled pagination on a single page by default', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: [{ title: 'First' }, { title: 'Second' }],
+                pagination: {
+                    enabled: true,
+                    pageSize: 10
+                }
+            });
+
+            expect(dialog.options.pagination.hideWhenSinglePage).toBe(true);
+            expect(dialog.paginationElement.hidden).toBe(true);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('can keep enabled pagination visible on a single page', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: [{ title: 'First' }],
+                pagination: {
+                    enabled: true,
+                    pageSize: 10,
+                    hideWhenSinglePage: false
+                }
+            });
+
+            expect(dialog.paginationElement.hidden).toBe(false);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-1 of 1 results | Page 1 of 1');
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
@@ -424,6 +475,7 @@ describe('LookupDialog filtering', () => {
             });
             const getRows = () => dialog.table.children[1].children;
 
+            expect(dialog.paginationElement.hidden).toBe(false);
             expect(getRows()).toHaveLength(2);
             expect(getRows()[0].children[0].textContent).toBe('First');
             expect(dialog.paginationSummary.textContent)
@@ -492,6 +544,7 @@ describe('LookupDialog filtering', () => {
                 .toBe('Target beyond page one');
             expect(dialog.paginationSummary.textContent)
                 .toBe('Showing 1-1 of 1 results | Page 1 of 1');
+            expect(dialog.paginationElement.hidden).toBe(true);
             expect(dialog.firstPageButton.disabled).toBe(true);
             expect(dialog.previousPageButton.disabled).toBe(true);
             expect(dialog.nextPageButton.disabled).toBe(true);

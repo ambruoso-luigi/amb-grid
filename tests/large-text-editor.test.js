@@ -40,12 +40,40 @@ const createElement = tagName => {
     return element;
 };
 
-const createHarness = (options = {}) => {
+const createHarness = (options = {}, { withRowNavigation = false } = {}) => {
     const success = vi.fn();
     const cancel = vi.fn();
+    const previousCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    const nextCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    const table = {
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
+    };
+    const cell = {
+        getValue: () => 'Original notes',
+        getTable: () => table,
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
+    };
+
+    cell.getRow = () => ({
+        getCells: () => withRowNavigation
+            ? [previousCell, cell, nextCell]
+            : []
+    });
     const editor = largeText(options);
     const placeholder = editor(
-        { getValue: () => 'Original notes' },
+        cell,
         callback => callback(),
         success,
         cancel
@@ -56,14 +84,22 @@ const createHarness = (options = {}) => {
     return {
         cancel,
         cancelButton: panel.children[2].children[0],
+        cell,
+        nextCell,
         overlay,
         panel,
         placeholder,
+        previousCell,
         saveButton: panel.children[2].children[1],
         success,
+        table,
         textarea: panel.children[1]
     };
 };
+
+const flushDeferred = () => new Promise(resolve => {
+    globalThis.setTimeout(resolve, 0);
+});
 
 describe('large text editor', () => {
     const originalDocument = globalThis.document;
@@ -118,6 +154,69 @@ describe('large text editor', () => {
 
         expect(harness.cancel).toHaveBeenCalledOnce();
         expect(harness.success).not.toHaveBeenCalled();
+    });
+
+    test('keeps the normal textarea Tab behavior by default', () => {
+        const harness = createHarness();
+        const preventDefault = vi.fn();
+        const stopPropagation = vi.fn();
+
+        harness.textarea.dispatch('keydown', {
+            key: 'Tab',
+            preventDefault,
+            stopPropagation
+        });
+
+        expect(preventDefault).not.toHaveBeenCalled();
+        expect(stopPropagation).not.toHaveBeenCalled();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).toContain(harness.overlay);
+    });
+
+    test('Tab saves and opens the next editable cell when configured', async () => {
+        const harness = createHarness({
+            tabBehavior: 'save-and-navigate'
+        }, {
+            withRowNavigation: true
+        });
+        const preventDefault = vi.fn();
+        const stopPropagation = vi.fn();
+
+        harness.textarea.value = 'Saved with Tab';
+        harness.textarea.dispatch('keydown', {
+            key: 'Tab',
+            preventDefault,
+            stopPropagation
+        });
+        await flushDeferred();
+
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(stopPropagation).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('Saved with Tab');
+        expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+        expect(harness.previousCell.edit).not.toHaveBeenCalled();
+        expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+    });
+
+    test('Shift+Tab saves and opens the previous editable cell when configured', async () => {
+        const harness = createHarness({
+            tabBehavior: 'save-and-navigate'
+        }, {
+            withRowNavigation: true
+        });
+
+        harness.textarea.value = 'Saved with Shift+Tab';
+        harness.textarea.dispatch('keydown', {
+            key: 'Tab',
+            shiftKey: true
+        });
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledWith('Saved with Shift+Tab');
+        expect(harness.previousCell.edit).toHaveBeenCalledOnce();
+        expect(harness.nextCell.edit).not.toHaveBeenCalled();
+        expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
     });
 
     test('Save and Ctrl+Enter still commit the edited text', () => {

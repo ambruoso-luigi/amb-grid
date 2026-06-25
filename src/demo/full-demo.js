@@ -106,11 +106,7 @@ export default async function fullDemo(app) {
                     autoCompleteOnTab: true,
                     dialogOptions: {
                         closeOnBackdropClick: false,
-                        pagination: {
-                            enabled: true,
-                            pageSize: 10,
-                            controls: 'full'
-                        },
+                        pagination: false,
                         destroyOnClose: true
                     }
                 })
@@ -144,7 +140,8 @@ export default async function fullDemo(app) {
                 editor: AMB.editors.largeText({
                     title: 'Edit notes',
                     rows: 10,
-                    closeOnBackdropClick: false
+                    closeOnBackdropClick: false,
+                    tabBehavior: 'save-and-navigate'
                 })
             },
             {

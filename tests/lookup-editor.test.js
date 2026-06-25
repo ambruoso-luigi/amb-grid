@@ -43,24 +43,43 @@ const createElement = tagName => {
 const createHarness = ({
     initialValue = 'ACTIVE',
     options = {},
-    load = ({ query }) => records.filter(record => record.id.includes(query))
+    load = ({ query }) => records.filter(record => record.id.includes(query)),
+    withRowNavigation = false
 } = {}) => {
     const rowData = { id: 1, status: initialValue };
     const cellElement = { dataset: {} };
+    const previousCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    const nextCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    let cell;
     const row = {
         getData: () => rowData,
-        update: patch => Object.assign(rowData, patch)
+        update: patch => Object.assign(rowData, patch),
+        getCells: () => withRowNavigation
+            ? [previousCell, cell, nextCell]
+            : []
     };
     const table = {
         navigateNext: vi.fn(),
         navigatePrev: vi.fn()
     };
-    const cell = {
+    cell = {
         getValue: () => rowData.status,
         getField: () => 'status',
         getRow: () => row,
         getElement: () => cellElement,
-        getTable: () => table
+        getTable: () => table,
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
     };
     const lookupInstance = {
         valueField: 'id',
@@ -102,6 +121,8 @@ const createHarness = ({
         input: container.children[0],
         load: lookupInstance.load,
         markInvalid,
+        nextCell,
+        previousCell,
         rowData,
         success,
         table
@@ -392,7 +413,8 @@ describe('lookup editor blur commits', () => {
             options: {
                 autoComplete: true
             },
-            load
+            load,
+            withRowNavigation: true
         });
         const preventDefault = vi.fn();
         const stopPropagation = vi.fn();
@@ -421,7 +443,8 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(harness.markInvalid).not.toHaveBeenCalled();
-        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
@@ -460,14 +483,15 @@ describe('lookup editor blur commits', () => {
         expect(harness.input.value).toBe('CLOSED');
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
-        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.cell.navigateNext).toHaveBeenCalledOnce();
     });
 
     test('Tab accepts a visible autocomplete suggestion and navigates next', async () => {
         const harness = createHarness({
             options: {
                 autoComplete: true
-            }
+            },
+            withRowNavigation: true
         });
         const preventDefault = vi.fn();
 
@@ -489,7 +513,8 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
         expect(harness.cancel).not.toHaveBeenCalled();
-        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
         expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
             value: 'REPAIR',
@@ -526,7 +551,7 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REP');
         expect(harness.markInvalid).toHaveBeenCalledOnce();
-        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.cell.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
@@ -585,7 +610,7 @@ describe('lookup editor blur commits', () => {
         expect(preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
-        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.cell.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
@@ -604,7 +629,7 @@ describe('lookup editor blur commits', () => {
         expect(preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
-        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
+        expect(harness.cell.navigatePrev).toHaveBeenCalledOnce();
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
     });
 
@@ -629,7 +654,7 @@ describe('lookup editor blur commits', () => {
             'Invalid lookup code'
         );
         expect(harness.cancel).not.toHaveBeenCalled();
-        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
+        expect(harness.cell.navigateNext).toHaveBeenCalledOnce();
     });
 
     test('Enter still commits a manual autocomplete suggestion without navigating', async () => {

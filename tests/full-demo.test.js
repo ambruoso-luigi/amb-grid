@@ -14,7 +14,7 @@ describe('Starship Registry demo', () => {
         expect(source).toContain('fakeApi.searchStatuses(query)');
         expect(source).toContain('dialogOptions: {');
         expect(source).toContain('closeOnBackdropClick: false');
-        expect(source).toContain("controls: 'full'");
+        expect(source).toContain('pagination: false');
         expect(source).toContain("title: 'After Date'");
         expect(source).toContain("field: 'afterDateNote'");
         expect(source).toContain("title: 'Final Text'");
@@ -32,6 +32,9 @@ describe('Starship Registry demo', () => {
     test('keeps the Notes large text editor open when its backdrop is clicked', () => {
         expect(source).toMatch(
             /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?closeOnBackdropClick: false/
+        );
+        expect(source).toMatch(
+            /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?tabBehavior: 'save-and-navigate'/
         );
     });
 });
