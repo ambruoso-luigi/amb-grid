@@ -28,4 +28,10 @@ describe('Starship Registry demo', () => {
         expect(source).toContain('crud.getSavePayload()');
         expect(source).toContain('fakeApi.saveStarshipChanges(payload)');
     });
+
+    test('keeps the Notes large text editor open when its backdrop is clicked', () => {
+        expect(source).toMatch(
+            /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?closeOnBackdropClick: false/
+        );
+    });
 });

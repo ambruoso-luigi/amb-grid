@@ -143,7 +143,8 @@ export default async function fullDemo(app) {
                 formatter: AMB.formatters.largeTextPreview({ maxLength: 40 }),
                 editor: AMB.editors.largeText({
                     title: 'Edit notes',
-                    rows: 10
+                    rows: 10,
+                    closeOnBackdropClick: false
                 })
             },
             {

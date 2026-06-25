@@ -375,7 +375,7 @@ describe('lookup editor blur commits', () => {
         });
     });
 
-    test('Tab does not resolve a pending autocomplete suggestion or restore the old value', async () => {
+    test('Tab resolves a matching suggestion before a pending autocomplete request updates the input', async () => {
         let resolveAutoComplete;
         let repRequests = 0;
         const load = vi.fn(({ query }) => {
@@ -395,6 +395,7 @@ describe('lookup editor blur commits', () => {
             load
         });
         const preventDefault = vi.fn();
+        const stopPropagation = vi.fn();
 
         harness.input.value = 'rep';
         await harness.input.dispatch('input', {
@@ -404,23 +405,62 @@ describe('lookup editor blur commits', () => {
 
         await harness.input.dispatch('keydown', {
             key: 'Tab',
-            preventDefault
+            preventDefault,
+            stopPropagation
         });
         resolveAutoComplete([records[1]]);
         await Promise.resolve();
         await flushDeferred();
 
         expect(preventDefault).toHaveBeenCalledOnce();
-        expect(harness.input.value).toBe('REP');
+        expect(stopPropagation).toHaveBeenCalledOnce();
+        expect(harness.input.value).toBe('REPAIR');
+        expect(harness.input.selectionStart).toBe(6);
+        expect(harness.input.selectionEnd).toBe(6);
         expect(harness.success).toHaveBeenCalledOnce();
-        expect(harness.success).toHaveBeenCalledWith('REP');
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
         expect(harness.cancel).not.toHaveBeenCalled();
-        expect(harness.markInvalid).toHaveBeenCalledWith(
-            harness.cell,
-            'Invalid lookup code'
-        );
+        expect(harness.markInvalid).not.toHaveBeenCalled();
         expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
+    test('a stale autocomplete response does not modify the input after a Tab commit', async () => {
+        let resolveAutoComplete;
+        let repRequests = 0;
+        const load = vi.fn(({ query }) => {
+            if (query === 'REP' && repRequests === 0) {
+                repRequests += 1;
+                return new Promise(resolve => {
+                    resolveAutoComplete = resolve;
+                });
+            }
+
+            return records.filter(record => record.id.includes(query));
+        });
+        const harness = createHarness({
+            options: {
+                autoComplete: true
+            },
+            load
+        });
+
+        harness.input.value = 'rep';
+        const pendingInput = harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+
+        await harness.input.dispatch('keydown', { key: 'Tab' });
+        harness.input.value = 'CLOSED';
+        resolveAutoComplete([records[1]]);
+        await pendingInput;
+        await flushDeferred();
+
+        expect(harness.input.value).toBe('CLOSED');
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
     });
 
     test('Tab accepts a visible autocomplete suggestion and navigates next', async () => {
@@ -488,6 +528,46 @@ describe('lookup editor blur commits', () => {
         expect(harness.markInvalid).toHaveBeenCalledOnce();
         expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
+    test('Tab does not search for a pending suggestion when autocomplete acceptance is disabled', async () => {
+        let resolveAutoComplete;
+        let repRequests = 0;
+        const load = vi.fn(({ query }) => {
+            if (query === 'REP' && repRequests === 0) {
+                repRequests += 1;
+                return new Promise(resolve => {
+                    resolveAutoComplete = resolve;
+                });
+            }
+
+            return records.filter(record => record.id.includes(query));
+        });
+        const harness = createHarness({
+            options: {
+                autoComplete: true,
+                autoCompleteOnTab: false
+            },
+            load
+        });
+
+        harness.input.value = 'rep';
+        const pendingInput = harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+
+        await harness.input.dispatch('keydown', { key: 'Tab' });
+        await flushDeferred();
+
+        expect(load).toHaveBeenCalledTimes(2);
+        expect(harness.success).toHaveBeenCalledWith('REP');
+        expect(harness.markInvalid).toHaveBeenCalledOnce();
+
+        resolveAutoComplete([records[1]]);
+        await pendingInput;
+
+        expect(harness.input.value).toBe('REP');
     });
 
     test('Tab commits a complete valid value once and navigates next', async () => {

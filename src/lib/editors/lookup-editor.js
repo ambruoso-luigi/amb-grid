@@ -14,7 +14,7 @@ import { getInitialValue, getLookupOptionValue } from './shared.js';
      * @param {boolean} [options.validateOnBlur=true] - Validate typed codes on blur.
      * @param {boolean} [options.autoComplete=false] - Enable inline lookup suggestions.
      * @param {number} [options.autoCompleteMinChars=1] - Minimum query length for suggestions.
-     * @param {boolean} [options.autoCompleteOnTab=true] - Accept a suggestion with Tab.
+     * @param {boolean} [options.autoCompleteOnTab=true] - Accept the best matching suggestion with Tab, including while an autocomplete request is pending.
      * @param {string} [options.invalidMessage='Invalid lookup code'] - Error message for invalid typed codes.
      * @param {object} [options.context] - Context passed to lookup loads.
      * @param {Array<object>} [options.columns] - Dialog columns.
@@ -220,6 +220,20 @@ export function lookup(lookupInstance, options = {}) {
                 }) || null;
             };
 
+            const findAutoCompleteSuggestion = async typedValue => {
+                if (!normalizedOptions.autoComplete || !typedValue) return null;
+
+                if (typedValue.length < normalizedOptions.autoCompleteMinChars) return null;
+
+                const items = await loadLookup(typedValue);
+
+                return items.find(item => {
+                    return normalizeValue(
+                        getLookupOptionValue(item, valueField)
+                    ).startsWith(typedValue);
+                }) || null;
+            };
+
             const invalidateManualAutoComplete = () => {
                 autoCompleteRequestId += 1;
                 hasAutoCompleteSuggestion = false;
@@ -239,12 +253,7 @@ export function lookup(lookupInstance, options = {}) {
                 if (typedValue.length < normalizedOptions.autoCompleteMinChars) return;
 
                 try {
-                    const items = await loadLookup(typedValue);
-                    const matchedItem = items.find(item => {
-                        return normalizeValue(
-                            getLookupOptionValue(item, valueField)
-                        ).startsWith(typedValue);
-                    });
+                    const matchedItem = await findAutoCompleteSuggestion(typedValue);
 
                     if (closed || requestId !== autoCompleteRequestId) return;
                     if (!matchedItem) return;
@@ -386,17 +395,41 @@ export function lookup(lookupInstance, options = {}) {
                 if (closed || tabCommitInProgress) return;
 
                 tabCommitInProgress = true;
+                const hasVisibleSuggestion = hasAutoCompleteSuggestion
+                    && input.selectionStart < input.selectionEnd;
 
-                if (
-                    hasAutoCompleteSuggestion
-                    && input.selectionStart < input.selectionEnd
-                ) {
+                if (hasVisibleSuggestion) {
                     const committedValue = normalizedOptions.autoCompleteOnTab
                         ? input.value
                         : manualAutoCompleteTypedValue;
 
                     input.value = committedValue;
                     input.setSelectionRange(committedValue.length, committedValue.length);
+                } else if (
+                    normalizedOptions.autoComplete
+                    && normalizedOptions.autoCompleteOnTab
+                ) {
+                    const typedValue = getValue();
+
+                    try {
+                        const suggestedItem = await findAutoCompleteSuggestion(typedValue);
+
+                        if (closed) return;
+
+                        if (suggestedItem) {
+                            const suggestedValue = normalizeValue(
+                                getLookupOptionValue(suggestedItem, valueField)
+                            );
+
+                            input.value = suggestedValue;
+                            input.setSelectionRange(
+                                suggestedValue.length,
+                                suggestedValue.length
+                            );
+                        }
+                    } catch {
+                        // Fall back to the existing lookup validation behavior.
+                    }
                 }
 
                 invalidateManualAutoComplete();
@@ -427,6 +460,7 @@ export function lookup(lookupInstance, options = {}) {
 
                 if (event.key === 'Tab') {
                     event.preventDefault();
+                    event.stopPropagation();
                     return commitFromTab(event.shiftKey ? 'prev' : 'next');
                 }
 

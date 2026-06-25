@@ -14,6 +14,7 @@ import { getInitialValue, toCssSize } from './shared.js';
      * @param {number|string} [options.textareaHeight=260] - Textarea height.
      * @param {boolean} [options.horizontalScroll=false] - Keep long lines on one line.
      * @param {string} [options.resize='vertical'] - CSS resize value for the textarea.
+     * @param {boolean} [options.closeOnBackdropClick=true] - Close the editor when the backdrop is pressed.
      * @returns {Function} Tabulator editor.
      * @example
      * {
@@ -36,6 +37,7 @@ export function largeText(options = {}) {
             textareaHeight: 260,
             horizontalScroll: false,
             resize: 'vertical',
+            closeOnBackdropClick: true,
             ...options
         };
 
@@ -115,10 +117,14 @@ export function largeText(options = {}) {
             cancelButton.addEventListener('click', closeWithCancel);
             saveButton.addEventListener('click', closeWithSuccess);
             overlay.addEventListener('mousedown', event => {
-                if (event.target === overlay) {
-                    event.preventDefault();
-                    closeWithCancel();
-                }
+                if (event.target !== overlay) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (normalizedOptions.closeOnBackdropClick === false) return;
+
+                closeWithCancel();
             });
             textarea.addEventListener('keydown', event => {
                 if (event.key === 'Escape') {
