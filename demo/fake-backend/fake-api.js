@@ -5,7 +5,7 @@ const clone = value => structuredClone(value);
 
 const state = {
     statuses: clone(database.statuses),
-    starships: clone(database.starships)
+    products: clone(database.products)
 };
 
 const normalizeCode = value => {
@@ -20,62 +20,62 @@ const getChangeId = item => {
         : item.id;
 };
 
-const getInsertedStarship = item => {
+const getInsertedProduct = item => {
     return clone(item);
 };
 
-const getUpdatedStarship = change => {
+const getUpdatedProduct = change => {
     return clone(change.after || change);
 };
 
-const getNextStarshipId = () => {
-    const maxId = state.starships.reduce((max, item) => {
+const getNextProductId = () => {
+    const maxId = state.products.reduce((max, item) => {
         return typeof item.id === 'number' && item.id > max ? item.id : max;
     }, 0);
 
     return maxId + 1;
 };
 
-const hasRegistryDuplicate = payload => {
+const hasSkuDuplicate = payload => {
     const changes = payload.changes || {};
     const deletedIds = new Set((changes.deleted || []).map(change => getChangeId(change)));
     const pendingById = new Map();
 
     (changes.updated || []).forEach(change => {
-        const starship = getUpdatedStarship(change);
+        const product = getUpdatedProduct(change);
 
-        pendingById.set(getChangeId(starship), starship);
+        pendingById.set(getChangeId(product), product);
     });
 
     (changes.inserted || []).forEach(item => {
-        const starship = getInsertedStarship(item);
+        const product = getInsertedProduct(item);
 
-        pendingById.set(getChangeId(starship), starship);
+        pendingById.set(getChangeId(product), product);
     });
 
     const candidates = [
-        ...state.starships
+        ...state.products
             .filter(item => !deletedIds.has(item.id))
             .map(item => pendingById.get(getChangeId(item)) || item),
-        ...(changes.inserted || []).map(getInsertedStarship)
-            .filter(item => !state.starships.some(existing => getChangeId(existing) === getChangeId(item)))
+        ...(changes.inserted || []).map(getInsertedProduct)
+            .filter(item => !state.products.some(existing => getChangeId(existing) === getChangeId(item)))
     ];
     const seen = new Map();
 
     for (const item of candidates) {
-        const registryCode = normalizeCode(item.registryCode);
+        const sku = normalizeCode(item.sku);
 
-        if (!registryCode) continue;
+        if (!sku) continue;
 
-        if (seen.has(registryCode) && seen.get(registryCode) !== getChangeId(item)) {
+        if (seen.has(sku) && seen.get(sku) !== getChangeId(item)) {
             return {
                 id: getChangeId(item),
-                field: 'registryCode',
-                message: 'Registry code already exists'
+                field: 'sku',
+                message: 'SKU already exists'
             };
         }
 
-        seen.set(registryCode, getChangeId(item));
+        seen.set(sku, getChangeId(item));
     }
 
     return null;
@@ -99,18 +99,18 @@ export const fakeApi = {
         }));
     },
 
-    async getStarships() {
+    async getProducts() {
         await delay();
 
-        return clone(state.starships);
+        return clone(state.products);
     },
 
-    async saveStarshipChanges(payload) {
+    async saveProductChanges(payload) {
         await delay(700);
 
         const changes = payload.changes || {};
         const missingDelete = (changes.deleted || []).find(change => {
-            return !state.starships.some(item => getChangeId(item) === getChangeId(change));
+            return !state.products.some(item => getChangeId(item) === getChangeId(change));
         });
 
         if (missingDelete) {
@@ -120,13 +120,13 @@ export const fakeApi = {
                 errors: [
                     {
                         id: getChangeId(missingDelete),
-                        message: 'Starship not found'
+                        message: 'Product not found'
                     }
                 ]
             };
         }
 
-        const duplicate = hasRegistryDuplicate(payload);
+        const duplicate = hasSkuDuplicate(payload);
 
         if (duplicate) {
             return {
@@ -146,47 +146,47 @@ export const fakeApi = {
 
         (changes.deleted || []).forEach(change => {
             const id = getChangeId(change);
-            const index = state.starships.findIndex(item => getChangeId(item) === id);
+            const index = state.products.findIndex(item => getChangeId(item) === id);
 
             if (index === -1) return;
 
-            const [deleted] = state.starships.splice(index, 1);
+            const [deleted] = state.products.splice(index, 1);
             saved.deleted.push(clone(deleted));
         });
 
         (changes.updated || []).forEach(change => {
-            const starship = getUpdatedStarship(change);
-            const index = state.starships.findIndex(item => getChangeId(item) === getChangeId(starship));
+            const product = getUpdatedProduct(change);
+            const index = state.products.findIndex(item => getChangeId(item) === getChangeId(product));
 
             if (index === -1) return;
 
-            state.starships[index] = starship;
-            saved.updated.push(clone(starship));
+            state.products[index] = product;
+            saved.updated.push(clone(product));
         });
 
         (changes.inserted || []).forEach(item => {
-            const starship = getInsertedStarship(item);
-            const tempId = starship._ambTempId;
+            const product = getInsertedProduct(item);
+            const tempId = product._ambTempId;
 
-            if (starship.id === null || starship.id === undefined || starship.id === '') {
-                starship.id = getNextStarshipId();
+            if (product.id === null || product.id === undefined || product.id === '') {
+                product.id = getNextProductId();
 
                 if (tempId) {
                     generatedIds.push({
                         tempId,
-                        id: starship.id
+                        id: product.id
                     });
                 } else {
                     unmappedInserted.push({
-                        id: starship.id,
+                        id: product.id,
                         reason: 'missing-temp-id'
                     });
                 }
             }
 
-            delete starship._ambTempId;
-            state.starships.push(starship);
-            saved.inserted.push(clone(starship));
+            delete product._ambTempId;
+            state.products.push(product);
+            saved.inserted.push(clone(product));
         });
 
         return {

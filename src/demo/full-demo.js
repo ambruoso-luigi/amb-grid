@@ -1,29 +1,47 @@
 import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 
+const categories = [
+    'Consumables',
+    'Equipment',
+    'Furniture',
+    'Storage'
+];
+
+const warehouses = [
+    'Bologna Hub',
+    'Milano Nord',
+    'Roma Est',
+    'Torino Ovest'
+];
+
 export default async function fullDemo(app) {
     app.innerHTML = `
-        <h2>Starship Registry</h2>
-        <div class="toolbar">
-            <button type="button" id="add-ship">Add starship</button>
-            <button type="button" id="save-ships">Save changes</button>
-            <button type="button" id="ship-report">Show state report</button>
+        <div class="demo-section-heading">
+            <p class="demo-kicker" data-i18n="mainDemo.kicker">Demo principale</p>
+            <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
+            <p class="demo-note" data-i18n="mainDemo.description">Una base backoffice per inventario: modifica prodotti, controlla stock e prezzi, valida i dati e genera un payload CRUD pronto per il backend.</p>
         </div>
-        <div id="starship-table"></div>
-        <pre class="demo-output" id="starship-output"></pre>
+        <div class="toolbar">
+            <button type="button" id="add-product" data-i18n="mainDemo.add">Aggiungi prodotto</button>
+            <button type="button" id="save-products" data-i18n="mainDemo.save">Salva modifiche</button>
+            <button type="button" id="product-report" data-i18n="mainDemo.report">Mostra report stato</button>
+        </div>
+        <div id="inventory-table"></div>
+        <pre class="demo-output" id="inventory-output"></pre>
     `;
 
-    const output = app.querySelector('#starship-output');
+    const output = app.querySelector('#inventory-output');
 
     output.textContent = 'Loading...';
 
-    const starships = await fakeApi.getStarships();
+    const products = await fakeApi.getProducts();
     const statusLookup = AMB.lookup({
         keyField: 'id',
         valueField: 'id',
         labelField: 'description',
         columns: [
-            { field: 'id', title: 'Code', visible: true, width: 140 },
+            { field: 'id', title: 'Code', visible: true, width: 150 },
             { field: 'description', title: 'Description', visible: true }
         ],
         search: {
@@ -34,66 +52,119 @@ export default async function fullDemo(app) {
     const statusDialog = new AMB.LookupDialog();
 
     const demo = AMB.table({
-        selector: '#starship-table',
-        height: '320px',
+        selector: '#inventory-table',
+        height: '360px',
         search: {
             enabled: true,
-            placeholder: 'Search starships...',
+            placeholder: 'Search inventory...',
             filters: {
                 enabled: true
             }
         },
         deleteColumn: {
             enabled: true,
-            confirmDeleteMessage: 'Delete this starship?',
-            confirmRollbackMessage: 'Rollback this starship?',
-            confirmRemoveNewMessage: 'Remove this new starship?'
+            confirmDeleteMessage: 'Delete this product?',
+            confirmRollbackMessage: 'Rollback this product?',
+            confirmRemoveNewMessage: 'Remove this new product?'
         },
-        data: starships,
+        data: products,
         layout: 'fitColumns',
         columns: [
-            { title: 'Ship Name', field: 'shipName', editor: AMB.editors.text({ trim: true }), required: true },
             {
-                title: 'Registry Code',
-                field: 'registryCode',
+                title: 'SKU',
+                field: 'sku',
+                width: 130,
                 editor: AMB.editors.text({ uppercase: true, trim: true }),
                 required: true,
                 validation: {
                     pattern: {
-                        regex: /^[A-Z]{3}[0-9]{3}$/,
-                        message: 'Use three letters and three digits'
+                        regex: /^SKU-[0-9]{4}$/,
+                        message: 'Use SKU-0000 format'
                     }
                 }
             },
             {
-                title: 'Captain Email',
-                field: 'captainEmail',
+                title: 'Product name',
+                field: 'productName',
+                width: 190,
                 editor: AMB.editors.text({ trim: true }),
-                validation: { email: { message: 'Enter a valid email' } }
+                required: true
             },
             {
-                title: 'Crew Size',
-                field: 'crewSize',
+                title: 'Category',
+                field: 'category',
+                width: 150,
+                editor: AMB.editors.autocomplete(categories, { maxOptions: 8 }),
+                validation: {
+                    allowedValues: {
+                        values: categories,
+                        message: 'Choose a known category'
+                    }
+                }
+            },
+            {
+                title: 'Warehouse',
+                field: 'warehouse',
+                width: 150,
+                editor: AMB.editors.autocomplete(warehouses, { maxOptions: 8 }),
+                validation: {
+                    allowedValues: {
+                        values: warehouses,
+                        message: 'Choose a known warehouse'
+                    }
+                }
+            },
+            {
+                title: 'Stock quantity',
+                field: 'stockQuantity',
+                width: 140,
                 editor: AMB.editors.integer({ allowEmpty: true }),
                 formatter: AMB.formatters.integer(),
                 validation: { integer: true }
             },
             {
-                title: 'Fuel Capacity',
-                field: 'fuelCapacity',
+                title: 'Minimum stock',
+                field: 'minimumStock',
+                width: 140,
+                editor: AMB.editors.integer({ allowEmpty: true }),
+                formatter: AMB.formatters.integer(),
+                validation: { integer: true }
+            },
+            {
+                title: 'Unit price',
+                field: 'unitPrice',
+                width: 130,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: true }),
                 formatter: AMB.formatters.decimal(2),
                 validation: {
                     decimal: {
                         integerDigits: 7,
                         decimalDigits: 2,
-                        message: 'Enter a valid fuel capacity'
+                        message: 'Enter a valid unit price'
+                    }
+                }
+            },
+            {
+                title: 'Last check date',
+                field: 'lastCheckDate',
+                width: 150,
+                editor: AMB.editors.date({
+                    format: 'dd/mm/yyyy',
+                    allowEmpty: true,
+                    picker: true
+                }),
+                formatter: AMB.formatters.date('dd/mm/yyyy'),
+                validation: {
+                    date: {
+                        format: 'dd/mm/yyyy',
+                        message: 'Enter a real check date'
                     }
                 }
             },
             {
                 title: 'Status',
                 field: 'status',
+                width: 150,
                 required: true,
                 editor: AMB.editors.lookup(statusLookup, {
                     uppercase: true,
@@ -112,64 +183,45 @@ export default async function fullDemo(app) {
                 })
             },
             {
-                title: 'Launch Date',
-                field: 'launchDate',
-                editor: AMB.editors.date({
-                    format: 'dd/mm/yyyy',
-                    allowEmpty: true,
-                    picker: true
-                }),
-                formatter: AMB.formatters.date('dd/mm/yyyy'),
-                validation: {
-                    date: {
-                        format: 'dd/mm/yyyy',
-                        message: 'Enter a real launch date'
-                    }
-                }
-            },
-            {
-                title: 'After Date',
-                field: 'afterDateNote',
-                editor: AMB.editors.text({ trim: true })
-            },
-            {
                 title: 'Notes',
                 field: 'notes',
-                width: 220,
-                formatter: AMB.formatters.largeTextPreview({ maxLength: 40 }),
+                width: 240,
+                formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }),
                 editor: AMB.editors.largeText({
-                    title: 'Edit notes',
+                    title: 'Edit inventory notes',
                     rows: 10,
                     closeOnBackdropClick: false,
                     tabBehavior: 'save-and-navigate'
                 })
             },
             {
-                title: 'Final Text',
-                field: 'finalText',
-                editor: AMB.editors.text({ trim: true })
+                title: 'Internal code',
+                field: 'internalCode',
+                width: 130,
+                editor: AMB.editors.text({ uppercase: true, trim: true })
             }
         ]
     });
 
     const { crud } = demo;
-    const saveButton = app.querySelector('#save-ships');
+    const saveButton = app.querySelector('#save-products');
 
     output.textContent = '';
 
-    app.querySelector('#add-ship').addEventListener('click', () => {
+    app.querySelector('#add-product').addEventListener('click', () => {
         crud.addRow({
             id: null,
-            shipName: '',
-            registryCode: '',
-            captainEmail: '',
-            crewSize: '',
-            fuelCapacity: '',
+            sku: '',
+            productName: '',
+            category: '',
+            warehouse: '',
+            stockQuantity: '',
+            minimumStock: '',
+            unitPrice: '',
+            lastCheckDate: '',
             status: '',
-            launchDate: '',
-            afterDateNote: '',
             notes: '',
-            finalText: ''
+            internalCode: ''
         });
     });
     saveButton.addEventListener('click', async () => {
@@ -191,7 +243,7 @@ export default async function fullDemo(app) {
         saveButton.disabled = true;
 
         try {
-            const result = await fakeApi.saveStarshipChanges(payload);
+            const result = await fakeApi.saveProductChanges(payload);
 
             if (result.ok) {
                 const applyIdsResult = crud.applyBackendIds(result.generatedIds || []);
@@ -220,7 +272,7 @@ export default async function fullDemo(app) {
             saveButton.disabled = false;
         }
     });
-    app.querySelector('#ship-report').addEventListener('click', () => {
+    app.querySelector('#product-report').addEventListener('click', () => {
         output.textContent = JSON.stringify(crud.getStateReport(), null, 2);
     });
 
