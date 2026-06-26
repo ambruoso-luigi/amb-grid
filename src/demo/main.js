@@ -35,7 +35,7 @@ const translations = {
         'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili, powered by Tabulator.',
         'hero.badge': 'Demo locale',
         'hero.description': 'Una base più professionale per presentare AMB Grid in contesti backoffice, admin panel e applicazioni business server-rendered o integrate con framework moderni.',
-        'hero.primary': 'Apri demo magazzino',
+        'hero.primary': 'Apri demo legacy-friendly',
         'hero.secondary': 'Vedi esempi funzionali',
         'hero.statState': 'Stati riga',
         'hero.statStateText': 'clean, new, modified, deleted, saved',
@@ -43,12 +43,10 @@ const translations = {
         'hero.statPayloadText': 'inserted, updated, deleted',
         'hero.statIntegration': 'Integrazione',
         'hero.statIntegrationText': 'vanilla JS, legacy-friendly, framework-ready',
-        'mainDemo.kicker': 'Demo principale',
+        'mainDemo.kicker': 'Demo legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
-        'mainDemo.description': 'Una base backoffice per inventario: modifica prodotti, controlla stock e prezzi, valida i dati e genera un payload CRUD pronto per il backend.',
-        'mainDemo.add': 'Aggiungi prodotto',
-        'mainDemo.save': 'Salva modifiche',
-        'mainDemo.report': 'Mostra report stato',
+        'mainDemo.description': 'Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.',
+        'mainDemo.scenario': 'Scenario: Classic Warehouse Backoffice',
         'cycle.kicker': 'Flusso applicativo',
         'cycle.title': 'CRUD, validazione e payload nello stesso ciclo',
         'cycle.description': 'La demo principale prepara il percorso evolutivo: lookup, autocomplete, campi numerici, date, rollback, save fake e riallineamento dello stato dopo il salvataggio.',
@@ -74,7 +72,7 @@ const translations = {
         'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular business data, powered by Tabulator.',
         'hero.badge': 'Local demo',
         'hero.description': 'A more professional foundation for presenting AMB Grid in backoffice, admin panel, business application, server-rendered, and framework-integrated contexts.',
-        'hero.primary': 'Open warehouse demo',
+        'hero.primary': 'Open legacy-friendly demo',
         'hero.secondary': 'View feature examples',
         'hero.statState': 'Row states',
         'hero.statStateText': 'clean, new, modified, deleted, saved',
@@ -82,12 +80,10 @@ const translations = {
         'hero.statPayloadText': 'inserted, updated, deleted',
         'hero.statIntegration': 'Integration',
         'hero.statIntegrationText': 'vanilla JS, legacy-friendly, framework-ready',
-        'mainDemo.kicker': 'Main demo',
+        'mainDemo.kicker': 'Legacy-friendly demo',
         'mainDemo.title': 'Classic Warehouse Backoffice',
-        'mainDemo.description': 'An inventory backoffice foundation: edit products, review stock and prices, validate data, and generate a backend-ready CRUD payload.',
-        'mainDemo.add': 'Add product',
-        'mainDemo.save': 'Save changes',
-        'mainDemo.report': 'Show state report',
+        'mainDemo.description': 'A classic server-rendered and legacy-friendly business page with a modern UI for CRUD, validation, and application payloads.',
+        'mainDemo.scenario': 'Scenario: Gestionale Magazzino Classico',
         'cycle.kicker': 'Application flow',
         'cycle.title': 'CRUD, validation, and payload in one cycle',
         'cycle.description': 'The main demo prepares the next evolution: lookup, autocomplete, numeric fields, dates, rollback, fake save, and state alignment after saving.',
@@ -121,8 +117,8 @@ const getText = key => translations[currentLang][key] || translations.it[key] ||
 const applyI18n = () => {
     document.documentElement.lang = currentLang;
     document.title = currentLang === 'it'
-        ? 'AMB Grid - Gestionale Magazzino Classico'
-        : 'AMB Grid - Classic Warehouse Backoffice';
+        ? 'AMB Grid - Demo legacy-friendly'
+        : 'AMB Grid - Legacy-friendly demo';
 
     root.querySelectorAll('[data-i18n]').forEach(element => {
         element.textContent = getText(element.dataset.i18n);
@@ -134,6 +130,10 @@ const applyI18n = () => {
         button.classList.toggle('is-active', isActive);
         button.setAttribute('aria-pressed', String(isActive));
     });
+
+    window.dispatchEvent(new CustomEvent('amb-demo-language-change', {
+        detail: { language: currentLang }
+    }));
 };
 
 const setActiveExample = selectedId => {
