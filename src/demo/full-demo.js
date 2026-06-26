@@ -16,6 +16,48 @@ const warehouses = [
     'Torino Ovest'
 ];
 
+const toolbarIcons = {
+    add: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+        </svg>
+    `,
+    reload: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 7v5h-5"></path>
+            <path d="M19 12a7 7 0 1 1-2.05-4.95L20 10"></path>
+        </svg>
+    `,
+    save: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12.5l4.2 4.2L19 7"></path>
+        </svg>
+    `,
+    payload: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5H5v14h3"></path>
+            <path d="M16 5h3v14h-3"></path>
+            <path d="M10 9l-2.5 3L10 15"></path>
+            <path d="M14 9l2.5 3L14 15"></path>
+        </svg>
+    `,
+    validate: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3l7 3v5c0 4.5-2.8 8-7 10-4.2-2-7-5.5-7-10V6l7-3z"></path>
+            <path d="M8.8 12.2l2.1 2.1 4.3-4.6"></path>
+        </svg>
+    `,
+    report: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 4h10l2 2v14H5V4h2z"></path>
+            <path d="M8 10h8"></path>
+            <path d="M8 14h8"></path>
+            <path d="M8 18h5"></path>
+        </svg>
+    `
+};
+
 const toolbarLabels = {
     it: {
         add: { label: 'Prodotto', title: 'Aggiungi prodotto' },
@@ -161,10 +203,14 @@ const updateToolbarLabels = demo => {
     Object.entries(labels).forEach(([id, label]) => {
         const button = toolbar.querySelector(`[data-action="${id === 'report' ? 'show-report' : id}"]`);
         const labelElement = button && button.querySelector('.amb-toolbar__button-label');
+        const iconElement = button && button.querySelector('.amb-toolbar__button-icon');
 
         if (!button || !labelElement) return;
 
         labelElement.textContent = label.label;
+        if (iconElement && toolbarIcons[id]) {
+            iconElement.innerHTML = toolbarIcons[id];
+        }
         button.title = label.title;
         button.setAttribute('aria-label', label.title);
     });
@@ -227,6 +273,7 @@ export default async function fullDemo(app) {
                     id: 'show-report',
                     label: 'Report',
                     title: 'Show state report',
+                    icon: toolbarIcons.report,
                     onClick: handleShowReport
                 }
             ],
