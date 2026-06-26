@@ -5,6 +5,10 @@ const source = fs.readFileSync(
     new URL('../src/demo/full-demo.js', import.meta.url),
     'utf8'
 );
+const demoCss = fs.readFileSync(
+    new URL('../src/demo/demo.css', import.meta.url),
+    'utf8'
+);
 
 describe('Legacy-friendly warehouse demo', () => {
     test('uses legacy-friendly naming with warehouse scenario', () => {
@@ -101,5 +105,15 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toMatch(
             /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?tabBehavior: 'save-and-navigate'/
         );
+    });
+
+    test('keeps the main demo toolbar compact and the Tabulator surface clean in demo CSS', () => {
+        expect(demoCss).toContain('.demo-panel .amb-toolbar {');
+        expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);');
+        expect(demoCss).toContain('.demo-panel .amb-toolbar__search {');
+        expect(demoCss).toContain('.demo-panel .tabulator .tabulator-tableholder,');
+        expect(demoCss).toContain('.demo-panel .tabulator .tabulator-placeholder');
+        expect(demoCss).toContain('background: #fff;');
+        expect(demoCss).toContain('grid-template-columns: minmax(0, 920px);');
     });
 });

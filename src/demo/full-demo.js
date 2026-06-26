@@ -202,7 +202,7 @@ export default async function fullDemo(app) {
 
     const demo = AMB.table({
         selector: '#inventory-table',
-        height: '380px',
+        height: '340px',
         search: {
             enabled: true,
             placeholder: 'Search inventory...',

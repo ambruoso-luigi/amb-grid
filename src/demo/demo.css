@@ -286,8 +286,8 @@ a {
 .demo-section-heading--split {
     align-items: start;
     display: grid;
-    gap: 18px;
-    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    grid-template-columns: minmax(0, 920px);
     max-width: none;
 }
 
@@ -298,9 +298,10 @@ a {
     color: var(--demo-accent-strong);
     font-size: 13px;
     font-weight: 700;
+    justify-self: start;
     margin: 2px 0 0;
     padding: 7px 12px;
-    white-space: nowrap;
+    width: fit-content;
 }
 
 .demo-kicker {
@@ -462,17 +463,36 @@ a {
 }
 
 .demo-panel .amb-toolbar {
-    background: #f6f9fd;
+    align-items: center;
+    background: linear-gradient(180deg, #f8fbff 0%, #f1f6fb 100%);
     border: 1px solid var(--demo-border);
     border-bottom: 0;
     border-radius: 8px 8px 0 0;
-    box-shadow: none;
-    gap: 12px;
-    padding: 10px;
+    box-shadow: inset 0 -1px 0 rgb(214 222 232 / 70%);
+    display: grid;
+    gap: 10px 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+    justify-content: stretch;
+    padding: 12px;
 }
 
 .demo-panel .amb-toolbar__actions {
     gap: 8px;
+    min-width: 0;
+}
+
+.demo-panel .amb-toolbar__search {
+    min-width: 0;
+    width: 100%;
+}
+
+.demo-panel .amb-toolbar__search .amb-search-toolbar {
+    justify-content: stretch;
+}
+
+.demo-panel .amb-search-toolbar--integrated .amb-search-toolbar__input {
+    flex: 1 1 auto;
+    width: 100%;
 }
 
 .demo-panel .amb-toolbar__button {
@@ -481,6 +501,7 @@ a {
     border-radius: 6px;
     color: #26364d;
     min-height: 36px;
+    padding: 7px 11px;
 }
 
 .demo-panel .amb-toolbar__button:hover {
@@ -506,7 +527,28 @@ a {
 }
 
 .demo-panel .tabulator {
+    background: #fff;
     border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+.demo-panel .tabulator .tabulator-tableholder,
+.demo-panel .tabulator .tabulator-table,
+.demo-panel .tabulator .tabulator-placeholder {
+    background: #fff;
+}
+
+.demo-panel .tabulator .tabulator-header {
+    background: #eef4fb;
+}
+
+.demo-panel .tabulator .tabulator-col {
+    background: #eef4fb;
+    border-color: #d6e0ec;
+}
+
+.demo-panel .tabulator .tabulator-row {
+    border-color: #e7edf4;
 }
 
 .demo-report-dialog[hidden] {
@@ -626,13 +668,12 @@ a {
         grid-template-columns: 1fr;
     }
 
-    .demo-section-heading--split {
-        grid-template-columns: 1fr;
+    .demo-scenario-label {
+        white-space: normal;
     }
 
-    .demo-scenario-label {
-        justify-self: start;
-        white-space: normal;
+    .demo-panel .amb-toolbar {
+        grid-template-columns: 1fr;
     }
 }
 
