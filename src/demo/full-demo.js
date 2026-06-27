@@ -227,6 +227,7 @@ export default async function fullDemo(app) {
     app.innerHTML = `
         <div class="demo-section-heading demo-section-heading--split">
             <div>
+                <span class="demo-main-badge" data-i18n="mainDemo.primaryLabel">Demo principale</span>
                 <p class="demo-kicker" data-i18n="mainDemo.kicker">Demo legacy-friendly</p>
                 <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
                 <p class="demo-note" data-i18n="mainDemo.description">Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.</p>

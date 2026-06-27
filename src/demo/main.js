@@ -13,6 +13,7 @@ import parsers from './parsers.js';
 import rowStates from './row-states.js';
 import multipleTables from './multiple-tables.js';
 import fullDemo from './full-demo.js';
+import gettingStartedJavaScript from './getting-started-javascript.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -33,6 +34,10 @@ const translations = {
     it: {
         'page.title': 'AMB Grid',
         'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili, powered by Tabulator.',
+        'language.it': '🇮🇹 IT',
+        'language.en': '🇬🇧 EN',
+        'language.itTitle': 'Cambia lingua in italiano',
+        'language.enTitle': 'Switch language to English',
         'hero.badge': 'AMB Grid',
         'hero.title': 'CRUD grid framework-agnostic per applicazioni business',
         'hero.description': 'AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
@@ -48,7 +53,7 @@ const translations = {
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
         'frameworks.javascript.badge': 'Classic integration',
         'frameworks.javascript.description': 'Snippet base con AMB.table(...).',
-        'frameworks.javascript.status': 'Available',
+        'frameworks.javascript.status': 'Apri guida',
         'frameworks.react.badge': 'Lifecycle integration',
         'frameworks.react.description': 'Esempio concettuale con mount e grid.destroy() nel cleanup.',
         'frameworks.react.status': 'Planned full demo',
@@ -59,6 +64,7 @@ const translations = {
         'frameworks.angular.description': 'Esempio concettuale con AfterViewInit e OnDestroy.',
         'frameworks.angular.status': 'Snippet planned',
         'mainDemo.kicker': 'Demo legacy-friendly',
+        'mainDemo.primaryLabel': 'Demo principale',
         'mainDemo.title': 'Gestionale Magazzino Classico',
         'mainDemo.description': 'Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.',
         'mainDemo.scenario': 'Scenario: Classic Warehouse Backoffice',
@@ -80,11 +86,39 @@ const translations = {
         'roadmap.title': 'Roadmap essenziale',
         'roadmap.demo': 'Raffinare la demo magazzino con fake API più completa, rollback guidato e salvataggio simulato più realistico.',
         'roadmap.site': 'Preparare una futura versione bilingue completa e una pubblicazione GitHub Pages dedicata alla demo.',
-        'roadmap.package': 'Definire in seguito build libreria, `files` npm o `.npmignore`, tipi e artifact pubblicabile senza demo.'
+        'roadmap.package': 'Definire in seguito build libreria, `files` npm o `.npmignore`, tipi e artifact pubblicabile senza demo.',
+        'guide.back': 'Torna alla home demo',
+        'guide.badge': 'JavaScript',
+        'guide.title': 'Inizia con AMB Grid in JavaScript',
+        'guide.description': 'Un percorso rapido per montare una griglia CRUD AMB Grid in una pagina JavaScript classica, senza framework obbligatori.',
+        'guide.introTitle': 'Esempio base, prima della demo completa',
+        'guide.introText': 'Questa guida mostra il minimo necessario per preparare container, dati, colonne e payload. AMB Grid resta framework-agnostic: puoi usarlo in pagine server-rendered, JavaScript classico o integrazioni moderne. La demo legacy-friendly completa resta nella home.',
+        'guide.step1.title': 'Prepara il container',
+        'guide.step1.text': 'Crea nel markup un punto di mount dedicato alla griglia.',
+        'guide.step2.title': 'Importa AMB Grid',
+        'guide.step2.text': 'Durante lo sviluppo locale importa la libreria dal sorgente o dal build del progetto. Quando il pacchetto npm sarà disponibile, questa sezione conterrà il comando ufficiale.',
+        'guide.step3.title': 'Definisci dati e colonne',
+        'guide.step3.text': 'Parti da un dataset piccolo e da colonne esplicite. I validator possono essere aggiunti dove servono regole applicative.',
+        'guide.step4.title': 'Crea la griglia CRUD',
+        'guide.step4.text': 'AMB.table monta Tabulator e aggiunge lo strato CRUD di AMB Grid per stati riga, validazione e payload.',
+        'guide.step5.title': 'Leggi il payload',
+        'guide.step5.text': 'Quando l’applicazione deve salvare, leggi il payload CRUD generato da AMB Grid e invialo al tuo backend.',
+        'guide.step6.title': 'Prossimi passi',
+        'guide.step6.text': 'Passa alla demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.',
+        'guide.openMainDemo': 'Apri demo legacy-friendly',
+        'guide.openExamples': 'Vedi esempi funzionali',
+        'guide.videoKicker': 'Video guida',
+        'guide.videoTitle': 'Installazione e uso in JavaScript',
+        'guide.videoText': 'Qui verrà collegato il video introduttivo su installazione e uso di AMB Grid in JavaScript.',
+        'guide.videoCta': 'Video in arrivo'
     },
     en: {
         'page.title': 'AMB Grid',
         'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular business data, powered by Tabulator.',
+        'language.it': '🇮🇹 IT',
+        'language.en': '🇬🇧 EN',
+        'language.itTitle': 'Cambia lingua in italiano',
+        'language.enTitle': 'Switch language to English',
         'hero.badge': 'AMB Grid',
         'hero.title': 'Framework-agnostic CRUD grid for business applications',
         'hero.description': 'AMB Grid adds an application layer to Tabulator for row states, validation, lookups, rollback, saving, and backend-ready payloads.',
@@ -100,7 +134,7 @@ const translations = {
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
         'frameworks.javascript.badge': 'Classic integration',
         'frameworks.javascript.description': 'Basic snippet with AMB.table(...).',
-        'frameworks.javascript.status': 'Available',
+        'frameworks.javascript.status': 'Open guide',
         'frameworks.react.badge': 'Lifecycle integration',
         'frameworks.react.description': 'Conceptual example with mount and grid.destroy() in cleanup.',
         'frameworks.react.status': 'Planned full demo',
@@ -111,6 +145,7 @@ const translations = {
         'frameworks.angular.description': 'Conceptual example with AfterViewInit and OnDestroy.',
         'frameworks.angular.status': 'Snippet planned',
         'mainDemo.kicker': 'Legacy-friendly demo',
+        'mainDemo.primaryLabel': 'Main demo',
         'mainDemo.title': 'Classic Warehouse Backoffice',
         'mainDemo.description': 'A classic server-rendered and legacy-friendly business page with a modern UI for CRUD, validation, and application payloads.',
         'mainDemo.scenario': 'Scenario: Gestionale Magazzino Classico',
@@ -132,7 +167,31 @@ const translations = {
         'roadmap.title': 'Essential roadmap',
         'roadmap.demo': 'Refine the warehouse demo with a fuller fake API, guided rollback, and a more realistic simulated save.',
         'roadmap.site': 'Prepare a future complete bilingual version and a GitHub Pages publication dedicated to the demo.',
-        'roadmap.package': 'Later define a library build, npm `files` or `.npmignore`, types, and a publishable artifact without demos.'
+        'roadmap.package': 'Later define a library build, npm `files` or `.npmignore`, types, and a publishable artifact without demos.',
+        'guide.back': 'Back to demo home',
+        'guide.badge': 'JavaScript',
+        'guide.title': 'Getting started with JavaScript',
+        'guide.description': 'A quick path for mounting an AMB Grid CRUD grid in a classic JavaScript page, with no required framework.',
+        'guide.introTitle': 'Basic example before the full demo',
+        'guide.introText': 'This guide shows the minimum needed to prepare the container, data, columns, and payload. AMB Grid remains framework-agnostic: use it in server-rendered pages, classic JavaScript, or modern integrations. The complete legacy-friendly demo stays on the home page.',
+        'guide.step1.title': 'Prepare the container',
+        'guide.step1.text': 'Create a dedicated mount point for the grid in your markup.',
+        'guide.step2.title': 'Import AMB Grid',
+        'guide.step2.text': 'During local development, import the library from the project source or build. When the npm package is available, this section will contain the official command.',
+        'guide.step3.title': 'Define data and columns',
+        'guide.step3.text': 'Start with a small dataset and explicit columns. Validators can be added wherever application rules are needed.',
+        'guide.step4.title': 'Create the CRUD grid',
+        'guide.step4.text': 'AMB.table mounts Tabulator and adds the AMB Grid CRUD layer for row states, validation, and payloads.',
+        'guide.step5.title': 'Read the payload',
+        'guide.step5.text': 'When the application needs to save, read the CRUD payload generated by AMB Grid and send it to your backend.',
+        'guide.step6.title': 'Next steps',
+        'guide.step6.text': 'Move to the complete demo to see lookup, autocomplete, toolbar, rollback, validation, and payload in one workflow.',
+        'guide.openMainDemo': 'Open legacy-friendly demo',
+        'guide.openExamples': 'View feature examples',
+        'guide.videoKicker': 'Video guide',
+        'guide.videoTitle': 'Installation and JavaScript usage',
+        'guide.videoText': 'An introductory video about installing and using AMB Grid with JavaScript will be linked here.',
+        'guide.videoCta': 'Coming soon'
     }
 };
 
@@ -140,7 +199,9 @@ const root = document.querySelector('#app');
 let currentMainDemo = null;
 let currentFeatureExample = null;
 let currentLang = 'it';
+let currentView = null;
 let featureLoadToken = 0;
+let mainDemoLoadToken = 0;
 
 const getText = key => translations[currentLang][key] || translations.it[key] || key;
 
@@ -152,6 +213,13 @@ const applyI18n = () => {
 
     root.querySelectorAll('[data-i18n]').forEach(element => {
         element.textContent = getText(element.dataset.i18n);
+    });
+
+    root.querySelectorAll('[data-i18n-title]').forEach(element => {
+        const title = getText(element.dataset.i18nTitle);
+
+        element.title = title;
+        element.setAttribute('aria-label', title);
     });
 
     root.querySelectorAll('[data-language]').forEach(button => {
@@ -178,6 +246,24 @@ const destroyDemo = demo => {
     }
 };
 
+const destroyCurrentDemos = () => {
+    destroyDemo(currentMainDemo);
+    destroyDemo(currentFeatureExample);
+    currentMainDemo = null;
+    currentFeatureExample = null;
+    featureLoadToken += 1;
+    mainDemoLoadToken += 1;
+};
+
+const bindLanguageButtons = () => {
+    root.querySelectorAll('[data-language]').forEach(button => {
+        button.addEventListener('click', () => {
+            currentLang = button.dataset.language;
+            applyI18n();
+        });
+    });
+};
+
 const renderShell = selectedId => {
     root.innerHTML = `
         <main class="demo-page">
@@ -185,8 +271,8 @@ const renderShell = selectedId => {
                 <nav class="demo-topbar" aria-label="AMB Grid demo navigation">
                     <a class="demo-brand" href="#top" aria-label="AMB Grid">AMB Grid</a>
                     <div class="demo-language" aria-label="Language">
-                        <button type="button" data-language="it">IT</button>
-                        <button type="button" data-language="en">EN</button>
+                        <button type="button" data-language="it" data-i18n="language.it" data-i18n-title="language.itTitle">🇮🇹 IT</button>
+                        <button type="button" data-language="en" data-i18n="language.en" data-i18n-title="language.enTitle">🇬🇧 EN</button>
                     </div>
                 </nav>
                 <div class="demo-hero__content" id="top">
@@ -220,7 +306,7 @@ const renderShell = selectedId => {
                     <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
                 </div>
                 <div class="demo-framework-grid">
-                    <a class="demo-framework-card demo-framework-card--javascript" href="#main-demo">
+                    <a class="demo-framework-card demo-framework-card--javascript" href="#getting-started-javascript">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             <span class="demo-framework-card__icon-text">JS</span>
                         </span>
@@ -228,7 +314,7 @@ const renderShell = selectedId => {
                             <span class="demo-framework-card__name">JavaScript</span>
                             <span class="demo-framework-card__badge" data-i18n="frameworks.javascript.badge">Classic integration</span>
                             <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Snippet base con AMB.table(...).</span>
-                            <span class="demo-framework-card__status" data-i18n="frameworks.javascript.status">Available</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.javascript.status">Apri guida</span>
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
@@ -348,17 +434,25 @@ const renderShell = selectedId => {
     root.querySelectorAll('[data-example]').forEach(button => {
         button.addEventListener('click', () => loadFeatureExample(button.dataset.example));
     });
-    root.querySelectorAll('[data-language]').forEach(button => {
-        button.addEventListener('click', () => {
-            currentLang = button.dataset.language;
-            applyI18n();
-        });
-    });
+    bindLanguageButtons();
 };
 
 const mountMainDemo = async () => {
+    const token = mainDemoLoadToken + 1;
+    const container = root.querySelector('#main-demo');
+
+    mainDemoLoadToken = token;
     destroyDemo(currentMainDemo);
-    currentMainDemo = await fullDemo(root.querySelector('#main-demo'));
+    currentMainDemo = null;
+
+    const mountedDemo = await fullDemo(container);
+
+    if (token !== mainDemoLoadToken || currentView !== 'home') {
+        destroyDemo(mountedDemo);
+        return;
+    }
+
+    currentMainDemo = mountedDemo;
     applyI18n();
 };
 
@@ -383,7 +477,58 @@ const loadFeatureExample = async id => {
     currentFeatureExample = mountedExample || null;
 };
 
-renderShell(featureExamples[0].id);
-applyI18n();
-mountMainDemo();
-loadFeatureExample(featureExamples[0].id);
+const scrollToHashTarget = () => {
+    const id = window.location.hash.replace(/^#/, '');
+
+    if (!id || id === 'top') {
+        window.scrollTo(0, 0);
+        return;
+    }
+
+    const target = document.getElementById(id);
+
+    if (target) {
+        target.scrollIntoView();
+    }
+};
+
+const renderGuide = () => {
+    if (currentView === 'guide') {
+        applyI18n();
+        return;
+    }
+
+    destroyCurrentDemos();
+    currentView = 'guide';
+    gettingStartedJavaScript(root);
+    bindLanguageButtons();
+    applyI18n();
+    window.scrollTo(0, 0);
+};
+
+const renderHome = () => {
+    if (currentView !== 'home') {
+        destroyCurrentDemos();
+        currentView = 'home';
+        renderShell(featureExamples[0].id);
+        applyI18n();
+        mountMainDemo();
+        loadFeatureExample(featureExamples[0].id);
+        window.requestAnimationFrame(scrollToHashTarget);
+        return;
+    }
+
+    window.requestAnimationFrame(scrollToHashTarget);
+};
+
+const renderRoute = () => {
+    if (window.location.hash === '#getting-started-javascript') {
+        renderGuide();
+        return;
+    }
+
+    renderHome();
+};
+
+window.addEventListener('hashchange', renderRoute);
+renderRoute();
