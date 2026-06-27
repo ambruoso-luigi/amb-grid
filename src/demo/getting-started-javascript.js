@@ -4,16 +4,29 @@ export default function gettingStartedJavaScript(app) {
             <header class="demo-guide-hero">
                 <nav class="demo-topbar" aria-label="AMB Grid guide navigation">
                     <a class="demo-brand" href="#top" aria-label="AMB Grid">AMB Grid</a>
-                    <div class="demo-language" aria-label="Language">
-                        <button type="button" data-language="it" data-i18n-title="language.itTitle">🇮🇹</button>
-                        <button type="button" data-language="en" data-i18n-title="language.enTitle">🇬🇧</button>
+                    <div class="language-switch is-it" data-language-switch aria-label="Language">
+                        <span class="language-switch__label" data-language-label="en">EN</span>
+                        <button
+                            type="button"
+                            class="language-switch__control"
+                            data-language-toggle
+                            role="switch"
+                            aria-checked="true"
+                            aria-label="Cambia lingua in inglese"
+                        >
+                            <span class="language-switch__track">
+                                <span class="language-switch__flag" data-language-flag>🇮🇹</span>
+                                <span class="language-switch__knob" aria-hidden="true"></span>
+                            </span>
+                        </button>
+                        <span class="language-switch__label" data-language-label="it">IT</span>
                     </div>
                 </nav>
                 <a class="demo-back-link" href="#top" data-i18n="guide.back">Torna alla home demo</a>
                 <div class="demo-guide-hero__content">
                     <p class="demo-kicker" data-i18n="guide.badge">JavaScript</p>
                     <h1 data-i18n="guide.title">AMB Grid con JavaScript</h1>
-                    <p class="demo-hero__text" data-i18n="guide.description">Un percorso rapido per montare una griglia CRUD AMB Grid in una pagina JavaScript classica, senza framework obbligatori.</p>
+                    <p class="demo-hero__text" data-i18n="guide.description">Demo tabellare e guida essenziale per usare AMB Grid in una pagina JavaScript classica, senza framework obbligatori.</p>
                 </div>
             </header>
 
@@ -107,9 +120,9 @@ if (payload.canSave) {
                         <span class="demo-guide-step__number">6</span>
                         <div>
                             <h3 data-i18n="guide.step6.title">Prossimi passi</h3>
-                            <p class="demo-note" data-i18n="guide.step6.text">Passa alla demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.</p>
+                            <p class="demo-note" data-i18n="guide.step6.text">Rivedi la demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.</p>
                             <div class="demo-guide-actions">
-                                <a class="demo-button demo-button--primary" href="#main-demo" data-i18n="guide.openMainDemo">Apri demo legacy-friendly</a>
+                                <a class="demo-button demo-button--primary" href="#getting-started-javascript" data-i18n="guide.openMainDemo">Torna alla demo</a>
                                 <a class="demo-button" href="#feature-examples" data-i18n="guide.openExamples">Vedi esempi funzionali</a>
                             </div>
                         </div>

@@ -19,15 +19,15 @@ window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
 
 const featureExamples = [
-    { id: 'basic-crud', label: 'Basic CRUD', mount: basicCrud },
-    { id: 'validation', label: 'Validation', mount: validation },
-    { id: 'numeric', label: 'Numeric fields', mount: numeric },
-    { id: 'dates', label: 'Dates', mount: dates },
-    { id: 'autocomplete', label: 'Autocomplete', mount: autocomplete },
-    { id: 'multifield-lookup', label: 'Multifield lookup', mount: multifieldLookup },
-    { id: 'parsers', label: 'Parsers', mount: parsers },
-    { id: 'row-states', label: 'Row states', mount: rowStates },
-    { id: 'multiple-tables', label: 'Multiple tables', mount: multipleTables }
+    { id: 'basic-crud', label: 'Basic CRUD', descriptionKey: 'examples.basicCrud.description', mount: basicCrud },
+    { id: 'validation', label: 'Validation', descriptionKey: 'examples.validation.description', mount: validation },
+    { id: 'numeric', label: 'Numeric fields', descriptionKey: 'examples.numeric.description', mount: numeric },
+    { id: 'dates', label: 'Dates', descriptionKey: 'examples.dates.description', mount: dates },
+    { id: 'autocomplete', label: 'Autocomplete', descriptionKey: 'examples.autocomplete.description', mount: autocomplete },
+    { id: 'multifield-lookup', label: 'Multifield lookup', descriptionKey: 'examples.multifieldLookup.description', mount: multifieldLookup },
+    { id: 'parsers', label: 'Parsers', descriptionKey: 'examples.parsers.description', mount: parsers },
+    { id: 'row-states', label: 'Row states', descriptionKey: 'examples.rowStates.description', mount: rowStates },
+    { id: 'multiple-tables', label: 'Multiple tables', descriptionKey: 'examples.multipleTables.description', mount: multipleTables }
 ];
 
 const translations = {
@@ -36,10 +36,12 @@ const translations = {
         'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili, powered by Tabulator.',
         'language.itTitle': 'Italiano',
         'language.enTitle': 'English',
+        'language.switchToIt': 'Cambia lingua in italiano',
+        'language.switchToEn': 'Cambia lingua in inglese',
         'hero.badge': 'AMB Grid',
         'hero.title': 'CRUD grid framework-agnostic per applicazioni business',
         'hero.description': 'AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
-        'hero.primary': 'Apri demo legacy-friendly',
+        'hero.primary': 'Apri demo JavaScript',
         'hero.secondary': 'Vedi esempi funzionali',
         'hero.statState': 'Stati riga',
         'hero.statStateText': 'clean, new, modified, deleted, saved',
@@ -68,7 +70,7 @@ const translations = {
         'mainDemo.scenario': 'Scenario: Classic Warehouse Backoffice',
         'cycle.kicker': 'Flusso applicativo',
         'cycle.title': 'CRUD, validazione e payload nello stesso ciclo',
-        'cycle.description': 'La demo principale prepara il percorso evolutivo: lookup, autocomplete, campi numerici, date, rollback, save fake e riallineamento dello stato dopo il salvataggio.',
+        'cycle.description': 'AMB Grid coordina editing, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
         'cycle.editTitle': 'Edit',
         'cycle.editText': 'Le celle editabili aggiornano i dati senza nascondere gli stati riga.',
         'cycle.validateTitle': 'Validate',
@@ -80,6 +82,16 @@ const translations = {
         'examples.kicker': 'Mini-demo tecniche',
         'examples.title': 'Esempi funzionali',
         'examples.description': 'Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.',
+        'examples.open': 'Apri esempio',
+        'examples.basicCrud.description': 'CRUD minimo con toolbar e payload applicativo.',
+        'examples.validation.description': 'Regole campo, errori riga e report di validazione.',
+        'examples.numeric.description': 'Integer, decimal e percentuali con parser coerenti.',
+        'examples.dates.description': 'Editor data, picker e normalizzazione payload.',
+        'examples.autocomplete.description': 'Suggerimenti controllati per campi testuali business.',
+        'examples.multifieldLookup.description': 'Lookup che aggiorna più campi da un record scelto.',
+        'examples.parsers.description': 'Parser dedicati per trasformare i valori verso API.',
+        'examples.rowStates.description': 'Stati riga, rollback, delete e report tecnici.',
+        'examples.multipleTables.description': 'Più griglie indipendenti nella stessa pagina.',
         'roadmap.kicker': 'Prossimi passi',
         'roadmap.title': 'Roadmap essenziale',
         'roadmap.demo': 'Raffinare la demo magazzino con fake API più completa, rollback guidato e salvataggio simulato più realistico.',
@@ -102,8 +114,8 @@ const translations = {
         'guide.step5.title': 'Leggi il payload',
         'guide.step5.text': 'Quando l’applicazione deve salvare, leggi il payload CRUD generato da AMB Grid e invialo al tuo backend.',
         'guide.step6.title': 'Prossimi passi',
-        'guide.step6.text': 'Passa alla demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.',
-        'guide.openMainDemo': 'Apri demo legacy-friendly',
+        'guide.step6.text': 'Rivedi la demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.',
+        'guide.openMainDemo': 'Torna alla demo',
         'guide.openExamples': 'Vedi esempi funzionali',
         'guide.videoKicker': 'Video guida',
         'guide.videoTitle': 'Installazione e uso in JavaScript',
@@ -115,10 +127,12 @@ const translations = {
         'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular business data, powered by Tabulator.',
         'language.itTitle': 'Italiano',
         'language.enTitle': 'English',
+        'language.switchToIt': 'Switch language to Italian',
+        'language.switchToEn': 'Switch language to English',
         'hero.badge': 'AMB Grid',
         'hero.title': 'Framework-agnostic CRUD grid for business applications',
         'hero.description': 'AMB Grid adds an application layer to Tabulator for row states, validation, lookups, rollback, saving, and backend-ready payloads.',
-        'hero.primary': 'Open legacy-friendly demo',
+        'hero.primary': 'Open JavaScript demo',
         'hero.secondary': 'View feature examples',
         'hero.statState': 'Row states',
         'hero.statStateText': 'clean, new, modified, deleted, saved',
@@ -147,7 +161,7 @@ const translations = {
         'mainDemo.scenario': 'Scenario: Gestionale Magazzino Classico',
         'cycle.kicker': 'Application flow',
         'cycle.title': 'CRUD, validation, and payload in one cycle',
-        'cycle.description': 'The main demo prepares the next evolution: lookup, autocomplete, numeric fields, dates, rollback, fake save, and state alignment after saving.',
+        'cycle.description': 'AMB Grid coordinates editing, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
         'cycle.editTitle': 'Edit',
         'cycle.editText': 'Editable cells update data while row states remain visible.',
         'cycle.validateTitle': 'Validate',
@@ -159,6 +173,16 @@ const translations = {
         'examples.kicker': 'Technical mini-demos',
         'examples.title': 'Feature examples',
         'examples.description': 'The existing demos remain available as focused examples for individual AMB Grid capabilities.',
+        'examples.open': 'Open example',
+        'examples.basicCrud.description': 'Minimal CRUD with toolbar and application payload.',
+        'examples.validation.description': 'Field rules, row errors, and validation reports.',
+        'examples.numeric.description': 'Integer, decimal, and percentage fields with coherent parsers.',
+        'examples.dates.description': 'Date editor, picker, and payload normalization.',
+        'examples.autocomplete.description': 'Controlled suggestions for business text fields.',
+        'examples.multifieldLookup.description': 'Lookup that updates several fields from one selected record.',
+        'examples.parsers.description': 'Dedicated parsers for transforming values toward APIs.',
+        'examples.rowStates.description': 'Row states, rollback, delete, and technical reports.',
+        'examples.multipleTables.description': 'Multiple independent grids on the same page.',
         'roadmap.kicker': 'Next steps',
         'roadmap.title': 'Essential roadmap',
         'roadmap.demo': 'Refine the warehouse demo with a fuller fake API, guided rollback, and a more realistic simulated save.',
@@ -181,8 +205,8 @@ const translations = {
         'guide.step5.title': 'Read the payload',
         'guide.step5.text': 'When the application needs to save, read the CRUD payload generated by AMB Grid and send it to your backend.',
         'guide.step6.title': 'Next steps',
-        'guide.step6.text': 'Move to the complete demo to see lookup, autocomplete, toolbar, rollback, validation, and payload in one workflow.',
-        'guide.openMainDemo': 'Open legacy-friendly demo',
+        'guide.step6.text': 'Review the complete demo to see lookup, autocomplete, toolbar, rollback, validation, and payload in one workflow.',
+        'guide.openMainDemo': 'Back to demo',
         'guide.openExamples': 'View feature examples',
         'guide.videoKicker': 'Video guide',
         'guide.videoTitle': 'Installation and JavaScript usage',
@@ -201,6 +225,26 @@ let mainDemoLoadToken = 0;
 
 const getText = key => translations[currentLang][key] || translations.it[key] || key;
 
+const renderLanguageSwitch = () => `
+    <div class="language-switch is-it" data-language-switch aria-label="Language">
+        <span class="language-switch__label" data-language-label="en">EN</span>
+        <button
+            type="button"
+            class="language-switch__control"
+            data-language-toggle
+            role="switch"
+            aria-checked="true"
+            aria-label="Cambia lingua in inglese"
+        >
+            <span class="language-switch__track">
+                <span class="language-switch__flag" data-language-flag>🇮🇹</span>
+                <span class="language-switch__knob" aria-hidden="true"></span>
+            </span>
+        </button>
+        <span class="language-switch__label" data-language-label="it">IT</span>
+    </div>
+`;
+
 const applyI18n = () => {
     document.documentElement.lang = currentLang;
     document.title = currentLang === 'it'
@@ -218,11 +262,26 @@ const applyI18n = () => {
         element.setAttribute('aria-label', title);
     });
 
-    root.querySelectorAll('[data-language]').forEach(button => {
-        const isActive = button.dataset.language === currentLang;
+    root.querySelectorAll('[data-language-switch]').forEach(switchElement => {
+        switchElement.classList.toggle('is-it', currentLang === 'it');
+        switchElement.classList.toggle('is-en', currentLang === 'en');
+    });
 
-        button.classList.toggle('is-active', isActive);
-        button.setAttribute('aria-pressed', String(isActive));
+    root.querySelectorAll('[data-language-label]').forEach(label => {
+        label.classList.toggle('is-active', label.dataset.languageLabel === currentLang);
+    });
+
+    root.querySelectorAll('[data-language-toggle]').forEach(button => {
+        const isItalian = currentLang === 'it';
+        const nextLanguageLabel = getText(isItalian ? 'language.switchToEn' : 'language.switchToIt');
+        const flag = button.querySelector('[data-language-flag]');
+
+        button.setAttribute('aria-checked', String(isItalian));
+        button.setAttribute('aria-label', nextLanguageLabel);
+        button.title = nextLanguageLabel;
+        if (flag) {
+            flag.textContent = isItalian ? '🇮🇹' : '🇬🇧';
+        }
     });
 
     window.dispatchEvent(new CustomEvent('amb-demo-language-change', {
@@ -252,9 +311,9 @@ const destroyCurrentDemos = () => {
 };
 
 const bindLanguageButtons = () => {
-    root.querySelectorAll('[data-language]').forEach(button => {
+    root.querySelectorAll('[data-language-toggle]').forEach(button => {
         button.addEventListener('click', () => {
-            currentLang = button.dataset.language;
+            currentLang = currentLang === 'it' ? 'en' : 'it';
             applyI18n();
         });
     });
@@ -266,17 +325,14 @@ const renderShell = selectedId => {
             <header class="demo-hero">
                 <nav class="demo-topbar" aria-label="AMB Grid demo navigation">
                     <a class="demo-brand" href="#top" aria-label="AMB Grid">AMB Grid</a>
-                    <div class="demo-language" aria-label="Language">
-                        <button type="button" data-language="it" data-i18n-title="language.itTitle">🇮🇹</button>
-                        <button type="button" data-language="en" data-i18n-title="language.enTitle">🇬🇧</button>
-                    </div>
+                    ${renderLanguageSwitch()}
                 </nav>
                 <div class="demo-hero__content" id="top">
                     <p class="demo-kicker" data-i18n="hero.badge">AMB Grid</p>
                     <h1 data-i18n="hero.title">CRUD grid framework-agnostic per applicazioni business</h1>
                     <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
                     <div class="demo-hero__actions">
-                        <a class="demo-button demo-button--primary" href="#main-demo" data-i18n="hero.primary">Apri demo magazzino</a>
+                        <a class="demo-button demo-button--primary" href="#getting-started-javascript" data-i18n="hero.primary">Apri demo JavaScript</a>
                         <a class="demo-button" href="#feature-examples" data-i18n="hero.secondary">Vedi esempi funzionali</a>
                     </div>
                 </div>
@@ -365,13 +421,11 @@ const renderShell = selectedId => {
                 </div>
             </section>
 
-            <section class="demo-panel demo-panel--main" id="main-demo"></section>
-
             <section class="demo-section">
                 <div class="demo-section-heading">
                     <p class="demo-kicker" data-i18n="cycle.kicker">Flusso applicativo</p>
                     <h2 data-i18n="cycle.title">CRUD, validazione e payload nello stesso ciclo</h2>
-                    <p class="demo-note" data-i18n="cycle.description">La demo principale prepara il percorso evolutivo: lookup, autocomplete, campi numerici, date, rollback, save fake e riallineamento dello stato dopo il salvataggio.</p>
+                    <p class="demo-note" data-i18n="cycle.description">AMB Grid coordina editing, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.</p>
                 </div>
                 <div class="demo-flow-grid">
                     <article class="demo-flow-card">
@@ -399,17 +453,19 @@ const renderShell = selectedId => {
                     <h2 data-i18n="examples.title">Esempi funzionali</h2>
                     <p class="demo-note" data-i18n="examples.description">Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.</p>
                 </div>
-                <nav class="demo-menu" aria-label="Feature examples">
+                <div class="demo-feature-grid" aria-label="Feature examples">
                     ${featureExamples.map(example => `
                         <button
                             type="button"
-                            class="demo-menu-button${example.id === selectedId ? ' is-active' : ''}"
+                            class="demo-feature-card${example.id === selectedId ? ' is-active' : ''}"
                             data-example="${example.id}"
                         >
-                            ${example.label}
+                            <span class="demo-feature-card__title">${example.label}</span>
+                            <span class="demo-feature-card__description" data-i18n="${example.descriptionKey}">${getText(example.descriptionKey)}</span>
+                            <span class="demo-feature-card__action" data-i18n="examples.open">Apri esempio</span>
                         </button>
                     `).join('')}
-                </nav>
+                </div>
                 <section id="feature-example" class="demo-example"></section>
             </section>
 
@@ -433,7 +489,7 @@ const renderShell = selectedId => {
     bindLanguageButtons();
 };
 
-const mountMainDemo = async (selector = '#main-demo', expectedView = 'home') => {
+const mountMainDemo = async (selector, expectedView = 'guide', options = {}) => {
     const token = mainDemoLoadToken + 1;
     const container = root.querySelector(selector);
 
@@ -443,7 +499,7 @@ const mountMainDemo = async (selector = '#main-demo', expectedView = 'home') => 
 
     if (!container) return;
 
-    const mountedDemo = await fullDemo(container);
+    const mountedDemo = await fullDemo(container, options);
 
     if (token !== mainDemoLoadToken || currentView !== expectedView) {
         destroyDemo(mountedDemo);
@@ -501,7 +557,11 @@ const renderGuide = () => {
     gettingStartedJavaScript(root);
     bindLanguageButtons();
     applyI18n();
-    mountMainDemo('#javascript-demo', 'guide');
+    mountMainDemo('#javascript-demo', 'guide', {
+        className: 'demo-shell--showcase',
+        tableHeight: 'clamp(520px, 62vh, 760px)',
+        variant: 'showcase'
+    });
     window.scrollTo(0, 0);
 };
 
@@ -511,7 +571,6 @@ const renderHome = () => {
         currentView = 'home';
         renderShell(featureExamples[0].id);
         applyI18n();
-        mountMainDemo();
         loadFeatureExample(featureExamples[0].id);
         window.requestAnimationFrame(scrollToHashTarget);
         return;

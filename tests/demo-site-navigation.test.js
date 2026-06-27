@@ -22,17 +22,37 @@ describe('demo site navigation', () => {
         expect(demoIndex).toBeGreaterThan(-1);
         expect(stepsIndex).toBeGreaterThan(-1);
         expect(demoIndex).toBeLessThan(stepsIndex);
-        expect(main).toContain("mountMainDemo('#javascript-demo', 'guide')");
+        expect(main).toContain("mountMainDemo('#javascript-demo', 'guide', {");
+        expect(main).toContain("tableHeight: 'clamp(520px, 62vh, 760px)'");
     });
 
-    test('uses visible flag-only language buttons with accessible labels', () => {
+    test('keeps the complete warehouse demo out of the home shell', () => {
+        const main = read('src/demo/main.js');
+
+        expect(main).not.toContain('id="main-demo"');
+        expect(main).not.toContain('mountMainDemo();');
+        expect(main).toContain('href="#getting-started-javascript" data-i18n="hero.primary"');
+    });
+
+    test('uses a visual language switch with a single flag control', () => {
         const main = read('src/demo/main.js');
         const guide = read('src/demo/getting-started-javascript.js');
         const combined = `${main}\n${guide}`;
 
-        expect(combined).toContain('data-language="it" data-i18n-title="language.itTitle">🇮🇹</button>');
-        expect(combined).toContain('data-language="en" data-i18n-title="language.enTitle">🇬🇧</button>');
-        expect(combined).not.toContain('>🇮🇹 IT</button>');
-        expect(combined).not.toContain('>🇬🇧 EN</button>');
+        expect(combined).toContain('class="language-switch');
+        expect(combined).toContain('data-language-toggle');
+        expect(combined).toContain('data-language-label="en">EN</span>');
+        expect(combined).toContain('data-language-label="it">IT</span>');
+        expect(combined).not.toContain('data-language="it"');
+        expect(combined).not.toContain('data-language="en"');
+    });
+
+    test('shows feature examples as cards without removing demos', () => {
+        const main = read('src/demo/main.js');
+
+        expect(main).toContain('class="demo-feature-grid"');
+        expect(main).toContain('class="demo-feature-card');
+        expect(main).toContain("'examples.multifieldLookup.description'");
+        expect(main).toContain("id: 'multiple-tables'");
     });
 });

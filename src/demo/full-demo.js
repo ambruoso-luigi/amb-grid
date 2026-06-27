@@ -223,17 +223,36 @@ const updateToolbarLabels = demo => {
     });
 };
 
-export default async function fullDemo(app) {
+export default async function fullDemo(app, options = {}) {
+    const {
+        className = '',
+        showHeader = true,
+        showScenario = true,
+        tableHeight = '340px',
+        variant = 'default'
+    } = options;
+    const extraClasses = [
+        variant && variant !== 'default' ? `demo-shell--${variant}` : '',
+        className
+    ]
+        .join(' ')
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if (extraClasses.length) {
+        app.classList.add(...extraClasses);
+    }
+
     app.innerHTML = `
-        <div class="demo-section-heading demo-section-heading--split">
+        ${showHeader ? `<div class="demo-section-heading demo-section-heading--split">
             <div>
                 <span class="demo-main-badge" data-i18n="mainDemo.primaryLabel">Demo principale</span>
                 <p class="demo-kicker" data-i18n="mainDemo.kicker">Demo legacy-friendly</p>
                 <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
                 <p class="demo-note" data-i18n="mainDemo.description">Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.</p>
             </div>
-            <p class="demo-scenario-label" data-i18n="mainDemo.scenario">Scenario: Classic Warehouse Backoffice</p>
-        </div>
+            ${showScenario ? '<p class="demo-scenario-label" data-i18n="mainDemo.scenario">Scenario: Classic Warehouse Backoffice</p>' : ''}
+        </div>` : ''}
         <div id="inventory-table"></div>
     `;
 
@@ -256,7 +275,7 @@ export default async function fullDemo(app) {
 
     const demo = AMB.table({
         selector: '#inventory-table',
-        height: '340px',
+        height: tableHeight,
         search: {
             enabled: true,
             placeholder: 'Search inventory...',
