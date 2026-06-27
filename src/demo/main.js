@@ -33,8 +33,9 @@ const translations = {
     it: {
         'page.title': 'AMB Grid',
         'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili, powered by Tabulator.',
-        'hero.badge': 'Demo locale',
-        'hero.description': 'Una base più professionale per presentare AMB Grid in contesti backoffice, admin panel e applicazioni business server-rendered o integrate con framework moderni.',
+        'hero.badge': 'AMB Grid',
+        'hero.title': 'CRUD grid framework-agnostic per applicazioni business',
+        'hero.description': 'AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
         'hero.primary': 'Apri demo legacy-friendly',
         'hero.secondary': 'Vedi esempi funzionali',
         'hero.statState': 'Stati riga',
@@ -42,7 +43,21 @@ const translations = {
         'hero.statPayload': 'Payload CRUD',
         'hero.statPayloadText': 'inserted, updated, deleted',
         'hero.statIntegration': 'Integrazione',
-        'hero.statIntegrationText': 'vanilla JS, legacy-friendly, framework-ready',
+        'hero.statIntegrationText': 'JavaScript, legacy-friendly, framework-ready',
+        'frameworks.title': 'Integrabile dove lavori già',
+        'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
+        'frameworks.javascript.badge': 'Classic integration',
+        'frameworks.javascript.description': 'Snippet base con AMB.table(...).',
+        'frameworks.javascript.status': 'Available',
+        'frameworks.react.badge': 'Lifecycle integration',
+        'frameworks.react.description': 'Esempio concettuale con mount e grid.destroy() nel cleanup.',
+        'frameworks.react.status': 'Planned full demo',
+        'frameworks.vue.badge': 'Composition API example',
+        'frameworks.vue.description': 'Esempio concettuale con onMounted e onUnmounted.',
+        'frameworks.vue.status': 'Snippet planned',
+        'frameworks.angular.badge': 'Component lifecycle example',
+        'frameworks.angular.description': 'Esempio concettuale con AfterViewInit e OnDestroy.',
+        'frameworks.angular.status': 'Snippet planned',
         'mainDemo.kicker': 'Demo legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
         'mainDemo.description': 'Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.',
@@ -70,8 +85,9 @@ const translations = {
     en: {
         'page.title': 'AMB Grid',
         'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular business data, powered by Tabulator.',
-        'hero.badge': 'Local demo',
-        'hero.description': 'A more professional foundation for presenting AMB Grid in backoffice, admin panel, business application, server-rendered, and framework-integrated contexts.',
+        'hero.badge': 'AMB Grid',
+        'hero.title': 'Framework-agnostic CRUD grid for business applications',
+        'hero.description': 'AMB Grid adds an application layer to Tabulator for row states, validation, lookups, rollback, saving, and backend-ready payloads.',
         'hero.primary': 'Open legacy-friendly demo',
         'hero.secondary': 'View feature examples',
         'hero.statState': 'Row states',
@@ -79,7 +95,21 @@ const translations = {
         'hero.statPayload': 'CRUD payload',
         'hero.statPayloadText': 'inserted, updated, deleted',
         'hero.statIntegration': 'Integration',
-        'hero.statIntegrationText': 'vanilla JS, legacy-friendly, framework-ready',
+        'hero.statIntegrationText': 'JavaScript, legacy-friendly, framework-ready',
+        'frameworks.title': 'Use AMB Grid where you already work',
+        'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
+        'frameworks.javascript.badge': 'Classic integration',
+        'frameworks.javascript.description': 'Basic snippet with AMB.table(...).',
+        'frameworks.javascript.status': 'Available',
+        'frameworks.react.badge': 'Lifecycle integration',
+        'frameworks.react.description': 'Conceptual example with mount and grid.destroy() in cleanup.',
+        'frameworks.react.status': 'Planned full demo',
+        'frameworks.vue.badge': 'Composition API example',
+        'frameworks.vue.description': 'Conceptual example with onMounted and onUnmounted.',
+        'frameworks.vue.status': 'Snippet planned',
+        'frameworks.angular.badge': 'Component lifecycle example',
+        'frameworks.angular.description': 'Conceptual example with AfterViewInit and OnDestroy.',
+        'frameworks.angular.status': 'Snippet planned',
         'mainDemo.kicker': 'Legacy-friendly demo',
         'mainDemo.title': 'Classic Warehouse Backoffice',
         'mainDemo.description': 'A classic server-rendered and legacy-friendly business page with a modern UI for CRUD, validation, and application payloads.',
@@ -160,10 +190,9 @@ const renderShell = selectedId => {
                     </div>
                 </nav>
                 <div class="demo-hero__content" id="top">
-                    <p class="demo-kicker" data-i18n="hero.badge">Demo locale</p>
-                    <h1 data-i18n="page.title">AMB Grid</h1>
-                    <p class="demo-hero__subtitle" data-i18n="page.subtitle">Libreria CRUD framework-agnostic per dati tabellari editabili, powered by Tabulator.</p>
-                    <p class="demo-hero__text" data-i18n="hero.description">Una base più professionale per presentare AMB Grid in contesti backoffice, admin panel e applicazioni business server-rendered o integrate con framework moderni.</p>
+                    <p class="demo-kicker" data-i18n="hero.badge">AMB Grid</p>
+                    <h1 data-i18n="hero.title">CRUD grid framework-agnostic per applicazioni business</h1>
+                    <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
                     <div class="demo-hero__actions">
                         <a class="demo-button demo-button--primary" href="#main-demo" data-i18n="hero.primary">Apri demo magazzino</a>
                         <a class="demo-button" href="#feature-examples" data-i18n="hero.secondary">Vedi esempi funzionali</a>
@@ -184,6 +213,39 @@ const renderShell = selectedId => {
                     </div>
                 </div>
             </header>
+
+            <section class="demo-section demo-frameworks" id="framework-integrations">
+                <div class="demo-section-heading">
+                    <h2 data-i18n="frameworks.title">Integrabile dove lavori già</h2>
+                    <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
+                </div>
+                <div class="demo-framework-grid">
+                    <a class="demo-framework-card" href="#main-demo">
+                        <span class="demo-framework-card__name">JavaScript</span>
+                        <span class="demo-framework-card__badge" data-i18n="frameworks.javascript.badge">Classic integration</span>
+                        <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Snippet base con AMB.table(...).</span>
+                        <span class="demo-framework-card__status" data-i18n="frameworks.javascript.status">Available</span>
+                    </a>
+                    <a class="demo-framework-card" href="#feature-examples">
+                        <span class="demo-framework-card__name">React</span>
+                        <span class="demo-framework-card__badge" data-i18n="frameworks.react.badge">Lifecycle integration</span>
+                        <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Esempio concettuale con mount e grid.destroy() nel cleanup.</span>
+                        <span class="demo-framework-card__status" data-i18n="frameworks.react.status">Planned full demo</span>
+                    </a>
+                    <a class="demo-framework-card" href="#feature-examples">
+                        <span class="demo-framework-card__name">Vue</span>
+                        <span class="demo-framework-card__badge" data-i18n="frameworks.vue.badge">Composition API example</span>
+                        <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Esempio concettuale con onMounted e onUnmounted.</span>
+                        <span class="demo-framework-card__status" data-i18n="frameworks.vue.status">Snippet planned</span>
+                    </a>
+                    <a class="demo-framework-card" href="#feature-examples">
+                        <span class="demo-framework-card__name">Angular</span>
+                        <span class="demo-framework-card__badge" data-i18n="frameworks.angular.badge">Component lifecycle example</span>
+                        <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Esempio concettuale con AfterViewInit e OnDestroy.</span>
+                        <span class="demo-framework-card__status" data-i18n="frameworks.angular.status">Snippet planned</span>
+                    </a>
+                </div>
+            </section>
 
             <section class="demo-panel demo-panel--main" id="main-demo"></section>
 
