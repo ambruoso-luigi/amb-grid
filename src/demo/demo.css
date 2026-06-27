@@ -198,10 +198,11 @@ a {
     border-radius: 999px;
     color: var(--amb-site-muted);
     cursor: pointer;
-    font-size: 14px;
+    font-size: 22px;
     font-weight: 700;
-    min-width: 72px;
-    padding: 7px 12px;
+    line-height: 1;
+    min-width: 48px;
+    padding: 8px 10px;
     transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 
@@ -615,9 +616,13 @@ a {
     max-width: 820px;
 }
 
-.demo-guide-intro {
-    display: grid;
-    gap: 18px;
+.demo-panel--javascript {
+    border-color: #7fa6cb;
+    box-shadow: 0 22px 48px rgb(16 35 63 / 15%);
+}
+
+.demo-guide-start {
+    scroll-margin-top: 18px;
 }
 
 .demo-guide-actions {
@@ -641,8 +646,9 @@ a {
     padding: clamp(16px, 2.4vw, 24px);
 }
 
-.demo-guide-step h2 {
-    font-size: clamp(22px, 3vw, 30px);
+.demo-guide-step h3 {
+    font-size: clamp(20px, 2.6vw, 26px);
+    line-height: 1.12;
     margin-bottom: 8px;
 }
 
