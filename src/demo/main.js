@@ -220,29 +220,65 @@ const renderShell = selectedId => {
                     <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
                 </div>
                 <div class="demo-framework-grid">
-                    <a class="demo-framework-card" href="#main-demo">
-                        <span class="demo-framework-card__name">JavaScript</span>
-                        <span class="demo-framework-card__badge" data-i18n="frameworks.javascript.badge">Classic integration</span>
-                        <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Snippet base con AMB.table(...).</span>
-                        <span class="demo-framework-card__status" data-i18n="frameworks.javascript.status">Available</span>
+                    <a class="demo-framework-card demo-framework-card--javascript" href="#main-demo">
+                        <span class="demo-framework-card__icon" aria-hidden="true">
+                            <span class="demo-framework-card__icon-text">JS</span>
+                        </span>
+                        <span class="demo-framework-card__body">
+                            <span class="demo-framework-card__name">JavaScript</span>
+                            <span class="demo-framework-card__badge" data-i18n="frameworks.javascript.badge">Classic integration</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Snippet base con AMB.table(...).</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.javascript.status">Available</span>
+                        </span>
+                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card" href="#feature-examples">
-                        <span class="demo-framework-card__name">React</span>
-                        <span class="demo-framework-card__badge" data-i18n="frameworks.react.badge">Lifecycle integration</span>
-                        <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Esempio concettuale con mount e grid.destroy() nel cleanup.</span>
-                        <span class="demo-framework-card__status" data-i18n="frameworks.react.status">Planned full demo</span>
+                    <a class="demo-framework-card demo-framework-card--react" href="#feature-examples">
+                        <span class="demo-framework-card__icon" aria-hidden="true">
+                            <svg viewBox="0 0 48 48">
+                                <ellipse cx="24" cy="24" rx="18" ry="7"></ellipse>
+                                <ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(60 24 24)"></ellipse>
+                                <ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(120 24 24)"></ellipse>
+                                <circle cx="24" cy="24" r="3.5"></circle>
+                            </svg>
+                        </span>
+                        <span class="demo-framework-card__body">
+                            <span class="demo-framework-card__name">React</span>
+                            <span class="demo-framework-card__badge" data-i18n="frameworks.react.badge">Lifecycle integration</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Esempio concettuale con mount e grid.destroy() nel cleanup.</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.react.status">Planned full demo</span>
+                        </span>
+                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card" href="#feature-examples">
-                        <span class="demo-framework-card__name">Vue</span>
-                        <span class="demo-framework-card__badge" data-i18n="frameworks.vue.badge">Composition API example</span>
-                        <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Esempio concettuale con onMounted e onUnmounted.</span>
-                        <span class="demo-framework-card__status" data-i18n="frameworks.vue.status">Snippet planned</span>
+                    <a class="demo-framework-card demo-framework-card--vue" href="#feature-examples">
+                        <span class="demo-framework-card__icon" aria-hidden="true">
+                            <svg viewBox="0 0 48 48">
+                                <path d="M8 12h10l6 11 6-11h10L24 38 8 12z"></path>
+                                <path d="M16 12h8l4 7 4-7h8L24 31 16 12z"></path>
+                            </svg>
+                        </span>
+                        <span class="demo-framework-card__body">
+                            <span class="demo-framework-card__name">Vue</span>
+                            <span class="demo-framework-card__badge" data-i18n="frameworks.vue.badge">Composition API example</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Esempio concettuale con onMounted e onUnmounted.</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.vue.status">Snippet planned</span>
+                        </span>
+                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card" href="#feature-examples">
-                        <span class="demo-framework-card__name">Angular</span>
-                        <span class="demo-framework-card__badge" data-i18n="frameworks.angular.badge">Component lifecycle example</span>
-                        <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Esempio concettuale con AfterViewInit e OnDestroy.</span>
-                        <span class="demo-framework-card__status" data-i18n="frameworks.angular.status">Snippet planned</span>
+                    <a class="demo-framework-card demo-framework-card--angular" href="#feature-examples">
+                        <span class="demo-framework-card__icon" aria-hidden="true">
+                            <svg viewBox="0 0 48 48">
+                                <path d="M24 5 40 12 37 34 24 43 11 34 8 12 24 5z"></path>
+                                <path d="M17 34 24 13l7 21"></path>
+                                <path d="M20 27h8"></path>
+                            </svg>
+                        </span>
+                        <span class="demo-framework-card__body">
+                            <span class="demo-framework-card__name">Angular</span>
+                            <span class="demo-framework-card__badge" data-i18n="frameworks.angular.badge">Component lifecycle example</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Esempio concettuale con AfterViewInit e OnDestroy.</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.angular.status">Snippet planned</span>
+                        </span>
+                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
                 </div>
             </section>
