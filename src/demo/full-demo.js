@@ -186,12 +186,6 @@ const buildSaveReport = ({ result, applyIdsResult, savedResult }) => [
     `Saved rows: ${savedResult.saved.length}`
 ];
 
-const formatBooleanCheck = cell => {
-    const checked = cell.getValue() === true;
-
-    return `<input class="demo-checkbox-input" type="checkbox"${checked ? ' checked' : ''} disabled aria-label="${checked ? 'Checked' : 'Not checked'}">`;
-};
-
 const updateToolbarLabels = demo => {
     const lang = getLanguage();
     const labels = toolbarLabels[lang];
@@ -451,7 +445,12 @@ export default async function fullDemo(app, options = {}) {
                 field: 'requiresInspection',
                 width: 150,
                 hozAlign: 'center',
-                formatter: formatBooleanCheck,
+                formatter: AMB.formatters.checkbox({
+                    checkedSymbol: '✓',
+                    uncheckedSymbol: '',
+                    checkedLabel: '',
+                    uncheckedLabel: ''
+                }),
                 editor: AMB.editors.checkbox({
                     checkedLabel: '',
                     uncheckedLabel: ''

@@ -34,55 +34,68 @@ const productNotes = [
     'Intentionally generic demo item for showing CRUD changes without real catalog data.'
 ];
 
-const warehouseCities = [
-    ['A', 'Milano', 'Nord Distribution Area'],
-    ['B', 'Roma', 'Est Spare Parts Hub'],
-    ['C', 'Bologna', 'Central Handling Depot'],
-    ['D', 'Torino', 'Ovest Returns Area'],
-    ['E', 'Napoli', 'South Picking Line'],
-    ['F', 'Padova', 'Light Assembly Storage'],
-    ['G', 'Genova', 'Port Transit Warehouse'],
-    ['H', 'Firenze', 'Service Parts Reserve'],
-    ['J', 'Verona', 'Retail Replenishment Hub'],
-    ['K', 'Bari', 'Adriatic Dispatch Point'],
-    ['L', 'Parma', 'Packaging Materials Store'],
-    ['M', 'Catania', 'Regional Maintenance Depot'],
-    ['N', 'Pescara', 'Cross Docking Area'],
-    ['P', 'Trieste', 'Import Control Warehouse'],
-    ['Q', 'Ancona', 'Spare Components Room'],
-    ['R', 'Cagliari', 'Island Stock Platform'],
-    ['S', 'Perugia', 'Quality Sampling Bay'],
-    ['T', 'Brescia', 'Heavy Equipment Yard'],
-    ['U', 'Modena', 'Assembly Buffer Storage'],
-    ['V', 'Lecce', 'Customer Returns Hub']
+const warehouseOptions = [
+    'Milano Nord Distribution Area',
+    'Milano Nord Overflow Storage',
+    'Milano Nord Priority Dispatch Bay',
+    'Milano Nord Cold Chain Room',
+    'Milano Nord Returns Counter',
+    'Roma Est Spare Parts Hub',
+    'Roma Est Fast Picking Line',
+    'Roma Est Maintenance Reserve',
+    'Roma Est Packaging Store',
+    'Roma Est Transit Deck',
+    'Bologna Central Handling Depot',
+    'Bologna Quality Check Area',
+    'Bologna Central Repack Station',
+    'Bologna Central Audit Lane',
+    'Bologna Central Bulk Reserve',
+    'Torino Ovest Returns Area',
+    'Torino Ovest Heavy Equipment Yard',
+    'Torino Ovest Service Bay',
+    'Torino Ovest Night Shift Line',
+    'Torino Ovest Cross Dock Gate',
+    'Napoli South Picking Line',
+    'Napoli South Safety Stock Room',
+    'Napoli South Dispatch Point',
+    'Napoli South Inspection Bench',
+    'Napoli South Seasonal Reserve',
+    'Padova Light Assembly Storage',
+    'Padova Labeling Workcell',
+    'Padova Small Parts Carousel',
+    'Padova Supplier Intake Area',
+    'Padova Repair Queue',
+    'Genova Port Transit Warehouse',
+    'Genova Import Control Desk',
+    'Genova Export Buffer Zone',
+    'Genova Sea Freight Holding Bay',
+    'Genova Customs Review Area',
+    'Firenze Service Parts Reserve',
+    'Firenze Retail Replenishment Hub',
+    'Firenze Fragile Goods Room',
+    'Firenze Returns Sorting Lane',
+    'Firenze Workshop Supply Cage',
+    'Verona Retail Replenishment Hub',
+    'Verona Regional Stock Platform',
+    'Verona Promotional Kits Area',
+    'Verona Fast Moving Goods Lane',
+    'Verona Pallet Consolidation Bay',
+    'Bari Adriatic Dispatch Point',
+    'Bari Coastal Spare Components',
+    'Bari Vendor Drop Zone',
+    'Bari Emergency Order Shelf',
+    'Bari Late Cutoff Loading Gate',
+    'Parma Packaging Materials Store',
+    'Parma Food Grade Supplies Room',
+    'Parma Batch Control Desk',
+    'Parma Label Stock Archive',
+    'Parma Sample Review Bench',
+    'Catania Regional Maintenance Depot',
+    'Catania Island Stock Platform',
+    'Catania Express Fulfillment Bay',
+    'Catania Warranty Returns Area',
+    'Catania Equipment Calibration Room'
 ];
-
-const warehouseAreas = [
-    '',
-    'Overflow Storage',
-    'Fast Lane',
-    'Inspection Area',
-    'Night Shift Line',
-    'Bulk Reserve',
-    'Service Bay',
-    'Transit Deck'
-];
-
-const createDemoWarehouses = count => {
-    return Array.from({ length: count }, (_, index) => {
-        const [prefix, city, description] = warehouseCities[index % warehouseCities.length];
-        const number = String(index + 1).padStart(2, '0');
-        const area = warehouseAreas[Math.floor(index / warehouseCities.length) % warehouseAreas.length];
-        const code = `WH-${prefix}${number}`;
-
-        return {
-            code,
-            description: `${city} ${description}${area ? ` ${area}` : ''}`,
-            city,
-            label: `${code} - ${city} ${description}${area ? ` ${area}` : ''}`
-        };
-    });
-};
 
 const createItemCode = index => {
     const prefixes = ['A', 'AB', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -106,7 +119,7 @@ const createDemoProducts = (count, warehouses, statuses) => {
             id: index + 1,
             itemCode: createItemCode(index),
             productName: `${productNames[index % productNames.length]} ${String(index + 1).padStart(2, '0')}`,
-            warehouse: warehouse ? warehouse.label : '',
+            warehouse: warehouse || '',
             status: status ? status.id : '',
             stockQuantity: (index * 17) % 240,
             unitPrice: Number((7.5 + ((index * 13) % 900) / 3).toFixed(2)),
@@ -124,7 +137,7 @@ const createDemoProducts = (count, warehouses, statuses) => {
 
 const state = {
     statuses: clone(database.statuses),
-    warehouses: createDemoWarehouses(80),
+    warehouses: clone(warehouseOptions),
     products: []
 };
 
@@ -229,7 +242,7 @@ export const fakeApi = {
     async getWarehouses() {
         await delay();
 
-        return clone(state.warehouses.map(item => item.label));
+        return clone(state.warehouses);
     },
 
     async getProducts() {

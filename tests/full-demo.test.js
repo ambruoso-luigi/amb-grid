@@ -86,7 +86,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("field: 'status'");
         expect(source).toContain("title: 'Requires inspection'");
         expect(source).toContain("field: 'requiresInspection'");
-        expect(source).toContain('formatter: formatBooleanCheck');
+        expect(source).toContain('formatter: AMB.formatters.checkbox({');
         expect(source).toContain('AMB.editors.checkbox({');
         expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
         expect(source).toContain('maxOptions: 5');
@@ -170,9 +170,8 @@ describe('Legacy-friendly warehouse demo', () => {
         const warehouses = await fakeApi.getWarehouses();
 
         expect(fakeApiSource).toContain('const createDemoProducts = (count, warehouses, statuses) =>');
-        expect(fakeApiSource).toContain('const createDemoWarehouses = count =>');
-        expect(fakeApiSource).toContain('const warehouseAreas = [');
-        expect(fakeApiSource).toContain('warehouses: createDemoWarehouses(80)');
+        expect(fakeApiSource).toContain('const warehouseOptions = [');
+        expect(fakeApiSource).toContain('warehouses: clone(warehouseOptions)');
         expect(fakeApiSource).toContain('createDemoProducts(100, state.warehouses, state.statuses)');
         expect(fakeApiSource).toContain("field: 'itemCode'");
         expect(fakeApiSource).toContain("message: 'Item code already exists'");
@@ -181,23 +180,30 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('maxOptions: 5');
         expect(source).not.toContain('fakeApi.searchWarehouses(query)');
         expect(source).not.toContain('warehouseDialog');
-        expect(fakeApiSource).toContain('label: `${code} - ${city} ${description}${area ? ` ${area}` : \'\'}');
-        expect(warehouses).toHaveLength(80);
-        expect(new Set(warehouses).size).toBe(80);
-        expect(warehouses[0]).toBe('WH-A01 - Milano Nord Distribution Area');
-        expect(warehouses).toContain('WH-B02 - Roma Est Spare Parts Hub');
-        expect(warehouses).toContain('WH-A21 - Milano Nord Distribution Area Overflow Storage');
+        expect(fakeApiSource).not.toContain('const createDemoWarehouses = count =>');
+        expect(fakeApiSource).not.toContain('const warehouseAreas = [');
+        expect(warehouses.length).toBeGreaterThanOrEqual(50);
+        expect(new Set(warehouses).size).toBe(warehouses.length);
+        expect(warehouses.every(value => !/^WH-[A-Z][0-9]{2} - /.test(value))).toBe(true);
+        expect(warehouses[0]).toBe('Milano Nord Distribution Area');
+        expect(warehouses).toContain('Milano Nord Overflow Storage');
+        expect(warehouses).toContain('Roma Est Spare Parts Hub');
+        expect(warehouses).toContain('Roma Est Fast Picking Line');
+        expect(warehouses).toContain('Bologna Central Handling Depot');
+        expect(warehouses).toContain('Bologna Quality Check Area');
     });
 
     test('renders Requires inspection as a simple boolean checkbox', () => {
-        expect(source).toContain('const formatBooleanCheck = cell =>');
-        expect(source).toContain('class="demo-checkbox-input"');
-        expect(source).toContain('type="checkbox"');
-        expect(source).toContain('disabled');
+        expect(source).toContain('formatter: AMB.formatters.checkbox({');
+        expect(source).toContain("checkedSymbol: '✓'");
+        expect(source).toContain("uncheckedSymbol: ''");
         expect(source).toContain('checkedLabel: \'\'');
         expect(source).toContain('uncheckedLabel: \'\'');
+        expect(source).not.toContain('const formatBooleanCheck = cell =>');
+        expect(source).not.toContain('class="demo-checkbox-input"');
         expect(source).not.toContain("checkedLabel: 'Yes'");
         expect(source).not.toContain("uncheckedLabel: 'No'");
+        expect(demoCss).not.toContain('.demo-checkbox-input');
         expect(demoCss).toContain('.demo-panel .tabulator-cell .amb-checkbox-editor');
         expect(demoCss).toContain('justify-content: center;');
     });
