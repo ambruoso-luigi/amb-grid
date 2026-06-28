@@ -1292,6 +1292,27 @@ a {
     color: var(--demo-muted);
 }
 
+.demo-checkbox-input,
+.demo-panel .tabulator-cell .amb-checkbox-editor__input {
+    accent-color: var(--amb-site-blue-strong);
+    height: 16px;
+    margin: 0;
+    width: 16px;
+}
+
+.demo-panel .tabulator-cell .amb-checkbox-editor {
+    align-items: center;
+    display: flex;
+    gap: 0;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+.demo-panel .tabulator-cell .amb-checkbox-editor__label:empty {
+    display: none;
+}
+
 .demo-panel .amb-row-actions {
     align-items: center;
     display: inline-flex;

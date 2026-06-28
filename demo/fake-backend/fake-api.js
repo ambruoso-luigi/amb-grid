@@ -34,6 +34,44 @@ const productNotes = [
     'Intentionally generic demo item for showing CRUD changes without real catalog data.'
 ];
 
+const warehouseCities = [
+    ['A', 'Milano', 'Nord Distribution Area'],
+    ['B', 'Roma', 'Est Spare Parts Hub'],
+    ['C', 'Bologna', 'Central Handling Depot'],
+    ['D', 'Torino', 'Ovest Returns Area'],
+    ['E', 'Napoli', 'South Picking Line'],
+    ['F', 'Padova', 'Light Assembly Storage'],
+    ['G', 'Genova', 'Port Transit Warehouse'],
+    ['H', 'Firenze', 'Service Parts Reserve'],
+    ['J', 'Verona', 'Retail Replenishment Hub'],
+    ['K', 'Bari', 'Adriatic Dispatch Point'],
+    ['L', 'Parma', 'Packaging Materials Store'],
+    ['M', 'Catania', 'Regional Maintenance Depot'],
+    ['N', 'Pescara', 'Cross Docking Area'],
+    ['P', 'Trieste', 'Import Control Warehouse'],
+    ['Q', 'Ancona', 'Spare Components Room'],
+    ['R', 'Cagliari', 'Island Stock Platform'],
+    ['S', 'Perugia', 'Quality Sampling Bay'],
+    ['T', 'Brescia', 'Heavy Equipment Yard'],
+    ['U', 'Modena', 'Assembly Buffer Storage'],
+    ['V', 'Lecce', 'Customer Returns Hub']
+];
+
+const createDemoWarehouses = count => {
+    return Array.from({ length: count }, (_, index) => {
+        const [prefix, city, description] = warehouseCities[index % warehouseCities.length];
+        const number = String(index + 1).padStart(2, '0');
+        const code = `WH-${prefix}${number}`;
+
+        return {
+            code,
+            description: `${city} ${description}`,
+            city,
+            label: `${city} ${description}`
+        };
+    });
+};
+
 const createItemCode = index => {
     const prefixes = ['A', 'AB', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     const prefix = prefixes[index % prefixes.length];
@@ -42,9 +80,7 @@ const createItemCode = index => {
     return `PRD-${prefix}${numeric}`;
 };
 
-const createDemoProducts = count => {
-    const warehouses = database.warehouses || [];
-    const statuses = database.statuses || [];
+const createDemoProducts = (count, warehouses, statuses) => {
     const startDate = new Date(Date.UTC(2026, 5, 1));
 
     return Array.from({ length: count }, (_, index) => {
@@ -58,7 +94,7 @@ const createDemoProducts = count => {
             id: index + 1,
             itemCode: createItemCode(index),
             productName: `${productNames[index % productNames.length]} ${String(index + 1).padStart(2, '0')}`,
-            warehouse: warehouse ? warehouse.code : '',
+            warehouse: warehouse ? warehouse.label : '',
             status: status ? status.id : '',
             stockQuantity: (index * 17) % 240,
             unitPrice: Number((7.5 + ((index * 13) % 900) / 3).toFixed(2)),
@@ -76,9 +112,11 @@ const createDemoProducts = count => {
 
 const state = {
     statuses: clone(database.statuses),
-    warehouses: clone(database.warehouses),
-    products: createDemoProducts(100)
+    warehouses: createDemoWarehouses(80),
+    products: []
 };
+
+state.products = createDemoProducts(100, state.warehouses, state.statuses);
 
 const normalizeCode = value => {
     return String(value || '').trim().toUpperCase();
@@ -179,13 +217,7 @@ export const fakeApi = {
     async getWarehouses() {
         await delay();
 
-        return clone(state.warehouses);
-    },
-
-    async searchWarehouses(query) {
-        await delay();
-
-        return searchRecords(state.warehouses, query, ['code', 'description', 'city']);
+        return clone(state.warehouses.map(item => item.label));
     },
 
     async getProducts() {

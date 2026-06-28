@@ -86,11 +86,11 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("field: 'status'");
         expect(source).toContain("title: 'Requires inspection'");
         expect(source).toContain("field: 'requiresInspection'");
-        expect(source).toContain('formatter: AMB.formatters.checkbox({');
+        expect(source).toContain('formatter: formatBooleanCheck');
         expect(source).toContain('AMB.editors.checkbox({');
-        expect(source).toContain('AMB.editors.lookup(warehouseLookup');
+        expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
+        expect(source).toContain('maxOptions: 5');
         expect(source).toContain('AMB.editors.lookup(statusLookup');
-        expect(source).toContain('fakeApi.searchWarehouses(query)');
         expect(source).toContain('fakeApi.searchStatuses(query)');
         expect(source).toContain('paginationSize: 5');
         expect(source).toContain('unique: {');
@@ -99,6 +99,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain("title: 'Category'");
         expect(source).not.toContain("title: 'Minimum stock'");
         expect(source).not.toContain("title: 'Internal code'");
+        expect(source).not.toContain('const warehouseLookup = AMB.lookup({');
+        expect(source).not.toContain('dialogTitle: \'Search warehouse\'');
     });
 
     test('includes inventory fields in newly inserted products', () => {
@@ -163,23 +165,32 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("controls: 'full'");
     });
 
-    test('uses a distinct warehouse lookup and generates a larger demo dataset', () => {
-        const warehouseCodes = demoDatabase.warehouses.map(item => item.code);
-
-        expect(warehouseCodes).toEqual(expect.arrayContaining(['WH-A01', 'WH-B02', 'WH-C15']));
-        expect(demoDatabase.warehouses).toContainEqual({
-            code: 'WH-A01',
-            description: 'Milano Nord Distribution Area',
-            city: 'Milano'
-        });
-        expect(demoDatabase.warehouses.every(item => item.code !== item.description)).toBe(true);
-        expect(fakeApiSource).toContain('const createDemoProducts = count =>');
-        expect(fakeApiSource).toContain('products: createDemoProducts(100)');
+    test('uses a long warehouse autocomplete list and generates a larger demo dataset', () => {
+        expect(fakeApiSource).toContain('const createDemoProducts = (count, warehouses, statuses) =>');
+        expect(fakeApiSource).toContain('const createDemoWarehouses = count =>');
+        expect(fakeApiSource).toContain('warehouses: createDemoWarehouses(80)');
+        expect(fakeApiSource).toContain('createDemoProducts(100, state.warehouses, state.statuses)');
         expect(fakeApiSource).toContain("field: 'itemCode'");
         expect(fakeApiSource).toContain("message: 'Item code already exists'");
-        expect(source).toContain('const warehouseLookup = AMB.lookup({');
-        expect(source).toContain("title: 'Warehouse description'");
-        expect(source).toContain("title: 'City'");
-        expect(source).toContain('pageSize: 5');
+        expect(source).toContain('const warehouseOptions = await fakeApi.getWarehouses()');
+        expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
+        expect(source).toContain('maxOptions: 5');
+        expect(source).not.toContain('fakeApi.searchWarehouses(query)');
+        expect(source).not.toContain('warehouseDialog');
+        expect(fakeApiSource).toContain('label: `${city} ${description}`');
+        expect(fakeApiSource).not.toContain('label: `${code} - ${city} ${description}`');
+    });
+
+    test('renders Requires inspection as a simple boolean checkbox', () => {
+        expect(source).toContain('const formatBooleanCheck = cell =>');
+        expect(source).toContain('class="demo-checkbox-input"');
+        expect(source).toContain('type="checkbox"');
+        expect(source).toContain('disabled');
+        expect(source).toContain('checkedLabel: \'\'');
+        expect(source).toContain('uncheckedLabel: \'\'');
+        expect(source).not.toContain("checkedLabel: 'Yes'");
+        expect(source).not.toContain("uncheckedLabel: 'No'");
+        expect(demoCss).toContain('.demo-panel .tabulator-cell .amb-checkbox-editor');
+        expect(demoCss).toContain('justify-content: center;');
     });
 });

@@ -186,6 +186,12 @@ const buildSaveReport = ({ result, applyIdsResult, savedResult }) => [
     `Saved rows: ${savedResult.saved.length}`
 ];
 
+const formatBooleanCheck = cell => {
+    const checked = cell.getValue() === true;
+
+    return `<input class="demo-checkbox-input" type="checkbox"${checked ? ' checked' : ''} disabled aria-label="${checked ? 'Checked' : 'Not checked'}">`;
+};
+
 const updateToolbarLabels = demo => {
     const lang = getLanguage();
     const labels = toolbarLabels[lang];
@@ -258,23 +264,9 @@ export default async function fullDemo(app, options = {}) {
         },
         load: ({ query }) => fakeApi.searchStatuses(query)
     });
-    const warehouseLookup = AMB.lookup({
-        keyField: 'code',
-        valueField: 'code',
-        labelField: 'description',
-        columns: [
-            { field: 'code', title: 'Code', visible: true, width: 120 },
-            { field: 'description', title: 'Warehouse description', visible: true, width: 300 },
-            { field: 'city', title: 'City', visible: true, width: 140 }
-        ],
-        search: {
-            fields: 'visible'
-        },
-        load: ({ query }) => fakeApi.searchWarehouses(query)
-    });
     const statusDialog = new AMB.LookupDialog();
-    const warehouseDialog = new AMB.LookupDialog();
     const reportDialog = createDemoReportDialog();
+    const warehouseOptions = await fakeApi.getWarehouses();
     const products = await fakeApi.getProducts();
 
     const demo = AMB.table({
@@ -368,25 +360,16 @@ export default async function fullDemo(app, options = {}) {
                 field: 'warehouse',
                 width: 128,
                 required: true,
-                editor: AMB.editors.lookup(warehouseLookup, {
-                    uppercase: true,
-                    allowEmpty: false,
-                    dialog: warehouseDialog,
-                    dialogTitle: 'Search warehouse',
-                    invalidMessage: 'Unknown warehouse code',
-                    autoComplete: true,
-                    autoCompleteMinChars: 1,
-                    autoCompleteOnTab: true,
-                    dialogOptions: {
-                        closeOnBackdropClick: false,
-                        pagination: {
-                            enabled: true,
-                            pageSize: 5,
-                            controls: 'full'
-                        },
-                        destroyOnClose: true
+                editor: AMB.editors.autocomplete(warehouseOptions, {
+                    maxOptions: 5,
+                    trimInput: true
+                }),
+                validation: {
+                    allowedValues: {
+                        values: warehouseOptions,
+                        message: 'Choose a known warehouse'
                     }
-                })
+                }
             },
             {
                 title: 'Stock quantity',
@@ -468,13 +451,10 @@ export default async function fullDemo(app, options = {}) {
                 field: 'requiresInspection',
                 width: 150,
                 hozAlign: 'center',
-                formatter: AMB.formatters.checkbox({
-                    checkedLabel: 'Yes',
-                    uncheckedLabel: 'No'
-                }),
+                formatter: formatBooleanCheck,
                 editor: AMB.editors.checkbox({
-                    checkedLabel: 'Yes',
-                    uncheckedLabel: 'No'
+                    checkedLabel: '',
+                    uncheckedLabel: ''
                 })
             },
             {
@@ -516,12 +496,6 @@ export default async function fullDemo(app, options = {}) {
             statusDialog.close(null);
         } else {
             statusDialog.destroy();
-        }
-
-        if (warehouseDialog.resolve) {
-            warehouseDialog.close(null);
-        } else {
-            warehouseDialog.destroy();
         }
 
         originalDestroy();
