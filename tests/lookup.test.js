@@ -421,6 +421,15 @@ describe('LookupDialog filtering', () => {
             expect(dialog.paginationSummary.textContent)
                 .toBe('Showing 1-50 of 51 results | Page 1 of 2');
 
+            await dialog.nextPageButton.dispatch('click');
+
+            expect(dialog.currentPage).toBe(2);
+            expect(dialog.table.children[1].children).toHaveLength(1);
+            expect(dialog.table.children[1].children[0].children[0].textContent)
+                .toBe('Result 51');
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 51-51 of 51 results | Page 2 of 2');
+
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
         } finally {
@@ -465,10 +474,10 @@ describe('LookupDialog filtering', () => {
             const dialog = new LookupDialog();
             const resultPromise = dialog.open({
                 columns: [{ field: 'title' }],
-                data: [{ title: 'First' }],
+                data: createLookupRows(20),
                 pagination: {
                     enabled: true,
-                    pageSize: 10,
+                    pageSize: 25,
                     alwaysVisible: true
                 }
             });
@@ -476,7 +485,7 @@ describe('LookupDialog filtering', () => {
             expect(dialog.options.pagination.alwaysVisible).toBe(true);
             expect(dialog.paginationElement.hidden).toBe(false);
             expect(dialog.paginationSummary.textContent)
-                .toBe('Showing 1-1 of 1 results | Page 1 of 1');
+                .toBe('Showing 1-20 of 20 results | Page 1 of 1');
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
@@ -684,6 +693,16 @@ describe('LookupDialog filtering', () => {
             expect(dialog.paginationElement.hidden).toBe(true);
             expect(dialog.paginationSummary.textContent)
                 .toBe('Showing 1-20 of 20 results | Page 1 of 1');
+
+            dialog.search.value = '';
+            await dialog.search.dispatch('input');
+
+            expect(dialog.currentPage).toBe(1);
+            expect(dialog.filteredData).toHaveLength(data.length);
+            expect(getRows()).toHaveLength(25);
+            expect(dialog.paginationElement.hidden).toBe(false);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-25 of 47 results | Page 1 of 2');
 
             dialog.search.value = 'Needle';
             await dialog.search.dispatch('input');
