@@ -355,7 +355,7 @@ export default async function fullDemo(app, options = {}) {
                 width: 128,
                 required: true,
                 editor: AMB.editors.autocomplete(warehouseOptions, {
-                    maxOptions: 5,
+                    maxOptions: 8,
                     trimInput: true
                 }),
                 validation: {

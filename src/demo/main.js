@@ -73,6 +73,8 @@ const translations = {
         'cycle.description': 'AMB Grid coordina editing, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
         'cycle.editTitle': 'Edit',
         'cycle.editText': 'Le celle editabili aggiornano i dati senza nascondere gli stati riga.',
+        'cycle.keyboardTitle': 'Editing orientato alla tastiera',
+        'cycle.keyboardText': 'Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.',
         'cycle.validateTitle': 'Validate',
         'cycle.validateText': 'Validatori e parser separano qualità del dato e normalizzazione payload.',
         'cycle.payloadTitle': 'Payload',
@@ -164,6 +166,8 @@ const translations = {
         'cycle.description': 'AMB Grid coordinates editing, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
         'cycle.editTitle': 'Edit',
         'cycle.editText': 'Editable cells update data while row states remain visible.',
+        'cycle.keyboardTitle': 'Work without leaving the keyboard',
+        'cycle.keyboardText': 'AMB Grid is designed for fast backoffice-style data entry: type, confirm with Tab and move to the next cell.',
         'cycle.validateTitle': 'Validate',
         'cycle.validateText': 'Validators and parsers keep data quality and payload normalization separate.',
         'cycle.payloadTitle': 'Payload',
@@ -450,6 +454,10 @@ const renderShell = selectedId => {
                     <article class="demo-flow-card">
                         <strong data-i18n="cycle.editTitle">Edit</strong>
                         <p data-i18n="cycle.editText">Le celle editabili aggiornano i dati senza nascondere gli stati riga.</p>
+                    </article>
+                    <article class="demo-flow-card">
+                        <strong data-i18n="cycle.keyboardTitle">Editing orientato alla tastiera</strong>
+                        <p data-i18n="cycle.keyboardText">Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.</p>
                     </article>
                     <article class="demo-flow-card">
                         <strong data-i18n="cycle.validateTitle">Validate</strong>

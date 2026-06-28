@@ -70,4 +70,17 @@ describe('demo site navigation', () => {
         expect(main).toContain("'examples.multifieldLookup.description'");
         expect(main).toContain("id: 'multiple-tables'");
     });
+
+    test('keeps the home wide and highlights keyboard-first editing', () => {
+        const main = read('src/demo/main.js');
+        const css = read('src/demo/demo.css');
+
+        expect(css).toContain('width: min(100% - 32px, 1680px);');
+        expect(main).toContain("'cycle.keyboardTitle': 'Editing orientato alla tastiera'");
+        expect(main).toContain("'cycle.keyboardText': 'Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.'");
+        expect(main).toContain("'cycle.keyboardTitle': 'Work without leaving the keyboard'");
+        expect(main).toContain("'cycle.keyboardText': 'AMB Grid is designed for fast backoffice-style data entry: type, confirm with Tab and move to the next cell.'");
+        expect(main).toContain('data-i18n="cycle.keyboardTitle"');
+        expect(main).toContain('data-i18n="cycle.keyboardText"');
+    });
 });

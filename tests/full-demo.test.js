@@ -89,7 +89,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('formatter: AMB.formatters.checkbox({');
         expect(source).toContain('AMB.editors.checkbox({');
         expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
-        expect(source).toContain('maxOptions: 5');
+        expect(source).toContain('maxOptions: 8');
         expect(source).toContain('AMB.editors.lookup(statusLookup');
         expect(source).toContain('fakeApi.searchStatuses(query)');
         expect(source).toContain('paginationSize: 5');
@@ -177,7 +177,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(fakeApiSource).toContain("message: 'Item code already exists'");
         expect(source).toContain('const warehouseOptions = await fakeApi.getWarehouses()');
         expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
-        expect(source).toContain('maxOptions: 5');
+        expect(source).toContain('maxOptions: 8');
         expect(source).not.toContain('fakeApi.searchWarehouses(query)');
         expect(source).not.toContain('warehouseDialog');
         expect(fakeApiSource).not.toContain('const createDemoWarehouses = count =>');

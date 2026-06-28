@@ -132,11 +132,11 @@ a {
     max-width: none;
     min-width: 0;
     padding: 22px 0;
-    width: min(100% - 32px, 1380px);
+    width: min(100% - 32px, 1680px);
 }
 
 .site-container {
-    width: min(100% - 32px, 1380px);
+    width: min(100% - 32px, 1680px);
 }
 
 .site-container--wide {
