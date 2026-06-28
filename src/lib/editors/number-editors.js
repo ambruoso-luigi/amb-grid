@@ -96,7 +96,7 @@ export function integer(options = {}) {
             ...options
         };
 
-        return (cell, onRendered, success, cancel) => {
+        const editor = (cell, onRendered, success, cancel) => {
             const input = document.createElement('input');
 
             input.type = 'text';
@@ -175,6 +175,10 @@ export function integer(options = {}) {
             });
             return input;
         };
+
+        editor._ambEditorType = 'integer';
+
+        return editor;
 }
 
     /**
@@ -203,7 +207,7 @@ export function decimal(options = {}) {
             ...options
         };
 
-        return (cell, onRendered, success, cancel) => {
+        const editor = (cell, onRendered, success, cancel) => {
             const input = document.createElement('input');
 
             input.type = 'text';
@@ -289,4 +293,8 @@ export function decimal(options = {}) {
             });
             return input;
         };
+
+        editor._ambEditorType = 'decimal';
+
+        return editor;
 }

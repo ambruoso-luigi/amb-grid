@@ -78,7 +78,7 @@ export const formatters = {
      * @returns {Function} Tabulator formatter.
      */
     decimal(decimals = 2, options = {}) {
-        return cell => {
+        const formatter = cell => {
             const value = getCellValue(cell);
 
             if (isEmptyValue(value)) return '';
@@ -97,6 +97,10 @@ export const formatters = {
                 ...formatOptions
             });
         };
+
+        formatter._ambFormatterType = 'decimal';
+
+        return formatter;
     },
 
     /**
@@ -106,7 +110,11 @@ export const formatters = {
      * @returns {Function} Tabulator formatter.
      */
     integer(options = {}) {
-        return formatters.decimal(0, options);
+        const formatter = formatters.decimal(0, options);
+
+        formatter._ambFormatterType = 'integer';
+
+        return formatter;
     },
 
     /**
@@ -116,7 +124,7 @@ export const formatters = {
      * @returns {Function} Tabulator formatter.
      */
     currency(options = {}) {
-        return cell => {
+        const formatter = cell => {
             const value = getCellValue(cell);
 
             if (isEmptyValue(value)) return '';
@@ -139,6 +147,10 @@ export const formatters = {
                 ...formatOptions
             });
         };
+
+        formatter._ambFormatterType = 'currency';
+
+        return formatter;
     },
 
     /**
@@ -151,7 +163,7 @@ export const formatters = {
      * @returns {Function} Tabulator formatter.
      */
     date(format = 'dd/mm/yyyy', options = {}) {
-        return cell => {
+        const formatter = cell => {
             const value = getCellValue(cell);
 
             if (isEmptyValue(value)) return '';
@@ -167,6 +179,10 @@ export const formatters = {
 
             return parsedValue;
         };
+
+        formatter._ambFormatterType = 'date';
+
+        return formatter;
     },
 
     /**
@@ -177,7 +193,7 @@ export const formatters = {
      * @returns {Function} Tabulator formatter.
      */
     percent(decimals = 2, options = {}) {
-        return cell => {
+        const formatter = cell => {
             const value = getCellValue(cell);
 
             if (isEmptyValue(value)) return '';
@@ -197,6 +213,10 @@ export const formatters = {
                 ...formatOptions
             });
         };
+
+        formatter._ambFormatterType = 'percent';
+
+        return formatter;
     },
 
     /**
@@ -218,10 +238,14 @@ export const formatters = {
             : 2;
         const displayDecimalDigits = Math.max(0, normalizedRatioDigits - 2);
 
-        return formatters.percent(displayDecimalDigits, {
+        const formatter = formatters.percent(displayDecimalDigits, {
             minimumFractionDigits: 0,
             ...options
         });
+
+        formatter._ambFormatterType = 'percentFromRatio';
+
+        return formatter;
     },
 
     /**

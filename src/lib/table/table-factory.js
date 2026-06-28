@@ -11,6 +11,60 @@ import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
 import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-binders.js';
 
+const NUMERIC_EDITOR_TYPES = new Set(['integer', 'decimal']);
+const NUMERIC_FORMATTER_TYPES = new Set([
+    'integer',
+    'decimal',
+    'currency',
+    'percent',
+    'percentFromRatio'
+]);
+const DATE_EDITOR_TYPES = new Set(['date']);
+const DATE_FORMATTER_TYPES = new Set(['date']);
+
+const getAmbEditorType = column => {
+    return column && column.editor && column.editor._ambEditorType;
+};
+
+const getAmbFormatterType = column => {
+    return column && column.formatter && column.formatter._ambFormatterType;
+};
+
+const getDefaultHozAlign = column => {
+    const editorType = getAmbEditorType(column);
+    const formatterType = getAmbFormatterType(column);
+
+    if (NUMERIC_EDITOR_TYPES.has(editorType) || NUMERIC_FORMATTER_TYPES.has(formatterType)) {
+        return 'right';
+    }
+
+    if (DATE_EDITOR_TYPES.has(editorType) || DATE_FORMATTER_TYPES.has(formatterType)) {
+        return 'center';
+    }
+
+    return undefined;
+};
+
+export const applyDefaultColumnAlignments = (columns = []) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) {
+            nextColumn.columns = applyDefaultColumnAlignments(nextColumn.columns);
+        }
+
+        if (nextColumn.hozAlign === undefined) {
+            const defaultHozAlign = getDefaultHozAlign(nextColumn);
+
+            if (defaultHozAlign !== undefined) {
+                nextColumn.hozAlign = defaultHozAlign;
+            }
+        }
+
+        return nextColumn;
+    });
+};
+
 const configureLookupEditors = (columns, getCrud) => {
     const getCrudRowIdentifier = (crud, data) => {
         if (!crud || !data) return null;
@@ -147,6 +201,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * structured `validation` object. Most validators do not imply required:
  * use `required: true`, `validation.required`, or `AMB.validators.required()`
  * when empty values should fail validation.
+ * AMB numeric editors/formatters receive `hozAlign: 'right'` by default and
+ * AMB date editors/formatters receive `hozAlign: 'center'` by default, only
+ * when the column did not already define `hozAlign`.
  *
  * @param {object} options - AMB table and Tabulator options.
  * @param {string|HTMLElement} options.selector - CSS selector or element passed to Tabulator.
@@ -225,6 +282,7 @@ export function createTable(options = {}) {
     };
     const extracted = extractColumnValidators(columns, normalizedMessages);
     const dataColumns = wrapEditableForDeletedRows(extracted.columns, () => crud);
+    const alignedDataColumns = applyDefaultColumnAlignments(dataColumns);
     const normalizedOptions = { ...tabulatorOptions };
     let crud = null;
     let unsubscribeDeleteColumn = null;
@@ -248,7 +306,7 @@ export function createTable(options = {}) {
         normalizedOptions.columns = [
             ...(selectionColumnController ? [selectionColumnController.column] : []),
             ...(deleteColumnController ? [deleteColumnController.column] : []),
-            ...dataColumns
+            ...alignedDataColumns
         ];
 
         configureLookupEditors(normalizedOptions.columns, () => crud);
@@ -281,7 +339,7 @@ export function createTable(options = {}) {
     searchController = createSearchController({
         selector,
         search,
-        columns: dataColumns,
+        columns: alignedDataColumns,
         table,
         floatingMessage,
         mountElement: toolbarController ? toolbarController.searchMount : null

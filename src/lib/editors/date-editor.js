@@ -92,7 +92,7 @@ export function date(options = {}) {
         const editorBehavior = getDateEditorBehavior(normalizedOptions.mode);
         const pickerFormat = normalizeDateFormat(normalizedOptions.format);
 
-        return (cell, onRendered, success, cancel) => {
+        const editor = (cell, onRendered, success, cancel) => {
             const input = document.createElement('input');
             const wrapper = document.createElement('span');
             const initialValue = getInitialValue(cell);
@@ -522,4 +522,8 @@ export function date(options = {}) {
             });
             return input;
         };
+
+        editor._ambEditorType = 'date';
+
+        return editor;
     }
