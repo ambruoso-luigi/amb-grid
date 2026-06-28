@@ -9,6 +9,10 @@ const columns = [
     { field: 'istatCode', title: 'ISTAT Code', visible: false }
 ];
 
+const createLookupRows = count => Array.from({ length: count }, (_, index) => ({
+    title: `Result ${index + 1}`
+}));
+
 class DialogElementMock {
     constructor(tagName = 'div') {
         this.tagName = tagName.toUpperCase();
@@ -339,6 +343,7 @@ describe('LookupDialog filtering', () => {
                     { title: 'Gamma' },
                     { title: 'Target outside initial limit' }
                 ],
+                pagination: false,
                 initialRenderLimit: 2
             });
             const getRenderedRows = () => dialog.table.children[1].children;
@@ -374,27 +379,23 @@ describe('LookupDialog filtering', () => {
         }
     });
 
-    test('renders all rows by default without pagination', async () => {
+    test('uses automatic pagination by default and hides it when results fit one page', async () => {
         const harness = createDialogHarness();
 
         try {
             const dialog = new LookupDialog();
             const resultPromise = dialog.open({
                 columns: [{ field: 'title' }],
-                data: [
-                    { title: 'First' },
-                    { title: 'Second' },
-                    { title: 'Third' }
-                ]
+                data: createLookupRows(50)
             });
 
             expect(dialog.options.pagination).toEqual({
-                enabled: false,
-                pageSize: 100,
+                enabled: true,
+                pageSize: 50,
                 controls: 'full',
-                hideWhenSinglePage: true
+                alwaysVisible: false
             });
-            expect(dialog.table.children[1].children).toHaveLength(3);
+            expect(dialog.table.children[1].children).toHaveLength(50);
             expect(dialog.paginationElement.hidden).toBe(true);
 
             dialog.close(null);
@@ -404,22 +405,21 @@ describe('LookupDialog filtering', () => {
         }
     });
 
-    test('hides enabled pagination on a single page by default', async () => {
+    test('shows default pagination when results exceed the default page size', async () => {
         const harness = createDialogHarness();
 
         try {
             const dialog = new LookupDialog();
             const resultPromise = dialog.open({
                 columns: [{ field: 'title' }],
-                data: [{ title: 'First' }, { title: 'Second' }],
-                pagination: {
-                    enabled: true,
-                    pageSize: 10
-                }
+                data: createLookupRows(51)
             });
 
-            expect(dialog.options.pagination.hideWhenSinglePage).toBe(true);
-            expect(dialog.paginationElement.hidden).toBe(true);
+            expect(dialog.options.pagination.pageSize).toBe(50);
+            expect(dialog.table.children[1].children).toHaveLength(50);
+            expect(dialog.paginationElement.hidden).toBe(false);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-50 of 51 results | Page 1 of 2');
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
@@ -428,7 +428,64 @@ describe('LookupDialog filtering', () => {
         }
     });
 
-    test('can keep enabled pagination visible on a single page', async () => {
+    test.each([
+        [20, true],
+        [25, true],
+        [26, false]
+    ])('custom page size hides pagination only when %i results fit page size 25', async (count, hidden) => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: createLookupRows(count),
+                pagination: {
+                    enabled: true,
+                    pageSize: 25
+                }
+            });
+
+            expect(dialog.options.pagination.alwaysVisible).toBe(false);
+            expect(dialog.table.children[1].children)
+                .toHaveLength(Math.min(count, 25));
+            expect(dialog.paginationElement.hidden).toBe(hidden);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('can force pagination visible on a single page', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: [{ title: 'First' }],
+                pagination: {
+                    enabled: true,
+                    pageSize: 10,
+                    alwaysVisible: true
+                }
+            });
+
+            expect(dialog.options.pagination.alwaysVisible).toBe(true);
+            expect(dialog.paginationElement.hidden).toBe(false);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-1 of 1 results | Page 1 of 1');
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('keeps backward-compatible hideWhenSinglePage false as always visible', async () => {
         const harness = createDialogHarness();
 
         try {
@@ -443,9 +500,33 @@ describe('LookupDialog filtering', () => {
                 }
             });
 
+            expect(dialog.options.pagination.alwaysVisible).toBe(true);
             expect(dialog.paginationElement.hidden).toBe(false);
-            expect(dialog.paginationSummary.textContent)
-                .toBe('Showing 1-1 of 1 results | Page 1 of 1');
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test.each([
+        false,
+        { enabled: false }
+    ])('can disable pagination with %j', async pagination => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data: createLookupRows(75),
+                pagination
+            });
+
+            expect(dialog.options.pagination.enabled).toBe(false);
+            expect(dialog.table.children[1].children).toHaveLength(75);
+            expect(dialog.paginationElement.hidden).toBe(true);
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();
@@ -557,23 +638,85 @@ describe('LookupDialog filtering', () => {
         }
     });
 
-    test('uses a default page size of 100 when pagination is enabled', async () => {
+    test('updates pagination visibility when search results cross the page-size threshold', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const dialog = new LookupDialog();
+            const data = [
+                ...Array.from({ length: 26 }, (_, index) => ({
+                    title: `Keep result ${index + 1}`
+                })),
+                ...Array.from({ length: 20 }, (_, index) => ({
+                    title: `Small result ${index + 1}`
+                })),
+                { title: 'Needle beyond first page' }
+            ];
+            const resultPromise = dialog.open({
+                columns: [{ field: 'title' }],
+                data,
+                pagination: {
+                    enabled: true,
+                    pageSize: 25
+                }
+            });
+            const getRows = () => dialog.table.children[1].children;
+
+            await dialog.nextPageButton.dispatch('click');
+            expect(dialog.currentPage).toBe(2);
+
+            dialog.search.value = 'Keep';
+            await dialog.search.dispatch('input');
+
+            expect(dialog.currentPage).toBe(1);
+            expect(dialog.filteredData).toHaveLength(26);
+            expect(getRows()).toHaveLength(25);
+            expect(dialog.paginationElement.hidden).toBe(false);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-25 of 26 results | Page 1 of 2');
+
+            dialog.search.value = 'Small';
+            await dialog.search.dispatch('input');
+
+            expect(dialog.currentPage).toBe(1);
+            expect(dialog.filteredData).toHaveLength(20);
+            expect(getRows()).toHaveLength(20);
+            expect(dialog.paginationElement.hidden).toBe(true);
+            expect(dialog.paginationSummary.textContent)
+                .toBe('Showing 1-20 of 20 results | Page 1 of 1');
+
+            dialog.search.value = 'Needle';
+            await dialog.search.dispatch('input');
+
+            expect(dialog.filteredData).toEqual([
+                { title: 'Needle beyond first page' }
+            ]);
+            expect(getRows()).toHaveLength(1);
+            expect(getRows()[0].children[0].textContent)
+                .toBe('Needle beyond first page');
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('uses a default page size of 50 when pagination is enabled', async () => {
         const harness = createDialogHarness();
 
         try {
             const dialog = new LookupDialog();
             const resultPromise = dialog.open({
                 columns: [{ field: 'title' }],
-                data: Array.from({ length: 101 }, (_, index) => ({
-                    title: `Result ${index + 1}`
-                })),
+                data: createLookupRows(51),
                 pagination: true
             });
 
-            expect(dialog.options.pagination.pageSize).toBe(100);
-            expect(dialog.table.children[1].children).toHaveLength(100);
+            expect(dialog.options.pagination.pageSize).toBe(50);
+            expect(dialog.table.children[1].children).toHaveLength(50);
             expect(dialog.paginationSummary.textContent)
-                .toBe('Showing 1-100 of 101 results | Page 1 of 2');
+                .toBe('Showing 1-50 of 51 results | Page 1 of 2');
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();

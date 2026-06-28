@@ -1,6 +1,6 @@
 import { FeedbackRegion } from './feedback-region.js';
 
-const DEFAULT_PAGE_SIZE = 100;
+const DEFAULT_PAGE_SIZE = 50;
 
 const createElement = (tagName, className, text = '') => {
     const element = document.createElement(tagName);
@@ -44,7 +44,8 @@ const normalizePagination = (pagination, pageSize) => {
     const controls = paginationOptions.controls === 'simple'
         ? 'simple'
         : 'full';
-    const hideWhenSinglePage = paginationOptions.hideWhenSinglePage !== false;
+    const alwaysVisible = paginationOptions.alwaysVisible === true
+        || paginationOptions.hideWhenSinglePage === false;
 
     return {
         enabled: Boolean(enabled),
@@ -52,7 +53,7 @@ const normalizePagination = (pagination, pageSize) => {
             ? configuredPageSize
             : DEFAULT_PAGE_SIZE,
         controls,
-        hideWhenSinglePage
+        alwaysVisible
     };
 };
 
@@ -116,12 +117,18 @@ export class LookupDialog {
      * @param {string[]} [options.searchFields] - Fields used for local filtering. Defaults to displayed columns.
      * @param {number} [options.width=720] - Dialog panel width in pixels.
      * @param {boolean} [options.closeOnBackdropClick=true] - Close when the backdrop is pressed.
-     * @param {boolean|object} [options.pagination=false] - Enable client-side pagination. Search always filters the complete dataset.
+     * Pagination defaults to 50 rows per page and is shown only when the
+     * filtered result count exceeds the page size. Search always filters the
+     * full dataset, resets to page one, and recalculates pagination visibility.
+     * Set `pagination: false`, `pagination.enabled: false`, or
+     * `pagination.alwaysVisible: true` to override the automatic behavior.
+     * @param {boolean|object} [options.pagination=true] - Enable client-side pagination. Search always filters the complete dataset.
      * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using object configuration.
-     * @param {number} [options.pagination.pageSize=100] - Rows rendered per page.
+     * @param {number} [options.pagination.pageSize=50] - Rows rendered per page.
      * @param {'simple'|'full'} [options.pagination.controls='full'] - Show Previous/Next or First/Previous/Next/Last controls.
-     * @param {boolean} [options.pagination.hideWhenSinglePage=true] - Hide pagination controls when the filtered result fits on one page.
-     * @param {number} [options.pageSize=100] - Rows per page when `pagination: true`.
+     * @param {boolean} [options.pagination.alwaysVisible=false] - Keep pagination visible even when the filtered result fits on one page.
+     * @param {boolean} [options.pagination.hideWhenSinglePage=true] - Backward-compatible inverse of `alwaysVisible`.
+     * @param {number} [options.pageSize=50] - Rows per page when `pagination: true`.
      * @param {boolean} [options.destroyOnClose=true] - Destroy markup on close. Set false to reuse the shell; call `destroy()` when finished so retained data can be released.
      * @param {number} [options.initialRenderLimit] - Legacy non-paginated render limit. Prefer `pagination`.
      * @param {string} [options.noResultsText='No results'] - Text shown when filtering returns no rows.
@@ -142,7 +149,7 @@ export class LookupDialog {
             searchPlaceholder: 'Search...',
             width: 720,
             closeOnBackdropClick: true,
-            pagination: false,
+            pagination: true,
             pageSize: DEFAULT_PAGE_SIZE,
             destroyOnClose: true,
             initialRenderLimit: null,
@@ -468,7 +475,7 @@ export class LookupDialog {
     updatePagination(renderState) {
         if (!this.options.pagination.enabled) return;
 
-        this.paginationElement.hidden = this.options.pagination.hideWhenSinglePage
+        this.paginationElement.hidden = !this.options.pagination.alwaysVisible
             && renderState.pageCount <= 1;
 
         const firstResult = renderState.totalCount
