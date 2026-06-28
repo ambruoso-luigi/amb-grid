@@ -165,9 +165,13 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("controls: 'full'");
     });
 
-    test('uses a long warehouse autocomplete list and generates a larger demo dataset', () => {
+    test('uses a long unique warehouse autocomplete list and generates a larger demo dataset', async () => {
+        const { fakeApi } = await import('../demo/fake-backend/fake-api.js');
+        const warehouses = await fakeApi.getWarehouses();
+
         expect(fakeApiSource).toContain('const createDemoProducts = (count, warehouses, statuses) =>');
         expect(fakeApiSource).toContain('const createDemoWarehouses = count =>');
+        expect(fakeApiSource).toContain('const warehouseAreas = [');
         expect(fakeApiSource).toContain('warehouses: createDemoWarehouses(80)');
         expect(fakeApiSource).toContain('createDemoProducts(100, state.warehouses, state.statuses)');
         expect(fakeApiSource).toContain("field: 'itemCode'");
@@ -177,8 +181,12 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('maxOptions: 5');
         expect(source).not.toContain('fakeApi.searchWarehouses(query)');
         expect(source).not.toContain('warehouseDialog');
-        expect(fakeApiSource).toContain('label: `${city} ${description}`');
-        expect(fakeApiSource).not.toContain('label: `${code} - ${city} ${description}`');
+        expect(fakeApiSource).toContain('label: `${code} - ${city} ${description}${area ? ` ${area}` : \'\'}');
+        expect(warehouses).toHaveLength(80);
+        expect(new Set(warehouses).size).toBe(80);
+        expect(warehouses[0]).toBe('WH-A01 - Milano Nord Distribution Area');
+        expect(warehouses).toContain('WH-B02 - Roma Est Spare Parts Hub');
+        expect(warehouses).toContain('WH-A21 - Milano Nord Distribution Area Overflow Storage');
     });
 
     test('renders Requires inspection as a simple boolean checkbox', () => {

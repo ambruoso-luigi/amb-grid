@@ -1295,9 +1295,14 @@ a {
 .demo-checkbox-input,
 .demo-panel .tabulator-cell .amb-checkbox-editor__input {
     accent-color: var(--amb-site-blue-strong);
-    height: 16px;
+    height: 15px;
     margin: 0;
-    width: 16px;
+    width: 15px;
+}
+
+.demo-checkbox-input {
+    opacity: 1;
+    pointer-events: none;
 }
 
 .demo-panel .tabulator-cell .amb-checkbox-editor {

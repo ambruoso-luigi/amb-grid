@@ -57,17 +57,29 @@ const warehouseCities = [
     ['V', 'Lecce', 'Customer Returns Hub']
 ];
 
+const warehouseAreas = [
+    '',
+    'Overflow Storage',
+    'Fast Lane',
+    'Inspection Area',
+    'Night Shift Line',
+    'Bulk Reserve',
+    'Service Bay',
+    'Transit Deck'
+];
+
 const createDemoWarehouses = count => {
     return Array.from({ length: count }, (_, index) => {
         const [prefix, city, description] = warehouseCities[index % warehouseCities.length];
         const number = String(index + 1).padStart(2, '0');
+        const area = warehouseAreas[Math.floor(index / warehouseCities.length) % warehouseAreas.length];
         const code = `WH-${prefix}${number}`;
 
         return {
             code,
-            description: `${city} ${description}`,
+            description: `${city} ${description}${area ? ` ${area}` : ''}`,
             city,
-            label: `${city} ${description}`
+            label: `${code} - ${city} ${description}${area ? ` ${area}` : ''}`
         };
     });
 };
