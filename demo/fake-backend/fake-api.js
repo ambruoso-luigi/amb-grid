@@ -3,9 +3,81 @@ import { delay } from './fake-delay.js';
 
 const clone = value => structuredClone(value);
 
+const productNames = [
+    'Adjustable scanner cradle',
+    'Thermal label cartridge',
+    'Mobile picking terminal',
+    'Stackable storage bin',
+    'Safety inspection kit',
+    'Compact workbench module',
+    'RFID shelf antenna',
+    'Pallet wrap dispenser',
+    'Maintenance tool trolley',
+    'Inventory audit tablet',
+    'Heavy-duty barcode printer',
+    'Return handling container',
+    'Cold-chain sensor pack',
+    'Forklift battery monitor',
+    'Assembly parts tray',
+    'Packing verification scale',
+    'Warehouse route badge',
+    'Lot tracking clipboard',
+    'Service spare cable',
+    'Priority dispatch cart'
+];
+
+const productNotes = [
+    'Used to demonstrate text editing, rollback, and payload updates in the main grid.',
+    'Contains operational notes long enough to trigger the large text preview tooltip.',
+    'Assigned to a rotating warehouse process so lookup changes are easy to inspect.',
+    'Useful for validating numeric, currency, date, checkbox, and lookup behavior together.',
+    'Intentionally generic demo item for showing CRUD changes without real catalog data.'
+];
+
+const createItemCode = index => {
+    const prefixes = ['A', 'AB', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const prefix = prefixes[index % prefixes.length];
+    const numeric = String(index + 1).padStart(prefix.length === 1 ? 3 : 2, '0');
+
+    return `PRD-${prefix}${numeric}`;
+};
+
+const createDemoProducts = count => {
+    const warehouses = database.warehouses || [];
+    const statuses = database.statuses || [];
+    const startDate = new Date(Date.UTC(2026, 5, 1));
+
+    return Array.from({ length: count }, (_, index) => {
+        const warehouse = warehouses[index % warehouses.length];
+        const status = statuses[(index * 7) % statuses.length];
+        const checkDate = new Date(startDate);
+
+        checkDate.setUTCDate(startDate.getUTCDate() + (index % 28));
+
+        return {
+            id: index + 1,
+            itemCode: createItemCode(index),
+            productName: `${productNames[index % productNames.length]} ${String(index + 1).padStart(2, '0')}`,
+            warehouse: warehouse ? warehouse.code : '',
+            status: status ? status.id : '',
+            stockQuantity: (index * 17) % 240,
+            unitPrice: Number((7.5 + ((index * 13) % 900) / 3).toFixed(2)),
+            lastCheckDate: checkDate.toLocaleDateString('it-IT', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'UTC'
+            }),
+            requiresInspection: index % 4 === 0 || index % 9 === 0,
+            notes: `${productNotes[index % productNotes.length]} Batch ${String(index + 1).padStart(3, '0')}.`
+        };
+    });
+};
+
 const state = {
     statuses: clone(database.statuses),
-    products: clone(database.products)
+    warehouses: clone(database.warehouses),
+    products: createDemoProducts(100)
 };
 
 const normalizeCode = value => {
@@ -36,7 +108,7 @@ const getNextProductId = () => {
     return maxId + 1;
 };
 
-const hasSkuDuplicate = payload => {
+const hasItemCodeDuplicate = payload => {
     const changes = payload.changes || {};
     const deletedIds = new Set((changes.deleted || []).map(change => getChangeId(change)));
     const pendingById = new Map();
@@ -63,22 +135,32 @@ const hasSkuDuplicate = payload => {
     const seen = new Map();
 
     for (const item of candidates) {
-        const sku = normalizeCode(item.sku);
+        const itemCode = normalizeCode(item.itemCode);
 
-        if (!sku) continue;
+        if (!itemCode) continue;
 
-        if (seen.has(sku) && seen.get(sku) !== getChangeId(item)) {
+        if (seen.has(itemCode) && seen.get(itemCode) !== getChangeId(item)) {
             return {
                 id: getChangeId(item),
-                field: 'sku',
-                message: 'SKU already exists'
+                field: 'itemCode',
+                message: 'Item code already exists'
             };
         }
 
-        seen.set(sku, getChangeId(item));
+        seen.set(itemCode, getChangeId(item));
     }
 
     return null;
+};
+
+const searchRecords = (records, query, fields) => {
+    const q = String(query || '').toLowerCase();
+
+    return clone(records.filter(item => {
+        return fields.some(field => {
+            return String(item[field] || '').toLowerCase().includes(q);
+        });
+    }));
 };
 
 export const fakeApi = {
@@ -91,12 +173,19 @@ export const fakeApi = {
     async searchStatuses(query) {
         await delay();
 
-        const q = String(query || '').toLowerCase();
+        return searchRecords(state.statuses, query, ['id', 'description']);
+    },
 
-        return clone(state.statuses.filter(item => {
-            return item.id.toLowerCase().includes(q)
-                || item.description.toLowerCase().includes(q);
-        }));
+    async getWarehouses() {
+        await delay();
+
+        return clone(state.warehouses);
+    },
+
+    async searchWarehouses(query) {
+        await delay();
+
+        return searchRecords(state.warehouses, query, ['code', 'description', 'city']);
     },
 
     async getProducts() {
@@ -126,7 +215,7 @@ export const fakeApi = {
             };
         }
 
-        const duplicate = hasSkuDuplicate(payload);
+        const duplicate = hasItemCodeDuplicate(payload);
 
         if (duplicate) {
             return {

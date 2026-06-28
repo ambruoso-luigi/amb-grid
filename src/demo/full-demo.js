@@ -2,20 +2,6 @@ import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 
-const categories = [
-    'Consumables',
-    'Equipment',
-    'Furniture',
-    'Storage'
-];
-
-const warehouses = [
-    'Bologna Hub',
-    'Milano Nord',
-    'Roma Est',
-    'Torino Ovest'
-];
-
 const toolbarIcons = {
     add: `
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -264,15 +250,30 @@ export default async function fullDemo(app, options = {}) {
         valueField: 'id',
         labelField: 'description',
         columns: [
-            { field: 'id', title: 'Code', visible: true, width: 150 },
-            { field: 'description', title: 'Description', visible: true }
+            { field: 'id', title: 'Code', visible: true, width: 110 },
+            { field: 'description', title: 'Description', visible: true, width: 360 }
         ],
         search: {
             fields: 'visible'
         },
         load: ({ query }) => fakeApi.searchStatuses(query)
     });
+    const warehouseLookup = AMB.lookup({
+        keyField: 'code',
+        valueField: 'code',
+        labelField: 'description',
+        columns: [
+            { field: 'code', title: 'Code', visible: true, width: 120 },
+            { field: 'description', title: 'Warehouse description', visible: true, width: 300 },
+            { field: 'city', title: 'City', visible: true, width: 140 }
+        ],
+        search: {
+            fields: 'visible'
+        },
+        load: ({ query }) => fakeApi.searchWarehouses(query)
+    });
     const statusDialog = new AMB.LookupDialog();
+    const warehouseDialog = new AMB.LookupDialog();
     const reportDialog = createDemoReportDialog();
     const products = await fakeApi.getProducts();
 
@@ -326,21 +327,25 @@ export default async function fullDemo(app, options = {}) {
         },
         data: products,
         layout: 'fitColumns',
+        pagination: true,
+        paginationMode: 'local',
+        paginationSize: 5,
+        paginationSizeSelector: [5, 10, 20, 50],
         columns: [
             {
-                title: 'SKU',
-                field: 'sku',
-                width: 118,
+                title: 'Item code',
+                field: 'itemCode',
+                width: 130,
                 editor: AMB.editors.text({ uppercase: true, trim: true }),
                 required: true,
                 validation: {
                     pattern: {
-                        regex: /^SKU-[0-9]{4}$/,
-                        message: 'Use SKU-0000 format'
+                        regex: /^PRD-[A-Z0-9]{4}$/,
+                        message: 'Use PRD-A001 format'
                     },
                     unique: {
                         caseSensitive: false,
-                        message: 'SKU must be unique'
+                        message: 'Item code must be unique'
                     }
                 }
             },
@@ -359,30 +364,29 @@ export default async function fullDemo(app, options = {}) {
                 }
             },
             {
-                title: 'Category',
-                field: 'category',
-                width: 132,
-                editor: AMB.editors.autocomplete(categories, { maxOptions: 8 }),
-                required: true,
-                validation: {
-                    allowedValues: {
-                        values: categories,
-                        message: 'Choose a known category'
-                    }
-                }
-            },
-            {
                 title: 'Warehouse',
                 field: 'warehouse',
-                width: 136,
-                editor: AMB.editors.autocomplete(warehouses, { maxOptions: 8 }),
+                width: 128,
                 required: true,
-                validation: {
-                    allowedValues: {
-                        values: warehouses,
-                        message: 'Choose a known warehouse'
+                editor: AMB.editors.lookup(warehouseLookup, {
+                    uppercase: true,
+                    allowEmpty: false,
+                    dialog: warehouseDialog,
+                    dialogTitle: 'Search warehouse',
+                    invalidMessage: 'Unknown warehouse code',
+                    autoComplete: true,
+                    autoCompleteMinChars: 1,
+                    autoCompleteOnTab: true,
+                    dialogOptions: {
+                        closeOnBackdropClick: false,
+                        pagination: {
+                            enabled: true,
+                            pageSize: 5,
+                            controls: 'full'
+                        },
+                        destroyOnClose: true
                     }
-                }
+                })
             },
             {
                 title: 'Stock quantity',
@@ -400,26 +404,11 @@ export default async function fullDemo(app, options = {}) {
                 }
             },
             {
-                title: 'Minimum stock',
-                field: 'minimumStock',
-                width: 120,
-                editor: AMB.editors.integer({ allowEmpty: false }),
-                formatter: AMB.formatters.integer(),
-                required: true,
-                validation: {
-                    integer: true,
-                    min: {
-                        value: 0,
-                        message: 'Minimum stock cannot be negative'
-                    }
-                }
-            },
-            {
                 title: 'Unit price',
                 field: 'unitPrice',
                 width: 118,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
-                formatter: AMB.formatters.decimal(2),
+                formatter: AMB.formatters.currency(),
                 required: true,
                 validation: {
                     decimal: {
@@ -452,7 +441,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Status',
                 field: 'status',
-                width: 126,
+                width: 118,
                 required: true,
                 editor: AMB.editors.lookup(statusLookup, {
                     uppercase: true,
@@ -465,9 +454,27 @@ export default async function fullDemo(app, options = {}) {
                     autoCompleteOnTab: true,
                     dialogOptions: {
                         closeOnBackdropClick: false,
-                        pagination: false,
+                        pagination: {
+                            enabled: true,
+                            pageSize: 8,
+                            controls: 'full'
+                        },
                         destroyOnClose: true
                     }
+                })
+            },
+            {
+                title: 'Requires inspection',
+                field: 'requiresInspection',
+                width: 150,
+                hozAlign: 'center',
+                formatter: AMB.formatters.checkbox({
+                    checkedLabel: 'Yes',
+                    uncheckedLabel: 'No'
+                }),
+                editor: AMB.editors.checkbox({
+                    checkedLabel: 'Yes',
+                    uncheckedLabel: 'No'
                 })
             },
             {
@@ -482,12 +489,6 @@ export default async function fullDemo(app, options = {}) {
                     closeOnBackdropClick: false,
                     tabBehavior: 'save-and-navigate'
                 })
-            },
-            {
-                title: 'Internal code',
-                field: 'internalCode',
-                width: 112,
-                editor: AMB.editors.text({ uppercase: true, trim: true })
             }
         ]
     });
@@ -515,6 +516,12 @@ export default async function fullDemo(app, options = {}) {
             statusDialog.close(null);
         } else {
             statusDialog.destroy();
+        }
+
+        if (warehouseDialog.resolve) {
+            warehouseDialog.close(null);
+        } else {
+            warehouseDialog.destroy();
         }
 
         originalDestroy();
@@ -553,17 +560,15 @@ export default async function fullDemo(app, options = {}) {
         demo.feedback.clear();
         crud.addRow({
             id: null,
-            sku: '',
+            itemCode: '',
             productName: '',
-            category: '',
             warehouse: '',
             stockQuantity: 0,
-            minimumStock: 0,
             unitPrice: '',
             lastCheckDate: '',
             status: '',
-            notes: '',
-            internalCode: ''
+            requiresInspection: false,
+            notes: ''
         });
     }
 

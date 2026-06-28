@@ -9,6 +9,14 @@ const demoCss = fs.readFileSync(
     new URL('../src/demo/demo.css', import.meta.url),
     'utf8'
 );
+const fakeApiSource = fs.readFileSync(
+    new URL('../demo/fake-backend/fake-api.js', import.meta.url),
+    'utf8'
+);
+const demoDatabase = JSON.parse(fs.readFileSync(
+    new URL('../demo/fake-backend/database.json', import.meta.url),
+    'utf8'
+));
 
 describe('Legacy-friendly warehouse demo', () => {
     test('uses legacy-friendly naming with warehouse scenario', () => {
@@ -61,40 +69,47 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('keeps inventory capabilities in the main demo', () => {
-        expect(source).toContain("title: 'SKU'");
-        expect(source).toContain("field: 'sku'");
+        expect(source).toContain("title: 'Item code'");
+        expect(source).toContain("field: 'itemCode'");
         expect(source).toContain("title: 'Product name'");
         expect(source).toContain("field: 'productName'");
-        expect(source).toContain("title: 'Category'");
         expect(source).toContain("title: 'Warehouse'");
+        expect(source).toContain("field: 'warehouse'");
         expect(source).toContain("title: 'Stock quantity'");
         expect(source).toContain("field: 'stockQuantity'");
-        expect(source).toContain("title: 'Minimum stock'");
-        expect(source).toContain("field: 'minimumStock'");
         expect(source).toContain("title: 'Unit price'");
         expect(source).toContain("field: 'unitPrice'");
+        expect(source).toContain('formatter: AMB.formatters.currency()');
         expect(source).toContain("title: 'Last check date'");
         expect(source).toContain("field: 'lastCheckDate'");
         expect(source).toContain("title: 'Status'");
         expect(source).toContain("field: 'status'");
-        expect(source).toContain('AMB.editors.autocomplete(categories');
+        expect(source).toContain("title: 'Requires inspection'");
+        expect(source).toContain("field: 'requiresInspection'");
+        expect(source).toContain('formatter: AMB.formatters.checkbox({');
+        expect(source).toContain('AMB.editors.checkbox({');
+        expect(source).toContain('AMB.editors.lookup(warehouseLookup');
         expect(source).toContain('AMB.editors.lookup(statusLookup');
+        expect(source).toContain('fakeApi.searchWarehouses(query)');
         expect(source).toContain('fakeApi.searchStatuses(query)');
+        expect(source).toContain('paginationSize: 5');
         expect(source).toContain('unique: {');
         expect(source).toContain('minLength: {');
         expect(source).toContain('min: {');
+        expect(source).not.toContain("title: 'Category'");
+        expect(source).not.toContain("title: 'Minimum stock'");
+        expect(source).not.toContain("title: 'Internal code'");
     });
 
     test('includes inventory fields in newly inserted products', () => {
-        expect(source).toContain("sku: ''");
+        expect(source).toContain("itemCode: ''");
         expect(source).toContain("productName: ''");
-        expect(source).toContain("category: ''");
         expect(source).toContain("warehouse: ''");
         expect(source).toContain('stockQuantity: 0');
-        expect(source).toContain('minimumStock: 0');
         expect(source).toContain("unitPrice: ''");
         expect(source).toContain("lastCheckDate: ''");
         expect(source).toContain("status: ''");
+        expect(source).toContain('requiresInspection: false');
         expect(source).toContain('crud.getSavePayload()');
     });
 
@@ -127,5 +142,44 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('.demo-showcase--large');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);');
         expect(demoCss).toContain('min-height: var(--demo-table-height, min(760px, 64vh));');
+    });
+
+    test('uses distinct short status codes with descriptive lookup labels', () => {
+        const statusIds = demoDatabase.statuses.map(item => item.id);
+        const statusDescriptions = demoDatabase.statuses.map(item => item.description);
+
+        expect(statusIds).toEqual(expect.arrayContaining(['A001', 'AB03', 'A085', 'B120', 'C040', 'HOLD', 'DISC']));
+        expect(statusIds.length).toBeGreaterThanOrEqual(35);
+        expect(statusDescriptions).toContain('Available for standard warehouse picking');
+        expect(statusDescriptions).toContain('Low stock: reorder suggested within 7 days');
+        expect(statusDescriptions).toContain('Blocked pending quality inspection');
+        expect(statusDescriptions).toContain('Reserved for internal maintenance order');
+        expect(statusDescriptions).toContain('Discontinued item kept for historical references');
+        demoDatabase.statuses.forEach(status => {
+            expect(status.description).not.toBe(status.id);
+            expect(status.description.length).toBeGreaterThan(status.id.length + 10);
+        });
+        expect(source).toContain('pageSize: 8');
+        expect(source).toContain("controls: 'full'");
+    });
+
+    test('uses a distinct warehouse lookup and generates a larger demo dataset', () => {
+        const warehouseCodes = demoDatabase.warehouses.map(item => item.code);
+
+        expect(warehouseCodes).toEqual(expect.arrayContaining(['WH-A01', 'WH-B02', 'WH-C15']));
+        expect(demoDatabase.warehouses).toContainEqual({
+            code: 'WH-A01',
+            description: 'Milano Nord Distribution Area',
+            city: 'Milano'
+        });
+        expect(demoDatabase.warehouses.every(item => item.code !== item.description)).toBe(true);
+        expect(fakeApiSource).toContain('const createDemoProducts = count =>');
+        expect(fakeApiSource).toContain('products: createDemoProducts(100)');
+        expect(fakeApiSource).toContain("field: 'itemCode'");
+        expect(fakeApiSource).toContain("message: 'Item code already exists'");
+        expect(source).toContain('const warehouseLookup = AMB.lookup({');
+        expect(source).toContain("title: 'Warehouse description'");
+        expect(source).toContain("title: 'City'");
+        expect(source).toContain('pageSize: 5');
     });
 });

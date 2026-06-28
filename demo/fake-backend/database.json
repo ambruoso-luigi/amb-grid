@@ -1,9 +1,55 @@
 {
   "statuses": [
-    { "id": "AVAILABLE", "description": "Available" },
-    { "id": "LOW_STOCK", "description": "Low stock" },
-    { "id": "HOLD", "description": "On hold" },
-    { "id": "DISCONTINUED", "description": "Discontinued" }
+    { "id": "A001", "description": "Available for standard warehouse picking" },
+    { "id": "AB03", "description": "Low stock: reorder suggested within 7 days" },
+    { "id": "A085", "description": "Available with reserved quantity for priority orders" },
+    { "id": "B120", "description": "Blocked pending quality inspection" },
+    { "id": "C040", "description": "Reserved for internal maintenance order" },
+    { "id": "HOLD", "description": "Temporarily on hold awaiting operations approval" },
+    { "id": "DISC", "description": "Discontinued item kept for historical references" },
+    { "id": "Q015", "description": "Quarantined until supplier certificate is reviewed" },
+    { "id": "R045", "description": "Reserved for customer shipment already planned" },
+    { "id": "M200", "description": "Missing serial verification before release" },
+    { "id": "X010", "description": "Exception approved by warehouse supervisor" },
+    { "id": "P330", "description": "Priority picking lane for same-day dispatch" },
+    { "id": "S118", "description": "Seasonal stock held for scheduled campaign" },
+    { "id": "T075", "description": "Transfer requested between regional warehouses" },
+    { "id": "L060", "description": "Locked because cycle count is in progress" },
+    { "id": "D500", "description": "Damaged packaging pending rework decision" },
+    { "id": "N090", "description": "New item awaiting first receiving inspection" },
+    { "id": "E220", "description": "Export documentation required before shipping" },
+    { "id": "K310", "description": "Kit component reserved for assembly batch" },
+    { "id": "V055", "description": "Vendor managed stock awaiting replenishment sync" },
+    { "id": "I700", "description": "Inventory adjustment pending finance approval" },
+    { "id": "F014", "description": "Fast-moving product monitored by reorder automation" },
+    { "id": "G620", "description": "General stock available after location reassignment" },
+    { "id": "U404", "description": "Unmatched receiving record requires operator review" },
+    { "id": "W730", "description": "Warranty replacement stock restricted to service orders" },
+    { "id": "Z999", "description": "Archived warehouse code kept for audit traceability" },
+    { "id": "C115", "description": "Cold-chain area item requiring controlled handling" },
+    { "id": "B205", "description": "Bulk storage quantity awaiting pallet split" },
+    { "id": "A410", "description": "Available after automated validation completed" },
+    { "id": "H330", "description": "Heavy equipment item requiring forklift movement" },
+    { "id": "O125", "description": "Overstock item suggested for redistribution" },
+    { "id": "P018", "description": "Promotional item blocked until campaign start date" },
+    { "id": "R640", "description": "Return stock waiting for refurbishment classification" },
+    { "id": "S777", "description": "Sample stock not available for standard orders" },
+    { "id": "T901", "description": "Temporary location assigned during warehouse replan" },
+    { "id": "V440", "description": "Validated for dispatch after quality sampling" },
+    { "id": "Y080", "description": "Year-end audit hold applied by inventory control" },
+    { "id": "J502", "description": "Job order allocation requires production confirmation" },
+    { "id": "K880", "description": "Kanban replenishment signal created for this item" },
+    { "id": "L905", "description": "Lot tracking mismatch pending supervisor review" }
+  ],
+  "warehouses": [
+    { "code": "WH-A01", "description": "Milano Nord Distribution Area", "city": "Milano" },
+    { "code": "WH-B02", "description": "Roma Est Spare Parts Hub", "city": "Roma" },
+    { "code": "WH-C15", "description": "Bologna Central Handling Depot", "city": "Bologna" },
+    { "code": "WH-D07", "description": "Torino Ovest Returns Platform", "city": "Torino" },
+    { "code": "WH-E20", "description": "Padova Light Assembly Storage", "city": "Padova" },
+    { "code": "WH-F11", "description": "Napoli South Regional Stockroom", "city": "Napoli" },
+    { "code": "WH-G04", "description": "Genova Port Transit Warehouse", "city": "Genova" },
+    { "code": "WH-H18", "description": "Firenze Service Parts Reserve", "city": "Firenze" }
   ],
   "products": [
     {
@@ -16,7 +62,7 @@
       "minimumStock": 12,
       "unitPrice": 149.9,
       "lastCheckDate": "05/06/2026",
-      "status": "AVAILABLE",
+      "status": "A001",
       "notes": "Primary warehouse stock aligned after monthly inventory count.",
       "internalCode": "WH-A01"
     },
@@ -30,7 +76,7 @@
       "minimumStock": 10,
       "unitPrice": 86.5,
       "lastCheckDate": "12/06/2026",
-      "status": "LOW_STOCK",
+      "status": "AB03",
       "notes": "Reorder request opened for the next procurement batch.",
       "internalCode": "EQ-B12"
     },
@@ -44,7 +90,7 @@
       "minimumStock": 80,
       "unitPrice": 4.25,
       "lastCheckDate": "18/06/2026",
-      "status": "AVAILABLE",
+      "status": "A085",
       "notes": "Fast-moving consumable, review reorder threshold quarterly.",
       "internalCode": "CN-C08"
     },
@@ -58,7 +104,7 @@
       "minimumStock": 2,
       "unitPrice": 389,
       "lastCheckDate": "20/06/2026",
-      "status": "HOLD",
+      "status": "B120",
       "notes": "One unit waiting for safety inspection before release.",
       "internalCode": "EQ-D04"
     },
@@ -72,7 +118,7 @@
       "minimumStock": 60,
       "unitPrice": 2.1,
       "lastCheckDate": "22/06/2026",
-      "status": "LOW_STOCK",
+      "status": "AB03",
       "notes": "Supplier lead time increased; monitor daily until replenished.",
       "internalCode": "CN-A14"
     },
@@ -86,7 +132,7 @@
       "minimumStock": 5,
       "unitPrice": 219.99,
       "lastCheckDate": "24/06/2026",
-      "status": "AVAILABLE",
+      "status": "C040",
       "notes": "Reserved quantity excludes units already assigned to projects.",
       "internalCode": "FR-B07"
     },
@@ -100,7 +146,7 @@
       "minimumStock": 0,
       "unitPrice": 72,
       "lastCheckDate": "25/06/2026",
-      "status": "DISCONTINUED",
+      "status": "DISC",
       "notes": "Kept in the catalog only for historical order references.",
       "internalCode": "EQ-C99"
     },
@@ -114,7 +160,7 @@
       "minimumStock": 6,
       "unitPrice": 312.75,
       "lastCheckDate": "26/06/2026",
-      "status": "AVAILABLE",
+      "status": "A001",
       "notes": "Devices updated with the latest warehouse checklist profile.",
       "internalCode": "EQ-D18"
     }
