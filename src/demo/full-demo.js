@@ -226,6 +226,7 @@ const updateToolbarLabels = demo => {
 export default async function fullDemo(app, options = {}) {
     const {
         className = '',
+        compactHeader = false,
         showHeader = true,
         showScenario = true,
         tableHeight = '340px',
@@ -233,6 +234,7 @@ export default async function fullDemo(app, options = {}) {
     } = options;
     const extraClasses = [
         variant && variant !== 'default' ? `demo-shell--${variant}` : '',
+        compactHeader ? 'demo-shell--compact-header' : '',
         className
     ]
         .join(' ')
@@ -242,6 +244,7 @@ export default async function fullDemo(app, options = {}) {
     if (extraClasses.length) {
         app.classList.add(...extraClasses);
     }
+    app.style.setProperty('--demo-table-height', tableHeight);
 
     app.innerHTML = `
         ${showHeader ? `<div class="demo-section-heading demo-section-heading--split">
@@ -327,7 +330,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'SKU',
                 field: 'sku',
-                width: 130,
+                width: 118,
                 editor: AMB.editors.text({ uppercase: true, trim: true }),
                 required: true,
                 validation: {
@@ -344,7 +347,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Product name',
                 field: 'productName',
-                width: 190,
+                width: 180,
+                widthGrow: 1.2,
                 editor: AMB.editors.text({ trim: true }),
                 required: true,
                 validation: {
@@ -357,7 +361,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Category',
                 field: 'category',
-                width: 150,
+                width: 132,
                 editor: AMB.editors.autocomplete(categories, { maxOptions: 8 }),
                 required: true,
                 validation: {
@@ -370,7 +374,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Warehouse',
                 field: 'warehouse',
-                width: 150,
+                width: 136,
                 editor: AMB.editors.autocomplete(warehouses, { maxOptions: 8 }),
                 required: true,
                 validation: {
@@ -383,7 +387,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Stock quantity',
                 field: 'stockQuantity',
-                width: 140,
+                width: 120,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 required: true,
@@ -398,7 +402,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Minimum stock',
                 field: 'minimumStock',
-                width: 140,
+                width: 120,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 required: true,
@@ -413,7 +417,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Unit price',
                 field: 'unitPrice',
-                width: 130,
+                width: 118,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
                 formatter: AMB.formatters.decimal(2),
                 required: true,
@@ -429,7 +433,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Last check date',
                 field: 'lastCheckDate',
-                width: 150,
+                width: 132,
                 editor: AMB.editors.date({
                     format: 'dd/mm/yyyy',
                     allowEmpty: false,
@@ -448,7 +452,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Status',
                 field: 'status',
-                width: 150,
+                width: 126,
                 required: true,
                 editor: AMB.editors.lookup(statusLookup, {
                     uppercase: true,
@@ -469,7 +473,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Notes',
                 field: 'notes',
-                width: 240,
+                width: 210,
+                widthGrow: 1.4,
                 formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }),
                 editor: AMB.editors.largeText({
                     title: 'Edit inventory notes',
@@ -481,7 +486,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Internal code',
                 field: 'internalCode',
-                width: 130,
+                width: 112,
                 editor: AMB.editors.text({ uppercase: true, trim: true })
             }
         ]
@@ -501,6 +506,10 @@ export default async function fullDemo(app, options = {}) {
     demo.destroy = () => {
         window.removeEventListener('amb-demo-language-change', handleLanguageChange);
         reportDialog.destroy();
+        app.style.removeProperty('--demo-table-height');
+        if (extraClasses.length) {
+            app.classList.remove(...extraClasses);
+        }
 
         if (statusDialog.resolve) {
             statusDialog.close(null);

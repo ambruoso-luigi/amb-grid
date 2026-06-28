@@ -116,4 +116,16 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('background: #fff;');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 920px);');
     });
+
+    test('supports a large showcase variant without changing the default API surface', () => {
+        expect(source).toContain('compactHeader = false');
+        expect(source).toContain("tableHeight = '340px'");
+        expect(source).toContain("variant && variant !== 'default' ? `demo-shell--${variant}` : ''");
+        expect(source).toContain("compactHeader ? 'demo-shell--compact-header' : ''");
+        expect(source).toContain("app.style.setProperty('--demo-table-height', tableHeight)");
+        expect(source).toContain("app.style.removeProperty('--demo-table-height')");
+        expect(demoCss).toContain('.demo-showcase--large');
+        expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);');
+        expect(demoCss).toContain('min-height: var(--demo-table-height, min(760px, 64vh));');
+    });
 });

@@ -1,11 +1,18 @@
 export default function gettingStartedJavaScript(app) {
     app.innerHTML = `
-        <main class="demo-page demo-guide-page">
+        <main class="demo-page demo-guide-page js-guide-page site-container site-container--wide">
             <header class="demo-guide-hero">
                 <nav class="demo-topbar" aria-label="AMB Grid guide navigation">
                     <a class="demo-brand" href="#top" aria-label="AMB Grid">AMB Grid</a>
                     <div class="language-switch is-it" data-language-switch aria-label="Language">
-                        <span class="language-switch__label" data-language-label="en">EN</span>
+                        <button
+                            type="button"
+                            class="language-switch__label language-switch__label--en"
+                            data-language-label="en"
+                            data-language-set="en"
+                            aria-label="English"
+                            aria-pressed="false"
+                        >EN</button>
                         <button
                             type="button"
                             class="language-switch__control"
@@ -14,12 +21,18 @@ export default function gettingStartedJavaScript(app) {
                             aria-checked="true"
                             aria-label="Cambia lingua in inglese"
                         >
-                            <span class="language-switch__track">
-                                <span class="language-switch__flag" data-language-flag>🇮🇹</span>
-                                <span class="language-switch__knob" aria-hidden="true"></span>
-                            </span>
+                            <span class="language-switch__flag language-switch__flag--en" aria-hidden="true"></span>
+                            <span class="language-switch__flag language-switch__flag--it" aria-hidden="true"></span>
+                            <span class="language-switch__knob" aria-hidden="true"></span>
                         </button>
-                        <span class="language-switch__label" data-language-label="it">IT</span>
+                        <button
+                            type="button"
+                            class="language-switch__label language-switch__label--it"
+                            data-language-label="it"
+                            data-language-set="it"
+                            aria-label="Italiano"
+                            aria-pressed="true"
+                        >IT</button>
                     </div>
                 </nav>
                 <a class="demo-back-link" href="#top" data-i18n="guide.back">Torna alla home demo</a>

@@ -227,7 +227,14 @@ const getText = key => translations[currentLang][key] || translations.it[key] ||
 
 const renderLanguageSwitch = () => `
     <div class="language-switch is-it" data-language-switch aria-label="Language">
-        <span class="language-switch__label" data-language-label="en">EN</span>
+        <button
+            type="button"
+            class="language-switch__label language-switch__label--en"
+            data-language-label="en"
+            data-language-set="en"
+            aria-label="English"
+            aria-pressed="false"
+        >EN</button>
         <button
             type="button"
             class="language-switch__control"
@@ -236,12 +243,18 @@ const renderLanguageSwitch = () => `
             aria-checked="true"
             aria-label="Cambia lingua in inglese"
         >
-            <span class="language-switch__track">
-                <span class="language-switch__flag" data-language-flag>🇮🇹</span>
-                <span class="language-switch__knob" aria-hidden="true"></span>
-            </span>
+            <span class="language-switch__flag language-switch__flag--en" aria-hidden="true"></span>
+            <span class="language-switch__flag language-switch__flag--it" aria-hidden="true"></span>
+            <span class="language-switch__knob" aria-hidden="true"></span>
         </button>
-        <span class="language-switch__label" data-language-label="it">IT</span>
+        <button
+            type="button"
+            class="language-switch__label language-switch__label--it"
+            data-language-label="it"
+            data-language-set="it"
+            aria-label="Italiano"
+            aria-pressed="true"
+        >IT</button>
     </div>
 `;
 
@@ -268,20 +281,19 @@ const applyI18n = () => {
     });
 
     root.querySelectorAll('[data-language-label]').forEach(label => {
-        label.classList.toggle('is-active', label.dataset.languageLabel === currentLang);
+        const isActive = label.dataset.languageLabel === currentLang;
+
+        label.classList.toggle('is-active', isActive);
+        label.setAttribute('aria-pressed', String(isActive));
     });
 
     root.querySelectorAll('[data-language-toggle]').forEach(button => {
         const isItalian = currentLang === 'it';
         const nextLanguageLabel = getText(isItalian ? 'language.switchToEn' : 'language.switchToIt');
-        const flag = button.querySelector('[data-language-flag]');
 
         button.setAttribute('aria-checked', String(isItalian));
         button.setAttribute('aria-label', nextLanguageLabel);
         button.title = nextLanguageLabel;
-        if (flag) {
-            flag.textContent = isItalian ? '🇮🇹' : '🇬🇧';
-        }
     });
 
     window.dispatchEvent(new CustomEvent('amb-demo-language-change', {
@@ -317,11 +329,18 @@ const bindLanguageButtons = () => {
             applyI18n();
         });
     });
+
+    root.querySelectorAll('[data-language-set]').forEach(button => {
+        button.addEventListener('click', () => {
+            currentLang = button.dataset.languageSet === 'en' ? 'en' : 'it';
+            applyI18n();
+        });
+    });
 };
 
 const renderShell = selectedId => {
     root.innerHTML = `
-        <main class="demo-page">
+        <main class="demo-page site-container">
             <header class="demo-hero">
                 <nav class="demo-topbar" aria-label="AMB Grid demo navigation">
                     <a class="demo-brand" href="#top" aria-label="AMB Grid">AMB Grid</a>
@@ -558,8 +577,9 @@ const renderGuide = () => {
     bindLanguageButtons();
     applyI18n();
     mountMainDemo('#javascript-demo', 'guide', {
-        className: 'demo-shell--showcase',
-        tableHeight: 'clamp(520px, 62vh, 760px)',
+        className: 'demo-showcase demo-showcase--large',
+        compactHeader: true,
+        tableHeight: 'clamp(560px, 64vh, 760px)',
         variant: 'showcase'
     });
     window.scrollTo(0, 0);
