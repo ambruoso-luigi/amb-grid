@@ -12,6 +12,12 @@ vi.mock('vanillajs-datepicker/Datepicker', () => ({
 }));
 
 describe('AMB default column alignments', () => {
+    test('AMB numeric and date editor factories expose internal type metadata', () => {
+        expect(createIntegerEditor()._ambEditorType).toBe('integer');
+        expect(createDecimalEditor()._ambEditorType).toBe('decimal');
+        expect(createDateEditor()._ambEditorType).toBe('date');
+    });
+
     test('columns with AMB integer editors align right by default', () => {
         const [column] = applyDefaultColumnAlignments([
             { field: 'quantity', editor: createIntegerEditor() }
@@ -68,6 +74,30 @@ describe('AMB default column alignments', () => {
         ]);
 
         expect(column.hozAlign).toBe('left');
+    });
+
+    test('decimal editor-only columns keep explicit user hozAlign values', () => {
+        const [column] = applyDefaultColumnAlignments([
+            {
+                field: 'amount',
+                editor: createDecimalEditor(),
+                hozAlign: 'center'
+            }
+        ]);
+
+        expect(column.hozAlign).toBe('center');
+    });
+
+    test('date editor-only columns keep explicit user hozAlign values', () => {
+        const [column] = applyDefaultColumnAlignments([
+            {
+                field: 'checkDate',
+                editor: createDateEditor(),
+                hozAlign: 'right'
+            }
+        ]);
+
+        expect(column.hozAlign).toBe('right');
     });
 
     test('date columns keep explicit user hozAlign values', () => {
