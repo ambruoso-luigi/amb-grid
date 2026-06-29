@@ -21,6 +21,45 @@ const NUMERIC_FORMATTER_TYPES = new Set([
 ]);
 const DATE_EDITOR_TYPES = new Set(['date']);
 const DATE_FORMATTER_TYPES = new Set(['date']);
+const DEFAULT_PAGINATION_MODE = 'local';
+const DEFAULT_PAGINATION_SIZE = 10;
+
+const isPaginationConfig = pagination => {
+    return pagination
+        && typeof pagination === 'object'
+        && !Array.isArray(pagination);
+};
+
+export const normalizePaginationOptions = (options = {}) => {
+    const nextOptions = { ...options };
+    const pagination = options.pagination;
+
+    if (!isPaginationConfig(pagination)) {
+        return nextOptions;
+    }
+
+    if (pagination.enabled === false) {
+        nextOptions.pagination = false;
+        return nextOptions;
+    }
+
+    const pageSize = Number(pagination.pageSize);
+    const mode = typeof pagination.mode === 'string' && pagination.mode
+        ? pagination.mode
+        : DEFAULT_PAGINATION_MODE;
+
+    nextOptions.pagination = true;
+    nextOptions.paginationMode = mode;
+    nextOptions.paginationSize = Number.isInteger(pageSize) && pageSize > 0
+        ? pageSize
+        : DEFAULT_PAGINATION_SIZE;
+
+    if (Object.prototype.hasOwnProperty.call(pagination, 'pageSizeSelector')) {
+        nextOptions.paginationSizeSelector = pagination.pageSizeSelector;
+    }
+
+    return nextOptions;
+};
 
 const getAmbEditorType = column => {
     return column && column.editor && column.editor._ambEditorType;
@@ -204,11 +243,24 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * AMB numeric editors/formatters receive `hozAlign: 'right'` by default and
  * AMB date editors/formatters receive `hozAlign: 'center'` by default, only
  * when the column did not already define `hozAlign`.
+ * Tabulator pagination options are still passed through unchanged when
+ * `pagination` is boolean. AMB also accepts an object-style pagination
+ * convenience layer:
+ * `{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.
+ * Object-style pagination is translated to Tabulator options before table
+ * creation and takes precedence over equivalent `paginationMode`,
+ * `paginationSize`, and `paginationSizeSelector` values. Remote pagination is
+ * only forwarded to Tabulator; AMB does not add backend/server-side behavior.
  *
  * @param {object} options - AMB table and Tabulator options.
  * @param {string|HTMLElement} options.selector - CSS selector or element passed to Tabulator.
  * @param {object[]} [options.data] - Initial row data.
  * @param {object[]} [options.columns] - Tabulator columns plus AMB validation metadata.
+ * @param {boolean|object} [options.pagination] - Tabulator boolean pagination or AMB object-style pagination convenience.
+ * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using AMB object-style pagination.
+ * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode forwarded to Tabulator as `paginationMode`.
+ * @param {number} [options.pagination.pageSize=10] - Page size forwarded to Tabulator as `paginationSize`.
+ * @param {number[]} [options.pagination.pageSizeSelector] - Page size options forwarded to Tabulator as `paginationSizeSelector`.
  * @param {object} [options.deleteColumn] - Optional row action column.
  * @param {boolean} [options.deleteColumn.enabled=false] - Add the delete/rollback/remove column.
  * @param {object} [options.deleteColumn.actions] - Action visibility flags.
@@ -283,7 +335,7 @@ export function createTable(options = {}) {
     const extracted = extractColumnValidators(columns, normalizedMessages);
     const dataColumns = wrapEditableForDeletedRows(extracted.columns, () => crud);
     const alignedDataColumns = applyDefaultColumnAlignments(dataColumns);
-    const normalizedOptions = { ...tabulatorOptions };
+    const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     let crud = null;
     let unsubscribeDeleteColumn = null;
     let unsubscribeLookupDescriptions = null;
