@@ -1,9 +1,11 @@
+import { renderDemoBrand } from './demo-brand.js';
+
 export default function gettingStartedJavaScript(app) {
     app.innerHTML = `
         <main class="demo-page demo-guide-page js-guide-page site-container site-container--wide">
             <header class="demo-guide-hero">
                 <nav class="demo-topbar" aria-label="AMB Grid guide navigation">
-                    <a class="demo-brand" href="#top" aria-label="AMB Grid">AMB Grid</a>
+                    ${renderDemoBrand()}
                     <div class="language-switch is-it" data-language-switch aria-label="Language">
                         <button
                             type="button"

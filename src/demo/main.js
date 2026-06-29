@@ -14,6 +14,7 @@ import rowStates from './row-states.js';
 import multipleTables from './multiple-tables.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
+import { renderDemoBrand } from './demo-brand.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -347,11 +348,10 @@ const renderShell = selectedId => {
         <main class="demo-page site-container">
             <header class="demo-hero">
                 <nav class="demo-topbar" aria-label="AMB Grid demo navigation">
-                    <a class="demo-brand" href="#top" aria-label="AMB Grid">AMB Grid</a>
+                    ${renderDemoBrand()}
                     ${renderLanguageSwitch()}
                 </nav>
                 <div class="demo-hero__content" id="top">
-                    <p class="demo-kicker" data-i18n="hero.badge">AMB Grid</p>
                     <h1 data-i18n="hero.title">CRUD grid framework-agnostic per applicazioni business</h1>
                     <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
                     <div class="demo-hero__actions">

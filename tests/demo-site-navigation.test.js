@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
@@ -11,6 +11,24 @@ describe('demo site navigation', () => {
         expect(main).toContain("window.location.hash === '#getting-started-javascript'");
         expect(main).toContain("'frameworks.javascript.status': 'Apri guida JavaScript'");
         expect(main).toContain("'frameworks.javascript.status': 'Open JavaScript guide'");
+    });
+
+    test('uses the shared logo brand on the home and JavaScript guide pages', () => {
+        const main = read('src/demo/main.js');
+        const guide = read('src/demo/getting-started-javascript.js');
+        const brand = read('src/demo/demo-brand.js');
+        const css = read('src/demo/demo.css');
+        const logo = statSync(new URL('../src/demo/amb-grid-logo.png', import.meta.url));
+
+        expect(main).toContain("import { renderDemoBrand } from './demo-brand.js';");
+        expect(guide).toContain("import { renderDemoBrand } from './demo-brand.js';");
+        expect(main).toContain('${renderDemoBrand()}');
+        expect(guide).toContain('${renderDemoBrand()}');
+        expect(brand).toContain("new URL('./amb-grid-logo.png', import.meta.url).href");
+        expect(brand).toContain('class="demo-brand__logo"');
+        expect(brand).toContain('alt="AMB Grid"');
+        expect(css).toContain('.demo-brand__logo');
+        expect(logo.size).toBeGreaterThan(0);
     });
 
     test('renders the JavaScript demo before the getting started steps', () => {
@@ -75,7 +93,7 @@ describe('demo site navigation', () => {
         const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');
 
-        expect(css).toContain('width: min(100% - 32px, 1680px);');
+        expect(css).toContain('width: min(100% - 12px, 1824px);');
         expect(main).toContain("'cycle.keyboardTitle': 'Editing orientato alla tastiera'");
         expect(main).toContain("'cycle.keyboardText': 'Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.'");
         expect(main).toContain("'cycle.keyboardTitle': 'Work without leaving the keyboard'");
