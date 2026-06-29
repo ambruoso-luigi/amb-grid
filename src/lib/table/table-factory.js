@@ -10,6 +10,9 @@ import { createDeleteColumn } from './delete-column.js';
 import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
 import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-binders.js';
+import { escapeHtmlText } from '../formatters.js';
+import { getLookupOptionValue } from '../editors/shared.js';
+import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
 
 const NUMERIC_EDITOR_TYPES = new Set(['integer', 'decimal']);
 const NUMERIC_FORMATTER_TYPES = new Set([
@@ -102,6 +105,205 @@ export const applyDefaultColumnAlignments = (columns = []) => {
 
         return nextColumn;
     });
+};
+
+const isLookupColumn = column => {
+    return column
+        && column.editor
+        && column.editor._ambEditorType === 'lookup';
+};
+
+const getLookupConfig = column => {
+    return isLookupColumn(column) && column.editor._ambLookupConfig
+        ? column.editor._ambLookupConfig
+        : null;
+};
+
+const createLookupCellMarkerFormatter = (field, originalFormatter) => {
+    return (cell, formatterParams, onRendered) => {
+        const cellElement = cell && cell.getElement && cell.getElement();
+
+        if (cellElement) {
+            cellElement.dataset.lookupField = field || cell.getField?.();
+        }
+
+        if (typeof originalFormatter === 'function') {
+            return originalFormatter(cell, formatterParams, onRendered);
+        }
+
+        const value = cell && cell.getValue ? cell.getValue() : '';
+
+        return escapeHtmlText(value);
+    };
+};
+
+export const prepareLookupColumns = (columns = []) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) {
+            nextColumn.columns = prepareLookupColumns(nextColumn.columns);
+        }
+
+        if (
+            isLookupColumn(nextColumn)
+            && (
+                nextColumn.formatter === undefined
+                || typeof nextColumn.formatter === 'function'
+            )
+        ) {
+            nextColumn.formatter = createLookupCellMarkerFormatter(
+                nextColumn.field,
+                typeof nextColumn.formatter === 'function'
+                    ? nextColumn.formatter
+                    : null
+            );
+        }
+
+        return nextColumn;
+    });
+};
+
+export const collectLookupColumns = (columns = []) => {
+    const lookupColumns = [];
+
+    (columns || []).forEach(column => {
+        if (!column) return;
+
+        if (column.columns) {
+            lookupColumns.push(...collectLookupColumns(column.columns));
+            return;
+        }
+
+        const config = getLookupConfig(column);
+
+        if (!config || !column.field) return;
+
+        lookupColumns.push({
+            field: column.field,
+            ...config
+        });
+    });
+
+    return lookupColumns;
+};
+
+const getRowData = row => {
+    if (!row) return null;
+
+    if (typeof row.getData === 'function') {
+        return row.getData();
+    }
+
+    return row;
+};
+
+const hasInitialLookupMetadata = (rowData, field, value) => {
+    const metadata = getLookupMetadata(rowData, field);
+
+    return Boolean(metadata && metadata.initial && metadata.initial.value === value);
+};
+
+export const initializeLookupMetadataForRows = async (rows = [], lookupColumns = []) => {
+    const lookupRequests = new Map();
+
+    (rows || []).forEach(row => {
+        const rowData = getRowData(row);
+
+        if (!rowData) return;
+
+        lookupColumns.forEach(column => {
+            const rawValue = rowData[column.field];
+            const value = column.normalizeValue
+                ? column.normalizeValue(rawValue)
+                : String(rawValue ?? '');
+
+            if (!value) return;
+            if (hasInitialLookupMetadata(rowData, column.field, value)) return;
+
+            const requestKey = `${column.field}\u0000${value}`;
+            const request = lookupRequests.get(requestKey) || {
+                column,
+                value,
+                rowData,
+                targets: []
+            };
+
+            request.targets.push(rowData);
+            lookupRequests.set(requestKey, request);
+        });
+    });
+
+    await Promise.all([...lookupRequests.values()].map(async request => {
+        const {
+            column,
+            value,
+            rowData,
+            targets
+        } = request;
+        let description = '';
+
+        try {
+            const items = column.lookupInstance
+                && typeof column.lookupInstance.load === 'function'
+                ? await column.lookupInstance.load({
+                    query: value,
+                    rowData,
+                    field: column.field,
+                    context: column.context || {}
+                })
+                : [];
+            const item = (items || []).find(candidate => {
+                const candidateValue = column.normalizeValue
+                    ? column.normalizeValue(getLookupOptionValue(candidate, column.valueField))
+                    : getLookupOptionValue(candidate, column.valueField);
+
+                return candidateValue === value;
+            });
+
+            description = item && item[column.labelField] !== undefined
+                ? item[column.labelField]
+                : '';
+        } catch (error) {
+            console.error('Lookup metadata initialization failed', error);
+        }
+
+        targets.forEach(targetRowData => {
+            setLookupMetadata(targetRowData, column.field, value, description, {
+                setInitial: true
+            });
+        });
+    }));
+};
+
+export const bindLookupMetadataInitialization = (table, lookupColumns = []) => {
+    if (
+        !table
+        || !lookupColumns.length
+        || typeof table.getRows !== 'function'
+    ) {
+        return () => {};
+    }
+
+    const initialize = () => {
+        initializeLookupMetadataForRows(table.getRows(), lookupColumns)
+            .catch(error => {
+                console.error('Lookup metadata initialization failed', error);
+            });
+    };
+    const eventNames = ['tableBuilt', 'dataLoaded'];
+
+    initialize();
+
+    if (typeof table.on === 'function') {
+        eventNames.forEach(eventName => table.on(eventName, initialize));
+    }
+
+    return () => {
+        if (typeof table.off !== 'function') return;
+
+        eventNames.forEach(eventName => table.off(eventName, initialize));
+    };
 };
 
 const configureLookupEditors = (columns, getCrud) => {
@@ -233,8 +435,13 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * The returned object exposes the raw Tabulator instance as `table` and a
  * CrudHelper instance as `crud`. Tabulator provides the table engine; AMB Grid
  * provides the CRUD application layer, column validation, rollback handling,
- * lookup behavior, save payloads, optional row action and selection columns,
- * hover messages, large text previews, search helpers, and lifecycle cleanup.
+ * lookup behavior, initial lookup description metadata for loaded rows, save
+ * payloads, optional row action and selection columns, hover messages, large
+ * text previews, search helpers, and lifecycle cleanup. Lookup columns created
+ * with `AMB.editors.lookup(...)` are marked on rendered cells and their
+ * prefilled values are resolved asynchronously into internal metadata after
+ * table build and data reloads, so hover descriptions can work before a cell is
+ * edited.
  *
  * Column validators can be provided with `validator`, `required`, or a
  * structured `validation` object. Most validators do not imply required:
@@ -333,11 +540,15 @@ export function createTable(options = {}) {
         ...messages
     };
     const extracted = extractColumnValidators(columns, normalizedMessages);
-    const dataColumns = wrapEditableForDeletedRows(extracted.columns, () => crud);
+    const dataColumns = prepareLookupColumns(
+        wrapEditableForDeletedRows(extracted.columns, () => crud)
+    );
     const alignedDataColumns = applyDefaultColumnAlignments(dataColumns);
+    const lookupColumns = collectLookupColumns(alignedDataColumns);
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     let crud = null;
     let unsubscribeDeleteColumn = null;
+    let unsubscribeLookupMetadata = null;
     let unsubscribeLookupDescriptions = null;
     let unsubscribeLargeText = null;
     let searchController = null;
@@ -369,6 +580,7 @@ export function createTable(options = {}) {
     const floatingMessage = new FloatingMessage();
     const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
     unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage);
+    unsubscribeLookupMetadata = bindLookupMetadataInitialization(table, lookupColumns);
     unsubscribeLargeText = createLargeTextBinder(table, floatingMessage);
     toolbarController = createToolbar({
         selector,
@@ -506,6 +718,11 @@ export function createTable(options = {}) {
             if (unsubscribeLookupDescriptions) {
                 unsubscribeLookupDescriptions();
                 unsubscribeLookupDescriptions = null;
+            }
+
+            if (unsubscribeLookupMetadata) {
+                unsubscribeLookupMetadata();
+                unsubscribeLookupMetadata = null;
             }
 
             if (unsubscribeLargeText) {

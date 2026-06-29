@@ -10,6 +10,173 @@ import {
 } from './autocomplete-editor-utils.js';
 import { getInitialValue } from './shared.js';
 
+const VIEWPORT_MARGIN = 8;
+const DEFAULT_DROPDOWN_Z_INDEX = 10050;
+let activeFloatingAutocompleteCleanup = null;
+
+const getViewportHeight = () => {
+    return globalThis.window && Number.isFinite(globalThis.window.innerHeight)
+        ? globalThis.window.innerHeight
+        : 0;
+};
+
+const getViewportWidth = () => {
+    return globalThis.window && Number.isFinite(globalThis.window.innerWidth)
+        ? globalThis.window.innerWidth
+        : 0;
+};
+
+const getInputRect = input => {
+    return input && typeof input.getBoundingClientRect === 'function'
+        ? input.getBoundingClientRect()
+        : {
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: 0,
+            height: 0
+        };
+};
+
+const createFloatingAutocomplete = ({
+    input,
+    awesomplete,
+    options,
+    onRequestClose
+}) => {
+    const dropdown = awesomplete && awesomplete.ul;
+
+    if (!dropdown || !document.body) {
+        return {
+            contains: target => Boolean(
+                awesomplete
+                && awesomplete.container
+                && awesomplete.container.contains(target)
+            ),
+            reposition() {},
+            cleanup() {}
+        };
+    }
+
+    if (activeFloatingAutocompleteCleanup) {
+        activeFloatingAutocompleteCleanup();
+        activeFloatingAutocompleteCleanup = null;
+    }
+
+    const originalParent = dropdown.parentNode;
+    const nextSibling = dropdown.nextSibling;
+    const originalClassName = dropdown.className;
+    const configuredWidth = Number(options.dropdownWidth);
+    const minDropdownWidth = Number.isFinite(configuredWidth) && configuredWidth > 0
+        ? configuredWidth
+        : 0;
+
+    dropdown.className = [
+        originalClassName,
+        'amb-autocomplete-dropdown'
+    ].filter(Boolean).join(' ');
+    dropdown.style.position = 'fixed';
+    dropdown.style.zIndex = String(
+        Number.isFinite(Number(options.dropdownZIndex))
+            ? Number(options.dropdownZIndex)
+            : DEFAULT_DROPDOWN_Z_INDEX
+    );
+    document.body.appendChild(dropdown);
+
+    const contains = target => {
+        return target === input
+            || dropdown.contains(target)
+            || Boolean(
+                awesomplete.container
+                && awesomplete.container.contains(target)
+            );
+    };
+
+    const reposition = () => {
+        const rect = getInputRect(input);
+        const viewportHeight = getViewportHeight();
+        const viewportWidth = getViewportWidth();
+        const dropdownHeight = dropdown.offsetHeight || dropdown.scrollHeight || 0;
+        const desiredWidth = Math.max(rect.width || 0, minDropdownWidth);
+        const maxWidth = viewportWidth
+            ? Math.max(rect.width || 0, viewportWidth - (VIEWPORT_MARGIN * 2))
+            : desiredWidth;
+        const width = Math.min(desiredWidth, maxWidth);
+        const availableBelow = viewportHeight
+            ? viewportHeight - rect.bottom - VIEWPORT_MARGIN
+            : Number.POSITIVE_INFINITY;
+        const availableAbove = viewportHeight
+            ? rect.top - VIEWPORT_MARGIN
+            : 0;
+        const openAbove = dropdownHeight > availableBelow
+            && availableAbove > availableBelow;
+        const left = viewportWidth
+            ? Math.min(
+                Math.max(rect.left, VIEWPORT_MARGIN),
+                Math.max(VIEWPORT_MARGIN, viewportWidth - width - VIEWPORT_MARGIN)
+            )
+            : rect.left;
+        const top = openAbove
+            ? Math.max(VIEWPORT_MARGIN, rect.top - dropdownHeight)
+            : rect.bottom;
+
+        dropdown.dataset.ambPlacement = openAbove ? 'top' : 'bottom';
+        dropdown.style.left = `${left}px`;
+        dropdown.style.top = `${top}px`;
+        dropdown.style.minWidth = `${Math.max(rect.width || 0, 0)}px`;
+        dropdown.style.width = `${width}px`;
+    };
+
+    const repositionIfOpen = () => {
+        if (!awesomplete.opened) return;
+
+        reposition();
+    };
+
+    const closeForViewportChange = () => {
+        if (typeof onRequestClose === 'function') {
+            onRequestClose();
+        }
+    };
+
+    input.addEventListener('awesomplete-open', reposition);
+    input.addEventListener('input', repositionIfOpen);
+    globalThis.window?.addEventListener('resize', closeForViewportChange);
+    globalThis.window?.addEventListener('scroll', repositionIfOpen, true);
+    document.addEventListener('scroll', repositionIfOpen, true);
+
+    const cleanup = () => {
+        input.removeEventListener('awesomplete-open', reposition);
+        input.removeEventListener('input', repositionIfOpen);
+        globalThis.window?.removeEventListener('resize', closeForViewportChange);
+        globalThis.window?.removeEventListener('scroll', repositionIfOpen, true);
+        document.removeEventListener('scroll', repositionIfOpen, true);
+        dropdown.className = originalClassName;
+        dropdown.removeAttribute('style');
+        delete dropdown.dataset.ambPlacement;
+
+        if (originalParent && dropdown.parentNode === document.body) {
+            originalParent.insertBefore(dropdown, nextSibling);
+        } else if (dropdown.parentNode) {
+            dropdown.parentNode.removeChild(dropdown);
+        }
+
+        if (activeFloatingAutocompleteCleanup === cleanup) {
+            activeFloatingAutocompleteCleanup = null;
+        }
+    };
+
+    activeFloatingAutocompleteCleanup = cleanup;
+    repositionIfOpen();
+
+    return {
+        contains,
+        reposition,
+        cleanup
+    };
+};
+
 /**
  * Native text editor with suggestions from a simple string list.
  *
@@ -17,6 +184,9 @@ import { getInitialValue } from './shared.js';
  * AMB Grid owns the text value, commit rules, validation, CRUD state, and
  * lifecycle cleanup. Suggestions have no separate hidden associated data, and
  * this editor does not perform remote lookup or asynchronous validation.
+ * The suggestion list is rendered as a floating overlay under `document.body`
+ * and positioned from the active input, so it is not clipped by the Tabulator
+ * scroll area and does not change grid layout.
  *
  * @param {Array<string>} values - Suggested text values.
  * @param {object} [options] - Autocomplete options.
@@ -25,6 +195,7 @@ import { getInitialValue } from './shared.js';
  * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected suggestion.
  * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit.
  * @param {number} [options.maxOptions=10] - Maximum matching suggestions shown through Awesomplete `maxItems`.
+ * @param {number} [options.dropdownWidth=420] - Preferred floating suggestion width in pixels. The dropdown is always at least as wide as the input.
  * @param {string} [options.placeholder] - Native input placeholder.
  * @returns {Function} Tabulator editor.
  */
@@ -35,6 +206,7 @@ export function autocomplete(values, options = {}) {
     return (cell, onRendered, success, cancel) => {
         const input = document.createElement('input');
         let awesomplete = null;
+        let floatingAutocomplete = null;
         let closed = false;
         let cellElement = null;
         let highlightedValue = '';
@@ -54,6 +226,11 @@ export function autocomplete(values, options = {}) {
             input.removeEventListener('input', handleInput);
             input.removeEventListener('awesomplete-highlight', handleHighlight);
             input.removeEventListener('awesomplete-selectcomplete', handleSelectComplete);
+
+            if (floatingAutocomplete) {
+                floatingAutocomplete.cleanup();
+                floatingAutocomplete = null;
+            }
 
             if (cellElement) {
                 cellElement.classList.remove('amb-autocomplete-cell--editing');
@@ -170,6 +347,7 @@ export function autocomplete(values, options = {}) {
 
             if (
                 event.target === input
+                || (floatingAutocomplete && floatingAutocomplete.contains(event.target))
                 || (editorContainer && editorContainer.contains(event.target))
             ) {
                 return;
@@ -197,6 +375,12 @@ export function autocomplete(values, options = {}) {
             commit(selectedValue);
         };
 
+        const closeFloatingOnly = () => {
+            if (awesomplete && typeof awesomplete.close === 'function') {
+                awesomplete.close({ reason: 'viewport' });
+            }
+        };
+
         input.addEventListener('input', handleInput);
         input.addEventListener('awesomplete-highlight', handleHighlight);
         input.addEventListener('awesomplete-selectcomplete', handleSelectComplete);
@@ -206,6 +390,12 @@ export function autocomplete(values, options = {}) {
                 input,
                 getAwesompleteOptions(suggestionValues, normalizedOptions)
             );
+            floatingAutocomplete = createFloatingAutocomplete({
+                input,
+                awesomplete,
+                options: normalizedOptions,
+                onRequestClose: closeFloatingOnly
+            });
             input.addEventListener('keydown', handleKeydown, true);
             input.addEventListener('blur', handleBlur);
             document.addEventListener('mousedown', handleDocumentMouseDown, true);

@@ -61,6 +61,16 @@ export function lookup(lookupInstance, options = {}) {
         const labelField = lookupInstance && lookupInstance.labelField
             ? lookupInstance.labelField
             : normalizedOptions.labelField || 'label';
+        const normalizeValue = rawValue => {
+            const stringValue = rawValue === null || rawValue === undefined
+                ? ''
+                : String(rawValue);
+            const value = normalizedOptions.trim
+                ? stringValue.trim()
+                : stringValue;
+
+            return normalizedOptions.uppercase ? value.toUpperCase() : value;
+        };
 
         const editor = (cell, onRendered, success, cancel) => {
             const container = document.createElement('div');
@@ -91,16 +101,6 @@ export function lookup(lookupInstance, options = {}) {
             container.appendChild(input);
             container.appendChild(button);
 
-            const normalizeValue = rawValue => {
-                const stringValue = rawValue === null || rawValue === undefined
-                    ? ''
-                    : String(rawValue);
-                const value = normalizedOptions.trim
-                    ? stringValue.trim()
-                    : stringValue;
-
-                return normalizedOptions.uppercase ? value.toUpperCase() : value;
-            };
             const normalizedInitialValue = normalizeValue(initialValue);
             const getValue = () => normalizeValue(input.value);
 
@@ -614,6 +614,13 @@ export function lookup(lookupInstance, options = {}) {
         };
 
         editor._ambEditorType = 'lookup';
+        editor._ambLookupConfig = {
+            lookupInstance,
+            valueField,
+            labelField,
+            context: normalizedOptions.context || {},
+            normalizeValue
+        };
         editor._ambSetLookupErrorHandlers = handlers => {
             normalizedOptions.markInvalid = handlers.markInvalid;
             normalizedOptions.clearInvalid = handlers.clearInvalid;

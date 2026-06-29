@@ -24,12 +24,28 @@ vi.mock('awesomplete', () => ({
                 label: value,
                 value
             }));
-            this.container = {
-                contains: target => target === input || target?.insideAutocomplete === true
-            };
+            this.container = new ElementMock('div');
+            this.ul = new ElementMock('ul');
+            this.ul.offsetHeight = 120;
+            this.ul.scrollHeight = 120;
+            this.ul.setAttribute('hidden', '');
+            this.container.append(input, this.ul);
             this.destroy = vi.fn();
             this.evaluate = vi.fn(() => {
                 this.isOpened = this.suggestions.length > 0;
+                this.ul.children = this.suggestions.map(suggestion => {
+                    const item = new ElementMock('li');
+
+                    item.textContent = suggestion.value;
+                    item.parentNode = this.ul;
+
+                    return item;
+                });
+
+                if (this.isOpened) {
+                    this.ul.removeAttribute('hidden');
+                    this.input.dispatch('awesomplete-open');
+                }
             });
             awesompleteMock.instances.push(this);
         }
@@ -58,6 +74,12 @@ vi.mock('awesomplete', () => ({
                 ? this.index - 1
                 : this.suggestions.length - 1;
             this.highlight();
+        }
+
+        close() {
+            this.isOpened = false;
+            this.ul.setAttribute('hidden', '');
+            this.input.dispatch('awesomplete-close');
         }
 
         highlight() {
@@ -108,15 +130,113 @@ class EventTargetMock {
     }
 }
 
-class InputMock extends EventTargetMock {
-    constructor() {
+class ElementMock extends EventTargetMock {
+    constructor(tagName = 'div') {
         super();
+        this.tagName = tagName.toUpperCase();
+        this.nodeName = this.tagName;
+        this.attributes = {};
+        this.children = [];
         this.className = '';
+        this.dataset = {};
+        this.parentNode = null;
         this.placeholder = '';
+        this.style = {};
+        this.textContent = '';
         this.type = '';
         this.value = '';
         this.focus = vi.fn();
+        this.offsetHeight = 0;
+        this.scrollHeight = 0;
         this.setSelectionRange = vi.fn();
+    }
+
+    append(...children) {
+        children.forEach(child => this.appendChild(child));
+    }
+
+    appendChild(child) {
+        if (child.parentNode) {
+            child.parentNode.removeChild(child);
+        }
+
+        child.parentNode = this;
+        this.children.push(child);
+        return child;
+    }
+
+    insertBefore(child, nextSibling) {
+        if (child.parentNode) {
+            child.parentNode.removeChild(child);
+        }
+
+        child.parentNode = this;
+        const index = nextSibling ? this.children.indexOf(nextSibling) : -1;
+
+        if (index === -1) {
+            this.children.push(child);
+        } else {
+            this.children.splice(index, 0, child);
+        }
+
+        return child;
+    }
+
+    removeChild(child) {
+        this.children = this.children.filter(current => current !== child);
+        child.parentNode = null;
+        return child;
+    }
+
+    contains(target) {
+        if (target === this) return true;
+
+        return this.children.some(child => child.contains?.(target));
+    }
+
+    setAttribute(name, value) {
+        this.attributes[name] = String(value);
+
+        if (name === 'hidden') {
+            this.hidden = true;
+        }
+    }
+
+    removeAttribute(name) {
+        delete this.attributes[name];
+
+        if (name === 'hidden') {
+            this.hidden = false;
+        }
+
+        if (name === 'style') {
+            this.style = {};
+        }
+    }
+
+    hasAttribute(name) {
+        return Object.prototype.hasOwnProperty.call(this.attributes, name);
+    }
+
+    getAttribute(name) {
+        return this.attributes[name] ?? null;
+    }
+
+    getBoundingClientRect() {
+        return this.rect || {
+            top: 20,
+            left: 30,
+            right: 150,
+            bottom: 50,
+            width: 120,
+            height: 30
+        };
+    }
+}
+
+class InputMock extends ElementMock {
+    constructor() {
+        super('input');
     }
 }
 
@@ -133,13 +253,18 @@ const createClassList = () => {
 const createEditorHarness = (
     options = {},
     initialValue = 'Finance',
-    values = ['Finance', 'Human Resources']
+    values = ['Finance', 'Human Resources'],
+    harnessOptions = {}
 ) => {
     const originalDocument = globalThis.document;
+    const originalWindow = globalThis.window;
     const documentMock = new EventTargetMock();
+    const windowMock = new EventTargetMock();
+    const body = new ElementMock('body');
     const cellElement = {
         classList: createClassList(),
-        dataset: {}
+        dataset: {},
+        children: []
     };
     const cell = {
         getElement: () => cellElement,
@@ -149,8 +274,12 @@ const createEditorHarness = (
     const cancel = vi.fn();
     let render = null;
 
+    documentMock.body = body;
     documentMock.createElement = vi.fn(() => new InputMock());
+    windowMock.innerHeight = harnessOptions.innerHeight ?? 720;
+    windowMock.innerWidth = harnessOptions.innerWidth ?? 1024;
     globalThis.document = documentMock;
+    globalThis.window = windowMock;
     awesompleteMock.instances.length = 0;
 
     const input = autocomplete(values, options)(
@@ -168,11 +297,13 @@ const createEditorHarness = (
         cancel,
         cell,
         cellElement,
+        body,
         documentMock,
         input,
         awesomplete: awesompleteMock.instances[0],
         restore: () => {
             globalThis.document = originalDocument;
+            globalThis.window = originalWindow;
         },
         success
     };
@@ -324,7 +455,7 @@ describe('autocomplete editor lifecycle', () => {
         try {
             harness.input.value = 'Fin';
             harness.documentMock.dispatch('mousedown', {
-                target: { insideAutocomplete: true }
+                target: harness.awesomplete.ul.children[0]
             });
 
             expect(harness.success).not.toHaveBeenCalled();
@@ -533,6 +664,207 @@ describe('autocomplete editor lifecycle', () => {
             )).toBe(false);
         } finally {
             harness.restore();
+        }
+    });
+
+    test('renders the suggestions dropdown outside the cell under document body', () => {
+        const harness = createEditorHarness();
+
+        try {
+            expect(harness.body.children).toContain(harness.awesomplete.ul);
+            expect(harness.awesomplete.ul.parentNode).toBe(harness.body);
+            expect(harness.awesomplete.ul.className).toContain('amb-autocomplete-dropdown');
+            expect(harness.cellElement.children).not.toContain(harness.awesomplete.ul);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('positions the floating dropdown below the input when there is space', () => {
+        const harness = createEditorHarness({}, '', ['Milano'], {
+            innerHeight: 800
+        });
+
+        try {
+            harness.input.rect = {
+                top: 120,
+                left: 40,
+                right: 180,
+                bottom: 150,
+                width: 140,
+                height: 30
+            };
+            harness.awesomplete.evaluate();
+
+            expect(harness.awesomplete.ul.dataset.ambPlacement).toBe('bottom');
+            expect(harness.awesomplete.ul.style.top).toBe('150px');
+            expect(harness.awesomplete.ul.style.left).toBe('40px');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('positions the floating dropdown above the input when there is not enough space below', () => {
+        const harness = createEditorHarness({}, '', ['Milano'], {
+            innerHeight: 240
+        });
+
+        try {
+            harness.input.rect = {
+                top: 180,
+                left: 40,
+                right: 180,
+                bottom: 210,
+                width: 140,
+                height: 30
+            };
+            harness.awesomplete.ul.offsetHeight = 120;
+            harness.awesomplete.evaluate();
+
+            expect(harness.awesomplete.ul.dataset.ambPlacement).toBe('top');
+            expect(harness.awesomplete.ul.style.top).toBe('60px');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('keeps the floating dropdown at least as wide as the input', () => {
+        const harness = createEditorHarness({ dropdownWidth: 80 });
+
+        try {
+            harness.input.rect = {
+                top: 20,
+                left: 20,
+                right: 240,
+                bottom: 50,
+                width: 220,
+                height: 30
+            };
+            harness.awesomplete.evaluate();
+
+            expect(Number.parseFloat(harness.awesomplete.ul.style.width))
+                .toBeGreaterThanOrEqual(220);
+            expect(harness.awesomplete.ul.style.minWidth).toBe('220px');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Escape removes the floating dropdown from document body', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            expect(harness.body.children).toContain(harness.awesomplete.ul);
+
+            harness.input.dispatch('keydown', { key: 'Escape' });
+
+            expect(harness.body.children).not.toContain(harness.awesomplete.ul);
+            expect(harness.cancel).toHaveBeenCalledOnce();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('click selection removes the floating dropdown from document body', () => {
+        const harness = createEditorHarness();
+
+        try {
+            harness.input.dispatch('awesomplete-selectcomplete', {
+                text: { value: 'Human Resources' }
+            });
+
+            expect(harness.body.children).not.toContain(harness.awesomplete.ul);
+            expect(harness.success).toHaveBeenCalledWith('Human Resources');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Enter and Tab commits remove the floating dropdown from document body', () => {
+        const enterHarness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            enterHarness.input.value = 'Operations';
+            enterHarness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(enterHarness.body.children).not.toContain(enterHarness.awesomplete.ul);
+        } finally {
+            enterHarness.restore();
+        }
+
+        const tabHarness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            tabHarness.input.value = 'Operations';
+            tabHarness.input.dispatch('keydown', { key: 'Tab' });
+
+            expect(tabHarness.body.children).not.toContain(tabHarness.awesomplete.ul);
+        } finally {
+            tabHarness.restore();
+        }
+    });
+
+    test('blur commit removes the floating dropdown from document body', () => {
+        const harness = createEditorHarness({ allowCustomValue: true });
+
+        try {
+            harness.input.value = 'Operations';
+            harness.input.dispatch('blur');
+
+            expect(harness.body.children).not.toContain(harness.awesomplete.ul);
+            expect(harness.success).toHaveBeenCalledWith('Operations');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('scroll repositions and resize closes the floating dropdown cleanly', () => {
+        const harness = createEditorHarness();
+
+        try {
+            harness.input.rect = {
+                top: 80,
+                left: 60,
+                right: 200,
+                bottom: 110,
+                width: 140,
+                height: 30
+            };
+            harness.documentMock.dispatch('scroll', { target: harness.documentMock });
+
+            expect(harness.awesomplete.ul.style.top).toBe('110px');
+
+            globalThis.window.dispatch('resize');
+
+            expect(harness.awesomplete.isOpened).toBe(false);
+            expect(harness.awesomplete.ul.hidden).toBe(true);
+            expect(harness.body.children).toContain(harness.awesomplete.ul);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('opening another autocomplete editor removes the previous floating dropdown and listeners', () => {
+        const firstHarness = createEditorHarness();
+        const firstDropdown = firstHarness.awesomplete.ul;
+        const firstResizeListeners = globalThis.window.listeners.get('resize') || [];
+
+        try {
+            expect(firstHarness.body.children).toContain(firstDropdown);
+            expect(firstResizeListeners).toHaveLength(1);
+
+            const secondHarness = createEditorHarness();
+
+            try {
+                expect(firstHarness.body.children).not.toContain(firstDropdown);
+                expect(secondHarness.body.children).toContain(secondHarness.awesomplete.ul);
+                expect((globalThis.window.listeners.get('resize') || []))
+                    .toHaveLength(1);
+            } finally {
+                secondHarness.restore();
+            }
+        } finally {
+            firstHarness.restore();
         }
     });
 
