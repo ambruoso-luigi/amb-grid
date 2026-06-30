@@ -40,8 +40,8 @@ const translations = {
         'language.switchToIt': 'Cambia lingua in italiano',
         'language.switchToEn': 'Cambia lingua in inglese',
         'hero.badge': 'AMB Grid',
-        'hero.title': 'CRUD grid framework-agnostic per applicazioni business',
-        'hero.description': 'AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
+        'hero.title': 'Griglie CRUD per applicazioni business',
+        'hero.description': 'AMB Grid aggiunge a Tabulator uno strato framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
         'hero.primary': 'Apri demo JavaScript',
         'hero.secondary': 'Vedi esempi funzionali',
         'hero.statState': 'Stati riga',
@@ -133,8 +133,8 @@ const translations = {
         'language.switchToIt': 'Switch language to Italian',
         'language.switchToEn': 'Switch language to English',
         'hero.badge': 'AMB Grid',
-        'hero.title': 'Framework-agnostic CRUD grid for business applications',
-        'hero.description': 'AMB Grid adds an application layer to Tabulator for row states, validation, lookups, rollback, saving, and backend-ready payloads.',
+        'hero.title': 'CRUD data grids for business applications',
+        'hero.description': 'AMB Grid adds a framework-agnostic layer to Tabulator for row states, validation, lookups, rollback, saving, and backend-ready payloads.',
         'hero.primary': 'Open JavaScript demo',
         'hero.secondary': 'View feature examples',
         'hero.statState': 'Row states',
@@ -352,8 +352,8 @@ const renderShell = selectedId => {
                     ${renderLanguageSwitch()}
                 </nav>
                 <div class="demo-hero__content" id="top">
-                    <h1 data-i18n="hero.title">CRUD grid framework-agnostic per applicazioni business</h1>
-                    <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato applicativo per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
+                    <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
+                    <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
                     <div class="demo-hero__actions">
                         <a class="demo-button demo-button--primary" href="#getting-started-javascript" data-i18n="hero.primary">Apri demo JavaScript</a>
                         <a class="demo-button" href="#feature-examples" data-i18n="hero.secondary">Vedi esempi funzionali</a>
