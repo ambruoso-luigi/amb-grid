@@ -36,10 +36,10 @@
     --amb-color-info-soft: #f0f5f9;
     --amb-color-focus: #315f8f;
     --amb-focus-ring: 0 0 0 3px rgb(49 95 143 / 18%);
-    --amb-save-bg: #e3f0e6;
-    --amb-save-border: #9fbea7;
-    --amb-save-text: #285c38;
-    --amb-save-hover-bg: #d4e8d9;
+    --amb-save-bg: #e5f0fb;
+    --amb-save-border: #9fb9d4;
+    --amb-save-text: #2c5d86;
+    --amb-save-hover-bg: #d6e7f7;
     --amb-reload-bg: #fff7df;
     --amb-reload-border: #d7bf7d;
     --amb-reload-text: #6f5310;
@@ -269,7 +269,7 @@
 
 .amb-toolbar__button--save:hover:not(:disabled) {
     background: var(--amb-save-hover-bg);
-    border-color: #86aa90;
+    border-color: #86a8c9;
 }
 
 .amb-toolbar__button--danger:not(:disabled) {
