@@ -155,7 +155,7 @@ export default async function fullDemo(app, options = {}) {
             </div>
             ${showScenario ? '<p class="demo-scenario-label" data-i18n="mainDemo.scenario">Scenario: Classic Warehouse Backoffice</p>' : ''}
         </div>` : ''}
-        <div id="inventory-table"></div>
+        <div id="inventory-table" class="amb-demo-inventory-grid"></div>
     `;
 
     const statusLookup = AMB.lookup({
@@ -188,6 +188,11 @@ export default async function fullDemo(app, options = {}) {
         deleteColumn: {
             enabled: true,
             width: 58,
+            icons: {
+                delete: '✕',
+                rollback: '↶',
+                removeNew: '✕'
+            },
             labels: {
                 delete: 'Delete product',
                 rollback: 'Rollback product changes',
@@ -221,7 +226,7 @@ export default async function fullDemo(app, options = {}) {
         layout: 'fitColumns',
         pagination: true,
         paginationMode: 'local',
-        paginationSize: 10,
+        paginationSize: 20,
         paginationSizeSelector: [10, 20, 50],
         columns: [
             {

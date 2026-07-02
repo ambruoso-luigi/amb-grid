@@ -92,7 +92,14 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('maxOptions: 8');
         expect(source).toContain('AMB.editors.lookup(statusLookup');
         expect(source).toContain('fakeApi.searchStatuses(query)');
-        expect(source).toContain('paginationSize: 10');
+        expect(source).toContain('data: products');
+        expect(source).toContain('pagination: true');
+        expect(source).toContain('paginationMode: \'local\'');
+        expect(source).toContain('paginationSize: 20');
+        expect(source).toContain('paginationSizeSelector: [10, 20, 50]');
+        expect(source).not.toContain('products.slice(0, 10)');
+        expect(source).not.toContain('data: visibleProducts');
+        expect(source).not.toContain('addRowPos');
         expect(source).toContain('unique: {');
         expect(source).toContain('minLength: {');
         expect(source).toContain('min: {');
@@ -115,6 +122,17 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('crud.getSavePayload()');
     });
 
+    test('uses the same simple Add row pattern as the base demos', () => {
+        expect(source).toContain('function handleAdd()');
+        expect(source).toContain('demo.feedback.clear()');
+        expect(source).toContain('crud.addRow({');
+        expect(source).not.toContain('async function handleAdd()');
+        expect(source).not.toContain('await crud.addRow');
+        expect(source).not.toContain('setPage(');
+        expect(source).not.toContain('scrollToRow');
+        expect(source).not.toContain('setTimeout');
+    });
+
     test('keeps the Notes large text editor open when its backdrop is clicked', () => {
         expect(source).toMatch(
             /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?closeOnBackdropClick: false/
@@ -128,8 +146,14 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('.demo-panel .amb-toolbar {');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);');
         expect(demoCss).toContain('.demo-panel .amb-toolbar__search {');
+        expect(source).toContain('class="amb-demo-inventory-grid"');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-tableholder,');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-placeholder');
+        expect(demoCss).toContain('--amb-demo-row-height: 36px;');
+        expect(demoCss).toContain('--amb-demo-visible-rows: 10;');
+        expect(demoCss).toContain('.demo-panel .amb-demo-inventory-grid .tabulator-tableholder {');
+        expect(demoCss).toContain('max-height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 10));');
+        expect(demoCss).toContain('overflow-y: auto;');
         expect(demoCss).toContain('background: #fff;');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 920px);');
     });

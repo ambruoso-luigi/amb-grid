@@ -57,6 +57,8 @@
     --demo-danger-text: var(--amb-site-danger-text);
     --demo-shadow: var(--amb-site-shadow-md);
     --demo-shadow-soft: var(--amb-site-shadow-sm);
+    --amb-demo-row-height: 36px;
+    --amb-demo-visible-rows: 10;
 }
 
 /* Base layout */
@@ -1334,6 +1336,13 @@ a {
     overflow-x: auto;
 }
 
+.demo-panel .amb-demo-inventory-grid .tabulator-tableholder {
+    background: #fff;
+    max-height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 10));
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
 .demo-panel .tabulator .tabulator-header {
     background: #eef4fb;
     border-bottom: 1px solid #cbd9e8;
@@ -1420,6 +1429,17 @@ a {
     background: linear-gradient(180deg, #ffffff 0%, var(--amb-site-action-danger-soft) 100%);
     border-color: #efb5b5;
     color: var(--amb-site-danger-text);
+    font-size: 0;
+}
+
+.demo-panel .amb-row-action-button--delete::before {
+    background: currentColor;
+    content: "";
+    display: block;
+    height: 17px;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 11v6' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M14 11v6' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M3 6h18' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 11v6' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M14 11v6' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M3 6h18' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+    width: 17px;
 }
 
 .demo-panel .amb-row-action-button--delete:hover {
