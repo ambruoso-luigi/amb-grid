@@ -8,7 +8,8 @@ describe('normalizePaginationOptions', () => {
         });
 
         expect(options).toEqual({
-            pagination: true
+            pagination: true,
+            paginationAddRow: 'table'
         });
     });
 
@@ -32,6 +33,7 @@ describe('normalizePaginationOptions', () => {
         expect(options.pagination).toBe(true);
         expect(options.paginationMode).toBe('local');
         expect(options.paginationSize).toBe(10);
+        expect(options.paginationAddRow).toBe('table');
     });
 
     test('turns object-style disabled pagination into pagination false', () => {
@@ -56,6 +58,7 @@ describe('normalizePaginationOptions', () => {
         expect(options.pagination).toBe(true);
         expect(options.paginationMode).toBe('remote');
         expect(options.paginationSize).toBe(25);
+        expect(options.paginationAddRow).toBe('table');
     });
 
     test('maps pageSizeSelector to paginationSizeSelector', () => {
@@ -95,5 +98,15 @@ describe('normalizePaginationOptions', () => {
         expect(options.height).toBe(400);
         expect(options.pagination).toBe(true);
         expect(options.paginationSize).toBe(25);
+        expect(options.paginationAddRow).toBe('table');
+    });
+
+    test('keeps explicit Tabulator paginationAddRow override', () => {
+        const options = normalizePaginationOptions({
+            pagination: true,
+            paginationAddRow: 'page'
+        });
+
+        expect(options.paginationAddRow).toBe('page');
     });
 });

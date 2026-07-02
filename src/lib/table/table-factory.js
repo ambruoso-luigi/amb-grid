@@ -33,12 +33,23 @@ const isPaginationConfig = pagination => {
         && !Array.isArray(pagination);
 };
 
+const applyPaginationAddRowOption = options => {
+    if (
+        options.pagination
+        && options.paginationAddRow === undefined
+    ) {
+        options.paginationAddRow = 'table';
+    }
+
+    return options;
+};
+
 export const normalizePaginationOptions = (options = {}) => {
     const nextOptions = { ...options };
     const pagination = options.pagination;
 
     if (!isPaginationConfig(pagination)) {
-        return nextOptions;
+        return applyPaginationAddRowOption(nextOptions);
     }
 
     if (pagination.enabled === false) {
@@ -61,7 +72,7 @@ export const normalizePaginationOptions = (options = {}) => {
         nextOptions.paginationSizeSelector = pagination.pageSizeSelector;
     }
 
-    return nextOptions;
+    return applyPaginationAddRowOption(nextOptions);
 };
 
 const getAmbEditorType = column => {
@@ -458,6 +469,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * creation and takes precedence over equivalent `paginationMode`,
  * `paginationSize`, and `paginationSizeSelector` values. Remote pagination is
  * only forwarded to Tabulator; AMB does not add backend/server-side behavior.
+ * When pagination is enabled, AMB sets Tabulator's `paginationAddRow` to
+ * `'table'` unless explicitly provided, so `crud.addRow(...)` appends to the
+ * whole table, opens the page containing the new row, and attempts to focus
+ * the first editable visible cell.
  *
  * @param {object} options - AMB table and Tabulator options.
  * @param {string|HTMLElement} options.selector - CSS selector or element passed to Tabulator.

@@ -385,18 +385,141 @@ export class CrudHelper {
     }
 
     _renumberAfterPhysicalDelete(deleteResult) {
-        const renumber = () => {
+        const afterDelete = () => {
             if (this.options.renumberOnDelete) {
                 this._renumberRows();
             }
+
+            return this._normalizePaginationAfterRowRemoval();
         };
 
         if (deleteResult && typeof deleteResult.then === 'function') {
-            deleteResult.then(renumber);
+            deleteResult.then(afterDelete);
             return;
         }
 
-        globalThis.setTimeout(renumber, 0);
+        afterDelete();
+    }
+
+    _isPaginationEnabled() {
+        return Boolean(
+            this.table
+            && this.table.options
+            && this.table.options.pagination
+            && typeof this.table.getPage === 'function'
+            && typeof this.table.getPageMax === 'function'
+            && typeof this.table.setPage === 'function'
+        );
+    }
+
+    _getLastValidPage() {
+        if (!this._isPaginationEnabled()) return 1;
+
+        const pageMax = Number(this.table.getPageMax());
+
+        return Number.isInteger(pageMax) && pageMax > 0 ? pageMax : 1;
+    }
+
+    _setPage(page) {
+        if (!this._isPaginationEnabled()) return Promise.resolve();
+
+        const currentPage = Number(this.table.getPage());
+        const targetPage = Number(page);
+
+        if (!Number.isInteger(targetPage) || targetPage < 1 || currentPage === targetPage) {
+            return Promise.resolve();
+        }
+
+        const result = this.table.setPage(targetPage);
+
+        return result && typeof result.then === 'function'
+            ? result.catch(() => {})
+            : Promise.resolve();
+    }
+
+    _normalizePaginationAfterRowRemoval() {
+        if (!this._isPaginationEnabled()) return Promise.resolve();
+
+        const currentPage = Number(this.table.getPage());
+        const lastPage = this._getLastValidPage();
+
+        if (!Number.isInteger(currentPage) || currentPage <= lastPage) {
+            return Promise.resolve();
+        }
+
+        return this._setPage(lastPage);
+    }
+
+    _scrollRowIntoView(row) {
+        if (!row) return Promise.resolve();
+
+        const result = typeof row.scrollTo === 'function'
+            ? row.scrollTo('bottom', false)
+            : this.table && typeof this.table.scrollToRow === 'function'
+                ? this.table.scrollToRow(row, 'bottom', false)
+                : null;
+
+        return result && typeof result.then === 'function'
+            ? result.catch(() => {})
+            : Promise.resolve();
+    }
+
+    _isCellEditable(cell) {
+        if (!cell || typeof cell.getField !== 'function') return false;
+
+        const field = cell.getField();
+
+        if (!field) return false;
+
+        const column = typeof cell.getColumn === 'function' ? cell.getColumn() : null;
+
+        if (column && typeof column.isVisible === 'function' && !column.isVisible()) {
+            return false;
+        }
+
+        const definition = column && typeof column.getDefinition === 'function'
+            ? column.getDefinition()
+            : {};
+
+        if (!definition || definition.visible === false || !definition.editor) {
+            return false;
+        }
+
+        if (definition.editable === false) return false;
+
+        if (typeof definition.editable === 'function') {
+            try {
+                return definition.editable(cell) !== false;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    _getFirstEditableCell(row) {
+        if (!row || typeof row.getCells !== 'function') return null;
+
+        return row.getCells().find(cell => this._isCellEditable(cell)) || null;
+    }
+
+    async _revealAndFocusRow(row) {
+        if (!row) return row;
+
+        if (this._isPaginationEnabled()) {
+            await this._setPage(this._getLastValidPage());
+        }
+
+        await this._scrollRowIntoView(row);
+
+        const cell = this._getFirstEditableCell(row);
+
+        if (cell && typeof cell.edit === 'function') {
+            cell.edit();
+        }
+
+        return row;
     }
 
     _restoreRowData(row, originalData) {
@@ -1249,28 +1372,36 @@ export class CrudHelper {
     }
 
     /**
-     * Add a new row and mark it as inserted.
+     * Add a new row, mark it as inserted, reveal it, and focus the first editable cell.
      *
      * @param {object} data - Row data to insert.
-     * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one.
+     * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one after reveal/focus.
      */
     addRow(data) {
         const rowData = this._assignInternalFieldsOnAdd({
             ...data,
             [this.options.stateField]: ROW_STATE.NEW
         });
+        const finalize = row => {
+            this._applyRowState(row, ROW_STATE.NEW);
+            this._revealAndFocusRow(row).catch(error => {
+                console.error('Failed to reveal added row', error);
+            });
+
+            return row;
+        };
 
         const result = this.table.addRow(rowData);
 
         if (result && typeof result.then === 'function') {
-            return result.then(row => {
+            return result.then(async row => {
                 this._applyRowState(row, ROW_STATE.NEW);
+                await this._revealAndFocusRow(row);
                 return row;
             });
         }
 
-        this._applyRowState(result, ROW_STATE.NEW);
-        return result;
+        return finalize(result);
     }
 
     /**
