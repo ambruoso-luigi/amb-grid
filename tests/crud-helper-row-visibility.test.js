@@ -6,12 +6,15 @@ const flushPromises = async () => {
     await Promise.resolve();
 };
 
-const createCellMock = (row, field, definition = {}) => {
-    const column = {
-        getDefinition: () => definition,
-        getField: () => field,
-        isVisible: () => definition.visible !== false
-    };
+const createColumnMock = (definition = {}) => ({
+    getDefinition: () => definition,
+    getField: () => definition.field,
+    isVisible: () => definition.visible !== false
+});
+
+const createCellMock = (row, definition = {}) => {
+    const column = createColumnMock(definition);
+    const field = definition.field;
     const cell = {
         edit: vi.fn(),
         getColumn: () => column,
@@ -31,10 +34,12 @@ const createTableMock = ({
     pageSize = 10,
     currentPage = 1,
     asyncAdd = true,
-    asyncDelete = true
+    asyncDelete = true,
+    rerenderOnSetPage = false
 } = {}) => {
     const rows = [];
     const handlers = new Map();
+    const tableColumns = columns.map(createColumnMock);
     const table = {
         options: pagination
             ? { pagination: true, paginationSize: pageSize }
@@ -47,6 +52,7 @@ const createTableMock = ({
 
             return asyncAdd ? Promise.resolve(row) : row;
         }),
+        getColumns: vi.fn(() => tableColumns),
         getPage: vi.fn(() => currentPage),
         getPageMax: vi.fn(() => Math.max(1, Math.ceil(rows.length / pageSize))),
         getRows: vi.fn(active => active === 'visible' ? table.getVisibleRows() : rows),
@@ -64,6 +70,16 @@ const createTableMock = ({
         scrollToRow: vi.fn(() => Promise.resolve()),
         setPage: vi.fn(page => {
             currentPage = Number(page);
+
+            if (rerenderOnSetPage) {
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize;
+                const replacementRows = rows
+                    .slice(start, end)
+                    .map(row => createRow(row.getData()));
+
+                rows.splice(start, replacementRows.length, ...replacementRows);
+            }
 
             return Promise.resolve();
         })
@@ -98,7 +114,7 @@ const createTableMock = ({
                 return row;
             }
         };
-        cells = columns.map(column => createCellMock(row, column.field, column));
+        cells = columns.map(column => createCellMock(row, column));
 
         return row;
     };
@@ -178,11 +194,74 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         expect(row.getCell('name').edit).toHaveBeenCalledTimes(1);
     });
 
+    test('addRow with pagination and an action column focuses the first editable data cell', async () => {
+        const { table } = createTableMock({
+            rowsData: createRowsData(20),
+            pagination: true,
+            pageSize: 10,
+            columns: [
+                {
+                    title: 'Actions',
+                    field: '_actions',
+                    editor: 'input',
+                    cssClass: 'amb-row-actions'
+                },
+                { title: 'Item code', field: 'itemCode', editor: 'input' },
+                { title: 'Product name', field: 'productName', editor: 'input' }
+            ]
+        });
+        const crud = new CrudHelper(table);
+
+        const row = await crud.addRow({ id: null, itemCode: '', productName: '' });
+
+        expect(table.getVisibleRows()).toContain(row);
+        expect(row.getCell('_actions').edit).not.toHaveBeenCalled();
+        expect(row.getCell('itemCode').edit).toHaveBeenCalledTimes(1);
+        expect(row.getCell('productName').edit).not.toHaveBeenCalled();
+    });
+
+    test('addRow resolves the rendered row again after paginated navigation before focusing', async () => {
+        const { table } = createTableMock({
+            rowsData: createRowsData(20),
+            pagination: true,
+            pageSize: 10,
+            rerenderOnSetPage: true,
+            columns: [
+                {
+                    title: 'Actions',
+                    field: '_actions',
+                    editor: 'input',
+                    cssClass: 'amb-row-actions'
+                },
+                { title: 'Item code', field: 'itemCode', editor: 'input' }
+            ]
+        });
+        const crud = new CrudHelper(table);
+
+        const originalRow = await crud.addRow({ id: null, itemCode: '' });
+        const renderedRow = table.getVisibleRows()[0];
+
+        expect(renderedRow).not.toBe(originalRow);
+        expect(renderedRow.getData()._ambTempId).toBe(originalRow.getData()._ambTempId);
+        expect(originalRow.getCell('itemCode').edit).not.toHaveBeenCalled();
+        expect(renderedRow.getCell('_actions').edit).not.toHaveBeenCalled();
+        expect(renderedRow.getCell('itemCode').edit).toHaveBeenCalledTimes(1);
+    });
+
     test('multiple paginated addRow calls reveal each new row without changing page size', async () => {
         const { table, getCurrentPage } = createTableMock({
             rowsData: createRowsData(20),
             pagination: true,
-            pageSize: 10
+            pageSize: 10,
+            columns: [
+                {
+                    title: 'Actions',
+                    field: '_actions',
+                    editor: 'input',
+                    cssClass: 'amb-row-actions'
+                },
+                { field: 'name', editor: 'input' }
+            ]
         });
         const crud = new CrudHelper(table);
 
@@ -192,6 +271,9 @@ describe('CrudHelper row reveal and pagination normalization', () => {
 
         expect(getCurrentPage()).toBe(3);
         expect(table.getVisibleRows()).toEqual([first, second, third]);
+        expect(first.getCell('_actions').edit).not.toHaveBeenCalled();
+        expect(second.getCell('_actions').edit).not.toHaveBeenCalled();
+        expect(third.getCell('_actions').edit).not.toHaveBeenCalled();
         expect(first.getCell('name').edit).toHaveBeenCalledTimes(1);
         expect(second.getCell('name').edit).toHaveBeenCalledTimes(1);
         expect(third.getCell('name').edit).toHaveBeenCalledTimes(1);

@@ -464,28 +464,94 @@ export class CrudHelper {
             : Promise.resolve();
     }
 
-    _isCellEditable(cell) {
-        if (!cell || typeof cell.getField !== 'function') return false;
+    _getRows(scope) {
+        if (!this.table || typeof this.table.getRows !== 'function') return [];
 
-        const field = cell.getField();
+        const rows = scope === undefined
+            ? this.table.getRows()
+            : this.table.getRows(scope);
+
+        return Array.isArray(rows) ? rows : [];
+    }
+
+    _resolveRowByKey(key) {
+        if (!key) return null;
+
+        const scopes = ['visible', 'active', undefined];
+
+        for (const scope of scopes) {
+            const row = this._getRows(scope).find(candidate => {
+                return this._getRowKey(candidate) === key;
+            });
+
+            if (row) return row;
+        }
+
+        return null;
+    }
+
+    _isActionColumnDefinition(definition = {}) {
+        const actionFields = new Set([
+            '_actions',
+            '_ambActions',
+            'actions',
+            'rowActions',
+            'deleteColumn'
+        ]);
+        const field = definition.field;
+
+        if (actionFields.has(field)) return true;
+
+        const markers = [
+            definition.cssClass,
+            definition.className,
+            definition.headerCssClass,
+            definition.title
+        ]
+            .filter(value => typeof value === 'string')
+            .map(value => value.toLowerCase());
+
+        return markers.some(value => {
+            return value.includes('amb-row-action')
+                || value.includes('row-action')
+                || value.includes('delete-column')
+                || value.includes('remove-new');
+        });
+    }
+
+    _isColumnEditable(column) {
+        if (!column || typeof column.getDefinition !== 'function') return false;
+
+        const definition = column.getDefinition() || {};
+        const field = typeof column.getField === 'function'
+            ? column.getField()
+            : definition.field;
 
         if (!field) return false;
 
-        const column = typeof cell.getColumn === 'function' ? cell.getColumn() : null;
+        if (this._isActionColumnDefinition(definition)) return false;
 
         if (column && typeof column.isVisible === 'function' && !column.isVisible()) {
             return false;
         }
-
-        const definition = column && typeof column.getDefinition === 'function'
-            ? column.getDefinition()
-            : {};
 
         if (!definition || definition.visible === false || !definition.editor) {
             return false;
         }
 
         if (definition.editable === false) return false;
+
+        return true;
+    }
+
+    _isCellEditable(cell) {
+        if (!cell || typeof cell.getField !== 'function') return false;
+
+        const column = typeof cell.getColumn === 'function' ? cell.getColumn() : null;
+
+        if (!this._isColumnEditable(column)) return false;
+
+        const definition = column.getDefinition() || {};
 
         if (typeof definition.editable === 'function') {
             try {
@@ -499,7 +565,22 @@ export class CrudHelper {
     }
 
     _getFirstEditableCell(row) {
-        if (!row || typeof row.getCells !== 'function') return null;
+        if (!row || typeof row.getCell !== 'function') return null;
+
+        const columns = this.table && typeof this.table.getColumns === 'function'
+            ? this.table.getColumns()
+            : [];
+
+        for (const column of columns) {
+            if (!this._isColumnEditable(column)) continue;
+
+            const field = column.getField();
+            const cell = row.getCell(field);
+
+            if (cell && this._isCellEditable(cell)) return cell;
+        }
+
+        if (typeof row.getCells !== 'function') return null;
 
         return row.getCells().find(cell => this._isCellEditable(cell)) || null;
     }
@@ -507,19 +588,23 @@ export class CrudHelper {
     async _revealAndFocusRow(row) {
         if (!row) return row;
 
+        const key = this._getRowKey(row);
+        let visibleRow = row;
+
         if (this._isPaginationEnabled()) {
             await this._setPage(this._getLastValidPage());
+            visibleRow = this._resolveRowByKey(key) || row;
         }
 
-        await this._scrollRowIntoView(row);
+        await this._scrollRowIntoView(visibleRow);
 
-        const cell = this._getFirstEditableCell(row);
+        const cell = this._getFirstEditableCell(visibleRow);
 
         if (cell && typeof cell.edit === 'function') {
             cell.edit();
         }
 
-        return row;
+        return visibleRow;
     }
 
     _restoreRowData(row, originalData) {
@@ -1372,7 +1457,8 @@ export class CrudHelper {
     }
 
     /**
-     * Add a new row, mark it as inserted, reveal it, and focus the first editable cell.
+     * Add a new row, mark it as inserted, reveal it, and focus the first editable data cell.
+     * Action/delete columns are not candidates for automatic focus.
      *
      * @param {object} data - Row data to insert.
      * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one after reveal/focus.
