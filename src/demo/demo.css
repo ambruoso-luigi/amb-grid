@@ -1395,19 +1395,13 @@ a {
         inset 0 1px 0 rgb(255 255 255 / 82%);
     color: var(--amb-site-slate);
     display: inline-flex;
-    font-size: 0;
+    font-size: 16px;
     height: 30px;
     justify-content: center;
     line-height: 1;
     padding: 0;
     transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
     width: 30px;
-}
-
-.demo-panel .amb-row-action-button .amb-demo-icon {
-    display: block;
-    height: 17px;
-    width: 17px;
 }
 
 .demo-panel .amb-row-action-button:hover {

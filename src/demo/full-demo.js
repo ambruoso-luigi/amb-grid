@@ -1,30 +1,6 @@
 import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
-import { demoDeleteColumnIcons, demoIcon } from './demo-icons.js';
-
-const toolbarIcons = {
-    report: demoIcon('report')
-};
-
-const toolbarLabels = {
-    it: {
-        add: { label: 'Prodotto', title: 'Aggiungi prodotto' },
-        reload: { label: 'Ricarica', title: 'Ricarica tabella' },
-        save: { label: 'Salva', title: 'Salva modifiche' },
-        payload: { label: 'Payload', title: 'Mostra payload' },
-        validate: { label: 'Valida', title: 'Valida righe' },
-        report: { label: 'Report', title: 'Mostra report stato' }
-    },
-    en: {
-        add: { label: 'Product', title: 'Add product' },
-        reload: { label: 'Reload', title: 'Reload table' },
-        save: { label: 'Save', title: 'Save changes' },
-        payload: { label: 'Payload', title: 'Show payload' },
-        validate: { label: 'Validate', title: 'Validate rows' },
-        report: { label: 'Report', title: 'Show state report' }
-    }
-};
 
 const messages = {
     it: {
@@ -142,29 +118,6 @@ const buildSaveReport = ({ result, applyIdsResult, savedResult }) => [
     `Saved rows: ${savedResult.saved.length}`
 ];
 
-const updateToolbarLabels = demo => {
-    const lang = getLanguage();
-    const labels = toolbarLabels[lang];
-    const toolbar = demo.toolbar && demo.toolbar.element;
-
-    if (!toolbar) return;
-
-    Object.entries(labels).forEach(([id, label]) => {
-        const button = toolbar.querySelector(`[data-action="${id === 'report' ? 'show-report' : id}"]`);
-        const labelElement = button && button.querySelector('.amb-toolbar__button-label');
-        const iconElement = button && button.querySelector('.amb-toolbar__button-icon');
-
-        if (!button || !labelElement) return;
-
-        labelElement.textContent = label.label;
-        if (iconElement && toolbarIcons[id]) {
-            iconElement.innerHTML = toolbarIcons[id];
-        }
-        button.title = label.title;
-        button.setAttribute('aria-label', label.title);
-    });
-};
-
 export default async function fullDemo(app, options = {}) {
     const {
         className = '',
@@ -235,7 +188,6 @@ export default async function fullDemo(app, options = {}) {
         deleteColumn: {
             enabled: true,
             width: 58,
-            icons: demoDeleteColumnIcons,
             labels: {
                 delete: 'Delete product',
                 rollback: 'Rollback product changes',
@@ -256,7 +208,6 @@ export default async function fullDemo(app, options = {}) {
                     id: 'show-report',
                     label: 'Report',
                     title: 'Show state report',
-                    icon: toolbarIcons.report,
                     onClick: handleShowReport
                 }
             ],
@@ -435,17 +386,13 @@ export default async function fullDemo(app, options = {}) {
 
     const { crud } = demo;
     const originalDestroy = demo.destroy.bind(demo);
-    const handleLanguageChange = () => updateToolbarLabels(demo);
 
-    updateToolbarLabels(demo);
     demo.feedback.show({
         type: 'info',
         message: t('loaded')
     });
-    window.addEventListener('amb-demo-language-change', handleLanguageChange);
 
     demo.destroy = () => {
-        window.removeEventListener('amb-demo-language-change', handleLanguageChange);
         reportDialog.destroy();
         app.style.removeProperty('--demo-table-height');
         if (extraClasses.length) {

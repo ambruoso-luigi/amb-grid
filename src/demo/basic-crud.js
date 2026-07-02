@@ -1,6 +1,5 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
-import { demoDeleteColumnIcons, demoIcon } from './demo-icons.js';
 
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
@@ -64,7 +63,6 @@ export default function basicCrud(app) {
         height: '260px',
         deleteColumn: {
             enabled: true,
-            icons: demoDeleteColumnIcons,
             confirmDeleteMessage: 'Delete this note?',
             confirmRollbackMessage: 'Rollback this note?',
             confirmRemoveNewMessage: 'Remove this new note?'
@@ -82,13 +80,11 @@ export default function basicCrud(app) {
                 {
                     id: 'report',
                     label: 'Show report',
-                    icon: demoIcon('report'),
                     onClick: handleShowReport
                 },
                 {
                     id: 'selected',
                     label: 'Show selected',
-                    icon: demoIcon('selected'),
                     onClick: handleShowSelected
                 }
             ],

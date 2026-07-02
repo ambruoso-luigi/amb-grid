@@ -55,6 +55,22 @@ describe('demo site navigation', () => {
         expect(main).toContain('href="#getting-started-javascript">${demoIcon(\'arrowRight\')}<span data-i18n="hero.primary"');
     });
 
+    test('does not post-process AMB Grid generated controls from the demo', () => {
+        const main = read('src/demo/main.js');
+        const icons = read('src/demo/demo-icons.js');
+        const fullDemo = read('src/demo/full-demo.js');
+        const combined = `${main}\n${icons}\n${fullDemo}`;
+
+        expect(combined).not.toContain('installDemoGridIcons');
+        expect(combined).not.toContain('applyDemoGridIcons');
+        expect(combined).not.toContain('MutationObserver');
+        expect(combined).not.toContain("querySelectorAll('.amb-toolbar__button");
+        expect(combined).not.toContain("querySelectorAll('.amb-search-toolbar__filters-button");
+        expect(combined).not.toContain("querySelectorAll('.amb-row-action-button");
+        expect(combined).not.toContain('demoDeleteColumnIcons');
+        expect(fullDemo).not.toContain('querySelector(`[data-action=');
+    });
+
     test('uses a visual language switch with a single flag control', () => {
         const main = read('src/demo/main.js');
         const guide = read('src/demo/getting-started-javascript.js');

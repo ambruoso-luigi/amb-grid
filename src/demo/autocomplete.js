@@ -1,6 +1,5 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
-import { demoIcon } from './demo-icons.js';
 
 const departments = [
     'Administration',
@@ -147,21 +146,18 @@ export default function autocomplete(app) {
                     id: 'validate-autocomplete',
                     label: 'Validate autocomplete',
                     title: 'Validate autocomplete values',
-                    icon: demoIcon('validate'),
                     onClick: handleValidateAutocomplete
                 },
                 {
                     id: 'create-autocomplete-anomalies',
                     label: 'Create anomalies',
                     title: 'Create invalid strict autocomplete values',
-                    icon: demoIcon('anomalies'),
                     onClick: handleCreateAutocompleteAnomalies
                 },
                 {
                     id: 'reset-autocomplete',
                     label: 'Reset data',
                     title: 'Reset autocomplete demo data',
-                    icon: demoIcon('reset'),
                     onClick: handleResetAutocomplete
                 }
             ]

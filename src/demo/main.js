@@ -15,7 +15,7 @@ import multipleTables from './multiple-tables.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
-import { demoIcon, installDemoGridIcons } from './demo-icons.js';
+import { demoIcon } from './demo-icons.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -529,10 +529,6 @@ const mountMainDemo = async (selector, expectedView = 'guide', options = {}) => 
 
     const mountedDemo = await fullDemo(container, options);
 
-    if (mountedDemo) {
-        installDemoGridIcons(mountedDemo, container);
-    }
-
     if (token !== mainDemoLoadToken || currentView !== expectedView) {
         destroyDemo(mountedDemo);
         return;
@@ -554,10 +550,6 @@ const loadFeatureExample = async id => {
     setActiveExample(example.id);
 
     const mountedExample = await example.mount(container);
-
-    if (mountedExample) {
-        installDemoGridIcons(mountedExample, container);
-    }
 
     if (token !== featureLoadToken) {
         destroyDemo(mountedExample);

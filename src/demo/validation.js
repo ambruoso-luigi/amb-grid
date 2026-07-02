@@ -1,6 +1,5 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
-import { demoDeleteColumnIcons, demoIcon } from './demo-icons.js';
 
 const hasReservedDocumentPrefix = value => {
     if (value === null || value === undefined || String(value).trim() === '') return true;
@@ -250,7 +249,6 @@ export default function validation(app) {
                 rollback: true,
                 removeNew: false
             },
-            icons: demoDeleteColumnIcons,
             confirmDeleteMessage: 'Delete this row?',
             confirmRollbackMessage: 'Rollback this row?',
             confirmRemoveNewMessage: 'Remove this new row?'
@@ -261,21 +259,18 @@ export default function validation(app) {
                     id: 'create-anomalies',
                     label: 'Create anomalies',
                     title: 'Create intentional validation errors',
-                    icon: demoIcon('anomalies'),
                     onClick: handleCreateAnomalies
                 },
                 {
                     id: 'show-report',
                     label: 'Show report',
                     title: 'Show validation report',
-                    icon: demoIcon('report'),
                     onClick: handleShowReport
                 },
                 {
                     id: 'reset-data',
                     label: 'Reset data',
                     title: 'Reset validation demo data',
-                    icon: demoIcon('reset'),
                     onClick: handleResetData
                 }
             ]

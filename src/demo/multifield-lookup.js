@@ -5,7 +5,6 @@ import {
     MUNICIPALITY_MAP_TO_ROW
 } from './multifield-lookup-config.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
-import { demoDeleteColumnIcons, demoIcon } from './demo-icons.js';
 
 const DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
@@ -241,7 +240,6 @@ export default async function multifieldLookup(app) {
                     id: 'reset-data',
                     label: 'Reset data',
                     title: 'Reset municipality demo data',
-                    icon: demoIcon('reset'),
                     onClick: handleResetData
                 }
             ],
@@ -250,8 +248,7 @@ export default async function multifieldLookup(app) {
         },
         layout: 'fitColumns',
         deleteColumn: {
-            enabled: true,
-            icons: demoDeleteColumnIcons
+            enabled: true
         },
         columns: [
             {

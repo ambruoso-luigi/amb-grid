@@ -1,6 +1,5 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
-import { demoDeleteColumnIcons, demoIcon } from './demo-icons.js';
 
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
@@ -99,7 +98,6 @@ export default function rowStates(app) {
         height: '320px',
         deleteColumn: {
             enabled: true,
-            icons: demoDeleteColumnIcons,
             confirmDeleteMessage: 'Delete this sample?',
             confirmRollbackMessage: 'Rollback this sample?',
             confirmRemoveNewMessage: 'Remove this new sample?'
@@ -113,21 +111,18 @@ export default function rowStates(app) {
                     id: 'state-error',
                     label: 'Create error',
                     title: 'Create demo errors',
-                    icon: demoIcon('anomalies'),
                     onClick: handleCreateError
                 },
                 {
                     id: 'state-report',
                     label: 'Report',
                     title: 'Show row states report',
-                    icon: demoIcon('report'),
                     onClick: handleShowReport
                 },
                 {
                     id: 'state-row-numbers',
                     label: 'Row numbers',
                     title: 'Show row number report',
-                    icon: demoIcon('selected'),
                     onClick: handleShowRowNumbers
                 }
             ],
