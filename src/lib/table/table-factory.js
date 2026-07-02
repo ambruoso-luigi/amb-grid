@@ -471,9 +471,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * only forwarded to Tabulator; AMB does not add backend/server-side behavior.
  * When pagination is enabled, AMB sets Tabulator's `paginationAddRow` to
  * `'table'` unless explicitly provided, so `crud.addRow(...)` appends to the
- * whole table, opens the page containing the new row, and attempts to focus
- * the first editable visible data cell. Action/delete columns are not
- * candidates for automatic focus.
+ * whole table, uses the Tabulator row component to open the page containing
+ * the new row when possible, and attempts to focus the first editable visible
+ * data cell. Action/delete columns are not candidates for automatic focus.
  *
  * @param {object} options - AMB table and Tabulator options.
  * @param {string|HTMLElement} options.selector - CSS selector or element passed to Tabulator.

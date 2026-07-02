@@ -15,8 +15,22 @@ const createColumnMock = (definition = {}) => ({
 const createCellMock = (row, definition = {}) => {
     const column = createColumnMock(definition);
     const field = definition.field;
+    const focusElement = {
+        className: definition.focusClassName || '',
+        dataset: { field },
+        closest: selector => {
+            return selector === '.amb-row-action-button' && definition.isActionButton
+                ? focusElement
+                : null;
+        }
+    };
     const cell = {
-        edit: vi.fn(),
+        focusElement,
+        edit: vi.fn(() => {
+            if (globalThis.document) {
+                globalThis.document.activeElement = focusElement;
+            }
+        }),
         getColumn: () => column,
         getElement: () => ({ dataset: {} }),
         getField: () => field,
@@ -35,11 +49,22 @@ const createTableMock = ({
     currentPage = 1,
     asyncAdd = true,
     asyncDelete = true,
-    rerenderOnSetPage = false
+    hasPageTo = true,
+    pageToRejects = false,
+    rerenderOnNavigation = false
 } = {}) => {
     const rows = [];
     const handlers = new Map();
     const tableColumns = columns.map(createColumnMock);
+    const rerenderCurrentPage = () => {
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        const replacementRows = rows
+            .slice(start, end)
+            .map(row => createRow(row.getData()));
+
+        rows.splice(start, replacementRows.length, ...replacementRows);
+    };
     const table = {
         options: pagination
             ? { pagination: true, paginationSize: pageSize }
@@ -71,14 +96,8 @@ const createTableMock = ({
         setPage: vi.fn(page => {
             currentPage = Number(page);
 
-            if (rerenderOnSetPage) {
-                const start = (currentPage - 1) * pageSize;
-                const end = start + pageSize;
-                const replacementRows = rows
-                    .slice(start, end)
-                    .map(row => createRow(row.getData()));
-
-                rows.splice(start, replacementRows.length, ...replacementRows);
+            if (rerenderOnNavigation) {
+                rerenderCurrentPage();
             }
 
             return Promise.resolve();
@@ -104,6 +123,27 @@ const createTableMock = ({
 
                 return asyncDelete ? Promise.resolve() : undefined;
             }),
+            ...(hasPageTo
+                ? {
+                    pageTo: vi.fn(() => {
+                        if (pageToRejects) {
+                            return Promise.reject(new Error('pageTo failed'));
+                        }
+
+                        const index = rows.indexOf(row);
+
+                        currentPage = index >= 0
+                            ? Math.ceil((index + 1) / pageSize)
+                            : currentPage;
+
+                        if (rerenderOnNavigation) {
+                            rerenderCurrentPage();
+                        }
+
+                        return Promise.resolve();
+                    })
+                }
+                : {}),
             getCell: field => cells.find(cell => cell.getField() === field) || null,
             getCells: () => cells,
             getData: () => data,
@@ -156,13 +196,14 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         expect(row).toBe(rows[2]);
         expect(rows).toHaveLength(3);
         expect(row.getData()._state).toBe(ROW_STATE.NEW);
+        expect(row.pageTo).not.toHaveBeenCalled();
         expect(row.scrollTo).toHaveBeenCalledWith('bottom', false);
         expect(row.getCell('locked').edit).not.toHaveBeenCalled();
         expect(row.getCell('secret').edit).not.toHaveBeenCalled();
         expect(row.getCell('name').edit).toHaveBeenCalledTimes(1);
     });
 
-    test('addRow with pagination and spare room goes to the existing last page', async () => {
+    test('addRow with pagination uses RowComponent.pageTo before scrolling and focusing', async () => {
         const { table, getCurrentPage } = createTableMock({
             rowsData: createRowsData(19),
             pagination: true,
@@ -173,8 +214,45 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         const row = await crud.addRow({ id: null, name: 'New row' });
 
         expect(getCurrentPage()).toBe(2);
+        expect(row.pageTo).toHaveBeenCalledTimes(1);
+        expect(table.setPage).not.toHaveBeenCalled();
+        expect(table.getVisibleRows()).toContain(row);
+        expect(row.scrollTo).toHaveBeenCalledWith('bottom', false);
+        expect(row.getCell('name').edit).toHaveBeenCalledTimes(1);
+    });
+
+    test('addRow with pagination falls back to setPage when pageTo is unavailable', async () => {
+        const { table, getCurrentPage } = createTableMock({
+            rowsData: createRowsData(19),
+            pagination: true,
+            pageSize: 10,
+            hasPageTo: false
+        });
+        const crud = new CrudHelper(table);
+
+        const row = await crud.addRow({ id: null, name: 'New row' });
+
+        expect(getCurrentPage()).toBe(2);
+        expect(row.pageTo).toBeUndefined();
         expect(table.setPage).toHaveBeenCalledWith(2);
         expect(table.getVisibleRows()).toContain(row);
+        expect(row.getCell('name').edit).toHaveBeenCalledTimes(1);
+    });
+
+    test('addRow with pagination falls back safely when pageTo rejects', async () => {
+        const { table, getCurrentPage } = createTableMock({
+            rowsData: createRowsData(19),
+            pagination: true,
+            pageSize: 10,
+            pageToRejects: true
+        });
+        const crud = new CrudHelper(table);
+
+        const row = await crud.addRow({ id: null, name: 'New row' });
+
+        expect(getCurrentPage()).toBe(2);
+        expect(row.pageTo).toHaveBeenCalledTimes(1);
+        expect(table.setPage).toHaveBeenCalledWith(2);
         expect(row.getCell('name').edit).toHaveBeenCalledTimes(1);
     });
 
@@ -190,11 +268,19 @@ describe('CrudHelper row reveal and pagination normalization', () => {
 
         expect(table.getPageMax()).toBe(3);
         expect(getCurrentPage()).toBe(3);
+        expect(row.pageTo).toHaveBeenCalledTimes(1);
+        expect(table.setPage).not.toHaveBeenCalled();
         expect(table.getVisibleRows()).toEqual([row]);
         expect(row.getCell('name').edit).toHaveBeenCalledTimes(1);
     });
 
     test('addRow with pagination and an action column focuses the first editable data cell', async () => {
+        const originalDocument = globalThis.document;
+        const actionButton = {
+            className: 'amb-row-action-button amb-row-action-button--remove-new',
+            closest: selector => selector === '.amb-row-action-button' ? actionButton : null
+        };
+        globalThis.document = { activeElement: actionButton };
         const { table } = createTableMock({
             rowsData: createRowsData(20),
             pagination: true,
@@ -204,20 +290,32 @@ describe('CrudHelper row reveal and pagination normalization', () => {
                     title: 'Actions',
                     field: '_actions',
                     editor: 'input',
-                    cssClass: 'amb-row-actions'
+                    cssClass: 'amb-row-actions',
+                    isActionButton: true
                 },
-                { title: 'Item code', field: 'itemCode', editor: 'input' },
+                {
+                    title: 'Item code',
+                    field: 'itemCode',
+                    editor: 'input',
+                    focusClassName: 'tabulator-editing'
+                },
                 { title: 'Product name', field: 'productName', editor: 'input' }
             ]
         });
         const crud = new CrudHelper(table);
 
-        const row = await crud.addRow({ id: null, itemCode: '', productName: '' });
+        try {
+            const row = await crud.addRow({ id: null, itemCode: '', productName: '' });
 
-        expect(table.getVisibleRows()).toContain(row);
-        expect(row.getCell('_actions').edit).not.toHaveBeenCalled();
-        expect(row.getCell('itemCode').edit).toHaveBeenCalledTimes(1);
-        expect(row.getCell('productName').edit).not.toHaveBeenCalled();
+            expect(table.getVisibleRows()).toContain(row);
+            expect(row.getCell('_actions').edit).not.toHaveBeenCalled();
+            expect(row.getCell('itemCode').edit).toHaveBeenCalledTimes(1);
+            expect(row.getCell('productName').edit).not.toHaveBeenCalled();
+            expect(globalThis.document.activeElement).toBe(row.getCell('itemCode').focusElement);
+            expect(globalThis.document.activeElement.closest('.amb-row-action-button')).toBeNull();
+        } finally {
+            globalThis.document = originalDocument;
+        }
     });
 
     test('addRow resolves the rendered row again after paginated navigation before focusing', async () => {
@@ -225,7 +323,7 @@ describe('CrudHelper row reveal and pagination normalization', () => {
             rowsData: createRowsData(20),
             pagination: true,
             pageSize: 10,
-            rerenderOnSetPage: true,
+            rerenderOnNavigation: true,
             columns: [
                 {
                     title: 'Actions',
@@ -241,6 +339,8 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         const originalRow = await crud.addRow({ id: null, itemCode: '' });
         const renderedRow = table.getVisibleRows()[0];
 
+        expect(originalRow.pageTo).toHaveBeenCalledTimes(1);
+        expect(table.setPage).not.toHaveBeenCalled();
         expect(renderedRow).not.toBe(originalRow);
         expect(renderedRow.getData()._ambTempId).toBe(originalRow.getData()._ambTempId);
         expect(originalRow.getCell('itemCode').edit).not.toHaveBeenCalled();
@@ -270,7 +370,11 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         const third = await crud.addRow({ id: null, name: 'Third new row' });
 
         expect(getCurrentPage()).toBe(3);
+        expect(table.setPage).not.toHaveBeenCalled();
         expect(table.getVisibleRows()).toEqual([first, second, third]);
+        expect(first.pageTo).toHaveBeenCalledTimes(1);
+        expect(second.pageTo).toHaveBeenCalledTimes(1);
+        expect(third.pageTo).toHaveBeenCalledTimes(1);
         expect(first.getCell('_actions').edit).not.toHaveBeenCalled();
         expect(second.getCell('_actions').edit).not.toHaveBeenCalled();
         expect(third.getCell('_actions').edit).not.toHaveBeenCalled();

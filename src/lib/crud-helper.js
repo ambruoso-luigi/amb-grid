@@ -406,14 +406,12 @@ export class CrudHelper {
             this.table
             && this.table.options
             && this.table.options.pagination
-            && typeof this.table.getPage === 'function'
-            && typeof this.table.getPageMax === 'function'
-            && typeof this.table.setPage === 'function'
         );
     }
 
     _getLastValidPage() {
         if (!this._isPaginationEnabled()) return 1;
+        if (!this.table || typeof this.table.getPageMax !== 'function') return 1;
 
         const pageMax = Number(this.table.getPageMax());
 
@@ -422,6 +420,13 @@ export class CrudHelper {
 
     _setPage(page) {
         if (!this._isPaginationEnabled()) return Promise.resolve();
+        if (
+            !this.table
+            || typeof this.table.getPage !== 'function'
+            || typeof this.table.setPage !== 'function'
+        ) {
+            return Promise.resolve();
+        }
 
         const currentPage = Number(this.table.getPage());
         const targetPage = Number(page);
@@ -439,6 +444,7 @@ export class CrudHelper {
 
     _normalizePaginationAfterRowRemoval() {
         if (!this._isPaginationEnabled()) return Promise.resolve();
+        if (!this.table || typeof this.table.getPage !== 'function') return Promise.resolve();
 
         const currentPage = Number(this.table.getPage());
         const lastPage = this._getLastValidPage();
@@ -448,6 +454,22 @@ export class CrudHelper {
         }
 
         return this._setPage(lastPage);
+    }
+
+    async _pageToRow(row) {
+        if (!row || typeof row.pageTo !== 'function') return false;
+
+        try {
+            const result = row.pageTo();
+
+            if (result && typeof result.then === 'function') {
+                await result;
+            }
+
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 
     _scrollRowIntoView(row) {
@@ -592,7 +614,12 @@ export class CrudHelper {
         let visibleRow = row;
 
         if (this._isPaginationEnabled()) {
-            await this._setPage(this._getLastValidPage());
+            const reachedRowPage = await this._pageToRow(visibleRow);
+
+            if (!reachedRowPage) {
+                await this._setPage(this._getLastValidPage());
+            }
+
             visibleRow = this._resolveRowByKey(key) || row;
         }
 
@@ -1458,7 +1485,9 @@ export class CrudHelper {
 
     /**
      * Add a new row, mark it as inserted, reveal it, and focus the first editable data cell.
-     * Action/delete columns are not candidates for automatic focus.
+     * With pagination, AMB uses the Tabulator row component to reach the page
+     * containing the new row when possible. Action/delete columns are not
+     * candidates for automatic focus.
      *
      * @param {object} data - Row data to insert.
      * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one after reveal/focus.
