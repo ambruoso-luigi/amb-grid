@@ -15,6 +15,7 @@ import multipleTables from './multiple-tables.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
+import { demoIcon, installDemoGridIcons } from './demo-icons.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -355,8 +356,8 @@ const renderShell = selectedId => {
                     <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
                     <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
                     <div class="demo-hero__actions">
-                        <a class="demo-button demo-button--primary" href="#getting-started-javascript" data-i18n="hero.primary">Apri demo JavaScript</a>
-                        <a class="demo-button" href="#feature-examples" data-i18n="hero.secondary">Vedi esempi funzionali</a>
+                        <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="hero.primary">Apri demo JavaScript</span></a>
+                        <a class="demo-button" href="#feature-examples">${demoIcon('selected')}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
                     </div>
                 </div>
                 <div class="demo-hero__metrics" aria-label="AMB Grid capabilities">
@@ -493,7 +494,7 @@ const renderShell = selectedId => {
                         </button>
                     `).join('')}
                 </div>
-                <section id="feature-example" class="demo-example"></section>
+                <section id="feature-example" class="demo-example demo-panel"></section>
             </section>
 
             <section class="demo-section demo-roadmap">
@@ -528,6 +529,10 @@ const mountMainDemo = async (selector, expectedView = 'guide', options = {}) => 
 
     const mountedDemo = await fullDemo(container, options);
 
+    if (mountedDemo) {
+        installDemoGridIcons(mountedDemo, container);
+    }
+
     if (token !== mainDemoLoadToken || currentView !== expectedView) {
         destroyDemo(mountedDemo);
         return;
@@ -549,6 +554,10 @@ const loadFeatureExample = async id => {
     setActiveExample(example.id);
 
     const mountedExample = await example.mount(container);
+
+    if (mountedExample) {
+        installDemoGridIcons(mountedExample, container);
+    }
 
     if (token !== featureLoadToken) {
         destroyDemo(mountedExample);
@@ -587,7 +596,6 @@ const renderGuide = () => {
     mountMainDemo('#javascript-demo', 'guide', {
         className: 'demo-showcase demo-showcase--large',
         compactHeader: true,
-        tableHeight: 'clamp(560px, 64vh, 760px)',
         variant: 'showcase'
     });
     window.scrollTo(0, 0);

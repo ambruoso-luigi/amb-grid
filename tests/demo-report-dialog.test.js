@@ -9,8 +9,10 @@ describe('demo report dialog integration', () => {
     test('opens on Report and switches between Report and JSON views', () => {
         const source = readSource('../src/demo/utils/demo-report-dialog.js');
 
-        expect(source).toContain("reportButton.textContent = 'Report'");
-        expect(source).toContain("jsonButton.textContent = 'JSON'");
+        expect(source).toContain("import { demoIcon } from '../demo-icons.js'");
+        expect(source).toContain("reportButton.innerHTML = `${demoIcon('report')}<span>Report</span>`");
+        expect(source).toContain("jsonButton.innerHTML = `${demoIcon('json')}<span>JSON</span>`");
+        expect(source).toContain("closeButton.innerHTML = `${demoIcon('arrowRight')}<span>Close</span>`");
         expect(source).toContain("const showReport = () => setView('report')");
         expect(source).toContain("const showJson = () => setView('json')");
         expect(source).toContain("setView('report');");

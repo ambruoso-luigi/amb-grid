@@ -43,7 +43,7 @@ describe('demo site navigation', () => {
         expect(main).toContain("mountMainDemo('#javascript-demo', 'guide', {");
         expect(main).toContain("className: 'demo-showcase demo-showcase--large'");
         expect(main).toContain('compactHeader: true');
-        expect(main).toContain("tableHeight: 'clamp(560px, 64vh, 760px)'");
+        expect(main).not.toContain("tableHeight: 'clamp(560px, 64vh, 760px)'");
         expect(main).toContain("variant: 'showcase'");
     });
 
@@ -52,7 +52,7 @@ describe('demo site navigation', () => {
 
         expect(main).not.toContain('id="main-demo"');
         expect(main).not.toContain('mountMainDemo();');
-        expect(main).toContain('href="#getting-started-javascript" data-i18n="hero.primary"');
+        expect(main).toContain('href="#getting-started-javascript">${demoIcon(\'arrowRight\')}<span data-i18n="hero.primary"');
     });
 
     test('uses a visual language switch with a single flag control', () => {

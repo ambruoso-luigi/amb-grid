@@ -1,4 +1,5 @@
 import { renderDemoBrand } from './demo-brand.js';
+import { demoIcon } from './demo-icons.js';
 
 export default function gettingStartedJavaScript(app) {
     app.innerHTML = `
@@ -137,8 +138,8 @@ if (payload.canSave) {
                             <h3 data-i18n="guide.step6.title">Prossimi passi</h3>
                             <p class="demo-note" data-i18n="guide.step6.text">Rivedi la demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.</p>
                             <div class="demo-guide-actions">
-                                <a class="demo-button demo-button--primary" href="#getting-started-javascript" data-i18n="guide.openMainDemo">Torna alla demo</a>
-                                <a class="demo-button" href="#feature-examples" data-i18n="guide.openExamples">Vedi esempi funzionali</a>
+                                <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="guide.openMainDemo">Torna alla demo</span></a>
+                                <a class="demo-button" href="#feature-examples">${demoIcon('selected')}<span data-i18n="guide.openExamples">Vedi esempi funzionali</span></a>
                             </div>
                         </div>
                     </article>
@@ -151,7 +152,7 @@ if (payload.canSave) {
                     <h2 data-i18n="guide.videoTitle">Installazione e uso in JavaScript</h2>
                     <p class="demo-note" data-i18n="guide.videoText">Qui verrà collegato il video introduttivo su installazione e uso di AMB Grid in JavaScript.</p>
                 </div>
-                <button class="demo-button demo-button--disabled" type="button" disabled data-i18n="guide.videoCta">Video in arrivo</button>
+                <button class="demo-button demo-button--disabled" type="button" disabled>${demoIcon('video')}<span data-i18n="guide.videoCta">Video in arrivo</span></button>
             </section>
         </main>
     `;

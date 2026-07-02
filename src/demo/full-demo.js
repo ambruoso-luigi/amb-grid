@@ -1,54 +1,10 @@
 import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { demoDeleteColumnIcons, demoIcon } from './demo-icons.js';
 
 const toolbarIcons = {
-    add: `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="5"></rect>
-            <path d="M12 8v8"></path>
-            <path d="M8 12h8"></path>
-        </svg>
-    `,
-    reload: `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 7v5h-5"></path>
-            <path d="M19 12a7 7 0 0 0-12.2-4.7"></path>
-            <path d="M4 17v-5h5"></path>
-            <path d="M5 12a7 7 0 0 0 12.2 4.7"></path>
-        </svg>
-    `,
-    save: `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 5h11l3 3v11H5V5z"></path>
-            <path d="M8 5v5h8"></path>
-            <path d="m8.5 15 2.2 2.2 4.8-5"></path>
-        </svg>
-    `,
-    payload: `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M8 4H5v16h3"></path>
-            <path d="M16 4h3v16h-3"></path>
-            <path d="M10 9 7.5 12 10 15"></path>
-            <path d="m14 9 2.5 3L14 15"></path>
-            <path d="m12.5 8-1 8"></path>
-        </svg>
-    `,
-    validate: `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3l7 3v5c0 4.5-2.8 8-7 10-4.2-2-7-5.5-7-10V6l7-3z"></path>
-            <path d="m8.8 12.3 2.1 2.1 4.4-4.8"></path>
-        </svg>
-    `,
-    report: `
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 4h12v16H6z"></path>
-            <path d="M9 15v2"></path>
-            <path d="M12 11v6"></path>
-            <path d="M15 13v4"></path>
-            <path d="M9 8h6"></path>
-        </svg>
-    `
+    report: demoIcon('report')
 };
 
 const toolbarLabels = {
@@ -215,7 +171,7 @@ export default async function fullDemo(app, options = {}) {
         compactHeader = false,
         showHeader = true,
         showScenario = true,
-        tableHeight = '340px',
+        tableHeight = null,
         variant = 'default'
     } = options;
     const extraClasses = [
@@ -230,7 +186,11 @@ export default async function fullDemo(app, options = {}) {
     if (extraClasses.length) {
         app.classList.add(...extraClasses);
     }
-    app.style.setProperty('--demo-table-height', tableHeight);
+    if (tableHeight) {
+        app.style.setProperty('--demo-table-height', tableHeight);
+    } else {
+        app.style.removeProperty('--demo-table-height');
+    }
 
     app.innerHTML = `
         ${showHeader ? `<div class="demo-section-heading demo-section-heading--split">
@@ -263,9 +223,8 @@ export default async function fullDemo(app, options = {}) {
     const warehouseOptions = await fakeApi.getWarehouses();
     const products = await fakeApi.getProducts();
 
-    const demo = AMB.table({
+    const tableOptions = {
         selector: '#inventory-table',
-        height: tableHeight,
         search: {
             enabled: true,
             placeholder: 'Search inventory...',
@@ -276,11 +235,7 @@ export default async function fullDemo(app, options = {}) {
         deleteColumn: {
             enabled: true,
             width: 58,
-            icons: {
-                delete: 'delete',
-                rollback: 'rollback',
-                removeNew: 'remove'
-            },
+            icons: demoDeleteColumnIcons,
             labels: {
                 delete: 'Delete product',
                 rollback: 'Rollback product changes',
@@ -315,8 +270,8 @@ export default async function fullDemo(app, options = {}) {
         layout: 'fitColumns',
         pagination: true,
         paginationMode: 'local',
-        paginationSize: 5,
-        paginationSizeSelector: [5, 10, 20, 50],
+        paginationSize: 10,
+        paginationSizeSelector: [10, 20, 50],
         columns: [
             {
                 title: 'Item code',
@@ -470,7 +425,13 @@ export default async function fullDemo(app, options = {}) {
                 })
             }
         ]
-    });
+    };
+
+    if (tableHeight) {
+        tableOptions.height = tableHeight;
+    }
+
+    const demo = AMB.table(tableOptions);
 
     const { crud } = demo;
     const originalDestroy = demo.destroy.bind(demo);

@@ -1,3 +1,5 @@
+import { demoIcon } from '../demo-icons.js';
+
 let nextDialogId = 1;
 
 const normalizeReportText = ({ reportText, reportLines }) => {
@@ -43,11 +45,11 @@ export const createDemoReportDialog = () => {
     reportButton.type = 'button';
     reportButton.className = 'demo-report-dialog__tab';
     reportButton.setAttribute('role', 'tab');
-    reportButton.textContent = 'Report';
+    reportButton.innerHTML = `${demoIcon('report')}<span>Report</span>`;
     jsonButton.type = 'button';
     jsonButton.className = 'demo-report-dialog__tab';
     jsonButton.setAttribute('role', 'tab');
-    jsonButton.textContent = 'JSON';
+    jsonButton.innerHTML = `${demoIcon('json')}<span>JSON</span>`;
     content.className = 'demo-report-dialog__content';
     report.className = 'demo-report-dialog__report';
     report.id = `demo-report-dialog-report-${dialogId}`;
@@ -60,7 +62,7 @@ export const createDemoReportDialog = () => {
     actions.className = 'demo-report-dialog__actions';
     closeButton.type = 'button';
     closeButton.className = 'demo-report-dialog__button';
-    closeButton.textContent = 'Close';
+    closeButton.innerHTML = `${demoIcon('arrowRight')}<span>Close</span>`;
 
     tabs.append(reportButton, jsonButton);
     header.append(title, tabs);
