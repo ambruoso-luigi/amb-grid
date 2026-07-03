@@ -14,14 +14,25 @@ describe('demo site navigation', () => {
         expect(main).toContain("'frameworks.javascript.badge': 'Guida disponibile'");
         expect(main).toContain("'frameworks.javascript.badge': 'Guide available'");
         expect(main).toContain("'frameworks.javascript.detailClassic': 'Classic HTML + JS + CSS'");
+        expect(main).toContain("'frameworks.javascript.status': 'Apri guida'");
+        expect(main).toContain("'frameworks.javascript.status': 'Open guide'");
         expect(main).toContain('demo-framework-card--ready');
         expect(main).toContain('demo-framework-card__meta-item');
         expect(main).toContain('data-i18n="frameworks.javascript.status"');
         expect(main).toContain('data-i18n="frameworks.react.status"');
-        expect(main).toContain("'frameworks.react.badge': 'React + TypeScript planned'");
-        expect(main).toContain("'frameworks.vue.badge': 'Vue + TypeScript planned'");
-        expect(main).toContain("'frameworks.angular.badge': 'Angular example planned'");
-        expect(main).toContain("'frameworks.angular.description': 'Future example with the component lifecycle. No official wrapper is promised at this stage.'");
+        expect(main).toContain("'frameworks.react.badge': 'React + TypeScript'");
+        expect(main).toContain("'frameworks.vue.badge': 'Vue + TypeScript'");
+        expect(main).toContain("'frameworks.angular.badge': 'Angular integration'");
+        expect(main).toContain("'frameworks.react.status': 'Vedi integrazione'");
+        expect(main).toContain("'frameworks.react.status': 'View integration'");
+        expect(main).toContain("'frameworks.angular.description': 'Integration in Angular components and modern business pages, without promising an official wrapper.'");
+
+        const css = read('src/demo/demo.css');
+
+        expect(css).toContain('grid-template-columns: repeat(4, minmax(0, 1fr));');
+        expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
+        expect(css).toContain('grid-template-columns: 1fr;');
+        expect(css).not.toContain('grid-column: span 2;');
     });
 
     test('uses the shared logo brand on the home and JavaScript guide pages', () => {

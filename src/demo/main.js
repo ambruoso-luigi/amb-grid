@@ -52,25 +52,25 @@ const translations = {
         'hero.statIntegration': 'Integrazione',
         'hero.statIntegrationText': 'JavaScript, legacy-friendly, framework-ready',
         'frameworks.title': 'Scegli il percorso di integrazione',
-        'frameworks.description': 'La logica CRUD resta la stessa: parti dalla guida JavaScript pronta, poi porta AMB Grid in pagine legacy-friendly o stack moderni.',
+        'frameworks.description': 'La logica CRUD resta la stessa in JavaScript, React, Vue, Angular e pagine legacy-friendly: scegli il percorso piu vicino al tuo stack.',
         'frameworks.javascript.badge': 'Guida disponibile',
-        'frameworks.javascript.description': 'Percorso consigliato per provare AMB Grid: Modern JavaScript / bundler e Classic HTML + JS + CSS nella stessa guida.',
+        'frameworks.javascript.description': 'Modern JavaScript, Classic HTML + JS + CSS e contesti legacy-friendly con la guida gia disponibile.',
         'frameworks.javascript.detailModern': 'Modern bundler',
         'frameworks.javascript.detailClassic': 'Classic HTML + JS + CSS',
         'frameworks.javascript.detailRecommended': 'Primo percorso consigliato',
-        'frameworks.javascript.status': 'Apri guida JavaScript',
-        'frameworks.react.badge': 'React + TypeScript planned',
-        'frameworks.react.description': 'Demo separata futura: mount di AMB Grid nel componente React e grid.destroy() nel cleanup.',
+        'frameworks.javascript.status': 'Apri guida',
+        'frameworks.react.badge': 'React + TypeScript',
+        'frameworks.react.description': 'AMB Grid montato dentro componenti React, con cleanup del ciclo di vita tramite grid.destroy().',
         'frameworks.react.detailLifecycle': 'Mount / destroy',
-        'frameworks.react.status': 'Vedi esempi attuali',
-        'frameworks.vue.badge': 'Vue + TypeScript planned',
-        'frameworks.vue.description': 'Demo separata futura: inizializzazione nel lifecycle Vue e cleanup quando il componente viene smontato.',
+        'frameworks.react.status': 'Vedi integrazione',
+        'frameworks.vue.badge': 'Vue + TypeScript',
+        'frameworks.vue.description': 'Integrazione con lifecycle Vue e cleanup quando il componente viene smontato.',
         'frameworks.vue.detailLifecycle': 'Lifecycle / cleanup',
-        'frameworks.vue.status': 'Vedi esempi attuali',
-        'frameworks.angular.badge': 'Angular example planned',
-        'frameworks.angular.description': 'Esempio futuro con lifecycle del componente. Nessun wrapper ufficiale promesso in questa fase.',
+        'frameworks.vue.status': 'Vedi integrazione',
+        'frameworks.angular.badge': 'Angular integration',
+        'frameworks.angular.description': 'Integrazione in componenti Angular e pagine gestionali moderne, senza promettere wrapper ufficiali.',
         'frameworks.angular.detailLifecycle': 'Component lifecycle',
-        'frameworks.angular.status': 'Vedi esempi attuali',
+        'frameworks.angular.status': 'Vedi integrazione',
         'mainDemo.kicker': 'Demo legacy-friendly',
         'mainDemo.primaryLabel': 'Demo principale',
         'mainDemo.title': 'Gestionale Magazzino Classico',
@@ -169,25 +169,25 @@ const translations = {
         'hero.statIntegration': 'Integration',
         'hero.statIntegrationText': 'JavaScript, legacy-friendly, framework-ready',
         'frameworks.title': 'Choose your integration path',
-        'frameworks.description': 'The CRUD logic stays the same: start with the ready JavaScript guide, then bring AMB Grid into legacy-friendly pages or modern stacks.',
+        'frameworks.description': 'The CRUD logic stays the same across JavaScript, React, Vue, Angular, and legacy-friendly pages: choose the path closest to your stack.',
         'frameworks.javascript.badge': 'Guide available',
-        'frameworks.javascript.description': 'Recommended first path for trying AMB Grid: Modern JavaScript / bundler and Classic HTML + JS + CSS in one guide.',
+        'frameworks.javascript.description': 'Modern JavaScript, Classic HTML + JS + CSS, and legacy-friendly contexts with the guide already available.',
         'frameworks.javascript.detailModern': 'Modern bundler',
         'frameworks.javascript.detailClassic': 'Classic HTML + JS + CSS',
         'frameworks.javascript.detailRecommended': 'Recommended first path',
-        'frameworks.javascript.status': 'Open JavaScript guide',
-        'frameworks.react.badge': 'React + TypeScript planned',
-        'frameworks.react.description': 'Future separate demo: mount AMB Grid inside a React component and call grid.destroy() during cleanup.',
+        'frameworks.javascript.status': 'Open guide',
+        'frameworks.react.badge': 'React + TypeScript',
+        'frameworks.react.description': 'AMB Grid mounted inside React components, with lifecycle cleanup through grid.destroy().',
         'frameworks.react.detailLifecycle': 'Mount / destroy',
-        'frameworks.react.status': 'View current examples',
-        'frameworks.vue.badge': 'Vue + TypeScript planned',
-        'frameworks.vue.description': 'Future separate demo: initialize during the Vue lifecycle and clean up when the component unmounts.',
+        'frameworks.react.status': 'View integration',
+        'frameworks.vue.badge': 'Vue + TypeScript',
+        'frameworks.vue.description': 'Integration with the Vue lifecycle and cleanup when the component unmounts.',
         'frameworks.vue.detailLifecycle': 'Lifecycle / cleanup',
-        'frameworks.vue.status': 'View current examples',
-        'frameworks.angular.badge': 'Angular example planned',
-        'frameworks.angular.description': 'Future example with the component lifecycle. No official wrapper is promised at this stage.',
+        'frameworks.vue.status': 'View integration',
+        'frameworks.angular.badge': 'Angular integration',
+        'frameworks.angular.description': 'Integration in Angular components and modern business pages, without promising an official wrapper.',
         'frameworks.angular.detailLifecycle': 'Component lifecycle',
-        'frameworks.angular.status': 'View current examples',
+        'frameworks.angular.status': 'View integration',
         'mainDemo.kicker': 'Legacy-friendly demo',
         'mainDemo.primaryLabel': 'Main demo',
         'mainDemo.title': 'Classic Warehouse Backoffice',
@@ -427,7 +427,7 @@ const renderShell = selectedId => {
             <section class="demo-section demo-frameworks" id="framework-integrations">
                 <div class="demo-section-heading">
                     <h2 data-i18n="frameworks.title">Scegli il percorso di integrazione</h2>
-                    <p class="demo-note" data-i18n="frameworks.description">La logica CRUD resta la stessa: parti dalla guida JavaScript pronta, poi porta AMB Grid in pagine legacy-friendly o stack moderni.</p>
+                    <p class="demo-note" data-i18n="frameworks.description">La logica CRUD resta la stessa in JavaScript, React, Vue, Angular e pagine legacy-friendly: scegli il percorso piu vicino al tuo stack.</p>
                 </div>
                 <div class="demo-framework-grid">
                     <a class="demo-framework-card demo-framework-card--javascript demo-framework-card--ready" href="#getting-started-javascript">
@@ -437,17 +437,17 @@ const renderShell = selectedId => {
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">JavaScript</span>
                             <span class="demo-framework-card__badge demo-framework-card__badge--ready" data-i18n="frameworks.javascript.badge">Guida disponibile</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Percorso consigliato per provare AMB Grid: Modern JavaScript / bundler e Classic HTML + JS + CSS nella stessa guida.</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Modern JavaScript, Classic HTML + JS + CSS e contesti legacy-friendly con la guida gia disponibile.</span>
                             <span class="demo-framework-card__meta">
                                 <span class="demo-framework-card__meta-item" data-i18n="frameworks.javascript.detailModern">Modern bundler</span>
                                 <span class="demo-framework-card__meta-item" data-i18n="frameworks.javascript.detailClassic">Classic HTML + JS + CSS</span>
                                 <span class="demo-framework-card__meta-item" data-i18n="frameworks.javascript.detailRecommended">Primo percorso consigliato</span>
                             </span>
-                            <span class="demo-framework-card__status demo-framework-card__status--ready" data-i18n="frameworks.javascript.status">Apri guida JavaScript</span>
+                            <span class="demo-framework-card__status demo-framework-card__status--ready" data-i18n="frameworks.javascript.status">Apri guida</span>
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--react demo-framework-card--planned" href="#feature-examples">
+                    <a class="demo-framework-card demo-framework-card--react demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             <svg viewBox="0 0 48 48">
                                 <ellipse cx="24" cy="24" rx="18" ry="7"></ellipse>
@@ -458,16 +458,16 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">React</span>
-                            <span class="demo-framework-card__badge demo-framework-card__badge--planned" data-i18n="frameworks.react.badge">React + TypeScript planned</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Demo separata futura: mount di AMB Grid nel componente React e grid.destroy() nel cleanup.</span>
+                            <span class="demo-framework-card__badge demo-framework-card__badge--integration" data-i18n="frameworks.react.badge">React + TypeScript</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">AMB Grid montato dentro componenti React, con cleanup del ciclo di vita tramite grid.destroy().</span>
                             <span class="demo-framework-card__meta">
                                 <span class="demo-framework-card__meta-item" data-i18n="frameworks.react.detailLifecycle">Mount / destroy</span>
                             </span>
-                            <span class="demo-framework-card__status" data-i18n="frameworks.react.status">Vedi esempi attuali</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.react.status">Vedi integrazione</span>
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--vue demo-framework-card--planned" href="#feature-examples">
+                    <a class="demo-framework-card demo-framework-card--vue demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             <svg viewBox="0 0 48 48">
                                 <path d="M8 12h10l6 11 6-11h10L24 38 8 12z"></path>
@@ -476,16 +476,16 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
-                            <span class="demo-framework-card__badge demo-framework-card__badge--planned" data-i18n="frameworks.vue.badge">Vue + TypeScript planned</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Demo separata futura: inizializzazione nel lifecycle Vue e cleanup quando il componente viene smontato.</span>
+                            <span class="demo-framework-card__badge demo-framework-card__badge--integration" data-i18n="frameworks.vue.badge">Vue + TypeScript</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Integrazione con lifecycle Vue e cleanup quando il componente viene smontato.</span>
                             <span class="demo-framework-card__meta">
                                 <span class="demo-framework-card__meta-item" data-i18n="frameworks.vue.detailLifecycle">Lifecycle / cleanup</span>
                             </span>
-                            <span class="demo-framework-card__status" data-i18n="frameworks.vue.status">Vedi esempi attuali</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.vue.status">Vedi integrazione</span>
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--angular demo-framework-card--planned" href="#feature-examples">
+                    <a class="demo-framework-card demo-framework-card--angular demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             <svg viewBox="0 0 48 48">
                                 <path d="M24 5 40 12 37 34 24 43 11 34 8 12 24 5z"></path>
@@ -495,12 +495,12 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
-                            <span class="demo-framework-card__badge demo-framework-card__badge--planned" data-i18n="frameworks.angular.badge">Angular example planned</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Esempio futuro con lifecycle del componente. Nessun wrapper ufficiale promesso in questa fase.</span>
+                            <span class="demo-framework-card__badge demo-framework-card__badge--integration" data-i18n="frameworks.angular.badge">Angular integration</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Integrazione in componenti Angular e pagine gestionali moderne, senza promettere wrapper ufficiali.</span>
                             <span class="demo-framework-card__meta">
                                 <span class="demo-framework-card__meta-item" data-i18n="frameworks.angular.detailLifecycle">Component lifecycle</span>
                             </span>
-                            <span class="demo-framework-card__status" data-i18n="frameworks.angular.status">Vedi esempi attuali</span>
+                            <span class="demo-framework-card__status" data-i18n="frameworks.angular.status">Vedi integrazione</span>
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
