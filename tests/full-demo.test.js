@@ -95,7 +95,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('data: products');
         expect(source).toContain('pagination: true');
         expect(source).toContain('paginationMode: \'local\'');
-        expect(source).toContain('paginationSize: 20');
+        expect(source).toContain('paginationSize: 10');
         expect(source).toContain('paginationSizeSelector: [10, 20, 50]');
         expect(source).not.toContain('products.slice(0, 10)');
         expect(source).not.toContain('data: visibleProducts');

@@ -226,7 +226,7 @@ export default async function fullDemo(app, options = {}) {
         layout: 'fitColumns',
         pagination: true,
         paginationMode: 'local',
-        paginationSize: 20,
+        paginationSize: 10,
         paginationSizeSelector: [10, 20, 50],
         columns: [
             {

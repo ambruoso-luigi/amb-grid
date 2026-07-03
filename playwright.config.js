@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const usesExternalServer = process.env.AMB_E2E_EXTERNAL_SERVER === '1';
+
 export default defineConfig({
     testDir: './tests/e2e',
     testMatch: '**/*.e2e.js',
@@ -13,12 +15,14 @@ export default defineConfig({
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure'
     },
-    webServer: {
-        command: 'npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort',
-        url: 'http://127.0.0.1:5173/src/demo/index.html',
-        reuseExistingServer: !process.env.CI,
-        timeout: 120000
-    },
+    webServer: usesExternalServer
+        ? undefined
+        : {
+            command: 'node ./node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5173 --strictPort',
+            url: 'http://127.0.0.1:5173/src/demo/index.html',
+            reuseExistingServer: !process.env.CI,
+            timeout: 120000
+        },
     projects: [
         {
             name: 'chrome',
