@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>AMB Grid addRow focus diagnostic fixture</title>
+    <link rel="stylesheet" href="/node_modules/tabulator-tables/dist/css/tabulator.min.css">
+    <link rel="stylesheet" href="/src/amb-grid.css">
+</head>
+<body>
+    <main>
+        <section>
+            <h1>Direct addRow diagnostic fixture</h1>
+            <div id="fixture-table"></div>
+        </section>
+    </main>
+    <script type="module">
+        import { AMB } from '/src/index.js';
+
+        const rows = Array.from({ length: 20 }, (_, index) => ({
+            id: index + 1,
+            itemCode: `PRD-${String(index + 1).padStart(4, '0')}`,
+            productName: `Product ${index + 1}`
+        }));
+
+        const diagnostics = {
+            addRowCalls: [],
+            cellEditCalls: []
+        };
+
+        const grid = AMB.table({
+            selector: '#fixture-table',
+            data: rows,
+            layout: 'fitColumns',
+            pagination: true,
+            paginationMode: 'local',
+            paginationSize: 10,
+            deleteColumn: {
+                enabled: true,
+                labels: {
+                    removeNew: 'Remove new fixture row'
+                }
+            },
+            toolbar: {
+                buttons: ['add'],
+                onAdd() {
+                    const result = grid.crud.addRow({
+                        id: null,
+                        itemCode: '',
+                        productName: ''
+                    });
+
+                    diagnostics.toolbarAddReturnIsPromise = Boolean(
+                        result && typeof result.then === 'function'
+                    );
+
+                    return result;
+                }
+            },
+            columns: [
+                {
+                    title: 'Item code',
+                    field: 'itemCode',
+                    editor: AMB.editors.text()
+                },
+                {
+                    title: 'Product name',
+                    field: 'productName',
+                    editor: AMB.editors.text()
+                }
+            ]
+        });
+
+        const originalAddRow = grid.crud.addRow.bind(grid.crud);
+        grid.crud.addRow = data => {
+            const result = originalAddRow(data);
+
+            diagnostics.addRowCalls.push({
+                returnedPromise: Boolean(result && typeof result.then === 'function')
+            });
+
+            return result;
+        };
+
+        if (typeof grid.crud._getFirstEditableCell === 'function') {
+            const originalGetFirstEditableCell = grid.crud._getFirstEditableCell.bind(grid.crud);
+
+            grid.crud._getFirstEditableCell = row => {
+                const cell = originalGetFirstEditableCell(row);
+
+                if (cell && typeof cell.edit === 'function' && !cell.__ambDiagnosticWrapped) {
+                    const originalEdit = cell.edit.bind(cell);
+
+                    cell.edit = (...args) => {
+                        diagnostics.cellEditCalls.push({
+                            field: cell.getField ? cell.getField() : null,
+                            activeTagBefore: document.activeElement ? document.activeElement.tagName : null
+                        });
+
+                        const result = originalEdit(...args);
+                        const lastCall = diagnostics.cellEditCalls[diagnostics.cellEditCalls.length - 1];
+
+                        lastCall.activeTagAfter = document.activeElement ? document.activeElement.tagName : null;
+                        lastCall.editorExistsAfter = Boolean(
+                            document.querySelector('.tabulator-cell[tabulator-field="itemCode"] input')
+                        );
+
+                        return result;
+                    };
+                    cell.__ambDiagnosticWrapped = true;
+                }
+
+                return cell;
+            };
+        }
+
+        window.__ambAddRowDiagnostic = {
+            grid,
+            diagnostics,
+            async addDirect() {
+                const result = grid.crud.addRow({
+                    id: null,
+                    itemCode: '',
+                    productName: ''
+                });
+                const returnedPromise = Boolean(result && typeof result.then === 'function');
+
+                diagnostics.directAddReturnIsPromise = returnedPromise;
+
+                if (returnedPromise) {
+                    await result;
+                }
+
+                return {
+                    returnedPromise,
+                    resolved: true
+                };
+            }
+        };
+    </script>
+</body>
+</html>
