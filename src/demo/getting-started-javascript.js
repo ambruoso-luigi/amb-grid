@@ -112,7 +112,9 @@ const columns = [
   deleteColumn: { enabled: true },
   toolbar: {
     buttons: ['add', 'reload', 'save', 'payload', 'validate'],
-    onAdd: () => grid.crud.addRow({ id: null, sku: '', productName: '', stockQuantity: 0 }),
+    onAdd: () => {
+      return grid.crud.addRow({ id: null, sku: '', productName: '', stockQuantity: 0 });
+    },
     onPayload: ({ payload }) => console.log(payload)
   }
 });</code></pre>
@@ -141,6 +143,101 @@ if (payload.canSave) {
                                 <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="guide.openMainDemo">Torna alla demo</span></a>
                                 <a class="demo-button" href="#feature-examples">${demoIcon('selected')}<span data-i18n="guide.openExamples">Vedi esempi funzionali</span></a>
                             </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="demo-section demo-guide-start" id="classic-html-js-css-integration">
+                <div class="demo-section-heading">
+                    <p class="demo-kicker" data-i18n="guide.classic.kicker">Legacy-friendly</p>
+                    <h2 data-i18n="guide.classic.title">Integrazione classica HTML + JS + CSS</h2>
+                    <p class="demo-note" data-i18n="guide.classic.text">AMB Grid resta framework-agnostic: Tabulator è il motore tabellare, mentre AMB Grid aggiunge lo strato CRUD applicativo senza imporre React, Vue o Angular.</p>
+                </div>
+
+                <div class="demo-guide-steps" aria-label="Classic HTML JavaScript CSS integration">
+                    <article class="demo-guide-step">
+                        <span class="demo-guide-step__number">A</span>
+                        <div>
+                            <h3 data-i18n="guide.classic.modernTitle">Modern JavaScript / bundler</h3>
+                            <p class="demo-note" data-i18n="guide.classic.modernText">Usa import ESM in Vite, bundler o progetti moderni. Durante lo sviluppo locale puoi importare AMB dal sorgente o dal build preparato dal progetto.</p>
+                            <pre class="demo-code-block"><code>import { AMB } from './src/index.js';</code></pre>
+                        </div>
+                    </article>
+
+                    <article class="demo-guide-step">
+                        <span class="demo-guide-step__number">B</span>
+                        <div>
+                            <h3 data-i18n="guide.classic.classicTitle">Classic HTML + JS + CSS</h3>
+                            <p class="demo-note" data-i18n="guide.classic.classicText">Nelle pagine server-rendered puoi mantenere una struttura classica: HTML importa CSS e script, il JS della pagina configura AMB Grid, il CSS della pagina contiene solo lo stile specifico del progetto.</p>
+                            <pre class="demo-code-block"><code>inventory-page.html
+inventory-page.js
+inventory-page.css</code></pre>
+                        </div>
+                    </article>
+
+                    <article class="demo-guide-step">
+                        <span class="demo-guide-step__number">C</span>
+                        <div>
+                            <h3 data-i18n="guide.classic.htmlTitle">HTML previsto per la futura build browser</h3>
+                            <p class="demo-note" data-i18n="guide.classic.htmlText">AMB Grid non produce ancora un file amb-grid.umd.js o amb-grid.iife.js. Questo snippet è uno schema previsto per la futura build browser, non un path già pronto in produzione.</p>
+                            <pre class="demo-code-block"><code>&lt;link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css"&gt;
+&lt;link rel="stylesheet" href="./vendor/amb-grid/amb-grid.css"&gt;
+&lt;link rel="stylesheet" href="./css/inventory-page.css"&gt;
+
+&lt;div id="inventory-table"&gt;&lt;/div&gt;
+
+&lt;script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"&gt;&lt;/script&gt;
+&lt;script src="./vendor/amb-grid/amb-grid.umd.js"&gt;&lt;/script&gt;
+&lt;script src="./js/inventory-page.js"&gt;&lt;/script&gt;</code></pre>
+                        </div>
+                    </article>
+
+                    <article class="demo-guide-step">
+                        <span class="demo-guide-step__number">D</span>
+                        <div>
+                            <h3 data-i18n="guide.classic.jsTitle">inventory-page.js</h3>
+                            <p class="demo-note" data-i18n="guide.classic.jsText">La callback Add restituisce la Promise di crud.addRow(...), così la toolbar può mantenere lo stato busy e attendere reveal e focus.</p>
+                            <pre class="demo-code-block"><code>const grid = AMB.table({
+  selector: '#inventory-table',
+  data: products,
+  columns: [
+    {
+      title: 'Code',
+      field: 'code',
+      editor: AMB.editors.text({ uppercase: true })
+    },
+    {
+      title: 'Description',
+      field: 'description',
+      editor: AMB.editors.text()
+    }
+  ],
+  toolbar: {
+    buttons: ['add', 'save', 'payload'],
+    onAdd() {
+      return grid.crud.addRow({
+        code: '',
+        description: ''
+      });
+    }
+  }
+});</code></pre>
+                        </div>
+                    </article>
+
+                    <article class="demo-guide-step">
+                        <span class="demo-guide-step__number">E</span>
+                        <div>
+                            <h3 data-i18n="guide.classic.cssTitle">inventory-page.css</h3>
+                            <p class="demo-note" data-i18n="guide.classic.cssText">Lo stile applicativo resta separato dallo stylesheet della libreria.</p>
+                            <pre class="demo-code-block"><code>.inventory-page {
+  padding: 24px;
+}
+
+#inventory-table {
+  margin-top: 16px;
+}</code></pre>
                         </div>
                     </article>
                 </div>

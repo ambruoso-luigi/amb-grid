@@ -47,6 +47,32 @@ describe('demo site navigation', () => {
         expect(main).toContain("variant: 'showcase'");
     });
 
+    test('documents classic HTML JS CSS integration as a planned browser bundle path', () => {
+        const guide = read('src/demo/getting-started-javascript.js');
+        const main = read('src/demo/main.js');
+
+        expect(guide).toContain('id="classic-html-js-css-integration"');
+        expect(main).toContain("'guide.classic.title': 'Integrazione classica HTML + JS + CSS'");
+        expect(main).toContain("'guide.classic.title': 'Classic HTML + JS + CSS integration'");
+        expect(guide).toContain('inventory-page.html');
+        expect(guide).toContain('inventory-page.js');
+        expect(guide).toContain('inventory-page.css');
+        expect(guide).toContain('https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css');
+        expect(guide).toContain('./vendor/amb-grid/amb-grid.css');
+        expect(guide).toContain('./vendor/amb-grid/amb-grid.umd.js');
+        expect(main).toContain('AMB Grid non produce ancora un file amb-grid.umd.js o amb-grid.iife.js');
+        expect(main).toContain('This snippet is the planned browser bundle integration shape');
+        expect(guide).toContain('return grid.crud.addRow({');
+        expect(guide).not.toContain('onAdd() {\n      grid.crud.addRow');
+    });
+
+    test('keeps the JavaScript guide add-row snippets promise-aware', () => {
+        const guide = read('src/demo/getting-started-javascript.js');
+
+        expect(guide).toContain('onAdd: () => {\n      return grid.crud.addRow');
+        expect(guide).toContain('onAdd() {\n      return grid.crud.addRow');
+    });
+
     test('keeps the complete warehouse demo out of the home shell', () => {
         const main = read('src/demo/main.js');
 
