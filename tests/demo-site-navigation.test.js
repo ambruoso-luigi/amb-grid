@@ -9,8 +9,19 @@ describe('demo site navigation', () => {
 
         expect(main).toContain('href="#getting-started-javascript"');
         expect(main).toContain("window.location.hash === '#getting-started-javascript'");
-        expect(main).toContain("'frameworks.javascript.status': 'Apri guida JavaScript'");
-        expect(main).toContain("'frameworks.javascript.status': 'Open JavaScript guide'");
+        expect(main).toContain("'frameworks.title': 'Scegli il percorso di integrazione'");
+        expect(main).toContain("'frameworks.title': 'Choose your integration path'");
+        expect(main).toContain("'frameworks.javascript.badge': 'Guida disponibile'");
+        expect(main).toContain("'frameworks.javascript.badge': 'Guide available'");
+        expect(main).toContain("'frameworks.javascript.detailClassic': 'Classic HTML + JS + CSS'");
+        expect(main).toContain('demo-framework-card--ready');
+        expect(main).toContain('demo-framework-card__meta-item');
+        expect(main).toContain('data-i18n="frameworks.javascript.status"');
+        expect(main).toContain('data-i18n="frameworks.react.status"');
+        expect(main).toContain("'frameworks.react.badge': 'React + TypeScript planned'");
+        expect(main).toContain("'frameworks.vue.badge': 'Vue + TypeScript planned'");
+        expect(main).toContain("'frameworks.angular.badge': 'Angular example planned'");
+        expect(main).toContain("'frameworks.angular.description': 'Future example with the component lifecycle. No official wrapper is promised at this stage.'");
     });
 
     test('uses the shared logo brand on the home and JavaScript guide pages', () => {
