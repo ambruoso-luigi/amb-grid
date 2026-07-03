@@ -20,12 +20,14 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "demo:data:municipalities": "node scripts/generate-italian-municipalities-demo.mjs",
     "preview": "vite preview",
     "docs": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "fflate": "^0.8.3",
     "jsdoc": "^4.0.5",
     "lucide": "^1.23.0",
