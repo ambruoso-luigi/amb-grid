@@ -42,15 +42,25 @@ const translations = {
         'language.switchToEn': 'Cambia lingua in inglese',
         'hero.badge': 'AMB Grid',
         'hero.title': 'Griglie CRUD per applicazioni business',
-        'hero.description': 'AMB Grid aggiunge a Tabulator uno strato framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
+        'hero.description': 'AMB Grid aggiunge a Tabulator uno strato CRUD framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
         'hero.primary': 'Apri demo JavaScript',
         'hero.secondary': 'Vedi esempi funzionali',
         'hero.statState': 'Stati riga',
         'hero.statStateText': 'clean, new, modified, deleted, saved',
         'hero.statPayload': 'Payload CRUD',
-        'hero.statPayloadText': 'inserted, updated, deleted',
-        'hero.statIntegration': 'Integrazione',
-        'hero.statIntegrationText': 'JavaScript, legacy-friendly, framework-ready',
+        'hero.statPayloadText': 'inserted, updated, deleted, backend-ready',
+        'hero.statIntegration': 'Framework-agnostic',
+        'hero.statIntegrationText': 'JavaScript classico, stack moderni e sistemi legacy-friendly',
+        'hero.visualTitle': 'Ciclo CRUD applicativo',
+        'hero.visualAria': 'Ciclo CRUD di AMB Grid',
+        'hero.visualSubtitle': 'Motore Tabulator + layer AMB Grid',
+        'hero.visualEdit': 'Edit',
+        'hero.visualValidate': 'Validate',
+        'hero.visualSave': 'Save',
+        'hero.visualPayload': 'Payload',
+        'hero.visualLegacy': 'legacy-friendly',
+        'hero.visualFramework': 'framework-ready',
+        'hero.visualBackend': 'backend payload',
         'frameworks.title': 'Scegli il percorso di integrazione',
         'frameworks.description': 'La logica CRUD resta la stessa in JavaScript, React, Vue, Angular e pagine legacy-friendly: scegli il percorso piu vicino al tuo stack.',
         'frameworks.javascript.badge': 'Guida disponibile',
@@ -159,15 +169,25 @@ const translations = {
         'language.switchToEn': 'Switch language to English',
         'hero.badge': 'AMB Grid',
         'hero.title': 'CRUD data grids for business applications',
-        'hero.description': 'AMB Grid adds a framework-agnostic layer to Tabulator for row states, validation, lookups, rollback, saving, and backend-ready payloads.',
+        'hero.description': 'AMB Grid adds a framework-agnostic CRUD layer on top of Tabulator for row states, validation, lookup, rollback, saving, and backend-ready payloads.',
         'hero.primary': 'Open JavaScript demo',
         'hero.secondary': 'View feature examples',
         'hero.statState': 'Row states',
         'hero.statStateText': 'clean, new, modified, deleted, saved',
         'hero.statPayload': 'CRUD payload',
-        'hero.statPayloadText': 'inserted, updated, deleted',
-        'hero.statIntegration': 'Integration',
-        'hero.statIntegrationText': 'JavaScript, legacy-friendly, framework-ready',
+        'hero.statPayloadText': 'inserted, updated, deleted, backend-ready',
+        'hero.statIntegration': 'Framework-agnostic',
+        'hero.statIntegrationText': 'Classic JavaScript, modern stacks, and legacy-friendly systems',
+        'hero.visualTitle': 'Application CRUD lifecycle',
+        'hero.visualAria': 'AMB Grid CRUD lifecycle',
+        'hero.visualSubtitle': 'Tabulator engine + AMB Grid layer',
+        'hero.visualEdit': 'Edit',
+        'hero.visualValidate': 'Validate',
+        'hero.visualSave': 'Save',
+        'hero.visualPayload': 'Payload',
+        'hero.visualLegacy': 'legacy-friendly',
+        'hero.visualFramework': 'framework-ready',
+        'hero.visualBackend': 'backend payload',
         'frameworks.title': 'Choose your integration path',
         'frameworks.description': 'The CRUD logic stays the same across JavaScript, React, Vue, Angular, and legacy-friendly pages: choose the path closest to your stack.',
         'frameworks.javascript.badge': 'Guide available',
@@ -400,26 +420,51 @@ const renderShell = selectedId => {
                     ${renderDemoBrand()}
                     ${renderLanguageSwitch()}
                 </nav>
-                <div class="demo-hero__content" id="top">
-                    <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
-                    <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
-                    <div class="demo-hero__actions">
-                        <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="hero.primary">Apri demo JavaScript</span></a>
-                        <a class="demo-button" href="#feature-examples">${demoIcon('selected')}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
+                <div class="demo-hero__body">
+                    <div class="demo-hero__content" id="top">
+                        <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
+                        <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato CRUD framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
+                        <div class="demo-hero__actions">
+                            <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="hero.primary">Apri demo JavaScript</span></a>
+                            <a class="demo-button" href="#feature-examples">${demoIcon('selected')}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
+                        </div>
                     </div>
-                </div>
-                <div class="demo-hero__metrics" aria-label="AMB Grid capabilities">
-                    <div>
-                        <strong data-i18n="hero.statState">Stati riga</strong>
-                        <span data-i18n="hero.statStateText">clean, new, modified, deleted, saved</span>
-                    </div>
-                    <div>
-                        <strong data-i18n="hero.statPayload">Payload CRUD</strong>
-                        <span data-i18n="hero.statPayloadText">inserted, updated, deleted</span>
-                    </div>
-                    <div>
-                        <strong data-i18n="hero.statIntegration">Integrazione</strong>
-                        <span data-i18n="hero.statIntegrationText">vanilla JS, legacy-friendly, framework-ready</span>
+                    <aside class="demo-hero-visual" data-i18n-title="hero.visualAria" aria-label="Ciclo CRUD di AMB Grid">
+                        <div class="demo-hero-visual__chrome" aria-hidden="true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="demo-hero-visual__header">
+                            <span data-i18n="hero.visualTitle">Ciclo CRUD applicativo</span>
+                            <strong>AMB Grid</strong>
+                        </div>
+                        <p data-i18n="hero.visualSubtitle">Motore Tabulator + layer AMB Grid</p>
+                        <div class="demo-hero-visual__flow">
+                            <span data-i18n="hero.visualEdit">Edit</span>
+                            <span data-i18n="hero.visualValidate">Validate</span>
+                            <span data-i18n="hero.visualSave">Save</span>
+                            <span data-i18n="hero.visualPayload">Payload</span>
+                        </div>
+                        <div class="demo-hero-visual__chips">
+                            <span data-i18n="hero.visualLegacy">legacy-friendly</span>
+                            <span data-i18n="hero.visualFramework">framework-ready</span>
+                            <span data-i18n="hero.visualBackend">backend payload</span>
+                        </div>
+                    </aside>
+                    <div class="demo-hero__metrics" aria-label="AMB Grid capabilities">
+                        <div>
+                            <strong data-i18n="hero.statState">Stati riga</strong>
+                            <span data-i18n="hero.statStateText">clean, new, modified, deleted, saved</span>
+                        </div>
+                        <div>
+                            <strong data-i18n="hero.statPayload">Payload CRUD</strong>
+                            <span data-i18n="hero.statPayloadText">inserted, updated, deleted, backend-ready</span>
+                        </div>
+                        <div>
+                            <strong data-i18n="hero.statIntegration">Framework-agnostic</strong>
+                            <span data-i18n="hero.statIntegrationText">JavaScript classico, stack moderni e sistemi legacy-friendly</span>
+                        </div>
                     </div>
                 </div>
             </header>
