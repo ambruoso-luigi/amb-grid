@@ -308,7 +308,7 @@ export default async function multifieldLookup(app) {
 
     function handleAddRow() {
         grid.feedback.clear();
-        grid.crud.addRow(createEmptyMunicipalityRow());
+        return grid.crud.addRow(createEmptyMunicipalityRow());
     }
 
     async function handleResetData() {

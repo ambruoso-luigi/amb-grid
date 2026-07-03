@@ -191,7 +191,7 @@ export default function basicCrud(app) {
 
     function handleAdd() {
         demo.feedback.clear();
-        crud.addRow({ id: null, title: '', tag: '', archived: 'N' });
+        return crud.addRow({ id: null, title: '', tag: '', archived: 'N' });
     }
 
     async function handleReload() {

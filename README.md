@@ -107,7 +107,7 @@ const grid = AMB.table({
       }
     ],
     onAdd: ({ grid }) => {
-      grid.crud.addRow({ id: null, name: '' });
+      return grid.crud.addRow({ id: null, name: '' });
     },
     onSave: async ({ grid, payload }) => {
       console.log(payload);
@@ -126,7 +126,9 @@ const grid = AMB.table({
 });
 ```
 
-All callbacks receive `{ grid, event }`. Save and Payload also receive
+All callbacks receive `{ grid, event }`. Return the Promise from asynchronous
+grid operations such as `grid.crud.addRow(...)` so the toolbar can keep the
+button busy until row reveal and focus complete. Save and Payload also receive
 `payload: grid.crud.getSavePayload()`. A custom button is a small object with
 `id`, `label`, optional inline `icon`, and `onClick`; set
 `includePayload: true` when a custom action also needs the save payload.

@@ -4,6 +4,12 @@ import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
 const flushPromises = async () => {
     await Promise.resolve();
     await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
 };
 
 const createColumnMock = (definition = {}) => ({
@@ -49,12 +55,14 @@ const createTableMock = ({
     currentPage = 1,
     asyncAdd = true,
     asyncDelete = true,
+    asyncUpdate = false,
     hasPageTo = true,
     pageToRejects = false,
     rerenderOnNavigation = false
 } = {}) => {
     const rows = [];
     const handlers = new Map();
+    const updateResolvers = [];
     const tableColumns = columns.map(createColumnMock);
     const rerenderCurrentPage = () => {
         const start = (currentPage - 1) * pageSize;
@@ -148,11 +156,21 @@ const createTableMock = ({
             getCells: () => cells,
             getData: () => data,
             getElement: () => rowElement,
-            update: patch => {
-                Object.assign(data, patch);
+            update: vi.fn(patch => {
+                const applyPatch = () => {
+                    Object.assign(data, patch);
 
-                return row;
-            }
+                    return row;
+                };
+
+                if (!asyncUpdate) return applyPatch();
+
+                return new Promise(resolve => {
+                    updateResolvers.push(() => {
+                        resolve(applyPatch());
+                    });
+                });
+            })
         };
         cells = columns.map(column => createCellMock(row, column));
 
@@ -164,6 +182,7 @@ const createTableMock = ({
     return {
         table,
         rows,
+        updateResolvers,
         getCurrentPage: () => currentPage
     };
 };
@@ -346,6 +365,33 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         expect(originalRow.getCell('itemCode').edit).not.toHaveBeenCalled();
         expect(renderedRow.getCell('_actions').edit).not.toHaveBeenCalled();
         expect(renderedRow.getCell('itemCode').edit).toHaveBeenCalledTimes(1);
+    });
+
+    test('addRow waits for asynchronous state patching before focusing the editor', async () => {
+        const { table, rows, updateResolvers } = createTableMock({
+            asyncUpdate: true,
+            pagination: true,
+            columns: [
+                { field: 'name', editor: 'input' }
+            ]
+        });
+        const crud = new CrudHelper(table);
+
+        const addResult = crud.addRow({ id: null, name: 'Pending update' });
+
+        await flushPromises();
+
+        const row = rows[0];
+
+        expect(row.getCell('name').edit).not.toHaveBeenCalled();
+        expect(updateResolvers).toHaveLength(1);
+
+        updateResolvers.shift()();
+
+        const resolvedRow = await addResult;
+
+        expect(resolvedRow).toBe(row);
+        expect(row.getCell('name').edit).toHaveBeenCalledTimes(1);
     });
 
     test('multiple paginated addRow calls reveal each new row without changing page size', async () => {

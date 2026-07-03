@@ -200,15 +200,25 @@ export const createToolbar = ({ selector, toolbar, getGrid }) => {
 
     options.buttons.forEach(definition => {
         const button = createButton(definition);
+        let isBusy = false;
 
         if (definition.callback) {
+            const suppressPointerHandler = event => {
+                event.preventDefault();
+                event.stopPropagation();
+            };
             const handler = async event => {
+                event.preventDefault();
+                event.stopPropagation();
+
                 const grid = getGrid();
 
-                if (!grid || button.disabled) return;
+                if (!grid || button.disabled || isBusy) return;
 
-                button.disabled = true;
+                isBusy = true;
                 button.dataset.busy = 'true';
+                button.setAttribute('aria-busy', 'true');
+                button.setAttribute('aria-disabled', 'true');
 
                 try {
                     const context = { grid, event };
@@ -219,13 +229,19 @@ export const createToolbar = ({ selector, toolbar, getGrid }) => {
 
                     await definition.callback(context);
                 } finally {
-                    button.disabled = false;
+                    isBusy = false;
                     delete button.dataset.busy;
+                    button.removeAttribute('aria-busy');
+                    button.removeAttribute('aria-disabled');
                 }
             };
 
+            ['pointerdown', 'pointerup', 'mousedown', 'mouseup'].forEach(type => {
+                button.addEventListener(type, suppressPointerHandler);
+                listeners.push({ button, type, handler: suppressPointerHandler });
+            });
             button.addEventListener('click', handler);
-            listeners.push({ button, handler });
+            listeners.push({ button, type: 'click', handler });
         }
 
         actions.appendChild(button);
@@ -238,8 +254,8 @@ export const createToolbar = ({ selector, toolbar, getGrid }) => {
         actions,
         searchMount,
         destroy() {
-            listeners.forEach(({ button, handler }) => {
-                button.removeEventListener('click', handler);
+            listeners.forEach(({ button, type, handler }) => {
+                button.removeEventListener(type, handler);
             });
             listeners.length = 0;
             element.remove();

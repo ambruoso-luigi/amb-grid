@@ -25,7 +25,7 @@ describe('Row states demo', () => {
         expect(source).toContain('enabled: true');
         expect(source.match(/\{ id: \d, item:/g)).toHaveLength(6);
         expect(source.match(/_state: 'clean'/g)).toHaveLength(6);
-        expect(source).toContain("crud.addRow({");
+        expect(source).toContain("return crud.addRow({");
         expect(source).toContain("item: 'New sample'");
         expect(source).toContain('crud.applyBackendIds(generatedIds)');
         expect(source).toContain('crud.markValidChangesSaved()');

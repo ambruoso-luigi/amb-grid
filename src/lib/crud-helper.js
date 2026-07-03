@@ -486,6 +486,20 @@ export class CrudHelper {
             : Promise.resolve();
     }
 
+    _waitForNextFrame() {
+        if (typeof globalThis.requestAnimationFrame !== 'function') {
+            return Promise.resolve();
+        }
+
+        return new Promise(resolve => {
+            globalThis.requestAnimationFrame(() => {
+                globalThis.requestAnimationFrame(() => {
+                    resolve();
+                });
+            });
+        });
+    }
+
     _getRows(scope) {
         if (!this.table || typeof this.table.getRows !== 'function') return [];
 
@@ -624,14 +638,27 @@ export class CrudHelper {
         }
 
         await this._scrollRowIntoView(visibleRow);
+        await this._waitForNextFrame();
+
+        visibleRow = this._resolveRowByKey(key) || visibleRow;
+        await this._scrollRowIntoView(visibleRow);
+        await this._waitForNextFrame();
 
         const cell = this._getFirstEditableCell(visibleRow);
 
         if (cell && typeof cell.edit === 'function') {
-            cell.edit();
+            cell.edit(true);
         }
 
         return visibleRow;
+    }
+
+    async _applyRowStateBeforeReveal(row, state) {
+        const result = this._applyRowState(row, state);
+
+        if (this._isPaginationEnabled() && result && typeof result.then === 'function') {
+            await result.catch(() => {});
+        }
     }
 
     _restoreRowData(row, originalData) {
@@ -1498,10 +1525,11 @@ export class CrudHelper {
             [this.options.stateField]: ROW_STATE.NEW
         });
         const finalize = row => {
-            this._applyRowState(row, ROW_STATE.NEW);
-            this._revealAndFocusRow(row).catch(error => {
-                console.error('Failed to reveal added row', error);
-            });
+            this._applyRowStateBeforeReveal(row, ROW_STATE.NEW)
+                .then(() => this._revealAndFocusRow(row))
+                .catch(error => {
+                    console.error('Failed to reveal added row', error);
+                });
 
             return row;
         };
@@ -1510,7 +1538,7 @@ export class CrudHelper {
 
         if (result && typeof result.then === 'function') {
             return result.then(async row => {
-                this._applyRowState(row, ROW_STATE.NEW);
+                await this._applyRowStateBeforeReveal(row, ROW_STATE.NEW);
                 await this._revealAndFocusRow(row);
                 return row;
             });
@@ -2239,7 +2267,7 @@ export class CrudHelper {
         const rowElement = row.getElement();
         const previousState = this._getBaseRowState(row);
 
-        this._patchRow(row, {
+        const result = this._patchRow(row, {
             [stateField]: state
         });
 
@@ -2257,5 +2285,7 @@ export class CrudHelper {
                 nextState: state
             });
         }
+
+        return result;
     }
 }

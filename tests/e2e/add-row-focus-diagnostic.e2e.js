@@ -56,7 +56,7 @@ const classifyDiagnostic = diagnostic => {
     }
 
     if (delayed.actionButtonFocused) {
-        return 'action button received focus';
+        return 'E) focus moved to an action button';
     }
 
     if (extra && extra.cellEditCalled === false) {
@@ -275,6 +275,30 @@ const assertDiagnosticSuccess = diagnostic => {
     ).toBe(true);
 };
 
+const assertToolbarBusyObserved = diagnostic => {
+    const message = formatDiagnostic(diagnostic);
+
+    expect(
+        diagnostic.busyImmediate === 'true'
+            || diagnostic.busyAfter50ms === 'true'
+            || diagnostic.immediate.buttonBusy === 'true',
+        `Toolbar Add button did not expose a busy state while addRow was pending.\n${message}`
+    ).toBe(true);
+};
+
+const assertBasicCrudFocusObserved = diagnostic => {
+    const message = formatDiagnostic(diagnostic);
+
+    expect(diagnostic.delayed.actionButtonFocused, `Focus is on the action/remove button.\n${message}`)
+        .toBe(false);
+    expect(diagnostic.immediate.actionButtonFocused, `Immediate focus is on the action/remove button.\n${message}`)
+        .toBe(false);
+    expect(diagnostic.delayed.newRowExists, `Basic CRUD did not create a visible new row.\n${message}`)
+        .toBe(true);
+    expect(diagnostic.delayed.targetCellExists, `Basic CRUD target cell is missing.\n${message}`)
+        .toBe(true);
+};
+
 const openInventoryDemo = async page => {
     await page.goto('/src/demo/index.html#getting-started-javascript');
     await expect(page.locator('#inventory-table.tabulator')).toBeVisible();
@@ -292,8 +316,8 @@ const openBasicCrudDemo = async page => {
     await expect(page.locator('#basic-table.tabulator')).toBeVisible();
 };
 
-test.describe('browser addRow focus diagnostic', () => {
-    test('Gestionale Magazzino Classico reports immediate and delayed focus after repeated Add row', async ({ page }) => {
+test.describe('browser addRow focus regression', () => {
+    test('Gestionale Magazzino Classico focuses itemCode after repeated toolbar Add row', async ({ page }) => {
         await openInventoryDemo(page);
 
         for (let iteration = 1; iteration <= 3; iteration += 1) {
@@ -305,11 +329,12 @@ test.describe('browser addRow focus diagnostic', () => {
                 addButtonSelector: '#javascript-demo .amb-toolbar__button--add'
             });
 
+            assertToolbarBusyObserved(diagnostic);
             assertDiagnosticSuccess(diagnostic);
         }
     });
 
-    test('Basic CRUD reports immediate and delayed focus after Add row', async ({ page }) => {
+    test('Basic CRUD comparison reports first editable field focus after toolbar Add row', async ({ page }) => {
         await openBasicCrudDemo(page);
 
         const diagnostic = await runToolbarDiagnostic(page, {
@@ -319,6 +344,35 @@ test.describe('browser addRow focus diagnostic', () => {
             targetField: 'title',
             addButtonSelector: '#feature-example .amb-toolbar__button--add'
         });
+
+        assertBasicCrudFocusObserved(diagnostic);
+    });
+
+    test('fixture toolbar returns and awaits crud.addRow focus', async ({ page }) => {
+        await page.goto('/tests/e2e/fixtures/add-row-direct.html');
+        await expect(page.locator('#fixture-table.tabulator')).toBeVisible();
+
+        const diagnostic = await runToolbarDiagnostic(page, {
+            scenario: 'Fixture toolbar returned crud.addRow',
+            iteration: 1,
+            tableSelector: '#fixture-table',
+            targetField: 'itemCode',
+            addButtonSelector: '.amb-toolbar__button--add'
+        });
+        diagnostic.extra = await page.evaluate(() => {
+            const diagnostics = window.__ambAddRowDiagnostic.diagnostics;
+            const lastEditCall = diagnostics.cellEditCalls[diagnostics.cellEditCalls.length - 1] || null;
+
+            return {
+                toolbarAddReturnIsPromise: diagnostics.toolbarAddReturnIsPromise,
+                addRowReturnIsPromise: diagnostics.addRowCalls.at(-1)?.returnedPromise ?? null,
+                cellEditCalled: diagnostics.cellEditCalls.length > 0,
+                cellEditField: lastEditCall ? lastEditCall.field : null,
+                cellEditCalls: diagnostics.cellEditCalls
+            };
+        });
+        diagnostic.classification = classifyDiagnostic(diagnostic);
+        console.info(formatDiagnostic(diagnostic));
 
         assertDiagnosticSuccess(diagnostic);
     });

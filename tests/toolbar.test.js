@@ -59,6 +59,10 @@ class ElementMock {
         this[name] = value;
     }
 
+    removeAttribute(name) {
+        delete this[name];
+    }
+
     querySelector() {
         return null;
     }
@@ -73,7 +77,12 @@ class ElementMock {
         const listener = this.listeners.get(type);
 
         if (listener) {
-            await listener({ type, target: this });
+            await listener({
+                type,
+                target: this,
+                preventDefault: vi.fn(),
+                stopPropagation: vi.fn()
+            });
         }
     }
 
@@ -272,6 +281,44 @@ describe('AMB toolbar', () => {
             expect(onCustom).toHaveBeenCalledWith(expect.objectContaining({
                 grid: harness.grid
             }));
+        } finally {
+            harness.controller.destroy();
+            harness.restore();
+        }
+    });
+
+    test('keeps async action buttons focusable while guarding duplicate clicks with busy state', async () => {
+        let resolveAdd;
+        const onAdd = vi.fn(() => new Promise(resolve => {
+            resolveAdd = resolve;
+        }));
+        const harness = createHarness({
+            buttons: ['add'],
+            onAdd
+        });
+
+        try {
+            const [addButton] = harness.controller.element.children[0].children;
+            const firstClick = addButton.dispatch('click');
+
+            await Promise.resolve();
+
+            expect(addButton.disabled).toBe(false);
+            expect(addButton.dataset.busy).toBe('true');
+            expect(addButton['aria-busy']).toBe('true');
+            expect(addButton['aria-disabled']).toBe('true');
+
+            await addButton.dispatch('click');
+
+            expect(onAdd).toHaveBeenCalledTimes(1);
+
+            resolveAdd();
+            await firstClick;
+
+            expect(addButton.disabled).toBe(false);
+            expect(addButton.dataset.busy).toBeUndefined();
+            expect(addButton['aria-busy']).toBeUndefined();
+            expect(addButton['aria-disabled']).toBeUndefined();
         } finally {
             harness.controller.destroy();
             harness.restore();

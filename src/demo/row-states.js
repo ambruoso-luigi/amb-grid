@@ -235,7 +235,7 @@ export default function rowStates(app) {
 
     function handleAdd() {
         demo.feedback.clear();
-        crud.addRow({
+        return crud.addRow({
             id: null,
             item: 'New sample',
             category: '',

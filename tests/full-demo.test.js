@@ -125,7 +125,7 @@ describe('Legacy-friendly warehouse demo', () => {
     test('uses the same simple Add row pattern as the base demos', () => {
         expect(source).toContain('function handleAdd()');
         expect(source).toContain('demo.feedback.clear()');
-        expect(source).toContain('crud.addRow({');
+        expect(source).toContain('return crud.addRow({');
         expect(source).not.toContain('async function handleAdd()');
         expect(source).not.toContain('await crud.addRow');
         expect(source).not.toContain('setPage(');

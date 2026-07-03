@@ -444,7 +444,7 @@ export default async function fullDemo(app, options = {}) {
 
     function handleAdd() {
         demo.feedback.clear();
-        crud.addRow({
+        return crud.addRow({
             id: null,
             itemCode: '',
             productName: '',
