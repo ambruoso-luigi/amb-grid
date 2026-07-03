@@ -891,6 +891,106 @@ a {
     padding: 14px;
 }
 
+.demo-code-block--compact {
+    margin-top: 10px;
+}
+
+.demo-guide-classic-layout {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.demo-guide-mode-card,
+.demo-guide-code-section {
+    background: var(--amb-site-surface-soft);
+    border: 1px solid var(--amb-site-border);
+    border-radius: var(--amb-site-radius-sm);
+    min-width: 0;
+    padding: clamp(16px, 2.2vw, 22px);
+}
+
+.demo-guide-mode-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.demo-guide-mode-card--legacy {
+    background: #f8fbff;
+    border-color: #b7cce8;
+}
+
+.demo-guide-mode-card h3,
+.demo-guide-code-section h3 {
+    font-size: clamp(18px, 2.2vw, 24px);
+    line-height: 1.16;
+    margin-bottom: 8px;
+}
+
+.demo-guide-badge,
+.demo-guide-code-label {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1;
+}
+
+.demo-guide-badge {
+    align-self: flex-start;
+    background: #eaf2ff;
+    color: var(--amb-site-blue);
+    padding: 7px 10px;
+}
+
+.demo-guide-badge--legacy {
+    background: #ecfdf3;
+    color: #087443;
+}
+
+.demo-guide-badge--planned {
+    background: #fff4df;
+    color: #8a4b00;
+}
+
+.demo-guide-code-label {
+    background: #eef3f8;
+    color: var(--amb-site-text);
+    margin-bottom: 10px;
+    padding: 6px 9px;
+}
+
+.demo-guide-file-structure {
+    background: #ffffff;
+    border: 1px solid #d6e2f0;
+    border-radius: var(--amb-site-radius-sm);
+    margin-top: 16px;
+    padding: 14px;
+}
+
+.demo-guide-file-structure .demo-code-block {
+    margin-top: 10px;
+}
+
+.demo-guide-code-section {
+    background: #ffffff;
+}
+
+.demo-guide-code-section--wide {
+    grid-column: 1 / -1;
+}
+
+.demo-guide-code-section--planned {
+    border-color: #e5c57a;
+}
+
+.demo-guide-code-heading {
+    margin-bottom: 12px;
+}
+
 .demo-video-card {
     align-items: center;
     display: flex;
@@ -1643,6 +1743,10 @@ a {
     }
 
     .demo-guide-step {
+        grid-template-columns: 1fr;
+    }
+
+    .demo-guide-classic-layout {
         grid-template-columns: 1fr;
     }
 

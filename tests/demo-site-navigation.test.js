@@ -54,6 +54,14 @@ describe('demo site navigation', () => {
         expect(guide).toContain('id="classic-html-js-css-integration"');
         expect(main).toContain("'guide.classic.title': 'Integrazione classica HTML + JS + CSS'");
         expect(main).toContain("'guide.classic.title': 'Classic HTML + JS + CSS integration'");
+        expect(guide).toContain('class="demo-guide-mode-card');
+        expect(guide).toContain('class="demo-guide-badge');
+        expect(guide).toContain('class="demo-guide-file-structure"');
+        expect(guide).toContain('class="demo-guide-code-section');
+        expect(main).toContain("'guide.classic.plannedBadge': 'Futura build browser'");
+        expect(main).toContain("'guide.classic.plannedBadge': 'Planned browser bundle'");
+        expect(main).toContain("'guide.classic.filesTitle': 'Struttura file'");
+        expect(main).toContain("'guide.classic.filesTitle': 'File structure'");
         expect(guide).toContain('inventory-page.html');
         expect(guide).toContain('inventory-page.js');
         expect(guide).toContain('inventory-page.css');

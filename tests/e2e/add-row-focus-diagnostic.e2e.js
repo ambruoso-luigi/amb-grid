@@ -422,4 +422,22 @@ test.describe('browser addRow focus regression', () => {
 
         assertDiagnosticSuccess(diagnostic);
     });
+
+    test('JavaScript guide shows the classic integration section as structured visible guidance', async ({ page }) => {
+        await page.goto('/src/demo/index.html#getting-started-javascript');
+
+        const section = page.locator('#classic-html-js-css-integration');
+        await section.scrollIntoViewIfNeeded();
+
+        await expect(section).toBeVisible();
+        await expect(section.locator('.demo-guide-mode-card')).toHaveCount(2);
+        await expect(section.locator('.demo-guide-mode-card--legacy')).toBeVisible();
+        await expect(section.locator('.demo-guide-file-structure')).toBeVisible();
+        await expect(section.locator('.demo-guide-file-structure .demo-code-block')).toContainText('inventory-page.html');
+        await expect(section.locator('.demo-guide-file-structure .demo-code-block')).toContainText('inventory-page.js');
+        await expect(section.locator('.demo-guide-file-structure .demo-code-block')).toContainText('inventory-page.css');
+        await expect(section.locator('.demo-guide-code-section')).toHaveCount(3);
+        await expect(section.locator('.demo-guide-badge--planned')).toBeVisible();
+        await expect(section.locator('.demo-code-block').filter({ hasText: 'return grid.crud.addRow' })).toBeVisible();
+    });
 });
