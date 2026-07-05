@@ -566,7 +566,7 @@ const renderShell = selectedId => {
                 </div>
             </section>
 
-            <section class="demo-section">
+            <section class="demo-section demo-section--flow">
                 <div class="demo-section-heading">
                     <p class="demo-kicker" data-i18n="cycle.kicker">Flusso applicativo</p>
                     <h2 data-i18n="cycle.title">CRUD, validazione e payload nello stesso ciclo</h2>
@@ -574,23 +574,38 @@ const renderShell = selectedId => {
                 </div>
                 <div class="demo-flow-grid">
                     <article class="demo-flow-card">
-                        <strong data-i18n="cycle.editTitle">Edit</strong>
+                        <span class="demo-flow-card__header">
+                            <span class="demo-flow-card__step" aria-hidden="true">01</span>
+                            <strong data-i18n="cycle.editTitle">Edit</strong>
+                        </span>
                         <p data-i18n="cycle.editText">Le celle editabili aggiornano i dati senza nascondere gli stati riga.</p>
                     </article>
                     <article class="demo-flow-card">
-                        <strong data-i18n="cycle.keyboardTitle">Editing orientato alla tastiera</strong>
+                        <span class="demo-flow-card__header">
+                            <span class="demo-flow-card__step" aria-hidden="true">02</span>
+                            <strong data-i18n="cycle.keyboardTitle">Editing orientato alla tastiera</strong>
+                        </span>
                         <p data-i18n="cycle.keyboardText">Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.</p>
                     </article>
                     <article class="demo-flow-card">
-                        <strong data-i18n="cycle.validateTitle">Validate</strong>
+                        <span class="demo-flow-card__header">
+                            <span class="demo-flow-card__step" aria-hidden="true">03</span>
+                            <strong data-i18n="cycle.validateTitle">Validate</strong>
+                        </span>
                         <p data-i18n="cycle.validateText">Validatori e parser separano qualità del dato e normalizzazione payload.</p>
                     </article>
                     <article class="demo-flow-card">
-                        <strong data-i18n="cycle.payloadTitle">Payload</strong>
+                        <span class="demo-flow-card__header">
+                            <span class="demo-flow-card__step" aria-hidden="true">04</span>
+                            <strong data-i18n="cycle.payloadTitle">Payload</strong>
+                        </span>
                         <p data-i18n="cycle.payloadText">Le modifiche diventano JSON leggibile e pronto per una API applicativa.</p>
                     </article>
                     <article class="demo-flow-card">
-                        <strong data-i18n="cycle.alignTitle">Align</strong>
+                        <span class="demo-flow-card__header">
+                            <span class="demo-flow-card__step" aria-hidden="true">05</span>
+                            <strong data-i18n="cycle.alignTitle">Align</strong>
+                        </span>
                         <p data-i18n="cycle.alignText">Dopo il salvataggio, ID backend e stati possono essere riallineati.</p>
                     </article>
                 </div>
