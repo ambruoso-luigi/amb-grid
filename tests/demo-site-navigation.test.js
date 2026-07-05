@@ -111,13 +111,16 @@ describe('demo site navigation', () => {
         expect(main).not.toContain('mountMainDemo();');
         expect(main).toContain('href="#getting-started-javascript">${demoIcon(\'arrowRight\')}<span data-i18n="hero.primary"');
         expect(main).toContain("'hero.description': 'AMB Grid adds a framework-agnostic CRUD layer on top of Tabulator");
-        expect(main).toContain('class="demo-hero-visual"');
-        expect(main).toContain('data-i18n="hero.visualTitle"');
-        expect(main).toContain('data-i18n="hero.visualPayload"');
+        expect(main).not.toContain('class="demo-hero-visual"');
+        expect(main).not.toContain('data-i18n="hero.visualTitle"');
+        expect(main).not.toContain('data-i18n="hero.visualPayload"');
+        expect(main).not.toContain('amb-grid.js');
+        expect(main).not.toContain('Tabulator engine');
+        expect(main).not.toContain('AMB Grid layer');
         expect(main).toContain("'hero.statIntegration': 'Framework-agnostic'");
         expect(css).toContain('.demo-hero__body');
-        expect(css).toContain('.demo-hero-visual');
-        expect(css).toContain('.demo-hero-visual__flow');
+        expect(css).not.toContain('.demo-hero-visual');
+        expect(css).not.toContain('.demo-hero-visual__flow');
     });
 
     test('does not post-process AMB Grid generated controls from the demo', () => {

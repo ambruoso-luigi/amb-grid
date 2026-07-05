@@ -53,24 +53,6 @@ const translations = {
         'hero.statPayloadText': 'inserted, updated, deleted, backend-ready',
         'hero.statIntegration': 'Framework-agnostic',
         'hero.statIntegrationText': 'JavaScript classico, stack moderni e sistemi legacy-friendly',
-        'hero.visualTitle': 'Ciclo CRUD applicativo',
-        'hero.visualAria': 'Ciclo CRUD di AMB Grid',
-        'hero.visualFile': 'amb-grid.js',
-        'hero.visualSubtitle': 'Motore Tabulator + layer AMB Grid',
-        'hero.visualEngine': 'Tabulator engine',
-        'hero.visualLayer': 'AMB Grid layer',
-        'hero.visualEdit': 'Edit',
-        'hero.visualValidate': 'Validate',
-        'hero.visualSave': 'Save',
-        'hero.visualPayload': 'Payload',
-        'hero.visualRecord': 'Riga prodotto',
-        'hero.visualClean': 'clean',
-        'hero.visualModified': 'modified',
-        'hero.visualSaved': 'saved',
-        'hero.visualPayloadReady': 'Payload pronto',
-        'hero.visualLegacy': 'legacy-friendly',
-        'hero.visualFramework': 'framework-ready',
-        'hero.visualBackend': 'backend payload',
         'frameworks.title': 'Scegli il percorso di integrazione',
         'frameworks.description': 'La logica CRUD resta la stessa in JavaScript, React, Vue, Angular e pagine legacy-friendly: scegli il percorso piu vicino al tuo stack.',
         'frameworks.javascript.badge': 'Guida disponibile',
@@ -196,24 +178,6 @@ const translations = {
         'hero.statPayloadText': 'inserted, updated, deleted, backend-ready',
         'hero.statIntegration': 'Framework-agnostic',
         'hero.statIntegrationText': 'Classic JavaScript, modern stacks, and legacy-friendly systems',
-        'hero.visualTitle': 'Application CRUD lifecycle',
-        'hero.visualAria': 'AMB Grid CRUD lifecycle',
-        'hero.visualFile': 'amb-grid.js',
-        'hero.visualSubtitle': 'Tabulator engine + AMB Grid layer',
-        'hero.visualEngine': 'Tabulator engine',
-        'hero.visualLayer': 'AMB Grid layer',
-        'hero.visualEdit': 'Edit',
-        'hero.visualValidate': 'Validate',
-        'hero.visualSave': 'Save',
-        'hero.visualPayload': 'Payload',
-        'hero.visualRecord': 'Product row',
-        'hero.visualClean': 'clean',
-        'hero.visualModified': 'modified',
-        'hero.visualSaved': 'saved',
-        'hero.visualPayloadReady': 'Payload ready',
-        'hero.visualLegacy': 'legacy-friendly',
-        'hero.visualFramework': 'framework-ready',
-        'hero.visualBackend': 'backend payload',
         'frameworks.title': 'Choose your integration path',
         'frameworks.description': 'The CRUD logic stays the same across JavaScript, React, Vue, Angular, and legacy-friendly pages: choose the path closest to your stack.',
         'frameworks.javascript.badge': 'Guide available',
@@ -467,57 +431,6 @@ const renderShell = selectedId => {
                             <a class="demo-button" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
                         </div>
                     </div>
-                    <aside class="demo-hero-visual" data-i18n-title="hero.visualAria" aria-label="Ciclo CRUD di AMB Grid">
-                        <div class="demo-hero-visual__chrome" aria-hidden="true">
-                            <span class="demo-hero-visual__dot"></span>
-                            <span class="demo-hero-visual__dot"></span>
-                            <span class="demo-hero-visual__dot"></span>
-                            <strong data-i18n="hero.visualFile">amb-grid.js</strong>
-                        </div>
-                        <div class="demo-hero-visual__header">
-                            <span>
-                                ${demoIcon('framework', { className: 'demo-hero-visual-icon', size: 16 })}
-                                <span data-i18n="hero.visualTitle">Ciclo CRUD applicativo</span>
-                            </span>
-                            <strong>AMB Grid</strong>
-                        </div>
-                        <p data-i18n="hero.visualSubtitle">Motore Tabulator + layer AMB Grid</p>
-                        <div class="demo-hero-visual__stack">
-                            <span>
-                                ${demoIcon('backend', { className: 'demo-hero-visual-icon', size: 15 })}
-                                <span data-i18n="hero.visualEngine">Tabulator engine</span>
-                            </span>
-                            <span>
-                                ${demoIcon('crud', { className: 'demo-hero-visual-icon', size: 15 })}
-                                <span data-i18n="hero.visualLayer">AMB Grid layer</span>
-                            </span>
-                        </div>
-                        <div class="demo-hero-visual__flow">
-                            <span>${demoIcon('edit', { className: 'demo-hero-visual-icon', size: 15 })}<span data-i18n="hero.visualEdit">Edit</span></span>
-                            <span>${demoIcon('validation', { className: 'demo-hero-visual-icon', size: 15 })}<span data-i18n="hero.visualValidate">Validate</span></span>
-                            <span>${demoIcon('save', { className: 'demo-hero-visual-icon', size: 15 })}<span data-i18n="hero.visualSave">Save</span></span>
-                            <span>${demoIcon('payload', { className: 'demo-hero-visual-icon', size: 15 })}<span data-i18n="hero.visualPayload">Payload</span></span>
-                        </div>
-                        <div class="demo-hero-visual__records" aria-hidden="true">
-                            <div>
-                                <span data-i18n="hero.visualRecord">Riga prodotto</span>
-                                <strong data-i18n="hero.visualClean">clean</strong>
-                            </div>
-                            <div>
-                                <span data-i18n="hero.visualRecord">Riga prodotto</span>
-                                <strong data-i18n="hero.visualModified">modified</strong>
-                            </div>
-                            <div>
-                                <span data-i18n="hero.visualPayloadReady">Payload pronto</span>
-                                <strong data-i18n="hero.visualSaved">saved</strong>
-                            </div>
-                        </div>
-                        <div class="demo-hero-visual__chips">
-                            <span data-i18n="hero.visualLegacy">legacy-friendly</span>
-                            <span data-i18n="hero.visualFramework">framework-ready</span>
-                            <span data-i18n="hero.visualBackend">backend payload</span>
-                        </div>
-                    </aside>
                     <div class="demo-hero__metrics" aria-label="AMB Grid capabilities">
                         <div>
                             ${demoIcon('rowStates', { className: 'demo-hero-metric-icon', size: 18 })}
