@@ -160,7 +160,7 @@ export default async function fullDemo(app, options = {}) {
                 <div class="demo-app-shell__meta">
                     <div>
                         <p class="demo-kicker" data-i18n="mainDemo.panelKicker">Pannello operativo</p>
-                        <h3 data-i18n="mainDemo.panelTitle">Editable inventory data</h3>
+                        <h3 data-i18n="mainDemo.panelTitle">Dati magazzino editabili</h3>
                         <p class="demo-note" data-i18n="mainDemo.panelText">Gestisci righe prodotto, stati CRUD, validazione e payload backend nello stesso flusso.</p>
                     </div>
                     <div class="demo-app-shell__chips" aria-label="Inventory demo capabilities">

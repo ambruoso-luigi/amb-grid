@@ -87,7 +87,7 @@ const translations = {
         'mainDemo.description': 'Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.',
         'mainDemo.scenario': 'Scenario: Classic Warehouse Backoffice',
         'mainDemo.panelKicker': 'Pannello operativo',
-        'mainDemo.panelTitle': 'Editable inventory data',
+        'mainDemo.panelTitle': 'Dati magazzino editabili',
         'mainDemo.panelText': 'Gestisci righe prodotto, stati CRUD, validazione e payload backend nello stesso flusso.',
         'mainDemo.chipPagination': 'Paginazione locale',
         'mainDemo.chipStates': 'Stati riga',

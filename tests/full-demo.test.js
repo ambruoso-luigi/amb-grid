@@ -146,11 +146,13 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('class="demo-inventory-panel"');
         expect(source).toContain('class="demo-app-shell"');
         expect(source).toContain('class="demo-app-shell__chips"');
+        expect(source).toContain('Dati magazzino editabili');
         expect(source).toContain('data-i18n="mainDemo.chipPagination"');
         expect(source).toContain('data-i18n="mainDemo.chipValidation"');
         expect(demoCss).toContain('.demo-inventory-panel');
         expect(demoCss).toContain('.demo-app-shell__header');
         expect(demoCss).toContain('.demo-app-chip');
+        expect(demoCss).toContain('.amb-demo-inventory-grid');
         expect(demoCss).toContain('.demo-panel .amb-toolbar {');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);');
         expect(demoCss).toContain('.demo-panel .amb-toolbar__search {');
