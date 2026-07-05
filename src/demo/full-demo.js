@@ -146,16 +146,33 @@ export default async function fullDemo(app, options = {}) {
     }
 
     app.innerHTML = `
-        ${showHeader ? `<div class="demo-section-heading demo-section-heading--split">
-            <div>
-                <span class="demo-main-badge" data-i18n="mainDemo.primaryLabel">Demo principale</span>
-                <p class="demo-kicker" data-i18n="mainDemo.kicker">Demo legacy-friendly</p>
-                <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
-                <p class="demo-note" data-i18n="mainDemo.description">Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.</p>
+        <div class="demo-inventory-panel">
+            ${showHeader ? `<div class="demo-app-shell__header">
+                <div>
+                    <span class="demo-main-badge" data-i18n="mainDemo.primaryLabel">Demo principale</span>
+                    <p class="demo-kicker" data-i18n="mainDemo.kicker">Demo legacy-friendly</p>
+                    <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
+                    <p class="demo-note" data-i18n="mainDemo.description">Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.</p>
+                </div>
+                ${showScenario ? '<p class="demo-scenario-label" data-i18n="mainDemo.scenario">Scenario: Classic Warehouse Backoffice</p>' : ''}
+            </div>` : ''}
+            <div class="demo-app-shell">
+                <div class="demo-app-shell__meta">
+                    <div>
+                        <p class="demo-kicker" data-i18n="mainDemo.panelKicker">Pannello operativo</p>
+                        <h3 data-i18n="mainDemo.panelTitle">Editable inventory data</h3>
+                        <p class="demo-note" data-i18n="mainDemo.panelText">Gestisci righe prodotto, stati CRUD, validazione e payload backend nello stesso flusso.</p>
+                    </div>
+                    <div class="demo-app-shell__chips" aria-label="Inventory demo capabilities">
+                        <span class="demo-app-chip" data-i18n="mainDemo.chipPagination">Paginazione locale</span>
+                        <span class="demo-app-chip" data-i18n="mainDemo.chipStates">Stati riga</span>
+                        <span class="demo-app-chip" data-i18n="mainDemo.chipBackend">Backend fake</span>
+                        <span class="demo-app-chip" data-i18n="mainDemo.chipValidation">Validazione attiva</span>
+                    </div>
+                </div>
             </div>
-            ${showScenario ? '<p class="demo-scenario-label" data-i18n="mainDemo.scenario">Scenario: Classic Warehouse Backoffice</p>' : ''}
-        </div>` : ''}
-        <div id="inventory-table" class="amb-demo-inventory-grid"></div>
+            <div id="inventory-table" class="amb-demo-inventory-grid"></div>
+        </div>
     `;
 
     const statusLookup = AMB.lookup({

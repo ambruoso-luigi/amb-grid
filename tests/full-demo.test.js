@@ -143,6 +143,14 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('keeps the main demo toolbar compact and the Tabulator surface clean in demo CSS', () => {
+        expect(source).toContain('class="demo-inventory-panel"');
+        expect(source).toContain('class="demo-app-shell"');
+        expect(source).toContain('class="demo-app-shell__chips"');
+        expect(source).toContain('data-i18n="mainDemo.chipPagination"');
+        expect(source).toContain('data-i18n="mainDemo.chipValidation"');
+        expect(demoCss).toContain('.demo-inventory-panel');
+        expect(demoCss).toContain('.demo-app-shell__header');
+        expect(demoCss).toContain('.demo-app-chip');
         expect(demoCss).toContain('.demo-panel .amb-toolbar {');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);');
         expect(demoCss).toContain('.demo-panel .amb-toolbar__search {');
