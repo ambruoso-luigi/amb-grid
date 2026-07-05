@@ -1,15 +1,60 @@
-import ArrowRight from 'lucide/dist/esm/icons/arrow-right.mjs';
-import CirclePlay from 'lucide/dist/esm/icons/circle-play.mjs';
-import ClipboardList from 'lucide/dist/esm/icons/clipboard-list.mjs';
-import FileCode from 'lucide/dist/esm/icons/file-code.mjs';
-import ListChecks from 'lucide/dist/esm/icons/list-checks.mjs';
+import {
+    ArrowRight,
+    Atom,
+    Blocks,
+    Box,
+    Braces,
+    Calendar,
+    CirclePlay,
+    ClipboardList,
+    CodeXml,
+    Component,
+    Database,
+    FileCode,
+    FileJson,
+    Keyboard,
+    Layers,
+    ListChecks,
+    MonitorCog,
+    Pencil,
+    RotateCcw,
+    Rows3,
+    Save,
+    Search,
+    Server,
+    ShieldCheck,
+    Sparkles,
+    Trash2,
+    Workflow
+} from 'lucide';
 
-const icons = {
+export const demoIcons = {
+    angular: Component,
+    api: Server,
     arrowRight: ArrowRight,
+    autocomplete: Sparkles,
+    backend: Database,
+    crud: Workflow,
+    date: Calendar,
+    delete: Trash2,
+    edit: Pencil,
+    framework: Blocks,
+    javascript: CodeXml,
     json: FileCode,
+    keyboard: Keyboard,
+    legacy: Box,
+    lookup: Search,
+    modern: MonitorCog,
+    payload: FileJson,
+    react: Atom,
     report: ClipboardList,
+    rollback: RotateCcw,
+    rowStates: Rows3,
+    save: Save,
     selected: ListChecks,
-    video: CirclePlay
+    validation: ShieldCheck,
+    video: CirclePlay,
+    vue: Layers
 };
 
 const stringifyAttributes = attributes => Object.entries(attributes)
@@ -27,7 +72,7 @@ const renderChildren = children => children
     .join('');
 
 export const demoIcon = (name, options = {}) => {
-    const icon = icons[name];
+    const icon = demoIcons[name];
     const {
         size = 18,
         strokeWidth = 2,

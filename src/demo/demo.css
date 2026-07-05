@@ -521,6 +521,12 @@ a {
     color: currentColor;
 }
 
+.demo-card-icon {
+    color: currentColor;
+    display: block;
+    flex: 0 0 auto;
+}
+
 .demo-button:hover,
 .toolbar button:hover,
 .demo-menu-button:hover,
@@ -734,10 +740,10 @@ a {
 }
 
 .demo-flow-card__header {
-    align-items: start;
+    align-items: center;
     display: grid;
     gap: 10px;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto auto minmax(0, 1fr);
 }
 
 .demo-flow-card__step {
@@ -752,6 +758,16 @@ a {
     line-height: 1;
     min-width: 36px;
     padding: 7px 8px;
+}
+
+.demo-card-icon--flow {
+    background: rgb(255 255 255 / 74%);
+    border: 1px solid rgb(16 35 63 / 10%);
+    border-radius: 999px;
+    color: var(--flow-accent);
+    height: 32px;
+    padding: 6px;
+    width: 32px;
 }
 
 .demo-flow-card strong {
@@ -836,6 +852,11 @@ a {
     stroke-linejoin: round;
     stroke-width: 2.2;
     width: 42px;
+}
+
+.demo-framework-card__icon .demo-card-icon--framework {
+    height: 34px;
+    width: 34px;
 }
 
 .demo-framework-card__icon-text {

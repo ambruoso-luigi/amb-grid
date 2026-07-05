@@ -491,7 +491,7 @@ const renderShell = selectedId => {
                 <div class="demo-framework-grid">
                     <a class="demo-framework-card demo-framework-card--javascript demo-framework-card--ready" href="#getting-started-javascript">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            <span class="demo-framework-card__icon-text">JS</span>
+                            ${demoIcon('javascript', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">JavaScript</span>
@@ -508,12 +508,7 @@ const renderShell = selectedId => {
                     </a>
                     <a class="demo-framework-card demo-framework-card--react demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            <svg viewBox="0 0 48 48">
-                                <ellipse cx="24" cy="24" rx="18" ry="7"></ellipse>
-                                <ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(60 24 24)"></ellipse>
-                                <ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(120 24 24)"></ellipse>
-                                <circle cx="24" cy="24" r="3.5"></circle>
-                            </svg>
+                            ${demoIcon('react', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">React</span>
@@ -528,10 +523,7 @@ const renderShell = selectedId => {
                     </a>
                     <a class="demo-framework-card demo-framework-card--vue demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            <svg viewBox="0 0 48 48">
-                                <path d="M8 12h10l6 11 6-11h10L24 38 8 12z"></path>
-                                <path d="M16 12h8l4 7 4-7h8L24 31 16 12z"></path>
-                            </svg>
+                            ${demoIcon('vue', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
@@ -546,11 +538,7 @@ const renderShell = selectedId => {
                     </a>
                     <a class="demo-framework-card demo-framework-card--angular demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            <svg viewBox="0 0 48 48">
-                                <path d="M24 5 40 12 37 34 24 43 11 34 8 12 24 5z"></path>
-                                <path d="M17 34 24 13l7 21"></path>
-                                <path d="M20 27h8"></path>
-                            </svg>
+                            ${demoIcon('angular', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
@@ -576,6 +564,7 @@ const renderShell = selectedId => {
                     <article class="demo-flow-card">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">01</span>
+                            ${demoIcon('edit', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.editTitle">Edit</strong>
                         </span>
                         <p data-i18n="cycle.editText">Le celle editabili aggiornano i dati senza nascondere gli stati riga.</p>
@@ -583,6 +572,7 @@ const renderShell = selectedId => {
                     <article class="demo-flow-card">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">02</span>
+                            ${demoIcon('keyboard', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.keyboardTitle">Editing orientato alla tastiera</strong>
                         </span>
                         <p data-i18n="cycle.keyboardText">Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.</p>
@@ -590,6 +580,7 @@ const renderShell = selectedId => {
                     <article class="demo-flow-card">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">03</span>
+                            ${demoIcon('validation', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.validateTitle">Validate</strong>
                         </span>
                         <p data-i18n="cycle.validateText">Validatori e parser separano qualità del dato e normalizzazione payload.</p>
@@ -597,6 +588,7 @@ const renderShell = selectedId => {
                     <article class="demo-flow-card">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">04</span>
+                            ${demoIcon('payload', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.payloadTitle">Payload</strong>
                         </span>
                         <p data-i18n="cycle.payloadText">Le modifiche diventano JSON leggibile e pronto per una API applicativa.</p>
@@ -604,6 +596,7 @@ const renderShell = selectedId => {
                     <article class="demo-flow-card">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">05</span>
+                            ${demoIcon('backend', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.alignTitle">Align</strong>
                         </span>
                         <p data-i18n="cycle.alignText">Dopo il salvataggio, ID backend e stati possono essere riallineati.</p>
