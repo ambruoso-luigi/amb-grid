@@ -16,6 +16,7 @@ import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon } from './demo-icons.js';
+import { initDemoMotion } from './demo-motion.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -728,6 +729,7 @@ const renderHome = () => {
         currentView = 'home';
         renderShell(featureExamples[0].id);
         applyI18n();
+        initDemoMotion(root);
         loadFeatureExample(featureExamples[0].id);
         window.requestAnimationFrame(scrollToHashTarget);
         return;
