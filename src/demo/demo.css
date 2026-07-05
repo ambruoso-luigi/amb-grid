@@ -187,10 +187,10 @@ a {
 }
 
 .demo-hero__body {
-    align-items: end;
+    align-items: center;
     display: grid;
     gap: clamp(20px, 3.4vw, 44px);
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.72fr);
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 0.78fr);
 }
 
 .demo-brand {
@@ -361,6 +361,41 @@ a {
     padding-top: clamp(14px, 3.4vw, 46px);
 }
 
+.demo-hero-badge {
+    align-items: center;
+    background: rgb(255 255 255 / 78%);
+    border: 1px solid rgb(145 168 191 / 48%);
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgb(16 35 63 / 8%);
+    color: var(--amb-site-blue-strong);
+    display: inline-flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+    font-weight: 850;
+    gap: 8px;
+    line-height: 1.2;
+    margin: 0 0 16px;
+    max-width: 100%;
+    padding: 7px 11px;
+}
+
+.demo-hero-badge strong {
+    color: var(--amb-site-navy-2);
+    font-weight: 800;
+}
+
+.demo-hero-badge-icon,
+.demo-hero-cta-icon,
+.demo-hero-visual-icon,
+.demo-hero-metric-icon {
+    color: currentColor;
+    flex: 0 0 auto;
+}
+
+.demo-hero-badge-icon {
+    color: var(--amb-site-blue);
+}
+
 .demo-hero__subtitle {
     color: var(--amb-site-slate);
     font-size: clamp(18px, 2.4vw, 27px);
@@ -394,16 +429,20 @@ a {
 }
 
 .demo-hero__actions .demo-button {
+    box-shadow: 0 8px 18px rgb(16 35 63 / 7%);
+    font-weight: 750;
     min-height: 44px;
     padding: 10px 16px;
 }
 
 .demo-hero-visual {
     background:
-        linear-gradient(135deg, rgb(255 255 255 / 94%) 0%, rgb(229 241 251 / 86%) 100%);
+        linear-gradient(135deg, rgb(255 255 255 / 96%) 0%, rgb(242 248 253 / 92%) 54%, rgb(229 241 251 / 88%) 100%);
     border: 1px solid #b7cce8;
     border-radius: var(--amb-site-radius-sm);
-    box-shadow: 0 18px 42px rgb(16 35 63 / 13%);
+    box-shadow:
+        0 24px 54px rgb(16 35 63 / 15%),
+        inset 0 1px 0 rgb(255 255 255 / 86%);
     color: var(--amb-site-navy);
     display: grid;
     gap: 14px;
@@ -412,16 +451,26 @@ a {
 }
 
 .demo-hero-visual__chrome {
+    align-items: center;
+    border-bottom: 1px solid rgb(145 168 191 / 24%);
     display: flex;
     gap: 6px;
+    padding-bottom: 12px;
 }
 
-.demo-hero-visual__chrome span {
+.demo-hero-visual__dot {
     background: #9fb7d1;
     border-radius: 999px;
     display: block;
     height: 8px;
     width: 8px;
+}
+
+.demo-hero-visual__chrome strong {
+    color: var(--amb-site-muted);
+    font-size: 12px;
+    font-weight: 800;
+    margin-left: auto;
 }
 
 .demo-hero-visual__header {
@@ -431,10 +480,13 @@ a {
     justify-content: space-between;
 }
 
-.demo-hero-visual__header span {
+.demo-hero-visual__header > span {
+    align-items: center;
     color: var(--amb-site-muted);
+    display: inline-flex;
     font-size: 12px;
     font-weight: 800;
+    gap: 7px;
     letter-spacing: 0;
     text-transform: uppercase;
 }
@@ -450,21 +502,88 @@ a {
     margin: 0;
 }
 
+.demo-hero-visual__stack {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.demo-hero-visual__stack > span {
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #c7d9ec;
+    border-radius: 6px;
+    color: var(--amb-site-blue-strong);
+    display: inline-flex;
+    font-size: 12px;
+    font-weight: 850;
+    gap: 7px;
+    min-width: 0;
+    padding: 8px 9px;
+}
+
 .demo-hero-visual__flow {
     display: grid;
     gap: 8px;
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.demo-hero-visual__flow span {
+.demo-hero-visual__flow > span {
+    align-items: center;
     background: #ffffff;
     border: 1px solid var(--amb-site-border);
     border-radius: 6px;
     color: var(--amb-site-navy-2);
+    display: inline-flex;
     font-size: 12px;
     font-weight: 800;
+    gap: 6px;
+    justify-content: center;
+    min-width: 0;
     padding: 10px 8px;
     text-align: center;
+}
+
+.demo-hero-visual__records {
+    background: rgb(255 255 255 / 72%);
+    border: 1px solid rgb(145 168 191 / 30%);
+    border-radius: 8px;
+    display: grid;
+    gap: 0;
+    overflow: hidden;
+}
+
+.demo-hero-visual__records div {
+    align-items: center;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-width: 0;
+    padding: 9px 11px;
+}
+
+.demo-hero-visual__records div + div {
+    border-top: 1px solid rgb(145 168 191 / 22%);
+}
+
+.demo-hero-visual__records span {
+    color: var(--amb-site-slate);
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.demo-hero-visual__records strong {
+    background: var(--amb-site-blue-soft);
+    border: 1px solid #c7d9ec;
+    border-radius: 999px;
+    color: var(--amb-site-blue-strong);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    padding: 6px 8px;
+    text-transform: uppercase;
 }
 
 .demo-hero-visual__chips {
@@ -473,7 +592,7 @@ a {
     gap: 8px;
 }
 
-.demo-hero-visual__chips span {
+.demo-hero-visual__chips > span {
     background: var(--amb-site-blue-soft);
     border: 1px solid #c7d9ec;
     border-radius: 999px;
@@ -573,11 +692,31 @@ a {
 }
 
 .demo-hero__metrics div {
+    align-items: start;
     background:
         linear-gradient(180deg, #ffffff 0%, var(--amb-site-surface-soft) 100%);
     border: 1px solid var(--amb-site-border);
     border-radius: var(--amb-site-radius-sm);
+    display: grid;
+    gap: 10px;
+    grid-template-columns: auto minmax(0, 1fr);
+    min-width: 0;
     padding: 16px;
+}
+
+.demo-hero-metric-icon {
+    background: var(--amb-site-blue-soft);
+    border: 1px solid #c7d9ec;
+    border-radius: 6px;
+    color: var(--amb-site-blue-strong);
+    height: 30px;
+    padding: 6px;
+    width: 30px;
+}
+
+.demo-hero-metric__body {
+    display: block;
+    min-width: 0;
 }
 
 .demo-hero__metrics strong {
@@ -2059,6 +2198,10 @@ a {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .demo-hero-visual__stack {
+        grid-template-columns: 1fr;
+    }
+
     .demo-hero__metrics {
         grid-template-columns: 1fr;
     }
@@ -2128,6 +2271,15 @@ a {
 
     .demo-hero__actions .demo-button {
         width: 100%;
+    }
+
+    .demo-hero-badge {
+        border-radius: 8px;
+    }
+
+    .demo-hero-visual__records div {
+        grid-template-columns: 1fr;
+        gap: 6px;
     }
 
     .demo-framework-grid {
