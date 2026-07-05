@@ -3,7 +3,6 @@ import {
     Atom,
     Blocks,
     Box,
-    Braces,
     Calendar,
     CirclePlay,
     ClipboardList,
@@ -57,8 +56,15 @@ export const demoIcons = {
     vue: Layers
 };
 
+const escapeAttribute = value => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
 const stringifyAttributes = attributes => Object.entries(attributes)
-    .map(([name, value]) => `${name}="${String(value)}"`)
+    .filter(([, value]) => value !== undefined && value !== null && value !== false)
+    .map(([name, value]) => `${name}="${escapeAttribute(value)}"`)
     .join(' ');
 
 const renderChildren = children => children
@@ -76,10 +82,34 @@ export const demoIcon = (name, options = {}) => {
     const {
         size = 18,
         strokeWidth = 2,
-        className = 'demo-icon'
+        className = 'demo-icon',
+        ariaLabel = null
     } = options;
 
     if (!icon) return '';
 
-    return `<svg class="${className}" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${renderChildren(icon)}</svg>`;
+    const accessibilityAttributes = ariaLabel
+        ? {
+            role: 'img',
+            'aria-label': ariaLabel
+        }
+        : {
+            'aria-hidden': 'true'
+        };
+    const svgAttributes = {
+        class: className,
+        xmlns: 'http://www.w3.org/2000/svg',
+        width: size,
+        height: size,
+        viewBox: '0 0 24 24',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': strokeWidth,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        focusable: 'false',
+        ...accessibilityAttributes
+    };
+
+    return `<svg ${stringifyAttributes(svgAttributes)}>${renderChildren(icon)}</svg>`;
 };
