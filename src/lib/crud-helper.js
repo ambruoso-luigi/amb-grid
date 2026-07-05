@@ -500,6 +500,106 @@ export class CrudHelper {
         });
     }
 
+    _waitForRenderQuiet(quietFrames = 4, maxFrames = 30) {
+        if (typeof globalThis.requestAnimationFrame !== 'function') {
+            return Promise.resolve();
+        }
+
+        return new Promise(resolve => {
+            let settled = false;
+            let frames = 0;
+            let quiet = quietFrames;
+
+            const finish = () => {
+                if (settled) return;
+
+                settled = true;
+
+                if (this.table && typeof this.table.off === 'function') {
+                    this.table.off('renderStarted', markRendered);
+                    this.table.off('renderComplete', markRendered);
+                }
+
+                resolve();
+            };
+            const markRendered = () => {
+                quiet = quietFrames;
+            };
+            const step = () => {
+                if (settled) return;
+
+                frames += 1;
+                quiet -= 1;
+
+                if (quiet <= 0 || frames >= maxFrames) {
+                    finish();
+                    return;
+                }
+
+                globalThis.requestAnimationFrame(step);
+            };
+
+            if (this.table && typeof this.table.on === 'function') {
+                this.table.on('renderStarted', markRendered);
+                this.table.on('renderComplete', markRendered);
+            }
+
+            globalThis.requestAnimationFrame(step);
+        });
+    }
+
+    _cellRetainsFocusedEditor(cell) {
+        const activeElement = globalThis.document && globalThis.document.activeElement;
+        const cellElement = cell && typeof cell.getElement === 'function'
+            ? cell.getElement()
+            : null;
+
+        if (
+            !activeElement
+            || !cellElement
+            || typeof cellElement.contains !== 'function'
+            || typeof cellElement.querySelector !== 'function'
+        ) {
+            return true;
+        }
+
+        const editor = cellElement.querySelector('input, textarea, select, [contenteditable="true"]');
+
+        return Boolean(editor && cellElement.contains(activeElement));
+    }
+
+    async _editCellAndRetainFocus(cell, rowKey) {
+        if (!cell || typeof cell.edit !== 'function') return;
+
+        const field = typeof cell.getField === 'function' ? cell.getField() : null;
+
+        let currentCell = cell;
+
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            currentCell.edit(true);
+            await this._waitForRenderQuiet();
+
+            if (this._cellRetainsFocusedEditor(currentCell)) return;
+
+            const row = this._resolveRowByKey(rowKey);
+            const refreshedCell = row && field && typeof row.getCell === 'function'
+                ? row.getCell(field)
+                : currentCell;
+
+            if (
+                refreshedCell
+                && refreshedCell !== currentCell
+                && !this._isCellEditable(refreshedCell)
+            ) {
+                return;
+            }
+
+            if (!refreshedCell || typeof refreshedCell.edit !== 'function') return;
+
+            currentCell = refreshedCell;
+        }
+    }
+
     _getRows(scope) {
         if (!this.table || typeof this.table.getRows !== 'function') return [];
 
@@ -643,12 +743,12 @@ export class CrudHelper {
         visibleRow = this._resolveRowByKey(key) || visibleRow;
         await this._scrollRowIntoView(visibleRow);
         await this._waitForNextFrame();
+        await this._waitForRenderQuiet();
 
+        visibleRow = this._resolveRowByKey(key) || visibleRow;
         const cell = this._getFirstEditableCell(visibleRow);
 
-        if (cell && typeof cell.edit === 'function') {
-            cell.edit(true);
-        }
+        await this._editCellAndRetainFocus(cell, key);
 
         return visibleRow;
     }

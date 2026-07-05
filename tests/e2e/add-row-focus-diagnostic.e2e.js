@@ -306,7 +306,12 @@ const openInventoryDemo = async page => {
     const pageSize = page.locator('#inventory-table .tabulator-page-size');
 
     if (await pageSize.count()) {
-        await pageSize.selectOption('10');
+        const currentPageSize = await pageSize.inputValue();
+
+        if (currentPageSize !== '10') {
+            await pageSize.selectOption('10');
+        }
+
         await expect(pageSize).toHaveValue('10');
     }
 };
