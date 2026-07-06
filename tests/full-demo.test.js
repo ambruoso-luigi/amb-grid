@@ -143,15 +143,21 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('keeps the main demo toolbar compact and the Tabulator surface clean in demo CSS', () => {
-        expect(source).toContain('class="demo-inventory-panel"');
-        expect(source).toContain('class="demo-app-shell"');
-        expect(source).toContain('class="demo-app-shell__chips"');
+        expect(source).toContain('class="demo-inventory-panel card bg-base-100 text-base-content"');
+        expect(source).toContain('class="demo-app-shell card bg-base-100"');
+        expect(source).toContain('data-theme="light"');
         expect(source).toContain('Dati magazzino editabili');
-        expect(source).toContain('data-i18n="mainDemo.chipPagination"');
-        expect(source).toContain('data-i18n="mainDemo.chipValidation"');
+        expect(source).toContain('data-i18n="mainDemo.panelKicker"');
+        expect(source).toContain('data-i18n="mainDemo.panelTitle"');
+        expect(source).not.toContain('class="demo-app-shell__chips"');
+        expect(source).not.toContain('data-i18n="mainDemo.chipPagination"');
+        expect(source).not.toContain('data-i18n="mainDemo.chipValidation"');
         expect(demoCss).toContain('.demo-inventory-panel');
         expect(demoCss).toContain('.demo-app-shell__header');
-        expect(demoCss).toContain('.demo-app-chip');
+        expect(demoCss).toContain('.demo-panel .amb-feedback-region');
+        expect(demoCss).not.toContain('.demo-app-chip');
+        expect(demoCss).toContain('@import "tailwindcss" source(none);');
+        expect(demoCss).toContain('@plugin "daisyui"');
         expect(demoCss).toContain('.amb-demo-inventory-grid');
         expect(demoCss).toContain('.demo-panel .amb-toolbar {');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);');

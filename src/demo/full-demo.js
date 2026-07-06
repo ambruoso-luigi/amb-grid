@@ -146,8 +146,8 @@ export default async function fullDemo(app, options = {}) {
     }
 
     app.innerHTML = `
-        <div class="demo-inventory-panel">
-            ${showHeader ? `<div class="demo-app-shell__header">
+        <div class="demo-inventory-panel card bg-base-100 text-base-content" data-theme="light">
+            ${showHeader ? `<div class="demo-app-shell__header card-body">
                 <div>
                     <span class="demo-main-badge" data-i18n="mainDemo.primaryLabel">Demo principale</span>
                     <p class="demo-kicker" data-i18n="mainDemo.kicker">Demo legacy-friendly</p>
@@ -156,8 +156,8 @@ export default async function fullDemo(app, options = {}) {
                 </div>
                 ${showScenario ? '<p class="demo-scenario-label" data-i18n="mainDemo.scenario">Scenario: Classic Warehouse Backoffice</p>' : ''}
             </div>` : ''}
-            <div class="demo-app-shell">
-                <div class="demo-app-shell__meta">
+            <div class="demo-app-shell card bg-base-100">
+                <div class="demo-app-shell__meta card-body">
                     <div>
                         <p class="demo-kicker" data-i18n="mainDemo.panelKicker">Pannello operativo</p>
                         <h3 data-i18n="mainDemo.panelTitle">Dati magazzino editabili</h3>

@@ -9,23 +9,20 @@ describe('demo site navigation', () => {
 
         expect(main).toContain('href="#getting-started-javascript"');
         expect(main).toContain("window.location.hash === '#getting-started-javascript'");
-        expect(main).toContain("'frameworks.title': 'Scegli il percorso di integrazione'");
-        expect(main).toContain("'frameworks.title': 'Choose your integration path'");
-        expect(main).toContain("'frameworks.javascript.badge': 'Guida disponibile'");
-        expect(main).toContain("'frameworks.javascript.badge': 'Guide available'");
-        expect(main).toContain("'frameworks.javascript.detailClassic': 'Classic HTML + JS + CSS'");
-        expect(main).toContain("'frameworks.javascript.status': 'Apri guida'");
-        expect(main).toContain("'frameworks.javascript.status': 'Open guide'");
+        expect(main).toContain("'frameworks.title': 'Integrabile dove lavori gi\u00e0'");
+        expect(main).toContain("'frameworks.title': 'Use AMB Grid where you already work'");
+        expect(main).toContain("'frameworks.javascript.badge': 'Classic integration'");
+        expect(main).toContain("'frameworks.javascript.status': 'Apri guida JavaScript'");
+        expect(main).toContain("'frameworks.javascript.status': 'Open JavaScript guide'");
         expect(main).toContain('demo-framework-card--ready');
-        expect(main).toContain('demo-framework-card__meta-item');
         expect(main).toContain('data-i18n="frameworks.javascript.status"');
         expect(main).toContain('data-i18n="frameworks.react.status"');
-        expect(main).toContain("'frameworks.react.badge': 'React + TypeScript'");
-        expect(main).toContain("'frameworks.vue.badge': 'Vue + TypeScript'");
-        expect(main).toContain("'frameworks.angular.badge': 'Angular integration'");
-        expect(main).toContain("'frameworks.react.status': 'Vedi integrazione'");
-        expect(main).toContain("'frameworks.react.status': 'View integration'");
-        expect(main).toContain("'frameworks.angular.description': 'Integration in Angular components and modern business pages, without promising an official wrapper.'");
+        expect(main).toContain("'frameworks.react.badge': 'Lifecycle integration'");
+        expect(main).toContain("'frameworks.vue.badge': 'Composition API example'");
+        expect(main).toContain("'frameworks.angular.badge': 'Component lifecycle example'");
+        expect(main).toContain("'frameworks.react.status': 'Planned full demo'");
+        expect(main).toContain("'frameworks.angular.description': 'Conceptual example with AfterViewInit and OnDestroy.'");
+        expect(main).not.toContain('demo-framework-card__meta-item');
 
         const css = read('src/demo/demo.css');
 
