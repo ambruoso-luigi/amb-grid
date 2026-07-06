@@ -54,7 +54,7 @@ export const initDemoMotion = (root = document) => {
 
     const heroElements = getElements(
         root,
-        '.demo-hero__content, .demo-hero__metrics > div, .demo-guide-hero__content'
+        '.demo-hero__content, .demo-hero__metrics > div, .demo-guide-hero .demo-topbar, .demo-back-link, .demo-guide-hero__content'
     );
 
     reveal(heroElements, {
