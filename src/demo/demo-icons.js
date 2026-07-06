@@ -113,3 +113,20 @@ export const demoIcon = (name, options = {}) => {
 
     return `<svg ${stringifyAttributes(svgAttributes)}>${renderChildren(icon)}</svg>`;
 };
+
+export const frameworkIcon = name => {
+    if (!['javascript', 'react', 'vue', 'angular'].includes(name)) {
+        return demoIcon(name, { className: 'demo-card-icon demo-card-icon--framework', size: 34 });
+    }
+
+    return `
+        <span class="demo-framework-logo demo-framework-logo--${escapeAttribute(name)}" aria-hidden="true">
+            <span class="demo-framework-logo__mark" aria-hidden="true">
+                ${name === 'javascript' ? '<span class="demo-framework-logo__letters">JS</span>' : ''}
+                ${name === 'react' ? '<span class="demo-framework-logo__orbit demo-framework-logo__orbit--one"></span><span class="demo-framework-logo__orbit demo-framework-logo__orbit--two"></span><span class="demo-framework-logo__orbit demo-framework-logo__orbit--three"></span><span class="demo-framework-logo__nucleus"></span>' : ''}
+                ${name === 'vue' ? '<span class="demo-framework-logo__vue-back"></span><span class="demo-framework-logo__vue-front"></span>' : ''}
+                ${name === 'angular' ? '<span class="demo-framework-logo__shield"><span>A</span></span>' : ''}
+            </span>
+        </span>
+    `;
+};

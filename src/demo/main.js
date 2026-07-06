@@ -15,7 +15,7 @@ import multipleTables from './multiple-tables.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
-import { demoIcon } from './demo-icons.js';
+import { demoIcon, frameworkIcon } from './demo-icons.js';
 import { initDemoMotion } from './demo-motion.js';
 
 window.AMB = AMB;
@@ -465,7 +465,7 @@ const renderShell = selectedId => {
                 <div class="demo-framework-grid">
                     <a class="demo-framework-card demo-framework-card--javascript demo-framework-card--ready" href="#getting-started-javascript">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            ${demoIcon('javascript', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
+                            ${frameworkIcon('javascript')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">JavaScript</span>
@@ -482,7 +482,7 @@ const renderShell = selectedId => {
                     </a>
                     <a class="demo-framework-card demo-framework-card--react demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            ${demoIcon('react', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
+                            ${frameworkIcon('react')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">React</span>
@@ -497,7 +497,7 @@ const renderShell = selectedId => {
                     </a>
                     <a class="demo-framework-card demo-framework-card--vue demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            ${demoIcon('vue', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
+                            ${frameworkIcon('vue')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
@@ -512,7 +512,7 @@ const renderShell = selectedId => {
                     </a>
                     <a class="demo-framework-card demo-framework-card--angular demo-framework-card--integration" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
-                            ${demoIcon('angular', { className: 'demo-card-icon demo-card-icon--framework', size: 34 })}
+                            ${frameworkIcon('angular')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
