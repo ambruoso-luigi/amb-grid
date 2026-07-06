@@ -164,8 +164,10 @@ export default async function fullDemo(app, options = {}) {
                         <p class="demo-note" data-i18n="mainDemo.panelText">Gestisci righe prodotto, stati CRUD, validazione e payload backend nello stesso flusso.</p>
                     </div>
                 </div>
+                <div class="demo-table-workbench">
+                    <div id="inventory-table" class="amb-demo-inventory-grid"></div>
+                </div>
             </div>
-            <div id="inventory-table" class="amb-demo-inventory-grid"></div>
         </div>
     `;
 

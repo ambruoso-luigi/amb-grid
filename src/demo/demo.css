@@ -1436,6 +1436,7 @@ a {
     display: grid;
     gap: 14px;
     grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0;
 }
 
 .demo-app-shell__meta h3 {
@@ -1448,6 +1449,10 @@ a {
 .amb-demo-inventory-grid {
     min-width: 0;
     position: relative;
+}
+
+.demo-table-workbench {
+    min-width: 0;
 }
 
 .demo-shell--showcase .demo-section-heading {
