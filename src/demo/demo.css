@@ -1379,29 +1379,20 @@ a {
 }
 
 .demo-inventory-panel {
-    background:
-        linear-gradient(180deg, rgb(255 255 255 / 96%) 0%, rgb(247 250 254 / 90%) 100%);
-    border: 1px solid #9eb9d2;
-    border-radius: var(--amb-site-radius-sm);
-    box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 92%),
-        0 18px 44px rgb(16 35 63 / 11%);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     display: grid;
     gap: 16px;
     min-width: 0;
-    overflow: hidden;
-    padding: clamp(14px, 1.6vw, 22px);
+    overflow: visible;
+    padding: 0;
     position: relative;
 }
 
 .demo-inventory-panel::before {
-    background: linear-gradient(90deg, #1d5f99 0%, #7fb1d4 48%, #d8e8f6 100%);
-    content: "";
-    height: 3px;
-    inset: 0 0 auto;
-    opacity: 0.86;
-    pointer-events: none;
-    position: absolute;
+    content: none;
 }
 
 .demo-app-shell__header {
@@ -1538,6 +1529,75 @@ a {
 .demo-main-demo-active .amb-lookup-pagination {
     border-color: #d7e2ee;
     padding-top: 10px;
+}
+
+.demo-main-demo-active .amb-lookup-dialog__button.amb-lookup-pagination__button {
+    --lookup-page-icon-left: 50%;
+    --lookup-page-icon-rotate: -45deg;
+    align-items: center;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f6fb 100%);
+    color: #274f70;
+    display: inline-grid;
+    font-size: 0;
+    height: 34px;
+    justify-content: center;
+    min-height: 34px;
+    min-width: 36px;
+    padding: 0;
+    position: relative;
+    width: 36px;
+}
+
+.demo-main-demo-active .amb-lookup-pagination__button::before,
+.demo-main-demo-active .amb-lookup-pagination__button::after {
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    content: "";
+    height: 8px;
+    left: var(--lookup-page-icon-left);
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(var(--lookup-page-icon-rotate));
+    width: 8px;
+}
+
+.demo-main-demo-active .amb-lookup-pagination__button::after {
+    display: none;
+}
+
+.demo-main-demo-active .amb-lookup-dialog__button.amb-lookup-pagination__button--first {
+    --lookup-page-icon-left: 43%;
+    --lookup-page-icon-rotate: 135deg;
+}
+
+.demo-main-demo-active .amb-lookup-pagination__button--first::after {
+    display: block;
+    left: 57%;
+}
+
+.demo-main-demo-active .amb-lookup-dialog__button.amb-lookup-pagination__button--previous {
+    --lookup-page-icon-left: 52%;
+    --lookup-page-icon-rotate: 135deg;
+}
+
+.demo-main-demo-active .amb-lookup-dialog__button.amb-lookup-pagination__button--next {
+    --lookup-page-icon-left: 48%;
+    --lookup-page-icon-rotate: -45deg;
+}
+
+.demo-main-demo-active .amb-lookup-dialog__button.amb-lookup-pagination__button--last {
+    --lookup-page-icon-left: 43%;
+    --lookup-page-icon-rotate: -45deg;
+}
+
+.demo-main-demo-active .amb-lookup-pagination__button--last::after {
+    display: block;
+    left: 57%;
+}
+
+.demo-main-demo-active .amb-lookup-pagination__button:disabled::before,
+.demo-main-demo-active .amb-lookup-pagination__button:disabled::after {
+    opacity: 0.45;
 }
 
 .demo-main-demo-active .amb-lookup-dialog__button {
