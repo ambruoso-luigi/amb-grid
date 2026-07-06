@@ -437,13 +437,13 @@ const renderShell = selectedId => {
                 </div>
             </header>
 
-            <section class="demo-section demo-frameworks" id="framework-integrations">
+            <section class="demo-section demo-frameworks card bg-base-100 text-base-content border shadow-sm" id="framework-integrations" data-theme="light">
                 <div class="demo-section-heading">
                     <h2 data-i18n="frameworks.title">Integrabile dove lavori già</h2>
                     <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
                 </div>
                 <div class="demo-framework-grid">
-                    <a class="demo-framework-card demo-framework-card--javascript demo-framework-card--ready" href="#getting-started-javascript">
+                    <a class="demo-framework-card demo-framework-card--javascript demo-framework-card--ready card bg-base-100 border shadow-sm transition" href="#getting-started-javascript">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('javascript')}
                         </span>
@@ -455,7 +455,7 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--react demo-framework-card--integration" href="#feature-examples">
+                    <a class="demo-framework-card demo-framework-card--react demo-framework-card--integration card bg-base-100 border shadow-sm transition" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('react')}
                         </span>
@@ -467,7 +467,7 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--vue demo-framework-card--integration" href="#feature-examples">
+                    <a class="demo-framework-card demo-framework-card--vue demo-framework-card--integration card bg-base-100 border shadow-sm transition" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('vue')}
                         </span>
@@ -479,7 +479,7 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--angular demo-framework-card--integration" href="#feature-examples">
+                    <a class="demo-framework-card demo-framework-card--angular demo-framework-card--integration card bg-base-100 border shadow-sm transition" href="#feature-examples">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('angular')}
                         </span>
