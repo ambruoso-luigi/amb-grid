@@ -139,6 +139,8 @@ export default async function fullDemo(app, options = {}) {
     if (extraClasses.length) {
         app.classList.add(...extraClasses);
     }
+    document.body.classList.add('demo-main-demo-active');
+
     if (tableHeight) {
         app.style.setProperty('--demo-table-height', tableHeight);
     } else {
@@ -413,6 +415,7 @@ export default async function fullDemo(app, options = {}) {
     demo.destroy = () => {
         reportDialog.destroy();
         app.style.removeProperty('--demo-table-height');
+        document.body.classList.remove('demo-main-demo-active');
         if (extraClasses.length) {
             app.classList.remove(...extraClasses);
         }
