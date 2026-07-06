@@ -724,28 +724,71 @@ a {
 /* Application flow */
 .demo-section--flow {
     background:
-        linear-gradient(180deg, #ffffff 0%, #fbfdff 48%, #f4f9fd 100%);
-    border-color: #b7cbe0;
+        linear-gradient(180deg, rgb(255 255 255 / 96%) 0%, rgb(248 251 255 / 94%) 52%, rgb(240 247 252 / 94%) 100%),
+        linear-gradient(135deg, #f7fbff 0%, #eef7fb 58%, #f8fbf8 100%);
+    border-color: rgb(139 163 188 / 62%);
+    box-shadow:
+        0 1px 0 rgb(255 255 255 / 86%) inset,
+        0 20px 52px rgb(16 35 63 / 10%);
+    overflow: hidden;
+    padding: clamp(22px, 3.2vw, 38px);
+    position: relative;
+}
+
+.demo-section--flow::before {
+    background:
+        linear-gradient(90deg, rgb(22 74 120 / 5%) 1px, transparent 1px),
+        linear-gradient(180deg, rgb(22 74 120 / 4%) 1px, transparent 1px);
+    background-size: 44px 44px;
+    content: "";
+    inset: 0;
+    mask-image: linear-gradient(135deg, #000 0%, #000 34%, transparent 82%);
+    opacity: 0.5;
+    pointer-events: none;
+    position: absolute;
+}
+
+.demo-section--flow > * {
+    position: relative;
 }
 
 .demo-section--flow .demo-section-heading {
-    margin-bottom: 22px;
-    max-width: 980px;
+    margin-bottom: clamp(22px, 3vw, 32px);
+    max-width: 1040px;
 }
 
 .demo-section--flow .demo-kicker {
-    background: var(--amb-site-blue-soft);
-    border: 1px solid #c7d9ec;
+    background: rgb(255 255 255 / 78%);
+    border: 1px solid rgb(124 150 176 / 42%);
     border-radius: 999px;
+    box-shadow:
+        0 1px 0 rgb(255 255 255 / 78%) inset,
+        0 10px 22px rgb(16 35 63 / 7%);
     color: var(--amb-site-blue-strong);
     display: inline-flex;
     line-height: 1;
-    padding: 7px 10px;
+    margin-bottom: 12px;
+    padding: 8px 11px;
+}
+
+.demo-section--flow h2 {
+    color: #0d2038;
+    font-size: clamp(28px, 3.6vw, 46px);
+    line-height: 1.04;
+    margin-bottom: 14px;
+    max-width: 920px;
+}
+
+.demo-section--flow .demo-note {
+    color: #40566f;
+    font-size: clamp(16px, 1.35vw, 19px);
+    line-height: 1.55;
+    max-width: 940px;
 }
 
 .demo-flow-grid {
     display: grid;
-    gap: 14px;
+    gap: clamp(12px, 1.5vw, 18px);
     grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
@@ -753,25 +796,36 @@ a {
     --flow-accent: var(--amb-site-blue);
     align-content: start;
     background:
-        linear-gradient(135deg, rgb(255 255 255 / 96%) 0%, rgb(248 251 255 / 96%) 58%, var(--flow-soft, #eef6fd) 100%);
-    border: 1px solid #c5d5e6;
-    border-top: 3px solid var(--flow-accent);
+        linear-gradient(180deg, rgb(255 255 255 / 94%) 0%, rgb(248 251 255 / 90%) 100%),
+        linear-gradient(135deg, #ffffff 0%, var(--flow-soft, #eef6fd) 100%);
+    border: 1px solid rgb(145 168 191 / 46%);
+    border-top: 4px solid var(--flow-accent);
     border-radius: var(--amb-site-radius-sm);
     box-shadow:
-        0 1px 0 rgb(16 35 63 / 5%),
-        0 10px 24px rgb(16 35 63 / 7%);
+        0 1px 0 rgb(255 255 255 / 82%) inset,
+        0 14px 32px rgb(16 35 63 / 8%);
     display: grid;
-    gap: 12px;
-    min-height: 176px;
+    gap: 14px;
+    min-height: 184px;
     min-width: 0;
-    padding: 17px;
+    padding: 18px;
     position: relative;
     overflow: hidden;
     transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
+.demo-flow-card::before {
+    background: linear-gradient(180deg, var(--flow-accent) 0%, transparent 100%);
+    content: "";
+    inset: 0 auto 0 0;
+    opacity: 0.1;
+    pointer-events: none;
+    position: absolute;
+    width: 4px;
+}
+
 .demo-flow-card::after {
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 56%), transparent);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 62%), transparent);
     content: "";
     height: 100%;
     left: -55%;
@@ -785,10 +839,10 @@ a {
 }
 
 .demo-flow-card:hover {
-    border-color: var(--amb-site-border-strong);
+    border-color: color-mix(in srgb, var(--flow-accent) 46%, #ffffff);
     box-shadow:
-        0 1px 0 rgb(16 35 63 / 5%),
-        0 16px 32px rgb(16 35 63 / 11%);
+        0 1px 0 rgb(255 255 255 / 84%) inset,
+        0 18px 40px rgb(16 35 63 / 12%);
     transform: translateY(-2px);
 }
 
@@ -823,51 +877,63 @@ a {
 }
 
 .demo-flow-card__header {
-    align-items: center;
+    align-items: start;
     display: grid;
-    gap: 10px;
-    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 11px;
+    grid-template-columns: auto minmax(0, 1fr);
 }
 
 .demo-flow-card__step {
-    background: #ffffff;
-    border: 1px solid rgb(16 35 63 / 12%);
+    background:
+        linear-gradient(180deg, #ffffff 0%, var(--flow-soft) 100%);
+    border: 1px solid color-mix(in srgb, var(--flow-accent) 36%, #ffffff);
     border-radius: 999px;
+    box-shadow:
+        0 1px 0 rgb(255 255 255 / 82%) inset,
+        0 8px 18px rgb(16 35 63 / 7%);
     color: var(--flow-accent);
     display: inline-flex;
     font-size: 12px;
     font-weight: 900;
     justify-content: center;
     line-height: 1;
-    min-width: 36px;
-    padding: 7px 8px;
+    min-width: 38px;
+    padding: 8px;
 }
 
 .demo-card-icon--flow {
-    background: rgb(255 255 255 / 74%);
-    border: 1px solid rgb(16 35 63 / 10%);
-    border-radius: 999px;
+    background:
+        linear-gradient(180deg, #ffffff 0%, var(--flow-soft) 100%);
+    border: 1px solid color-mix(in srgb, var(--flow-accent) 36%, #ffffff);
+    border-radius: 8px;
+    box-shadow:
+        0 1px 0 rgb(255 255 255 / 82%) inset,
+        0 8px 18px rgb(16 35 63 / 7%);
     color: var(--flow-accent);
-    height: 32px;
+    grid-column: 1;
+    height: 34px;
     padding: 6px;
-    width: 32px;
+    width: 34px;
 }
 
 .demo-flow-card strong {
     color: var(--amb-site-navy);
     display: block;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 850;
-    line-height: 1.22;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    line-height: 1.2;
     min-width: 0;
     overflow-wrap: anywhere;
+    padding-top: 3px;
 }
 
 .demo-flow-card p {
-    color: var(--amb-site-slate);
+    color: #465d76;
     display: block;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.55;
     margin: 0;
     overflow-wrap: anywhere;
 }
