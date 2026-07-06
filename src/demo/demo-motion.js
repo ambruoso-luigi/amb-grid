@@ -54,13 +54,39 @@ export const initDemoMotion = (root = document) => {
 
     const heroElements = getElements(
         root,
-        '.demo-hero__content, .demo-hero__metrics > div'
+        '.demo-hero__content, .demo-hero__metrics > div, .demo-guide-hero__content'
     );
 
     reveal(heroElements, {
         delay: stagger(0.06),
         duration: 0.48,
         offset: 12
+    });
+
+    reveal(getElements(root, '.demo-panel--main, .demo-inventory-panel'), {
+        delay: 0.04,
+        duration: 0.42,
+        offset: 10
+    });
+
+    reveal(getElements(root, '.demo-app-shell, .amb-demo-inventory-grid'), {
+        delay: stagger(0.05),
+        duration: 0.36,
+        offset: 8
+    });
+
+    revealWhenVisible(root, '.demo-guide-steps', '.demo-guide-step', {
+        amount: 0.14,
+        delay: stagger(0.035),
+        duration: 0.34,
+        offset: 8
+    });
+
+    revealWhenVisible(root, '.demo-guide-classic-layout', '.demo-guide-mode-card, .demo-guide-code-section', {
+        amount: 0.16,
+        delay: stagger(0.04),
+        duration: 0.36,
+        offset: 8
     });
 
     revealWhenVisible(root, '.demo-frameworks', '.demo-framework-card', {
@@ -82,5 +108,12 @@ export const initDemoMotion = (root = document) => {
         delay: stagger(0.035),
         duration: 0.36,
         offset: 8
+    });
+
+    revealWhenVisible(root, '.demo-example', '.demo-disclosure, .demo-warning, .demo-output, .demo-table-wrap', {
+        amount: 0.2,
+        delay: stagger(0.03),
+        duration: 0.32,
+        offset: 6
     });
 };

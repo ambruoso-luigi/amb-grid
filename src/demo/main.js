@@ -639,6 +639,7 @@ const mountMainDemo = async (selector, expectedView = 'guide', options = {}) => 
 
     currentMainDemo = mountedDemo;
     applyI18n();
+    initDemoMotion(container);
 };
 
 const loadFeatureExample = async id => {
@@ -660,6 +661,7 @@ const loadFeatureExample = async id => {
     }
 
     currentFeatureExample = mountedExample || null;
+    initDemoMotion(container);
 };
 
 const scrollToHashTarget = () => {
@@ -688,6 +690,7 @@ const renderGuide = () => {
     gettingStartedJavaScript(root);
     bindLanguageButtons();
     applyI18n();
+    initDemoMotion(root);
     mountMainDemo('#javascript-demo', 'guide', {
         className: 'demo-showcase demo-showcase--large',
         compactHeader: true,
