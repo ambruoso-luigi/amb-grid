@@ -163,12 +163,6 @@ export default async function fullDemo(app, options = {}) {
                         <h3 data-i18n="mainDemo.panelTitle">Dati magazzino editabili</h3>
                         <p class="demo-note" data-i18n="mainDemo.panelText">Gestisci righe prodotto, stati CRUD, validazione e payload backend nello stesso flusso.</p>
                     </div>
-                    <div class="demo-app-shell__chips" aria-label="Inventory demo capabilities">
-                        <span class="demo-app-chip" data-i18n="mainDemo.chipPagination">Paginazione locale</span>
-                        <span class="demo-app-chip" data-i18n="mainDemo.chipStates">Stati riga</span>
-                        <span class="demo-app-chip" data-i18n="mainDemo.chipBackend">Backend fake</span>
-                        <span class="demo-app-chip" data-i18n="mainDemo.chipValidation">Validazione attiva</span>
-                    </div>
                 </div>
             </div>
             <div id="inventory-table" class="amb-demo-inventory-grid"></div>

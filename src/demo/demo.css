@@ -944,22 +944,17 @@ a {
 }
 
 .demo-framework-logo--javascript .demo-framework-logo__mark {
-    background: linear-gradient(180deg, #f8e65d 0%, #f2cc1b 100%);
-    border: 1px solid #d4ab0c;
-    border-radius: 8px;
-    box-shadow:
-        0 9px 18px rgb(200 155 18 / 24%),
-        inset 0 1px 0 rgb(255 255 255 / 58%);
+    align-items: center;
+    display: flex;
+    justify-content: center;
 }
 
 .demo-framework-logo__letters {
-    bottom: 5px;
     color: #172033;
-    font-size: 19px;
+    font-size: 25px;
     font-weight: 950;
     line-height: 1;
-    position: absolute;
-    right: 5px;
+    text-shadow: 0 1px 0 rgb(255 255 255 / 42%);
 }
 
 .demo-framework-logo--react .demo-framework-logo__mark {
@@ -1087,29 +1082,6 @@ a {
     font-size: 14px;
     line-height: 1.5;
     overflow-wrap: anywhere;
-}
-
-.demo-framework-card__meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.demo-framework-card__meta-item {
-    background: #ffffff;
-    border: 1px solid var(--amb-site-border);
-    border-radius: 999px;
-    color: var(--amb-site-slate);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1;
-    padding: 6px 8px;
-    transition: border-color 160ms ease, color 160ms ease;
-}
-
-.demo-framework-card:hover .demo-framework-card__meta-item {
-    border-color: rgb(16 35 63 / 18%);
-    color: var(--amb-site-navy-2);
 }
 
 .demo-framework-card__status {
@@ -1312,35 +1284,6 @@ a {
     font-size: clamp(20px, 2vw, 28px);
     line-height: 1.15;
     margin: 0 0 8px;
-}
-
-.demo-app-shell__chips {
-    align-content: start;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-end;
-    max-width: 520px;
-}
-
-.demo-app-chip {
-    background: linear-gradient(180deg, #ffffff 0%, var(--amb-site-blue-soft) 100%);
-    border: 1px solid #c7d9ec;
-    border-radius: 999px;
-    color: var(--amb-site-blue-strong);
-    display: inline-flex;
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1;
-    padding: 7px 10px;
-    transition: border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
-}
-
-.demo-app-chip:hover {
-    border-color: #98bad9;
-    box-shadow: 0 7px 14px rgb(16 35 63 / 8%);
-    color: var(--amb-site-navy-2);
-    transform: translateY(-1px);
 }
 
 .amb-demo-inventory-grid {
@@ -2403,11 +2346,6 @@ a {
     .demo-showcase--large .amb-toolbar {
         align-items: start;
         grid-template-columns: 1fr;
-    }
-
-    .demo-app-shell__chips {
-        justify-content: flex-start;
-        max-width: none;
     }
 
     .demo-guide-classic-layout {
