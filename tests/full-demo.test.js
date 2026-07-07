@@ -86,7 +86,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("field: 'status'");
         expect(source).toContain("title: 'Requires inspection'");
         expect(source).toContain("field: 'requiresInspection'");
-        expect(source).toContain('formatter: AMB.formatters.checkbox({');
+        expect(source).toContain('formatter: formatInspectionCheckbox');
         expect(source).toContain('AMB.editors.checkbox({');
         expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
         expect(source).toContain('maxOptions: 8');
@@ -168,7 +168,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('--amb-demo-row-height: 36px;');
         expect(demoCss).toContain('--amb-demo-visible-rows: 10;');
         expect(demoCss).toContain('.demo-panel .amb-demo-inventory-grid .tabulator-tableholder {');
-        expect(demoCss).toContain('max-height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 10));');
+        expect(demoCss).toContain('max-height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 10) + 22px);');
         expect(demoCss).toContain('overflow-y: auto;');
         expect(demoCss).toContain('background: #fff;');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 920px);');
@@ -234,17 +234,18 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('renders Requires inspection as a simple boolean checkbox', () => {
-        expect(source).toContain('formatter: AMB.formatters.checkbox({');
-        expect(source).toContain("checkedSymbol: '✓'");
-        expect(source).toContain("uncheckedSymbol: ''");
-        expect(source).toContain('checkedLabel: \'\'');
-        expect(source).toContain('uncheckedLabel: \'\'');
+        expect(source).toContain('const formatInspectionCheckbox = cell =>');
+        expect(source).toContain('class="demo-inspection-checkbox${stateClass}"');
+        expect(source).toContain('role="checkbox"');
+        expect(source).toContain('formatter: formatInspectionCheckbox');
         expect(source).not.toContain('const formatBooleanCheck = cell =>');
         expect(source).not.toContain('class="demo-checkbox-input"');
         expect(source).not.toContain("checkedLabel: 'Yes'");
         expect(source).not.toContain("uncheckedLabel: 'No'");
         expect(demoCss).not.toContain('.demo-checkbox-input');
+        expect(demoCss).toContain('.demo-panel .amb-demo-inventory-grid .demo-inspection-checkbox');
         expect(demoCss).toContain('.demo-panel .tabulator-cell .amb-checkbox-editor');
+        expect(demoCss).toContain('@keyframes demo-checkbox-pop');
         expect(demoCss).toContain('justify-content: center;');
     });
 });

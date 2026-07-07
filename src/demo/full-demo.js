@@ -59,6 +59,13 @@ const getLanguage = () => {
 
 const t = key => messages[getLanguage()][key] || messages.it[key] || key;
 
+const formatInspectionCheckbox = cell => {
+    const checked = cell.getValue() === true;
+    const stateClass = checked ? ' is-checked' : '';
+
+    return `<span class="demo-inspection-checkbox${stateClass}" role="checkbox" aria-checked="${checked ? 'true' : 'false'}"></span>`;
+};
+
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
@@ -371,12 +378,7 @@ export default async function fullDemo(app, options = {}) {
                 field: 'requiresInspection',
                 width: 150,
                 hozAlign: 'center',
-                formatter: AMB.formatters.checkbox({
-                    checkedSymbol: '✓',
-                    uncheckedSymbol: '',
-                    checkedLabel: '',
-                    uncheckedLabel: ''
-                }),
+                formatter: formatInspectionCheckbox,
                 editor: AMB.editors.checkbox({
                     checkedLabel: '',
                     uncheckedLabel: ''
