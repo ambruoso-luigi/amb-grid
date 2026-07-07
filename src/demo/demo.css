@@ -2677,12 +2677,17 @@ a {
 }
 
 .demo-panel .amb-demo-inventory-grid {
+    --demo-checkbox-border: #9fb2c4;
+    --demo-checkbox-fill: #fbfdff;
     --demo-checkbox-fill-checked: #315f87;
+    --demo-checkbox-fill-checked-deep: #244a6d;
+    --demo-checkbox-highlight: rgb(49 95 135 / 14%);
     --demo-checkbox-size: 17px;
 }
 
 .demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"] {
     color: var(--demo-checkbox-fill-checked);
+    cursor: pointer;
     text-align: center;
     transition: background 150ms ease, color 150ms ease;
 }
@@ -2697,6 +2702,44 @@ a {
     outline: none;
 }
 
+.demo-panel .amb-demo-inventory-grid .demo-inspection-visual {
+    background-color: var(--demo-checkbox-fill);
+    background-image: linear-gradient(180deg, var(--demo-checkbox-fill) 0%, #f0f5fa 100%);
+    border: 1px solid var(--demo-checkbox-border);
+    border-radius: 4px;
+    box-shadow:
+        0 1px 2px rgb(16 35 63 / 8%),
+        inset 0 1px 0 rgb(255 255 255 / 90%);
+    box-sizing: border-box;
+    display: inline-block;
+    height: var(--demo-checkbox-size);
+    margin: 0;
+    position: relative;
+    transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+    vertical-align: middle;
+    width: var(--demo-checkbox-size);
+}
+
+.demo-panel .amb-demo-inventory-grid .demo-inspection-visual.is-checked {
+    background: linear-gradient(180deg, var(--demo-checkbox-fill-checked) 0%, var(--demo-checkbox-fill-checked-deep) 100%);
+    border-color: var(--demo-checkbox-fill-checked-deep);
+    box-shadow:
+        0 0 0 3px var(--demo-checkbox-highlight),
+        0 2px 6px rgb(22 74 120 / 14%);
+}
+
+.demo-panel .amb-demo-inventory-grid .demo-inspection-visual.is-checked::after {
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    content: "";
+    height: 8px;
+    left: 50%;
+    position: absolute;
+    top: 45%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 5px;
+}
+
 .demo-panel .amb-demo-inventory-grid .amb-checkbox-editor__input {
     accent-color: var(--demo-checkbox-fill-checked);
     cursor: pointer;
@@ -2706,6 +2749,10 @@ a {
     transition: box-shadow 140ms ease, filter 140ms ease;
     vertical-align: middle;
     width: var(--demo-checkbox-size);
+}
+
+.demo-panel .amb-demo-inventory-grid .amb-checkbox-editor__input:checked {
+    filter: saturate(0.82);
 }
 
 .demo-panel .amb-demo-inventory-grid .amb-checkbox-editor__input:focus-visible {

@@ -59,6 +59,56 @@ const getLanguage = () => {
 
 const t = key => messages[getLanguage()][key] || messages.it[key] || key;
 
+const formatInspectionCheckbox = cell => {
+    const checked = cell.getValue() === true;
+    const stateClass = checked ? ' is-checked' : '';
+
+    return `<span class="demo-inspection-visual${stateClass}" aria-hidden="true"></span>`;
+};
+
+const toggleInspectionCheckbox = (event, cell) => {
+    const target = event && event.target;
+    const cellElement = cell.getElement && cell.getElement();
+
+    if (
+        target
+        && typeof target.closest === 'function'
+        && target.closest('.amb-checkbox-editor')
+    ) {
+        return;
+    }
+
+    const row = cell.getRow();
+    const data = row && typeof row.getData === 'function' ? row.getData() : {};
+
+    if (data && data._state === 'deleted') return;
+
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
+
+    if (event && typeof event.stopPropagation === 'function') {
+        event.stopPropagation();
+    }
+
+    if (
+        cellElement
+        && cellElement.classList
+        && cellElement.classList.contains('tabulator-editing')
+    ) {
+        const input = cellElement.querySelector('.amb-checkbox-editor__input');
+
+        if (input) {
+            input.checked = cell.getValue() !== true;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        return;
+    }
+
+    cell.setValue(cell.getValue() !== true);
+};
+
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
@@ -371,16 +421,12 @@ export default async function fullDemo(app, options = {}) {
                 field: 'requiresInspection',
                 width: 150,
                 hozAlign: 'center',
-                formatter: AMB.formatters.checkbox({
-                    checkedSymbol: '✓',
-                    uncheckedSymbol: '',
-                    checkedLabel: '',
-                    uncheckedLabel: ''
-                }),
+                formatter: formatInspectionCheckbox,
                 editor: AMB.editors.checkbox({
                     checkedLabel: '',
                     uncheckedLabel: ''
-                })
+                }),
+                cellClick: toggleInspectionCheckbox
             },
             {
                 title: 'Notes',
