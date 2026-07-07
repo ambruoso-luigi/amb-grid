@@ -66,68 +66,6 @@ const formatInspectionCheckbox = cell => {
     return `<span class="demo-inspection-visual${stateClass}" aria-hidden="true"></span>`;
 };
 
-const getInspectionCellElement = cell => {
-    return cell && typeof cell.getElement === 'function' ? cell.getElement() : null;
-};
-
-const isInspectionEditorTarget = target => {
-    return Boolean(
-        target
-        && typeof target.closest === 'function'
-        && target.closest('.amb-checkbox-editor')
-    );
-};
-
-const isDeletedInspectionRow = cell => {
-    const row = cell && typeof cell.getRow === 'function' ? cell.getRow() : null;
-    const data = row && typeof row.getData === 'function' ? row.getData() : {};
-
-    return Boolean(data && data._state === 'deleted');
-};
-
-const suppressInspectionPointerClick = () => {
-    const handleClick = event => {
-        const target = event && event.target;
-        const cellElement = target && typeof target.closest === 'function'
-            ? target.closest('.amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]')
-            : null;
-
-        document.removeEventListener('click', handleClick, true);
-
-        if (!cellElement) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (typeof event.stopImmediatePropagation === 'function') {
-            event.stopImmediatePropagation();
-        }
-    };
-
-    document.addEventListener('click', handleClick, true);
-};
-
-const toggleInspectionCheckbox = (event, cell) => {
-    const target = event && event.target;
-
-    if (isInspectionEditorTarget(target) || isDeletedInspectionRow(cell)) return;
-
-    if (event && typeof event.preventDefault === 'function') {
-        event.preventDefault();
-    }
-
-    if (event && typeof event.stopPropagation === 'function') {
-        event.stopPropagation();
-    }
-
-    if (event && typeof event.stopImmediatePropagation === 'function') {
-        event.stopImmediatePropagation();
-    }
-
-    suppressInspectionPointerClick();
-    cell.setValue(cell.getValue() !== true, true);
-};
-
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
@@ -444,8 +382,7 @@ export default async function fullDemo(app, options = {}) {
                 editor: AMB.editors.checkbox({
                     checkedLabel: '',
                     uncheckedLabel: ''
-                }),
-                cellMouseDown: toggleInspectionCheckbox
+                })
             },
             {
                 title: 'Notes',

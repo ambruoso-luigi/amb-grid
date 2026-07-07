@@ -220,4 +220,17 @@ describe('checkbox editor keyboard behavior', () => {
 
         expect(harness.success).toHaveBeenCalledWith(true);
     });
+
+    test('exposes AMB checkbox metadata for table-level cbox behavior', () => {
+        const editor = createCheckboxEditor({
+            checkedValue: 'Y',
+            uncheckedValue: 'N'
+        });
+
+        expect(editor._ambEditorType).toBe('checkbox');
+        expect(editor._ambCheckboxConfig).toEqual({
+            checkedValue: 'Y',
+            uncheckedValue: 'N'
+        });
+    });
 });

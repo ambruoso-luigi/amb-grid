@@ -88,7 +88,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("field: 'requiresInspection'");
         expect(source).toContain('formatter: formatInspectionCheckbox');
         expect(source).toContain('editor: AMB.editors.checkbox({');
-        expect(source).toContain('cellMouseDown: toggleInspectionCheckbox');
+        expect(source).not.toContain('cellMouseDown: toggleInspectionCheckbox');
         expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
         expect(source).toContain('maxOptions: 8');
         expect(source).toContain('AMB.editors.lookup(statusLookup');
@@ -236,23 +236,20 @@ describe('Legacy-friendly warehouse demo', () => {
 
     test('renders Requires inspection with passive demo visual and AMB checkbox editor', () => {
         expect(source).toContain('const formatInspectionCheckbox = cell =>');
-        expect(source).toContain('const suppressInspectionPointerClick = () =>');
-        expect(source).toContain('const toggleInspectionCheckbox = (event, cell) =>');
         expect(source).toContain('class="demo-inspection-visual${stateClass}"');
         expect(source).toContain('aria-hidden="true"');
         expect(source).toContain('formatter: formatInspectionCheckbox');
         expect(source).toContain('editor: AMB.editors.checkbox({');
         expect(source).toContain("checkedLabel: ''");
         expect(source).toContain("uncheckedLabel: ''");
-        expect(source).toContain('cellMouseDown: toggleInspectionCheckbox');
-        expect(source).toContain("target.closest('.amb-demo-inventory-grid .tabulator-cell[tabulator-field=\"requiresInspection\"]')");
-        expect(source).toContain("document.addEventListener('click', handleClick, true)");
-        expect(source).toContain("document.removeEventListener('click', handleClick, true)");
-        expect(source).toContain('suppressInspectionPointerClick();');
-        expect(source).toContain('cell.setValue(cell.getValue() !== true, true);');
-        expect(source).toContain("target.closest('.amb-checkbox-editor')");
-        expect(source).toContain("data._state === 'deleted'");
-        expect(source).toContain('event.stopImmediatePropagation()');
+        expect(source).not.toContain('const suppressInspectionPointerClick = () =>');
+        expect(source).not.toContain('const toggleInspectionCheckbox = (event, cell) =>');
+        expect(source).not.toContain('cellMouseDown: toggleInspectionCheckbox');
+        expect(source).not.toContain("target.closest('.amb-demo-inventory-grid .tabulator-cell[tabulator-field=\"requiresInspection\"]')");
+        expect(source).not.toContain("document.addEventListener('click', handleClick, true)");
+        expect(source).not.toContain("document.removeEventListener('click', handleClick, true)");
+        expect(source).not.toContain('suppressInspectionPointerClick();');
+        expect(source).not.toContain('cell.setValue(cell.getValue() !== true, true);');
         expect(source).not.toContain('cellClick: toggleInspectionCheckbox');
         expect(source).not.toContain('cellClick: releaseInspectionPointerToggle');
         expect(source).not.toContain('const inspectionPointerToggleCells = new WeakSet()');

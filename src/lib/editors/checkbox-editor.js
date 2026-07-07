@@ -40,7 +40,7 @@ export function checkbox(options = {}) {
             uncheckedKeys: normalizeKeyList(options.uncheckedKeys, DEFAULT_UNCHECKED_KEYS)
         };
 
-        return (cell, onRendered, success, cancel) => {
+        const editor = (cell, onRendered, success, cancel) => {
             const container = document.createElement('label');
             const input = document.createElement('input');
             const label = document.createElement('span');
@@ -137,4 +137,11 @@ export function checkbox(options = {}) {
 
             return container;
         };
+        editor._ambEditorType = 'checkbox';
+        editor._ambCheckboxConfig = {
+            checkedValue: normalizedOptions.checkedValue,
+            uncheckedValue: normalizedOptions.uncheckedValue
+        };
+
+        return editor;
 }

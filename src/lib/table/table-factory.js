@@ -24,6 +24,7 @@ const NUMERIC_FORMATTER_TYPES = new Set([
 ]);
 const DATE_EDITOR_TYPES = new Set(['date']);
 const DATE_FORMATTER_TYPES = new Set(['date']);
+const CHECKBOX_EDITOR_TYPES = new Set(['checkbox']);
 const DEFAULT_PAGINATION_MODE = 'local';
 const DEFAULT_PAGINATION_SIZE = 10;
 
@@ -122,6 +123,10 @@ const isLookupColumn = column => {
     return column
         && column.editor
         && column.editor._ambEditorType === 'lookup';
+};
+
+const isCheckboxColumn = column => {
+    return CHECKBOX_EDITOR_TYPES.has(getAmbEditorType(column));
 };
 
 const getLookupConfig = column => {
@@ -385,6 +390,127 @@ const isDeletedRow = (cell, getCrud) => {
     return Boolean(data && (data[stateField] || ROW_STATE.CLEAN) === ROW_STATE.DELETED);
 };
 
+const getCheckboxConfig = column => {
+    return column && column.editor && column.editor._ambCheckboxConfig
+        ? column.editor._ambCheckboxConfig
+        : {
+            checkedValue: true,
+            uncheckedValue: false
+        };
+};
+
+const isPrimaryMouseEvent = event => {
+    return !event || event.button === undefined || event.button === 0;
+};
+
+const isCheckboxEditorTarget = target => {
+    return Boolean(
+        target
+        && typeof target.closest === 'function'
+        && target.closest('.amb-checkbox-editor')
+    );
+};
+
+const stopCellPointerEvent = event => {
+    if (!event) return;
+
+    if (typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
+
+    if (typeof event.stopPropagation === 'function') {
+        event.stopPropagation();
+    }
+
+    if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+    }
+};
+
+const getTargetCell = target => {
+    return target && typeof target.closest === 'function'
+        ? target.closest('.tabulator-cell')
+        : null;
+};
+
+const suppressCheckboxCellClick = cell => {
+    if (
+        typeof document === 'undefined'
+        || !document
+        || typeof document.addEventListener !== 'function'
+        || typeof document.removeEventListener !== 'function'
+    ) {
+        return;
+    }
+
+    const field = cell && typeof cell.getField === 'function' ? cell.getField() : null;
+    const handleClick = event => {
+        document.removeEventListener('click', handleClick, true);
+
+        const targetCell = getTargetCell(event && event.target);
+
+        if (!targetCell) return;
+
+        const targetField = typeof targetCell.getAttribute === 'function'
+            ? targetCell.getAttribute('tabulator-field')
+            : null;
+
+        if (field && targetField !== field) return;
+
+        stopCellPointerEvent(event);
+    };
+
+    document.addEventListener('click', handleClick, true);
+};
+
+const toggleCheckboxCellFromMouse = (event, cell, column, getCrud) => {
+    if (
+        !isPrimaryMouseEvent(event)
+        || isCheckboxEditorTarget(event && event.target)
+        || isDeletedRow(cell, getCrud)
+        || !cell
+        || typeof cell.getValue !== 'function'
+        || typeof cell.setValue !== 'function'
+    ) {
+        return false;
+    }
+
+    const config = getCheckboxConfig(column);
+    const checked = cell.getValue() === config.checkedValue;
+
+    stopCellPointerEvent(event);
+    suppressCheckboxCellClick(cell);
+    cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
+
+    return true;
+};
+
+export const prepareCheckboxColumns = (columns = [], getCrud = () => null) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) {
+            nextColumn.columns = prepareCheckboxColumns(nextColumn.columns, getCrud);
+        }
+
+        if (!isCheckboxColumn(nextColumn)) return nextColumn;
+
+        const originalCellMouseDown = nextColumn.cellMouseDown;
+
+        nextColumn.cellMouseDown = (event, cell) => {
+            const handled = toggleCheckboxCellFromMouse(event, cell, nextColumn, getCrud);
+
+            if (!handled && typeof originalCellMouseDown === 'function') {
+                return originalCellMouseDown(event, cell);
+            }
+
+            return handled;
+        };
+
+        return nextColumn;
+    });
+};
+
 const wrapEditableForDeletedRows = (columns, getCrud) => {
     return (columns || []).map(column => {
         const nextColumn = { ...column };
@@ -556,8 +682,11 @@ export function createTable(options = {}) {
         ...messages
     };
     const extracted = extractColumnValidators(columns, normalizedMessages);
-    const dataColumns = prepareLookupColumns(
-        wrapEditableForDeletedRows(extracted.columns, () => crud)
+    const dataColumns = prepareCheckboxColumns(
+        prepareLookupColumns(
+            wrapEditableForDeletedRows(extracted.columns, () => crud)
+        ),
+        () => crud
     );
     const alignedDataColumns = applyDefaultColumnAlignments(dataColumns);
     const lookupColumns = collectLookupColumns(alignedDataColumns);
