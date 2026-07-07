@@ -66,42 +66,8 @@ const formatInspectionCheckbox = cell => {
     return `<span class="demo-inspection-visual${stateClass}" aria-hidden="true"></span>`;
 };
 
-const inspectionPointerToggleCells = new WeakSet();
-
 const getInspectionCellElement = cell => {
     return cell && typeof cell.getElement === 'function' ? cell.getElement() : null;
-};
-
-const clearInspectionPointerToggle = cell => {
-    const cellElement = getInspectionCellElement(cell);
-
-    inspectionPointerToggleCells.delete(cell);
-
-    if (cellElement && cellElement.dataset) {
-        delete cellElement.dataset.demoInspectionPointerToggle;
-    }
-};
-
-const markInspectionPointerToggle = cell => {
-    const cellElement = getInspectionCellElement(cell);
-
-    inspectionPointerToggleCells.add(cell);
-
-    if (cellElement && cellElement.dataset) {
-        cellElement.dataset.demoInspectionPointerToggle = 'true';
-    }
-};
-
-const consumeInspectionPointerToggle = cell => {
-    const cellElement = getInspectionCellElement(cell);
-    const hasPointerToggle = inspectionPointerToggleCells.has(cell)
-        || Boolean(cellElement && cellElement.dataset && cellElement.dataset.demoInspectionPointerToggle);
-
-    if (hasPointerToggle) {
-        clearInspectionPointerToggle(cell);
-    }
-
-    return hasPointerToggle;
 };
 
 const isInspectionEditorTarget = target => {
@@ -119,20 +85,32 @@ const isDeletedInspectionRow = cell => {
     return Boolean(data && data._state === 'deleted');
 };
 
-const shouldEditInspectionCheckbox = cell => {
-    return !consumeInspectionPointerToggle(cell);
-};
+const suppressInspectionPointerClick = () => {
+    const handleClick = event => {
+        const target = event && event.target;
+        const cellElement = target && typeof target.closest === 'function'
+            ? target.closest('.amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]')
+            : null;
 
-const releaseInspectionPointerToggle = (event, cell) => {
-    clearInspectionPointerToggle(cell);
+        document.removeEventListener('click', handleClick, true);
+
+        if (!cellElement) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (typeof event.stopImmediatePropagation === 'function') {
+            event.stopImmediatePropagation();
+        }
+    };
+
+    document.addEventListener('click', handleClick, true);
 };
 
 const toggleInspectionCheckbox = (event, cell) => {
     const target = event && event.target;
 
     if (isInspectionEditorTarget(target) || isDeletedInspectionRow(cell)) return;
-
-    markInspectionPointerToggle(cell);
 
     if (event && typeof event.preventDefault === 'function') {
         event.preventDefault();
@@ -146,7 +124,8 @@ const toggleInspectionCheckbox = (event, cell) => {
         event.stopImmediatePropagation();
     }
 
-    cell.setValue(cell.getValue() !== true);
+    suppressInspectionPointerClick();
+    cell.setValue(cell.getValue() !== true, true);
 };
 
 const countRowsByState = (report, state) => {
@@ -466,9 +445,7 @@ export default async function fullDemo(app, options = {}) {
                     checkedLabel: '',
                     uncheckedLabel: ''
                 }),
-                editable: shouldEditInspectionCheckbox,
-                cellMouseDown: toggleInspectionCheckbox,
-                cellClick: releaseInspectionPointerToggle
+                cellMouseDown: toggleInspectionCheckbox
             },
             {
                 title: 'Notes',
