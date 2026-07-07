@@ -66,6 +66,30 @@ const formatInspectionCheckbox = cell => {
     return `<span class="demo-inspection-checkbox${stateClass}" role="checkbox" aria-checked="${checked ? 'true' : 'false'}"></span>`;
 };
 
+const toggleInspectionCheckbox = (event, cell) => {
+    const row = cell.getRow();
+    const data = row && typeof row.getData === 'function' ? row.getData() : {};
+
+    if (data && data._state === 'deleted') return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    cell.setValue(cell.getValue() !== true);
+
+    const element = cell.getElement();
+
+    if (!element || typeof window === 'undefined') return;
+
+    element.classList.remove('demo-inspection-cell--toggled');
+    void element.offsetWidth;
+    element.classList.add('demo-inspection-cell--toggled');
+
+    element.addEventListener('animationend', () => {
+        element.classList.remove('demo-inspection-cell--toggled');
+    }, { once: true });
+};
+
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
@@ -379,10 +403,7 @@ export default async function fullDemo(app, options = {}) {
                 width: 150,
                 hozAlign: 'center',
                 formatter: formatInspectionCheckbox,
-                editor: AMB.editors.checkbox({
-                    checkedLabel: '',
-                    uncheckedLabel: ''
-                })
+                cellClick: toggleInspectionCheckbox
             },
             {
                 title: 'Notes',

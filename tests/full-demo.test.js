@@ -87,7 +87,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("title: 'Requires inspection'");
         expect(source).toContain("field: 'requiresInspection'");
         expect(source).toContain('formatter: formatInspectionCheckbox');
-        expect(source).toContain('AMB.editors.checkbox({');
+        expect(source).toContain('cellClick: toggleInspectionCheckbox');
         expect(source).toContain('AMB.editors.autocomplete(warehouseOptions, {');
         expect(source).toContain('maxOptions: 8');
         expect(source).toContain('AMB.editors.lookup(statusLookup');
@@ -235,11 +235,14 @@ describe('Legacy-friendly warehouse demo', () => {
 
     test('renders Requires inspection as a simple boolean checkbox', () => {
         expect(source).toContain('const formatInspectionCheckbox = cell =>');
+        expect(source).toContain('const toggleInspectionCheckbox = (event, cell) =>');
         expect(source).toContain('class="demo-inspection-checkbox${stateClass}"');
         expect(source).toContain('role="checkbox"');
         expect(source).toContain('formatter: formatInspectionCheckbox');
+        expect(source).toContain('cell.setValue(cell.getValue() !== true);');
         expect(source).not.toContain('const formatBooleanCheck = cell =>');
         expect(source).not.toContain('class="demo-checkbox-input"');
+        expect(source).not.toContain('AMB.editors.checkbox({');
         expect(source).not.toContain("checkedLabel: 'Yes'");
         expect(source).not.toContain("uncheckedLabel: 'No'");
         expect(demoCss).not.toContain('.demo-checkbox-input');
