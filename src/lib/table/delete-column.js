@@ -88,6 +88,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         button.dataset.action = config.action;
         button.textContent = config.icon;
         button.setAttribute('aria-label', config.label);
+        button.title = config.label;
 
         container.append(button);
 

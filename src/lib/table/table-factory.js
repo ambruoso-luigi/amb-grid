@@ -693,6 +693,7 @@ export function createTable(options = {}) {
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     let crud = null;
     let unsubscribeDeleteColumn = null;
+    let unsubscribeSelectionColumn = null;
     let unsubscribeLookupMetadata = null;
     let unsubscribeLookupDescriptions = null;
     let unsubscribeLargeText = null;
@@ -722,6 +723,9 @@ export function createTable(options = {}) {
 
     const table = new Tabulator(selector, normalizedOptions);
     crud = new CrudHelper(table, { errorStyle });
+    unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
+        ? selectionColumnController.bind(table)
+        : null;
     const floatingMessage = new FloatingMessage();
     const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
     unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage);
@@ -858,6 +862,11 @@ export function createTable(options = {}) {
             if (unsubscribeDeleteColumn) {
                 unsubscribeDeleteColumn();
                 unsubscribeDeleteColumn = null;
+            }
+
+            if (unsubscribeSelectionColumn) {
+                unsubscribeSelectionColumn();
+                unsubscribeSelectionColumn = null;
             }
 
             if (unsubscribeLookupDescriptions) {
