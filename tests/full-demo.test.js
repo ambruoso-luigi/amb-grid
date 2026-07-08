@@ -146,6 +146,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("confirmDeleteMessage: 'Delete this product?'");
         expect(source).toContain("confirmRollbackMessage: 'Rollback this product?'");
         expect(source).toContain("confirmRemoveNewMessage: 'Remove this new product?'");
+        expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?width: 58/);
+        expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?icons: \{/);
         expect(source).not.toContain('bindInventoryRowActionKeyboardBridge');
         expect(source).not.toContain('KEYDOWN_EVENT');
         expect(source).not.toContain("addEventListener('keydown'");

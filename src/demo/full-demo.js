@@ -209,12 +209,6 @@ export default async function fullDemo(app, options = {}) {
         },
         deleteColumn: {
             enabled: true,
-            width: 58,
-            icons: {
-                delete: '✕',
-                rollback: '↶',
-                removeNew: '✕'
-            },
             labels: {
                 delete: 'Delete product',
                 rollback: 'Rollback product changes',
