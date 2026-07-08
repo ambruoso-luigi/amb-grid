@@ -693,7 +693,6 @@ export function createTable(options = {}) {
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     let crud = null;
     let unsubscribeDeleteColumn = null;
-    let unsubscribeDeleteColumnKeyboard = null;
     let unsubscribeSelectionColumn = null;
     let unsubscribeLookupMetadata = null;
     let unsubscribeLookupDescriptions = null;
@@ -760,9 +759,6 @@ export function createTable(options = {}) {
     });
 
     if (deleteColumnController) {
-        unsubscribeDeleteColumnKeyboard = typeof deleteColumnController.bind === 'function'
-            ? deleteColumnController.bind(table)
-            : null;
         unsubscribeDeleteColumn = crud.on('row-state-changed', ({ row }) => {
             deleteColumnController.updateRowButton(row);
         });
@@ -866,11 +862,6 @@ export function createTable(options = {}) {
             if (unsubscribeDeleteColumn) {
                 unsubscribeDeleteColumn();
                 unsubscribeDeleteColumn = null;
-            }
-
-            if (unsubscribeDeleteColumnKeyboard) {
-                unsubscribeDeleteColumnKeyboard();
-                unsubscribeDeleteColumnKeyboard = null;
             }
 
             if (unsubscribeSelectionColumn) {
