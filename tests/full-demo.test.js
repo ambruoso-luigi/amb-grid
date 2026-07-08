@@ -5,6 +5,10 @@ const source = fs.readFileSync(
     new URL('../src/demo/full-demo.js', import.meta.url),
     'utf8'
 );
+const basicCrudSource = fs.readFileSync(
+    new URL('../src/demo/basic-crud.js', import.meta.url),
+    'utf8'
+);
 const demoCss = fs.readFileSync(
     new URL('../src/demo/demo.css', import.meta.url),
     'utf8'
@@ -132,6 +136,26 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('setPage(');
         expect(source).not.toContain('scrollToRow');
         expect(source).not.toContain('setTimeout');
+    });
+
+    test('keeps full demo row actions on native button tab behavior', () => {
+        expect(source).toContain('deleteColumn: {');
+        expect(source).toContain("delete: 'Delete product'");
+        expect(source).toContain("rollback: 'Rollback product changes'");
+        expect(source).toContain("removeNew: 'Remove new product'");
+        expect(source).toContain("confirmDeleteMessage: 'Delete this product?'");
+        expect(source).toContain("confirmRollbackMessage: 'Rollback this product?'");
+        expect(source).toContain("confirmRemoveNewMessage: 'Remove this new product?'");
+        expect(source).not.toContain('bindInventoryRowActionKeyboardBridge');
+        expect(source).not.toContain('KEYDOWN_EVENT');
+        expect(source).not.toContain("addEventListener('keydown'");
+        expect(source).not.toContain('addEventListener("keydown"');
+        expect(source).not.toContain('preventDefault()');
+        expect(source).not.toContain('stopPropagation()');
+        expect(source).not.toContain('focus({ preventScroll: true })');
+        expect(source).not.toContain('tabindex');
+        expect(basicCrudSource).toContain('deleteColumn: {');
+        expect(basicCrudSource).toContain('selectionColumn: {');
     });
 
     test('keeps the Notes large text editor open when its backdrop is clicked', () => {
