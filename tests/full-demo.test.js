@@ -134,6 +134,25 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('setTimeout');
     });
 
+    test('keeps full demo row action buttons reachable from the first editable cell', () => {
+        expect(source).toContain('deleteColumn: {');
+        expect(source).toContain('bindInventoryRowActionKeyboardBridge');
+        expect(source).toContain('getPreviousDemoRowActionButton');
+        expect(source).toContain('getDemoRowActionButton');
+        expect(source).toContain('getDemoTableCell');
+        expect(source).toContain("event.key !== 'Tab'");
+        expect(source).toContain("target.closest('.tabulator-cell')");
+        expect(source).toContain("target.closest('.tabulator-tableholder')");
+        expect(source).toContain("previous.querySelector('.amb-row-action-button')");
+        expect(source).toContain("previous.classList.contains('tabulator-editable')");
+        expect(source).toContain('let lastCellElement = null');
+        expect(source).toContain('tableElement.addEventListener(FOCUSIN_EVENT, rememberCell, true)');
+        expect(source).toContain('tableElement.addEventListener(POINTERDOWN_EVENT, rememberCell, true)');
+        expect(source).toContain('actionButton.focus({ preventScroll: true })');
+        expect(source).toContain('const unbindRowActionKeyboardBridge = bindInventoryRowActionKeyboardBridge');
+        expect(source).toContain('unbindRowActionKeyboardBridge();');
+    });
+
     test('keeps the Notes large text editor open when its backdrop is clicked', () => {
         expect(source).toMatch(
             /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?closeOnBackdropClick: false/

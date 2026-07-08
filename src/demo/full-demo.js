@@ -66,6 +66,96 @@ const formatInspectionCheckbox = cell => {
     return `<span class="demo-inspection-visual${stateClass}" aria-hidden="true"></span>`;
 };
 
+const KEYDOWN_EVENT = 'keydown';
+const FOCUSIN_EVENT = 'focusin';
+const POINTERDOWN_EVENT = 'pointerdown';
+const TABLE_CONTROL_SELECTOR = 'button, input, select, textarea, a[href]';
+
+const getDemoTableCell = target => {
+    return target && typeof target.closest === 'function'
+        ? target.closest('.tabulator-cell')
+        : null;
+};
+
+const getDemoRowActionButton = cellElement => {
+    const rowElement = cellElement && typeof cellElement.closest === 'function'
+        ? cellElement.closest('.tabulator-row')
+        : null;
+
+    return rowElement ? rowElement.querySelector('.amb-row-action-button') : null;
+};
+
+const getPreviousDemoRowActionButton = cellElement => {
+    let previous = cellElement ? cellElement.previousElementSibling : null;
+
+    while (previous) {
+        const actionButton = previous.querySelector('.amb-row-action-button');
+
+        if (actionButton) return actionButton;
+
+        if (
+            previous.classList.contains('tabulator-editable')
+            || previous.querySelector(TABLE_CONTROL_SELECTOR)
+        ) {
+            return null;
+        }
+
+        previous = previous.previousElementSibling;
+    }
+
+    return null;
+};
+
+const bindInventoryRowActionKeyboardBridge = tableElement => {
+    if (!tableElement) return () => {};
+
+    let lastCellElement = null;
+
+    const rememberCell = event => {
+        const cellElement = getDemoTableCell(event.target);
+
+        if (cellElement && tableElement.contains(cellElement)) {
+            lastCellElement = cellElement;
+        }
+    };
+
+    const handleKeydown = event => {
+        if (event.key !== 'Tab') return;
+
+        const target = event.target;
+        const cellElement = getDemoTableCell(target);
+        const tableholder = target && typeof target.closest === 'function'
+            ? target.closest('.tabulator-tableholder')
+            : null;
+
+        if (cellElement && tableElement.contains(cellElement)) {
+            lastCellElement = cellElement;
+        }
+
+        const actionButton = cellElement && event.shiftKey
+            ? getPreviousDemoRowActionButton(cellElement)
+            : tableholder && tableElement.contains(tableholder)
+                ? getDemoRowActionButton(lastCellElement) || tableElement.querySelector('.amb-row-action-button')
+                : null;
+
+        if (!actionButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        actionButton.focus({ preventScroll: true });
+    };
+
+    tableElement.addEventListener(FOCUSIN_EVENT, rememberCell, true);
+    tableElement.addEventListener(POINTERDOWN_EVENT, rememberCell, true);
+    tableElement.addEventListener(KEYDOWN_EVENT, handleKeydown, true);
+
+    return () => {
+        tableElement.removeEventListener(FOCUSIN_EVENT, rememberCell, true);
+        tableElement.removeEventListener(POINTERDOWN_EVENT, rememberCell, true);
+        tableElement.removeEventListener(KEYDOWN_EVENT, handleKeydown, true);
+    };
+};
+
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
@@ -405,6 +495,9 @@ export default async function fullDemo(app, options = {}) {
     }
 
     const demo = AMB.table(tableOptions);
+    const unbindRowActionKeyboardBridge = bindInventoryRowActionKeyboardBridge(
+        app.querySelector('#inventory-table')
+    );
 
     const { crud } = demo;
     const originalDestroy = demo.destroy.bind(demo);
@@ -415,6 +508,7 @@ export default async function fullDemo(app, options = {}) {
     });
 
     demo.destroy = () => {
+        unbindRowActionKeyboardBridge();
         reportDialog.destroy();
         app.style.removeProperty('--demo-table-height');
         document.body.classList.remove('demo-main-demo-active');
