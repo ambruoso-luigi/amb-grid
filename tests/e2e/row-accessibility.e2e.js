@@ -93,6 +93,57 @@ test.describe('row controls accessibility', () => {
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
     });
 
+    test('main demo table navigation reaches row action buttons from editable cells', async ({ page }) => {
+        await openInventoryDemo(page);
+
+        const firstRow = page.locator('#inventory-table .tabulator-row').first();
+        const productNameCell = firstRow.locator('.tabulator-cell[tabulator-field="productName"]');
+        const itemCodeCell = firstRow.locator('.tabulator-cell[tabulator-field="itemCode"]');
+
+        await productNameCell.click();
+        await expect(productNameCell.locator('input.amb-cell-editor')).toBeFocused();
+        await productNameCell.locator('input.amb-cell-editor').fill('Keyboard reachable product');
+        await page.keyboard.press('Enter');
+        await expect(firstRow).toHaveAttribute('data-state', 'modified');
+
+        await itemCodeCell.click();
+        await expect(itemCodeCell.locator('input.amb-cell-editor')).toBeFocused();
+        await page.keyboard.press('Shift+Tab');
+
+        const modifiedRollbackButton = firstRow.locator('.amb-row-action-button--rollback');
+
+        await expect(modifiedRollbackButton).toBeFocused();
+        await expect(modifiedRollbackButton).not.toHaveAttribute('tabindex', '-1');
+        await expect(modifiedRollbackButton).toHaveAttribute('type', 'button');
+        await expect(modifiedRollbackButton).toHaveAttribute('aria-label', 'Rollback product changes');
+
+        await page.keyboard.press('Enter');
+        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
+        await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
+        await expect(firstRow).toHaveAttribute('data-state', 'clean');
+
+        await page.locator('#javascript-demo .amb-toolbar__button--add').click();
+
+        const newRow = page.locator('#inventory-table .tabulator-row[data-state="new"]').last();
+        const newItemCodeCell = newRow.locator('.tabulator-cell[tabulator-field="itemCode"]');
+
+        await expect(newItemCodeCell.locator('input.amb-cell-editor')).toBeFocused();
+        await newItemCodeCell.locator('input.amb-cell-editor').fill('PRD-Z999');
+        await page.keyboard.press('Shift+Tab');
+
+        const removeNewButton = newRow.locator('.amb-row-action-button--remove-new');
+
+        await expect(removeNewButton).toBeFocused();
+        await expect(removeNewButton).not.toHaveAttribute('tabindex', '-1');
+        await expect(removeNewButton).toHaveAttribute('type', 'button');
+        await expect(removeNewButton).toHaveAttribute('aria-label', 'Remove new product');
+
+        await page.keyboard.press('Enter');
+        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
+        await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
+        await expect(page.locator('#inventory-table .tabulator-row[data-state="new"]')).toHaveCount(0);
+    });
+
     test('main demo data cbox still supports whole-cell mouse editing', async ({ page }) => {
         await openInventoryDemo(page);
 

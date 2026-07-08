@@ -120,11 +120,118 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         return confirmDialog.confirm({ message });
     };
 
+    const handleAction = async (event, cell, actionElement) => {
+        if (!actionElement) return;
+
+        const crud = getCrud();
+
+        if (!crud) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const row = cell.getRow();
+        const data = row.getData();
+        const identifier = getRowIdentifier(crud, data);
+        const state = getRowState(row);
+        const action = actionElement.dataset.action;
+
+        if (action === 'remove-new' && state === ROW_STATE.NEW) {
+            const confirmed = await requestConfirmation({
+                action: 'remove-new',
+                message: confirmRemoveNewMessage,
+                row,
+                state,
+                id: identifier
+            });
+
+            if (!confirmed) return;
+
+            crud.deleteRow(identifier);
+            scheduleRowButtonUpdate(row);
+            return;
+        }
+
+        if (action === 'rollback' && (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED)) {
+            const confirmed = await requestConfirmation({
+                action: 'rollback',
+                message: confirmRollbackMessage,
+                row,
+                state,
+                id: identifier
+            });
+
+            if (!confirmed) return;
+
+            crud.rollbackRow(identifier);
+            scheduleRowButtonUpdate(row);
+            return;
+        }
+
+        if (
+            action !== 'delete'
+            || (state !== ROW_STATE.CLEAN && state !== ROW_STATE.SAVED)
+        ) {
+            return;
+        }
+
+        const confirmed = await requestConfirmation({
+            action: 'delete',
+            message: confirmDeleteMessage,
+            row,
+            state,
+            id: identifier
+        });
+
+        if (!confirmed) return;
+
+        crud.deleteRow(identifier);
+        scheduleRowButtonUpdate(row);
+    };
+
+    const findPreviousActionButton = cellElement => {
+        let previous = cellElement ? cellElement.previousElementSibling : null;
+
+        while (previous) {
+            const actionButton = previous.querySelector('.amb-row-action-button');
+
+            if (actionButton) return actionButton;
+
+            if (
+                previous.hasAttribute('tabindex')
+                || previous.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+            ) {
+                return null;
+            }
+
+            previous = previous.previousElementSibling;
+        }
+
+        return null;
+    };
+
+    const handleTableKeydown = event => {
+        if (!event.shiftKey || event.key !== 'Tab') return;
+
+        const target = event.target;
+        const cellElement = target && typeof target.closest === 'function'
+            ? target.closest('.tabulator-cell')
+            : null;
+        const actionButton = findPreviousActionButton(cellElement);
+
+        if (!actionButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        actionButton.focus({ preventScroll: true });
+    };
+
     return {
         column: {
             width: deleteColumn.width || 55,
             hozAlign: 'center',
             headerSort: false,
+            cssClass: 'amb-row-action-cell',
             formatter: cell => {
                 return createActionsContainer(getRowState(cell.getRow()));
             },
@@ -134,73 +241,21 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                     ? target.closest('[data-action]')
                     : null;
 
-                if (!actionElement) return;
-
-                const crud = getCrud();
-
-                if (!crud) return;
-
-                event.preventDefault();
-                event.stopPropagation();
-
-                const row = cell.getRow();
-                const data = row.getData();
-                const identifier = getRowIdentifier(crud, data);
-                const state = getRowState(row);
-                const action = actionElement.dataset.action;
-
-                if (action === 'remove-new' && state === ROW_STATE.NEW) {
-                    const confirmed = await requestConfirmation({
-                        action: 'remove-new',
-                        message: confirmRemoveNewMessage,
-                        row,
-                        state,
-                        id: identifier
-                    });
-
-                    if (!confirmed) return;
-
-                    crud.deleteRow(identifier);
-                    scheduleRowButtonUpdate(row);
-                    return;
-                }
-
-                if (action === 'rollback' && (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED)) {
-                    const confirmed = await requestConfirmation({
-                        action: 'rollback',
-                        message: confirmRollbackMessage,
-                        row,
-                        state,
-                        id: identifier
-                    });
-
-                    if (!confirmed) return;
-
-                    crud.rollbackRow(identifier);
-                    scheduleRowButtonUpdate(row);
-                    return;
-                }
-
-                if (
-                    action !== 'delete'
-                    || (state !== ROW_STATE.CLEAN && state !== ROW_STATE.SAVED)
-                ) {
-                    return;
-                }
-
-                const confirmed = await requestConfirmation({
-                    action: 'delete',
-                    message: confirmDeleteMessage,
-                    row,
-                    state,
-                    id: identifier
-                });
-
-                if (!confirmed) return;
-
-                crud.deleteRow(identifier);
-                scheduleRowButtonUpdate(row);
+                await handleAction(event, cell, actionElement);
             }
+        },
+        bind(table) {
+            const tableElement = table && table.element;
+
+            if (!tableElement || typeof tableElement.addEventListener !== 'function') {
+                return () => {};
+            }
+
+            tableElement.addEventListener('keydown', handleTableKeydown, true);
+
+            return () => {
+                tableElement.removeEventListener('keydown', handleTableKeydown, true);
+            };
         },
         updateRowButton
     };
