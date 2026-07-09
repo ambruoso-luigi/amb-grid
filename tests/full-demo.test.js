@@ -139,13 +139,16 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('keeps full demo row actions on native button tab behavior', () => {
-        expect(source).toContain('deleteColumn: {');
+        expect(source).toContain('createDemoRowActionColumn({');
+        expect(source).toContain("field: '_demoRowActions'");
+        expect(source).toContain('className = `amb-row-action-button ${config.className}`');
         expect(source).toContain("delete: 'Delete product'");
         expect(source).toContain("rollback: 'Rollback product changes'");
         expect(source).toContain("removeNew: 'Remove new product'");
-        expect(source).toContain("confirmDeleteMessage: 'Delete this product?'");
-        expect(source).toContain("confirmRollbackMessage: 'Rollback this product?'");
-        expect(source).toContain("confirmRemoveNewMessage: 'Remove this new product?'");
+        expect(source).toContain("delete: 'Delete this product?'");
+        expect(source).toContain("rollback: 'Rollback this product?'");
+        expect(source).toContain("removeNew: 'Remove this new product?'");
+        expect(source).not.toContain('deleteColumn: {');
         expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?width: 58/);
         expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?icons: \{/);
         expect(source).not.toContain('bindInventoryRowActionKeyboardBridge');
@@ -156,6 +159,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('stopPropagation()');
         expect(source).not.toContain('focus({ preventScroll: true })');
         expect(source).not.toContain('tabindex');
+        expect(source).toContain('confirmDialog.destroy()');
         expect(basicCrudSource).toContain('deleteColumn: {');
         expect(basicCrudSource).toContain('selectionColumn: {');
     });
