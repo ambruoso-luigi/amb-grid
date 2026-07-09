@@ -1,0 +1,34 @@
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #1f2933;
+    background: #f7f9fb;
+}
+
+#test-app {
+    box-sizing: border-box;
+    width: min(100%, 1280px);
+    margin: 0 auto;
+    padding: 24px;
+}
+
+#test-app h1,
+#test-app h2,
+#test-app p {
+    margin-top: 0;
+}
+
+#inventory-test-table {
+    margin: 16px 0 24px;
+}
+
+#test-output {
+    min-height: 180px;
+    margin: 0;
+    padding: 16px;
+    overflow: auto;
+    border: 1px solid #ccd6e0;
+    background: #fff;
+    color: #111827;
+    font: 13px/1.5 Consolas, "Liberation Mono", monospace;
+}
