@@ -1,3 +1,5 @@
+import { navigateEditableCellAfterClose } from './shared.js';
+
 const DEFAULT_TOGGLE_KEYS = [' '];
 const DEFAULT_CHECKED_KEYS = ['1', 'y', 'Y', 's', 'S'];
 const DEFAULT_UNCHECKED_KEYS = ['0', 'n', 'N'];
@@ -71,11 +73,15 @@ export function checkbox(options = {}) {
                 updateLabel();
             };
 
-            const closeWithSuccess = () => {
+            const closeWithSuccess = direction => {
                 if (closed) return;
 
                 closed = true;
                 success(getValue());
+
+                if (direction) {
+                    navigateEditableCellAfterClose(cell, direction);
+                }
             };
 
             const closeWithCancel = () => {
@@ -106,7 +112,14 @@ export function checkbox(options = {}) {
                 }
 
                 if (event.key === 'Tab') {
-                    closeWithSuccess();
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
+                    closeWithSuccess(event.shiftKey ? 'prev' : 'next');
                     return;
                 }
 

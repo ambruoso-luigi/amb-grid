@@ -8,7 +8,7 @@ import {
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
-import { getInitialValue } from './shared.js';
+import { getInitialValue, navigateEditableCellAfterClose } from './shared.js';
 
 const VIEWPORT_MARGIN = 8;
 const DEFAULT_DROPDOWN_Z_INDEX = 10050;
@@ -282,7 +282,7 @@ export function autocomplete(values, options = {}) {
             return highlightedValue;
         };
 
-        const commit = selectedValue => {
+        const commit = (selectedValue, direction) => {
             const result = resolveAutocompleteCommit({
                 selectedValue: selectedValue === undefined
                     ? getHighlightedValue()
@@ -293,10 +293,17 @@ export function autocomplete(values, options = {}) {
 
             if (result.action === 'cancel') {
                 closeWithCancel();
+                if (direction) {
+                    navigateEditableCellAfterClose(cell, direction);
+                }
                 return;
             }
 
             closeWithSuccess(result.value);
+
+            if (direction) {
+                navigateEditableCellAfterClose(cell, direction);
+            }
         };
 
         const handleKeydown = event => {
@@ -331,7 +338,20 @@ export function autocomplete(values, options = {}) {
             }
 
             if (action.action === 'commit') {
-                commit();
+                const direction = event.key === 'Tab'
+                    ? (event.shiftKey ? 'prev' : 'next')
+                    : null;
+
+                if (direction) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+                }
+
+                commit(undefined, direction);
                 return;
             }
 

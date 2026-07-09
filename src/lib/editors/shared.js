@@ -6,6 +6,83 @@ export const getInitialValue = cell => {
     return String(value);
 };
 
+const columnIsVisible = column => {
+    if (column && typeof column.isVisible === 'function') {
+        return column.isVisible() !== false;
+    }
+
+    const definition = column
+        && typeof column.getDefinition === 'function'
+        ? column.getDefinition()
+        : null;
+
+    return !definition || definition.visible !== false;
+};
+
+const cellIsEditableCandidate = candidate => {
+    if (!candidate || typeof candidate.edit !== 'function') return false;
+
+    const column = candidate.getColumn && candidate.getColumn();
+    const definition = column
+        && typeof column.getDefinition === 'function'
+        ? column.getDefinition()
+        : null;
+
+    if (!columnIsVisible(column)) return false;
+    if (!definition || !definition.editor) return false;
+    if (definition.editable === false) return false;
+    if (typeof definition.editable === 'function') {
+        return definition.editable(candidate) !== false;
+    }
+
+    return true;
+};
+
+export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
+    globalThis.setTimeout(() => {
+        const row = cell && cell.getRow && cell.getRow();
+        const cells = row && typeof row.getCells === 'function'
+            ? row.getCells()
+            : [];
+        const currentIndex = cells.indexOf(cell);
+        const step = direction === 'prev' ? -1 : 1;
+
+        if (currentIndex !== -1) {
+            for (
+                let index = currentIndex + step;
+                index >= 0 && index < cells.length;
+                index += step
+            ) {
+                const candidate = cells[index];
+
+                if (!cellIsEditableCandidate(candidate)) continue;
+                if (candidate.edit() !== false) return;
+            }
+        }
+
+        if (direction === 'prev' && cell && typeof cell.navigatePrev === 'function') {
+            cell.navigatePrev();
+            return;
+        }
+
+        if (direction === 'next' && cell && typeof cell.navigateNext === 'function') {
+            cell.navigateNext();
+            return;
+        }
+
+        const table = cell && cell.getTable && cell.getTable();
+
+        if (direction === 'prev' && table && typeof table.navigatePrev === 'function') {
+            table.navigatePrev();
+            return;
+        }
+
+        if (direction === 'next' && table && typeof table.navigateNext === 'function') {
+            table.navigateNext();
+        }
+    }, 0);
+};
+
 export const focusInput = (input, onRendered, options = {}) => {
     onRendered(() => {
         const cursorPosition = input.value.length;

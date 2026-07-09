@@ -266,9 +266,36 @@ const createEditorHarness = (
         dataset: {},
         children: []
     };
-    const cell = {
+    const previousCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    const nextCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    let cell;
+    const row = {
+        getCells: () => harnessOptions.withRowNavigation
+            ? [previousCell, cell, nextCell]
+            : []
+    };
+    const table = {
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
+    };
+
+    cell = {
         getElement: () => cellElement,
-        getValue: () => initialValue
+        getRow: () => row,
+        getTable: () => table,
+        getValue: () => initialValue,
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
     };
     const success = vi.fn();
     const cancel = vi.fn();
@@ -300,6 +327,9 @@ const createEditorHarness = (
         body,
         documentMock,
         input,
+        nextCell,
+        previousCell,
+        table,
         awesomplete: awesompleteMock.instances[0],
         restore: () => {
             globalThis.document = originalDocument;
@@ -308,6 +338,10 @@ const createEditorHarness = (
         success
     };
 };
+
+const flushDeferred = () => new Promise(resolve => {
+    globalThis.setTimeout(resolve, 0);
+});
 
 describe('autocomplete editor options', () => {
     test('provides stable strict defaults', () => {
@@ -350,25 +384,35 @@ describe('autocomplete editor lifecycle', () => {
         }
     });
 
-    test('Tab without a highlighted suggestion commits raw text and stays unblocked', () => {
-        const harness = createEditorHarness({ allowCustomValue: true });
+    test('Tab without a highlighted suggestion commits raw text and navigates next', async () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            'Finance',
+            ['Finance', 'Human Resources'],
+            { withRowNavigation: true }
+        );
 
         try {
             harness.input.value = 'Mar';
             const event = harness.input.dispatch('keydown', { key: 'Tab' });
 
-            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
             expect(harness.success).toHaveBeenCalledWith('Mar');
+            await flushDeferred();
+            expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+            expect(harness.previousCell.edit).not.toHaveBeenCalled();
         } finally {
             harness.restore();
         }
     });
 
-    test('Tab with a highlighted suggestion commits it and stays unblocked', () => {
+    test('Tab with a highlighted suggestion commits it and navigates next', async () => {
         const harness = createEditorHarness(
             { allowCustomValue: true },
             '',
-            ['Mario Rossi', 'Maria Bianchi']
+            ['Mario Rossi', 'Maria Bianchi'],
+            { withRowNavigation: true }
         );
 
         try {
@@ -376,8 +420,65 @@ describe('autocomplete editor lifecycle', () => {
             harness.awesomplete.index = 0;
             const event = harness.input.dispatch('keydown', { key: 'Tab' });
 
-            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
             expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
+            await flushDeferred();
+            expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+            expect(harness.previousCell.edit).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Shift+Tab with a highlighted suggestion commits it and navigates previous', async () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            '',
+            ['Mario Rossi', 'Maria Bianchi'],
+            { withRowNavigation: true }
+        );
+
+        try {
+            harness.input.value = 'Mar';
+            harness.awesomplete.index = 0;
+            const event = harness.input.dispatch('keydown', {
+                key: 'Tab',
+                shiftKey: true
+            });
+
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
+            expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
+            await flushDeferred();
+            expect(harness.previousCell.edit).toHaveBeenCalledOnce();
+            expect(harness.nextCell.edit).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('Shift+Tab without a highlighted suggestion commits raw text and navigates previous', async () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            'Finance',
+            ['Finance', 'Human Resources'],
+            { withRowNavigation: true }
+        );
+
+        try {
+            harness.input.value = 'Mar';
+            const event = harness.input.dispatch('keydown', {
+                key: 'Tab',
+                shiftKey: true
+            });
+
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
+            expect(harness.success).toHaveBeenCalledWith('Mar');
+            await flushDeferred();
+            expect(harness.previousCell.edit).toHaveBeenCalledOnce();
+            expect(harness.nextCell.edit).not.toHaveBeenCalled();
         } finally {
             harness.restore();
         }
@@ -416,7 +517,7 @@ describe('autocomplete editor lifecycle', () => {
             });
             const event = harness.input.dispatch('keydown', { key: 'Tab' });
 
-            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalledOnce();
             expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
         } finally {
             harness.restore();
@@ -480,7 +581,8 @@ describe('autocomplete editor lifecycle', () => {
             harness.input.value = 'Pippo Pluto';
             const event = harness.input.dispatch('keydown', { key: 'Tab' });
 
-            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
             expect(harness.success).toHaveBeenCalledWith('Pippo Pluto');
             expect(harness.cancel).not.toHaveBeenCalled();
         } finally {
@@ -498,7 +600,8 @@ describe('autocomplete editor lifecycle', () => {
             harness.input.value = 'Pippo Pluto';
             const event = harness.input.dispatch('keydown', { key: 'Tab' });
 
-            expect(event.preventDefault).not.toHaveBeenCalled();
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
             expect(harness.cancel).toHaveBeenCalledOnce();
             expect(harness.success).not.toHaveBeenCalled();
         } finally {
@@ -590,8 +693,8 @@ describe('autocomplete editor lifecycle', () => {
 
             const tabEvent = harness.input.dispatch('keydown', { key: 'Tab' });
 
-            expect(tabEvent.preventDefault).not.toHaveBeenCalled();
-            expect(tabEvent.stopPropagation).not.toHaveBeenCalled();
+            expect(tabEvent.preventDefault).toHaveBeenCalledOnce();
+            expect(tabEvent.stopPropagation).toHaveBeenCalledOnce();
             expect(harness.success).toHaveBeenCalledWith('Mario Rossi');
         } finally {
             harness.restore();

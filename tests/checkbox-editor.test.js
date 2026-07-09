@@ -29,6 +29,7 @@ class ElementMock {
         const dispatchedEvent = {
             target: this,
             preventDefault: vi.fn(),
+            stopImmediatePropagation: vi.fn(),
             stopPropagation: vi.fn(),
             shiftKey: false,
             ...event
@@ -44,10 +45,38 @@ class ElementMock {
 
 const createHarness = ({
     initialValue = false,
-    options = {}
+    options = {},
+    withRowNavigation = false
 } = {}) => {
-    const cell = {
-        getValue: () => initialValue
+    const previousCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    const nextCell = {
+        edit: vi.fn(),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        })
+    };
+    let cell;
+    const row = {
+        getCells: () => withRowNavigation
+            ? [previousCell, cell, nextCell]
+            : []
+    };
+    const table = {
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
+    };
+
+    cell = {
+        getRow: () => row,
+        getTable: () => table,
+        getValue: () => initialValue,
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
     };
     const success = vi.fn();
     const cancel = vi.fn();
@@ -58,12 +87,20 @@ const createHarness = ({
 
     return {
         cancel,
+        cell,
         container,
         input,
         label,
+        nextCell,
+        previousCell,
+        table,
         success
     };
 };
+
+const flushDeferred = () => new Promise(resolve => {
+    globalThis.setTimeout(resolve, 0);
+});
 
 describe('checkbox editor keyboard behavior', () => {
     const originalDocument = globalThis.document;
@@ -154,17 +191,24 @@ describe('checkbox editor keyboard behavior', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
     });
 
-    test('Tab confirms without changing value or blocking navigation', () => {
-        const harness = createHarness();
+    test('Tab confirms without changing value and navigates next', async () => {
+        const harness = createHarness({ withRowNavigation: true });
         const event = harness.input.dispatch('keydown', { key: 'Tab' });
 
         expect(harness.input.checked).toBe(false);
         expect(harness.success).toHaveBeenCalledWith(false);
-        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        await flushDeferred();
+        expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+        expect(harness.previousCell.edit).not.toHaveBeenCalled();
     });
 
-    test('Shift+Tab confirms without changing value or blocking navigation', () => {
-        const harness = createHarness({ initialValue: true });
+    test('Shift+Tab confirms without changing value and navigates previous', async () => {
+        const harness = createHarness({
+            initialValue: true,
+            withRowNavigation: true
+        });
         const event = harness.input.dispatch('keydown', {
             key: 'Tab',
             shiftKey: true
@@ -172,7 +216,11 @@ describe('checkbox editor keyboard behavior', () => {
 
         expect(harness.input.checked).toBe(true);
         expect(harness.success).toHaveBeenCalledWith(true);
-        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        await flushDeferred();
+        expect(harness.previousCell.edit).toHaveBeenCalledOnce();
+        expect(harness.nextCell.edit).not.toHaveBeenCalled();
     });
 
     test('custom checkedKeys, uncheckedKeys, and toggleKeys replace the defaults', () => {
