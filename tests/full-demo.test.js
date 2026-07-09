@@ -139,8 +139,21 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('keeps full demo row actions on native button tab behavior', () => {
+        const rowActionColumnIndex = source.indexOf('createDemoRowActionColumn({');
+        const itemCodeIndex = source.indexOf("title: 'Item code'");
+        const requiresInspectionIndex = source.indexOf("title: 'Requires inspection'");
+        const notesIndex = source.indexOf("title: 'Notes'");
+
         expect(source).toContain('createDemoRowActionColumn({');
         expect(source).toContain("field: '_demoRowActions'");
+        expect(rowActionColumnIndex).toBeGreaterThan(-1);
+        expect(itemCodeIndex).toBeGreaterThan(-1);
+        expect(requiresInspectionIndex).toBeGreaterThan(-1);
+        expect(notesIndex).toBeGreaterThan(-1);
+        expect(rowActionColumnIndex).toBeLessThan(itemCodeIndex);
+        expect(
+            rowActionColumnIndex > requiresInspectionIndex && rowActionColumnIndex < notesIndex
+        ).toBe(false);
         expect(source).toContain('className = `amb-row-action-button ${config.className}`');
         expect(source).toContain("delete: 'Delete product'");
         expect(source).toContain("rollback: 'Rollback product changes'");

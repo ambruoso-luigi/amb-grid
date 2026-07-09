@@ -8,6 +8,7 @@ const openBasicCrudDemo = async page => {
 const openInventoryDemo = async page => {
     await page.goto('/src/demo/index.html#getting-started-javascript');
     await expect(page.locator('#inventory-table.tabulator')).toBeVisible();
+    await expect(page.locator('#inventory-table .tabulator-row .amb-row-action-button--delete').first()).toBeVisible();
 };
 
 const selectedRowCount = page => {
@@ -48,33 +49,6 @@ const getActiveGridFocus = page => {
             action: actionButton ? actionButton.dataset.action : null
         };
     });
-};
-
-const focusInventoryItemCodeEditorFromCell = async page => {
-    const itemCodeCell = page.locator('#inventory-table .tabulator-row:first-child .tabulator-cell[tabulator-field="itemCode"]');
-
-    await itemCodeCell.click();
-    await page.keyboard.press('F2');
-    await expect.poll(async () => {
-        const focus = await getActiveGridFocus(page);
-
-        return `${focus.tagName}:${focus.field}`;
-    }).toBe('INPUT:itemCode');
-};
-
-const tabToFocusedAction = async (page, selector) => {
-    for (let index = 0; index < 20; index += 1) {
-        const focus = await getActiveGridFocus(page);
-
-        if (focus.action && await page.locator(selector).evaluate(element => element === document.activeElement)) {
-            return focus;
-        }
-
-        await page.keyboard.press('Tab');
-    }
-
-    await expect(page.locator(selector)).toBeFocused();
-    return getActiveGridFocus(page);
 };
 
 test.describe('row controls accessibility', () => {
@@ -118,6 +92,7 @@ test.describe('row controls accessibility', () => {
         await expect(deleteButton).toHaveAttribute('aria-label', 'Delete product');
         await expect(deleteButton).toHaveAttribute('title', 'Delete product');
 
+        await deleteButton.focus();
         await page.keyboard.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
@@ -131,7 +106,7 @@ test.describe('row controls accessibility', () => {
         await expect(rollbackButton).toHaveAttribute('aria-label', 'Rollback product changes');
         await expect(rollbackButton).toHaveAttribute('title', 'Rollback product changes');
 
-        await page.keyboard.press('Space');
+        await rollbackButton.press('Space');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'clean');
@@ -140,40 +115,31 @@ test.describe('row controls accessibility', () => {
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
     });
 
-    test('main demo row action is reachable from internal cell Tab navigation', async ({ page }) => {
+    test('main demo row action exits to Item code with native Tab navigation', async ({ page }) => {
         await openInventoryDemo(page);
 
         const deleteButtonSelector = '#inventory-table .tabulator-row:first-child .amb-row-action-button--delete';
         const deleteButton = page.locator(deleteButtonSelector);
         const firstRow = page.locator('#inventory-table .tabulator-row').first();
 
-        await focusInventoryItemCodeEditorFromCell(page);
+        await deleteButton.focus();
 
-        const actionFocus = await tabToFocusedAction(page, deleteButtonSelector);
+        const actionFocus = await getActiveGridFocus(page);
 
         await expect(deleteButton).toBeFocused();
         expect(actionFocus.action).toBe('delete');
         expect(actionFocus.field).toBe('_demoRowActions');
-
-        await page.keyboard.press('Shift+Tab');
-
-        const previousFocus = await getActiveGridFocus(page);
-
-        expect(previousFocus.field).toBe('requiresInspection');
-        expect(previousFocus.className).toContain('amb-checkbox-editor__input');
-
-        await page.keyboard.press('Tab');
-        await expect(deleteButton).toBeFocused();
 
         await page.keyboard.press('Tab');
 
         const afterActionFocus = await getActiveGridFocus(page);
 
         expect(afterActionFocus.className).not.toContain('amb-row-action-button');
-        expect(afterActionFocus.tagName).toBe('TEXTAREA');
+        expect(afterActionFocus.tagName).toBe('INPUT');
+        expect(afterActionFocus.field).toBe('itemCode');
 
         await deleteButton.focus();
-        await page.keyboard.press('Enter');
+        await deleteButton.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'deleted');

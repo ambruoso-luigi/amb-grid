@@ -371,6 +371,10 @@ export default async function fullDemo(app, options = {}) {
         paginationSize: 10,
         paginationSizeSelector: [10, 20, 50],
         columns: [
+            createDemoRowActionColumn({
+                getCrud: () => crud,
+                confirmDialog
+            }),
             {
                 title: 'Item code',
                 field: 'itemCode',
@@ -504,10 +508,6 @@ export default async function fullDemo(app, options = {}) {
                     uncheckedLabel: ''
                 })
             },
-            createDemoRowActionColumn({
-                getCrud: () => crud,
-                confirmDialog
-            }),
             {
                 title: 'Notes',
                 field: 'notes',
