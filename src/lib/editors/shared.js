@@ -63,6 +63,10 @@ const navigateToCandidate = candidate => {
     }
 
     if (definition && definition._ambInteractive) {
+        if (definition.editor && typeof candidate.edit === 'function') {
+            return candidate.edit() !== false;
+        }
+
         return focusInteractiveCandidate(candidate, definition);
     }
 

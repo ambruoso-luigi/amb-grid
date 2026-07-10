@@ -35,7 +35,7 @@ describe('selection column keyboard access', () => {
 
         expect(controller.column.formatter).toEqual(expect.any(Function));
         expect(controller.column.cssClass).toBe('amb-selection-column');
-        expect(controller.column.editor).toBeUndefined();
+        expect(controller.column.editor).toEqual(expect.any(Function));
         expect(controller.column.field).toBeUndefined();
         expect(controller.column.headerSort).toBe(false);
     });
@@ -175,9 +175,10 @@ describe('selection column keyboard access', () => {
         expect(previousCell.edit).toHaveBeenCalledOnce();
     });
 
-    test('AMB navigation focuses the selection checkbox instead of skipping the selection column', async () => {
+    test('AMB navigation edits the selection cell instead of skipping the selection column', async () => {
         const controller = createSelectionColumn({ enabled: true });
         const input = { focus: vi.fn() };
+        const edit = vi.fn();
         let startCell;
         let selectionCell;
         const row = {
@@ -187,12 +188,39 @@ describe('selection column keyboard access', () => {
         startCell = {
             getRow: () => row
         };
-        selectionCell = createSelectionCell(controller, row, input);
+        selectionCell = {
+            ...createSelectionCell(controller, row, input),
+            edit
+        };
 
         navigateEditableCellAfterClose(startCell, 'next');
 
         await flushDeferred();
+        expect(edit).toHaveBeenCalledOnce();
+        expect(input.focus).not.toHaveBeenCalled();
+    });
+
+    test('the internal selection editor focuses its checkbox and cancels on Tab before navigation', async () => {
+        const controller = createSelectionColumn({ enabled: true });
+        const nextCell = createEditableCell();
+        let selectionCell;
+        const row = {
+            getCells: () => [selectionCell, nextCell]
+        };
+        const input = renderSelectionEditor(controller, row, renderedInput => {
+            selectionCell = createSelectionCell(controller, row, renderedInput);
+            return selectionCell;
+        });
+        const event = createKeyboardEvent('Tab');
+
         expect(input.focus).toHaveBeenCalledOnce();
+
+        input.dispatch('keydown', event);
+
+        expect(input.cancel).toHaveBeenCalledOnce();
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        await flushDeferred();
+        expect(nextCell.edit).toHaveBeenCalledOnce();
     });
 });
 
@@ -245,6 +273,45 @@ const renderSelectionInput = (controller, row, cellOrFactory) => {
 
     try {
         controller.column.formatter(cell);
+        return input;
+    } finally {
+        globalThis.document = originalDocument;
+    }
+};
+
+const renderSelectionEditor = (controller, row, cellOrFactory) => {
+    const originalDocument = globalThis.document;
+    const input = {
+        type: '',
+        className: '',
+        checked: false,
+        attributes: {},
+        listeners: {},
+        cancel: vi.fn(),
+        addEventListener(type, handler) {
+            this.listeners[type] = handler;
+        },
+        setAttribute(name, value) {
+            this.attributes[name] = value;
+        },
+        dispatch(type, event) {
+            this.listeners[type]?.({
+                target: this,
+                ...event
+            });
+        },
+        focus: vi.fn()
+    };
+    const cell = typeof cellOrFactory === 'function'
+        ? cellOrFactory(input)
+        : cellOrFactory || createCell(row);
+
+    globalThis.document = {
+        createElement: vi.fn(() => input)
+    };
+
+    try {
+        controller.column.editor(cell, callback => callback(), vi.fn(), input.cancel);
         return input;
     } finally {
         globalThis.document = originalDocument;

@@ -83,12 +83,15 @@ const syncRowSelectionInput = row => {
     input.checked = isRowSelected(row);
 };
 
-const handleSelectionInputKeydown = (event, row, cell, isMultiple) => {
+const handleSelectionInputKeydown = (event, row, cell, isMultiple, closeEditor) => {
     const key = event && event.key;
     let handled = false;
 
     if (key === 'Tab') {
         stopSelectionKey(event);
+        if (typeof closeEditor === 'function') {
+            closeEditor();
+        }
         navigateEditableCellAfterClose(cell, event.shiftKey ? 'prev' : 'next');
         return;
     }
@@ -109,7 +112,7 @@ const handleSelectionInputKeydown = (event, row, cell, isMultiple) => {
     }
 };
 
-const createSelectionFormatter = isMultiple => (cell, _formatterParams, onRendered) => {
+const createSelectionInput = (cell, isMultiple, closeEditor) => {
     const input = document.createElement('input');
     const row = cell && typeof cell.getRow === 'function' ? cell.getRow() : null;
 
@@ -126,14 +129,40 @@ const createSelectionFormatter = isMultiple => (cell, _formatterParams, onRender
         syncRowSelectionInput(row);
     });
     input.addEventListener('keydown', event => {
-        handleSelectionInputKeydown(event, row, cell, isMultiple);
+        handleSelectionInputKeydown(event, row, cell, isMultiple, closeEditor);
     });
+
+    return input;
+};
+
+const createSelectionFormatter = isMultiple => (cell, _formatterParams, onRendered) => {
+    const input = createSelectionInput(cell, isMultiple);
+    const row = cell && typeof cell.getRow === 'function' ? cell.getRow() : null;
 
     if (typeof onRendered === 'function') {
         onRendered(() => {
             syncRowSelectionInput(row);
         });
     }
+
+    return input;
+};
+
+const createSelectionEditor = isMultiple => (cell, onRendered, _success, cancel) => {
+    let closed = false;
+    const closeEditor = () => {
+        if (closed) return;
+
+        closed = true;
+        cancel();
+    };
+    const input = createSelectionInput(cell, isMultiple, closeEditor);
+
+    onRendered(() => {
+        input.focus();
+    });
+
+    input.addEventListener('blur', closeEditor);
 
     return input;
 };
@@ -165,6 +194,7 @@ export const createSelectionColumn = (selectionColumn = {}) => {
             cssClass: 'amb-selection-column',
             _ambInteractive: true,
             _ambFocusSelector: SELECTION_INPUT_SELECTOR,
+            editor: createSelectionEditor(isMultiple),
             titleFormatter: isMultiple ? 'rowSelection' : () => '',
             titleFormatterParams: isMultiple ? { rowRange: 'active' } : undefined,
             formatter: createSelectionFormatter(isMultiple)
