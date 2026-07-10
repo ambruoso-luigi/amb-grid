@@ -15,10 +15,11 @@ describe('technical test page', () => {
         expect(testSource).toContain('selectionColumn: {');
         expect(testSource).toContain('enabled: true');
         expect(testSource).toContain('mode: selectionMode');
+        expect(testSource).toContain("const createGrid = async (selectionMode = 'single')");
         expect(testSource).toContain("grid.getSelectedRows()");
         expect(testHtml).toContain('id="selection-mode"');
         expect(testHtml).toContain('value="multiple"');
-        expect(testHtml).toContain('value="single"');
+        expect(testHtml).toContain('<option value="single" selected>');
         expect(testSource).not.toContain('amb-selection-column__input');
         expect(testSource).not.toContain("titleFormatter: 'rowSelection'");
     });

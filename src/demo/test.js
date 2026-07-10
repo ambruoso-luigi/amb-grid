@@ -42,7 +42,7 @@ const hasPayloadChanges = payload => {
     );
 };
 
-const createGrid = async (selectionMode = 'multiple') => {
+const createGrid = async (selectionMode = 'single') => {
     const statusLookup = AMB.lookup({
         keyField: 'id',
         valueField: 'id',
@@ -428,9 +428,9 @@ const mountGrid = async () => {
         currentGrid = null;
     }
 
-    const selectionMode = selectionModeControl && selectionModeControl.value === 'single'
-        ? 'single'
-        : 'multiple';
+    const selectionMode = selectionModeControl && selectionModeControl.value === 'multiple'
+        ? 'multiple'
+        : 'single';
 
     currentGrid = await createGrid(selectionMode);
 };

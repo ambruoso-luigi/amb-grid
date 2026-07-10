@@ -53,7 +53,9 @@ export function checkbox(options = {}) {
             const initialChecked = initialValue === normalizedOptions.checkedValue;
             let closed = false;
 
-            container.className = 'amb-checkbox-editor';
+            container.className = hasAnyLabel
+                ? 'amb-checkbox-editor'
+                : 'amb-checkbox-editor amb-checkbox-editor--no-label';
             input.className = 'amb-checkbox-editor__input';
             input.type = 'checkbox';
             input.checked = initialChecked;

@@ -19,23 +19,58 @@ const columnIsVisible = column => {
     return !definition || definition.visible !== false;
 };
 
-const cellIsEditableCandidate = candidate => {
-    if (!candidate || typeof candidate.edit !== 'function') return false;
+const getCellDefinition = cell => {
+    const column = cell && cell.getColumn && cell.getColumn();
 
-    const column = candidate.getColumn && candidate.getColumn();
-    const definition = column
-        && typeof column.getDefinition === 'function'
+    return column && typeof column.getDefinition === 'function'
         ? column.getDefinition()
         : null;
+};
+
+const focusInteractiveCandidate = (candidate, definition) => {
+    const cellElement = candidate
+        && typeof candidate.getElement === 'function'
+        ? candidate.getElement()
+        : null;
+    const selector = definition && (
+        definition._ambFocusSelector
+        || definition._ambInteractiveSelector
+    );
+    const selectedTarget = selector
+        && cellElement
+        && typeof cellElement.querySelector === 'function'
+        ? cellElement.querySelector(selector)
+        : null;
+    const focusTarget = selectedTarget || cellElement;
+
+    if (!focusTarget || typeof focusTarget.focus !== 'function') return false;
+
+    focusTarget.focus();
+    return true;
+};
+
+const navigateToCandidate = candidate => {
+    if (!candidate) return false;
+
+    const column = candidate.getColumn && candidate.getColumn();
+    const definition = getCellDefinition(candidate);
 
     if (!columnIsVisible(column)) return false;
-    if (!definition || !definition.editor) return false;
+    if (!definition) return false;
     if (definition.editable === false) return false;
     if (typeof definition.editable === 'function') {
-        return definition.editable(candidate) !== false;
+        if (definition.editable(candidate) === false) return false;
     }
 
-    return true;
+    if (definition && definition._ambInteractive) {
+        return focusInteractiveCandidate(candidate, definition);
+    }
+
+    if (!definition || !definition.editor || typeof candidate.edit !== 'function') {
+        return false;
+    }
+
+    return candidate.edit() !== false;
 };
 
 export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
@@ -55,8 +90,7 @@ export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
             ) {
                 const candidate = cells[index];
 
-                if (!cellIsEditableCandidate(candidate)) continue;
-                if (candidate.edit() !== false) return;
+                if (navigateToCandidate(candidate)) return;
             }
         }
 

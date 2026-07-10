@@ -120,6 +120,7 @@ describe('checkbox editor keyboard behavior', () => {
         const harness = createHarness();
 
         expect(harness.container.children).toHaveLength(1);
+        expect(harness.container.className).toBe('amb-checkbox-editor amb-checkbox-editor--no-label');
         expect(harness.input.className).toBe('amb-checkbox-editor__input');
         expect(harness.label).toBeNull();
     });
@@ -133,6 +134,7 @@ describe('checkbox editor keyboard behavior', () => {
         });
 
         expect(harness.container.children).toHaveLength(2);
+        expect(harness.container.className).toBe('amb-checkbox-editor');
         expect(harness.label.className).toBe('amb-checkbox-editor__label');
         expect(harness.label.textContent).toBe('No');
 
