@@ -194,9 +194,11 @@ describe('large text editor', () => {
         expect(preventDefault).toHaveBeenCalledOnce();
         expect(stopPropagation).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('Saved with Tab');
+        expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.nextCell.edit).toHaveBeenCalledOnce();
         expect(harness.previousCell.edit).not.toHaveBeenCalled();
         expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(harness.overlay);
     });
 
     test('Shift+Tab saves and opens the previous editable cell when configured', async () => {
@@ -214,9 +216,15 @@ describe('large text editor', () => {
         await flushDeferred();
 
         expect(harness.success).toHaveBeenCalledWith('Saved with Shift+Tab');
+        expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.previousCell.edit).toHaveBeenCalledOnce();
         expect(harness.nextCell.edit).not.toHaveBeenCalled();
         expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(harness.overlay);
+
+        harness.textarea.dispatch('keydown', { key: 'Tab', shiftKey: true });
+
+        expect(harness.success).toHaveBeenCalledOnce();
     });
 
     test('Save and Ctrl+Enter still commit the edited text', () => {
@@ -227,6 +235,7 @@ describe('large text editor', () => {
 
         expect(saveHarness.success).toHaveBeenCalledWith('Saved with button');
         expect(saveHarness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(saveHarness.overlay);
 
         const keyboardHarness = createHarness();
 
@@ -238,6 +247,7 @@ describe('large text editor', () => {
 
         expect(keyboardHarness.success).toHaveBeenCalledWith('Saved with keyboard');
         expect(keyboardHarness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(keyboardHarness.overlay);
     });
 
     test('Cancel still discards the edited text', () => {

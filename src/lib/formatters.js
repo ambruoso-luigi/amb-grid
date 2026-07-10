@@ -270,18 +270,20 @@ export const formatters = {
      * @param {object} [options] - Checkbox display options.
      * @param {*} [options.checkedValue=true] - Stored value treated as checked.
      * @param {*} [options.uncheckedValue=false] - Stored value treated as unchecked.
-     * @param {string} [options.checkedLabel='Yes'] - Label for checked values.
-     * @param {string} [options.uncheckedLabel='No'] - Label for unchecked values.
+     * @param {string} [options.checkedLabel] - Optional label for checked values.
+     * @param {string} [options.uncheckedLabel] - Optional label for unchecked values.
      * @param {string} [options.checkedSymbol='☑'] - Symbol for checked values.
      * @param {string} [options.uncheckedSymbol='☐'] - Symbol for unchecked values.
      * @returns {Function} Tabulator formatter.
      */
     checkbox(options = {}) {
+        const hasCheckedLabel = Object.prototype.hasOwnProperty.call(options, 'checkedLabel');
+        const hasUncheckedLabel = Object.prototype.hasOwnProperty.call(options, 'uncheckedLabel');
         const normalizedOptions = {
             checkedValue: true,
             uncheckedValue: false,
-            checkedLabel: 'Yes',
-            uncheckedLabel: 'No',
+            checkedLabel: '',
+            uncheckedLabel: '',
             checkedSymbol: '☑',
             uncheckedSymbol: '☐',
             ...options
@@ -296,6 +298,9 @@ export const formatters = {
             const label = checked
                 ? normalizedOptions.checkedLabel
                 : normalizedOptions.uncheckedLabel;
+            const hasLabel = checked ? hasCheckedLabel : hasUncheckedLabel;
+
+            if (!hasLabel) return escapeHtmlText(symbol);
 
             return `${escapeHtmlText(symbol)} ${escapeHtmlText(label)}`;
         };

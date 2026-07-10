@@ -92,13 +92,32 @@ describe('safe textual formatters', () => {
             .toBe('&lt;b&gt;value&lt;/b&gt;');
     });
 
-    test('checkbox escapes custom labels and symbols', () => {
+    test('checkbox defaults to symbols without labels or trailing spaces', () => {
+        const defaultChecked = formatters.checkbox()(createCell(true));
+        const defaultUnchecked = formatters.checkbox()(createCell(false));
+        const customSymbols = formatters.checkbox({
+            checkedSymbol: 'X',
+            uncheckedSymbol: 'O'
+        });
+
+        expect(defaultChecked).not.toContain('Yes');
+        expect(defaultUnchecked).not.toContain('No');
+        expect(defaultChecked).not.toMatch(/\s$/);
+        expect(defaultUnchecked).not.toMatch(/\s$/);
+        expect(customSymbols(createCell(true))).toBe('X');
+        expect(customSymbols(createCell(false))).toBe('O');
+    });
+
+    test('checkbox escapes explicit custom labels and symbols', () => {
         const formatter = formatters.checkbox({
             checkedLabel: '<yes>',
-            checkedSymbol: '<x>'
+            uncheckedLabel: '<no>',
+            checkedSymbol: '<x>',
+            uncheckedSymbol: '<o>'
         });
 
         expect(formatter(createCell(true))).toBe('&lt;x&gt; &lt;yes&gt;');
+        expect(formatter(createCell(false))).toBe('&lt;o&gt; &lt;no&gt;');
     });
 
     test('largeTextPreview truncates text before escaping output', () => {

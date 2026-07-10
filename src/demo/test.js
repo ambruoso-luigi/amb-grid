@@ -7,6 +7,8 @@ import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 
 const output = document.querySelector('#test-output');
+const selectionModeControl = document.querySelector('#selection-mode');
+let currentGrid = null;
 
 const showTestOutput = (title, data) => {
     if (!output) return;
@@ -40,7 +42,7 @@ const hasPayloadChanges = payload => {
     );
 };
 
-const createGrid = async () => {
+const createGrid = async (selectionMode = 'multiple') => {
     const statusLookup = AMB.lookup({
         keyField: 'id',
         valueField: 'id',
@@ -61,6 +63,10 @@ const createGrid = async () => {
 
     const tableOptions = {
         selector: '#inventory-test-table',
+        selectionColumn: {
+            enabled: true,
+            mode: selectionMode
+        },
         deleteColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this product?',
@@ -86,6 +92,12 @@ const createGrid = async () => {
                     label: 'Report',
                     title: 'Show state report',
                     onClick: handleShowReport
+                },
+                {
+                    id: 'show-selected',
+                    label: 'Selected rows',
+                    title: 'Show selected rows',
+                    onClick: handleShowSelected
                 }
             ],
             onAdd: handleAdd,
@@ -228,14 +240,8 @@ const createGrid = async () => {
                 field: 'requiresInspection',
                 width: 150,
                 hozAlign: 'center',
-                formatter: AMB.formatters.checkbox({
-                    checkedLabel: 'Yes',
-                    uncheckedLabel: 'No'
-                }),
-                editor: AMB.editors.checkbox({
-                    checkedLabel: 'Yes',
-                    uncheckedLabel: 'No'
-                })
+                formatter: AMB.formatters.checkbox(),
+                editor: AMB.editors.checkbox()
             },
             {
                 title: 'Notes',
@@ -267,7 +273,8 @@ const createGrid = async () => {
         message: 'Warehouse data loaded.'
     });
     showTestOutput('Loaded products', {
-        rows: products.length
+        rows: products.length,
+        selectionMode
     });
 
     function handleAdd() {
@@ -312,6 +319,16 @@ const createGrid = async () => {
         showTestOutput('Row state report', {
             summary: buildStateSummary(report),
             report
+        });
+    }
+
+    function handleShowSelected() {
+        const selectedRows = grid.getSelectedRows();
+
+        showTestOutput('Selected rows', {
+            mode: selectionMode,
+            count: selectedRows.length,
+            rows: selectedRows
         });
     }
 
@@ -405,7 +422,30 @@ const createGrid = async () => {
     return grid;
 };
 
-createGrid().catch(error => {
+const mountGrid = async () => {
+    if (currentGrid && typeof currentGrid.destroy === 'function') {
+        currentGrid.destroy();
+        currentGrid = null;
+    }
+
+    const selectionMode = selectionModeControl && selectionModeControl.value === 'single'
+        ? 'single'
+        : 'multiple';
+
+    currentGrid = await createGrid(selectionMode);
+};
+
+selectionModeControl?.addEventListener('change', () => {
+    mountGrid().catch(error => {
+        console.error(error);
+        showTestOutput('Test grid remount failed', {
+            message: error && error.message ? error.message : String(error),
+            stack: error && error.stack ? error.stack : null
+        });
+    });
+});
+
+mountGrid().catch(error => {
     console.error(error);
     showTestOutput('Test page initialization failed', {
         message: error && error.message ? error.message : String(error),

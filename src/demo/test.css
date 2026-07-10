@@ -22,6 +22,18 @@ body {
     margin: 16px 0 24px;
 }
 
+.test-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 4px;
+}
+
+.test-control select {
+    min-width: 180px;
+    padding: 4px 8px;
+}
+
 #test-output {
     min-height: 180px;
     margin: 0;

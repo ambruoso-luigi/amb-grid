@@ -26,6 +26,30 @@ describe('selection column keyboard access', () => {
 
         expect(controller.column.formatter).toEqual(expect.any(Function));
         expect(controller.column.cssClass).toBe('amb-selection-column');
+        expect(controller.column.editor).toBeUndefined();
+        expect(controller.column.field).toBeUndefined();
+        expect(controller.column.headerSort).toBe(false);
+    });
+
+    test('multiple mode allows multiple selected rows', () => {
+        const controller = createSelectionColumn({
+            enabled: true,
+            mode: 'multiple'
+        });
+
+        expect(controller.selectableRows).toBe(true);
+        expect(controller.column.titleFormatter).toBe('rowSelection');
+    });
+
+    test('single mode allows only one selected row', () => {
+        const controller = createSelectionColumn({
+            enabled: true,
+            mode: 'single'
+        });
+
+        expect(controller.selectableRows).toBe(1);
+        expect(controller.column.titleFormatter()).toBe('');
+        expect(controller.column.titleFormatterParams).toBeUndefined();
     });
 
     test('Enter toggles the row selection through the Tabulator row API', () => {

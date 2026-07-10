@@ -83,7 +83,7 @@ const createHarness = ({
     const editor = createCheckboxEditor(options);
     const container = editor(cell, callback => callback(), success, cancel);
     const input = container.children[0];
-    const label = container.children[1];
+    const label = container.children[1] || null;
 
     return {
         cancel,
@@ -116,12 +116,59 @@ describe('checkbox editor keyboard behavior', () => {
         vi.restoreAllMocks();
     });
 
+    test('does not create a label node by default', () => {
+        const harness = createHarness();
+
+        expect(harness.container.children).toHaveLength(1);
+        expect(harness.input.className).toBe('amb-checkbox-editor__input');
+        expect(harness.label).toBeNull();
+    });
+
+    test('creates and updates a label only when labels are explicitly configured', () => {
+        const harness = createHarness({
+            options: {
+                checkedLabel: 'Yes',
+                uncheckedLabel: 'No'
+            }
+        });
+
+        expect(harness.container.children).toHaveLength(2);
+        expect(harness.label.className).toBe('amb-checkbox-editor__label');
+        expect(harness.label.textContent).toBe('No');
+
+        harness.input.dispatch('keydown', { key: '1' });
+
+        expect(harness.label.textContent).toBe('Yes');
+    });
+
+    test('supports partial explicit labels', () => {
+        const checkedOnly = createHarness({
+            options: {
+                checkedLabel: 'Checked'
+            }
+        });
+
+        expect(checkedOnly.label.textContent).toBe('');
+        checkedOnly.input.dispatch('keydown', { key: '1' });
+        expect(checkedOnly.label.textContent).toBe('Checked');
+
+        const uncheckedOnly = createHarness({
+            initialValue: true,
+            options: {
+                uncheckedLabel: 'Unchecked'
+            }
+        });
+
+        expect(uncheckedOnly.label.textContent).toBe('');
+        uncheckedOnly.input.dispatch('keydown', { key: '0' });
+        expect(uncheckedOnly.label.textContent).toBe('Unchecked');
+    });
+
     test('Space toggles the checkbox without committing immediately', () => {
         const harness = createHarness();
         const event = harness.input.dispatch('keydown', { key: ' ' });
 
         expect(harness.input.checked).toBe(true);
-        expect(harness.label.textContent).toBe('Yes');
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).not.toHaveBeenCalled();
         expect(harness.cancel).not.toHaveBeenCalled();
@@ -133,7 +180,6 @@ describe('checkbox editor keyboard behavior', () => {
         harness.input.dispatch('keydown', { key: '1' });
 
         expect(harness.input.checked).toBe(true);
-        expect(harness.label.textContent).toBe('Yes');
     });
 
     test('0 sets the checkbox to unchecked', () => {
@@ -142,7 +188,6 @@ describe('checkbox editor keyboard behavior', () => {
         harness.input.dispatch('keydown', { key: '0' });
 
         expect(harness.input.checked).toBe(false);
-        expect(harness.label.textContent).toBe('No');
     });
 
     test.each(['y', 'Y'])('%s sets the checkbox to checked', key => {
@@ -185,7 +230,6 @@ describe('checkbox editor keyboard behavior', () => {
         const event = harness.input.dispatch('keydown', { key: 'Escape' });
 
         expect(harness.input.checked).toBe(false);
-        expect(harness.label.textContent).toBe('No');
         expect(harness.cancel).toHaveBeenCalledOnce();
         expect(harness.success).not.toHaveBeenCalled();
         expect(event.preventDefault).toHaveBeenCalledOnce();

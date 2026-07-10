@@ -18,19 +18,22 @@ const keyMatches = (event, keys) => keys.includes(event.key);
      * @param {object} [options] - Checkbox editor options.
      * @param {*} [options.checkedValue=true] - Value saved for checked state.
      * @param {*} [options.uncheckedValue=false] - Value saved for unchecked state.
-     * @param {string} [options.checkedLabel='Yes'] - Label shown while checked.
-     * @param {string} [options.uncheckedLabel='No'] - Label shown while unchecked.
+     * @param {string} [options.checkedLabel] - Optional label shown while checked.
+     * @param {string} [options.uncheckedLabel] - Optional label shown while unchecked.
      * @param {string[]} [options.toggleKeys=[' ']] - Keys that toggle the current checkbox state.
      * @param {string[]} [options.checkedKeys=['1','y','Y','s','S']] - Keys that force checked state.
      * @param {string[]} [options.uncheckedKeys=['0','n','N']] - Keys that force unchecked state.
      * @returns {Function} Tabulator editor.
      */
 export function checkbox(options = {}) {
+        const hasCheckedLabel = Object.prototype.hasOwnProperty.call(options, 'checkedLabel');
+        const hasUncheckedLabel = Object.prototype.hasOwnProperty.call(options, 'uncheckedLabel');
+        const hasAnyLabel = hasCheckedLabel || hasUncheckedLabel;
         const normalizedOptions = {
             checkedValue: true,
             uncheckedValue: false,
-            checkedLabel: 'Yes',
-            uncheckedLabel: 'No',
+            checkedLabel: '',
+            uncheckedLabel: '',
             toggleKeys: DEFAULT_TOGGLE_KEYS,
             checkedKeys: DEFAULT_CHECKED_KEYS,
             uncheckedKeys: DEFAULT_UNCHECKED_KEYS,
@@ -45,7 +48,7 @@ export function checkbox(options = {}) {
         const editor = (cell, onRendered, success, cancel) => {
             const container = document.createElement('label');
             const input = document.createElement('input');
-            const label = document.createElement('span');
+            const label = hasAnyLabel ? document.createElement('span') : null;
             const initialValue = cell.getValue();
             const initialChecked = initialValue === normalizedOptions.checkedValue;
             let closed = false;
@@ -54,7 +57,10 @@ export function checkbox(options = {}) {
             input.className = 'amb-checkbox-editor__input';
             input.type = 'checkbox';
             input.checked = initialChecked;
-            label.className = 'amb-checkbox-editor__label';
+
+            if (label) {
+                label.className = 'amb-checkbox-editor__label';
+            }
 
             const getValue = () => {
                 return input.checked
@@ -63,6 +69,8 @@ export function checkbox(options = {}) {
             };
 
             const updateLabel = () => {
+                if (!label) return;
+
                 label.textContent = input.checked
                     ? normalizedOptions.checkedLabel
                     : normalizedOptions.uncheckedLabel;
@@ -142,7 +150,11 @@ export function checkbox(options = {}) {
             });
             input.addEventListener('blur', closeWithSuccess);
 
-            container.append(input, label);
+            if (label) {
+                container.append(input, label);
+            } else {
+                container.append(input);
+            }
 
             onRendered(() => {
                 input.focus();
