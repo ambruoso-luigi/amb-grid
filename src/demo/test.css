@@ -18,8 +18,15 @@ body {
     margin-top: 0;
 }
 
-#inventory-test-table {
+#inventory-test-table,
+#multifield-lookup-test-table {
     margin: 16px 0 24px;
+}
+
+.test-section {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #ccd6e0;
 }
 
 .test-control {

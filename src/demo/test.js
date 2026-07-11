@@ -9,6 +9,71 @@ import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 const output = document.querySelector('#test-output');
 const selectionModeControl = document.querySelector('#selection-mode');
 let currentGrid = null;
+let currentMultifieldGrid = null;
+
+const customerLookupRecords = [
+    {
+        code: 'CUST-001',
+        name: 'Acme Manufacturing',
+        city: 'Milano',
+        country: 'IT'
+    },
+    {
+        code: 'CUST-002',
+        name: 'Northwind Traders',
+        city: 'Torino',
+        country: 'IT'
+    },
+    {
+        code: 'CUST-003',
+        name: 'Contoso Retail',
+        city: 'Roma',
+        country: 'IT'
+    },
+    {
+        code: 'CUST-004',
+        name: 'Fabrikam Logistics',
+        city: 'Bologna',
+        country: 'IT'
+    },
+    {
+        code: 'CUST-005',
+        name: 'Tailspin Distribution',
+        city: 'Verona',
+        country: 'IT'
+    }
+];
+
+const createMultifieldRows = () => [
+    {
+        id: 1,
+        reference: 'ORD-1001',
+        customerCode: 'CUST-001',
+        customerName: 'Acme Manufacturing',
+        city: 'Milano',
+        country: 'IT',
+        note: 'Prefilled lookup row'
+    },
+    {
+        id: 2,
+        reference: 'ORD-1002',
+        customerCode: 'CUST-003',
+        customerName: 'Contoso Retail',
+        city: 'Roma',
+        country: 'IT',
+        note: 'Change the customer code'
+    }
+];
+
+const createEmptyMultifieldRow = () => ({
+    id: null,
+    reference: '',
+    customerCode: '',
+    customerName: '',
+    city: '',
+    country: '',
+    note: ''
+});
 
 const showTestOutput = (title, data) => {
     if (!output) return;
@@ -421,6 +486,159 @@ const createGrid = async (selectionMode = 'single') => {
     return grid;
 };
 
+const createMultifieldLookupGrid = () => {
+    const customerLookup = AMB.lookup({
+        keyField: 'code',
+        valueField: 'code',
+        labelField: 'name',
+        columns: [
+            { field: 'code', title: 'Code', visible: true, width: 120 },
+            { field: 'name', title: 'Customer', visible: true, width: 220 },
+            { field: 'city', title: 'City', visible: true, width: 130 },
+            { field: 'country', title: 'Country', visible: true, width: 100 }
+        ],
+        search: {
+            fields: 'visible'
+        },
+        mapToRow: {
+            customerCode: 'code',
+            customerName: 'name',
+            city: 'city',
+            country: 'country'
+        },
+        load: ({ query }) => {
+            const normalizedQuery = String(query || '').trim().toLowerCase();
+
+            if (!normalizedQuery) return customerLookupRecords;
+
+            return customerLookupRecords.filter(record => {
+                return [
+                    record.code,
+                    record.name,
+                    record.city,
+                    record.country
+                ].some(value => value.toLowerCase().includes(normalizedQuery));
+            });
+        }
+    });
+    const customerDialog = new AMB.LookupDialog();
+    const grid = AMB.table({
+        selector: '#multifield-lookup-test-table',
+        deleteColumn: {
+            enabled: true,
+            confirmDeleteMessage: 'Delete this lookup test row?',
+            confirmRemoveNewMessage: 'Remove this new lookup test row?'
+        },
+        toolbar: {
+            buttons: [
+                'add',
+                'payload',
+                'validate'
+            ],
+            onAdd: handleAdd,
+            onPayload: handleShowPayload,
+            onValidate: handleValidate
+        },
+        data: createMultifieldRows(),
+        layout: 'fitColumns',
+        columns: [
+            {
+                title: 'Reference',
+                field: 'reference',
+                width: 130,
+                editor: AMB.editors.text({ uppercase: true, trim: true }),
+                required: true
+            },
+            {
+                title: 'Customer code',
+                field: 'customerCode',
+                width: 145,
+                required: true,
+                editor: AMB.editors.lookup(customerLookup, {
+                    uppercase: true,
+                    allowEmpty: false,
+                    dialog: customerDialog,
+                    dialogTitle: 'Select customer',
+                    invalidMessage: 'Unknown customer code',
+                    autoComplete: true,
+                    autoCompleteMinChars: 1,
+                    autoCompleteOnTab: true,
+                    dialogOptions: {
+                        closeOnBackdropClick: false,
+                        pagination: {
+                            enabled: true,
+                            pageSize: 4,
+                            controls: 'simple'
+                        },
+                        destroyOnClose: true
+                    }
+                })
+            },
+            {
+                title: 'Customer name',
+                field: 'customerName',
+                width: 210,
+                editor: AMB.editors.text({ trim: true })
+            },
+            {
+                title: 'City',
+                field: 'city',
+                width: 120,
+                editor: AMB.editors.text({ trim: true })
+            },
+            {
+                title: 'Country',
+                field: 'country',
+                width: 95,
+                editor: AMB.editors.text({ uppercase: true, trim: true })
+            },
+            {
+                title: 'Note',
+                field: 'note',
+                width: 180,
+                widthGrow: 1,
+                editor: AMB.editors.text({ trim: true })
+            }
+        ]
+    });
+    const originalDestroy = grid.destroy.bind(grid);
+
+    grid.destroy = () => {
+        customerDialog.destroy();
+        originalDestroy();
+    };
+
+    function handleAdd() {
+        grid.feedback.clear();
+        return grid.crud.addRow(createEmptyMultifieldRow());
+    }
+
+    function handleShowPayload({ payload }) {
+        showTestOutput('Multifield lookup payload', {
+            payload,
+            report: buildStateSummary(grid.crud.getStateReport())
+        });
+    }
+
+    function handleValidate() {
+        const validateResult = grid.crud.validateAll();
+
+        showTestOutput('Multifield lookup validation', {
+            isValid: validateResult.isValid,
+            validateResult,
+            payload: grid.crud.getSavePayload({ includeInvalid: true })
+        });
+        grid.feedback.show({
+            type: validateResult.isValid ? 'success' : 'warning',
+            message: validateResult.isValid
+                ? 'Multifield lookup rows are valid.'
+                : 'Multifield lookup rows contain errors.'
+        });
+    }
+
+    return grid;
+};
+
 const mountGrid = async () => {
     if (currentGrid && typeof currentGrid.destroy === 'function') {
         currentGrid.destroy();
@@ -434,6 +652,15 @@ const mountGrid = async () => {
     currentGrid = await createGrid(selectionMode);
 };
 
+const mountMultifieldLookupGrid = () => {
+    if (currentMultifieldGrid && typeof currentMultifieldGrid.destroy === 'function') {
+        currentMultifieldGrid.destroy();
+        currentMultifieldGrid = null;
+    }
+
+    currentMultifieldGrid = createMultifieldLookupGrid();
+};
+
 selectionModeControl?.addEventListener('change', () => {
     mountGrid().catch(error => {
         console.error(error);
@@ -444,7 +671,12 @@ selectionModeControl?.addEventListener('change', () => {
     });
 });
 
-mountGrid().catch(error => {
+const mountTestPage = async () => {
+    await mountGrid();
+    mountMultifieldLookupGrid();
+};
+
+mountTestPage().catch(error => {
     console.error(error);
     showTestOutput('Test page initialization failed', {
         message: error && error.message ? error.message : String(error),

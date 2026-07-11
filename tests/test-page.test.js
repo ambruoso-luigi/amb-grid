@@ -33,4 +33,18 @@ describe('technical test page', () => {
         expect(testSource).not.toContain("checkedLabel: 'Yes'");
         expect(testSource).not.toContain("uncheckedLabel: 'No'");
     });
+
+    test('adds an isolated multifield lookup test grid', () => {
+        expect(testHtml).toContain('id="multifield-lookup-test-table"');
+        expect(testHtml).toContain('Multifield lookup test');
+        expect(testSource).toContain('const createMultifieldLookupGrid = () => {');
+        expect(testSource).toContain("selector: '#multifield-lookup-test-table'");
+        expect(testSource).toContain('mapToRow: {');
+        expect(testSource).toContain("customerCode: 'code'");
+        expect(testSource).toContain("customerName: 'name'");
+        expect(testSource).toContain("city: 'city'");
+        expect(testSource).toContain("country: 'country'");
+        expect(testSource).toContain('AMB.editors.lookup(customerLookup');
+        expect(testSource).toContain('currentMultifieldGrid = createMultifieldLookupGrid();');
+    });
 });
