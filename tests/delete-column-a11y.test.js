@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { navigateEditableCellAfterClose } from '../src/lib/editors/shared.js';
 import { createDeleteColumn } from '../src/lib/table/delete-column.js';
 
 const createElementMock = tagName => {
@@ -14,6 +15,24 @@ const createElementMock = tagName => {
         append(...children) {
             this.children.push(...children);
         },
+        addEventListener(type, handler) {
+            this.listeners = this.listeners || {};
+            this.listeners[type] = handler;
+        },
+        contains(target) {
+            return this === target || this.children.some(child => child.contains?.(target));
+        },
+        dispatch(type, event = {}) {
+            this.listeners?.[type]?.({
+                currentTarget: this,
+                target: this,
+                preventDefault: vi.fn(),
+                stopImmediatePropagation: vi.fn(),
+                stopPropagation: vi.fn(),
+                ...event
+            });
+        },
+        focus: vi.fn(),
         querySelector(selector) {
             if (
                 selector === '.amb-row-action-button'
@@ -44,9 +63,39 @@ const createElementMock = tagName => {
     return element;
 };
 
+const createCrud = () => ({
+    options: {
+        idField: 'id',
+        tempIdField: '_ambTempId',
+        stateField: '_state'
+    },
+    deleteRow: vi.fn(),
+    rollbackRow: vi.fn()
+});
+
 const createRow = (data = { id: 1, _state: 'clean' }) => ({
     getData: () => data,
     getElement: () => globalThis.document.createElement('div')
+});
+
+const createKeyboardEvent = (key, options = {}) => ({
+    key,
+    preventDefault: vi.fn(),
+    shiftKey: false,
+    stopImmediatePropagation: vi.fn(),
+    stopPropagation: vi.fn(),
+    ...options
+});
+
+const createEditableCell = () => ({
+    edit: vi.fn(),
+    getColumn: () => ({
+        getDefinition: () => ({ editor: 'input' })
+    })
+});
+
+const flushDeferred = () => new Promise(resolve => {
+    globalThis.setTimeout(resolve, 0);
 });
 
 describe('delete column accessibility', () => {
@@ -63,13 +112,7 @@ describe('delete column accessibility', () => {
     });
 
     test('renders row action buttons as native buttons with aria-label and title', () => {
-        const crud = {
-            options: {
-                idField: 'id',
-                tempIdField: '_ambTempId',
-                stateField: '_state'
-            }
-        };
+        const crud = createCrud();
         const controller = createDeleteColumn(
             {
                 labels: {
@@ -91,5 +134,225 @@ describe('delete column accessibility', () => {
         expect(button.getAttribute('aria-label')).toBe('Delete product');
         expect(button.title).toBe('Delete product');
         expect(button.tabIndex).toBe(0);
+    });
+
+    test('marks the delete column as an AMB interactive navigation target', () => {
+        const controller = createDeleteColumn(
+            {},
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+
+        expect(controller.column._ambInteractive).toBe(true);
+        expect(controller.column._ambFocusSelector).toBe('.amb-row-action-button');
+        expect(controller.column.editor).toEqual(expect.any(Function));
+        expect(controller.column.field).toBeUndefined();
+    });
+
+    test.each([
+        ['clean', 'delete'],
+        ['deleted', 'rollback'],
+        ['new', 'remove-new']
+    ])('renders %s row action through the same button selector', (state, action) => {
+        const controller = createDeleteColumn(
+            {},
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const element = controller.column.formatter({
+            getRow: () => createRow({ id: 1, _state: state })
+        });
+        const button = element.querySelector('.amb-row-action-button');
+
+        expect(button).toBeTruthy();
+        expect(button.dataset.action).toBe(action);
+    });
+
+    test('AMB navigation edits the delete cell instead of skipping the action column', async () => {
+        const controller = createDeleteColumn(
+            {},
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const edit = vi.fn();
+        let startCell;
+        let actionCell;
+        const row = {
+            getCells: () => [startCell, actionCell]
+        };
+
+        startCell = {
+            getRow: () => row
+        };
+        actionCell = {
+            edit,
+            getColumn: () => ({
+                getDefinition: () => controller.column
+            })
+        };
+
+        navigateEditableCellAfterClose(startCell, 'next');
+
+        await flushDeferred();
+        expect(edit).toHaveBeenCalledOnce();
+    });
+
+    test('internal action editor returns false when the current row has no available action', () => {
+        const controller = createDeleteColumn(
+            {
+                actions: {
+                    delete: false
+                }
+            },
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const row = {
+            getData: () => ({ id: 1, _state: 'clean' })
+        };
+        const cell = {
+            getRow: () => row
+        };
+
+        expect(controller.column.editor(cell, vi.fn(), vi.fn(), vi.fn())).toBe(false);
+    });
+
+    test('AMB navigation skips the delete cell when the current row has no available action', async () => {
+        const controller = createDeleteColumn(
+            {
+                actions: {
+                    delete: false
+                }
+            },
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const nextCell = createEditableCell();
+        let startCell;
+        let actionCell;
+        const row = {
+            getCells: () => [startCell, actionCell, nextCell]
+        };
+
+        startCell = {
+            getRow: () => row
+        };
+        actionCell = {
+            edit: vi.fn(() => false),
+            getColumn: () => ({
+                getDefinition: () => controller.column
+            })
+        };
+
+        navigateEditableCellAfterClose(startCell, 'next');
+
+        await flushDeferred();
+        expect(actionCell.edit).toHaveBeenCalledOnce();
+        expect(nextCell.edit).toHaveBeenCalledOnce();
+    });
+
+    test('the internal action editor focuses the row action button and navigates next on Tab', async () => {
+        const controller = createDeleteColumn(
+            {},
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const nextCell = createEditableCell();
+        const cancel = vi.fn();
+        let actionCell;
+        const row = {
+            getData: () => ({ id: 1, _state: 'clean' }),
+            getCells: () => [actionCell, nextCell]
+        };
+
+        actionCell = {
+            getRow: () => row,
+            getColumn: () => ({
+                getDefinition: () => controller.column
+            })
+        };
+
+        const container = controller.column.editor(actionCell, callback => callback(), vi.fn(), cancel);
+        const button = container.querySelector('.amb-row-action-button');
+        const event = createKeyboardEvent('Tab');
+
+        expect(button.focus).toHaveBeenCalledOnce();
+
+        button.dispatch('keydown', event);
+
+        expect(cancel).toHaveBeenCalledOnce();
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        await flushDeferred();
+        expect(nextCell.edit).toHaveBeenCalledOnce();
+    });
+
+    test('the internal action editor navigates previous on Rtab', async () => {
+        const controller = createDeleteColumn(
+            {},
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const previousCell = createEditableCell();
+        const cancel = vi.fn();
+        let actionCell;
+        const row = {
+            getData: () => ({ id: 1, _state: 'clean' }),
+            getCells: () => [previousCell, actionCell]
+        };
+
+        actionCell = {
+            getRow: () => row,
+            getColumn: () => ({
+                getDefinition: () => controller.column
+            })
+        };
+
+        const container = controller.column.editor(actionCell, callback => callback(), vi.fn(), cancel);
+        const button = container.querySelector('.amb-row-action-button');
+        const event = createKeyboardEvent('Tab', { shiftKey: true });
+
+        button.dispatch('keydown', event);
+
+        expect(cancel).toHaveBeenCalledOnce();
+        await flushDeferred();
+        expect(previousCell.edit).toHaveBeenCalledOnce();
+    });
+
+    test.each([
+        ['clean', 'delete', 'deleteRow'],
+        ['deleted', 'rollback', 'rollbackRow'],
+        ['new', 'remove-new', 'deleteRow']
+    ])('editor button click executes %s row action', async (state, action, methodName) => {
+        const crud = createCrud();
+        const cancel = vi.fn();
+        const controller = createDeleteColumn(
+            {},
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const rowElement = globalThis.document.createElement('div');
+        const row = {
+            getData: () => ({ id: 1, _state: state }),
+            getElement: () => rowElement
+        };
+        const cell = {
+            getRow: () => row
+        };
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), cancel);
+        const button = container.querySelector('.amb-row-action-button');
+
+        expect(button.dataset.action).toBe(action);
+
+        await button.listeners.click({
+            currentTarget: button,
+            preventDefault: vi.fn(),
+            stopImmediatePropagation: vi.fn(),
+            stopPropagation: vi.fn()
+        });
+
+        expect(cancel).toHaveBeenCalledOnce();
+        expect(crud[methodName]).toHaveBeenCalledWith(1);
+        await flushDeferred();
     });
 });
