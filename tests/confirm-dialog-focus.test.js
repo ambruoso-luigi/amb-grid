@@ -70,11 +70,17 @@ class ElementMock {
     setAttribute(name, value) {
         this.attributes[name] = String(value);
     }
+
+    getAttribute(name) {
+        return this.attributes[name] ?? null;
+    }
 }
 
 const createHarness = () => {
     const listeners = {};
     const originalDocument = globalThis.document;
+    const originalWindow = globalThis.window;
+    const removeAllRanges = vi.fn();
     const documentMock = {
         activeElement: null,
         addEventListener: (type, listener) => {
@@ -91,9 +97,15 @@ const createHarness = () => {
 
     documentMock.body = new ElementMock('body', documentMock);
     globalThis.document = documentMock;
+    globalThis.window = {
+        getSelection: () => ({
+            removeAllRanges
+        })
+    };
 
     return {
         documentMock,
+        removeAllRanges,
         keydown(event = {}) {
             const dispatchedEvent = {
                 key: undefined,
@@ -107,6 +119,7 @@ const createHarness = () => {
         },
         restore() {
             globalThis.document = originalDocument;
+            globalThis.window = originalWindow;
         }
     };
 };
@@ -150,6 +163,36 @@ describe('ConfirmDialog focus management', () => {
         harness.keydown({ key: 'Tab', shiftKey: true });
         expect(harness.documentMock.activeElement).toBe(dialog.confirmButton);
         expect(harness.documentMock.activeElement).not.toBe(outside);
+    });
+
+    test('dialog buttons are marked as non-editable and clear text selection on focus', () => {
+        const dialog = new ConfirmDialog();
+
+        dialog.confirm({ message: 'Delete row?' });
+        dialog.confirmButton.dispatch('focus');
+
+        expect(dialog.cancelButton.getAttribute('contenteditable')).toBe('false');
+        expect(dialog.confirmButton.getAttribute('contenteditable')).toBe('false');
+        expect(dialog.cancelButton.getAttribute('unselectable')).toBe('on');
+        expect(dialog.confirmButton.getAttribute('unselectable')).toBe('on');
+        expect(harness.removeAllRanges).toHaveBeenCalled();
+    });
+
+    test.each([
+        'ArrowLeft',
+        'ArrowRight',
+        'ArrowUp',
+        'ArrowDown',
+        'Home',
+        'End'
+    ])('prevents %s from moving a caret inside dialog button text', key => {
+        const dialog = new ConfirmDialog();
+
+        dialog.confirm({ message: 'Delete row?' });
+        const event = dialog.confirmButton.dispatch('keydown', { key });
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(harness.removeAllRanges).toHaveBeenCalled();
     });
 
     test('Escape cancels and restores focus to the opener', async () => {

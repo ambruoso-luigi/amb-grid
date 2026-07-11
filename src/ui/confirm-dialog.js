@@ -3,6 +3,14 @@ const DEFAULT_OPTIONS = {
     confirmText: 'Confirm',
     cancelText: 'Cancel'
 };
+const CARET_NAVIGATION_KEYS = new Set([
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowUp',
+    'ArrowDown',
+    'Home',
+    'End'
+]);
 
 /**
  * Small promise-based confirmation dialog.
@@ -29,6 +37,15 @@ export class ConfirmDialog {
         this.cancelButton = null;
         this.resolveCurrent = null;
         this.previouslyFocusedElement = null;
+        this.handleButtonFocus = () => {
+            this._clearTextSelection();
+        };
+        this.handleButtonKeyDown = event => {
+            if (!CARET_NAVIGATION_KEYS.has(event.key)) return;
+
+            event.preventDefault();
+            this._clearTextSelection();
+        };
         this.handleKeyDown = event => {
             if (event.key === 'Escape') {
                 event.preventDefault();
@@ -53,6 +70,7 @@ export class ConfirmDialog {
         this.panelElement = document.createElement('div');
         this.panelElement.className = 'teh-confirm-dialog__panel';
         this.panelElement.tabIndex = -1;
+        this.panelElement.setAttribute('contenteditable', 'false');
 
         this.titleElement = document.createElement('h2');
         this.titleElement.className = 'teh-confirm-dialog__title';
@@ -66,6 +84,7 @@ export class ConfirmDialog {
         this.cancelButton = document.createElement('button');
         this.cancelButton.type = 'button';
         this.cancelButton.className = 'teh-confirm-dialog__button teh-confirm-dialog__button--cancel';
+        this._prepareButton(this.cancelButton);
         this.cancelButton.addEventListener('click', () => {
             this._close(false);
         });
@@ -73,6 +92,7 @@ export class ConfirmDialog {
         this.confirmButton = document.createElement('button');
         this.confirmButton.type = 'button';
         this.confirmButton.className = 'teh-confirm-dialog__button teh-confirm-dialog__button--confirm';
+        this._prepareButton(this.confirmButton);
         this.confirmButton.addEventListener('click', () => {
             this._close(true);
         });
@@ -81,6 +101,23 @@ export class ConfirmDialog {
         this.panelElement.append(this.titleElement, this.messageElement, actions);
         this.element.append(this.panelElement);
         document.body.appendChild(this.element);
+    }
+
+    _prepareButton(button) {
+        button.setAttribute('contenteditable', 'false');
+        button.setAttribute('unselectable', 'on');
+        button.addEventListener('focus', this.handleButtonFocus);
+        button.addEventListener('keydown', this.handleButtonKeyDown);
+    }
+
+    _clearTextSelection() {
+        const selection = typeof window !== 'undefined' && window.getSelection
+            ? window.getSelection()
+            : null;
+
+        if (selection && typeof selection.removeAllRanges === 'function') {
+            selection.removeAllRanges();
+        }
     }
 
     _getFocusableElements() {

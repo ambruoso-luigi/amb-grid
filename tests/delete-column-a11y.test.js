@@ -549,6 +549,56 @@ describe('delete column accessibility', () => {
         expect(previousRowElement.contains(globalThis.document.activeElement)).toBe(true);
     });
 
+    test('after remove-new on a disappearing paginated page, focus moves to a visible row action cell', async () => {
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {},
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const currentRowElement = globalThis.document.createElement('div');
+        const previousPageRowElement = globalThis.document.createElement('div');
+        const previousPageRow = {
+            getData: () => ({ id: 10, _state: 'clean' }),
+            getElement: () => previousPageRowElement
+        };
+        let visibleRowsCallCount = 0;
+        const table = {
+            options: {
+                pagination: true
+            },
+            getRows: vi.fn(scope => {
+                if (scope !== 'visible') return [];
+
+                visibleRowsCallCount += 1;
+                return visibleRowsCallCount > 1 ? [previousPageRow] : [];
+            })
+        };
+        const currentRow = {
+            getData: () => ({ id: 1, _state: 'new' }),
+            getElement: () => currentRowElement,
+            getNextRow: () => null,
+            getPrevRow: () => null,
+            getTable: () => table
+        };
+        const cell = {
+            getRow: () => currentRow
+        };
+
+        previousPageRowElement.append(controller.column.formatter({ getRow: () => previousPageRow }));
+
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), vi.fn());
+        currentRowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushActionFocus();
+
+        expect(crud.deleteRow).toHaveBeenCalledWith(1);
+        expect(table.getRows).toHaveBeenCalledWith('visible');
+        expect(globalThis.document.activeElement.dataset.action).toBe('delete');
+        expect(previousPageRowElement.contains(globalThis.document.activeElement)).toBe(true);
+    });
+
     test('after remove-new, focus falls back to the table element without errors when no rows remain', async () => {
         const crud = createCrud();
         const controller = createDeleteColumn(

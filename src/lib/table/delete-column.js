@@ -2,6 +2,7 @@ import { navigateEditableCellAfterClose } from '../editors/shared.js';
 import { ROW_STATE } from '../crud-helper.js';
 
 const ACTION_BUTTON_SELECTOR = '.amb-row-action-button';
+const PAGINATED_REMOVE_FOCUS_ATTEMPTS = 8;
 
 export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const confirmDeleteMessage = deleteColumn.confirmDeleteMessage || deleteColumn.confirmMessage;
@@ -197,6 +198,43 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         }
     };
 
+    const getTableFromRow = row => {
+        return row && typeof row.getTable === 'function'
+            ? row.getTable()
+            : null;
+    };
+
+    const isRowTablePaginated = row => {
+        const table = getTableFromRow(row);
+
+        return Boolean(table && table.options && table.options.pagination);
+    };
+
+    const getRowsFromTable = (table, scope) => {
+        if (!table || typeof table.getRows !== 'function') return [];
+
+        const rows = scope === undefined
+            ? table.getRows()
+            : table.getRows(scope);
+
+        return Array.isArray(rows) ? rows : [];
+    };
+
+    const getVisibleActionFallbackRow = row => {
+        const table = getTableFromRow(row);
+        const scopes = isRowTablePaginated(row)
+            ? ['visible']
+            : ['visible', 'active', undefined];
+        const rows = scopes.flatMap(scope => getRowsFromTable(table, scope))
+            .filter(candidate => candidate && candidate !== row);
+
+        for (let index = rows.length - 1; index >= 0; index -= 1) {
+            if (focusRowActionButton(rows[index])) return true;
+        }
+
+        return false;
+    };
+
     const getRemoveFallbackRow = row => {
         if (!row) return null;
 
@@ -220,8 +258,12 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             if (!options.skipRow && focusRowActionButton(row, options.expectedAction || null)) return;
             if (fallbackRow && focusRowActionButton(fallbackRow)) return;
             if (options.skipRow && !fallbackRow) {
-                focusTableFallback(row);
-                return;
+                if (getVisibleActionFallbackRow(row)) return;
+
+                if (!isRowTablePaginated(row) || attempts <= 0) {
+                    focusTableFallback(row);
+                    return;
+                }
             }
 
             if (attempts > 0) {
@@ -313,7 +355,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             }
 
             crud.deleteRow(identifier);
-            restoreActionFocus(row, removeFallbackRow, { skipRow: true });
+            restoreActionFocus(row, removeFallbackRow, { skipRow: true }, PAGINATED_REMOVE_FOCUS_ATTEMPTS);
             return true;
         }
 

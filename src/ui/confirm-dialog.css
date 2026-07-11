@@ -48,11 +48,14 @@
     border: 1px solid var(--amb-color-border-strong);
     border-radius: var(--amb-radius-sm);
     background: var(--amb-color-surface);
+    caret-color: transparent;
     color: var(--amb-color-text);
     cursor: pointer;
     font: inherit;
     padding: 8px 12px;
     transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .teh-confirm-dialog__button:hover {
