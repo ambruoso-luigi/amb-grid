@@ -70,7 +70,6 @@ const createGrid = async (selectionMode = 'single') => {
         deleteColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this product?',
-            confirmRollbackMessage: 'Rollback this product?',
             confirmRemoveNewMessage: 'Remove this new product?'
         },
         search: {
