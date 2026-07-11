@@ -5,6 +5,17 @@ import { getInitialValue, getLookupOptionValue } from './shared.js';
     /**
      * Lookup code editor with a text input and search dialog button.
      *
+     * Keyboard behavior:
+     * - `Tab` and `Shift+Tab` commit and navigate when the lookup dialog is
+     *   closed.
+     * - `Enter` opens the configured lookup dialog; without a dialog it keeps
+     *   the manual commit behavior.
+     * - while the lookup dialog is open, focus is trapped inside the dialog,
+     *   arrow keys move lookup selection, `Enter` selects, and `Escape`
+     *   cancels.
+     * - record-based lookups can update multiple row fields through
+     *   `mapToRow`.
+     *
      * @param {object} lookupInstance - Lookup instance created with `AMB.lookup`.
      * @param {object} [options] - Lookup editor options.
      * @param {boolean} [options.allowEmpty=true] - Allow saving an empty string.

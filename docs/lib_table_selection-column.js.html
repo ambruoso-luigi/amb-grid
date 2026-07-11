@@ -1,4 +1,32 @@
-import { navigateEditableCellAfterClose } from '../editors/shared.js';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/table/selection-column.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/table/selection-column.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { navigateEditableCellAfterClose } from '../editors/shared.js';
 
 const CHECKED_KEYS = new Set(['1', 'y', 'Y', 's', 'S']);
 const UNCHECKED_KEYS = new Set(['0', 'n', 'N']);
@@ -6,15 +34,15 @@ const UNCHECKED_KEYS = new Set(['0', 'n', 'N']);
 const SELECTION_INPUT_SELECTOR = '.amb-selection-column__input';
 
 const isRowSelected = row => {
-    return Boolean(row && typeof row.isSelected === 'function' && row.isSelected());
+    return Boolean(row &amp;&amp; typeof row.isSelected === 'function' &amp;&amp; row.isSelected());
 };
 
 const clearTableSelection = row => {
-    const table = row && typeof row.getTable === 'function'
+    const table = row &amp;&amp; typeof row.getTable === 'function'
         ? row.getTable()
         : null;
 
-    if (table && typeof table.deselectRow === 'function') {
+    if (table &amp;&amp; typeof table.deselectRow === 'function') {
         table.deselectRow();
     }
 };
@@ -43,7 +71,7 @@ const toggleRowSelection = (row, isMultiple = true) => {
     if (!row) return false;
 
     if (typeof row.toggleSelect === 'function') {
-        if (!isMultiple && !isRowSelected(row)) {
+        if (!isMultiple &amp;&amp; !isRowSelected(row)) {
             clearTableSelection(row);
         }
 
@@ -71,10 +99,10 @@ const stopSelectionKey = event => {
 };
 
 const syncRowSelectionInput = row => {
-    const rowElement = row && typeof row.getElement === 'function'
+    const rowElement = row &amp;&amp; typeof row.getElement === 'function'
         ? row.getElement()
         : null;
-    const input = rowElement && typeof rowElement.querySelector === 'function'
+    const input = rowElement &amp;&amp; typeof rowElement.querySelector === 'function'
         ? rowElement.querySelector(SELECTION_INPUT_SELECTOR)
         : null;
 
@@ -84,7 +112,7 @@ const syncRowSelectionInput = row => {
 };
 
 const handleSelectionInputKeydown = (event, row, cell, isMultiple, closeEditor) => {
-    const key = event && event.key;
+    const key = event &amp;&amp; event.key;
     let handled = false;
 
     if (key === 'Tab') {
@@ -114,7 +142,7 @@ const handleSelectionInputKeydown = (event, row, cell, isMultiple, closeEditor) 
 
 const createSelectionInput = (cell, isMultiple, closeEditor) => {
     const input = document.createElement('input');
-    const row = cell && typeof cell.getRow === 'function' ? cell.getRow() : null;
+    const row = cell &amp;&amp; typeof cell.getRow === 'function' ? cell.getRow() : null;
 
     input.type = 'checkbox';
     input.className = 'amb-selection-column__input';
@@ -137,7 +165,7 @@ const createSelectionInput = (cell, isMultiple, closeEditor) => {
 
 const createSelectionFormatter = isMultiple => (cell, _formatterParams, onRendered) => {
     const input = createSelectionInput(cell, isMultiple);
-    const row = cell && typeof cell.getRow === 'function' ? cell.getRow() : null;
+    const row = cell &amp;&amp; typeof cell.getRow === 'function' ? cell.getRow() : null;
 
     if (typeof onRendered === 'function') {
         onRendered(() => {
@@ -229,3 +257,26 @@ export const createSelectionColumn = (selectionColumn = {}) => {
         }
     };
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

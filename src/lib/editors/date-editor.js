@@ -77,6 +77,15 @@ const createPickerOptions = options => {
     /**
      * Date editor. Saves a date string in the configured format.
      *
+     * Keyboard behavior:
+     * - `Tab` and `Shift+Tab` commit and navigate when the picker is closed.
+     * - `Enter` opens the datepicker when a picker is configured.
+     * - while the picker is open, `Tab` and `Shift+Tab` stay inside it, arrow
+     *   keys do not propagate to the grid, `Enter` is left to the picker, and
+     *   `Escape` closes the popup.
+     * - manual picker editors keep the calendar button mounted after picker
+     *   close so the calendar can be reopened.
+     *
      * @param {object} [options] - Date editor options.
      * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'} [options.format='dd/mm/yyyy'] - Input and saved date format.
      * @param {boolean} [options.allowEmpty=true] - Save an empty string for empty input.
@@ -162,15 +171,45 @@ export function date(options = {}) {
                     pickerKeyboardListenerAttached = false;
                 };
 
-                const destroyDatepicker = () => {
+                const focusManualInput = () => {
+                    if (!editorBehavior.hasManualInput) return;
+
+                    try {
+                        input.focus({ preventScroll: true });
+                    } catch {
+                        input.focus();
+                    }
+                };
+
+                const cleanupPickerSession = ({ restoreFocus = true } = {}) => {
                     removePickerKeyboardListener();
-                    pickerFocusTrap?.deactivate();
+                    pickerFocusTrap?.deactivate({ restore: restoreFocus });
                     pickerFocusTrap = null;
 
                     if (blurTimeout) {
                         window.clearTimeout(blurTimeout);
                         blurTimeout = null;
                     }
+                };
+
+                const closePickerPopup = ({ restoreFocus = true } = {}) => {
+                    cleanupPickerSession({ restoreFocus: false });
+
+                    if (datepicker) {
+                        if (typeof datepicker.hide === 'function' && datepicker.active) {
+                            datepicker.hide();
+                        } else {
+                            datepicker.active = false;
+                        }
+                    }
+
+                    if (restoreFocus) {
+                        focusManualInput();
+                    }
+                };
+
+                const destroyDatepicker = () => {
+                    cleanupPickerSession();
 
                     if (datepicker) {
                         datepicker.destroy();
@@ -336,6 +375,11 @@ export function date(options = {}) {
                     if (event.key === 'Escape') {
                         event.preventDefault();
                         event.stopPropagation();
+                        if (editorBehavior.hasManualInput) {
+                            closePickerPopup();
+                            return;
+                        }
+
                         closeWithCancel();
                         return;
                     }
@@ -414,9 +458,25 @@ export function date(options = {}) {
                     const formattedValue = formatPickerDate(date, normalizedOptions.format);
 
                     input.value = formattedValue;
+
+                    if (editorBehavior.hasManualInput) {
+                        closePickerPopup();
+                        return;
+                    }
+
                     closeWithSuccess(formattedValue);
                 });
-                pickerInput.addEventListener('hide', closeWithCancel);
+                pickerInput.addEventListener('hide', () => {
+                    if (closed) return;
+
+                    if (editorBehavior.hasManualInput) {
+                        cleanupPickerSession({ restoreFocus: false });
+                        focusManualInput();
+                        return;
+                    }
+
+                    closeWithCancel();
+                });
 
                 if (editorBehavior.hasPickerButton) {
                     pickerButton.addEventListener('mousedown', event => {

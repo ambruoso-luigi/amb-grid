@@ -170,6 +170,141 @@
 
         
             
+<h4 class="name" id="createDeleteColumn"><span class="type-signature">(constant) </span>createDeleteColumn<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Create the standard AMB row action column.
+
+The column is an interactive action cell, not a data column. It participates
+in AMB keyboard navigation, focuses its row action button, and activates
+delete, rollback/undo, or remove-new with `Enter`/`Space`. Delete
+confirmation uses the shared dialog focus trap. After delete focus returns
+to rollback, after rollback focus returns to delete, and remove-new falls
+back to the next or previous visible row action when possible.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_delete-column.js.html">lib/table/delete-column.js</a>, <a href="lib_table_delete-column.js.html#line22">line 22</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="createSelectionColumn"><span class="type-signature">(constant) </span>createSelectionColumn<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Create the standard AMB row selection column.
+
+The column is an interactive non-data cell. It participates in AMB keyboard
+navigation, focuses the native checkbox control, uses `Enter`/`Space` to
+toggle row selection, and keeps `Tab`/`Shift+Tab` as cell navigation.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_selection-column.js.html">lib/table/selection-column.js</a>, <a href="lib_table_selection-column.js.html#line186">line 186</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="escapeHtmlText"><span class="type-signature">(constant) </span>escapeHtmlText<span class="type-signature"></span></h4>
 
 
@@ -765,6 +900,11 @@ scroll area and does not change grid layout.
 
 <div class="description">
     Checkbox editor. Saves `checkedValue` or `uncheckedValue`.
+
+Keyboard behavior: `Space` and configured toggle keys change the
+current checkbox state, configured checked/unchecked keys force a state,
+`Enter` confirms, `Escape` cancels, and `Tab`/`Shift+Tab` confirm and
+navigate without an extra toggle.
 </div>
 
 
@@ -963,12 +1103,10 @@ scroll area and does not change grid layout.
             
                 <td class="default">
                 
-                    'Yes'
-                
                 </td>
             
 
-            <td class="description last">Label shown while checked.</td>
+            <td class="description last">Optional label shown while checked.</td>
         </tr>
 
     
@@ -1002,12 +1140,10 @@ scroll area and does not change grid layout.
             
                 <td class="default">
                 
-                    'No'
-                
                 </td>
             
 
-            <td class="description last">Label shown while unchecked.</td>
+            <td class="description last">Optional label shown while unchecked.</td>
         </tr>
 
     
@@ -1172,7 +1308,7 @@ scroll area and does not change grid layout.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_checkbox-editor.js.html">lib/editors/checkbox-editor.js</a>, <a href="lib_editors_checkbox-editor.js.html#line26">line 26</a>
+        <a href="lib_editors_checkbox-editor.js.html">lib/editors/checkbox-editor.js</a>, <a href="lib_editors_checkbox-editor.js.html#line33">line 33</a>
     </li></ul></dd>
     
 
@@ -1878,39 +2014,7 @@ scroll area and does not change grid layout.
 
 
 <div class="description">
-    Create an AMB-managed CRUD grid powered by a Tabulator table.
-
-The returned object exposes the raw Tabulator instance as `table` and a
-CrudHelper instance as `crud`. Tabulator provides the table engine; AMB Grid
-provides the CRUD application layer, column validation, rollback handling,
-lookup behavior, initial lookup description metadata for loaded rows, save
-payloads, optional row action and selection columns, hover messages, large
-text previews, search helpers, and lifecycle cleanup. Lookup columns created
-with `AMB.editors.lookup(...)` are marked on rendered cells and their
-prefilled values are resolved asynchronously into internal metadata after
-table build and data reloads, so hover descriptions can work before a cell is
-edited.
-
-Column validators can be provided with `validator`, `required`, or a
-structured `validation` object. Most validators do not imply required:
-use `required: true`, `validation.required`, or `AMB.validators.required()`
-when empty values should fail validation.
-AMB numeric editors/formatters receive `hozAlign: 'right'` by default and
-AMB date editors/formatters receive `hozAlign: 'center'` by default, only
-when the column did not already define `hozAlign`.
-Tabulator pagination options are still passed through unchanged when
-`pagination` is boolean. AMB also accepts an object-style pagination
-convenience layer:
-`{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.
-Object-style pagination is translated to Tabulator options before table
-creation and takes precedence over equivalent `paginationMode`,
-`paginationSize`, and `paginationSizeSelector` values. Remote pagination is
-only forwarded to Tabulator; AMB does not add backend/server-side behavior.
-When pagination is enabled, AMB sets Tabulator's `paginationAddRow` to
-`'table'` unless explicitly provided, so `crud.addRow(...)` appends to the
-whole table, uses the Tabulator row component to open the page containing
-the new row when possible, and attempts to focus the first editable visible
-data cell. Action/delete columns are not candidates for automatic focus.
+    Create an AMB-managed CRUD grid powered by a Tabulator table.The returned object exposes the raw Tabulator instance as `table` and aCrudHelper instance as `crud`. Tabulator provides the table engine; AMB Gridprovides the CRUD application layer, column validation, rollback handling,lookup behavior, initial lookup description metadata for loaded rows, savepayloads, optional row action and selection columns, hover messages, largetext previews, search helpers, and lifecycle cleanup. Lookup columns createdwith `AMB.editors.lookup(...)` are marked on rendered cells and theirprefilled values are resolved asynchronously into internal metadata aftertable build and data reloads, so hover descriptions can work before a cell isedited.Column validators can be provided with `validator`, `required`, or astructured `validation` object. Most validators do not imply required:use `required: true`, `validation.required`, or `AMB.validators.required()`when empty values should fail validation.AMB numeric editors/formatters receive `hozAlign: 'right'` by default andAMB date editors/formatters receive `hozAlign: 'center'` by default, onlywhen the column did not already define `hozAlign`.Tabulator pagination options are still passed through unchanged when`pagination` is boolean. AMB also accepts an object-style paginationconvenience layer:`{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.Object-style pagination is translated to Tabulator options before tablecreation and takes precedence over equivalent `paginationMode`,`paginationSize`, and `paginationSizeSelector` values. Remote pagination isonly forwarded to Tabulator; AMB does not add backend/server-side behavior.When pagination is enabled, AMB sets Tabulator's `paginationAddRow` to`'table'` unless explicitly provided, so `crud.addRow(...)` appends to thewhole table, uses the Tabulator row component to open the page containingthe new row when possible, and attempts to focus the first editable visibledata cell. Action/delete columns are not candidates for automatic focus.
 </div>
 
 
@@ -4135,7 +4239,7 @@ data cell. Action/delete columns are not candidates for automatic focus.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line542">line 542</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line668">line 668</a>
     </li></ul></dd>
     
 
@@ -4164,10 +4268,7 @@ data cell. Action/delete columns are not candidates for automatic focus.
 
         
 <div class="param-desc">
-    AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.
-
-Underscored fields on the returned controller are internal integration
-objects and are not part of the stable public API.
+    AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.Underscored fields on the returned controller are internal integrationobjects and are not part of the stable public API.
 </div>
 
 
@@ -4191,16 +4292,7 @@ objects and are not part of the stable public API.
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>const grid = AMB.table({
-  selector: '#people',
-  data: [],
-  columns: [
-    { title: 'Name', field: 'name', editor: AMB.editors.text(), required: true }
-  ]
-});
-
-// later, when the page section/modal/view is disposed
-grid.destroy();</code></pre>
+    <pre class="prettyprint"><code>const grid = AMB.table({  selector: '#people',  data: [],  columns: [    { title: 'Name', field: 'name', editor: AMB.editors.text(), required: true }  ]});// later, when the page section/modal/view is disposedgrid.destroy();</code></pre>
 
 
 
@@ -4219,6 +4311,15 @@ grid.destroy();</code></pre>
 
 <div class="description">
     Date editor. Saves a date string in the configured format.
+
+Keyboard behavior:
+- `Tab` and `Shift+Tab` commit and navigate when the picker is closed.
+- `Enter` opens the datepicker when a picker is configured.
+- while the picker is open, `Tab` and `Shift+Tab` stay inside it, arrow
+  keys do not propagate to the grid, `Enter` is left to the picker, and
+  `Escape` closes the popup.
+- manual picker editors keep the calendar button mounted after picker
+  close so the calendar can be reopened.
 </div>
 
 
@@ -4704,7 +4805,7 @@ grid.destroy();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_date-editor.js.html">lib/editors/date-editor.js</a>, <a href="lib_editors_date-editor.js.html#line90">line 90</a>
+        <a href="lib_editors_date-editor.js.html">lib/editors/date-editor.js</a>, <a href="lib_editors_date-editor.js.html#line100">line 100</a>
     </li></ul></dd>
     
 
@@ -5820,6 +5921,11 @@ grid.destroy();</code></pre>
 
 <div class="description">
     Modal textarea editor for long text.
+
+Keyboard behavior: `Escape` cancels and `Ctrl+Enter` saves. With
+`tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates to the
+next editable cell and `Shift+Tab` saves and navigates to the previous
+editable cell.
 </div>
 
 
@@ -6434,7 +6540,7 @@ grid.destroy();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_large-text-editor.js.html">lib/editors/large-text-editor.js</a>, <a href="lib_editors_large-text-editor.js.html#line28">line 28</a>
+        <a href="lib_editors_large-text-editor.js.html">lib/editors/large-text-editor.js</a>, <a href="lib_editors_large-text-editor.js.html#line33">line 33</a>
     </li></ul></dd>
     
 
@@ -6511,6 +6617,17 @@ grid.destroy();</code></pre>
 
 <div class="description">
     Lookup code editor with a text input and search dialog button.
+
+Keyboard behavior:
+- `Tab` and `Shift+Tab` commit and navigate when the lookup dialog is
+  closed.
+- `Enter` opens the configured lookup dialog; without a dialog it keeps
+  the manual commit behavior.
+- while the lookup dialog is open, focus is trapped inside the dialog,
+  arrow keys move lookup selection, `Enter` selects, and `Escape`
+  cancels.
+- record-based lookups can update multiple row fields through
+  `mapToRow`.
 </div>
 
 
@@ -7212,7 +7329,7 @@ grid.destroy();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line39">line 39</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -8257,12 +8374,7 @@ named export for advanced or direct module usage.
 
 
 <div class="description">
-    Controller returned by `AMB.table(...)`.
-
-`destroy()` releases the full AMB-managed grid: AMB event bindings, lookup
-and large-text hover helpers, search helpers, floating messages, dialogs,
-the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
-`table.destroy()`.
+    Controller returned by `AMB.table(...)`.`destroy()` releases the full AMB-managed grid: AMB event bindings, lookupand large-text hover helpers, search helpers, floating messages, dialogs,the CrudHelper layer, and finally the Tabulator table when Tabulator exposes`table.destroy()`.
 </div>
 
 
@@ -8664,7 +8776,7 @@ the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line418">line 418</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line544">line 544</a>
     </li></ul></dd>
     
 
@@ -8694,13 +8806,13 @@ the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 03 2026 16:53:08 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

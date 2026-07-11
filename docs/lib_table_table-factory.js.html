@@ -52,6 +52,7 @@ const NUMERIC_FORMATTER_TYPES = new Set([
 ]);
 const DATE_EDITOR_TYPES = new Set(['date']);
 const DATE_FORMATTER_TYPES = new Set(['date']);
+const CHECKBOX_EDITOR_TYPES = new Set(['checkbox']);
 const DEFAULT_PAGINATION_MODE = 'local';
 const DEFAULT_PAGINATION_SIZE = 10;
 
@@ -150,6 +151,10 @@ const isLookupColumn = column => {
     return column
         &amp;&amp; column.editor
         &amp;&amp; column.editor._ambEditorType === 'lookup';
+};
+
+const isCheckboxColumn = column => {
+    return CHECKBOX_EDITOR_TYPES.has(getAmbEditorType(column));
 };
 
 const getLookupConfig = column => {
@@ -413,6 +418,127 @@ const isDeletedRow = (cell, getCrud) => {
     return Boolean(data &amp;&amp; (data[stateField] || ROW_STATE.CLEAN) === ROW_STATE.DELETED);
 };
 
+const getCheckboxConfig = column => {
+    return column &amp;&amp; column.editor &amp;&amp; column.editor._ambCheckboxConfig
+        ? column.editor._ambCheckboxConfig
+        : {
+            checkedValue: true,
+            uncheckedValue: false
+        };
+};
+
+const isPrimaryMouseEvent = event => {
+    return !event || event.button === undefined || event.button === 0;
+};
+
+const isCheckboxEditorTarget = target => {
+    return Boolean(
+        target
+        &amp;&amp; typeof target.closest === 'function'
+        &amp;&amp; target.closest('.amb-checkbox-editor')
+    );
+};
+
+const stopCellPointerEvent = event => {
+    if (!event) return;
+
+    if (typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
+
+    if (typeof event.stopPropagation === 'function') {
+        event.stopPropagation();
+    }
+
+    if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+    }
+};
+
+const getTargetCell = target => {
+    return target &amp;&amp; typeof target.closest === 'function'
+        ? target.closest('.tabulator-cell')
+        : null;
+};
+
+const suppressCheckboxCellClick = cell => {
+    if (
+        typeof document === 'undefined'
+        || !document
+        || typeof document.addEventListener !== 'function'
+        || typeof document.removeEventListener !== 'function'
+    ) {
+        return;
+    }
+
+    const field = cell &amp;&amp; typeof cell.getField === 'function' ? cell.getField() : null;
+    const handleClick = event => {
+        document.removeEventListener('click', handleClick, true);
+
+        const targetCell = getTargetCell(event &amp;&amp; event.target);
+
+        if (!targetCell) return;
+
+        const targetField = typeof targetCell.getAttribute === 'function'
+            ? targetCell.getAttribute('tabulator-field')
+            : null;
+
+        if (field &amp;&amp; targetField !== field) return;
+
+        stopCellPointerEvent(event);
+    };
+
+    document.addEventListener('click', handleClick, true);
+};
+
+const toggleCheckboxCellFromMouse = (event, cell, column, getCrud) => {
+    if (
+        !isPrimaryMouseEvent(event)
+        || isCheckboxEditorTarget(event &amp;&amp; event.target)
+        || isDeletedRow(cell, getCrud)
+        || !cell
+        || typeof cell.getValue !== 'function'
+        || typeof cell.setValue !== 'function'
+    ) {
+        return false;
+    }
+
+    const config = getCheckboxConfig(column);
+    const checked = cell.getValue() === config.checkedValue;
+
+    stopCellPointerEvent(event);
+    suppressCheckboxCellClick(cell);
+    cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
+
+    return true;
+};
+
+export const prepareCheckboxColumns = (columns = [], getCrud = () => null) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) {
+            nextColumn.columns = prepareCheckboxColumns(nextColumn.columns, getCrud);
+        }
+
+        if (!isCheckboxColumn(nextColumn)) return nextColumn;
+
+        const originalCellMouseDown = nextColumn.cellMouseDown;
+
+        nextColumn.cellMouseDown = (event, cell) => {
+            const handled = toggleCheckboxCellFromMouse(event, cell, nextColumn, getCrud);
+
+            if (!handled &amp;&amp; typeof originalCellMouseDown === 'function') {
+                return originalCellMouseDown(event, cell);
+            }
+
+            return handled;
+        };
+
+        return nextColumn;
+    });
+};
+
 const wrapEditableForDeletedRows = (columns, getCrud) => {
     return (columns || []).map(column => {
         const nextColumn = { ...column };
@@ -584,14 +710,18 @@ export function createTable(options = {}) {
         ...messages
     };
     const extracted = extractColumnValidators(columns, normalizedMessages);
-    const dataColumns = prepareLookupColumns(
-        wrapEditableForDeletedRows(extracted.columns, () => crud)
+    const dataColumns = prepareCheckboxColumns(
+        prepareLookupColumns(
+            wrapEditableForDeletedRows(extracted.columns, () => crud)
+        ),
+        () => crud
     );
     const alignedDataColumns = applyDefaultColumnAlignments(dataColumns);
     const lookupColumns = collectLookupColumns(alignedDataColumns);
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     let crud = null;
     let unsubscribeDeleteColumn = null;
+    let unsubscribeSelectionColumn = null;
     let unsubscribeLookupMetadata = null;
     let unsubscribeLookupDescriptions = null;
     let unsubscribeLargeText = null;
@@ -621,6 +751,9 @@ export function createTable(options = {}) {
 
     const table = new Tabulator(selector, normalizedOptions);
     crud = new CrudHelper(table, { errorStyle });
+    unsubscribeSelectionColumn = selectionColumnController &amp;&amp; typeof selectionColumnController.bind === 'function'
+        ? selectionColumnController.bind(table)
+        : null;
     const floatingMessage = new FloatingMessage();
     const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
     unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage);
@@ -759,6 +892,11 @@ export function createTable(options = {}) {
                 unsubscribeDeleteColumn = null;
             }
 
+            if (unsubscribeSelectionColumn) {
+                unsubscribeSelectionColumn();
+                unsubscribeSelectionColumn = null;
+            }
+
             if (unsubscribeLookupDescriptions) {
                 unsubscribeLookupDescriptions();
                 unsubscribeLookupDescriptions = null;
@@ -808,13 +946,13 @@ export function createTable(options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 03 2026 16:53:08 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

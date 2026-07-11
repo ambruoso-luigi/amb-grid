@@ -26,11 +26,21 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const DEFAULT_OPTIONS = {
+            <pre class="prettyprint source linenums"><code>import { createFocusTrap } from './focus-trap.js';
+
+const DEFAULT_OPTIONS = {
     title: 'Confirm action',
     confirmText: 'Confirm',
     cancelText: 'Cancel'
 };
+const CARET_NAVIGATION_KEYS = new Set([
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowUp',
+    'ArrowDown',
+    'Home',
+    'End'
+]);
 
 /**
  * Small promise-based confirmation dialog.
@@ -52,12 +62,30 @@ export class ConfirmDialog {
         this.element = null;
         this.titleElement = null;
         this.messageElement = null;
+        this.panelElement = null;
         this.confirmButton = null;
         this.cancelButton = null;
         this.resolveCurrent = null;
+        this.previouslyFocusedElement = null;
+        this.focusTrap = null;
+        this.handleButtonFocus = () => {
+            this._clearTextSelection();
+        };
+        this.handleButtonKeyDown = event => {
+            if (!CARET_NAVIGATION_KEYS.has(event.key)) return;
+
+            event.preventDefault();
+            this._clearTextSelection();
+        };
         this.handleKeyDown = event => {
             if (event.key === 'Escape') {
+                event.preventDefault();
                 this._close(false);
+                return;
+            }
+
+            if (event.key === 'Tab') {
+                this.focusTrap?.handleKeydown(event);
             }
         };
     }
@@ -70,8 +98,10 @@ export class ConfirmDialog {
         this.element.setAttribute('role', 'dialog');
         this.element.setAttribute('aria-modal', 'true');
 
-        const panel = document.createElement('div');
-        panel.className = 'teh-confirm-dialog__panel';
+        this.panelElement = document.createElement('div');
+        this.panelElement.className = 'teh-confirm-dialog__panel';
+        this.panelElement.tabIndex = -1;
+        this.panelElement.setAttribute('contenteditable', 'false');
 
         this.titleElement = document.createElement('h2');
         this.titleElement.className = 'teh-confirm-dialog__title';
@@ -85,6 +115,7 @@ export class ConfirmDialog {
         this.cancelButton = document.createElement('button');
         this.cancelButton.type = 'button';
         this.cancelButton.className = 'teh-confirm-dialog__button teh-confirm-dialog__button--cancel';
+        this._prepareButton(this.cancelButton);
         this.cancelButton.addEventListener('click', () => {
             this._close(false);
         });
@@ -92,14 +123,49 @@ export class ConfirmDialog {
         this.confirmButton = document.createElement('button');
         this.confirmButton.type = 'button';
         this.confirmButton.className = 'teh-confirm-dialog__button teh-confirm-dialog__button--confirm';
+        this._prepareButton(this.confirmButton);
         this.confirmButton.addEventListener('click', () => {
             this._close(true);
         });
 
         actions.append(this.cancelButton, this.confirmButton);
-        panel.append(this.titleElement, this.messageElement, actions);
-        this.element.append(panel);
+        this.panelElement.append(this.titleElement, this.messageElement, actions);
+        this.element.append(this.panelElement);
         document.body.appendChild(this.element);
+
+        this.focusTrap = createFocusTrap({
+            container: () => this.panelElement,
+            getElements: () => [this.cancelButton, this.confirmButton],
+            initialFocus: () => this.cancelButton,
+            restoreFocusTo: () => this.previouslyFocusedElement,
+            fallbackFocus: () => this.panelElement
+        });
+    }
+
+    _prepareButton(button) {
+        button.setAttribute('contenteditable', 'false');
+        button.setAttribute('unselectable', 'on');
+        button.addEventListener('focus', this.handleButtonFocus);
+        button.addEventListener('keydown', this.handleButtonKeyDown);
+    }
+
+    _clearTextSelection() {
+        const selection = typeof window !== 'undefined' &amp;&amp; window.getSelection
+            ? window.getSelection()
+            : null;
+
+        if (selection &amp;&amp; typeof selection.removeAllRanges === 'function') {
+            selection.removeAllRanges();
+        }
+    }
+
+    _focusInitialElement() {
+        this.focusTrap?.activate();
+    }
+
+    _restoreFocus() {
+        this.focusTrap?.deactivate();
+        this.previouslyFocusedElement = null;
     }
 
     _close(result) {
@@ -115,6 +181,7 @@ export class ConfirmDialog {
         }
 
         resolve(result);
+        this._restoreFocus();
     }
 
     /**
@@ -138,6 +205,7 @@ export class ConfirmDialog {
         };
 
         this._ensureElement();
+        this.previouslyFocusedElement = document.activeElement || null;
 
         this.titleElement.textContent = dialogOptions.title;
         this.messageElement.textContent = dialogOptions.message || '';
@@ -148,7 +216,7 @@ export class ConfirmDialog {
 
         return new Promise(resolve => {
             this.resolveCurrent = resolve;
-            this.confirmButton.focus();
+            this._focusInitialElement();
         });
     }
 
@@ -168,8 +236,11 @@ export class ConfirmDialog {
         this.element = null;
         this.titleElement = null;
         this.messageElement = null;
+        this.panelElement = null;
         this.confirmButton = null;
         this.cancelButton = null;
+        this.previouslyFocusedElement = null;
+        this.focusTrap = null;
     }
 }
 </code></pre>
@@ -182,13 +253,13 @@ export class ConfirmDialog {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 03 2026 16:53:08 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -3,6 +3,11 @@ import { getInitialValue, navigateEditableCellAfterClose, toCssSize } from './sh
     /**
      * Modal textarea editor for long text.
      *
+     * Keyboard behavior: `Escape` cancels and `Ctrl+Enter` saves. With
+     * `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates to the
+     * next editable cell and `Shift+Tab` saves and navigates to the previous
+     * editable cell.
+     *
      * @param {object} [options] - Large text editor options.
      * @param {string} [options.title='Edit text'] - Dialog title.
      * @param {number} [options.rows=10] - Textarea row count.

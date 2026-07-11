@@ -27,6 +27,7 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import Datepicker from 'vanillajs-datepicker/Datepicker';
+import { createFocusTrap, getFocusableElements } from '../../ui/focus-trap.js';
 import { parsers } from '../parsers.js';
 import {
     formatPickerDate,
@@ -104,6 +105,15 @@ const createPickerOptions = options => {
     /**
      * Date editor. Saves a date string in the configured format.
      *
+     * Keyboard behavior:
+     * - `Tab` and `Shift+Tab` commit and navigate when the picker is closed.
+     * - `Enter` opens the datepicker when a picker is configured.
+     * - while the picker is open, `Tab` and `Shift+Tab` stay inside it, arrow
+     *   keys do not propagate to the grid, `Enter` is left to the picker, and
+     *   `Escape` closes the popup.
+     * - manual picker editors keep the calendar button mounted after picker
+     *   close so the calendar can be reopened.
+     *
      * @param {object} [options] - Date editor options.
      * @param {'dd/mm/yyyy'|'dd-mm-yyyy'|'dd.mm.yyyy'|'mm/dd/yyyy'|'mm-dd-yyyy'|'yyyy-mm-dd'|'yyyy/mm/dd'|'yyyymmdd'|'it'|'iso'|'legacy'} [options.format='dd/mm/yyyy'] - Input and saved date format.
      * @param {boolean} [options.allowEmpty=true] - Save an empty string for empty input.
@@ -150,6 +160,7 @@ export function date(options = {}) {
                 let navigationScheduled = false;
                 let pickerKeyboardListenerAttached = false;
                 let handlePickerDocumentKeydown = null;
+                let pickerFocusTrap = null;
 
                 input.className = 'amb-date-editor';
                 wrapper.className = 'amb-date-editor-wrapper';
@@ -183,19 +194,50 @@ export function date(options = {}) {
 
                     document.removeEventListener(
                         'keydown',
-                        handlePickerDocumentKeydown,
-                        true
+                        handlePickerDocumentKeydown
                     );
                     pickerKeyboardListenerAttached = false;
                 };
 
-                const destroyDatepicker = () => {
+                const focusManualInput = () => {
+                    if (!editorBehavior.hasManualInput) return;
+
+                    try {
+                        input.focus({ preventScroll: true });
+                    } catch {
+                        input.focus();
+                    }
+                };
+
+                const cleanupPickerSession = ({ restoreFocus = true } = {}) => {
                     removePickerKeyboardListener();
+                    pickerFocusTrap?.deactivate({ restore: restoreFocus });
+                    pickerFocusTrap = null;
 
                     if (blurTimeout) {
                         window.clearTimeout(blurTimeout);
                         blurTimeout = null;
                     }
+                };
+
+                const closePickerPopup = ({ restoreFocus = true } = {}) => {
+                    cleanupPickerSession({ restoreFocus: false });
+
+                    if (datepicker) {
+                        if (typeof datepicker.hide === 'function' &amp;&amp; datepicker.active) {
+                            datepicker.hide();
+                        } else {
+                            datepicker.active = false;
+                        }
+                    }
+
+                    if (restoreFocus) {
+                        focusManualInput();
+                    }
+                };
+
+                const destroyDatepicker = () => {
+                    cleanupPickerSession();
 
                     if (datepicker) {
                         datepicker.destroy();
@@ -298,38 +340,38 @@ export function date(options = {}) {
                     navigateAfterClose(direction);
                 };
 
-                const commitFocusedPickerDateFromTab = direction => {
-                    if (
-                        closed
-                        || tabCommitInProgress
-                        || !datepicker
-                        || !datepicker.active
-                        || typeof datepicker.getFocusedDate !== 'function'
-                    ) {
-                        return;
-                    }
+                const getPickerPopup = () => {
+                    if (typeof document.querySelector !== 'function') return null;
 
-                    const focusedDate = datepicker.getFocusedDate();
+                    return document.querySelector('.datepicker.active')
+                        || document.querySelector('.datepicker');
+                };
 
-                    if (!(focusedDate instanceof Date) || !Number.isFinite(focusedDate.getTime())) {
-                        return;
-                    }
+                const getPickerFocusableElements = () => {
+                    const pickerElements = getFocusableElements(getPickerPopup());
+                    const elements = [pickerInput, ...pickerElements];
 
-                    tabCommitInProgress = true;
-                    const formattedValue = formatPickerDate(
-                        focusedDate,
-                        normalizedOptions.format
-                    );
+                    return elements.filter((element, index) => {
+                        return element &amp;&amp; elements.indexOf(element) === index;
+                    });
+                };
 
-                    input.value = formattedValue;
-                    closeWithSuccess(formattedValue);
-                    navigateAfterClose(direction);
+                const ensurePickerFocusTrap = () => {
+                    if (pickerFocusTrap) return pickerFocusTrap;
+
+                    pickerFocusTrap = createFocusTrap({
+                        container: () => getPickerPopup() || wrapper,
+                        getElements: getPickerFocusableElements,
+                        initialFocus: () => getPickerFocusableElements()[0] || pickerInput,
+                        fallbackFocus: () => pickerInput
+                    });
+
+                    return pickerFocusTrap;
                 };
 
                 const keepPickerArrowInsideEditor = event => {
                     if (
-                        normalizedOptions.mode !== 'pickerOnly'
-                        || !datepicker
+                        !datepicker
                         || !datepicker.active
                         || (
                             event.key !== 'ArrowUp'
@@ -346,33 +388,51 @@ export function date(options = {}) {
 
                 handlePickerDocumentKeydown = event => {
                     if (
-                        normalizedOptions.mode !== 'pickerOnly'
-                        || closed
+                        closed
                         || !datepicker
                         || !datepicker.active
                     ) {
                         return;
                     }
 
-                    if (event.key !== 'Tab') return;
+                    if (event.key === 'Tab') {
+                        ensurePickerFocusTrap().handleKeydown(event);
+                        return;
+                    }
 
-                    event.preventDefault();
-                    event.stopPropagation();
-                    commitFocusedPickerDateFromTab(event.shiftKey ? 'prev' : 'next');
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (editorBehavior.hasManualInput) {
+                            closePickerPopup();
+                            return;
+                        }
+
+                        closeWithCancel();
+                        return;
+                    }
+
+                    if (
+                        event.key === 'ArrowUp'
+                        || event.key === 'ArrowDown'
+                        || event.key === 'ArrowLeft'
+                        || event.key === 'ArrowRight'
+                        || event.key === 'Enter'
+                    ) {
+                        event.stopPropagation();
+                    }
                 };
 
                 const addPickerKeyboardListener = () => {
                     if (
-                        normalizedOptions.mode !== 'pickerOnly'
-                        || pickerKeyboardListenerAttached
+                        pickerKeyboardListenerAttached
                     ) {
                         return;
                     }
 
                     document.addEventListener(
                         'keydown',
-                        handlePickerDocumentKeydown,
-                        true
+                        handlePickerDocumentKeydown
                     );
                     pickerKeyboardListenerAttached = true;
                 };
@@ -393,13 +453,12 @@ export function date(options = {}) {
 
                     if (datepicker.active) {
                         addPickerKeyboardListener();
+                        ensurePickerFocusTrap().activate();
 
-                        if (normalizedOptions.mode === 'pickerOnly') {
-                            try {
-                                pickerInput.focus({ preventScroll: true });
-                            } catch {
-                                pickerInput.focus();
-                            }
+                        try {
+                            pickerInput.focus({ preventScroll: true });
+                        } catch {
+                            pickerInput.focus();
                         }
                     }
                 };
@@ -427,9 +486,25 @@ export function date(options = {}) {
                     const formattedValue = formatPickerDate(date, normalizedOptions.format);
 
                     input.value = formattedValue;
+
+                    if (editorBehavior.hasManualInput) {
+                        closePickerPopup();
+                        return;
+                    }
+
                     closeWithSuccess(formattedValue);
                 });
-                pickerInput.addEventListener('hide', closeWithCancel);
+                pickerInput.addEventListener('hide', () => {
+                    if (closed) return;
+
+                    if (editorBehavior.hasManualInput) {
+                        cleanupPickerSession({ restoreFocus: false });
+                        focusManualInput();
+                        return;
+                    }
+
+                    closeWithCancel();
+                });
 
                 if (editorBehavior.hasPickerButton) {
                     pickerButton.addEventListener('mousedown', event => {
@@ -452,6 +527,13 @@ export function date(options = {}) {
                         }
 
                         if (event.key === 'Enter') {
+                            if (datepicker &amp;&amp; !datepicker.active) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                showPicker();
+                                return;
+                            }
+
                             commit();
                             return;
                         }
@@ -565,13 +647,13 @@ export function date(options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 03 2026 16:53:08 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -27,6 +27,7 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import { FeedbackRegion } from './feedback-region.js';
+import { createFocusTrap } from './focus-trap.js';
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -128,6 +129,7 @@ export class LookupDialog {
         this.lastPageButton = null;
         this.cancelButton = null;
         this.selectButton = null;
+        this.focusTrap = null;
     }
 
     /**
@@ -233,6 +235,7 @@ export class LookupDialog {
 
     deactivate() {
         this.removeKeydownHandler();
+        this.focusTrap?.deactivate();
 
         if (this.overlay) {
             this.overlay.hidden = true;
@@ -256,6 +259,7 @@ export class LookupDialog {
      */
     destroy() {
         this.removeKeydownHandler();
+        this.focusTrap?.deactivate();
 
         if (this.overlay) {
             this.overlay.remove();
@@ -285,6 +289,7 @@ export class LookupDialog {
         this.lastPageButton = null;
         this.cancelButton = null;
         this.selectButton = null;
+        this.focusTrap = null;
     }
 
     createStructure() {
@@ -380,6 +385,20 @@ export class LookupDialog {
         this.lastPageButton = lastPageButton;
         this.cancelButton = cancelButton;
         this.selectButton = selectButton;
+        this.focusTrap = createFocusTrap({
+            container: () => this.panel,
+            getElements: () => [
+                this.search,
+                this.firstPageButton,
+                this.previousPageButton,
+                this.nextPageButton,
+                this.lastPageButton,
+                this.cancelButton,
+                this.selectButton
+            ],
+            initialFocus: () => this.search,
+            fallbackFocus: () => this.panel
+        });
 
         overlay.addEventListener('mousedown', event => {
             if (
@@ -421,7 +440,7 @@ export class LookupDialog {
         this.renderTable();
         this.keydownHandler = event => this.handleKeydown(event);
         document.addEventListener('keydown', this.keydownHandler);
-        this.search.focus();
+        this.focusTrap?.activate();
     }
 
     updateSelectButton() {
@@ -643,27 +662,38 @@ export class LookupDialog {
     handleKeydown(event) {
         if (!this.overlay || this.overlay.hidden) return;
 
+        if (this.focusTrap?.handleKeydown(event)) return;
+
         if (event.key === 'Escape') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.close(null);
             return;
         }
 
         if (event.key === 'Enter') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.selectCurrent();
             return;
         }
 
         if (event.key === 'ArrowDown') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.moveSelection(1);
             return;
         }
 
         if (event.key === 'ArrowUp') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.moveSelection(-1);
+            return;
+        }
+
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.stopPropagation?.();
         }
     }
 
@@ -707,13 +737,13 @@ export class LookupDialog {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 03 2026 16:53:08 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

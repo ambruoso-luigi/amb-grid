@@ -1,4 +1,32 @@
-import { navigateEditableCellAfterClose } from '../editors/shared.js';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/table/delete-column.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/table/delete-column.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { navigateEditableCellAfterClose } from '../editors/shared.js';
 import { ROW_STATE } from '../crud-helper.js';
 
 const ACTION_BUTTON_SELECTOR = '.amb-row-action-button';
@@ -54,7 +82,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const getRowIdentifier = (crud, data) => {
         const id = data[crud.options.idField];
 
-        if (id !== null && id !== undefined && id !== '') return id;
+        if (id !== null &amp;&amp; id !== undefined &amp;&amp; id !== '') return id;
 
         return data[crud.options.tempIdField];
     };
@@ -139,8 +167,8 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 
     const updateRowButton = row => {
-        const rowElement = row && row.getElement && row.getElement();
-        const container = rowElement && rowElement.querySelector('.amb-row-actions');
+        const rowElement = row &amp;&amp; row.getElement &amp;&amp; row.getElement();
+        const container = rowElement &amp;&amp; rowElement.querySelector('.amb-row-actions');
 
         if (!container) return;
 
@@ -148,43 +176,43 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 
     const buttonMatchesAction = (button, action) => {
-        return !action || button && button.dataset && button.dataset.action === action;
+        return !action || button &amp;&amp; button.dataset &amp;&amp; button.dataset.action === action;
     };
 
     const focusRowActionButton = (row, expectedAction = null) => {
-        const cells = row && typeof row.getCells === 'function'
+        const cells = row &amp;&amp; typeof row.getCells === 'function'
             ? row.getCells()
             : [];
         const actionCell = cells.find(candidate => {
             const definition = candidate
-                && candidate.getColumn
-                && candidate.getColumn()
-                && candidate.getColumn().getDefinition
-                && candidate.getColumn().getDefinition();
+                &amp;&amp; candidate.getColumn
+                &amp;&amp; candidate.getColumn()
+                &amp;&amp; candidate.getColumn().getDefinition
+                &amp;&amp; candidate.getColumn().getDefinition();
             const cellElement = candidate
-                && typeof candidate.getElement === 'function'
+                &amp;&amp; typeof candidate.getElement === 'function'
                 ? candidate.getElement()
                 : null;
 
-            return definition && definition._ambFocusSelector === ACTION_BUTTON_SELECTOR
-                || Boolean(cellElement && cellElement.querySelector(ACTION_BUTTON_SELECTOR));
+            return definition &amp;&amp; definition._ambFocusSelector === ACTION_BUTTON_SELECTOR
+                || Boolean(cellElement &amp;&amp; cellElement.querySelector(ACTION_BUTTON_SELECTOR));
         });
-        const cellElement = actionCell && typeof actionCell.getElement === 'function'
+        const cellElement = actionCell &amp;&amp; typeof actionCell.getElement === 'function'
             ? actionCell.getElement()
             : null;
-        const cellButton = cellElement && cellElement.querySelector(ACTION_BUTTON_SELECTOR);
+        const cellButton = cellElement &amp;&amp; cellElement.querySelector(ACTION_BUTTON_SELECTOR);
 
         if (
             cellButton
-            && buttonMatchesAction(cellButton, expectedAction)
-            && typeof cellButton.focus === 'function'
+            &amp;&amp; buttonMatchesAction(cellButton, expectedAction)
+            &amp;&amp; typeof cellButton.focus === 'function'
         ) {
             cellButton.focus();
             return true;
         }
 
-        const rowElement = row && row.getElement && row.getElement();
-        const button = rowElement && rowElement.querySelector(ACTION_BUTTON_SELECTOR);
+        const rowElement = row &amp;&amp; row.getElement &amp;&amp; row.getElement();
+        const button = rowElement &amp;&amp; rowElement.querySelector(ACTION_BUTTON_SELECTOR);
 
         if (
             !button
@@ -199,22 +227,22 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 
     const focusTableFallback = row => {
-        const table = row && typeof row.getTable === 'function'
+        const table = row &amp;&amp; typeof row.getTable === 'function'
             ? row.getTable()
             : null;
-        const tableElement = table && (
+        const tableElement = table &amp;&amp; (
             typeof table.getElement === 'function'
                 ? table.getElement()
                 : table.element
         );
 
-        if (tableElement && typeof tableElement.focus === 'function') {
+        if (tableElement &amp;&amp; typeof tableElement.focus === 'function') {
             tableElement.focus();
         }
     };
 
     const getTableFromRow = row => {
-        return row && typeof row.getTable === 'function'
+        return row &amp;&amp; typeof row.getTable === 'function'
             ? row.getTable()
             : null;
     };
@@ -222,7 +250,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const isRowTablePaginated = row => {
         const table = getTableFromRow(row);
 
-        return Boolean(table && table.options && table.options.pagination);
+        return Boolean(table &amp;&amp; table.options &amp;&amp; table.options.pagination);
     };
 
     const getRowsFromTable = (table, scope) => {
@@ -241,7 +269,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             ? ['visible']
             : ['visible', 'active', undefined];
         const rows = scopes.flatMap(scope => getRowsFromTable(table, scope))
-            .filter(candidate => candidate && candidate !== row);
+            .filter(candidate => candidate &amp;&amp; candidate !== row);
 
         for (let index = rows.length - 1; index >= 0; index -= 1) {
             if (focusRowActionButton(rows[index])) return true;
@@ -270,12 +298,12 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
 
     const restoreActionFocus = (row, fallbackRow = null, options = {}, attempts = 4) => {
         globalThis.setTimeout(() => {
-            if (!options.skipRow && focusRowActionButton(row, options.expectedAction || null)) return;
-            if (fallbackRow && focusRowActionButton(fallbackRow)) return;
-            if (options.skipRow && !fallbackRow) {
+            if (!options.skipRow &amp;&amp; focusRowActionButton(row, options.expectedAction || null)) return;
+            if (fallbackRow &amp;&amp; focusRowActionButton(fallbackRow)) return;
+            if (options.skipRow &amp;&amp; !fallbackRow) {
                 if (getVisibleActionFallbackRow(row)) return;
 
-                if (!isRowTablePaginated(row) || attempts <= 0) {
+                if (!isRowTablePaginated(row) || attempts &lt;= 0) {
                     focusTableFallback(row);
                     return;
                 }
@@ -334,7 +362,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 
     const findCurrentRow = (crud, identifier, fallbackRow) => {
-        if (crud && typeof crud.findRowByKey === 'function') {
+        if (crud &amp;&amp; typeof crud.findRowByKey === 'function') {
             return crud.findRowByKey(identifier) || fallbackRow;
         }
 
@@ -355,7 +383,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             ? getRemoveFallbackRow(row)
             : null;
 
-        if (action === 'remove-new' && state === ROW_STATE.NEW) {
+        if (action === 'remove-new' &amp;&amp; state === ROW_STATE.NEW) {
             const confirmed = await requestConfirmation({
                 action: 'remove-new',
                 message: confirmRemoveNewMessage,
@@ -374,7 +402,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             return true;
         }
 
-        if (action === 'rollback' && (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED)) {
+        if (action === 'rollback' &amp;&amp; (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED)) {
             const confirmed = await requestConfirmation({
                 action: 'rollback',
                 message: confirmRollbackMessage,
@@ -395,7 +423,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
 
         if (
             action !== 'delete'
-            || (state !== ROW_STATE.CLEAN && state !== ROW_STATE.SAVED)
+            || (state !== ROW_STATE.CLEAN &amp;&amp; state !== ROW_STATE.SAVED)
         ) {
             return false;
         }
@@ -433,7 +461,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         };
         const container = createActionsContainer(state, {
             onButtonClick: async event => {
-                const action = event.currentTarget && event.currentTarget.dataset.action;
+                const action = event.currentTarget &amp;&amp; event.currentTarget.dataset.action;
 
                 closeEditor();
                 await executeAction({ action, row, event, cell });
@@ -450,13 +478,13 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         onRendered(() => {
             const button = container.querySelector(ACTION_BUTTON_SELECTOR);
 
-            if (button && typeof button.focus === 'function') {
+            if (button &amp;&amp; typeof button.focus === 'function') {
                 button.focus();
             }
         });
 
         container.addEventListener('focusout', event => {
-            if (event.relatedTarget && container.contains(event.relatedTarget)) return;
+            if (event.relatedTarget &amp;&amp; container.contains(event.relatedTarget)) return;
 
             closeEditor();
         });
@@ -477,7 +505,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             },
             cellClick: async (event, cell) => {
                 const target = event.target;
-                const actionElement = target && typeof target.closest === 'function'
+                const actionElement = target &amp;&amp; typeof target.closest === 'function'
                     ? target.closest('[data-action]')
                     : null;
 
@@ -492,3 +520,26 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         updateRowButton
     };
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

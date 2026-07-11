@@ -519,6 +519,63 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
+    test('Escape from an open manual picker closes only the popup and keeps the calendar button reusable', async () => {
+        const harness = createPickerHarness();
+        const datepicker = datepickerState.instances[0];
+
+        await harness.input.dispatch('keydown', {
+            key: 'Enter'
+        });
+        expect(datepicker.active).toBe(true);
+        expect(documentListeners).toHaveLength(1);
+
+        const escapeEvent = await globalThis.document.dispatch('keydown', {
+            key: 'Escape'
+        });
+
+        expect(escapeEvent.preventDefault).toHaveBeenCalledOnce();
+        expect(escapeEvent.stopPropagation).toHaveBeenCalledOnce();
+        expect(datepicker.active).toBe(false);
+        expect(documentListeners).toHaveLength(0);
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(harness.pickerButton).toBeTruthy();
+
+        await harness.input.dispatch('keydown', {
+            key: 'Enter'
+        });
+
+        expect(datepicker.show).toHaveBeenCalledTimes(2);
+        expect(datepicker.active).toBe(true);
+    });
+
+    test('selecting a date from a manual picker closes only the popup and keeps the calendar button reusable', async () => {
+        const harness = createPickerHarness();
+        const datepicker = datepickerState.instances[0];
+
+        await harness.input.dispatch('keydown', {
+            key: 'Enter'
+        });
+
+        await harness.pickerInput.dispatch('changeDate', {
+            detail: {
+                date: new Date(2026, 7, 9)
+            }
+        });
+
+        expect(harness.input.value).toBe('09/08/2026');
+        expect(datepicker.active).toBe(false);
+        expect(documentListeners).toHaveLength(0);
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(harness.pickerButton).toBeTruthy();
+
+        await harness.pickerButton.dispatch('click');
+
+        expect(datepicker.show).toHaveBeenCalledTimes(2);
+        expect(datepicker.active).toBe(true);
+    });
+
     test('Escape cancels without navigating', async () => {
         const harness = createPickerHarness();
 

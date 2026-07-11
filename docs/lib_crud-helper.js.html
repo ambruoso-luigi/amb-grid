@@ -528,6 +528,106 @@ export class CrudHelper {
         });
     }
 
+    _waitForRenderQuiet(quietFrames = 4, maxFrames = 30) {
+        if (typeof globalThis.requestAnimationFrame !== 'function') {
+            return Promise.resolve();
+        }
+
+        return new Promise(resolve => {
+            let settled = false;
+            let frames = 0;
+            let quiet = quietFrames;
+
+            const finish = () => {
+                if (settled) return;
+
+                settled = true;
+
+                if (this.table &amp;&amp; typeof this.table.off === 'function') {
+                    this.table.off('renderStarted', markRendered);
+                    this.table.off('renderComplete', markRendered);
+                }
+
+                resolve();
+            };
+            const markRendered = () => {
+                quiet = quietFrames;
+            };
+            const step = () => {
+                if (settled) return;
+
+                frames += 1;
+                quiet -= 1;
+
+                if (quiet &lt;= 0 || frames >= maxFrames) {
+                    finish();
+                    return;
+                }
+
+                globalThis.requestAnimationFrame(step);
+            };
+
+            if (this.table &amp;&amp; typeof this.table.on === 'function') {
+                this.table.on('renderStarted', markRendered);
+                this.table.on('renderComplete', markRendered);
+            }
+
+            globalThis.requestAnimationFrame(step);
+        });
+    }
+
+    _cellRetainsFocusedEditor(cell) {
+        const activeElement = globalThis.document &amp;&amp; globalThis.document.activeElement;
+        const cellElement = cell &amp;&amp; typeof cell.getElement === 'function'
+            ? cell.getElement()
+            : null;
+
+        if (
+            !activeElement
+            || !cellElement
+            || typeof cellElement.contains !== 'function'
+            || typeof cellElement.querySelector !== 'function'
+        ) {
+            return true;
+        }
+
+        const editor = cellElement.querySelector('input, textarea, select, [contenteditable="true"]');
+
+        return Boolean(editor &amp;&amp; cellElement.contains(activeElement));
+    }
+
+    async _editCellAndRetainFocus(cell, rowKey) {
+        if (!cell || typeof cell.edit !== 'function') return;
+
+        const field = typeof cell.getField === 'function' ? cell.getField() : null;
+
+        let currentCell = cell;
+
+        for (let attempt = 0; attempt &lt; 3; attempt += 1) {
+            currentCell.edit(true);
+            await this._waitForRenderQuiet();
+
+            if (this._cellRetainsFocusedEditor(currentCell)) return;
+
+            const row = this._resolveRowByKey(rowKey);
+            const refreshedCell = row &amp;&amp; field &amp;&amp; typeof row.getCell === 'function'
+                ? row.getCell(field)
+                : currentCell;
+
+            if (
+                refreshedCell
+                &amp;&amp; refreshedCell !== currentCell
+                &amp;&amp; !this._isCellEditable(refreshedCell)
+            ) {
+                return;
+            }
+
+            if (!refreshedCell || typeof refreshedCell.edit !== 'function') return;
+
+            currentCell = refreshedCell;
+        }
+    }
+
     _getRows(scope) {
         if (!this.table || typeof this.table.getRows !== 'function') return [];
 
@@ -671,12 +771,12 @@ export class CrudHelper {
         visibleRow = this._resolveRowByKey(key) || visibleRow;
         await this._scrollRowIntoView(visibleRow);
         await this._waitForNextFrame();
+        await this._waitForRenderQuiet();
 
+        visibleRow = this._resolveRowByKey(key) || visibleRow;
         const cell = this._getFirstEditableCell(visibleRow);
 
-        if (cell &amp;&amp; typeof cell.edit === 'function') {
-            cell.edit(true);
-        }
+        await this._editCellAndRetainFocus(cell, key);
 
         return visibleRow;
     }
@@ -2327,13 +2427,13 @@ export class CrudHelper {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 03 2026 16:53:08 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

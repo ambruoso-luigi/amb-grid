@@ -218,6 +218,37 @@ Reusable editors for common scenarios:
 * Lookup
 * Large text
 
+### Keyboard support
+
+AMB Grid keeps keyboard behavior aligned across editable data cells,
+popup/action cells, and non-data interactive columns:
+
+* `Tab` moves to the next editable or interactive AMB Grid cell.
+* `Shift+Tab` (Rtab) moves to the previous editable or interactive AMB Grid
+  cell.
+* The standard selection column participates in cell navigation. `Enter` and
+  `Space` toggle row selection through the Tabulator row API.
+* The standard delete/undo/remove-new column participates in cell navigation
+  as an interactive action cell, not as a data column. `Enter` and `Space`
+  activate the row action. Delete confirmation traps `Tab`/`Shift+Tab` inside
+  the dialog; after delete focus returns to undo, after undo focus returns to
+  delete, and remove-new falls back to the next or previous visible row action.
+* Checkbox editors use `Space` and configured toggle keys to change value.
+  `Enter` confirms. `Tab`/`Shift+Tab` confirm and navigate without an
+  accidental extra toggle.
+* Lookup editors use `Enter` to open the lookup dialog when one is configured.
+  While the dialog is open, `Tab`/`Shift+Tab` stay inside it, arrow keys move
+  lookup selection, `Enter` selects, and `Escape` cancels. Record-based
+  lookups can update multiple row fields through `mapToRow`.
+* Date editors with a picker use `Enter` to open the datepicker. While the
+  picker is open, `Tab`/`Shift+Tab` remain inside the popup, arrow keys stay
+  with the datepicker, `Enter` selects when supported by the picker, and
+  `Escape` closes the popup. Manual picker editors keep the calendar button
+  available after the popup closes so it can be reopened.
+* Large text editors cancel with `Escape` and save with `Ctrl+Enter`.
+  With `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates forward
+  and `Shift+Tab` saves and navigates backward.
+
 ### Formatters
 
 Formatting helpers for:

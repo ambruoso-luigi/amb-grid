@@ -15,6 +15,11 @@ const keyMatches = (event, keys) => keys.includes(event.key);
     /**
      * Checkbox editor. Saves `checkedValue` or `uncheckedValue`.
      *
+     * Keyboard behavior: `Space` and configured toggle keys change the
+     * current checkbox state, configured checked/unchecked keys force a state,
+     * `Enter` confirms, `Escape` cancels, and `Tab`/`Shift+Tab` confirm and
+     * navigate without an extra toggle.
+     *
      * @param {object} [options] - Checkbox editor options.
      * @param {*} [options.checkedValue=true] - Value saved for checked state.
      * @param {*} [options.uncheckedValue=false] - Value saved for unchecked state.
