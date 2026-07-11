@@ -13,7 +13,10 @@ const createElementMock = tagName => {
         title: '',
         type: '',
         append(...children) {
-            this.children.push(...children);
+            children.forEach(child => {
+                child.parentNode = this;
+                this.children.push(child);
+            });
         },
         addEventListener(type, handler) {
             this.listeners = this.listeners || {};
@@ -32,11 +35,15 @@ const createElementMock = tagName => {
                 ...event
             });
         },
-        focus: vi.fn(),
+        focus: vi.fn(function focus() {
+            if (globalThis.document) {
+                globalThis.document.activeElement = this;
+            }
+        }),
         querySelector(selector) {
             if (
-                selector === '.amb-row-action-button'
-                && String(this.className).split(/\s+/).includes('amb-row-action-button')
+                selector.startsWith('.')
+                && String(this.className).split(/\s+/).includes(selector.slice(1))
             ) {
                 return this;
             }
@@ -54,6 +61,17 @@ const createElementMock = tagName => {
         },
         getAttribute(name) {
             return this.attributes[name] ?? null;
+        },
+        replaceWith(nextElement) {
+            if (!this.parentNode) return;
+
+            const index = this.parentNode.children.indexOf(this);
+
+            if (index === -1) return;
+
+            nextElement.parentNode = this.parentNode;
+            this.parentNode.children[index] = nextElement;
+            this.parentNode = null;
         },
         get tabIndex() {
             return this.tagName === 'BUTTON' ? 0 : -1;
@@ -98,11 +116,26 @@ const flushDeferred = () => new Promise(resolve => {
     globalThis.setTimeout(resolve, 0);
 });
 
+const flushActionFocus = async () => {
+    await flushDeferred();
+    await flushDeferred();
+};
+
+const clickButton = button => {
+    return button.listeners.click({
+        currentTarget: button,
+        preventDefault: vi.fn(),
+        stopImmediatePropagation: vi.fn(),
+        stopPropagation: vi.fn()
+    });
+};
+
 describe('delete column accessibility', () => {
     const originalDocument = globalThis.document;
 
     beforeEach(() => {
         globalThis.document = {
+            activeElement: null,
             createElement: createElementMock
         };
     });
@@ -344,15 +377,207 @@ describe('delete column accessibility', () => {
 
         expect(button.dataset.action).toBe(action);
 
-        await button.listeners.click({
-            currentTarget: button,
-            preventDefault: vi.fn(),
-            stopImmediatePropagation: vi.fn(),
-            stopPropagation: vi.fn()
-        });
+        await clickButton(button);
 
         expect(cancel).toHaveBeenCalledOnce();
         expect(crud[methodName]).toHaveBeenCalledWith(1);
         await flushDeferred();
+    });
+
+    test('after confirmed delete, focus returns to the same action cell on the rollback button', async () => {
+        const data = { id: 1, _state: 'clean' };
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {
+                confirmDeleteMessage: 'Delete row?'
+            },
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const rowElement = globalThis.document.createElement('div');
+        const row = {
+            getData: () => data,
+            getElement: () => rowElement
+        };
+        const cell = {
+            getRow: () => row
+        };
+
+        crud.deleteRow.mockImplementation(() => {
+            data._state = 'deleted';
+            return true;
+        });
+
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), vi.fn());
+        rowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushActionFocus();
+
+        expect(crud.deleteRow).toHaveBeenCalledWith(1);
+        expect(globalThis.document.activeElement.dataset.action).toBe('rollback');
+    });
+
+    test('after canceled delete, focus returns to the same action cell on the delete button', async () => {
+        const data = { id: 1, _state: 'clean' };
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {
+                confirmDeleteMessage: 'Delete row?'
+            },
+            () => crud,
+            { confirm: () => Promise.resolve(false) }
+        );
+        const rowElement = globalThis.document.createElement('div');
+        const row = {
+            getData: () => data,
+            getElement: () => rowElement
+        };
+        const cell = {
+            getRow: () => row
+        };
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), vi.fn());
+
+        rowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushDeferred();
+
+        expect(crud.deleteRow).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement.dataset.action).toBe('delete');
+    });
+
+    test('after rollback without confirmation, focus returns to the same action cell on the delete button', async () => {
+        const data = { id: 1, _state: 'deleted' };
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {},
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const rowElement = globalThis.document.createElement('div');
+        const row = {
+            getData: () => data,
+            getElement: () => rowElement
+        };
+        const cell = {
+            getRow: () => row
+        };
+
+        crud.rollbackRow.mockImplementation(() => {
+            data._state = 'clean';
+            return true;
+        });
+
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), vi.fn());
+        rowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushActionFocus();
+
+        expect(crud.rollbackRow).toHaveBeenCalledWith(1);
+        expect(globalThis.document.activeElement.dataset.action).toBe('delete');
+    });
+
+    test('after remove-new, focus moves to the next row action cell when available', async () => {
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {},
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const currentRowElement = globalThis.document.createElement('div');
+        const nextRowElement = globalThis.document.createElement('div');
+        const nextRow = {
+            getData: () => ({ id: 2, _state: 'clean' }),
+            getElement: () => nextRowElement
+        };
+        const currentRow = {
+            getData: () => ({ id: 1, _state: 'new' }),
+            getElement: () => currentRowElement,
+            getNextRow: () => nextRow
+        };
+        const cell = {
+            getRow: () => currentRow
+        };
+
+        nextRowElement.append(controller.column.formatter({ getRow: () => nextRow }));
+
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), vi.fn());
+        currentRowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushDeferred();
+
+        expect(crud.deleteRow).toHaveBeenCalledWith(1);
+        expect(globalThis.document.activeElement.dataset.action).toBe('delete');
+        expect(nextRowElement.contains(globalThis.document.activeElement)).toBe(true);
+    });
+
+    test('after remove-new, focus moves to the previous row action cell when no next row exists', async () => {
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {},
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const currentRowElement = globalThis.document.createElement('div');
+        const previousRowElement = globalThis.document.createElement('div');
+        const previousRow = {
+            getData: () => ({ id: 2, _state: 'clean' }),
+            getElement: () => previousRowElement
+        };
+        const currentRow = {
+            getData: () => ({ id: 1, _state: 'new' }),
+            getElement: () => currentRowElement,
+            getNextRow: () => null,
+            getPrevRow: () => previousRow
+        };
+        const cell = {
+            getRow: () => currentRow
+        };
+
+        previousRowElement.append(controller.column.formatter({ getRow: () => previousRow }));
+
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), vi.fn());
+        currentRowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushDeferred();
+
+        expect(globalThis.document.activeElement.dataset.action).toBe('delete');
+        expect(previousRowElement.contains(globalThis.document.activeElement)).toBe(true);
+    });
+
+    test('after remove-new, focus falls back to the table element without errors when no rows remain', async () => {
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {},
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const tableElement = globalThis.document.createElement('div');
+        const currentRowElement = globalThis.document.createElement('div');
+        const currentRow = {
+            getData: () => ({ id: 1, _state: 'new' }),
+            getElement: () => currentRowElement,
+            getNextRow: () => null,
+            getPrevRow: () => null,
+            getTable: () => ({
+                getElement: () => tableElement
+            })
+        };
+        const cell = {
+            getRow: () => currentRow
+        };
+        const container = controller.column.editor(cell, callback => callback(), vi.fn(), vi.fn());
+
+        currentRowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushDeferred();
+
+        expect(crud.deleteRow).toHaveBeenCalledWith(1);
+        expect(globalThis.document.activeElement).toBe(tableElement);
     });
 });

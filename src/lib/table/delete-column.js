@@ -131,9 +131,138 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         container.replaceWith(createActionsContainer(getRowState(row)));
     };
 
-    const scheduleRowButtonUpdate = row => {
+    const buttonMatchesAction = (button, action) => {
+        return !action || button && button.dataset && button.dataset.action === action;
+    };
+
+    const focusRowActionButton = (row, expectedAction = null) => {
+        const cells = row && typeof row.getCells === 'function'
+            ? row.getCells()
+            : [];
+        const actionCell = cells.find(candidate => {
+            const definition = candidate
+                && candidate.getColumn
+                && candidate.getColumn()
+                && candidate.getColumn().getDefinition
+                && candidate.getColumn().getDefinition();
+            const cellElement = candidate
+                && typeof candidate.getElement === 'function'
+                ? candidate.getElement()
+                : null;
+
+            return definition && definition._ambFocusSelector === ACTION_BUTTON_SELECTOR
+                || Boolean(cellElement && cellElement.querySelector(ACTION_BUTTON_SELECTOR));
+        });
+        const cellElement = actionCell && typeof actionCell.getElement === 'function'
+            ? actionCell.getElement()
+            : null;
+        const cellButton = cellElement && cellElement.querySelector(ACTION_BUTTON_SELECTOR);
+
+        if (
+            cellButton
+            && buttonMatchesAction(cellButton, expectedAction)
+            && typeof cellButton.focus === 'function'
+        ) {
+            cellButton.focus();
+            return true;
+        }
+
+        const rowElement = row && row.getElement && row.getElement();
+        const button = rowElement && rowElement.querySelector(ACTION_BUTTON_SELECTOR);
+
+        if (
+            !button
+            || !buttonMatchesAction(button, expectedAction)
+            || typeof button.focus !== 'function'
+        ) {
+            return false;
+        }
+
+        button.focus();
+        return true;
+    };
+
+    const focusTableFallback = row => {
+        const table = row && typeof row.getTable === 'function'
+            ? row.getTable()
+            : null;
+        const tableElement = table && (
+            typeof table.getElement === 'function'
+                ? table.getElement()
+                : table.element
+        );
+
+        if (tableElement && typeof tableElement.focus === 'function') {
+            tableElement.focus();
+        }
+    };
+
+    const getRemoveFallbackRow = row => {
+        if (!row) return null;
+
+        if (typeof row.getNextRow === 'function') {
+            const nextRow = row.getNextRow();
+
+            if (nextRow) return nextRow;
+        }
+
+        if (typeof row.getPrevRow === 'function') {
+            const previousRow = row.getPrevRow();
+
+            if (previousRow) return previousRow;
+        }
+
+        return null;
+    };
+
+    const restoreActionFocus = (row, fallbackRow = null, options = {}, attempts = 4) => {
+        globalThis.setTimeout(() => {
+            if (!options.skipRow && focusRowActionButton(row, options.expectedAction || null)) return;
+            if (fallbackRow && focusRowActionButton(fallbackRow)) return;
+            if (options.skipRow && !fallbackRow) {
+                focusTableFallback(row);
+                return;
+            }
+
+            if (attempts > 0) {
+                restoreActionFocus(row, fallbackRow, options, attempts - 1);
+                return;
+            }
+
+            focusTableFallback(row || fallbackRow);
+        }, 0);
+    };
+
+    const scheduleRowButtonUpdate = (row, options = {}) => {
         globalThis.setTimeout(() => {
             updateRowButton(row);
+
+            if (options.restoreFocus) {
+                restoreActionFocus(row, options.fallbackRow || null, {
+                    expectedAction: options.expectedAction || null
+                });
+            }
+        }, 0);
+    };
+
+    const restoreActionCell = (cell, row, expectedAction) => {
+        if (!cell || typeof cell.edit !== 'function') {
+            scheduleRowButtonUpdate(row, {
+                expectedAction,
+                restoreFocus: true
+            });
+            return;
+        }
+
+        globalThis.setTimeout(() => {
+            const editResult = cell.edit();
+
+            if (editResult !== false) return;
+
+            scheduleRowButtonUpdate(row, {
+                expectedAction,
+                restoreFocus: true
+            });
         }, 0);
     };
 
@@ -147,7 +276,15 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         return confirmDialog.confirm({ message });
     };
 
-    const executeAction = async ({ action, row, event }) => {
+    const findCurrentRow = (crud, identifier, fallbackRow) => {
+        if (crud && typeof crud.findRowByKey === 'function') {
+            return crud.findRowByKey(identifier) || fallbackRow;
+        }
+
+        return fallbackRow;
+    };
+
+    const executeAction = async ({ action, row, event, cell }) => {
         const crud = getCrud();
 
         if (!crud || !row) return false;
@@ -157,6 +294,9 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         const data = row.getData();
         const identifier = getRowIdentifier(crud, data);
         const state = getRowState(row);
+        const removeFallbackRow = state === ROW_STATE.NEW
+            ? getRemoveFallbackRow(row)
+            : null;
 
         if (action === 'remove-new' && state === ROW_STATE.NEW) {
             const confirmed = await requestConfirmation({
@@ -167,10 +307,13 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                 id: identifier
             });
 
-            if (!confirmed) return false;
+            if (!confirmed) {
+                restoreActionFocus(row);
+                return false;
+            }
 
             crud.deleteRow(identifier);
-            scheduleRowButtonUpdate(row);
+            restoreActionFocus(row, removeFallbackRow, { skipRow: true });
             return true;
         }
 
@@ -183,10 +326,13 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                 id: identifier
             });
 
-            if (!confirmed) return false;
+            if (!confirmed) {
+                restoreActionFocus(row);
+                return false;
+            }
 
             crud.rollbackRow(identifier);
-            scheduleRowButtonUpdate(row);
+            restoreActionCell(cell, findCurrentRow(crud, identifier, row), 'delete');
             return true;
         }
 
@@ -205,10 +351,13 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             id: identifier
         });
 
-        if (!confirmed) return false;
+        if (!confirmed) {
+            restoreActionFocus(row);
+            return false;
+        }
 
         crud.deleteRow(identifier);
-        scheduleRowButtonUpdate(row);
+        restoreActionCell(cell, findCurrentRow(crud, identifier, row), 'rollback');
         return true;
     };
 
@@ -230,7 +379,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                 const action = event.currentTarget && event.currentTarget.dataset.action;
 
                 closeEditor();
-                await executeAction({ action, row, event });
+                await executeAction({ action, row, event, cell });
             },
             onButtonKeydown: event => {
                 if (event.key !== 'Tab') return;
@@ -280,7 +429,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
                 const row = cell.getRow();
                 const action = actionElement.dataset.action;
 
-                await executeAction({ action, row, event });
+                await executeAction({ action, row, event, cell });
             }
         },
         updateRowButton

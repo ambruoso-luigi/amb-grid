@@ -24,12 +24,20 @@ export class ConfirmDialog {
         this.element = null;
         this.titleElement = null;
         this.messageElement = null;
+        this.panelElement = null;
         this.confirmButton = null;
         this.cancelButton = null;
         this.resolveCurrent = null;
+        this.previouslyFocusedElement = null;
         this.handleKeyDown = event => {
             if (event.key === 'Escape') {
+                event.preventDefault();
                 this._close(false);
+                return;
+            }
+
+            if (event.key === 'Tab') {
+                this._trapFocus(event);
             }
         };
     }
@@ -42,8 +50,9 @@ export class ConfirmDialog {
         this.element.setAttribute('role', 'dialog');
         this.element.setAttribute('aria-modal', 'true');
 
-        const panel = document.createElement('div');
-        panel.className = 'teh-confirm-dialog__panel';
+        this.panelElement = document.createElement('div');
+        this.panelElement.className = 'teh-confirm-dialog__panel';
+        this.panelElement.tabIndex = -1;
 
         this.titleElement = document.createElement('h2');
         this.titleElement.className = 'teh-confirm-dialog__title';
@@ -69,9 +78,60 @@ export class ConfirmDialog {
         });
 
         actions.append(this.cancelButton, this.confirmButton);
-        panel.append(this.titleElement, this.messageElement, actions);
-        this.element.append(panel);
+        this.panelElement.append(this.titleElement, this.messageElement, actions);
+        this.element.append(this.panelElement);
         document.body.appendChild(this.element);
+    }
+
+    _getFocusableElements() {
+        return [this.cancelButton, this.confirmButton].filter(element => {
+            return element
+                && element.disabled !== true
+                && typeof element.focus === 'function';
+        });
+    }
+
+    _focusInitialElement() {
+        const focusableElements = this._getFocusableElements();
+        const target = focusableElements[0] || this.panelElement;
+
+        if (target && typeof target.focus === 'function') {
+            target.focus();
+        }
+    }
+
+    _trapFocus(event) {
+        const focusableElements = this._getFocusableElements();
+
+        if (!focusableElements.length) {
+            event.preventDefault();
+
+            if (this.panelElement && typeof this.panelElement.focus === 'function') {
+                this.panelElement.focus();
+            }
+
+            return;
+        }
+
+        const activeElement = document.activeElement;
+        const activeIndex = focusableElements.indexOf(activeElement);
+        const step = event.shiftKey ? -1 : 1;
+        const nextIndex = activeIndex === -1
+            ? 0
+            : (activeIndex + step + focusableElements.length) % focusableElements.length;
+
+        event.preventDefault();
+        focusableElements[nextIndex].focus();
+    }
+
+    _restoreFocus() {
+        const target = this.previouslyFocusedElement;
+
+        this.previouslyFocusedElement = null;
+
+        if (target && typeof target.focus === 'function') {
+            target.focus();
+        }
     }
 
     _close(result) {
@@ -87,6 +147,7 @@ export class ConfirmDialog {
         }
 
         resolve(result);
+        this._restoreFocus();
     }
 
     /**
@@ -110,6 +171,7 @@ export class ConfirmDialog {
         };
 
         this._ensureElement();
+        this.previouslyFocusedElement = document.activeElement || null;
 
         this.titleElement.textContent = dialogOptions.title;
         this.messageElement.textContent = dialogOptions.message || '';
@@ -120,7 +182,7 @@ export class ConfirmDialog {
 
         return new Promise(resolve => {
             this.resolveCurrent = resolve;
-            this.confirmButton.focus();
+            this._focusInitialElement();
         });
     }
 
@@ -140,7 +202,9 @@ export class ConfirmDialog {
         this.element = null;
         this.titleElement = null;
         this.messageElement = null;
+        this.panelElement = null;
         this.confirmButton = null;
         this.cancelButton = null;
+        this.previouslyFocusedElement = null;
     }
 }
