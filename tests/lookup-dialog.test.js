@@ -89,7 +89,11 @@ class DialogElementMock {
         return matches;
     }
 
-    focus() {}
+    focus() {
+        if (globalThis.document) {
+            globalThis.document.activeElement = this;
+        }
+    }
 
     remove() {
         this.removed = true;
@@ -127,6 +131,7 @@ const createDialogHarness = () => {
     const listeners = new Map();
 
     globalThis.document = {
+        activeElement: null,
         body,
         createElement: tagName => new DialogElementMock(tagName),
         addEventListener: (type, listener) => listeners.set(type, listener),
@@ -138,6 +143,24 @@ const createDialogHarness = () => {
     };
 
     return {
+        keydown(event = {}) {
+            const dispatchedEvent = {
+                key: undefined,
+                preventDefault() {
+                    this.defaultPrevented = true;
+                },
+                stopPropagation() {
+                    this.propagationStopped = true;
+                },
+                defaultPrevented: false,
+                propagationStopped: false,
+                shiftKey: false,
+                ...event
+            };
+
+            listeners.get('keydown')?.(dispatchedEvent);
+            return dispatchedEvent;
+        },
         restore() {
             globalThis.document = originalDocument;
         }
@@ -158,6 +181,55 @@ const getRows = dialog => dialog.table.children[1].children;
 const getFirstCellText = row => row.children[0].textContent;
 
 describe('LookupDialog smart pagination', () => {
+    test('keeps Tab and Rtab inside the dialog controls', () => {
+        const harness = createDialogHarness();
+
+        try {
+            const { dialog } = openDialog({
+                data: createRows(2)
+            });
+
+            expect(globalThis.document.activeElement).toBe(dialog.search);
+
+            const tabEvent = harness.keydown({ key: 'Tab' });
+
+            expect(tabEvent.defaultPrevented).toBe(true);
+            expect(tabEvent.propagationStopped).toBe(true);
+            expect(globalThis.document.activeElement).toBe(dialog.cancelButton);
+
+            const reverseTabEvent = harness.keydown({
+                key: 'Tab',
+                shiftKey: true
+            });
+
+            expect(reverseTabEvent.defaultPrevented).toBe(true);
+            expect(globalThis.document.activeElement).toBe(dialog.search);
+
+            dialog.close(null);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('keeps lookup arrow navigation from propagating outside the dialog', () => {
+        const harness = createDialogHarness();
+
+        try {
+            const { dialog } = openDialog({
+                data: createRows(2)
+            });
+            const event = harness.keydown({ key: 'ArrowDown' });
+
+            expect(event.defaultPrevented).toBe(true);
+            expect(event.propagationStopped).toBe(true);
+            expect(dialog.selectedIndex).toBe(0);
+
+            dialog.close(null);
+        } finally {
+            harness.restore();
+        }
+    });
+
     test('hides default pagination when 50 results fit the default page size', async () => {
         const harness = createDialogHarness();
 

@@ -1,4 +1,5 @@
 import Datepicker from 'vanillajs-datepicker/Datepicker';
+import { createFocusTrap, getFocusableElements } from '../../ui/focus-trap.js';
 import { parsers } from '../parsers.js';
 import {
     formatPickerDate,
@@ -122,6 +123,7 @@ export function date(options = {}) {
                 let navigationScheduled = false;
                 let pickerKeyboardListenerAttached = false;
                 let handlePickerDocumentKeydown = null;
+                let pickerFocusTrap = null;
 
                 input.className = 'amb-date-editor';
                 wrapper.className = 'amb-date-editor-wrapper';
@@ -155,14 +157,15 @@ export function date(options = {}) {
 
                     document.removeEventListener(
                         'keydown',
-                        handlePickerDocumentKeydown,
-                        true
+                        handlePickerDocumentKeydown
                     );
                     pickerKeyboardListenerAttached = false;
                 };
 
                 const destroyDatepicker = () => {
                     removePickerKeyboardListener();
+                    pickerFocusTrap?.deactivate();
+                    pickerFocusTrap = null;
 
                     if (blurTimeout) {
                         window.clearTimeout(blurTimeout);
@@ -270,38 +273,38 @@ export function date(options = {}) {
                     navigateAfterClose(direction);
                 };
 
-                const commitFocusedPickerDateFromTab = direction => {
-                    if (
-                        closed
-                        || tabCommitInProgress
-                        || !datepicker
-                        || !datepicker.active
-                        || typeof datepicker.getFocusedDate !== 'function'
-                    ) {
-                        return;
-                    }
+                const getPickerPopup = () => {
+                    if (typeof document.querySelector !== 'function') return null;
 
-                    const focusedDate = datepicker.getFocusedDate();
+                    return document.querySelector('.datepicker.active')
+                        || document.querySelector('.datepicker');
+                };
 
-                    if (!(focusedDate instanceof Date) || !Number.isFinite(focusedDate.getTime())) {
-                        return;
-                    }
+                const getPickerFocusableElements = () => {
+                    const pickerElements = getFocusableElements(getPickerPopup());
+                    const elements = [pickerInput, ...pickerElements];
 
-                    tabCommitInProgress = true;
-                    const formattedValue = formatPickerDate(
-                        focusedDate,
-                        normalizedOptions.format
-                    );
+                    return elements.filter((element, index) => {
+                        return element && elements.indexOf(element) === index;
+                    });
+                };
 
-                    input.value = formattedValue;
-                    closeWithSuccess(formattedValue);
-                    navigateAfterClose(direction);
+                const ensurePickerFocusTrap = () => {
+                    if (pickerFocusTrap) return pickerFocusTrap;
+
+                    pickerFocusTrap = createFocusTrap({
+                        container: () => getPickerPopup() || wrapper,
+                        getElements: getPickerFocusableElements,
+                        initialFocus: () => getPickerFocusableElements()[0] || pickerInput,
+                        fallbackFocus: () => pickerInput
+                    });
+
+                    return pickerFocusTrap;
                 };
 
                 const keepPickerArrowInsideEditor = event => {
                     if (
-                        normalizedOptions.mode !== 'pickerOnly'
-                        || !datepicker
+                        !datepicker
                         || !datepicker.active
                         || (
                             event.key !== 'ArrowUp'
@@ -318,33 +321,46 @@ export function date(options = {}) {
 
                 handlePickerDocumentKeydown = event => {
                     if (
-                        normalizedOptions.mode !== 'pickerOnly'
-                        || closed
+                        closed
                         || !datepicker
                         || !datepicker.active
                     ) {
                         return;
                     }
 
-                    if (event.key !== 'Tab') return;
+                    if (event.key === 'Tab') {
+                        ensurePickerFocusTrap().handleKeydown(event);
+                        return;
+                    }
 
-                    event.preventDefault();
-                    event.stopPropagation();
-                    commitFocusedPickerDateFromTab(event.shiftKey ? 'prev' : 'next');
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        closeWithCancel();
+                        return;
+                    }
+
+                    if (
+                        event.key === 'ArrowUp'
+                        || event.key === 'ArrowDown'
+                        || event.key === 'ArrowLeft'
+                        || event.key === 'ArrowRight'
+                        || event.key === 'Enter'
+                    ) {
+                        event.stopPropagation();
+                    }
                 };
 
                 const addPickerKeyboardListener = () => {
                     if (
-                        normalizedOptions.mode !== 'pickerOnly'
-                        || pickerKeyboardListenerAttached
+                        pickerKeyboardListenerAttached
                     ) {
                         return;
                     }
 
                     document.addEventListener(
                         'keydown',
-                        handlePickerDocumentKeydown,
-                        true
+                        handlePickerDocumentKeydown
                     );
                     pickerKeyboardListenerAttached = true;
                 };
@@ -365,13 +381,12 @@ export function date(options = {}) {
 
                     if (datepicker.active) {
                         addPickerKeyboardListener();
+                        ensurePickerFocusTrap().activate();
 
-                        if (normalizedOptions.mode === 'pickerOnly') {
-                            try {
-                                pickerInput.focus({ preventScroll: true });
-                            } catch {
-                                pickerInput.focus();
-                            }
+                        try {
+                            pickerInput.focus({ preventScroll: true });
+                        } catch {
+                            pickerInput.focus();
                         }
                     }
                 };
@@ -424,6 +439,13 @@ export function date(options = {}) {
                         }
 
                         if (event.key === 'Enter') {
+                            if (datepicker && !datepicker.active) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                showPicker();
+                                return;
+                            }
+
                             commit();
                             return;
                         }

@@ -680,6 +680,39 @@ describe('lookup editor blur commits', () => {
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
+    test('Enter opens the configured lookup dialog and applies the selected record', async () => {
+        const dialog = {
+            open: vi.fn(async () => records[1])
+        };
+        const harness = createHarness({
+            options: {
+                dialog,
+                dialogTitle: 'Search status',
+                dialogColumns: [
+                    { field: 'id', title: 'Code' },
+                    { field: 'description', title: 'Description' }
+                ]
+            }
+        });
+        const preventDefault = vi.fn();
+        const stopPropagation = vi.fn();
+
+        await harness.input.dispatch('keydown', {
+            key: 'Enter',
+            preventDefault,
+            stopPropagation
+        });
+
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(stopPropagation).toHaveBeenCalledOnce();
+        expect(dialog.open).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
+            value: 'REPAIR',
+            description: 'Under repair'
+        });
+    });
+
     test('forwards dialogOptions while preserving editor-calculated dialog fields', async () => {
         const dialog = {
             open: vi.fn(async () => records[2])

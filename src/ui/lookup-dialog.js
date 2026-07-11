@@ -1,4 +1,5 @@
 import { FeedbackRegion } from './feedback-region.js';
+import { createFocusTrap } from './focus-trap.js';
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -100,6 +101,7 @@ export class LookupDialog {
         this.lastPageButton = null;
         this.cancelButton = null;
         this.selectButton = null;
+        this.focusTrap = null;
     }
 
     /**
@@ -205,6 +207,7 @@ export class LookupDialog {
 
     deactivate() {
         this.removeKeydownHandler();
+        this.focusTrap?.deactivate();
 
         if (this.overlay) {
             this.overlay.hidden = true;
@@ -228,6 +231,7 @@ export class LookupDialog {
      */
     destroy() {
         this.removeKeydownHandler();
+        this.focusTrap?.deactivate();
 
         if (this.overlay) {
             this.overlay.remove();
@@ -257,6 +261,7 @@ export class LookupDialog {
         this.lastPageButton = null;
         this.cancelButton = null;
         this.selectButton = null;
+        this.focusTrap = null;
     }
 
     createStructure() {
@@ -352,6 +357,20 @@ export class LookupDialog {
         this.lastPageButton = lastPageButton;
         this.cancelButton = cancelButton;
         this.selectButton = selectButton;
+        this.focusTrap = createFocusTrap({
+            container: () => this.panel,
+            getElements: () => [
+                this.search,
+                this.firstPageButton,
+                this.previousPageButton,
+                this.nextPageButton,
+                this.lastPageButton,
+                this.cancelButton,
+                this.selectButton
+            ],
+            initialFocus: () => this.search,
+            fallbackFocus: () => this.panel
+        });
 
         overlay.addEventListener('mousedown', event => {
             if (
@@ -393,7 +412,7 @@ export class LookupDialog {
         this.renderTable();
         this.keydownHandler = event => this.handleKeydown(event);
         document.addEventListener('keydown', this.keydownHandler);
-        this.search.focus();
+        this.focusTrap?.activate();
     }
 
     updateSelectButton() {
@@ -615,27 +634,38 @@ export class LookupDialog {
     handleKeydown(event) {
         if (!this.overlay || this.overlay.hidden) return;
 
+        if (this.focusTrap?.handleKeydown(event)) return;
+
         if (event.key === 'Escape') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.close(null);
             return;
         }
 
         if (event.key === 'Enter') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.selectCurrent();
             return;
         }
 
         if (event.key === 'ArrowDown') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.moveSelection(1);
             return;
         }
 
         if (event.key === 'ArrowUp') {
             event.preventDefault();
+            event.stopPropagation?.();
             this.moveSelection(-1);
+            return;
+        }
+
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.stopPropagation?.();
         }
     }
 

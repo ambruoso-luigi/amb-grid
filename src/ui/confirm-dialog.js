@@ -1,3 +1,5 @@
+import { createFocusTrap } from './focus-trap.js';
+
 const DEFAULT_OPTIONS = {
     title: 'Confirm action',
     confirmText: 'Confirm',
@@ -37,6 +39,7 @@ export class ConfirmDialog {
         this.cancelButton = null;
         this.resolveCurrent = null;
         this.previouslyFocusedElement = null;
+        this.focusTrap = null;
         this.handleButtonFocus = () => {
             this._clearTextSelection();
         };
@@ -54,7 +57,7 @@ export class ConfirmDialog {
             }
 
             if (event.key === 'Tab') {
-                this._trapFocus(event);
+                this.focusTrap?.handleKeydown(event);
             }
         };
     }
@@ -101,6 +104,14 @@ export class ConfirmDialog {
         this.panelElement.append(this.titleElement, this.messageElement, actions);
         this.element.append(this.panelElement);
         document.body.appendChild(this.element);
+
+        this.focusTrap = createFocusTrap({
+            container: () => this.panelElement,
+            getElements: () => [this.cancelButton, this.confirmButton],
+            initialFocus: () => this.cancelButton,
+            restoreFocusTo: () => this.previouslyFocusedElement,
+            fallbackFocus: () => this.panelElement
+        });
     }
 
     _prepareButton(button) {
@@ -120,55 +131,13 @@ export class ConfirmDialog {
         }
     }
 
-    _getFocusableElements() {
-        return [this.cancelButton, this.confirmButton].filter(element => {
-            return element
-                && element.disabled !== true
-                && typeof element.focus === 'function';
-        });
-    }
-
     _focusInitialElement() {
-        const focusableElements = this._getFocusableElements();
-        const target = focusableElements[0] || this.panelElement;
-
-        if (target && typeof target.focus === 'function') {
-            target.focus();
-        }
-    }
-
-    _trapFocus(event) {
-        const focusableElements = this._getFocusableElements();
-
-        if (!focusableElements.length) {
-            event.preventDefault();
-
-            if (this.panelElement && typeof this.panelElement.focus === 'function') {
-                this.panelElement.focus();
-            }
-
-            return;
-        }
-
-        const activeElement = document.activeElement;
-        const activeIndex = focusableElements.indexOf(activeElement);
-        const step = event.shiftKey ? -1 : 1;
-        const nextIndex = activeIndex === -1
-            ? 0
-            : (activeIndex + step + focusableElements.length) % focusableElements.length;
-
-        event.preventDefault();
-        focusableElements[nextIndex].focus();
+        this.focusTrap?.activate();
     }
 
     _restoreFocus() {
-        const target = this.previouslyFocusedElement;
-
+        this.focusTrap?.deactivate();
         this.previouslyFocusedElement = null;
-
-        if (target && typeof target.focus === 'function') {
-            target.focus();
-        }
     }
 
     _close(result) {
@@ -243,5 +212,6 @@ export class ConfirmDialog {
         this.confirmButton = null;
         this.cancelButton = null;
         this.previouslyFocusedElement = null;
+        this.focusTrap = null;
     }
 }

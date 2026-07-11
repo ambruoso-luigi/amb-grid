@@ -478,69 +478,36 @@ export function lookup(lookupInstance, options = {}) {
                 navigateAfterClose(direction);
             };
 
-            input.addEventListener('input', event => {
-                if (normalizedOptions.uppercase) {
-                    input.value = input.value.toUpperCase();
-                }
+            const openDialog = async (event, options = {}) => {
+                event?.preventDefault?.();
+                event?.stopPropagation?.();
 
-                const isDeleteInput = typeof event.inputType === 'string'
-                    && event.inputType.startsWith('delete');
-
-                if (isDeleteInput || input.value === '') {
-                    invalidateManualAutoComplete();
-                    return;
-                }
-
-                applyManualAutoComplete();
-            });
-            input.addEventListener('keydown', event => {
-                if (event.key === 'Backspace' || event.key === 'Delete') {
-                    invalidateManualAutoComplete();
-                    return;
-                }
-
-                if (event.key === 'Tab') {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return commitFromTab(event.shiftKey ? 'prev' : 'next');
-                }
-
-                if (event.key === 'Enter') {
-                    return commit();
-                }
-
-                if (event.key === 'Escape') {
-                    closeWithCancel();
-                }
-            });
-            input.addEventListener('blur', () => {
-                if (dialogOpen || tabCommitInProgress) return;
-
-                if (normalizedOptions.validateOnBlur) {
-                    return commit();
-                }
-            });
-            button.addEventListener('mousedown', event => {
-                event.preventDefault();
-            });
-            button.addEventListener('click', async event => {
-                event.preventDefault();
-                event.stopPropagation();
+                if (dialogOpen || closed) return;
 
                 if (typeof normalizedOptions.onOpenDialog === 'function') {
-                    normalizedOptions.onOpenDialog({
-                        value: getValue(),
-                        rowData,
-                        field,
-                        context,
-                        lookupInstance,
-                        success: closeWithSuccess,
-                        cancel: closeWithCancel
-                    });
+                    dialogOpen = true;
+
+                    try {
+                        normalizedOptions.onOpenDialog({
+                            value: getValue(),
+                            rowData,
+                            field,
+                            context,
+                            lookupInstance,
+                            success: closeWithSuccess,
+                            cancel: closeWithCancel
+                        });
+                    } finally {
+                        dialogOpen = false;
+                    }
+
                     return;
                 }
 
                 if (!normalizedOptions.dialog || typeof normalizedOptions.dialog.open !== 'function') {
+                    if (options.commitWhenUnavailable === false) return;
+
+                    await commit();
                     return;
                 }
 
@@ -594,6 +561,55 @@ export function lookup(lookupInstance, options = {}) {
                 } finally {
                     dialogOpen = false;
                 }
+            };
+
+            input.addEventListener('input', event => {
+                if (normalizedOptions.uppercase) {
+                    input.value = input.value.toUpperCase();
+                }
+
+                const isDeleteInput = typeof event.inputType === 'string'
+                    && event.inputType.startsWith('delete');
+
+                if (isDeleteInput || input.value === '') {
+                    invalidateManualAutoComplete();
+                    return;
+                }
+
+                applyManualAutoComplete();
+            });
+            input.addEventListener('keydown', event => {
+                if (event.key === 'Backspace' || event.key === 'Delete') {
+                    invalidateManualAutoComplete();
+                    return;
+                }
+
+                if (event.key === 'Tab') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return commitFromTab(event.shiftKey ? 'prev' : 'next');
+                }
+
+                if (event.key === 'Enter') {
+                    return openDialog(event);
+                }
+
+                if (event.key === 'Escape') {
+                    closeWithCancel();
+                }
+            });
+            input.addEventListener('blur', () => {
+                if (dialogOpen || tabCommitInProgress) return;
+
+                if (normalizedOptions.validateOnBlur) {
+                    return commit();
+                }
+            });
+            button.addEventListener('mousedown', event => {
+                event.preventDefault();
+            });
+            button.addEventListener('click', async event => {
+                await openDialog(event, { commitWhenUnavailable: false });
             });
 
             onRendered(() => {
