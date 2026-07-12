@@ -210,6 +210,56 @@ export function lookup(lookupInstance, options = {}) {
                 return null;
             };
 
+            const applyMappedPatch = patch => {
+                if (!patch || typeof patch !== 'object') return null;
+
+                if (typeof normalizedOptions.applyRecord === 'function') {
+                    return normalizedOptions.applyRecord(cell, patch, null);
+                }
+
+                if (row && typeof row.update === 'function') {
+                    return row.update(patch);
+                }
+
+                return null;
+            };
+
+            const applyEmptyMappedPatch = value => {
+                if (
+                    !normalizedOptions.clearMappedFieldsOnEmpty
+                    || typeof normalizedOptions.buildEmptyPatch !== 'function'
+                ) {
+                    return null;
+                }
+
+                return applyMappedPatch(normalizedOptions.buildEmptyPatch({
+                    value,
+                    rowData,
+                    field,
+                    context,
+                    lookupInstance,
+                    cell
+                }));
+            };
+
+            const applyInvalidMappedPatch = value => {
+                if (
+                    !normalizedOptions.clearMappedFieldsOnInvalid
+                    || typeof normalizedOptions.buildInvalidPatch !== 'function'
+                ) {
+                    return null;
+                }
+
+                return applyMappedPatch(normalizedOptions.buildInvalidPatch({
+                    value,
+                    rowData,
+                    field,
+                    context,
+                    lookupInstance,
+                    cell
+                }));
+            };
+
             const loadLookup = async query => {
                 if (!lookupInstance || typeof lookupInstance.load !== 'function') {
                     return [];
@@ -329,6 +379,10 @@ export function lookup(lookupInstance, options = {}) {
                         item = await findExactItem(value);
 
                         if (item) {
+                            const appliedRecord = applyMappedRecord(item);
+
+                            if (normalizedOptions.mapToRow && appliedRecord === null) return;
+
                             const description = item[labelField];
 
                             setLookupMetadata(rowData, field, value, description);
@@ -352,6 +406,10 @@ export function lookup(lookupInstance, options = {}) {
 
                 if (value === '') {
                     if (normalizedOptions.allowEmpty) {
+                        if (normalizedOptions.mapToRow) {
+                            applyEmptyMappedPatch(value);
+                        }
+
                         setLookupMetadata(rowData, field, '', '');
                         setCellLookupDescription('');
                         clearInvalidCode();
@@ -367,6 +425,10 @@ export function lookup(lookupInstance, options = {}) {
                     const item = await findExactItem(value);
 
                     if (item) {
+                        const appliedRecord = applyMappedRecord(item);
+
+                        if (normalizedOptions.mapToRow && appliedRecord === null) return;
+
                         closeWithLookupItem(value, item);
                         return;
                     }
@@ -374,6 +436,10 @@ export function lookup(lookupInstance, options = {}) {
                     console.error('Lookup validation failed', error);
                     closeWithCancel();
                     return;
+                }
+
+                if (normalizedOptions.mapToRow) {
+                    applyInvalidMappedPatch(value);
                 }
 
                 setLookupMetadata(rowData, field, value, '');
@@ -537,9 +603,7 @@ export function lookup(lookupInstance, options = {}) {
                     const searchFields = normalizedOptions.search
                         && normalizedOptions.search.fields !== 'visible'
                         && Array.isArray(normalizedOptions.search.fields)
-                        ? normalizedOptions.search.fields.filter(searchField => {
-                            return visibleColumns.some(column => column.field === searchField);
-                        })
+                        ? normalizedOptions.search.fields
                         : visibleColumns.map(column => column.field);
                     const selected = await normalizedOptions.dialog.open({
                         ...normalizedOptions.dialogOptions,

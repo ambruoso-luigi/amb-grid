@@ -348,6 +348,65 @@ only visible columns, while selection resolves the complete indexed record.
 All mapped values pass through the AMB CRUD lifecycle, including row state,
 field validation, rollback, and save payload generation.
 
+`AMB.mlk(...)` is the dedicated Multifield Lookup API. A normal lookup answers
+"which value should this cell store?". An MLK answers "which external record is
+attached to this row, and which row fields must update together?".
+
+```js
+const municipalityLookup = AMB.lookup({
+  keyField: 'istatCode',
+  valueField: 'municipalityName',
+  labelField: 'municipalityName',
+  columns: municipalityLookupColumns,
+  load: () => municipalityRecords
+});
+
+const municipalityMlk = AMB.mlk({
+  id: 'municipality',
+  lookup: municipalityLookup,
+  masterField: {
+    field: 'municipality',
+    from: 'municipalityName',
+    title: 'Municipality',
+    required: true,
+    autocomplete: true,
+    dialog: true
+  },
+  dependentFields: [
+    { field: 'province', from: 'province', title: 'Province', required: true },
+    { field: 'region', from: 'region', title: 'Region', required: true },
+    { field: 'postalCode', from: 'postalCode', title: 'Postal Code', required: true },
+    {
+      field: 'istatCode',
+      from: 'istatCode',
+      title: 'ISTAT Code',
+      visibleInGrid: true,
+      visibleInLookup: false,
+      searchable: false,
+      required: true
+    }
+  ]
+});
+
+const columns = [
+  municipalityMlk.masterColumn({ width: 220 }),
+  municipalityMlk.dependentColumn('province', { width: 100 }),
+  municipalityMlk.dependentColumn('region', { width: 130 }),
+  municipalityMlk.dependentColumn('postalCode', { width: 125 }),
+  municipalityMlk.dependentColumn('istatCode', { width: 120 })
+];
+```
+
+The MLK mapping uses `{ from, field }`: `from` is the lookup record field and
+`field` is the row field. Selecting a record or accepting a valid autocomplete
+match applies one patch containing the master plus every dependent field.
+Dependent fields are readonly by default, remain normal row fields for payload,
+validation, state report and rollback, and do not require a separate
+`technicalFields` option. If the master becomes empty or invalid, dependent
+fields are cleared by default so stale data from a previous record is not kept.
+`visibleInLookup: false` hides a lookup field from the dialog but does not
+prevent it from being mapped into the row.
+
 The municipality demo is dialog-only: clicking the Municipality cell opens the
 lookup without creating a text input or an in-cell lookup button. Province,
 Region, Postal Code, ISTAT Code, and Cadastral Code are read-only derived

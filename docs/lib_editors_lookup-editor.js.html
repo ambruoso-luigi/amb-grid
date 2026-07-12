@@ -238,6 +238,56 @@ export function lookup(lookupInstance, options = {}) {
                 return null;
             };
 
+            const applyMappedPatch = patch => {
+                if (!patch || typeof patch !== 'object') return null;
+
+                if (typeof normalizedOptions.applyRecord === 'function') {
+                    return normalizedOptions.applyRecord(cell, patch, null);
+                }
+
+                if (row &amp;&amp; typeof row.update === 'function') {
+                    return row.update(patch);
+                }
+
+                return null;
+            };
+
+            const applyEmptyMappedPatch = value => {
+                if (
+                    !normalizedOptions.clearMappedFieldsOnEmpty
+                    || typeof normalizedOptions.buildEmptyPatch !== 'function'
+                ) {
+                    return null;
+                }
+
+                return applyMappedPatch(normalizedOptions.buildEmptyPatch({
+                    value,
+                    rowData,
+                    field,
+                    context,
+                    lookupInstance,
+                    cell
+                }));
+            };
+
+            const applyInvalidMappedPatch = value => {
+                if (
+                    !normalizedOptions.clearMappedFieldsOnInvalid
+                    || typeof normalizedOptions.buildInvalidPatch !== 'function'
+                ) {
+                    return null;
+                }
+
+                return applyMappedPatch(normalizedOptions.buildInvalidPatch({
+                    value,
+                    rowData,
+                    field,
+                    context,
+                    lookupInstance,
+                    cell
+                }));
+            };
+
             const loadLookup = async query => {
                 if (!lookupInstance || typeof lookupInstance.load !== 'function') {
                     return [];
@@ -357,6 +407,10 @@ export function lookup(lookupInstance, options = {}) {
                         item = await findExactItem(value);
 
                         if (item) {
+                            const appliedRecord = applyMappedRecord(item);
+
+                            if (normalizedOptions.mapToRow &amp;&amp; appliedRecord === null) return;
+
                             const description = item[labelField];
 
                             setLookupMetadata(rowData, field, value, description);
@@ -380,6 +434,10 @@ export function lookup(lookupInstance, options = {}) {
 
                 if (value === '') {
                     if (normalizedOptions.allowEmpty) {
+                        if (normalizedOptions.mapToRow) {
+                            applyEmptyMappedPatch(value);
+                        }
+
                         setLookupMetadata(rowData, field, '', '');
                         setCellLookupDescription('');
                         clearInvalidCode();
@@ -395,6 +453,10 @@ export function lookup(lookupInstance, options = {}) {
                     const item = await findExactItem(value);
 
                     if (item) {
+                        const appliedRecord = applyMappedRecord(item);
+
+                        if (normalizedOptions.mapToRow &amp;&amp; appliedRecord === null) return;
+
                         closeWithLookupItem(value, item);
                         return;
                     }
@@ -402,6 +464,10 @@ export function lookup(lookupInstance, options = {}) {
                     console.error('Lookup validation failed', error);
                     closeWithCancel();
                     return;
+                }
+
+                if (normalizedOptions.mapToRow) {
+                    applyInvalidMappedPatch(value);
                 }
 
                 setLookupMetadata(rowData, field, value, '');
@@ -565,9 +631,7 @@ export function lookup(lookupInstance, options = {}) {
                     const searchFields = normalizedOptions.search
                         &amp;&amp; normalizedOptions.search.fields !== 'visible'
                         &amp;&amp; Array.isArray(normalizedOptions.search.fields)
-                        ? normalizedOptions.search.fields.filter(searchField => {
-                            return visibleColumns.some(column => column.field === searchField);
-                        })
+                        ? normalizedOptions.search.fields
                         : visibleColumns.map(column => column.field);
                     const selected = await normalizedOptions.dialog.open({
                         ...normalizedOptions.dialogOptions,
@@ -694,13 +758,13 @@ export function lookup(lookupInstance, options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 11 2026 21:40:35 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jul 12 2026 10:35:04 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

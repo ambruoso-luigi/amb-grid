@@ -97,6 +97,10 @@ const createHarness = ({
         cellElement.title = message;
     });
     const clearInvalid = vi.fn(clearRenderedError);
+    const applyRecord = vi.fn((_cell, patch) => {
+        Object.assign(rowData, patch);
+        return true;
+    });
     const editor = createLookupEditor(lookupInstance, {
         uppercase: true,
         trim: true,
@@ -107,7 +111,7 @@ const createHarness = ({
     editor._ambSetLookupErrorHandlers({
         markInvalid,
         clearInvalid,
-        applyRecord: vi.fn()
+        applyRecord
     });
 
     const container = editor(cell, () => {}, success, cancel);
@@ -124,6 +128,7 @@ const createHarness = ({
         nextCell,
         previousCell,
         rowData,
+        applyRecord,
         success,
         table
     };
@@ -250,6 +255,63 @@ describe('lookup editor blur commits', () => {
         });
     });
 
+    test('a valid mapped lookup value applies the full row patch', async () => {
+        const harness = createHarness({
+            options: {
+                mapToRow: {
+                    status: 'id',
+                    statusDescription: 'description'
+                }
+            }
+        });
+
+        harness.input.value = 'repair';
+        await harness.input.dispatch('blur');
+
+        expect(harness.applyRecord).toHaveBeenCalledWith(
+            harness.cell,
+            {
+                status: 'REPAIR',
+                statusDescription: 'Under repair'
+            },
+            records[1]
+        );
+        expect(harness.rowData.statusDescription).toBe('Under repair');
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+    });
+
+    test('an invalid mapped lookup value clears stale dependent fields', async () => {
+        const harness = createHarness({
+            options: {
+                mapToRow: {
+                    status: 'id',
+                    statusDescription: 'description'
+                },
+                clearMappedFieldsOnInvalid: true,
+                buildInvalidPatch: () => ({
+                    statusDescription: ''
+                })
+            }
+        });
+
+        harness.rowData.statusDescription = 'Active';
+        harness.input.value = 'unknown';
+        await harness.input.dispatch('blur');
+        await flushDeferred();
+
+        expect(harness.applyRecord).toHaveBeenCalledWith(
+            harness.cell,
+            { statusDescription: '' },
+            null
+        );
+        expect(harness.rowData.statusDescription).toBe('');
+        expect(harness.success).toHaveBeenCalledWith('UNKNOWN');
+        expect(harness.markInvalid).toHaveBeenCalledWith(
+            harness.cell,
+            'Invalid lookup code'
+        );
+    });
+
     test('keeps manual autocomplete working with normalized lookup values', async () => {
         const harness = createHarness({
             options: {
@@ -264,6 +326,36 @@ describe('lookup editor blur commits', () => {
         expect(harness.input.value).toBe('REPAIR');
         expect(harness.input.selectionStart).toBe(3);
         expect(harness.input.selectionEnd).toBe(6);
+    });
+
+    test('Tab accepting a mapped autocomplete suggestion applies the full row patch', async () => {
+        const harness = createHarness({
+            withRowNavigation: true,
+            options: {
+                autoComplete: true,
+                mapToRow: {
+                    status: 'id',
+                    statusDescription: 'description'
+                }
+            }
+        });
+
+        harness.input.value = 'rep';
+        await harness.input.dispatch('input');
+        await Promise.resolve();
+        await harness.input.dispatch('keydown', { key: 'Tab' });
+        await flushDeferred();
+
+        expect(harness.applyRecord).toHaveBeenCalledWith(
+            harness.cell,
+            {
+                status: 'REPAIR',
+                statusDescription: 'Under repair'
+            },
+            records[1]
+        );
+        expect(harness.rowData.statusDescription).toBe('Under repair');
+        expect(harness.nextCell.edit).toHaveBeenCalledOnce();
     });
 
     test.each([

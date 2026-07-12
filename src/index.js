@@ -6,6 +6,7 @@ export { editors } from './lib/editors.js';
 export { parsers } from './lib/parsers.js';
 export { date } from './lib/date.js';
 export { createLookup } from './lib/lookup.js';
+export { createMultifieldLookup, mlk } from './lib/mlk.js';
 export { ConfirmDialog } from './ui/confirm-dialog.js';
 export { LookupDialog } from './ui/lookup-dialog.js';
 export { SearchFiltersDialog } from './ui/search-filters-dialog.js';

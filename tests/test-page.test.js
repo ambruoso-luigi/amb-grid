@@ -40,15 +40,29 @@ describe('technical test page', () => {
         expect(testSource).toContain('const createMultifieldLookupGrid = async () => {');
         expect(testSource).toContain("selector: '#multifield-lookup-test-table'");
         expect(testSource).toContain('MUNICIPALITY_LOOKUP_COLUMNS');
-        expect(testSource).toContain('MUNICIPALITY_MAP_TO_ROW');
+        expect(testSource).toContain('AMB.mlk({');
         expect(testSource).toContain("valueField: 'municipalityName'");
-        expect(testSource).toContain("masterField: 'municipality'");
-        expect(testSource).toContain("rowField: 'province'");
-        expect(testSource).toContain("rowField: 'region'");
-        expect(testSource).toContain("rowField: 'postalCode'");
-        expect(testSource).toContain("rowField: 'istatCode'");
-        expect(testSource).toContain("rowField: 'cadastralCode'");
-        expect(testSource).toContain('AMB.editors.lookup(municipalityLookup');
+        expect(testSource).toContain("field: 'municipality'");
+        expect(testSource).toContain("from: 'municipalityName'");
+        expect(testSource).toContain("field: 'province'");
+        expect(testSource).toContain("from: 'province'");
+        expect(testSource).toContain("field: 'region'");
+        expect(testSource).toContain("field: 'postalCode'");
+        expect(testSource).toContain("field: 'istatCode'");
+        expect(testSource).toContain("visibleInLookup: false");
+        expect(testSource).toContain("field: 'cadastralCode'");
+        expect(testSource).toContain('municipalityMlk.masterColumn({');
+        expect(testSource).toContain("municipalityMlk.dependentColumn('province'");
         expect(testSource).toContain('currentMultifieldGrid = await createMultifieldLookupGrid();');
+    });
+
+    test('enables autocomplete on both lookup editors in the technical test page', () => {
+        expect(testSource).toContain('const testLookupAutoCompleteOptions = {');
+        expect(testSource).toContain('autoComplete: true');
+        expect(testSource).toContain('autoCompleteMinChars: 1');
+        expect(testSource).toContain('autoCompleteOnTab: true');
+        expect(
+            testSource.match(/\.\.\.testLookupAutoCompleteOptions/g)
+        ).toHaveLength(2);
     });
 });

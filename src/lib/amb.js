@@ -6,6 +6,7 @@ import { SearchFiltersDialog } from '../ui/search-filters-dialog.js';
 import { editors } from './editors.js';
 import { formatters } from './formatters.js';
 import { createLookup } from './lookup.js';
+import { createMultifieldLookup } from './mlk.js';
 import { parsers } from './parsers.js';
 import { createTable } from './table/index.js';
 import { validators } from './validators.js';
@@ -20,6 +21,7 @@ import { validators } from './validators.js';
  * @property {object} parsers - Parser factories used by editors, formatters, and validators.
  * @property {object} date - Date configuration helpers.
  * @property {Function} lookup - Primary lookup data source factory.
+ * @property {Function} mlk - Multifield Lookup factory for record-to-row field groups.
  * @property {Function} LookupDialog - Lookup selection dialog class.
  * @property {Function} FeedbackRegion - Accessible status region class.
  * @property {Function} ConfirmDialog - Confirmation dialog class.
@@ -32,6 +34,7 @@ export const AMB = {
     parsers,
     date,
     lookup: createLookup,
+    mlk: createMultifieldLookup,
     LookupDialog,
     FeedbackRegion,
     ConfirmDialog,
