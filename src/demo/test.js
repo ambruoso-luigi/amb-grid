@@ -81,32 +81,38 @@ const createMunicipalityMlk = municipalityLookup => AMB.mlk({
 const createMultifieldRows = () => [
     {
         id: 1,
+        textBefore: 'Before Nocera',
         istatCode: '065078',
         cadastralCode: 'F912',
         municipality: 'Nocera Inferiore',
         province: 'SA',
         region: 'CAMPANIA',
-        postalCode: '84014'
+        postalCode: '84014',
+        textAfter: 'After Nocera'
     },
     {
         id: 2,
+        textBefore: 'Before Milano',
         istatCode: '015146',
         cadastralCode: 'F205',
         municipality: 'Milano',
         province: 'MI',
         region: 'LOMBARDIA',
-        postalCode: '20121'
+        postalCode: '20121',
+        textAfter: 'After Milano'
     }
 ];
 
 const createEmptyMultifieldRow = () => ({
     id: null,
+    textBefore: '',
     istatCode: '',
     cadastralCode: '',
     municipality: '',
     province: '',
     region: '',
-    postalCode: ''
+    postalCode: '',
+    textAfter: ''
 });
 
 const loadMunicipalities = async () => {
@@ -556,7 +562,6 @@ const createMultifieldLookupGrid = async () => {
         search: {
             fields: 'visible'
         },
-        mapToRow: MUNICIPALITY_MAP_TO_ROW,
         load: ({ query }) => {
             return filterMunicipalities(municipalities, query);
         }
@@ -583,6 +588,12 @@ const createMultifieldLookupGrid = async () => {
         data: createMultifieldRows(),
         layout: 'fitColumns',
         columns: [
+            {
+                title: 'Text before',
+                field: 'textBefore',
+                width: 150,
+                editor: AMB.editors.text({ trim: true })
+            },
             municipalityMlk.masterColumn({
                 width: 220,
                 dialog: municipalityDialog,
@@ -605,7 +616,13 @@ const createMultifieldLookupGrid = async () => {
             municipalityMlk.dependentColumn('region', { width: 130 }),
             municipalityMlk.dependentColumn('postalCode', { width: 125 }),
             municipalityMlk.dependentColumn('istatCode', { width: 120 }),
-            municipalityMlk.dependentColumn('cadastralCode', { width: 155 })
+            municipalityMlk.dependentColumn('cadastralCode', { width: 155 }),
+            {
+                title: 'Text after',
+                field: 'textAfter',
+                width: 150,
+                editor: AMB.editors.text({ trim: true })
+            }
         ]
     });
     const originalDestroy = grid.destroy.bind(grid);

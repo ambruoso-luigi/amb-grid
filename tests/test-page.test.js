@@ -36,7 +36,7 @@ describe('technical test page', () => {
 
     test('adds an isolated MLK municipality baseline grid', () => {
         expect(testHtml).toContain('id="multifield-lookup-test-table"');
-        expect(testHtml).toContain('MLK baseline - Italian municipalities');
+        expect(testHtml).toContain('Italian municipality MLK');
         expect(testSource).toContain('const createMultifieldLookupGrid = async () => {');
         expect(testSource).toContain("selector: '#multifield-lookup-test-table'");
         expect(testSource).toContain('MUNICIPALITY_LOOKUP_COLUMNS');
@@ -54,6 +54,31 @@ describe('technical test page', () => {
         expect(testSource).toContain('municipalityMlk.masterColumn({');
         expect(testSource).toContain("municipalityMlk.dependentColumn('province'");
         expect(testSource).toContain('currentMultifieldGrid = await createMultifieldLookupGrid();');
+        expect(testSource).not.toContain('MUNICIPALITY_MAP_TO_ROW');
+        expect(testSource).not.toContain('applyMunicipalitySelection');
+        expect(testSource).not.toContain('createMunicipalityPatch');
+        expect(testSource).not.toContain('mapToRow: MUNICIPALITY_MAP_TO_ROW');
+    });
+
+    test('places the municipality MLK between normal text editor columns', () => {
+        expect(testSource).toContain("textBefore: 'Before Nocera'");
+        expect(testSource).toContain("textAfter: 'After Nocera'");
+        expect(testSource).toContain("textBefore: 'Before Milano'");
+        expect(testSource).toContain("textAfter: 'After Milano'");
+        expect(testSource).toContain("title: 'Text before'");
+        expect(testSource).toContain("field: 'textBefore'");
+        expect(testSource).toContain("title: 'Text after'");
+        expect(testSource).toContain("field: 'textAfter'");
+        expect(
+            testSource.match(/editor: AMB\.editors\.text\(\{ trim: true \}\)/g)
+                .length
+        ).toBeGreaterThanOrEqual(2);
+        expect(testSource.indexOf("field: 'textBefore'")).toBeLessThan(
+            testSource.indexOf('municipalityMlk.masterColumn({')
+        );
+        expect(testSource.indexOf("municipalityMlk.dependentColumn('cadastralCode'")).toBeLessThan(
+            testSource.indexOf("field: 'textAfter'")
+        );
     });
 
     test('enables autocomplete on both lookup editors in the technical test page', () => {
