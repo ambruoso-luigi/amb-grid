@@ -28,6 +28,9 @@ describe('technical test page', () => {
         expect(testSource).not.toContain("import './demo.css'");
         expect(testSource).not.toContain("from './full-demo.js'");
         expect(testSource).not.toContain("from './main.js'");
+        expect(testSource).not.toContain("from './autocomplete.js'");
+        expect(testSource).not.toContain('createDemoReportDialog');
+        expect(testHtml).not.toContain('demo.css');
         expect(testSource).toContain('formatter: AMB.formatters.checkbox()');
         expect(testSource).toContain('editor: AMB.editors.checkbox()');
         expect(testSource).not.toContain("checkedLabel: 'Yes'");
@@ -89,5 +92,28 @@ describe('technical test page', () => {
         expect(
             testSource.match(/\.\.\.testLookupAutoCompleteOptions/g)
         ).toHaveLength(2);
+    });
+
+    test('adds an isolated autocomplete technical grid from the demo behavior', () => {
+        expect(testHtml).toContain('id="autocomplete-test-table"');
+        expect(testHtml).toContain('Autocomplete');
+        expect(testSource).toContain('let currentAutocompleteGrid = null;');
+        expect(testSource).toContain('const createAutocompleteGrid = () => {');
+        expect(testSource).toContain("selector: '#autocomplete-test-table'");
+        expect(testSource).toContain("currentAutocompleteGrid = createAutocompleteGrid();");
+        expect(testSource).toContain("'add'");
+        expect(testSource).toContain("'payload'");
+        expect(testSource).toContain("'validate'");
+        expect(testSource).toContain("field: 'department'");
+        expect(testSource).toContain("field: 'requiredDepartment'");
+        expect(testSource).toContain("field: 'tag'");
+        expect(testSource).toContain("field: 'city'");
+        expect(testSource).toContain('allowCustomValue: false');
+        expect(testSource).toContain('allowCustomValue: true');
+        expect(testSource).toContain("invalidBehavior: 'commitRaw'");
+        expect(testSource).toContain('maxOptions: 5');
+        expect(testSource).toContain('caseSensitive: false');
+        expect(testSource).not.toContain('create-autocomplete-anomalies');
+        expect(testSource).not.toContain('reset-autocomplete');
     });
 });

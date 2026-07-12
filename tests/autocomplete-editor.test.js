@@ -1,10 +1,12 @@
 import { describe, expect, test, vi } from 'vitest';
 import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
 import {
+    findAutocompleteMatch,
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
     getAutocompleteSuggestionValues,
     getAwesompleteOptions,
+    normalizeAutocompleteComparableValue,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from '../src/lib/editors/autocomplete-editor-utils.js';
@@ -20,7 +22,8 @@ vi.mock('awesomplete', () => ({
             this.options = options;
             this.index = -1;
             this.isOpened = false;
-            this.suggestions = options.list.map(value => ({
+            this.list = [...options.list];
+            this.suggestions = this.list.map(value => ({
                 label: value,
                 value
             }));
@@ -32,6 +35,17 @@ vi.mock('awesomplete', () => ({
             this.container.append(input, this.ul);
             this.destroy = vi.fn();
             this.evaluate = vi.fn(() => {
+                this.suggestions = this.list
+                    .filter(value => {
+                        return typeof this.options.filter === 'function'
+                            ? this.options.filter({ value, label: value }, this.input.value)
+                            : true;
+                    })
+                    .slice(0, this.options.maxItems)
+                    .map(value => ({
+                        label: value,
+                        value
+                    }));
                 this.isOpened = this.suggestions.length > 0;
                 this.ul.children = this.suggestions.map(suggestion => {
                     const item = new ElementMock('li');
@@ -351,7 +365,26 @@ describe('autocomplete editor options', () => {
             invalidBehavior: 'commitRaw',
             trimInput: true,
             maxOptions: 10,
-            dropdownWidth: 420
+            dropdownWidth: 420,
+            caseSensitive: false,
+            commitMatchedValue: true
+        }));
+    });
+
+    test('supports case matching and matched commit overrides', () => {
+        expect(normalizeAutocompleteOptions({
+            caseSensitive: true,
+            commitMatchedValue: false
+        })).toEqual(expect.objectContaining({
+            caseSensitive: true,
+            commitMatchedValue: false
+        }));
+        expect(normalizeAutocompleteOptions({
+            caseSensitive: 'true',
+            commitMatchedValue: 0
+        })).toEqual(expect.objectContaining({
+            caseSensitive: false,
+            commitMatchedValue: true
         }));
     });
 
@@ -609,18 +642,35 @@ describe('autocomplete editor lifecycle', () => {
         }
     });
 
-    test('typing an exact suggestion is still raw unless it was highlighted', () => {
+    test('typing an exact suggestion commits the canonical value by default', () => {
         const harness = createEditorHarness({
             allowCustomValue: false,
             invalidBehavior: 'cancel'
         });
 
         try {
-            harness.input.value = 'Finance';
+            harness.input.value = 'finance';
             harness.input.dispatch('keydown', { key: 'Enter' });
 
-            expect(harness.cancel).toHaveBeenCalledOnce();
-            expect(harness.success).not.toHaveBeenCalled();
+            expect(harness.success).toHaveBeenCalledWith('Finance');
+            expect(harness.cancel).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('commitMatchedValue false keeps the typed value when no suggestion was selected', () => {
+        const harness = createEditorHarness({
+            allowCustomValue: false,
+            invalidBehavior: 'commitRaw',
+            commitMatchedValue: false
+        });
+
+        try {
+            harness.input.value = 'finance';
+            harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(harness.success).toHaveBeenCalledWith('finance');
         } finally {
             harness.restore();
         }
@@ -749,6 +799,119 @@ describe('autocomplete editor lifecycle', () => {
             expect(customHarness.success).toHaveBeenCalledWith('Custom department');
         } finally {
             customHarness.restore();
+        }
+    });
+
+    test('visually completes a typed prefix with the canonical suffix selected', () => {
+        const harness = createEditorHarness({}, '', ['Finance', 'Human Resources']);
+        const inputEvents = vi.fn();
+
+        try {
+            harness.input.addEventListener('input', inputEvents);
+            harness.input.setSelectionRange.mockClear();
+            harness.awesomplete.evaluate.mockClear();
+            harness.input.value = 'fina';
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            expect(harness.input.value).toBe('Finance');
+            expect(harness.input.setSelectionRange).toHaveBeenCalledWith(4, 7);
+            expect(inputEvents).toHaveBeenCalledOnce();
+            expect(harness.awesomplete.evaluate).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('case-sensitive autocomplete only completes matching case', () => {
+        const matchingHarness = createEditorHarness({
+            caseSensitive: true
+        }, '', ['Finance']);
+
+        try {
+            matchingHarness.input.value = 'Fina';
+            matchingHarness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            expect(matchingHarness.input.value).toBe('Finance');
+        } finally {
+            matchingHarness.restore();
+        }
+
+        const lowercaseHarness = createEditorHarness({
+            caseSensitive: true
+        }, '', ['Finance']);
+
+        try {
+            lowercaseHarness.input.value = 'fina';
+            lowercaseHarness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            expect(lowercaseHarness.input.value).toBe('fina');
+        } finally {
+            lowercaseHarness.restore();
+        }
+    });
+
+    test.each([
+        ['fina', 'Enter', null],
+        ['FINA', 'Enter', null],
+        ['finance', 'Enter', null],
+        ['fina', 'Tab', 'next'],
+        ['FINA', 'Tab', 'prev'],
+        ['finance', 'blur', null]
+    ])('%s committed with %s saves the canonical autocomplete value', async (typedValue, key, direction) => {
+        const harness = createEditorHarness(
+            {},
+            '',
+            ['Finance', 'Human Resources'],
+            { withRowNavigation: key === 'Tab' }
+        );
+
+        try {
+            harness.input.value = typedValue;
+
+            if (key === 'blur') {
+                harness.input.dispatch('blur');
+            } else {
+                harness.input.dispatch('keydown', {
+                    key,
+                    shiftKey: direction === 'prev'
+                });
+            }
+
+            expect(harness.success).toHaveBeenCalledWith('Finance');
+
+            if (direction === 'next') {
+                await flushDeferred();
+                expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+            } else if (direction === 'prev') {
+                await flushDeferred();
+                expect(harness.previousCell.edit).toHaveBeenCalledOnce();
+            }
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('explicitly highlighted suggestions take precedence over automatic prefix matching', () => {
+        const harness = createEditorHarness(
+            { allowCustomValue: true },
+            '',
+            ['Finance', 'Facilities']
+        );
+
+        try {
+            harness.input.value = 'F';
+            harness.awesomplete.index = 1;
+            harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(harness.success).toHaveBeenCalledWith('Facilities');
+        } finally {
+            harness.restore();
         }
     });
 
@@ -1065,6 +1228,66 @@ describe('autocomplete suggestions', () => {
             'review'
         ]);
     });
+
+    test.each([
+        ['fina', 'Finance'],
+        ['FINA', 'Finance'],
+        ['finance', 'Finance'],
+        ['FINANCE', 'Finance']
+    ])('finds a case-insensitive canonical prefix match for %s', (typedValue, expected) => {
+        expect(findAutocompleteMatch([
+            'Finance',
+            'Human Resources',
+            'Information Technology'
+        ], typedValue)).toBe(expected);
+    });
+
+    test.each([
+        ['Fina', 'Finance'],
+        ['fina', null],
+        ['FINA', null]
+    ])('respects case-sensitive prefix matching for %s', (typedValue, expected) => {
+        expect(findAutocompleteMatch(['Finance'], typedValue, {
+            caseSensitive: true
+        })).toBe(expected);
+    });
+
+    test('normalizes comparable values without changing the canonical suggestion', () => {
+        expect(normalizeAutocompleteComparableValue('Finance')).toBe('finance');
+        expect(normalizeAutocompleteComparableValue('Finance', {
+            caseSensitive: true
+        })).toBe('Finance');
+        expect(findAutocompleteMatch(['Finance'], 'fina')).toBe('Finance');
+    });
+
+    test('filters Awesomplete suggestions with the configured case sensitivity', () => {
+        const insensitiveOptions = getAwesompleteOptions(['Finance'], {});
+        const sensitiveOptions = getAwesompleteOptions(['Finance'], {
+            caseSensitive: true
+        });
+
+        expect(insensitiveOptions.filter({ value: 'Finance' }, 'fina')).toBe(true);
+        expect(sensitiveOptions.filter({ value: 'Finance' }, 'fina')).toBe(false);
+        expect(sensitiveOptions.filter({ value: 'Finance' }, 'Fina')).toBe(true);
+    });
+
+    test('keeps maxOptions limiting the rendered dropdown', () => {
+        const harness = createEditorHarness({ maxOptions: 1 }, '', [
+            'Finance',
+            'Facilities',
+            'Field Operations'
+        ]);
+
+        try {
+            harness.input.value = 'F';
+            harness.awesomplete.evaluate();
+
+            expect(harness.awesomplete.suggestions.map(item => item.value))
+                .toEqual(['Finance']);
+        } finally {
+            harness.restore();
+        }
+    });
 });
 
 describe('autocomplete native input behavior', () => {
@@ -1149,6 +1372,7 @@ describe('autocomplete commit behavior', () => {
         expect(resolveAutocompleteCommit({
             selectedValue: '',
             typedValue: 'XXX',
+            values: ['Finance'],
             options: {
                 allowCustomValue: false,
                 invalidBehavior: 'commitRaw'
@@ -1163,12 +1387,48 @@ describe('autocomplete commit behavior', () => {
         expect(resolveAutocompleteCommit({
             selectedValue: '',
             typedValue: 'XXX',
+            values: ['Finance'],
             options: {
                 allowCustomValue: false,
                 invalidBehavior: 'cancel'
             }
         })).toEqual({
             action: 'cancel'
+        });
+    });
+
+    test('commits canonical exact and prefix matches by default', () => {
+        expect(resolveAutocompleteCommit({
+            selectedValue: '',
+            typedValue: 'FINA',
+            values: ['Finance']
+        })).toEqual({
+            action: 'success',
+            value: 'Finance'
+        });
+        expect(resolveAutocompleteCommit({
+            selectedValue: '',
+            typedValue: 'finance',
+            values: ['Finance']
+        })).toEqual({
+            action: 'success',
+            value: 'Finance'
+        });
+    });
+
+    test('commitMatchedValue false preserves the previous raw typed behavior', () => {
+        expect(resolveAutocompleteCommit({
+            selectedValue: '',
+            typedValue: 'finance',
+            values: ['Finance'],
+            options: {
+                commitMatchedValue: false,
+                allowCustomValue: false,
+                invalidBehavior: 'commitRaw'
+            }
+        })).toEqual({
+            action: 'success',
+            value: 'finance'
         });
     });
 

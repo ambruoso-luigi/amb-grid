@@ -5,7 +5,9 @@ import {
     getAutocompleteKeyAction,
     getAutocompleteSuggestionValues,
     getAwesompleteOptions,
+    findAutocompleteMatch,
     normalizeAutocompleteOptions,
+    normalizeAutocompleteInput,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
 import { getInitialValue, navigateEditableCellAfterClose } from './shared.js';
@@ -196,6 +198,8 @@ const createFloatingAutocomplete = ({
  * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit.
  * @param {number} [options.maxOptions=10] - Maximum matching suggestions shown through Awesomplete `maxItems`.
  * @param {number} [options.dropdownWidth=420] - Preferred floating suggestion width in pixels. The dropdown is always at least as wide as the input.
+ * @param {boolean} [options.caseSensitive=false] - Match suggestions with case sensitivity. The default ignores case.
+ * @param {boolean} [options.commitMatchedValue=true] - Commit the canonical list value when typed text exactly or partially matches a suggestion.
  * @param {string} [options.placeholder] - Native input placeholder.
  * @returns {Function} Tabulator editor.
  */
@@ -210,6 +214,7 @@ export function autocomplete(values, options = {}) {
         let closed = false;
         let cellElement = null;
         let highlightedValue = '';
+        let applyingCompletion = false;
 
         input.type = 'text';
         input.value = getInitialValue(cell);
@@ -288,6 +293,7 @@ export function autocomplete(values, options = {}) {
                     ? getHighlightedValue()
                     : selectedValue,
                 typedValue: input.value,
+                values: suggestionValues,
                 options: normalizedOptions
             });
 
@@ -380,8 +386,45 @@ export function autocomplete(values, options = {}) {
             commit();
         };
 
-        const handleInput = () => {
+        const applyCanonicalCompletion = typedValue => {
+            if (
+                applyingCompletion
+                || !normalizedOptions.commitMatchedValue
+                || typedValue === ''
+            ) {
+                return;
+            }
+
+            const normalizedTypedValue = normalizeAutocompleteInput(
+                typedValue,
+                normalizedOptions
+            );
+            const matchedValue = findAutocompleteMatch(
+                suggestionValues,
+                typedValue,
+                normalizedOptions
+            );
+
+            if (matchedValue === null || matchedValue === typedValue) return;
+
+            applyingCompletion = true;
+            input.value = matchedValue;
+            input.setSelectionRange(
+                normalizedTypedValue.length,
+                matchedValue.length
+            );
+            applyingCompletion = false;
+        };
+
+        const handleInput = event => {
             highlightedValue = '';
+
+            const isDeleteInput = typeof event.inputType === 'string'
+                && event.inputType.startsWith('delete');
+
+            if (isDeleteInput) return;
+
+            applyCanonicalCompletion(input.value);
         };
 
         const handleHighlight = event => {

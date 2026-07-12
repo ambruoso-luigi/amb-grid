@@ -11,12 +11,91 @@ const output = document.querySelector('#test-output');
 const selectionModeControl = document.querySelector('#selection-mode');
 let currentGrid = null;
 let currentMultifieldGrid = null;
+let currentAutocompleteGrid = null;
 
 const testLookupAutoCompleteOptions = {
     autoComplete: true,
     autoCompleteMinChars: 1,
     autoCompleteOnTab: true
 };
+const autocompleteDepartments = [
+    'Administration',
+    'Accounting',
+    'Business Development',
+    'Customer Care',
+    'Design',
+    'Engineering',
+    'Finance',
+    'Human Resources',
+    'Information Technology',
+    'Legal',
+    'Logistics',
+    'Marketing',
+    'Operations',
+    'Product',
+    'Purchasing',
+    'Quality Assurance',
+    'Research and Development',
+    'Sales',
+    'Security',
+    'Support'
+];
+const autocompleteTags = [
+    'approved',
+    'blocked',
+    'business',
+    'external',
+    'follow-up',
+    'internal',
+    'important',
+    'pending',
+    'priority',
+    'review',
+    'security',
+    'support',
+    'urgent'
+];
+const autocompleteCities = [
+    'Amsterdam',
+    'Athens',
+    'Bari',
+    'Barcelona',
+    'Berlin',
+    'Bilbao',
+    'Bologna',
+    'Bordeaux',
+    'Boston',
+    'Bremen',
+    'Brussels',
+    'Budapest',
+    'Copenhagen',
+    'Dublin',
+    'Florence',
+    'Frankfurt',
+    'Geneva',
+    'Hamburg',
+    'Helsinki',
+    'Lisbon',
+    'London',
+    'Madrid',
+    'Manchester',
+    'Marseille',
+    'Milan',
+    'Munich',
+    'Naples',
+    'Oslo',
+    'Paris',
+    'Prague',
+    'Riga',
+    'Rome',
+    'Rotterdam',
+    'Stockholm',
+    'Turin',
+    'Valencia',
+    'Venice',
+    'Vienna',
+    'Warsaw'
+];
 const MLK_DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
 const createMunicipalityMlk = municipalityLookup => AMB.mlk({
     id: 'municipality',
@@ -113,6 +192,22 @@ const createEmptyMultifieldRow = () => ({
     region: '',
     postalCode: '',
     textAfter: ''
+});
+
+const createAutocompleteData = () => [
+    { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', requiredDepartment: 'Administration', tag: 'internal', city: 'Milan' },
+    { id: 2, task: 'Review access controls', department: 'Information Technology', requiredDepartment: 'Security', tag: 'review', city: 'Berlin' },
+    { id: 3, task: 'Check monthly close', department: 'Finance', requiredDepartment: 'Accounting', tag: 'urgent', city: 'London' },
+    { id: 4, task: 'Update support workflow', department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' }
+];
+
+const createEmptyAutocompleteRow = () => ({
+    id: null,
+    task: '',
+    department: '',
+    requiredDepartment: '',
+    tag: '',
+    city: ''
 });
 
 const loadMunicipalities = async () => {
@@ -672,6 +767,123 @@ const createMultifieldLookupGrid = async () => {
     return grid;
 };
 
+const createAutocompleteGrid = () => {
+    const grid = AMB.table({
+        selector: '#autocomplete-test-table',
+        toolbar: {
+            buttons: [
+                'add',
+                'payload',
+                'validate'
+            ],
+            onAdd: handleAdd,
+            onPayload: handleShowPayload,
+            onValidate: handleValidate
+        },
+        data: createAutocompleteData(),
+        layout: 'fitColumns',
+        columns: [
+            { title: 'ID', field: 'id', width: 70 },
+            {
+                title: 'Task',
+                field: 'task',
+                editor: AMB.editors.text({
+                    trim: true,
+                    maxLength: 80
+                })
+            },
+            {
+                title: 'Department strict',
+                field: 'department',
+                editor: AMB.editors.autocomplete(autocompleteDepartments, {
+                    allowEmpty: true,
+                    allowCustomValue: false,
+                    invalidBehavior: 'commitRaw',
+                    placeholder: 'Type to search...'
+                }),
+                validation: {
+                    allowedValues: {
+                        values: autocompleteDepartments,
+                        trim: true,
+                        caseSensitive: false,
+                        message: 'Choose a department from the list'
+                    }
+                }
+            },
+            {
+                title: 'Department required',
+                field: 'requiredDepartment',
+                editor: AMB.editors.autocomplete(autocompleteDepartments, {
+                    allowEmpty: false,
+                    allowCustomValue: false,
+                    invalidBehavior: 'commitRaw',
+                    placeholder: 'Type to search...'
+                }),
+                validation: {
+                    required: {
+                        message: 'Department is required'
+                    },
+                    allowedValues: {
+                        values: autocompleteDepartments,
+                        trim: true,
+                        caseSensitive: false,
+                        message: 'Choose a department from the list'
+                    }
+                }
+            },
+            {
+                title: 'Free autocomplete',
+                field: 'tag',
+                editor: AMB.editors.autocomplete(autocompleteTags, {
+                    allowEmpty: true,
+                    allowCustomValue: true,
+                    placeholder: 'Type or add a tag...'
+                })
+            },
+            {
+                title: 'Long list (max 5)',
+                field: 'city',
+                editor: AMB.editors.autocomplete(autocompleteCities, {
+                    allowEmpty: true,
+                    allowCustomValue: true,
+                    maxOptions: 5,
+                    placeholder: 'Try B, M, or R...'
+                })
+            }
+        ]
+    });
+
+    function handleAdd() {
+        grid.feedback.clear();
+        return grid.crud.addRow(createEmptyAutocompleteRow());
+    }
+
+    function handleShowPayload({ payload }) {
+        showTestOutput('Autocomplete payload', {
+            payload,
+            report: buildStateSummary(grid.crud.getStateReport())
+        });
+    }
+
+    function handleValidate() {
+        const validateResult = grid.crud.validateAll();
+
+        showTestOutput('Autocomplete validation', {
+            isValid: validateResult.isValid,
+            validateResult,
+            payload: grid.crud.getSavePayload({ includeInvalid: true })
+        });
+        grid.feedback.show({
+            type: validateResult.isValid ? 'success' : 'warning',
+            message: validateResult.isValid
+                ? 'Autocomplete rows are valid.'
+                : 'Autocomplete rows contain errors.'
+        });
+    }
+
+    return grid;
+};
+
 const mountGrid = async () => {
     if (currentGrid && typeof currentGrid.destroy === 'function') {
         currentGrid.destroy();
@@ -694,6 +906,15 @@ const mountMultifieldLookupGrid = async () => {
     currentMultifieldGrid = await createMultifieldLookupGrid();
 };
 
+const mountAutocompleteGrid = () => {
+    if (currentAutocompleteGrid && typeof currentAutocompleteGrid.destroy === 'function') {
+        currentAutocompleteGrid.destroy();
+        currentAutocompleteGrid = null;
+    }
+
+    currentAutocompleteGrid = createAutocompleteGrid();
+};
+
 selectionModeControl?.addEventListener('change', () => {
     mountGrid().catch(error => {
         console.error(error);
@@ -707,6 +928,7 @@ selectionModeControl?.addEventListener('change', () => {
 const mountTestPage = async () => {
     await mountGrid();
     await mountMultifieldLookupGrid();
+    mountAutocompleteGrid();
 };
 
 mountTestPage().catch(error => {

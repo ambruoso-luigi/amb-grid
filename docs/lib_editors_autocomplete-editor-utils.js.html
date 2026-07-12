@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/editors/autocomplete-editor-utils.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/editors/autocomplete-editor-utils.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Normalize autocomplete editor options.
  *
  * @param {object} [options] - Autocomplete options.
@@ -26,7 +54,7 @@ export const normalizeAutocompleteOptions = (options = {}) => {
     };
     const maxOptions = Number(normalizedOptions.maxOptions);
 
-    normalizedOptions.maxOptions = Number.isFinite(maxOptions) && maxOptions > 0
+    normalizedOptions.maxOptions = Number.isFinite(maxOptions) &amp;&amp; maxOptions > 0
         ? Math.floor(maxOptions)
         : 10;
     normalizedOptions.caseSensitive = normalizedOptions.caseSensitive === true;
@@ -54,14 +82,14 @@ export const normalizeAutocompleteInput = (value, options = {}) => {
 /**
  * Convert a suggestion source to the plain string list used by autocomplete.
  *
- * @param {Array<string>} values - Suggested values.
+ * @param {Array&lt;string>} values - Suggested values.
  * @returns {string[]} String suggestions.
  */
 export const getAutocompleteSuggestionValues = values => {
     if (!Array.isArray(values)) return [];
 
     return values
-        .filter(value => value !== null && value !== undefined)
+        .filter(value => value !== null &amp;&amp; value !== undefined)
         .map(value => String(value));
 };
 
@@ -84,7 +112,7 @@ export const normalizeAutocompleteComparableValue = (value, options = {}) => {
 /**
  * Find the first canonical suggestion whose prefix matches the typed value.
  *
- * @param {Array<string>} values - Suggested values.
+ * @param {Array&lt;string>} values - Suggested values.
  * @param {*} typedValue - Current typed value.
  * @param {object} [options] - Autocomplete options.
  * @returns {string|null} Canonical suggestion value, or `null`.
@@ -109,7 +137,7 @@ export const findAutocompleteMatch = (values, typedValue, options = {}) => {
 /**
  * Build Awesomplete options for AMB autocomplete.
  *
- * @param {Array<string>} values - Suggested values.
+ * @param {Array&lt;string>} values - Suggested values.
  * @param {object} [options] - Autocomplete options.
  * @returns {object} Awesomplete configuration.
  */
@@ -124,7 +152,7 @@ export const getAwesompleteOptions = (values, options = {}) => {
         sort: false,
         tabSelect: false,
         filter(text, input) {
-            const suggestionValue = text && text.value !== undefined
+            const suggestionValue = text &amp;&amp; text.value !== undefined
                 ? text.value
                 : text;
 
@@ -193,7 +221,7 @@ export const getAutocompleteKeyAction = key => {
  * @param {object} params - Commit params.
  * @param {*} params.selectedValue - Explicitly selected or highlighted value.
  * @param {*} params.typedValue - Current input value.
- * @param {Array<string>} [params.values=[]] - Canonical suggestion list.
+ * @param {Array&lt;string>} [params.values=[]] - Canonical suggestion list.
  * @param {object} [params.options] - Autocomplete options.
  * @returns {{action: 'success', value: string}|{action: 'cancel'}} Commit result.
  */
@@ -214,7 +242,7 @@ export const resolveAutocompleteCommit = ({
         };
     }
 
-    if (typed !== '' && normalizedOptions.commitMatchedValue) {
+    if (typed !== '' &amp;&amp; normalizedOptions.commitMatchedValue) {
         const matchedValue = findAutocompleteMatch(values, typed, normalizedOptions);
 
         if (matchedValue !== null) {
@@ -247,3 +275,26 @@ export const resolveAutocompleteCommit = ({
         ? { action: 'success', value: '' }
         : { action: 'cancel' };
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jul 12 2026 22:51:19 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

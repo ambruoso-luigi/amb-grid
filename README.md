@@ -443,13 +443,33 @@ overlay and are not an official ISTAT field.
 
 `maxOptions` defaults to `10` and limits the number of matching suggestions shown. It can be overridden, for example with `AMB.editors.autocomplete(values, { maxOptions: 15 })`.
 
+Autocomplete matching is case-insensitive by default and commits canonical list
+values by default:
+
+```js
+AMB.editors.autocomplete(departments, {
+  caseSensitive: false,
+  commitMatchedValue: true
+});
+```
+
+With values such as `['Finance', 'Human Resources']`, typed exact or prefix
+matches like `fina`, `FINA`, `finance`, and `FINANCE` resolve to and save
+`Finance`. The completed suffix is selected in the input so the user can
+accept it, keep typing, or replace it naturally. Set `caseSensitive: true` to
+require matching uppercase and lowercase exactly. Set
+`commitMatchedValue: false` when compatibility requires keeping typed text
+unless the user selects or highlights a suggestion.
+
 The list supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
 
 Selected and typed values are trimmed only on commit by default with `trimInput: true`; set `trimInput: false` to preserve surrounding whitespace. Backspace and Delete retain native input behavior. Arrow keys navigate suggestions, Enter commits, Escape cancels, and Tab commits without blocking Tabulator navigation. At commit, `allowEmpty` and `invalidBehavior` determine whether an empty string is saved or the edit is cancelled.
 
 `allowedValues` is synchronous and intended for static lists. Async validation is not included at this stage.
 
-Autocomplete intentionally remains a local plain-text editor. It does not perform remote lookup or asynchronous validation.
+Autocomplete intentionally remains a local plain-text editor. It does not
+perform remote lookup or asynchronous validation, does not become a lookup, and
+does not manage associated records or hidden data.
 
 ### Search and Filters
 
