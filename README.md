@@ -322,6 +322,7 @@ const municipalities = AMB.lookup({
   keyField: 'istatCode',
   valueField: 'istatCode',
   labelField: 'municipalityName',
+  caseSensitive: false,
   columns: [
     { field: 'municipalityName', title: 'Municipality', visible: true },
     { field: 'province', title: 'Province', visible: true },
@@ -341,6 +342,16 @@ const municipalities = AMB.lookup({
 });
 ```
 
+Lookup editor matching is case-insensitive by default:
+`caseSensitive: false`. The lookup loader still receives the query as typed;
+AMB Grid applies the option when matching the returned records. When a typed
+value or autocomplete prefix matches, the saved value is the canonical value
+from the lookup record, not the typed text. For example, `mila`, `MILA`,
+`milano`, and `MILANO` can all match a record whose value is `Milano`, and the
+cell stores `Milano`. Set `caseSensitive: true` to require matching uppercase
+and lowercase exactly. `uppercase` is separate: it transforms typed input, while
+`caseSensitive` controls lookup matching.
+
 `mapToRow` uses `{ gridRowField: lookupRecordField }`. `keyField` is required
 and validated for presence and uniqueness when records load. At least one
 lookup column must declare `visible: true`. The modal displays and searches
@@ -357,6 +368,7 @@ const municipalityLookup = AMB.lookup({
   keyField: 'istatCode',
   valueField: 'municipalityName',
   labelField: 'municipalityName',
+  caseSensitive: false,
   columns: municipalityLookupColumns,
   load: () => municipalityRecords
 });
@@ -400,6 +412,8 @@ const columns = [
 The MLK mapping uses `{ from, field }`: `from` is the lookup record field and
 `field` is the row field. Selecting a record or accepting a valid autocomplete
 match applies one patch containing the master plus every dependent field.
+MLK uses the same `caseSensitive` setting as its lookup by default, and a single
+master column can override it with `masterColumn({ editorOptions: { caseSensitive: true } })`.
 Dependent fields are readonly by default, remain normal row fields for payload,
 validation, state report and rollback, and do not require a separate
 `technicalFields` option. If the master becomes empty or invalid, dependent

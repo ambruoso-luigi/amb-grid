@@ -20,6 +20,8 @@ const normalizeResult = result => {
     return Array.isArray(result) ? result : [];
 };
 
+const normalizeCaseSensitive = options => options.caseSensitive === true;
+
 const normalizeRecordConfiguration = options => {
     const columns = Array.isArray(options.columns) ? options.columns : null;
     const mapToRow = options.mapToRow && typeof options.mapToRow === 'object'
@@ -67,13 +69,14 @@ const normalizeRecordConfiguration = options => {
  * @param {object[]} [options.columns] - Lookup dialog columns. Record-based lookups require at least one `visible: true` column.
  * @param {object} [options.search] - Lookup search configuration.
  * @param {object} [options.mapToRow] - Mapping from grid row fields to lookup record fields.
+ * @param {boolean} [options.caseSensitive=false] - Whether lookup editor matching preserves case. When `false`, matching ignores case but committed values still come from the matched record.
  * @param {object} [options.context] - Default context merged into load params.
  * @param {Function} [options.load] - Async or sync loader receiving `{ query, rowData, field, context }`.
  * @param {object} [options.cache] - Cache options.
  * @param {boolean} [options.cache.enabled=true] - Enable in-memory caching.
  * @param {number} [options.cache.ttl] - Cache time to live in milliseconds.
  * @param {Function} [options.cache.key] - Custom cache key function receiving normalized params.
- * @returns {{valueField: string, labelField: string, keyField: string|null, columns: object[]|null, search: object|null, mapToRow: object|null, getByKey: Function, load: Function, refresh: Function, clearCache: Function}} Lookup instance.
+ * @returns {{valueField: string, labelField: string, keyField: string|null, columns: object[]|null, search: object|null, mapToRow: object|null, caseSensitive: boolean, getByKey: Function, load: Function, refresh: Function, clearCache: Function}} Lookup instance.
  */
 export function createLookup(options = {}) {
     const cache = new Map();
@@ -205,6 +208,7 @@ export function createLookup(options = {}) {
         columns: recordConfiguration.columns,
         search: recordConfiguration.search,
         mapToRow: recordConfiguration.mapToRow,
+        caseSensitive: normalizeCaseSensitive(options),
         getByKey(key) {
             return recordIndex.get(key) || null;
         },

@@ -18,8 +18,20 @@ const records = [
         postalCode: '60100'
     }
 ];
+const milanoRecord = {
+    istatCode: '015146',
+    cadastralCode: 'F205',
+    municipalityName: 'Milano',
+    province: 'MI',
+    region: 'LOMBARDIA',
+    postalCode: '20121'
+};
 
-const createMunicipalityLookup = () => createLookup({
+const createMunicipalityLookup = ({
+    rows = records,
+    load,
+    ...options
+} = {}) => createLookup({
     keyField: 'istatCode',
     valueField: 'municipalityName',
     labelField: 'municipalityName',
@@ -31,12 +43,19 @@ const createMunicipalityLookup = () => createLookup({
         { field: 'istatCode', title: 'ISTAT Code', visible: false },
         { field: 'cadastralCode', title: 'Cadastral Code', visible: false }
     ],
-    load: () => records
+    ...options,
+    load: load || (() => rows)
 });
 
-const createMunicipalityMlk = (options = {}) => createMultifieldLookup({
+const createMunicipalityMlk = (options = {}) => {
+    const {
+        lookup = createMunicipalityLookup(),
+        ...mlkOptions
+    } = options;
+
+    return createMultifieldLookup({
     id: 'municipality',
-    lookup: createMunicipalityLookup(),
+    lookup,
     masterField: {
         field: 'municipality',
         from: 'municipalityName',
@@ -81,8 +100,111 @@ const createMunicipalityMlk = (options = {}) => createMultifieldLookup({
             required: true
         }
     ],
-    ...options
+    ...mlkOptions
+    });
+};
+
+const createElement = tagName => {
+    const listeners = new Map();
+
+    return {
+        tagName,
+        children: [],
+        dataset: {},
+        value: '',
+        selectionStart: 0,
+        selectionEnd: 0,
+        appendChild(child) {
+            this.children.push(child);
+        },
+        addEventListener(type, listener) {
+            listeners.set(type, listener);
+        },
+        async dispatch(type, event = {}) {
+            return listeners.get(type)?.({
+                preventDefault() {},
+                stopPropagation() {},
+                ...event
+            });
+        },
+        focus() {},
+        select() {},
+        setSelectionRange(start, end) {
+            this.selectionStart = start;
+            this.selectionEnd = end;
+        }
+    };
+};
+
+const flushDeferred = () => new Promise(resolve => {
+    globalThis.setTimeout(resolve, 0);
 });
+
+const createMlkEditorHarness = ({
+    rows = [milanoRecord],
+    columnOptions = {},
+    lookup = createMunicipalityLookup({ rows }),
+    initialRowData = {}
+} = {}) => {
+    const mlk = createMunicipalityMlk({ lookup });
+    const column = mlk.masterColumn({
+        dialog: null,
+        ...columnOptions
+    });
+    const rowData = {
+        id: 1,
+        municipality: '',
+        province: '',
+        region: '',
+        postalCode: '',
+        istatCode: '',
+        cadastralCode: '',
+        ...initialRowData
+    };
+    const cellElement = { dataset: {} };
+    const applyRecord = vi.fn((_cell, patch) => {
+        Object.assign(rowData, patch);
+        return true;
+    });
+    const row = {
+        getData: () => rowData,
+        update: patch => Object.assign(rowData, patch),
+        getCells: () => []
+    };
+    const cell = {
+        getValue: () => rowData.municipality,
+        getField: () => 'municipality',
+        getRow: () => row,
+        getElement: () => cellElement,
+        navigateNext: vi.fn(),
+        navigatePrev: vi.fn()
+    };
+    const success = vi.fn(value => {
+        rowData.municipality = value;
+    });
+    const cancel = vi.fn();
+
+    column.editor._ambSetLookupErrorHandlers({
+        markInvalid() {},
+        clearInvalid() {},
+        applyRecord
+    });
+
+    const container = column.editor(cell, () => {}, success, cancel);
+
+    return {
+        applyRecord,
+        cancel,
+        cell,
+        column,
+        container,
+        input: container.children[0],
+        lookup,
+        mlk,
+        rowData,
+        success
+    };
+};
 
 describe('AMB.mlk', () => {
     test('is exposed from the public AMB namespace', () => {
@@ -208,6 +330,114 @@ describe('AMB.mlk', () => {
         expect(column.required).toBe(true);
         expect(column.editor._ambEditorType).toBe('lookup');
         expect(column.editor._ambLookupConfig.lookupInstance).toBe(mlk.lookup);
+        expect(mlk.lookup.caseSensitive).toBe(false);
+        expect(column.editor._ambLookupConfig.caseSensitive).toBe(false);
+    });
+
+    test('masterColumn respects a caseSensitive editor override', () => {
+        const mlk = createMunicipalityMlk();
+        const column = mlk.masterColumn({
+            editorOptions: {
+                caseSensitive: true
+            }
+        });
+
+        expect(mlk.lookup.caseSensitive).toBe(false);
+        expect(column.editor._ambLookupConfig.caseSensitive).toBe(true);
+    });
+
+    test('case-insensitive MLK autocomplete applies one canonical master and dependent patch', async () => {
+        const originalDocument = globalThis.document;
+
+        globalThis.document = { createElement };
+
+        try {
+            const harness = createMlkEditorHarness();
+
+            harness.input.value = 'mila';
+            await harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+            await Promise.resolve();
+            await harness.input.dispatch('keydown', { key: 'Tab' });
+            await flushDeferred();
+
+            expect(harness.input.value).toBe('Milano');
+            expect(harness.applyRecord).toHaveBeenCalledWith(
+                harness.cell,
+                {
+                    municipality: 'Milano',
+                    province: 'MI',
+                    region: 'LOMBARDIA',
+                    postalCode: '20121',
+                    istatCode: '015146',
+                    cadastralCode: 'F205'
+                },
+                milanoRecord
+            );
+            expect(harness.success).toHaveBeenCalledWith('Milano');
+            expect(harness.rowData).toEqual(expect.objectContaining({
+                municipality: 'Milano',
+                province: 'MI',
+                region: 'LOMBARDIA',
+                postalCode: '20121',
+                istatCode: '015146',
+                cadastralCode: 'F205'
+            }));
+        } finally {
+            globalThis.document = originalDocument;
+        }
+    });
+
+    test('caseSensitive override keeps lowercase MLK input invalid and clears stale dependents', async () => {
+        const originalDocument = globalThis.document;
+
+        globalThis.document = { createElement };
+
+        try {
+            const harness = createMlkEditorHarness({
+                columnOptions: {
+                    editorOptions: {
+                        caseSensitive: true
+                    }
+                },
+                initialRowData: {
+                    municipality: 'Milano',
+                    province: 'MI',
+                    region: 'LOMBARDIA',
+                    postalCode: '20121',
+                    istatCode: '015146',
+                    cadastralCode: 'F205'
+                }
+            });
+
+            harness.input.value = 'mila';
+            await harness.input.dispatch('keydown', { key: 'Tab' });
+            await flushDeferred();
+
+            expect(harness.success).toHaveBeenCalledWith('mila');
+            expect(harness.applyRecord).toHaveBeenCalledWith(
+                harness.cell,
+                {
+                    province: '',
+                    region: '',
+                    postalCode: '',
+                    istatCode: '',
+                    cadastralCode: ''
+                },
+                null
+            );
+            expect(harness.rowData).toEqual(expect.objectContaining({
+                municipality: 'mila',
+                province: '',
+                region: '',
+                postalCode: '',
+                istatCode: '',
+                cadastralCode: ''
+            }));
+        } finally {
+            globalThis.document = originalDocument;
+        }
     });
 
     test('dependentColumn creates readonly derived columns and validates fields', () => {

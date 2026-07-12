@@ -170,6 +170,13 @@ const createDialogHarness = () => {
 };
 
 describe('record-based lookup', () => {
+    test('exposes caseSensitive with a false default', () => {
+        expect(createLookup().caseSensitive).toBe(false);
+        expect(createLookup({ caseSensitive: false }).caseSensitive).toBe(false);
+        expect(createLookup({ caseSensitive: true }).caseSensitive).toBe(true);
+        expect(createLookup({ caseSensitive: 'true' }).caseSensitive).toBe(false);
+    });
+
     test('requires a technical key and at least one visible column', () => {
         expect(() => createLookup({
             columns,

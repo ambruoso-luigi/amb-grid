@@ -7,6 +7,11 @@ const records = [
     { id: 'REPAIR', description: 'Under repair' },
     { id: 'DOCKED', description: 'Docked' }
 ];
+const milanoRecord = {
+    id: '015146',
+    municipalityName: 'Milano',
+    province: 'MI'
+};
 
 const createElement = tagName => {
     const listeners = new Map();
@@ -44,6 +49,7 @@ const createHarness = ({
     initialValue = 'ACTIVE',
     options = {},
     load = ({ query }) => records.filter(record => record.id.includes(query)),
+    lookupOptions = {},
     withRowNavigation = false
 } = {}) => {
     const rowData = { id: 1, status: initialValue };
@@ -84,7 +90,8 @@ const createHarness = ({
     const lookupInstance = {
         valueField: 'id',
         labelField: 'description',
-        load
+        load,
+        ...lookupOptions
     };
     const clearRenderedError = () => {
         delete cellElement.dataset.cellError;
@@ -137,6 +144,30 @@ const createHarness = ({
 const flushDeferred = () => new Promise(resolve => {
     globalThis.setTimeout(resolve, 0);
 });
+
+const createMunicipalityHarness = ({
+    initialValue = '',
+    options = {},
+    lookupOptions = {},
+    load = () => [milanoRecord],
+    withRowNavigation = false
+} = {}) => {
+    return createHarness({
+        initialValue,
+        options: {
+            uppercase: false,
+            autoComplete: true,
+            ...options
+        },
+        lookupOptions: {
+            valueField: 'municipalityName',
+            labelField: 'municipalityName',
+            ...lookupOptions
+        },
+        load,
+        withRowNavigation
+    });
+};
 
 describe('lookup editor blur commits', () => {
     const originalDocument = globalThis.document;
@@ -855,5 +886,169 @@ describe('lookup editor blur commits', () => {
             searchPlaceholder: 'Search...'
         });
         expect(harness.success).toHaveBeenCalledWith('DOCKED');
+    });
+
+    test.each([
+        ['mila'],
+        ['MILA']
+    ])('case-insensitive autocomplete proposes the canonical value for %s', async typedValue => {
+        const harness = createMunicipalityHarness();
+
+        harness.input.value = typedValue;
+        await harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+
+        expect(harness.input.value).toBe('Milano');
+        expect(harness.input.selectionStart).toBe(typedValue.length);
+        expect(harness.input.selectionEnd).toBe('Milano'.length);
+    });
+
+    test.each([
+        ['milano', 'blur', null],
+        ['MILANO', 'blur', null],
+        ['milano', 'Enter', null],
+        ['milano', 'Tab', 'next'],
+        ['milano', 'Tab', 'prev']
+    ])('case-insensitive %s commit via %s saves the canonical value', async (typedValue, action, direction) => {
+        const harness = createMunicipalityHarness({
+            withRowNavigation: action === 'Tab'
+        });
+
+        harness.input.value = typedValue;
+
+        if (action === 'blur') {
+            await harness.input.dispatch('blur');
+        } else if (action === 'Enter') {
+            await harness.input.dispatch('keydown', { key: 'Enter' });
+        } else {
+            await harness.input.dispatch('keydown', {
+                key: 'Tab',
+                shiftKey: direction === 'prev'
+            });
+            await flushDeferred();
+        }
+
+        expect(harness.success).toHaveBeenCalledWith('Milano');
+        expect(harness.success).not.toHaveBeenCalledWith(typedValue);
+        expect(harness.markInvalid).not.toHaveBeenCalled();
+
+        if (direction === 'next') {
+            expect(harness.nextCell.edit).toHaveBeenCalledOnce();
+        } else if (direction === 'prev') {
+            expect(harness.previousCell.edit).toHaveBeenCalledOnce();
+        }
+    });
+
+    test('case-insensitive mapped autocomplete applies the full row patch from the original record', async () => {
+        const harness = createMunicipalityHarness({
+            withRowNavigation: true,
+            options: {
+                mapToRow: {
+                    status: 'municipalityName',
+                    statusProvince: 'province'
+                }
+            }
+        });
+
+        harness.input.value = 'mila';
+        await harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+        await harness.input.dispatch('keydown', { key: 'Tab' });
+        await flushDeferred();
+
+        expect(harness.applyRecord).toHaveBeenCalledWith(
+            harness.cell,
+            {
+                status: 'Milano',
+                statusProvince: 'MI'
+            },
+            milanoRecord
+        );
+        expect(harness.success).toHaveBeenCalledWith('Milano');
+    });
+
+    test('a stale case-insensitive autocomplete response does not overwrite a completed commit', async () => {
+        let resolveAutoComplete;
+        let requests = 0;
+        const load = vi.fn(({ query }) => {
+            requests += 1;
+
+            if (query === 'mila' && requests === 1) {
+                return new Promise(resolve => {
+                    resolveAutoComplete = resolve;
+                });
+            }
+
+            return [milanoRecord];
+        });
+        const harness = createMunicipalityHarness({
+            load
+        });
+
+        harness.input.value = 'mila';
+        const pendingInput = harness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+
+        await harness.input.dispatch('keydown', { key: 'Tab' });
+        harness.input.value = 'CLOSED';
+        resolveAutoComplete([milanoRecord]);
+        await pendingInput;
+        await flushDeferred();
+
+        expect(harness.input.value).toBe('CLOSED');
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('Milano');
+    });
+
+    test('case-sensitive lookup matching only accepts matching case and keeps invalid behavior', async () => {
+        const prefixHarness = createMunicipalityHarness({
+            lookupOptions: {
+                caseSensitive: true
+            }
+        });
+
+        prefixHarness.input.value = 'Mila';
+        await prefixHarness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+
+        expect(prefixHarness.input.value).toBe('Milano');
+
+        const lowercaseHarness = createMunicipalityHarness({
+            lookupOptions: {
+                caseSensitive: true
+            }
+        });
+
+        lowercaseHarness.input.value = 'mila';
+        await lowercaseHarness.input.dispatch('input', {
+            inputType: 'insertText'
+        });
+        await Promise.resolve();
+
+        expect(lowercaseHarness.input.value).toBe('mila');
+
+        const invalidHarness = createMunicipalityHarness({
+            lookupOptions: {
+                caseSensitive: true
+            }
+        });
+
+        invalidHarness.input.value = 'MILANO';
+        await invalidHarness.input.dispatch('blur');
+        await flushDeferred();
+
+        expect(invalidHarness.success).toHaveBeenCalledWith('MILANO');
+        expect(invalidHarness.markInvalid).toHaveBeenCalledWith(
+            invalidHarness.cell,
+            'Invalid lookup code'
+        );
     });
 });

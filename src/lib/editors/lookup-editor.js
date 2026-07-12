@@ -22,6 +22,7 @@ import { getInitialValue, getLookupOptionValue } from './shared.js';
      * @param {string} [options.buttonText='🔍'] - Dialog button text.
      * @param {boolean} [options.uppercase=false] - Convert typed values to uppercase.
      * @param {boolean} [options.trim=true] - Trim typed values before saving.
+     * @param {boolean} [options.caseSensitive] - Override lookup matching case sensitivity. Defaults to `lookupInstance.caseSensitive`, then `false`.
      * @param {boolean} [options.validateOnBlur=true] - Validate typed codes on blur.
      * @param {boolean} [options.autoComplete=false] - Enable inline lookup suggestions.
      * @param {number} [options.autoCompleteMinChars=1] - Minimum query length for suggestions.
@@ -59,6 +60,7 @@ export function lookup(lookupInstance, options = {}) {
             autoCompleteMinChars: 1,
             autoCompleteOnTab: true,
             invalidMessage: 'Invalid lookup code',
+            caseSensitive: lookupInstance && lookupInstance.caseSensitive === true,
             columns: lookupInstance && lookupInstance.columns,
             search: lookupInstance && lookupInstance.search,
             mapToRow: lookupInstance && lookupInstance.mapToRow,
@@ -81,6 +83,16 @@ export function lookup(lookupInstance, options = {}) {
                 : stringValue;
 
             return normalizedOptions.uppercase ? value.toUpperCase() : value;
+        };
+        const normalizeComparableValue = rawValue => {
+            const normalizedValue = normalizeValue(rawValue);
+
+            return normalizedOptions.caseSensitive
+                ? normalizedValue
+                : normalizedValue.toLowerCase();
+        };
+        const getCanonicalItemValue = item => {
+            return normalizeValue(getLookupOptionValue(item, valueField));
         };
 
         const editor = (cell, onRendered, success, cancel) => {
@@ -275,9 +287,12 @@ export function lookup(lookupInstance, options = {}) {
 
             const findExactItem = async value => {
                 const items = await loadLookup(value);
+                const comparableValue = normalizeComparableValue(value);
 
                 return items.find(item => {
-                    return normalizeValue(getLookupOptionValue(item, valueField)) === value;
+                    return normalizeComparableValue(
+                        getLookupOptionValue(item, valueField)
+                    ) === comparableValue;
                 }) || null;
             };
 
@@ -287,11 +302,12 @@ export function lookup(lookupInstance, options = {}) {
                 if (typedValue.length < normalizedOptions.autoCompleteMinChars) return null;
 
                 const items = await loadLookup(typedValue);
+                const comparableTypedValue = normalizeComparableValue(typedValue);
 
                 return items.find(item => {
-                    return normalizeValue(
+                    return normalizeComparableValue(
                         getLookupOptionValue(item, valueField)
-                    ).startsWith(typedValue);
+                    ).startsWith(comparableTypedValue);
                 }) || null;
             };
 
@@ -319,9 +335,7 @@ export function lookup(lookupInstance, options = {}) {
                     if (closed || requestId !== autoCompleteRequestId) return;
                     if (!matchedItem) return;
 
-                    const matchedValue = normalizeValue(
-                        getLookupOptionValue(matchedItem, valueField)
-                    );
+                    const matchedValue = getCanonicalItemValue(matchedItem);
 
                     if (!matchedValue || matchedValue === typedValue) return;
 
@@ -346,9 +360,12 @@ export function lookup(lookupInstance, options = {}) {
 
                 try {
                     const item = await findExactItem(normalizedInitialValue);
+                    const metadataValue = item
+                        ? getCanonicalItemValue(item)
+                        : normalizedInitialValue;
                     const description = item && item[labelField];
 
-                    setLookupMetadata(rowData, field, normalizedInitialValue, description || '', {
+                    setLookupMetadata(rowData, field, metadataValue, description || '', {
                         setInitial: true
                     });
                     setCellLookupDescription(description);
@@ -379,15 +396,21 @@ export function lookup(lookupInstance, options = {}) {
                         item = await findExactItem(value);
 
                         if (item) {
+                            const canonicalValue = getCanonicalItemValue(item);
                             const appliedRecord = applyMappedRecord(item);
 
                             if (normalizedOptions.mapToRow && appliedRecord === null) return;
 
                             const description = item[labelField];
 
-                            setLookupMetadata(rowData, field, value, description);
+                            setLookupMetadata(rowData, field, canonicalValue, description);
                             setCellLookupDescription(description);
                             clearInvalidCode();
+
+                            if (canonicalValue !== value) {
+                                closeWithLookupItem(canonicalValue, item);
+                                return;
+                            }
                         } else {
                             setLookupMetadata(rowData, field, value, '');
                             setCellLookupDescription('');
@@ -425,11 +448,12 @@ export function lookup(lookupInstance, options = {}) {
                     const item = await findExactItem(value);
 
                     if (item) {
+                        const canonicalValue = getCanonicalItemValue(item);
                         const appliedRecord = applyMappedRecord(item);
 
                         if (normalizedOptions.mapToRow && appliedRecord === null) return;
 
-                        closeWithLookupItem(value, item);
+                        closeWithLookupItem(canonicalValue, item);
                         return;
                     }
                 } catch (error) {
@@ -535,9 +559,7 @@ export function lookup(lookupInstance, options = {}) {
                         if (closed) return;
 
                         if (suggestedItem) {
-                            const suggestedValue = normalizeValue(
-                                getLookupOptionValue(suggestedItem, valueField)
-                            );
+                            const suggestedValue = getCanonicalItemValue(suggestedItem);
 
                             input.value = suggestedValue;
                             input.setSelectionRange(
@@ -710,7 +732,9 @@ export function lookup(lookupInstance, options = {}) {
             valueField,
             labelField,
             context: normalizedOptions.context || {},
-            normalizeValue
+            normalizeValue,
+            normalizeComparableValue,
+            caseSensitive: normalizedOptions.caseSensitive
         };
         editor._ambSetLookupErrorHandlers = handlers => {
             normalizedOptions.markInvalid = handlers.markInvalid;

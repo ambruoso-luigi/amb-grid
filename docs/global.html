@@ -1457,6 +1457,8 @@ navigate without an extra toggle.
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -1492,6 +1494,10 @@ navigate without an extra toggle.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Field containing the stored code/value.</td>
         </tr>
@@ -1524,6 +1530,10 @@ navigate without an extra toggle.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Field containing the display label.</td>
@@ -1558,6 +1568,10 @@ navigate without an extra toggle.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Required unique technical key for record-based lookups.</td>
         </tr>
@@ -1590,6 +1604,10 @@ navigate without an extra toggle.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Lookup dialog columns. Record-based lookups require at least one `visible: true` column.</td>
@@ -1624,6 +1642,10 @@ navigate without an extra toggle.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Lookup search configuration.</td>
         </tr>
@@ -1657,8 +1679,51 @@ navigate without an extra toggle.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Mapping from grid row fields to lookup record fields.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>caseSensitive</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Whether lookup editor matching preserves case. When `false`, matching ignores case but committed values still come from the matched record.</td>
         </tr>
 
     
@@ -1689,6 +1754,10 @@ navigate without an extra toggle.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Default context merged into load params.</td>
@@ -1723,6 +1792,10 @@ navigate without an extra toggle.
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Async or sync loader receiving `{ query, rowData, field, context }`.</td>
         </tr>
@@ -1755,6 +1828,10 @@ navigate without an extra toggle.
                 </td>
             
 
+            
+                <td class="default">
+                
+                </td>
             
 
             <td class="description last">Cache options.
@@ -1948,7 +2025,7 @@ navigate without an extra toggle.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_lookup.js.html">lib/lookup.js</a>, <a href="lib_lookup.js.html#line78">line 78</a>
+        <a href="lib_lookup.js.html">lib/lookup.js</a>, <a href="lib_lookup.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -2014,7 +2091,12 @@ navigate without an extra toggle.
 
 
 <div class="description">
-    Create a Multifield Lookup (MLK) definition.`AMB.mlk(...)` links one editable master cell to a complete lookup record.A normal lookup answers "which value goes in this cell?"; an MLK answers"which external record is attached to this row, and which row fields mustbe updated together?". The mapping is explicit: every `{ from, field }`pair maps `lookupRecord[from]` to `row[field]`.Keyboard behavior is inherited from the lookup editor: when the master cellis closed, `Enter` opens the lookup dialog and `Tab`/`Shift+Tab` navigatebetween cells. When the dialog is open, focus remains in the dialog,arrows move selection, `Enter` selects, and `Escape` closes.
+    Create a Multifield Lookup (MLK) definition.`AMB.mlk(...)` links one editable master cell to a complete lookup record.A normal lookup answers "which value goes in this cell?"; an MLK answers"which external record is attached to this row, and which row fields mustbe updated together?". The mapping is explicit: every `{ from, field }`pair maps `lookupRecord[from]` to `row[field]`.Keyboard behavior is inherited from the lookup editor: when the master cell
+is closed, `Enter` opens the lookup dialog and `Tab`/`Shift+Tab` navigate
+between cells. When the dialog is open, focus remains in the dialog,
+arrows move selection, `Enter` selects, and `Escape` closes.
+Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
+`masterColumn({ editorOptions: { caseSensitive } })` overrides it.
 </div>
 
 
@@ -2470,7 +2552,7 @@ navigate without an extra toggle.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_mlk.js.html">lib/mlk.js</a>, <a href="lib_mlk.js.html#line100">line 100</a>
+        <a href="lib_mlk.js.html">lib/mlk.js</a>, <a href="lib_mlk.js.html#line102">line 102</a>
     </li></ul></dd>
     
 
@@ -4761,7 +4843,7 @@ navigate without an extra toggle.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line668">line 668</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line674">line 674</a>
     </li></ul></dd>
     
 
@@ -7419,6 +7501,43 @@ editable cell.
 
         <tr>
             
+                <td class="name"><code>caseSensitive</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Override lookup matching case sensitivity. Defaults to `lookupInstance.caseSensitive`, then `false`.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>validateOnBlur</code></td>
             
 
@@ -7840,7 +7959,7 @@ editable cell.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line50">line 50</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line51">line 51</a>
     </li></ul></dd>
     
 
@@ -8018,7 +8137,7 @@ named export for advanced or direct module usage.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_lookup.js.html">lib/lookup.js</a>, <a href="lib_lookup.js.html#line217">line 217</a>
+        <a href="lib_lookup.js.html">lib/lookup.js</a>, <a href="lib_lookup.js.html#line221">line 221</a>
     </li></ul></dd>
     
 
@@ -9276,7 +9395,7 @@ named export for advanced or direct module usage.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line544">line 544</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line550">line 550</a>
     </li></ul></dd>
     
 
@@ -9312,7 +9431,7 @@ named export for advanced or direct module usage.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jul 12 2026 12:04:37 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jul 12 2026 22:23:52 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

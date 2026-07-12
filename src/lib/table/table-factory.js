@@ -273,8 +273,14 @@ export const initializeLookupMetadataForRows = async (rows = [], lookupColumns =
                 const candidateValue = column.normalizeValue
                     ? column.normalizeValue(getLookupOptionValue(candidate, column.valueField))
                     : getLookupOptionValue(candidate, column.valueField);
+                const comparableCandidateValue = column.normalizeComparableValue
+                    ? column.normalizeComparableValue(candidateValue)
+                    : candidateValue;
+                const comparableValue = column.normalizeComparableValue
+                    ? column.normalizeComparableValue(value)
+                    : value;
 
-                return candidateValue === value;
+                return comparableCandidateValue === comparableValue;
             });
 
             description = item && item[column.labelField] !== undefined

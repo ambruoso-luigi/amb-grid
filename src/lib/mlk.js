@@ -84,6 +84,8 @@ const mergeCssClass = (...classes) => {
  * is closed, `Enter` opens the lookup dialog and `Tab`/`Shift+Tab` navigate
  * between cells. When the dialog is open, focus remains in the dialog,
  * arrows move selection, `Enter` selects, and `Escape` closes.
+ * Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
+ * `masterColumn({ editorOptions: { caseSensitive } })` overrides it.
  *
  * @param {object} options - MLK options.
  * @param {string} options.id - Non-empty MLK identifier for diagnostics.
