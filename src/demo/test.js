@@ -5,75 +5,128 @@ import './test.css';
 
 import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
+import {
+    MUNICIPALITY_LOOKUP_COLUMNS,
+    MUNICIPALITY_MAP_TO_ROW
+} from './multifield-lookup-config.js';
 
 const output = document.querySelector('#test-output');
 const selectionModeControl = document.querySelector('#selection-mode');
 let currentGrid = null;
 let currentMultifieldGrid = null;
 
-const customerLookupRecords = [
-    {
-        code: 'CUST-001',
-        name: 'Acme Manufacturing',
-        city: 'Milano',
-        country: 'IT'
-    },
-    {
-        code: 'CUST-002',
-        name: 'Northwind Traders',
-        city: 'Torino',
-        country: 'IT'
-    },
-    {
-        code: 'CUST-003',
-        name: 'Contoso Retail',
-        city: 'Roma',
-        country: 'IT'
-    },
-    {
-        code: 'CUST-004',
-        name: 'Fabrikam Logistics',
-        city: 'Bologna',
-        country: 'IT'
-    },
-    {
-        code: 'CUST-005',
-        name: 'Tailspin Distribution',
-        city: 'Verona',
-        country: 'IT'
-    }
-];
+const MLK_DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
+const municipalityMlkDefinition = {
+    id: 'municipality',
+    masterField: 'municipality',
+    dependentFields: [
+        {
+            rowField: 'province',
+            lookupField: 'province',
+            title: 'Province',
+            width: 100,
+            visibleInGrid: true,
+            readonly: true,
+            required: true
+        },
+        {
+            rowField: 'region',
+            lookupField: 'region',
+            title: 'Region',
+            width: 130,
+            visibleInGrid: true,
+            readonly: true,
+            required: true
+        },
+        {
+            rowField: 'postalCode',
+            lookupField: 'postalCode',
+            title: 'Postal Code',
+            width: 125,
+            visibleInGrid: true,
+            readonly: true,
+            required: true
+        },
+        {
+            rowField: 'istatCode',
+            lookupField: 'istatCode',
+            title: 'ISTAT Code',
+            width: 120,
+            visibleInGrid: true,
+            visibleInLookup: false,
+            readonly: true,
+            required: true
+        },
+        {
+            rowField: 'cadastralCode',
+            lookupField: 'cadastralCode',
+            title: 'Cadastral Code',
+            width: 155,
+            visibleInGrid: true,
+            visibleInLookup: false,
+            readonly: true,
+            required: true
+        }
+    ]
+};
 
 const createMultifieldRows = () => [
     {
         id: 1,
-        reference: 'ORD-1001',
-        customerCode: 'CUST-001',
-        customerName: 'Acme Manufacturing',
-        city: 'Milano',
-        country: 'IT',
-        note: 'Prefilled lookup row'
+        istatCode: '065078',
+        cadastralCode: 'F912',
+        municipality: 'Nocera Inferiore',
+        province: 'SA',
+        region: 'CAMPANIA',
+        postalCode: '84014'
     },
     {
         id: 2,
-        reference: 'ORD-1002',
-        customerCode: 'CUST-003',
-        customerName: 'Contoso Retail',
-        city: 'Roma',
-        country: 'IT',
-        note: 'Change the customer code'
+        istatCode: '015146',
+        cadastralCode: 'F205',
+        municipality: 'Milano',
+        province: 'MI',
+        region: 'LOMBARDIA',
+        postalCode: '20121'
     }
 ];
 
 const createEmptyMultifieldRow = () => ({
     id: null,
-    reference: '',
-    customerCode: '',
-    customerName: '',
-    city: '',
-    country: '',
-    note: ''
+    istatCode: '',
+    cadastralCode: '',
+    municipality: '',
+    province: '',
+    region: '',
+    postalCode: ''
 });
+
+const loadMunicipalities = async () => {
+    const response = await fetch(MLK_DATASET_URL);
+
+    if (!response.ok) {
+        throw new Error(`Unable to load the municipality test dataset (${response.status})`);
+    }
+
+    return response.json();
+};
+
+const filterMunicipalities = (records, query) => {
+    const normalizedQuery = String(query || '').trim().toLowerCase();
+
+    if (!normalizedQuery) return records;
+
+    return records.filter(record => {
+        return [
+            record.municipalityName,
+            record.province,
+            record.region,
+            record.postalCode,
+            record.istatCode,
+            record.cadastralCode
+        ].some(value => String(value || '').toLowerCase().includes(normalizedQuery));
+    });
+};
 
 const showTestOutput = (title, data) => {
     if (!output) return;
@@ -486,48 +539,41 @@ const createGrid = async (selectionMode = 'single') => {
     return grid;
 };
 
-const createMultifieldLookupGrid = () => {
-    const customerLookup = AMB.lookup({
-        keyField: 'code',
-        valueField: 'code',
-        labelField: 'name',
-        columns: [
-            { field: 'code', title: 'Code', visible: true, width: 120 },
-            { field: 'name', title: 'Customer', visible: true, width: 220 },
-            { field: 'city', title: 'City', visible: true, width: 130 },
-            { field: 'country', title: 'Country', visible: true, width: 100 }
-        ],
+const createMultifieldLookupGrid = async () => {
+    const tableMount = document.querySelector('#multifield-lookup-test-table');
+    const municipalities = await loadMunicipalities();
+    const municipalityLookup = AMB.lookup({
+        keyField: 'istatCode',
+        valueField: 'municipalityName',
+        labelField: 'municipalityName',
+        columns: MUNICIPALITY_LOOKUP_COLUMNS,
         search: {
             fields: 'visible'
         },
-        mapToRow: {
-            customerCode: 'code',
-            customerName: 'name',
-            city: 'city',
-            country: 'country'
-        },
+        mapToRow: MUNICIPALITY_MAP_TO_ROW,
         load: ({ query }) => {
-            const normalizedQuery = String(query || '').trim().toLowerCase();
-
-            if (!normalizedQuery) return customerLookupRecords;
-
-            return customerLookupRecords.filter(record => {
-                return [
-                    record.code,
-                    record.name,
-                    record.city,
-                    record.country
-                ].some(value => value.toLowerCase().includes(normalizedQuery));
-            });
+            return filterMunicipalities(municipalities, query);
         }
     });
-    const customerDialog = new AMB.LookupDialog();
+    const municipalityDialog = new AMB.LookupDialog();
+    const dependentColumns = municipalityMlkDefinition.dependentFields
+        .filter(field => field.visibleInGrid !== false)
+        .map(field => ({
+            title: field.title,
+            field: field.rowField,
+            width: field.width,
+            editable: field.readonly ? false : undefined,
+            required: field.required === true,
+            cssClass: field.readonly
+                ? 'amb-cell--readonly-passive amb-cell--derived'
+                : undefined
+        }));
     const grid = AMB.table({
         selector: '#multifield-lookup-test-table',
         deleteColumn: {
             enabled: true,
-            confirmDeleteMessage: 'Delete this lookup test row?',
-            confirmRemoveNewMessage: 'Remove this new lookup test row?'
+            confirmDeleteMessage: 'Delete this municipality row?',
+            confirmRemoveNewMessage: 'Remove this new municipality row?'
         },
         toolbar: {
             buttons: [
@@ -543,68 +589,38 @@ const createMultifieldLookupGrid = () => {
         layout: 'fitColumns',
         columns: [
             {
-                title: 'Reference',
-                field: 'reference',
-                width: 130,
-                editor: AMB.editors.text({ uppercase: true, trim: true }),
-                required: true
-            },
-            {
-                title: 'Customer code',
-                field: 'customerCode',
-                width: 145,
+                title: 'Municipality',
+                field: municipalityMlkDefinition.masterField,
+                width: 220,
                 required: true,
-                editor: AMB.editors.lookup(customerLookup, {
-                    uppercase: true,
+                cssClass: 'amb-cell--actionable',
+                editor: AMB.editors.lookup(municipalityLookup, {
                     allowEmpty: false,
-                    dialog: customerDialog,
-                    dialogTitle: 'Select customer',
-                    invalidMessage: 'Unknown customer code',
+                    dialog: municipalityDialog,
+                    dialogTitle: 'Select an Italian municipality',
+                    invalidMessage: 'Unknown municipality',
                     autoComplete: true,
-                    autoCompleteMinChars: 1,
+                    autoCompleteMinChars: 2,
                     autoCompleteOnTab: true,
+                    searchPlaceholder: 'Search municipality, province, region, or postal code...',
                     dialogOptions: {
                         closeOnBackdropClick: false,
                         pagination: {
                             enabled: true,
-                            pageSize: 4,
-                            controls: 'simple'
+                            pageSize: 100,
+                            controls: 'full'
                         },
                         destroyOnClose: true
                     }
                 })
             },
-            {
-                title: 'Customer name',
-                field: 'customerName',
-                width: 210,
-                editor: AMB.editors.text({ trim: true })
-            },
-            {
-                title: 'City',
-                field: 'city',
-                width: 120,
-                editor: AMB.editors.text({ trim: true })
-            },
-            {
-                title: 'Country',
-                field: 'country',
-                width: 95,
-                editor: AMB.editors.text({ uppercase: true, trim: true })
-            },
-            {
-                title: 'Note',
-                field: 'note',
-                width: 180,
-                widthGrow: 1,
-                editor: AMB.editors.text({ trim: true })
-            }
+            ...dependentColumns
         ]
     });
     const originalDestroy = grid.destroy.bind(grid);
 
     grid.destroy = () => {
-        customerDialog.destroy();
+        municipalityDialog.destroy();
         originalDestroy();
     };
 
@@ -614,7 +630,8 @@ const createMultifieldLookupGrid = () => {
     }
 
     function handleShowPayload({ payload }) {
-        showTestOutput('Multifield lookup payload', {
+        showTestOutput('MLK municipality payload', {
+            definition: municipalityMlkDefinition,
             payload,
             report: buildStateSummary(grid.crud.getStateReport())
         });
@@ -623,7 +640,8 @@ const createMultifieldLookupGrid = () => {
     function handleValidate() {
         const validateResult = grid.crud.validateAll();
 
-        showTestOutput('Multifield lookup validation', {
+        showTestOutput('MLK municipality validation', {
+            definition: municipalityMlkDefinition,
             isValid: validateResult.isValid,
             validateResult,
             payload: grid.crud.getSavePayload({ includeInvalid: true })
@@ -631,8 +649,15 @@ const createMultifieldLookupGrid = () => {
         grid.feedback.show({
             type: validateResult.isValid ? 'success' : 'warning',
             message: validateResult.isValid
-                ? 'Multifield lookup rows are valid.'
-                : 'Multifield lookup rows contain errors.'
+                ? 'MLK municipality rows are valid.'
+                : 'MLK municipality rows contain errors.'
+        });
+    }
+
+    if (tableMount) {
+        showTestOutput('MLK municipality dataset loaded', {
+            rows: municipalities.length,
+            definition: municipalityMlkDefinition
         });
     }
 
@@ -652,13 +677,13 @@ const mountGrid = async () => {
     currentGrid = await createGrid(selectionMode);
 };
 
-const mountMultifieldLookupGrid = () => {
+const mountMultifieldLookupGrid = async () => {
     if (currentMultifieldGrid && typeof currentMultifieldGrid.destroy === 'function') {
         currentMultifieldGrid.destroy();
         currentMultifieldGrid = null;
     }
 
-    currentMultifieldGrid = createMultifieldLookupGrid();
+    currentMultifieldGrid = await createMultifieldLookupGrid();
 };
 
 selectionModeControl?.addEventListener('change', () => {
@@ -673,7 +698,7 @@ selectionModeControl?.addEventListener('change', () => {
 
 const mountTestPage = async () => {
     await mountGrid();
-    mountMultifieldLookupGrid();
+    await mountMultifieldLookupGrid();
 };
 
 mountTestPage().catch(error => {

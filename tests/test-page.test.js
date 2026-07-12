@@ -34,17 +34,21 @@ describe('technical test page', () => {
         expect(testSource).not.toContain("uncheckedLabel: 'No'");
     });
 
-    test('adds an isolated multifield lookup test grid', () => {
+    test('adds an isolated MLK municipality baseline grid', () => {
         expect(testHtml).toContain('id="multifield-lookup-test-table"');
-        expect(testHtml).toContain('Multifield lookup test');
-        expect(testSource).toContain('const createMultifieldLookupGrid = () => {');
+        expect(testHtml).toContain('MLK baseline - Italian municipalities');
+        expect(testSource).toContain('const createMultifieldLookupGrid = async () => {');
         expect(testSource).toContain("selector: '#multifield-lookup-test-table'");
-        expect(testSource).toContain('mapToRow: {');
-        expect(testSource).toContain("customerCode: 'code'");
-        expect(testSource).toContain("customerName: 'name'");
-        expect(testSource).toContain("city: 'city'");
-        expect(testSource).toContain("country: 'country'");
-        expect(testSource).toContain('AMB.editors.lookup(customerLookup');
-        expect(testSource).toContain('currentMultifieldGrid = createMultifieldLookupGrid();');
+        expect(testSource).toContain('MUNICIPALITY_LOOKUP_COLUMNS');
+        expect(testSource).toContain('MUNICIPALITY_MAP_TO_ROW');
+        expect(testSource).toContain("valueField: 'municipalityName'");
+        expect(testSource).toContain("masterField: 'municipality'");
+        expect(testSource).toContain("rowField: 'province'");
+        expect(testSource).toContain("rowField: 'region'");
+        expect(testSource).toContain("rowField: 'postalCode'");
+        expect(testSource).toContain("rowField: 'istatCode'");
+        expect(testSource).toContain("rowField: 'cadastralCode'");
+        expect(testSource).toContain('AMB.editors.lookup(municipalityLookup');
+        expect(testSource).toContain('currentMultifieldGrid = await createMultifieldLookupGrid();');
     });
 });
