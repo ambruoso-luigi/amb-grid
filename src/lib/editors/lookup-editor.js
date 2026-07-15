@@ -27,6 +27,7 @@ import { getInitialValue, getLookupOptionValue } from './shared.js';
      * @param {boolean} [options.autoComplete=false] - Enable inline lookup suggestions.
      * @param {number} [options.autoCompleteMinChars=1] - Minimum query length for suggestions.
      * @param {boolean} [options.autoCompleteOnTab=true] - Accept the best matching suggestion with Tab, including while an autocomplete request is pending.
+     * @param {boolean} [options.showDescription=true] - Show the lookup description in the cell hover message. Metadata is still kept when disabled.
      * @param {string} [options.invalidMessage='Invalid lookup code'] - Error message for invalid typed codes.
      * @param {object} [options.context] - Context passed to lookup loads.
      * @param {Array<object>} [options.columns] - Dialog columns.
@@ -59,6 +60,7 @@ export function lookup(lookupInstance, options = {}) {
             autoComplete: false,
             autoCompleteMinChars: 1,
             autoCompleteOnTab: true,
+            showDescription: true,
             invalidMessage: 'Invalid lookup code',
             caseSensitive: lookupInstance && lookupInstance.caseSensitive === true,
             columns: lookupInstance && lookupInstance.columns,
@@ -67,6 +69,7 @@ export function lookup(lookupInstance, options = {}) {
             dialogOptions: {},
             ...options
         };
+        normalizedOptions.showDescription = normalizedOptions.showDescription !== false;
         const keyField = lookupInstance && lookupInstance.keyField;
         const valueField = lookupInstance && lookupInstance.valueField
             ? lookupInstance.valueField
@@ -177,7 +180,11 @@ export function lookup(lookupInstance, options = {}) {
 
                 if (!cellElement) return;
 
-                cellElement.dataset.lookupField = field;
+                if (normalizedOptions.showDescription) {
+                    cellElement.dataset.lookupField = field;
+                } else {
+                    delete cellElement.dataset.lookupField;
+                }
             };
 
             const closeWithLookupItem = (value, item) => {
@@ -734,7 +741,8 @@ export function lookup(lookupInstance, options = {}) {
             context: normalizedOptions.context || {},
             normalizeValue,
             normalizeComparableValue,
-            caseSensitive: normalizedOptions.caseSensitive
+            caseSensitive: normalizedOptions.caseSensitive,
+            showDescription: normalizedOptions.showDescription
         };
         editor._ambSetLookupErrorHandlers = handlers => {
             normalizedOptions.markInvalid = handlers.markInvalid;

@@ -2607,7 +2607,13 @@ navigate without an extra toggle.
 
 
 <div class="description">
-    Create a Multifield Lookup (MLK) definition.`AMB.mlk(...)` links one editable master cell to a complete lookup record.A normal lookup answers "which value goes in this cell?"; an MLK answers"which external record is attached to this row, and which row fields mustbe updated together?". The mapping is explicit: every `{ from, field }`pair maps `lookupRecord[from]` to `row[field]`.Keyboard behavior is inherited from the lookup editor: when the master cell
+    Create a Multifield Lookup definition.
+
+`AMB.multifieldLookup(...)` links one editable master cell to a complete lookup record.
+A normal lookup answers "which value goes in this cell?"; a Multifield Lookup answers
+"which external record is attached to this row, and which row fields must
+be updated together?". The mapping is explicit: every `{ from, field }`
+pair maps `lookupRecord[from]` to `row[field]`.Keyboard behavior is inherited from the lookup editor: when the master cell
 is closed, `Enter` opens the lookup dialog and `Tab`/`Shift+Tab` navigate
 between cells. When the dialog is open, focus remains in the dialog,
 arrows move selection, `Enter` selects, and `Escape` closes.
@@ -2664,7 +2670,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
 
             
 
-            <td class="description last">MLK options.
+            <td class="description last">Multifield Lookup options.
                 <h6>Properties</h6>
                 
 
@@ -2722,7 +2728,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
                 </td>
             
 
-            <td class="description last">Non-empty MLK identifier for diagnostics.</td>
+            <td class="description last">Non-empty Multifield Lookup identifier for diagnostics.</td>
         </tr>
 
     
@@ -3068,7 +3074,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_mlk.js.html">lib/mlk.js</a>, <a href="lib_mlk.js.html#line102">line 102</a>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line102">line 102</a>
     </li></ul></dd>
     
 
@@ -3097,7 +3103,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
 
         
 <div class="param-desc">
-    MLK definition and column helpers.
+    Multifield Lookup definition and column helpers.
 </div>
 
 
@@ -3134,7 +3140,10 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
 
 
 <div class="description">
-    Create an AMB-managed CRUD grid powered by a Tabulator table.The returned object exposes the raw Tabulator instance as `table` and aCrudHelper instance as `crud`. Tabulator provides the table engine; AMB Gridprovides the CRUD application layer, column validation, rollback handling,lookup behavior, initial lookup description metadata for loaded rows, savepayloads, optional row action and selection columns, hover messages, largetext previews, search helpers, and lifecycle cleanup. Lookup columns createdwith `AMB.editors.lookup(...)` are marked on rendered cells and theirprefilled values are resolved asynchronously into internal metadata aftertable build and data reloads, so hover descriptions can work before a cell isedited.Column validators can be provided with `validator`, `required`, or astructured `validation` object. Most validators do not imply required:use `required: true`, `validation.required`, or `AMB.validators.required()`when empty values should fail validation.AMB numeric editors/formatters receive `hozAlign: 'right'` by default andAMB date editors/formatters receive `hozAlign: 'center'` by default, onlywhen the column did not already define `hozAlign`.Tabulator pagination options are still passed through unchanged when`pagination` is boolean. AMB also accepts an object-style paginationconvenience layer:`{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.Object-style pagination is translated to Tabulator options before tablecreation and takes precedence over equivalent `paginationMode`,`paginationSize`, and `paginationSizeSelector` values. Remote pagination isonly forwarded to Tabulator; AMB does not add backend/server-side behavior.When pagination is enabled, AMB sets Tabulator's `paginationAddRow` to`'table'` unless explicitly provided, so `crud.addRow(...)` appends to thewhole table, uses the Tabulator row component to open the page containingthe new row when possible, and attempts to focus the first editable visibledata cell. Action/delete columns are not candidates for automatic focus.
+    Create an AMB-managed CRUD grid powered by a Tabulator table.The returned object exposes the raw Tabulator instance as `table` and aCrudHelper instance as `crud`. Tabulator provides the table engine; AMB Gridprovides the CRUD application layer, column validation, rollback handling,lookup behavior, initial lookup description metadata for loaded rows, savepayloads, optional row action and selection columns, hover messages, largetext previews, search helpers, and lifecycle cleanup. Lookup columns createdwith `AMB.editors.lookup(...)` are marked on rendered cells and theirprefilled values are resolved asynchronously into internal metadata aftertable build and data reloads. When lookup description floating messages are
+enabled, lookup cells are marked on render so hover descriptions can work
+before a cell is edited.
+Column validators can be provided with `validator`, `required`, or astructured `validation` object. Most validators do not imply required:use `required: true`, `validation.required`, or `AMB.validators.required()`when empty values should fail validation.AMB numeric editors/formatters receive `hozAlign: 'right'` by default andAMB date editors/formatters receive `hozAlign: 'center'` by default, onlywhen the column did not already define `hozAlign`.Tabulator pagination options are still passed through unchanged when`pagination` is boolean. AMB also accepts an object-style paginationconvenience layer:`{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.Object-style pagination is translated to Tabulator options before tablecreation and takes precedence over equivalent `paginationMode`,`paginationSize`, and `paginationSizeSelector` values. Remote pagination isonly forwarded to Tabulator; AMB does not add backend/server-side behavior.When pagination is enabled, AMB sets Tabulator's `paginationAddRow` to`'table'` unless explicitly provided, so `crud.addRow(...)` appends to thewhole table, uses the Tabulator row component to open the page containingthe new row when possible, and attempts to focus the first editable visibledata cell. Action/delete columns are not candidates for automatic focus.
 </div>
 
 
@@ -4877,6 +4886,271 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
 
         <tr>
             
+                <td class="name"><code>floatingMessages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Hover message options. Set `false` to disable all `teh-floating-message` output.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>enabled</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Enable all floating message channels.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>lookupDescriptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Show lookup description hover messages.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validationErrors</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Show validation error hover messages.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>largeTextPreviews</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Show large text preview hover messages.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>searchFilterStatus</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Show search filter status hover messages.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>toolbar</code></td>
             
 
@@ -5359,7 +5633,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line674">line 674</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line738">line 738</a>
     </li></ul></dd>
     
 
@@ -8210,6 +8484,45 @@ editable cell.
 
         <tr>
             
+                <td class="name"><code>showDescription</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Show the lookup description in the cell hover message. Metadata is still kept when disabled.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>invalidMessage</code></td>
             
 
@@ -8475,7 +8788,7 @@ editable cell.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line51">line 51</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -9911,7 +10224,7 @@ named export for advanced or direct module usage.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line550">line 550</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line607">line 607</a>
     </li></ul></dd>
     
 
@@ -9947,7 +10260,7 @@ named export for advanced or direct module usage.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jul 12 2026 22:51:19 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jul 15 2026 17:16:13 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

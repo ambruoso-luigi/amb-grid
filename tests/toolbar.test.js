@@ -586,6 +586,57 @@ describe('AMB toolbar', () => {
         }
     });
 
+    test('can disable search filter status hover without disabling the filters dialog', async () => {
+        const harness = createHarness({
+            buttons: ['add'],
+            onAdd: vi.fn()
+        });
+        const table = {
+            addFilter: vi.fn(),
+            removeFilter: vi.fn()
+        };
+        const floatingMessage = {
+            scheduleShow: vi.fn(),
+            hide: vi.fn()
+        };
+
+        try {
+            const searchController = createSearchController({
+                selector: '#table',
+                search: {
+                    enabled: true,
+                    filters: { enabled: true }
+                },
+                columns: [{ field: 'title', title: 'Title' }],
+                table,
+                floatingMessage,
+                showFilterStatus: false,
+                mountElement: harness.controller.searchMount
+            });
+            const searchToolbar = harness.controller.searchMount.children[0];
+            const filtersButton = searchToolbar.children[1];
+
+            expect(filtersButton.listeners.has('mouseover')).toBe(false);
+            expect(filtersButton.listeners.has('mouseout')).toBe(false);
+
+            await filtersButton.dispatch('mouseover');
+            expect(floatingMessage.scheduleShow).not.toHaveBeenCalled();
+
+            const dialogSpy = vi
+                .spyOn(SearchFiltersDialog.prototype, 'open')
+                .mockResolvedValue({ applied: false });
+
+            await filtersButton.dispatch('click');
+            expect(dialogSpy).toHaveBeenCalledOnce();
+
+            dialogSpy.mockRestore();
+            searchController.destroy();
+        } finally {
+            harness.controller.destroy();
+            harness.restore();
+        }
+    });
+
     test('keeps library and demo CSS imports separate', () => {
         const demoMain = fs.readFileSync(
             new URL('../src/demo/main.js', import.meta.url),

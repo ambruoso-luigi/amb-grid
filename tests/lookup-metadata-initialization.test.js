@@ -6,8 +6,10 @@ import {
     bindLookupMetadataInitialization,
     collectLookupColumns,
     initializeLookupMetadataForRows,
+    normalizeFloatingMessageOptions,
     prepareLookupColumns
 } from '../src/lib/table/table-factory.js';
+import { getSearchableValues } from '../src/lib/table/search-controller.js';
 import {
     createLargeTextBinder,
     createLookupDescriptionBinder
@@ -128,10 +130,16 @@ const createStatusLookup = loadFn => createLookup({
 });
 
 const createLookupColumn = (lookupSource = createStatusLookup(), options = {}) => {
+    const editorOptions = options.editorOptions || {};
+    const {
+        editorOptions: _editorOptions,
+        ...columnOptions
+    } = options;
+
     return {
         field: 'status',
-        editor: createLookupEditor(lookupSource),
-        ...options
+        editor: createLookupEditor(lookupSource, editorOptions),
+        ...columnOptions
     };
 };
 
@@ -150,6 +158,56 @@ const createTableForHover = (row, tableElement = new ElementMock('tabulator')) =
 });
 
 describe('lookup metadata initialization', () => {
+    test('normalizes floating message options', () => {
+        expect(normalizeFloatingMessageOptions()).toEqual({
+            enabled: true,
+            lookupDescriptions: true,
+            validationErrors: true,
+            largeTextPreviews: true,
+            searchFilterStatus: true
+        });
+        expect(normalizeFloatingMessageOptions(true)).toEqual({
+            enabled: true,
+            lookupDescriptions: true,
+            validationErrors: true,
+            largeTextPreviews: true,
+            searchFilterStatus: true
+        });
+        expect(normalizeFloatingMessageOptions(false)).toEqual({
+            enabled: false,
+            lookupDescriptions: false,
+            validationErrors: false,
+            largeTextPreviews: false,
+            searchFilterStatus: false
+        });
+        expect(normalizeFloatingMessageOptions({})).toEqual({
+            enabled: true,
+            lookupDescriptions: true,
+            validationErrors: true,
+            largeTextPreviews: true,
+            searchFilterStatus: true
+        });
+        expect(normalizeFloatingMessageOptions({ enabled: false })).toEqual({
+            enabled: false,
+            lookupDescriptions: false,
+            validationErrors: false,
+            largeTextPreviews: false,
+            searchFilterStatus: false
+        });
+        expect(normalizeFloatingMessageOptions({ lookupDescriptions: false }))
+            .toMatchObject({
+                enabled: true,
+                lookupDescriptions: false,
+                validationErrors: true
+            });
+        expect(normalizeFloatingMessageOptions({ validationErrors: false }))
+            .toMatchObject({ enabled: true, validationErrors: false });
+        expect(normalizeFloatingMessageOptions({ largeTextPreviews: false }))
+            .toMatchObject({ enabled: true, largeTextPreviews: false });
+        expect(normalizeFloatingMessageOptions({ searchFilterStatus: false }))
+            .toMatchObject({ enabled: true, searchFilterStatus: false });
+    });
+
     test('initializes lookup description metadata for prefilled rows without opening the editor', async () => {
         const rowData = { status: 'A001' };
         const lookupColumns = collectPreparedLookupColumns([
@@ -177,6 +235,100 @@ describe('lookup metadata initialization', () => {
 
         expect(cellElement.dataset.lookupField).toBe('status');
         expect(output).toBe('A001');
+    });
+
+    test('lookup showDescription defaults to true and can disable only the hover marker', async () => {
+        const defaultColumn = createLookupColumn();
+        const disabledColumn = createLookupColumn(createStatusLookup(), {
+            editorOptions: {
+                showDescription: false
+            }
+        });
+
+        expect(defaultColumn.editor._ambLookupConfig.showDescription).toBe(true);
+        expect(disabledColumn.editor._ambLookupConfig.showDescription).toBe(false);
+
+        const [preparedDefault] = prepareLookupColumns([defaultColumn]);
+        const [preparedDisabled] = prepareLookupColumns([disabledColumn]);
+        const defaultCellElement = new ElementMock('tabulator-cell');
+        const disabledCellElement = new ElementMock('tabulator-cell');
+
+        disabledCellElement.dataset.lookupField = 'previous';
+        preparedDefault.formatter({
+            getElement: () => defaultCellElement,
+            getField: () => 'status',
+            getValue: () => 'A001'
+        });
+        preparedDisabled.formatter({
+            getElement: () => disabledCellElement,
+            getField: () => 'status',
+            getValue: () => 'A001'
+        });
+
+        expect(defaultCellElement.dataset.lookupField).toBe('status');
+        expect(disabledCellElement.dataset.lookupField).toBeUndefined();
+
+        const rowData = { status: 'A001' };
+        const lookupColumns = collectLookupColumns(prepareLookupColumns([disabledColumn]));
+
+        await initializeLookupMetadataForRows([createRow(rowData)], lookupColumns);
+
+        expect(getLookupMetadata(rowData, 'status').current).toEqual({
+            value: 'A001',
+            description: 'Available for standard warehouse picking'
+        });
+        expect(getSearchableValues(rowData, 'status'))
+            .toContain('Available for standard warehouse picking');
+    });
+
+    test('preserves an application formatter while removing hover markers when showDescription is disabled', () => {
+        const customFormatter = vi.fn(() => '<strong>A001</strong>');
+        const [column] = prepareLookupColumns([
+            createLookupColumn(createStatusLookup(), {
+                editorOptions: {
+                    showDescription: false
+                },
+                formatter: customFormatter
+            })
+        ]);
+        const cellElement = new ElementMock('tabulator-cell');
+        const cell = {
+            getElement: () => cellElement,
+            getField: () => 'status',
+            getValue: () => 'A001'
+        };
+
+        cellElement.dataset.lookupField = 'previous';
+
+        expect(column.formatter(cell, { custom: true }, 'rendered'))
+            .toBe('<strong>A001</strong>');
+        expect(customFormatter).toHaveBeenCalledWith(cell, { custom: true }, 'rendered');
+        expect(cellElement.dataset.lookupField).toBeUndefined();
+    });
+
+    test('table lookupDescriptions false prevents lookup hover markers but keeps metadata columns', async () => {
+        const [column] = prepareLookupColumns([
+            createLookupColumn()
+        ], {
+            lookupDescriptions: false
+        });
+        const cellElement = new ElementMock('tabulator-cell');
+        const rowData = { status: 'A001' };
+        const lookupColumns = collectLookupColumns([column]);
+
+        cellElement.dataset.lookupField = 'previous';
+        column.formatter({
+            getElement: () => cellElement,
+            getField: () => 'status',
+            getValue: () => 'A001'
+        });
+
+        expect(cellElement.dataset.lookupField).toBeUndefined();
+        expect(lookupColumns).toHaveLength(1);
+
+        await initializeLookupMetadataForRows([createRow(rowData)], lookupColumns);
+        expect(getLookupMetadata(rowData, 'status').current.description)
+            .toBe('Available for standard warehouse picking');
     });
 
     test('lookup hover binder reads initial description metadata', async () => {
@@ -212,6 +364,38 @@ describe('lookup metadata initialization', () => {
                 message: 'Available for standard warehouse picking'
             })
         );
+    });
+
+    test('lookup hover binder can be disabled without touching lookup metadata', async () => {
+        const rowData = { status: 'A001' };
+        const rowElement = new ElementMock('tabulator-row');
+        const cellElement = new ElementMock('tabulator-cell');
+        const tableElement = new ElementMock('tabulator');
+        const floatingMessage = {
+            scheduleShow: vi.fn(),
+            hide: vi.fn()
+        };
+
+        rowElement.appendChild(cellElement);
+        cellElement.dataset.lookupField = 'status';
+        setLookupMetadata(
+            rowData,
+            'status',
+            'A001',
+            'Available for standard warehouse picking',
+            { setInitial: true }
+        );
+
+        createLookupDescriptionBinder(
+            createTableForHover(createRow(rowData, rowElement), tableElement),
+            floatingMessage,
+            { enabled: false }
+        );
+        await tableElement.dispatch('mouseover', { target: cellElement });
+
+        expect(floatingMessage.scheduleShow).not.toHaveBeenCalled();
+        expect(getLookupMetadata(rowData, 'status').current.description)
+            .toBe('Available for standard warehouse picking');
     });
 
     test('deduplicates repeated lookup values across rows', async () => {
@@ -383,5 +567,28 @@ describe('lookup metadata initialization', () => {
                 message: 'Long operational note for the warehouse team.'
             })
         );
+    });
+
+    test('large text hover binder can be disabled', async () => {
+        const rowData = { notes: 'Long operational note for the warehouse team.' };
+        const rowElement = new ElementMock('tabulator-row');
+        const cellElement = new ElementMock('tabulator-cell');
+        const tableElement = new ElementMock('tabulator');
+        const floatingMessage = {
+            scheduleShow: vi.fn(),
+            hide: vi.fn()
+        };
+
+        rowElement.appendChild(cellElement);
+        cellElement.dataset.largeTextField = 'notes';
+
+        createLargeTextBinder(
+            createTableForHover(createRow(rowData, rowElement), tableElement),
+            floatingMessage,
+            { enabled: false }
+        );
+        await tableElement.dispatch('mouseover', { target: cellElement });
+
+        expect(floatingMessage.scheduleShow).not.toHaveBeenCalled();
     });
 });

@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import { describe, expect, test, vi } from 'vitest';
 import { createLookup } from '../src/lib/lookup.js';
-import { createMultifieldLookup } from '../src/lib/mlk.js';
+import {
+    createMultifieldLookup,
+    multifieldLookup
+} from '../src/lib/multifield-lookup.js';
 
 const ambSource = fs.readFileSync(
     new URL('../src/lib/amb.js', import.meta.url),
@@ -47,10 +50,10 @@ const createMunicipalityLookup = ({
     load: load || (() => rows)
 });
 
-const createMunicipalityMlk = (options = {}) => {
+const createMunicipalityMultifieldLookup = (options = {}) => {
     const {
         lookup = createMunicipalityLookup(),
-        ...mlkOptions
+        ...multifieldLookupOptions
     } = options;
 
     return createMultifieldLookup({
@@ -100,7 +103,7 @@ const createMunicipalityMlk = (options = {}) => {
             required: true
         }
     ],
-    ...mlkOptions
+    ...multifieldLookupOptions
     });
 };
 
@@ -140,14 +143,14 @@ const flushDeferred = () => new Promise(resolve => {
     globalThis.setTimeout(resolve, 0);
 });
 
-const createMlkEditorHarness = ({
+const createMultifieldLookupEditorHarness = ({
     rows = [milanoRecord],
     columnOptions = {},
     lookup = createMunicipalityLookup({ rows }),
     initialRowData = {}
 } = {}) => {
-    const mlk = createMunicipalityMlk({ lookup });
-    const column = mlk.masterColumn({
+    const multifieldLookup = createMunicipalityMultifieldLookup({ lookup });
+    const column = multifieldLookup.masterColumn({
         dialog: null,
         ...columnOptions
     });
@@ -200,16 +203,49 @@ const createMlkEditorHarness = ({
         container,
         input: container.children[0],
         lookup,
-        mlk,
+        multifieldLookup,
         rowData,
         success
     };
 };
 
-describe('AMB.mlk', () => {
-    test('is exposed from the public AMB namespace', () => {
-        expect(ambSource).toContain("import { createMultifieldLookup } from './mlk.js'");
-        expect(ambSource).toContain('mlk: createMultifieldLookup');
+describe('AMB.multifieldLookup', () => {
+    test('is exposed from the public AMB namespace', async () => {
+        const originalDocument = globalThis.document;
+        const originalWindow = globalThis.window;
+
+        globalThis.document = {
+            documentElement: {},
+            createElement: () => ({}),
+            createRange: () => ({
+                createContextualFragment: () => ({})
+            }),
+            addEventListener() {},
+            removeEventListener() {}
+        };
+        globalThis.window = {
+            document: globalThis.document,
+            addEventListener() {},
+            removeEventListener() {}
+        };
+
+        try {
+            const [{ AMB }, publicApi] = await Promise.all([
+                import('../src/lib/amb.js'),
+                import('../src/index.js')
+            ]);
+
+            expect(ambSource).toContain("import { createMultifieldLookup } from './multifield-lookup.js'");
+            expect(ambSource).toContain('multifieldLookup: createMultifieldLookup');
+            expect(AMB.multifieldLookup).toBe(createMultifieldLookup);
+            expect(AMB).not.toHaveProperty('mlk');
+            expect(multifieldLookup).toBe(createMultifieldLookup);
+            expect(publicApi.multifieldLookup).toBe(createMultifieldLookup);
+            expect(publicApi).not.toHaveProperty('mlk');
+        } finally {
+            globalThis.document = originalDocument;
+            globalThis.window = originalWindow;
+        }
     });
 
     test('validates required configuration', () => {
@@ -245,16 +281,21 @@ describe('AMB.mlk', () => {
             masterField: { field: 'name', from: 'name' },
             dependentFields: [{ field: 'province' }]
         })).toThrow(/dependentFields.from/);
+        expect(() => createMultifieldLookup({
+            id: 'x',
+            lookup: {},
+            masterField: { field: 'name', from: 'name' }
+        })).toThrow(/AMB\.multifieldLookup/);
     });
 
     test('normalizes dependent defaults without requiring technicalFields', () => {
-        const mlk = createMunicipalityMlk();
+        const multifieldLookup = createMunicipalityMultifieldLookup();
 
-        expect(mlk.readonlyDependents).toBe(true);
-        expect(mlk.clearDependentsOnEmptyMaster).toBe(true);
-        expect(mlk.clearDependentsOnInvalidMaster).toBe(true);
-        expect(mlk).not.toHaveProperty('technicalFields');
-        expect(mlk.dependentFields[0]).toMatchObject({
+        expect(multifieldLookup.readonlyDependents).toBe(true);
+        expect(multifieldLookup.clearDependentsOnEmptyMaster).toBe(true);
+        expect(multifieldLookup.clearDependentsOnInvalidMaster).toBe(true);
+        expect(multifieldLookup).not.toHaveProperty('technicalFields');
+        expect(multifieldLookup.dependentFields[0]).toMatchObject({
             field: 'province',
             from: 'province',
             readonly: true,
@@ -265,9 +306,9 @@ describe('AMB.mlk', () => {
     });
 
     test('creates an atomic patch using explicit from to field mapping', () => {
-        const mlk = createMunicipalityMlk();
+        const multifieldLookup = createMunicipalityMultifieldLookup();
 
-        expect(mlk.mapToRow).toEqual({
+        expect(multifieldLookup.mapToRow).toEqual({
             municipality: 'municipalityName',
             province: 'province',
             region: 'region',
@@ -275,7 +316,7 @@ describe('AMB.mlk', () => {
             istatCode: 'istatCode',
             cadastralCode: 'cadastralCode'
         });
-        expect(mlk.createPatch(records[0])).toEqual({
+        expect(multifieldLookup.createPatch(records[0])).toEqual({
             municipality: 'Ancona',
             province: 'AN',
             region: 'MARCHE',
@@ -286,29 +327,29 @@ describe('AMB.mlk', () => {
     });
 
     test('maps hidden lookup fields while keeping them out of dialog columns', () => {
-        const mlk = createMunicipalityMlk();
+        const multifieldLookup = createMunicipalityMultifieldLookup();
 
-        expect(mlk.lookupColumns.map(column => column.field)).toEqual([
+        expect(multifieldLookup.lookupColumns.map(column => column.field)).toEqual([
             'municipalityName',
             'province',
             'region',
             'postalCode'
         ]);
-        expect(mlk.createPatch(records[0]).istatCode).toBe('042002');
-        expect(mlk.createPatch(records[0]).cadastralCode).toBe('A271');
+        expect(multifieldLookup.createPatch(records[0]).istatCode).toBe('042002');
+        expect(multifieldLookup.createPatch(records[0]).cadastralCode).toBe('A271');
     });
 
     test('creates clear patches for dependent fields', () => {
-        const mlk = createMunicipalityMlk();
+        const multifieldLookup = createMunicipalityMultifieldLookup();
 
-        expect(mlk.createClearPatch()).toEqual({
+        expect(multifieldLookup.createClearPatch()).toEqual({
             province: '',
             region: '',
             postalCode: '',
             istatCode: '',
             cadastralCode: ''
         });
-        expect(mlk.createClearPatch({ includeMaster: true })).toEqual({
+        expect(multifieldLookup.createClearPatch({ includeMaster: true })).toEqual({
             municipality: '',
             province: '',
             region: '',
@@ -318,9 +359,9 @@ describe('AMB.mlk', () => {
         });
     });
 
-    test('masterColumn creates an autocomplete lookup editor with MLK mapping', () => {
-        const mlk = createMunicipalityMlk();
-        const column = mlk.masterColumn({
+    test('masterColumn creates an autocomplete lookup editor with Multifield Lookup mapping', () => {
+        const multifieldLookup = createMunicipalityMultifieldLookup();
+        const column = multifieldLookup.masterColumn({
             width: 220,
             dialog: { open: vi.fn() }
         });
@@ -329,30 +370,41 @@ describe('AMB.mlk', () => {
         expect(column.width).toBe(220);
         expect(column.required).toBe(true);
         expect(column.editor._ambEditorType).toBe('lookup');
-        expect(column.editor._ambLookupConfig.lookupInstance).toBe(mlk.lookup);
-        expect(mlk.lookup.caseSensitive).toBe(false);
+        expect(column.editor._ambLookupConfig.lookupInstance).toBe(multifieldLookup.lookup);
+        expect(multifieldLookup.lookup.caseSensitive).toBe(false);
         expect(column.editor._ambLookupConfig.caseSensitive).toBe(false);
     });
 
     test('masterColumn respects a caseSensitive editor override', () => {
-        const mlk = createMunicipalityMlk();
-        const column = mlk.masterColumn({
+        const multifieldLookup = createMunicipalityMultifieldLookup();
+        const column = multifieldLookup.masterColumn({
             editorOptions: {
                 caseSensitive: true
             }
         });
 
-        expect(mlk.lookup.caseSensitive).toBe(false);
+        expect(multifieldLookup.lookup.caseSensitive).toBe(false);
         expect(column.editor._ambLookupConfig.caseSensitive).toBe(true);
     });
 
-    test('case-insensitive MLK autocomplete applies one canonical master and dependent patch', async () => {
+    test('masterColumn forwards showDescription through editorOptions', () => {
+        const multifieldLookup = createMunicipalityMultifieldLookup();
+        const column = multifieldLookup.masterColumn({
+            editorOptions: {
+                showDescription: false
+            }
+        });
+
+        expect(column.editor._ambLookupConfig.showDescription).toBe(false);
+    });
+
+    test('case-insensitive Multifield Lookup autocomplete applies one canonical master and dependent patch', async () => {
         const originalDocument = globalThis.document;
 
         globalThis.document = { createElement };
 
         try {
-            const harness = createMlkEditorHarness();
+            const harness = createMultifieldLookupEditorHarness();
 
             harness.input.value = 'mila';
             await harness.input.dispatch('input', {
@@ -389,13 +441,13 @@ describe('AMB.mlk', () => {
         }
     });
 
-    test('caseSensitive override keeps lowercase MLK input invalid and clears stale dependents', async () => {
+    test('caseSensitive override keeps lowercase Multifield Lookup input invalid and clears stale dependents', async () => {
         const originalDocument = globalThis.document;
 
         globalThis.document = { createElement };
 
         try {
-            const harness = createMlkEditorHarness({
+            const harness = createMultifieldLookupEditorHarness({
                 columnOptions: {
                     editorOptions: {
                         caseSensitive: true
@@ -441,8 +493,8 @@ describe('AMB.mlk', () => {
     });
 
     test('dependentColumn creates readonly derived columns and validates fields', () => {
-        const mlk = createMunicipalityMlk();
-        const column = mlk.dependentColumn('province', {
+        const multifieldLookup = createMunicipalityMultifieldLookup();
+        const column = multifieldLookup.dependentColumn('province', {
             width: 100,
             title: 'Provincia'
         });
@@ -459,21 +511,21 @@ describe('AMB.mlk', () => {
         expect(column.validator.validate('', { municipality: '' })).toBe(true);
         expect(column.validator.validate('', { municipality: 'Ancona' })).toBe(false);
         expect(column.validator.validate('AN', { municipality: 'Ancona' })).toBe(true);
-        expect(() => mlk.dependentColumn('missing')).toThrow(/does not define dependent field/);
+        expect(() => multifieldLookup.dependentColumn('missing')).toThrow(/does not define dependent field/);
     });
 
     test('validates required master and required dependent values as a group', () => {
-        const mlk = createMunicipalityMlk();
+        const multifieldLookup = createMunicipalityMultifieldLookup();
 
-        expect(mlk.validateMasterValue('', {})).toBe(false);
-        expect(mlk.validateMasterValue('Ancona', {
+        expect(multifieldLookup.validateMasterValue('', {})).toBe(false);
+        expect(multifieldLookup.validateMasterValue('Ancona', {
             province: 'AN',
             region: 'MARCHE',
             postalCode: '60100',
             istatCode: '042002',
             cadastralCode: 'A271'
         })).toBe(true);
-        expect(mlk.validateMasterValue('Ancona', {
+        expect(multifieldLookup.validateMasterValue('Ancona', {
             province: '',
             region: 'MARCHE',
             postalCode: '60100',

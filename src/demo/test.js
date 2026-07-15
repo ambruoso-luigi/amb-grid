@@ -10,7 +10,7 @@ import { MUNICIPALITY_LOOKUP_COLUMNS } from './multifield-lookup-config.js';
 const output = document.querySelector('#test-output');
 const selectionModeControl = document.querySelector('#selection-mode');
 let currentGrid = null;
-let currentMultifieldGrid = null;
+let currentMultifieldLookupGrid = null;
 let currentAutocompleteGrid = null;
 
 const testLookupAutoCompleteOptions = {
@@ -96,8 +96,8 @@ const autocompleteCities = [
     'Vienna',
     'Warsaw'
 ];
-const MLK_DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
-const createMunicipalityMlk = municipalityLookup => AMB.mlk({
+const MULTIFIELD_LOOKUP_DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
+const createMunicipalityMultifieldLookup = municipalityLookup => AMB.multifieldLookup({
     id: 'municipality',
     lookup: municipalityLookup,
     masterField: {
@@ -211,7 +211,7 @@ const createEmptyAutocompleteRow = () => ({
 });
 
 const loadMunicipalities = async () => {
-    const response = await fetch(MLK_DATASET_URL);
+    const response = await fetch(MULTIFIELD_LOOKUP_DATASET_URL);
 
     if (!response.ok) {
         throw new Error(`Unable to load the municipality test dataset (${response.status})`);
@@ -442,6 +442,7 @@ const createGrid = async (selectionMode = 'single') => {
                 width: 118,
                 required: true,
                 editor: AMB.editors.lookup(statusLookup, {
+                    showDescription: false,
                     uppercase: true,
                     allowEmpty: false,
                     dialog: statusDialog,
@@ -662,7 +663,7 @@ const createMultifieldLookupGrid = async () => {
         }
     });
     const municipalityDialog = new AMB.LookupDialog();
-    const municipalityMlk = createMunicipalityMlk(municipalityLookup);
+    const municipalityMultifieldLookup = createMunicipalityMultifieldLookup(municipalityLookup);
     const grid = AMB.table({
         selector: '#multifield-lookup-test-table',
         deleteColumn: {
@@ -689,7 +690,7 @@ const createMultifieldLookupGrid = async () => {
                 width: 150,
                 editor: AMB.editors.text({ trim: true })
             },
-            municipalityMlk.masterColumn({
+            municipalityMultifieldLookup.masterColumn({
                 width: 220,
                 dialog: municipalityDialog,
                 editorOptions: {
@@ -707,11 +708,11 @@ const createMultifieldLookupGrid = async () => {
                     }
                 }
             }),
-            municipalityMlk.dependentColumn('province', { width: 100 }),
-            municipalityMlk.dependentColumn('region', { width: 130 }),
-            municipalityMlk.dependentColumn('postalCode', { width: 125 }),
-            municipalityMlk.dependentColumn('istatCode', { width: 120 }),
-            municipalityMlk.dependentColumn('cadastralCode', { width: 155 }),
+            municipalityMultifieldLookup.dependentColumn('province', { width: 100 }),
+            municipalityMultifieldLookup.dependentColumn('region', { width: 130 }),
+            municipalityMultifieldLookup.dependentColumn('postalCode', { width: 125 }),
+            municipalityMultifieldLookup.dependentColumn('istatCode', { width: 120 }),
+            municipalityMultifieldLookup.dependentColumn('cadastralCode', { width: 155 }),
             {
                 title: 'Text after',
                 field: 'textAfter',
@@ -733,8 +734,8 @@ const createMultifieldLookupGrid = async () => {
     }
 
     function handleShowPayload({ payload }) {
-        showTestOutput('MLK municipality payload', {
-            definition: municipalityMlk,
+        showTestOutput('Multifield Lookup municipality payload', {
+            definition: municipalityMultifieldLookup,
             payload,
             report: buildStateSummary(grid.crud.getStateReport())
         });
@@ -743,8 +744,8 @@ const createMultifieldLookupGrid = async () => {
     function handleValidate() {
         const validateResult = grid.crud.validateAll();
 
-        showTestOutput('MLK municipality validation', {
-            definition: municipalityMlk,
+        showTestOutput('Multifield Lookup municipality validation', {
+            definition: municipalityMultifieldLookup,
             isValid: validateResult.isValid,
             validateResult,
             payload: grid.crud.getSavePayload({ includeInvalid: true })
@@ -752,15 +753,15 @@ const createMultifieldLookupGrid = async () => {
         grid.feedback.show({
             type: validateResult.isValid ? 'success' : 'warning',
             message: validateResult.isValid
-                ? 'MLK municipality rows are valid.'
-                : 'MLK municipality rows contain errors.'
+                ? 'Multifield Lookup municipality rows are valid.'
+                : 'Multifield Lookup municipality rows contain errors.'
         });
     }
 
     if (tableMount) {
-        showTestOutput('MLK municipality dataset loaded', {
+        showTestOutput('Multifield Lookup municipality dataset loaded', {
             rows: municipalities.length,
-            definition: municipalityMlk
+            definition: municipalityMultifieldLookup
         });
     }
 
@@ -898,12 +899,12 @@ const mountGrid = async () => {
 };
 
 const mountMultifieldLookupGrid = async () => {
-    if (currentMultifieldGrid && typeof currentMultifieldGrid.destroy === 'function') {
-        currentMultifieldGrid.destroy();
-        currentMultifieldGrid = null;
+    if (currentMultifieldLookupGrid && typeof currentMultifieldLookupGrid.destroy === 'function') {
+        currentMultifieldLookupGrid.destroy();
+        currentMultifieldLookupGrid = null;
     }
 
-    currentMultifieldGrid = await createMultifieldLookupGrid();
+    currentMultifieldLookupGrid = await createMultifieldLookupGrid();
 };
 
 const mountAutocompleteGrid = () => {

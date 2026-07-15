@@ -10,13 +10,16 @@ export class FloatingMessage {
      * @param {object} [options] - Message options.
      * @param {number} [options.offset=8] - Vertical offset from the target element in pixels.
      * @param {number} [options.hoverDelay=300] - Delay used by `scheduleShow`, in milliseconds.
+     * @param {boolean} [options.enabled=true] - When `false`, no floating message DOM or timers are created.
      */
     constructor(options = {}) {
         this.options = {
             offset: 8,
             hoverDelay: 300,
+            enabled: true,
             ...options
         };
+        this.options.enabled = this.options.enabled !== false;
         this.element = null;
         this.titleElement = null;
         this.bodyElement = null;
@@ -75,6 +78,7 @@ export class FloatingMessage {
      * @returns {void}
      */
     show(targetElement, messageOptions = {}) {
+        if (!this.options.enabled) return;
         if (!targetElement) return;
 
         this._ensureElement();
@@ -96,6 +100,8 @@ export class FloatingMessage {
      */
     scheduleShow(targetElement, messageOptions = {}) {
         this._clearShowTimer();
+
+        if (!this.options.enabled) return;
 
         this.showTimer = window.setTimeout(() => {
             this.showTimer = null;

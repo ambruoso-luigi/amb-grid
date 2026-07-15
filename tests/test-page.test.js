@@ -37,13 +37,13 @@ describe('technical test page', () => {
         expect(testSource).not.toContain("uncheckedLabel: 'No'");
     });
 
-    test('adds an isolated MLK municipality baseline grid', () => {
+    test('adds an isolated Multifield Lookup municipality baseline grid', () => {
         expect(testHtml).toContain('id="multifield-lookup-test-table"');
-        expect(testHtml).toContain('Italian municipality MLK');
+        expect(testHtml).toContain('Italian municipality Multifield Lookup');
         expect(testSource).toContain('const createMultifieldLookupGrid = async () => {');
         expect(testSource).toContain("selector: '#multifield-lookup-test-table'");
         expect(testSource).toContain('MUNICIPALITY_LOOKUP_COLUMNS');
-        expect(testSource).toContain('AMB.mlk({');
+        expect(testSource).toContain('AMB.multifieldLookup({');
         expect(testSource).toContain("valueField: 'municipalityName'");
         expect(testSource).toContain("field: 'municipality'");
         expect(testSource).toContain("from: 'municipalityName'");
@@ -54,16 +54,16 @@ describe('technical test page', () => {
         expect(testSource).toContain("field: 'istatCode'");
         expect(testSource).toContain("visibleInLookup: false");
         expect(testSource).toContain("field: 'cadastralCode'");
-        expect(testSource).toContain('municipalityMlk.masterColumn({');
-        expect(testSource).toContain("municipalityMlk.dependentColumn('province'");
-        expect(testSource).toContain('currentMultifieldGrid = await createMultifieldLookupGrid();');
+        expect(testSource).toContain('municipalityMultifieldLookup.masterColumn({');
+        expect(testSource).toContain("municipalityMultifieldLookup.dependentColumn('province'");
+        expect(testSource).toContain('currentMultifieldLookupGrid = await createMultifieldLookupGrid();');
         expect(testSource).not.toContain('MUNICIPALITY_MAP_TO_ROW');
         expect(testSource).not.toContain('applyMunicipalitySelection');
         expect(testSource).not.toContain('createMunicipalityPatch');
         expect(testSource).not.toContain('mapToRow: MUNICIPALITY_MAP_TO_ROW');
     });
 
-    test('places the municipality MLK between normal text editor columns', () => {
+    test('places the municipality Multifield Lookup between normal text editor columns', () => {
         expect(testSource).toContain("textBefore: 'Before Nocera'");
         expect(testSource).toContain("textAfter: 'After Nocera'");
         expect(testSource).toContain("textBefore: 'Before Milano'");
@@ -77,9 +77,9 @@ describe('technical test page', () => {
                 .length
         ).toBeGreaterThanOrEqual(2);
         expect(testSource.indexOf("field: 'textBefore'")).toBeLessThan(
-            testSource.indexOf('municipalityMlk.masterColumn({')
+            testSource.indexOf('municipalityMultifieldLookup.masterColumn({')
         );
-        expect(testSource.indexOf("municipalityMlk.dependentColumn('cadastralCode'")).toBeLessThan(
+        expect(testSource.indexOf("municipalityMultifieldLookup.dependentColumn('cadastralCode'")).toBeLessThan(
             testSource.indexOf("field: 'textAfter'")
         );
     });
@@ -89,6 +89,7 @@ describe('technical test page', () => {
         expect(testSource).toContain('autoComplete: true');
         expect(testSource).toContain('autoCompleteMinChars: 1');
         expect(testSource).toContain('autoCompleteOnTab: true');
+        expect(testSource).toContain('showDescription: false');
         expect(
             testSource.match(/\.\.\.testLookupAutoCompleteOptions/g)
         ).toHaveLength(2);

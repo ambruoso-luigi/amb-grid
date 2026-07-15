@@ -169,6 +169,7 @@ export const createSearchController = ({
     columns,
     table,
     floatingMessage,
+    showFilterStatus = true,
     mountElement
 }) => {
     const searchOptions = normalizeSearchOptions(search);
@@ -343,8 +344,11 @@ export const createSearchController = ({
 
         if (toolbar.filtersButton) {
             toolbar.filtersButton.addEventListener('click', openFiltersDialog);
-            toolbar.filtersButton.addEventListener('mouseover', showFiltersMessage);
-            toolbar.filtersButton.addEventListener('mouseout', hideFiltersMessage);
+
+            if (showFilterStatus !== false) {
+                toolbar.filtersButton.addEventListener('mouseover', showFiltersMessage);
+                toolbar.filtersButton.addEventListener('mouseout', hideFiltersMessage);
+            }
         }
     }
 
@@ -376,8 +380,11 @@ export const createSearchController = ({
 
                 if (toolbar.filtersButton) {
                     toolbar.filtersButton.removeEventListener('click', openFiltersDialog);
-                    toolbar.filtersButton.removeEventListener('mouseover', showFiltersMessage);
-                    toolbar.filtersButton.removeEventListener('mouseout', hideFiltersMessage);
+
+                    if (showFilterStatus !== false) {
+                        toolbar.filtersButton.removeEventListener('mouseover', showFiltersMessage);
+                        toolbar.filtersButton.removeEventListener('mouseout', hideFiltersMessage);
+                    }
                 }
 
                 toolbar.toolbar.remove();

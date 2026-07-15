@@ -5,8 +5,10 @@ export class CellMessageBinder {
         this.options = {
             defaultTitle: 'Validation error',
             type: 'error',
+            enabled: true,
             ...options
         };
+        this.options.enabled = this.options.enabled !== false;
         this.cellListeners = new Map();
         this.unsubscribeHandlers = [
             this.crudHelper.on('cell-error', payload => {
@@ -24,6 +26,8 @@ export class CellMessageBinder {
         if (!cellElement) return;
 
         cellElement.removeAttribute('title');
+
+        if (!this.options.enabled) return;
 
         const existingListeners = this.cellListeners.get(cellElement);
 

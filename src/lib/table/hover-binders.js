@@ -1,6 +1,10 @@
 import { getLookupMetadata } from '../lookup-metadata.js';
 
-export const createLookupDescriptionBinder = (table, floatingMessage) => {
+export const createLookupDescriptionBinder = (table, floatingMessage, options = {}) => {
+    if (options.enabled === false) {
+        return () => {};
+    }
+
     const tableElement = table && table.element;
 
     if (!tableElement) {
@@ -66,7 +70,11 @@ export const createLookupDescriptionBinder = (table, floatingMessage) => {
     };
 };
 
-export const createLargeTextBinder = (table, floatingMessage) => {
+export const createLargeTextBinder = (table, floatingMessage, options = {}) => {
+    if (options.enabled === false) {
+        return () => {};
+    }
+
     const tableElement = table && table.element;
 
     if (!tableElement) {

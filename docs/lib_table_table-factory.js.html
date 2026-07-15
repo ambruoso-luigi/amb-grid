@@ -55,6 +55,13 @@ const DATE_FORMATTER_TYPES = new Set(['date']);
 const CHECKBOX_EDITOR_TYPES = new Set(['checkbox']);
 const DEFAULT_PAGINATION_MODE = 'local';
 const DEFAULT_PAGINATION_SIZE = 10;
+const DEFAULT_FLOATING_MESSAGE_OPTIONS = {
+    enabled: true,
+    lookupDescriptions: true,
+    validationErrors: true,
+    largeTextPreviews: true,
+    searchFilterStatus: true
+};
 
 const isPaginationConfig = pagination => {
     return pagination
@@ -102,6 +109,42 @@ export const normalizePaginationOptions = (options = {}) => {
     }
 
     return applyPaginationAddRowOption(nextOptions);
+};
+
+export const normalizeFloatingMessageOptions = (floatingMessages = undefined) => {
+    if (floatingMessages === false) {
+        return {
+            enabled: false,
+            lookupDescriptions: false,
+            validationErrors: false,
+            largeTextPreviews: false,
+            searchFilterStatus: false
+        };
+    }
+
+    const configured = floatingMessages &amp;&amp; typeof floatingMessages === 'object'
+        ? floatingMessages
+        : {};
+    const enabled = configured.enabled !== false;
+
+    if (!enabled) {
+        return {
+            enabled: false,
+            lookupDescriptions: false,
+            validationErrors: false,
+            largeTextPreviews: false,
+            searchFilterStatus: false
+        };
+    }
+
+    return {
+        ...DEFAULT_FLOATING_MESSAGE_OPTIONS,
+        enabled: true,
+        lookupDescriptions: configured.lookupDescriptions !== false,
+        validationErrors: configured.validationErrors !== false,
+        largeTextPreviews: configured.largeTextPreviews !== false,
+        searchFilterStatus: configured.searchFilterStatus !== false
+    };
 };
 
 const getAmbEditorType = column => {
@@ -163,12 +206,16 @@ const getLookupConfig = column => {
         : null;
 };
 
-const createLookupCellMarkerFormatter = (field, originalFormatter) => {
+const createLookupCellMarkerFormatter = (field, originalFormatter, showDescription = true) => {
     return (cell, formatterParams, onRendered) => {
         const cellElement = cell &amp;&amp; cell.getElement &amp;&amp; cell.getElement();
 
         if (cellElement) {
-            cellElement.dataset.lookupField = field || cell.getField?.();
+            if (showDescription) {
+                cellElement.dataset.lookupField = field || cell.getField?.();
+            } else {
+                delete cellElement.dataset.lookupField;
+            }
         }
 
         if (typeof originalFormatter === 'function') {
@@ -181,16 +228,25 @@ const createLookupCellMarkerFormatter = (field, originalFormatter) => {
     };
 };
 
-export const prepareLookupColumns = (columns = []) => {
+export const prepareLookupColumns = (columns = [], options = {}) => {
+    const lookupDescriptionsEnabled = options.lookupDescriptions !== false;
+
     return (columns || []).map(column => {
         const nextColumn = { ...column };
 
         if (nextColumn.columns) {
-            nextColumn.columns = prepareLookupColumns(nextColumn.columns);
+            nextColumn.columns = prepareLookupColumns(nextColumn.columns, options);
         }
 
+        const lookupConfig = getLookupConfig(nextColumn);
+        const showDescription = Boolean(
+            lookupDescriptionsEnabled
+            &amp;&amp; lookupConfig
+            &amp;&amp; lookupConfig.showDescription !== false
+        );
+
         if (
-            isLookupColumn(nextColumn)
+            lookupConfig
             &amp;&amp; (
                 nextColumn.formatter === undefined
                 || typeof nextColumn.formatter === 'function'
@@ -200,7 +256,8 @@ export const prepareLookupColumns = (columns = []) => {
                 nextColumn.field,
                 typeof nextColumn.formatter === 'function'
                     ? nextColumn.formatter
-                    : null
+                    : null,
+                showDescription
             );
         }
 
@@ -611,8 +668,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * text previews, search helpers, and lifecycle cleanup. Lookup columns created
  * with `AMB.editors.lookup(...)` are marked on rendered cells and their
  * prefilled values are resolved asynchronously into internal metadata after
- * table build and data reloads, so hover descriptions can work before a cell is
- * edited.
+ * table build and data reloads. When lookup description floating messages are
+ * enabled, lookup cells are marked on render so hover descriptions can work
+ * before a cell is edited.
  *
  * Column validators can be provided with `validator`, `required`, or a
  * structured `validation` object. Most validators do not imply required:
@@ -673,6 +731,12 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @param {boolean} [options.search.wholeWord=false] - Match the query as a complete word or phrase.
  * @param {object} [options.search.filters] - Search field filter options.
  * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
+ * @param {boolean|object} [options.floatingMessages] - Hover message options. Set `false` to disable all `teh-floating-message` output.
+ * @param {boolean} [options.floatingMessages.enabled=true] - Enable all floating message channels.
+ * @param {boolean} [options.floatingMessages.lookupDescriptions=true] - Show lookup description hover messages.
+ * @param {boolean} [options.floatingMessages.validationErrors=true] - Show validation error hover messages.
+ * @param {boolean} [options.floatingMessages.largeTextPreviews=true] - Show large text preview hover messages.
+ * @param {boolean} [options.floatingMessages.searchFilterStatus=true] - Show search filter status hover messages.
  * @param {boolean|object} [options.toolbar=true] - Backend-agnostic CRUD toolbar. Set `false` to disable.
  * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
  * @param {Array.&lt;string|object>} [options.toolbar.buttons=['add','reload','save']] - Built-in ids or simple custom button definitions.
@@ -708,9 +772,11 @@ export function createTable(options = {}) {
         selectionColumn,
         search,
         toolbar,
+        floatingMessages,
         errorStyle,
         ...tabulatorOptions
     } = options;
+    const normalizedFloatingMessages = normalizeFloatingMessageOptions(floatingMessages);
     const normalizedMessages = {
         ...DEFAULT_MESSAGES,
         ...messages
@@ -718,7 +784,8 @@ export function createTable(options = {}) {
     const extracted = extractColumnValidators(columns, normalizedMessages);
     const dataColumns = prepareCheckboxColumns(
         prepareLookupColumns(
-            wrapEditableForDeletedRows(extracted.columns, () => crud)
+            wrapEditableForDeletedRows(extracted.columns, () => crud),
+            { lookupDescriptions: normalizedFloatingMessages.lookupDescriptions }
         ),
         () => crud
     );
@@ -760,11 +827,19 @@ export function createTable(options = {}) {
     unsubscribeSelectionColumn = selectionColumnController &amp;&amp; typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
         : null;
-    const floatingMessage = new FloatingMessage();
-    const cellMessageBinder = new CellMessageBinder(crud, floatingMessage);
-    unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage);
+    const floatingMessage = new FloatingMessage({
+        enabled: normalizedFloatingMessages.enabled
+    });
+    const cellMessageBinder = new CellMessageBinder(crud, floatingMessage, {
+        enabled: normalizedFloatingMessages.validationErrors
+    });
+    unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage, {
+        enabled: normalizedFloatingMessages.lookupDescriptions
+    });
     unsubscribeLookupMetadata = bindLookupMetadataInitialization(table, lookupColumns);
-    unsubscribeLargeText = createLargeTextBinder(table, floatingMessage);
+    unsubscribeLargeText = createLargeTextBinder(table, floatingMessage, {
+        enabled: normalizedFloatingMessages.largeTextPreviews
+    });
     toolbarController = createToolbar({
         selector,
         toolbar,
@@ -789,6 +864,7 @@ export function createTable(options = {}) {
         columns: alignedDataColumns,
         table,
         floatingMessage,
+        showFilterStatus: normalizedFloatingMessages.searchFilterStatus,
         mountElement: toolbarController ? toolbarController.searchMount : null
     });
 
@@ -958,7 +1034,7 @@ export function createTable(options = {}) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Jul 12 2026 22:51:19 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jul 15 2026 17:16:13 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

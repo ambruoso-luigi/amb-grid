@@ -359,9 +359,10 @@ only visible columns, while selection resolves the complete indexed record.
 All mapped values pass through the AMB CRUD lifecycle, including row state,
 field validation, rollback, and save payload generation.
 
-`AMB.mlk(...)` is the dedicated Multifield Lookup API. A normal lookup answers
-"which value should this cell store?". An MLK answers "which external record is
-attached to this row, and which row fields must update together?".
+`AMB.multifieldLookup(...)` is the dedicated Multifield Lookup API. A normal
+lookup answers "which value should this cell store?". A Multifield Lookup
+answers "which external record is attached to this row, and which row fields
+must update together?".
 
 ```js
 const municipalityLookup = AMB.lookup({
@@ -373,7 +374,7 @@ const municipalityLookup = AMB.lookup({
   load: () => municipalityRecords
 });
 
-const municipalityMlk = AMB.mlk({
+const municipalityMultifieldLookup = AMB.multifieldLookup({
   id: 'municipality',
   lookup: municipalityLookup,
   masterField: {
@@ -401,25 +402,66 @@ const municipalityMlk = AMB.mlk({
 });
 
 const columns = [
-  municipalityMlk.masterColumn({ width: 220 }),
-  municipalityMlk.dependentColumn('province', { width: 100 }),
-  municipalityMlk.dependentColumn('region', { width: 130 }),
-  municipalityMlk.dependentColumn('postalCode', { width: 125 }),
-  municipalityMlk.dependentColumn('istatCode', { width: 120 })
+  municipalityMultifieldLookup.masterColumn({ width: 220 }),
+  municipalityMultifieldLookup.dependentColumn('province', { width: 100 }),
+  municipalityMultifieldLookup.dependentColumn('region', { width: 130 }),
+  municipalityMultifieldLookup.dependentColumn('postalCode', { width: 125 }),
+  municipalityMultifieldLookup.dependentColumn('istatCode', { width: 120 })
 ];
 ```
 
-The MLK mapping uses `{ from, field }`: `from` is the lookup record field and
-`field` is the row field. Selecting a record or accepting a valid autocomplete
-match applies one patch containing the master plus every dependent field.
-MLK uses the same `caseSensitive` setting as its lookup by default, and a single
-master column can override it with `masterColumn({ editorOptions: { caseSensitive: true } })`.
+The Multifield Lookup mapping uses `{ from, field }`: `from` is the lookup
+record field and `field` is the row field. Selecting a record or accepting a
+valid autocomplete match applies one patch containing the master plus every
+dependent field. Multifield Lookup uses the same `caseSensitive` setting as its
+lookup by default, and a single master column can override it with
+`masterColumn({ editorOptions: { caseSensitive: true } })`.
 Dependent fields are readonly by default, remain normal row fields for payload,
 validation, state report and rollback, and do not require a separate
 `technicalFields` option. If the master becomes empty or invalid, dependent
 fields are cleared by default so stale data from a previous record is not kept.
 `visibleInLookup: false` hides a lookup field from the dialog but does not
 prevent it from being mapped into the row.
+
+Lookup description hover messages are enabled by default. Disable only the
+hover presentation for one lookup editor with `showDescription: false`; lookup
+metadata is still initialized and kept for search, rollback, payload and other
+library behavior:
+
+```js
+AMB.editors.lookup(statusLookup, {
+  showDescription: false
+});
+```
+
+At table level, `floatingMessages` controls every hover message rendered with
+the shared `teh-floating-message` component:
+
+```js
+AMB.table({
+  selector: '#grid',
+  data,
+  columns,
+  floatingMessages: {
+    lookupDescriptions: true,
+    validationErrors: true,
+    largeTextPreviews: true,
+    searchFilterStatus: true
+  }
+});
+```
+
+Use `floatingMessages: false` to disable all floating hover messages without
+disabling lookup metadata, validation, large text editing or search filters:
+
+```js
+AMB.table({
+  selector: '#grid',
+  data,
+  columns,
+  floatingMessages: false
+});
+```
 
 The municipality demo is dialog-only: clicking the Municipality cell opens the
 lookup without creating a text input or an in-cell lookup button. Province,
