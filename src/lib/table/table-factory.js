@@ -624,6 +624,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSearchState - Return search query and selected search fields.
  * @property {Function} setSearchFields - Set the active search fields.
  * @property {Function} setSearchOptions - Set case-sensitive and whole-word search options.
+ * @property {Function} redraw - Redraw the grid through the internal table engine.
+ * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
+ * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
  * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
  * @property {FeedbackRegion} feedback - Accessible grid status region.
  * @property {Function} destroy - Destroy the complete AMB-managed grid, including the Tabulator table.
@@ -933,6 +936,41 @@ export function createTable(options = {}) {
 
             searchController.setSearchOptions(options);
             return true;
+        },
+        /**
+         * Redraws the grid.
+         *
+         * This method delegates the operation to the internal table engine and
+         * returns the result produced by that engine.
+         *
+         * @param {...any} args - Arguments forwarded to the internal engine.
+         * @returns {any} Result returned by the internal engine.
+         */
+        redraw(...args) {
+            return table.redraw(...args);
+        },
+        /**
+         * Temporarily suspends automatic redraws.
+         *
+         * Use this around a short group of consecutive grid operations, then
+         * call `restoreRedraw()` to let the internal table engine resume normal
+         * redraw behavior.
+         *
+         * @returns {any} Result returned by the internal engine.
+         */
+        blockRedraw() {
+            return table.blockRedraw();
+        },
+        /**
+         * Restores automatic redraws after `blockRedraw()`.
+         *
+         * This forwards the call to the underlying table engine, allowing it to
+         * perform any redraw that remained pending while redraws were blocked.
+         *
+         * @returns {any} Result returned by the internal engine.
+         */
+        restoreRedraw() {
+            return table.restoreRedraw();
         },
         destroy() {
             if (toolbarController) {
