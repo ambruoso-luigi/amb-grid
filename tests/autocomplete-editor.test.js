@@ -61,6 +61,7 @@ vi.mock('awesomplete', () => ({
                     this.input.dispatch('awesomplete-open');
                 }
             });
+            this.input.addEventListener('input', () => this.evaluate());
             awesompleteMock.instances.push(this);
         }
 
@@ -105,6 +106,21 @@ vi.mock('awesomplete', () => ({
 }));
 
 const { autocomplete } = await import('../src/lib/editors/autocomplete-editor.js');
+
+const autocompleteCities = [
+    'Amsterdam',
+    'Athens',
+    'Bari',
+    'Barcelona',
+    'Berlin',
+    'Bilbao',
+    'Bologna',
+    'Bordeaux',
+    'Boston',
+    'Bremen',
+    'Brussels',
+    'Budapest'
+];
 
 class EventTargetMock {
     constructor() {
@@ -356,6 +372,10 @@ const createEditorHarness = (
 const flushDeferred = () => new Promise(resolve => {
     globalThis.setTimeout(resolve, 0);
 });
+
+const getSuggestionValues = awesomplete => {
+    return awesomplete.suggestions.map(item => item.value);
+};
 
 describe('autocomplete editor options', () => {
     test('provides stable strict defaults', () => {
@@ -818,7 +838,217 @@ describe('autocomplete editor lifecycle', () => {
             expect(harness.input.value).toBe('Finance');
             expect(harness.input.setSelectionRange).toHaveBeenCalledWith(4, 7);
             expect(inputEvents).toHaveBeenCalledOnce();
-            expect(harness.awesomplete.evaluate).not.toHaveBeenCalled();
+            expect(harness.awesomplete.evaluate).toHaveBeenCalledOnce();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test.each([
+        ['B'],
+        ['b']
+    ])('inline completion for %s keeps the dropdown filtered by typed prefix', typedValue => {
+        const harness = createEditorHarness({
+            maxOptions: 5,
+            caseSensitive: false,
+            commitMatchedValue: true
+        }, '', autocompleteCities);
+
+        try {
+            harness.input.setSelectionRange.mockClear();
+            harness.input.value = typedValue;
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            expect(harness.input.value).toBe('Bari');
+            expect(harness.input.setSelectionRange).toHaveBeenCalledWith(1, 4);
+            expect(getSuggestionValues(harness.awesomplete)).toEqual([
+                'Bari',
+                'Barcelona',
+                'Berlin',
+                'Bilbao',
+                'Bologna'
+            ]);
+            expect(getSuggestionValues(harness.awesomplete)).not.toEqual(['Bari']);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('progressive typing replaces the selected suffix and keeps all matching suggestions', () => {
+        const harness = createEditorHarness({
+            maxOptions: 5,
+            caseSensitive: false,
+            commitMatchedValue: true
+        }, '', autocompleteCities);
+
+        try {
+            harness.input.value = 'B';
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+            harness.input.setSelectionRange.mockClear();
+
+            harness.input.value = 'Bo';
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            expect(harness.input.value).toBe('Bologna');
+            expect(harness.input.setSelectionRange).toHaveBeenCalledWith(2, 7);
+            expect(getSuggestionValues(harness.awesomplete)).toEqual([
+                'Bologna',
+                'Bordeaux',
+                'Boston'
+            ]);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('an explicitly selected suggestion wins over the first canonical completion', () => {
+        const harness = createEditorHarness({
+            maxOptions: 5,
+            caseSensitive: false,
+            commitMatchedValue: true
+        }, '', autocompleteCities);
+
+        try {
+            harness.input.value = 'B';
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+            harness.input.dispatch('awesomplete-selectcomplete', {
+                text: { value: 'Berlin' }
+            });
+
+            expect(harness.success).toHaveBeenCalledWith('Berlin');
+            expect(harness.success).not.toHaveBeenCalledWith('Bari');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('ArrowDown can select a non-first suggestion from the full prefix dropdown', () => {
+        const harness = createEditorHarness({
+            maxOptions: 5,
+            caseSensitive: false,
+            commitMatchedValue: true
+        }, '', autocompleteCities);
+
+        try {
+            harness.input.value = 'B';
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(harness.success).toHaveBeenCalledWith('Berlin');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test.each([
+        ['Enter', false],
+        ['Tab', false],
+        ['Tab', true],
+        ['blur', false]
+    ])('B committed with %s saves the first canonical match', async (key, shiftKey) => {
+        const harness = createEditorHarness({
+            maxOptions: 5,
+            caseSensitive: false,
+            commitMatchedValue: true
+        }, '', autocompleteCities, {
+            withRowNavigation: key === 'Tab'
+        });
+
+        try {
+            harness.input.value = 'B';
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            if (key === 'blur') {
+                harness.input.dispatch('blur');
+            } else {
+                harness.input.dispatch('keydown', { key, shiftKey });
+            }
+
+            expect(harness.success).toHaveBeenCalledWith('Bari');
+
+            if (key === 'Tab') {
+                await flushDeferred();
+                const targetCell = shiftKey
+                    ? harness.previousCell
+                    : harness.nextCell;
+
+                expect(targetCell.edit).toHaveBeenCalledOnce();
+            }
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('commitMatchedValue false preserves typed text while keeping the full dropdown', () => {
+        const harness = createEditorHarness({
+            maxOptions: 5,
+            caseSensitive: false,
+            commitMatchedValue: false
+        }, '', autocompleteCities);
+
+        try {
+            harness.input.value = 'B';
+            harness.input.dispatch('input', {
+                inputType: 'insertText'
+            });
+
+            expect(harness.input.value).toBe('B');
+            expect(getSuggestionValues(harness.awesomplete)).toEqual([
+                'Bari',
+                'Barcelona',
+                'Berlin',
+                'Bilbao',
+                'Bologna'
+            ]);
+
+            harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            harness.input.dispatch('keydown', { key: 'ArrowDown' });
+            harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(harness.success).toHaveBeenCalledWith('Berlin');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('delete input updates the dropdown without reapplying inline completion', () => {
+        const harness = createEditorHarness({
+            maxOptions: 5,
+            caseSensitive: false,
+            commitMatchedValue: true
+        }, '', autocompleteCities);
+
+        try {
+            harness.input.setSelectionRange.mockClear();
+            harness.input.value = 'Bo';
+            harness.input.dispatch('input', {
+                inputType: 'deleteContentBackward'
+            });
+
+            expect(harness.input.value).toBe('Bo');
+            expect(harness.input.setSelectionRange).not.toHaveBeenCalled();
+            expect(getSuggestionValues(harness.awesomplete)).toEqual([
+                'Bologna',
+                'Bordeaux',
+                'Boston'
+            ]);
         } finally {
             harness.restore();
         }

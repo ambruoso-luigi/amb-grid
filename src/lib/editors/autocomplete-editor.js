@@ -444,7 +444,6 @@ export function autocomplete(values, options = {}) {
             }
         };
 
-        input.addEventListener('input', handleInput);
         input.addEventListener('awesomplete-highlight', handleHighlight);
         input.addEventListener('awesomplete-selectcomplete', handleSelectComplete);
 
@@ -453,6 +452,7 @@ export function autocomplete(values, options = {}) {
                 input,
                 getAwesompleteOptions(suggestionValues, normalizedOptions)
             );
+            input.addEventListener('input', handleInput);
             floatingAutocomplete = createFloatingAutocomplete({
                 input,
                 awesomplete,
