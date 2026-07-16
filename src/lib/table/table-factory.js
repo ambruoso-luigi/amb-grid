@@ -624,6 +624,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSearchState - Return search query and selected search fields.
  * @property {Function} setSearchFields - Set the active search fields.
  * @property {Function} setSearchOptions - Set case-sensitive and whole-word search options.
+ * @property {Function} getData - Return the current grid row data.
+ * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} redraw - Redraw the grid through the internal table engine.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
  * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
@@ -936,6 +938,40 @@ export function createTable(options = {}) {
 
             searchController.setSearchOptions(options);
             return true;
+        },
+        /**
+         * Returns the current grid data.
+         *
+         * An optional row range can be provided to limit the returned rows. For
+         * example, the `"active"` range returns rows currently included after
+         * filters and search conditions have been applied.
+         *
+         * This method returns runtime row data as-is. It does not create an AMB
+         * Grid save payload or remove technical fields. Returned row objects
+         * should be treated as read-only because direct changes may bypass CRUD
+         * tracking.
+         *
+         * @param {...any} args - Optional arguments used to select the requested rows.
+         * @returns {object[]} Current row data.
+         */
+        getData(...args) {
+            return table.getData(...args);
+        },
+        /**
+         * Returns the number of rows in the requested row range.
+         *
+         * An optional row range can be provided. For example, `"active"` returns
+         * the number of rows currently included after filters and search
+         * conditions have been applied.
+         *
+         * This method reads the current grid state without modifying filters,
+         * search, pagination, selection, or AMB Grid CRUD state.
+         *
+         * @param {...any} args - Optional arguments used to select the row range.
+         * @returns {number} Number of rows in the requested range.
+         */
+        getDataCount(...args) {
+            return table.getDataCount(...args);
         },
         /**
          * Redraws the grid.
