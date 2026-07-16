@@ -618,9 +618,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSelectedRows - Return selected row data using the existing AMB Grid compatibility behavior.
  * @property {Function} getSelectedData - Return the data objects for the selected rows.
  * @property {Function} getSelectedRowComponents - Return the components for the selected rows.
- * @property {Function} clearSelection - Clear the current row selection.
- * @property {Function} selectRow - Select a row by backend id or AMB temporary id.
- * @property {Function} deselectRow - Deselect a row by backend id or AMB temporary id.
+ * @property {Function} clearSelection - Clear the complete row selection.
+ * @property {Function} selectRow - Select one row by backend id or AMB temporary id.
+ * @property {Function} deselectRow - Deselect one row by backend id or AMB temporary id.
  * @property {Function} setSearchQuery - Set the global search query.
  * @property {Function} clearSearch - Clear global search state.
  * @property {Function} getSearchState - Return search query and selected search fields.
@@ -932,11 +932,31 @@ export function createTable(options = {}) {
         getSelectedRowComponents() {
             return table.getSelectedRows();
         },
+        /**
+         * Clears the current row selection.
+         *
+         * All selected rows are deselected. The method performs no operation
+         * when row deselection is not available.
+         *
+         * @returns {void}
+         */
         clearSelection() {
             if (typeof table.deselectRow === 'function') {
                 table.deselectRow();
             }
         },
+        /**
+         * Selects one row using an AMB Grid row identifier.
+         *
+         * Backend identifiers and AMB Grid temporary identifiers are resolved
+         * through the CRUD layer.
+         *
+         * This method currently selects one row at a time. Arrays, row ranges
+         * and select-all behavior are not part of this AMB Grid method contract.
+         *
+         * @param {*} identifier - Backend id or AMB temporary id.
+         * @returns {boolean} `true` when the row is selected, otherwise `false`.
+         */
         selectRow(identifier) {
             const row = crud.findRowByKey(identifier);
 
@@ -945,6 +965,19 @@ export function createTable(options = {}) {
             row.select();
             return true;
         },
+        /**
+         * Deselects one row using an AMB Grid row identifier.
+         *
+         * Backend identifiers and AMB Grid temporary identifiers are resolved
+         * through the CRUD layer.
+         *
+         * This method currently deselects one row at a time. Arrays, row ranges
+         * and deselect-all behavior are not part of this method; use
+         * `clearSelection()` to clear the complete selection.
+         *
+         * @param {*} identifier - Backend id or AMB temporary id.
+         * @returns {boolean} `true` when the row is deselected, otherwise `false`.
+         */
         deselectRow(identifier) {
             const row = crud.findRowByKey(identifier);
 
