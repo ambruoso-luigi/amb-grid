@@ -628,6 +628,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
+ * @property {Function} getRowPosition - Return the one-based position of a row.
+ * @property {Function} getRowFromPosition - Return the row component at a numerical position.
  * @property {Function} redraw - Redraw the grid through the internal table engine.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
  * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
@@ -1012,6 +1014,38 @@ export function createTable(options = {}) {
             if (ambRow) return ambRow;
 
             return table.getRow(identifier);
+        },
+        /**
+         * Returns the current numerical position of a row.
+         *
+         * Positions start at 1. Backend identifiers and AMB Grid temporary
+         * identifiers are resolved through the CRUD layer, while other supported
+         * row lookup values retain their normal behavior.
+         *
+         * The method returns `false` when a position is not currently available
+         * and does not modify the row or grid state.
+         *
+         * @param {*} identifier - Backend id, AMB temporary id, or supported row lookup value.
+         * @param {...any} args - Additional position lookup arguments.
+         * @returns {number|false} Current one-based row position, or `false`.
+         */
+        getRowPosition(identifier, ...args) {
+            const ambRow = crud.findRowByKey(identifier);
+
+            return table.getRowPosition(ambRow || identifier, ...args);
+        },
+        /**
+         * Returns the row component at a numerical position.
+         *
+         * Positions start at 1. The returned component exposes advanced row
+         * operations, so direct mutations may bypass or interfere with AMB Grid
+         * CRUD tracking.
+         *
+         * @param {...any} args - Position lookup arguments.
+         * @returns {object|false} Row component at the requested position, or `false`.
+         */
+        getRowFromPosition(...args) {
+            return table.getRowFromPosition(...args);
         },
         /**
          * Redraws the grid.
