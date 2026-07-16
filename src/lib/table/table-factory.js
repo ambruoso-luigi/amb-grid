@@ -626,6 +626,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSearchState - Return search query and selected search fields.
  * @property {Function} setSearchFields - Set the active search fields.
  * @property {Function} setSearchOptions - Set case-sensitive and whole-word search options.
+ * @property {Function} getHeaderFilters - Return the current column header filters.
+ * @property {Function} getHeaderFilterValue - Return the current header filter value for a column.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} getRows - Return row components in the requested range.
@@ -1021,6 +1023,28 @@ export function createTable(options = {}) {
 
             searchController.setSearchOptions(options);
             return true;
+        },
+        /**
+         * Returns the current column header filters.
+         *
+         * Header filters are returned independently from programmatic filters
+         * and from the AMB Grid global search state.
+         *
+         * @returns {object[]} Current header filter definitions.
+         */
+        getHeaderFilters() {
+            return table.getHeaderFilters();
+        },
+        /**
+         * Returns the current header filter value for a column.
+         *
+         * The column can be identified using any supported column lookup value.
+         *
+         * @param {*} columnLookup - Column field, component, element or supported lookup value.
+         * @returns {*} Current header filter value.
+         */
+        getHeaderFilterValue(columnLookup) {
+            return table.getHeaderFilterValue(columnLookup);
         },
         /**
          * Returns the current grid data.
