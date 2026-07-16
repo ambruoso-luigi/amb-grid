@@ -615,8 +615,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @typedef {object} AMBTableController
  * @property {object} table - Raw Tabulator table instance.
  * @property {CrudHelper} crud - CRUD application layer for row state, validation, rollback, and save payloads.
- * @property {Function} getSelectedRows - Return currently selected row data.
- * @property {Function} clearSelection - Clear the Tabulator row selection.
+ * @property {Function} getSelectedRows - Return selected row data using the existing AMB Grid compatibility behavior.
+ * @property {Function} getSelectedData - Return the data objects for the selected rows.
+ * @property {Function} getSelectedRowComponents - Return the components for the selected rows.
+ * @property {Function} clearSelection - Clear the current row selection.
  * @property {Function} selectRow - Select a row by backend id or AMB temporary id.
  * @property {Function} deselectRow - Deselect a row by backend id or AMB temporary id.
  * @property {Function} setSearchQuery - Set the global search query.
@@ -889,10 +891,46 @@ export function createTable(options = {}) {
          * @internal
          */
         _confirmDialog: confirmDialog,
+        /**
+         * Returns the data objects for the selected rows.
+         *
+         * This AMB Grid compatibility method returns selected row data rather
+         * than row components. Use `getSelectedRowComponents()` when component
+         * access is required.
+         *
+         * @returns {object[]} Data objects for the selected rows.
+         */
         getSelectedRows() {
             return typeof table.getSelectedData === 'function'
                 ? table.getSelectedData()
                 : [];
+        },
+        /**
+         * Returns the data objects for the selected rows.
+         *
+         * Rows are returned in their selection order. The method returns runtime
+         * grid data as-is and does not create an AMB Grid save payload or remove
+         * technical fields.
+         *
+         * Returned objects should be treated as read-only because direct
+         * mutation may bypass CRUD tracking.
+         *
+         * @returns {object[]} Data objects for the selected rows.
+         */
+        getSelectedData() {
+            return table.getSelectedData();
+        },
+        /**
+         * Returns the row components for the selected rows.
+         *
+         * Components are returned in their selection order. Row components
+         * expose advanced operations, so direct mutations may bypass or
+         * interfere with AMB Grid CRUD tracking.
+         *
+         * @returns {object[]} Components for the selected rows.
+         */
+        getSelectedRowComponents() {
+            return table.getSelectedRows();
         },
         clearSelection() {
             if (typeof table.deselectRow === 'function') {
