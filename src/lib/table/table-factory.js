@@ -637,6 +637,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} nextPage - Show the next page.
  * @property {Function} previousPage - Show the previous page.
  * @property {Function} setPageSize - Change the number of rows displayed on each page.
+ * @property {Function} setPageToRow - Show the local pagination page containing a row.
  * @property {Function} redraw - Redraw the grid through the internal table engine.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
  * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
@@ -1137,6 +1138,27 @@ export function createTable(options = {}) {
          */
         setPageSize(size) {
             return table.setPageSize(size);
+        },
+        /**
+         * Shows the local pagination page containing the requested row.
+         *
+         * Backend identifiers and AMB Grid temporary identifiers are resolved
+         * through the CRUD layer. Other supported row lookup values retain their
+         * normal behavior.
+         *
+         * With remote pagination, the page of a row that has not been loaded
+         * cannot be determined without specific backend support.
+         *
+         * This method does not automatically save, validate or confirm pending
+         * AMB Grid changes.
+         *
+         * @param {*} identifier - Backend id, AMB temporary id, or supported row lookup value.
+         * @returns {Promise} Promise completed after the row page has been displayed.
+         */
+        setPageToRow(identifier) {
+            const ambRow = crud.findRowByKey(identifier);
+
+            return table.setPageToRow(ambRow || identifier);
         },
         /**
          * Redraws the grid.

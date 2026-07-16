@@ -8,6 +8,24 @@ const crudMock = vi.hoisted(() => ({
     instances: []
 }));
 
+const rowNavigationMock = vi.hoisted(() => {
+    const createRowComponent = name => ({
+        name,
+        select: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        scrollTo: vi.fn(),
+        show: vi.fn(),
+        edit: vi.fn()
+    });
+
+    return {
+        savedRow: createRowComponent('saved-row'),
+        tempRow: createRowComponent('temp-row'),
+        fallbackRow: createRowComponent('fallback-row')
+    };
+});
+
 vi.mock('tabulator-tables', () => ({
     TabulatorFull: class TabulatorMock {
         constructor(selector, options) {
@@ -27,10 +45,9 @@ vi.mock('tabulator-tables', () => ({
             this.previousPage = vi.fn();
             this.setPageSize = vi.fn();
             this.setPageToRow = vi.fn();
-            this.setFilter = vi.fn();
-            this.clearFilter = vi.fn();
             this.selectRow = vi.fn();
             this.deselectRow = vi.fn();
+            this.scrollToRow = vi.fn();
             this.redraw = vi.fn(() => 'redraw-result');
             this.blockRedraw = vi.fn(() => 'block-result');
             this.restoreRedraw = vi.fn(() => 'restore-result');
@@ -51,7 +68,12 @@ vi.mock('../src/lib/crud-helper.js', () => ({
             this.options = options;
             this.on = vi.fn(() => vi.fn());
             this.addCellValidator = vi.fn();
-            this.findRowByKey = vi.fn();
+            this.findRowByKey = vi.fn(identifier => {
+                if (identifier === 15) return rowNavigationMock.savedRow;
+                if (identifier === 'amb-temp-1') return rowNavigationMock.tempRow;
+
+                return null;
+            });
             this.getSavePayload = vi.fn();
             this.getStateReport = vi.fn();
             this.validateRow = vi.fn();
@@ -123,6 +145,19 @@ const createDocumentHarness = () => {
     tabulatorMock.instances.length = 0;
     crudMock.instances.length = 0;
 
+    [
+        rowNavigationMock.savedRow,
+        rowNavigationMock.tempRow,
+        rowNavigationMock.fallbackRow
+    ].forEach(row => {
+        row.select.mockClear();
+        row.update.mockClear();
+        row.delete.mockClear();
+        row.scrollTo.mockClear();
+        row.show.mockClear();
+        row.edit.mockClear();
+    });
+
     return {
         mount,
         restore() {
@@ -144,30 +179,43 @@ const clearCrudSetupCalls = crud => {
     crud.destroy.mockClear();
 };
 
-const expectNoPageSizeSideEffects = (table, crud) => {
+const expectNoRowNavigationSideEffects = (table, crud) => {
     expect(table.setPage).not.toHaveBeenCalled();
     expect(table.nextPage).not.toHaveBeenCalled();
     expect(table.previousPage).not.toHaveBeenCalled();
-    expect(table.setPageToRow).not.toHaveBeenCalled();
+    expect(table.setPageSize).not.toHaveBeenCalled();
     expect(table.getPage).not.toHaveBeenCalled();
     expect(table.getPageMax).not.toHaveBeenCalled();
-    expect(table.getPageSize).not.toHaveBeenCalled();
-    expect(table.setFilter).not.toHaveBeenCalled();
-    expect(table.clearFilter).not.toHaveBeenCalled();
     expect(table.selectRow).not.toHaveBeenCalled();
     expect(table.deselectRow).not.toHaveBeenCalled();
+    expect(table.scrollToRow).not.toHaveBeenCalled();
+    expect(table.getRows).not.toHaveBeenCalled();
+    expect(table.getRow).not.toHaveBeenCalled();
+    expect(table.getRowPosition).not.toHaveBeenCalled();
     expect(crud.getSavePayload).not.toHaveBeenCalled();
     expect(crud.getStateReport).not.toHaveBeenCalled();
     expect(crud.validateRow).not.toHaveBeenCalled();
     expect(crud.updateRowFields).not.toHaveBeenCalled();
     expect(crud.deleteRow).not.toHaveBeenCalled();
     expect(crud.rollbackRow).not.toHaveBeenCalled();
-    expect(crud.findRowByKey).not.toHaveBeenCalled();
     expect(crud.destroy).not.toHaveBeenCalled();
+
+    [
+        rowNavigationMock.savedRow,
+        rowNavigationMock.tempRow,
+        rowNavigationMock.fallbackRow
+    ].forEach(row => {
+        expect(row.select).not.toHaveBeenCalled();
+        expect(row.update).not.toHaveBeenCalled();
+        expect(row.delete).not.toHaveBeenCalled();
+        expect(row.scrollTo).not.toHaveBeenCalled();
+        expect(row.show).not.toHaveBeenCalled();
+        expect(row.edit).not.toHaveBeenCalled();
+    });
 };
 
-describe('AMB table controller pagination page size API', () => {
-    test('exposes setPageSize and keeps existing pagination API available', () => {
+describe('AMB table controller pagination row navigation API', () => {
+    test('exposes setPageToRow and keeps pagination controller API available', () => {
         const harness = createDocumentHarness();
 
         try {
@@ -180,8 +228,8 @@ describe('AMB table controller pagination page size API', () => {
             const crud = crudMock.instances[0];
 
             expect(controller.table).toBe(table);
-            expect(typeof controller.setPageSize).toBe('function');
             expect(typeof controller.setPageToRow).toBe('function');
+            expect(typeof controller.setPageSize).toBe('function');
             expect(typeof controller.setPage).toBe('function');
             expect(typeof controller.nextPage).toBe('function');
             expect(typeof controller.previousPage).toBe('function');
@@ -199,13 +247,13 @@ describe('AMB table controller pagination page size API', () => {
             expect(typeof controller.restoreRedraw).toBe('function');
 
             clearCrudSetupCalls(crud);
-            expectNoPageSizeSideEffects(table, crud);
+            expectNoRowNavigationSideEffects(table, crud);
         } finally {
             harness.restore();
         }
     });
 
-    test('forwards page size values unchanged and returns the original result', () => {
+    test('resolves AMB identifiers before calling setPageToRow', () => {
         const harness = createDocumentHarness();
 
         try {
@@ -216,27 +264,33 @@ describe('AMB table controller pagination page size API', () => {
             });
             const table = tabulatorMock.instances[0];
             const crud = crudMock.instances[0];
-            const result = { changed: true };
+            const savedPromise = Promise.resolve('saved-page');
+            const tempPromise = Promise.resolve('temp-page');
 
             clearCrudSetupCalls(crud);
 
-            table.setPageSize.mockReturnValueOnce(result);
-            expect(controller.setPageSize(25)).toBe(result);
-            expect(table.setPageSize).toHaveBeenCalledOnce();
-            expect(table.setPageSize).toHaveBeenLastCalledWith(25);
-            expectNoPageSizeSideEffects(table, crud);
+            table.setPageToRow.mockReturnValueOnce(savedPromise);
+            expect(controller.setPageToRow(15)).toBe(savedPromise);
+            expect(crud.findRowByKey).toHaveBeenCalledOnce();
+            expect(crud.findRowByKey).toHaveBeenLastCalledWith(15);
+            expect(table.setPageToRow).toHaveBeenCalledOnce();
+            expect(table.setPageToRow).toHaveBeenLastCalledWith(rowNavigationMock.savedRow);
+            expect(table.setPageToRow).not.toHaveBeenCalledWith(15);
 
-            table.setPageSize.mockReturnValueOnce('size-50-result');
-            expect(controller.setPageSize(50)).toBe('size-50-result');
-            expect(table.setPageSize).toHaveBeenCalledTimes(2);
-            expect(table.setPageSize).toHaveBeenLastCalledWith(50);
-            expectNoPageSizeSideEffects(table, crud);
+            table.setPageToRow.mockReturnValueOnce(tempPromise);
+            expect(controller.setPageToRow('amb-temp-1')).toBe(tempPromise);
+            expect(crud.findRowByKey).toHaveBeenCalledTimes(2);
+            expect(crud.findRowByKey).toHaveBeenLastCalledWith('amb-temp-1');
+            expect(table.setPageToRow).toHaveBeenCalledTimes(2);
+            expect(table.setPageToRow).toHaveBeenLastCalledWith(rowNavigationMock.tempRow);
+            expect(table.setPageToRow).not.toHaveBeenCalledWith('amb-temp-1');
+            expectNoRowNavigationSideEffects(table, crud);
         } finally {
             harness.restore();
         }
     });
 
-    test('preserves undefined and does not normalize sentinel values', () => {
+    test('preserves fallback lookup values without manual row searches', () => {
         const harness = createDocumentHarness();
 
         try {
@@ -247,21 +301,65 @@ describe('AMB table controller pagination page size API', () => {
             });
             const table = tabulatorMock.instances[0];
             const crud = crudMock.instances[0];
-            const size = '25';
+            const lookupObject = { lookup: 'row-element' };
+            const fallbacks = [
+                22,
+                'external-row',
+                rowNavigationMock.fallbackRow,
+                lookupObject
+            ];
 
             clearCrudSetupCalls(crud);
 
-            table.setPageSize.mockReturnValueOnce(undefined);
-            expect(controller.setPageSize(25)).toBeUndefined();
-            expect(table.setPageSize).toHaveBeenCalledOnce();
-            expect(table.setPageSize).toHaveBeenLastCalledWith(25);
-            expectNoPageSizeSideEffects(table, crud);
+            fallbacks.forEach((lookup, index) => {
+                const promise = Promise.resolve(`fallback-${index}`);
 
-            table.setPageSize.mockReturnValueOnce('sentinel-result');
-            expect(controller.setPageSize(size)).toBe('sentinel-result');
-            expect(table.setPageSize).toHaveBeenCalledTimes(2);
-            expect(table.setPageSize).toHaveBeenLastCalledWith(size);
-            expectNoPageSizeSideEffects(table, crud);
+                table.setPageToRow.mockReturnValueOnce(promise);
+                expect(controller.setPageToRow(lookup)).toBe(promise);
+                expect(crud.findRowByKey).toHaveBeenCalledTimes(index + 1);
+                expect(crud.findRowByKey).toHaveBeenLastCalledWith(lookup);
+                expect(table.setPageToRow).toHaveBeenCalledTimes(index + 1);
+                expect(table.setPageToRow).toHaveBeenLastCalledWith(lookup);
+            });
+
+            expectNoRowNavigationSideEffects(table, crud);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('returns the original Promise and preserves resolution or rejection', async () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const controller = createTable({
+                selector: harness.mount,
+                columns: [],
+                toolbar: false
+            });
+            const table = tabulatorMock.instances[0];
+            const crud = crudMock.instances[0];
+            const resolvedValue = { displayed: true };
+            const resolved = Promise.resolve(resolvedValue);
+
+            clearCrudSetupCalls(crud);
+
+            table.setPageToRow.mockReturnValueOnce(resolved);
+            const resolvedResult = controller.setPageToRow(15);
+
+            expect(resolvedResult).toBe(resolved);
+            await expect(resolvedResult).resolves.toBe(resolvedValue);
+
+            const error = new Error('row-page-not-found');
+            const rejected = Promise.reject(error);
+
+            table.setPageToRow.mockReturnValueOnce(rejected);
+            const rejectedResult = controller.setPageToRow('missing-row');
+
+            expect(rejectedResult).toBe(rejected);
+            expect(rejectedResult).not.toBe(false);
+            await expect(rejectedResult).rejects.toBe(error);
+            expectNoRowNavigationSideEffects(table, crud);
         } finally {
             harness.restore();
         }
