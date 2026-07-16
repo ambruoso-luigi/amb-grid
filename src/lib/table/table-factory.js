@@ -636,6 +636,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setPage - Show a numbered or named pagination page.
  * @property {Function} nextPage - Show the next page.
  * @property {Function} previousPage - Show the previous page.
+ * @property {Function} setPageSize - Change the number of rows displayed on each page.
  * @property {Function} redraw - Redraw the grid through the internal table engine.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
  * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
@@ -1121,6 +1122,21 @@ export function createTable(options = {}) {
          */
         previousPage() {
             return table.previousPage();
+        },
+        /**
+         * Changes the number of rows displayed on each page.
+         *
+         * With remote pagination, this setting may be ignored when the page size
+         * is controlled by the server.
+         *
+         * This method does not automatically save, validate or confirm pending
+         * AMB Grid changes.
+         *
+         * @param {number} size - Number of rows to display on each page.
+         * @returns {*} Result of the page-size update.
+         */
+        setPageSize(size) {
+            return table.setPageSize(size);
         },
         /**
          * Redraws the grid.
