@@ -630,6 +630,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowPosition - Return the one-based position of a row.
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
+ * @property {Function} getPage - Return the current page number.
+ * @property {Function} getPageMax - Return the maximum available page number.
+ * @property {Function} getPageSize - Return the number of rows allowed per page.
  * @property {Function} redraw - Redraw the grid through the internal table engine.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
  * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
@@ -1046,6 +1049,35 @@ export function createTable(options = {}) {
          */
         getRowFromPosition(...args) {
             return table.getRowFromPosition(...args);
+        },
+        /**
+         * Returns the current page number.
+         *
+         * Page numbers start at 1. The method returns `false` when pagination is
+         * disabled.
+         *
+         * @returns {number|false} Current page number, or `false` when pagination is disabled.
+         */
+        getPage() {
+            return table.getPage();
+        },
+        /**
+         * Returns the maximum available page number.
+         *
+         * The method returns `false` when pagination is disabled.
+         *
+         * @returns {number|false} Maximum page number, or `false` when pagination is disabled.
+         */
+        getPageMax() {
+            return table.getPageMax();
+        },
+        /**
+         * Returns the number of rows allowed on each page.
+         *
+         * @returns {number} Current page size.
+         */
+        getPageSize() {
+            return table.getPageSize();
         },
         /**
          * Redraws the grid.
