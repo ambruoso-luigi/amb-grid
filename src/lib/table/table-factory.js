@@ -628,6 +628,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setSearchOptions - Set case-sensitive and whole-word search options.
  * @property {Function} getHeaderFilters - Return the current column header filters.
  * @property {Function} getHeaderFilterValue - Return the current header filter value for a column.
+ * @property {Function} setHeaderFilterValue - Set the header filter value for a column.
+ * @property {Function} setHeaderFilterFocus - Move focus to a column header filter.
+ * @property {Function} clearHeaderFilter - Clear all column header filters.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} getRows - Return row components in the requested range.
@@ -1045,6 +1048,43 @@ export function createTable(options = {}) {
          */
         getHeaderFilterValue(columnLookup) {
             return table.getHeaderFilterValue(columnLookup);
+        },
+        /**
+         * Sets the header filter value for a column.
+         *
+         * The column can be identified using any supported column lookup value.
+         * The supplied value is applied without AMB Grid normalization.
+         *
+         * Changing a header filter may change which rows are currently visible,
+         * but it does not directly modify CRUD state.
+         *
+         * @param {*} columnLookup - Column field, component, element or supported lookup value.
+         * @param {*} value - Header filter value.
+         * @returns {*} Result of the header filter update.
+         */
+        setHeaderFilterValue(columnLookup, value) {
+            return table.setHeaderFilterValue(columnLookup, value);
+        },
+        /**
+         * Moves focus to the header filter for a column.
+         *
+         * The column can be identified using any supported column lookup value.
+         *
+         * @param {*} columnLookup - Column field, component, element or supported lookup value.
+         * @returns {*} Result of the focus operation.
+         */
+        setHeaderFilterFocus(columnLookup) {
+            return table.setHeaderFilterFocus(columnLookup);
+        },
+        /**
+         * Clears all column header filters.
+         *
+         * Programmatic filters and the AMB Grid global search remain active.
+         *
+         * @returns {*} Result of clearing the header filters.
+         */
+        clearHeaderFilter() {
+            return table.clearHeaderFilter();
         },
         /**
          * Returns the current grid data.
