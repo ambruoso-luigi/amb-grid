@@ -631,6 +631,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setHeaderFilterValue - Set the header filter value for a column.
  * @property {Function} setHeaderFilterFocus - Move focus to a column header filter.
  * @property {Function} clearHeaderFilter - Clear all column header filters.
+ * @property {Function} refreshFilter - Re-run the filters currently applied to the grid.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} getRows - Return row components in the requested range.
@@ -1085,6 +1086,21 @@ export function createTable(options = {}) {
          */
         clearHeaderFilter() {
             return table.clearHeaderFilter();
+        },
+        /**
+         * Re-runs the filters currently applied to the grid.
+         *
+         * This is useful when a custom filter depends on external values that
+         * have changed. The existing filter configuration and AMB Grid search
+         * state are not replaced or cleared.
+         *
+         * Refreshing filters may change which rows are currently active or
+         * visible, but it does not directly modify CRUD state.
+         *
+         * @returns {void}
+         */
+        refreshFilter() {
+            return table.refreshFilter();
         },
         /**
          * Returns the current grid data.
