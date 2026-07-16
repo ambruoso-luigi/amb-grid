@@ -633,6 +633,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getPage - Return the current page number.
  * @property {Function} getPageMax - Return the maximum available page number.
  * @property {Function} getPageSize - Return the number of rows allowed per page.
+ * @property {Function} setPage - Show a numbered or named pagination page.
+ * @property {Function} nextPage - Show the next page.
+ * @property {Function} previousPage - Show the previous page.
  * @property {Function} redraw - Redraw the grid through the internal table engine.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
  * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
@@ -1078,6 +1081,46 @@ export function createTable(options = {}) {
          */
         getPageSize() {
             return table.getPageSize();
+        },
+        /**
+         * Shows the requested page.
+         *
+         * The page can be specified using a positive page number or one of the
+         * `"first"`, `"prev"`, `"next"` and `"last"` navigation values.
+         *
+         * With remote pagination, changing page may start a data request. This
+         * method does not automatically save, validate or confirm pending AMB
+         * Grid changes.
+         *
+         * @param {number|'first'|'prev'|'next'|'last'} page - Page to display.
+         * @returns {Promise} Promise completed after the page change.
+         */
+        setPage(page) {
+            return table.setPage(page);
+        },
+        /**
+         * Shows the next page.
+         *
+         * With remote pagination, changing page may start a data request. This
+         * method does not automatically save, validate or confirm pending AMB
+         * Grid changes.
+         *
+         * @returns {Promise} Promise completed after the page change.
+         */
+        nextPage() {
+            return table.nextPage();
+        },
+        /**
+         * Shows the previous page.
+         *
+         * With remote pagination, changing page may start a data request. This
+         * method does not automatically save, validate or confirm pending AMB
+         * Grid changes.
+         *
+         * @returns {Promise} Promise completed after the page change.
+         */
+        previousPage() {
+            return table.previousPage();
         },
         /**
          * Redraws the grid.
