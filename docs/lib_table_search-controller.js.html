@@ -1,4 +1,32 @@
-import { SearchFiltersDialog } from '../../ui/search-filters-dialog.js';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: lib/table/search-controller.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: lib/table/search-controller.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { SearchFiltersDialog } from '../../ui/search-filters-dialog.js';
 
 export const SEARCH_EXCLUDED_FIELDS = new Set([
     '_state',
@@ -21,7 +49,7 @@ export const normalizeSearchOptions = (search = {}) => {
 };
 
 const escapeRegExp = value => {
-    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;');
 };
 
 export const matchesSearchValue = (value, query, options = {}) => {
@@ -60,7 +88,7 @@ export const getTableElement = selector => {
 
 export const getSearchColumnTitle = column => {
     if (!column) return '';
-    if (typeof column.title === 'string' && column.title.trim() !== '') return column.title;
+    if (typeof column.title === 'string' &amp;&amp; column.title.trim() !== '') return column.title;
 
     return column.field || '';
 };
@@ -92,7 +120,7 @@ export const collectSearchColumns = (columns = []) => {
 export const createSearchToolbar = (selector, searchOptions, mountElement = null) => {
     const tableElement = getTableElement(selector);
 
-    if (!mountElement && (!tableElement || !tableElement.parentNode)) return null;
+    if (!mountElement &amp;&amp; (!tableElement || !tableElement.parentNode)) return null;
 
     const toolbar = document.createElement('div');
     const input = document.createElement('input');
@@ -114,9 +142,9 @@ export const createSearchToolbar = (selector, searchOptions, mountElement = null
     filtersIcon.className = 'amb-toolbar__button-icon';
     filtersIcon.setAttribute('aria-hidden', 'true');
     filtersIcon.innerHTML = `
-        <svg viewBox="0 0 24 24">
-            <path d="M4 5h16l-6 7v5l-4 2v-7z"></path>
-        </svg>
+        &lt;svg viewBox="0 0 24 24">
+            &lt;path d="M4 5h16l-6 7v5l-4 2v-7z">&lt;/path>
+        &lt;/svg>
     `;
     filtersCount.className = 'amb-toolbar__filters-count';
     filtersCount.hidden = true;
@@ -144,15 +172,15 @@ export const createSearchToolbar = (selector, searchOptions, mountElement = null
 
 export const getSearchableValues = (data, field) => {
     const values = [];
-    const value = data && data[field];
+    const value = data &amp;&amp; data[field];
     const lookupDescription = data
-        && data._ambLookup
-        && data._ambLookup[field]
-        && data._ambLookup[field].current
+        &amp;&amp; data._ambLookup
+        &amp;&amp; data._ambLookup[field]
+        &amp;&amp; data._ambLookup[field].current
         ? data._ambLookup[field].current.description
         : '';
 
-    if (value !== null && value !== undefined) {
+    if (value !== null &amp;&amp; value !== undefined) {
         values.push(String(value));
     }
 
@@ -212,7 +240,7 @@ export const createSearchController = ({
         if (!toolbar || !toolbar.filtersButton) return;
 
         const count = searchState.selectedFields.length;
-        const restricted = count < allFields.length;
+        const restricted = count &lt; allFields.length;
 
         if (toolbar.filtersCount) {
             toolbar.filtersCount.textContent = String(count);
@@ -290,7 +318,7 @@ export const createSearchController = ({
     const setSearchQuery = query => {
         searchState.query = String(query || '');
 
-        if (toolbar && toolbar.input && toolbar.input.value !== searchState.query) {
+        if (toolbar &amp;&amp; toolbar.input &amp;&amp; toolbar.input.value !== searchState.query) {
             toolbar.input.value = searchState.query;
         }
 
@@ -309,11 +337,11 @@ export const createSearchController = ({
     };
 
     const setSearchOptions = options => {
-        if (options && options.caseSensitive !== undefined) {
+        if (options &amp;&amp; options.caseSensitive !== undefined) {
             searchState.caseSensitive = options.caseSensitive === true;
         }
 
-        if (options && options.wholeWord !== undefined) {
+        if (options &amp;&amp; options.wholeWord !== undefined) {
             searchState.wholeWord = options.wholeWord === true;
         }
 
@@ -325,13 +353,13 @@ export const createSearchController = ({
         if (!toolbar || !toolbar.filtersButton) return;
 
         const selectedColumns = getSelectedColumns();
-        const restricted = selectedColumns.length < availableColumns.length;
+        const restricted = selectedColumns.length &lt; availableColumns.length;
         const optionMessages = [
             searchState.caseSensitive ? '- Case sensitive' : '',
             searchState.wholeWord ? '- Whole word' : ''
         ].filter(Boolean);
 
-        if (!restricted && !optionMessages.length) {
+        if (!restricted &amp;&amp; !optionMessages.length) {
             floatingMessage.scheduleShow(toolbar.filtersButton, {
                 type: 'info',
                 title: 'Filters',
@@ -375,7 +403,7 @@ export const createSearchController = ({
             cancelText: 'Cancel'
         });
 
-        if (result && result.applied) {
+        if (result &amp;&amp; result.applied) {
             setSearchFields(result.selectedFields || []);
             setSearchOptions({
                 caseSensitive: result.caseSensitive,
@@ -447,3 +475,26 @@ export const createSearchController = ({
         }
     };
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 07:38:01 GMT+0200 (Ora legale dell’Europa centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
