@@ -642,6 +642,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} refreshFilter - Re-run the filters currently applied to the grid.
  * @property {Function} getFilters - Return the current developer-managed filters.
  * @property {Function} addFilter - Add a programmatic filter.
+ * @property {Function} setFilter - Replace the developer-managed programmatic filters.
+ * @property {Function} removeFilter - Remove a programmatic filter.
+ * @property {Function} clearFilter - Clear developer-managed filters while preserving global search.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} getRows - Return row components in the requested range.

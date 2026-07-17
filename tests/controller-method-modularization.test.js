@@ -94,6 +94,9 @@ describe('AMB table controller method modularization', () => {
         const inlineFilterDefinitions = [
             /^\s*getFilters\(\.\.\.args\) \{/m,
             /^\s*addFilter\(\.\.\.args\) \{/m,
+            /^\s*setFilter\(\.\.\.args\) \{/m,
+            /^\s*removeFilter\(\.\.\.args\) \{/m,
+            /^\s*clearFilter\(\.\.\.args\) \{/m,
             /^\s*getHeaderFilters\(\) \{/m,
             /^\s*getHeaderFilterValue\(columnLookup\) \{/m,
             /^\s*setHeaderFilterValue\(columnLookup, value\) \{/m,

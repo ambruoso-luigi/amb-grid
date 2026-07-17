@@ -121,5 +121,58 @@ export const createFilterMethods = ({ table, searchController = null }) => ({
      */
     addFilter(...args) {
         return table.addFilter(...args);
+    },
+
+    /**
+     * Replaces the developer-managed programmatic filters.
+     *
+     * The AMB Grid global search filter is preserved by reapplying it after the
+     * replacement succeeds. Replacing filters may change which rows are active
+     * or visible, but it does not directly modify row data or CRUD state.
+     *
+     * @param {...*} args - Filter definition arguments.
+     * @returns {*} Result of replacing the filters.
+     */
+    setFilter(...args) {
+        const result = table.setFilter(...args);
+
+        if (searchController) {
+            searchController.reapplySearchFilter();
+        }
+
+        return result;
+    },
+
+    /**
+     * Removes a programmatic filter from the grid.
+     *
+     * The AMB Grid global search state is not modified. The operation returns
+     * the result produced by the filter removal.
+     *
+     * @param {...*} args - Filter removal arguments.
+     * @returns {*} Result of removing the filter.
+     */
+    removeFilter(...args) {
+        return table.removeFilter(...args);
+    },
+
+    /**
+     * Clears developer-managed programmatic filters.
+     *
+     * The AMB Grid global search filter is preserved by reapplying it after the
+     * clear operation succeeds. Passing `true` also clears column header filters.
+     * Use `clearSearch()` to clear the AMB Grid global search query.
+     *
+     * @param {...*} args - Filter clear arguments.
+     * @returns {*} Result of clearing the filters.
+     */
+    clearFilter(...args) {
+        const result = table.clearFilter(...args);
+
+        if (searchController) {
+            searchController.reapplySearchFilter();
+        }
+
+        return result;
     }
 });
