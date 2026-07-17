@@ -815,6 +815,181 @@ before custom-value and invalid behavior are considered.
     
 
     
+    <h4 class="name" id="addFilter"><span class="type-signature"></span>addFilter<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {*}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adds a programmatic filter to the grid.
+
+Existing developer filters, header filters, and the AMB Grid global search
+remain active. The operation may change which rows are currently visible,
+but it does not directly modify row data or CRUD state.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Filter definition arguments.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line122">line 122</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Result of adding the filter.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">*</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="autocomplete"><span class="type-signature"></span>autocomplete<span class="signature">(values, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
     
 
@@ -2049,7 +2224,7 @@ Programmatic filters and the AMB Grid global search remain active.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line71">line 71</a>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line92">line 92</a>
     </li></ul></dd>
     
 
@@ -6078,7 +6253,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line771">line 771</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line773">line 773</a>
     </li></ul></dd>
     
 
@@ -7808,6 +7983,183 @@ search, pagination, selection, or AMB Grid CRUD state.
     
 
     
+    <h4 class="name" id="getFilters"><span class="type-signature"></span>getFilters<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the current developer-managed filters.
+
+The internal filter used by AMB Grid global search is excluded. Header
+filters are included only when requested through the optional argument.
+
+The returned filter definitions retain their original object identities
+and should be treated as read-only.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">any</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Filter read arguments, such as including header filters.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line24">line 24</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Current filters visible through the AMB Grid API.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="getHeaderFilterValue"><span class="type-signature"></span>getHeaderFilterValue<span class="signature">(columnLookup)</span><span class="type-signature"> &rarr; {*}</span></h4>
     
 
@@ -7911,7 +8263,7 @@ The column can be identified using any supported column lookup value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line31">line 31</a>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -8024,7 +8376,7 @@ from the AMB Grid global search state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line19">line 19</a>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line40">line 40</a>
     </li></ul></dd>
     
 
@@ -12266,7 +12618,7 @@ but it does not directly modify CRUD state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line87">line 87</a>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line108">line 108</a>
     </li></ul></dd>
     
 
@@ -13097,7 +13449,7 @@ The column can be identified using any supported column lookup value.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line60">line 60</a>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line81">line 81</a>
     </li></ul></dd>
     
 
@@ -13285,7 +13637,7 @@ it does not directly modify CRUD state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line48">line 48</a>
+        <a href="lib_table_controller_filter-methods.js.html">lib/table/controller/filter-methods.js</a>, <a href="lib_table_controller_filter-methods.js.html#line69">line 69</a>
     </li></ul></dd>
     
 
@@ -15321,6 +15673,52 @@ row data or CRUD state.
 
         <tr>
             
+                <td class="name"><code>getFilters</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Return the current developer-managed filters.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>addFilter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Add a programmatic filter.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>getData</code></td>
             
 
@@ -15846,13 +16244,13 @@ row data or CRUD state.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 14:30:46 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 15:27:09 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -3,11 +3,32 @@
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
+ * @param {object|null} context.searchController - Optional global-search controller.
  * @returns {object} Filter methods for the flat controller API.
  * @private
  * @internal
  */
-export const createFilterMethods = ({ table }) => ({
+export const createFilterMethods = ({ table, searchController = null }) => ({
+    /**
+     * Returns the current developer-managed filters.
+     *
+     * The internal filter used by AMB Grid global search is excluded. Header
+     * filters are included only when requested through the optional argument.
+     *
+     * The returned filter definitions retain their original object identities
+     * and should be treated as read-only.
+     *
+     * @param {...any} args - Filter read arguments, such as including header filters.
+     * @returns {Array} Current filters visible through the AMB Grid API.
+     */
+    getFilters(...args) {
+        const filters = table.getFilters(...args);
+
+        if (!searchController) return filters;
+
+        return searchController.excludeSearchFilter(filters);
+    },
+
     /**
      * Returns the current column header filters.
      *
@@ -86,5 +107,19 @@ export const createFilterMethods = ({ table }) => ({
      */
     refreshFilter() {
         return table.refreshFilter();
+    },
+
+    /**
+     * Adds a programmatic filter to the grid.
+     *
+     * Existing developer filters, header filters, and the AMB Grid global search
+     * remain active. The operation may change which rows are currently visible,
+     * but it does not directly modify row data or CRUD state.
+     *
+     * @param {...*} args - Filter definition arguments.
+     * @returns {*} Result of adding the filter.
+     */
+    addFilter(...args) {
+        return table.addFilter(...args);
     }
 });

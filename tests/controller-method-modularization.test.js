@@ -32,7 +32,11 @@ describe('AMB table controller method modularization', () => {
         const source = readTableFactorySource();
 
         expect(source).toContain("import { createFilterMethods } from './controller/filter-methods.js';");
-        expect(source).toContain('const filterMethods = createFilterMethods({ table });');
+        expect(source).toContain('const filterMethods = createFilterMethods({');
+        expect(source).toContain('searchController');
+        expect(source).not.toContain('const filterMethods = createFilterMethods({ table });');
+        expect(source.indexOf('searchController = createSearchController({'))
+            .toBeLessThan(source.indexOf('const filterMethods = createFilterMethods({'));
 
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
 
@@ -88,6 +92,8 @@ describe('AMB table controller method modularization', () => {
     test('does not keep inline header filter method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineFilterDefinitions = [
+            /^\s*getFilters\(\.\.\.args\) \{/m,
+            /^\s*addFilter\(\.\.\.args\) \{/m,
             /^\s*getHeaderFilters\(\) \{/m,
             /^\s*getHeaderFilterValue\(columnLookup\) \{/m,
             /^\s*setHeaderFilterValue\(columnLookup, value\) \{/m,

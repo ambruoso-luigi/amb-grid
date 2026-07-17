@@ -640,6 +640,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setHeaderFilterFocus - Move focus to a column header filter.
  * @property {Function} clearHeaderFilter - Clear all column header filters.
  * @property {Function} refreshFilter - Re-run the filters currently applied to the grid.
+ * @property {Function} getFilters - Return the current developer-managed filters.
+ * @property {Function} addFilter - Add a programmatic filter.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} getRows - Return row components in the requested range.
@@ -829,7 +831,6 @@ export function createTable(options = {}) {
 
     const table = new Tabulator(selector, normalizedOptions);
     const dataMethods = createDataMethods({ table });
-    const filterMethods = createFilterMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
@@ -877,6 +878,10 @@ export function createTable(options = {}) {
         floatingMessage,
         showFilterStatus: normalizedFloatingMessages.searchFilterStatus,
         mountElement: toolbarController ? toolbarController.searchMount : null
+    });
+    const filterMethods = createFilterMethods({
+        table,
+        searchController
     });
     const searchMethods = createSearchMethods({ searchController });
     const controllerMethods = composeControllerMethods(
