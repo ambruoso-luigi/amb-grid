@@ -240,6 +240,9 @@ describe('AMB table controller header filter read API', () => {
             expect(typeof controller.redraw).toBe('function');
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
+            expect(controller.filterMethods).toBeUndefined();
+            expect(controller.filters).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
 
             clearCrudSetupCalls(crud);
             expectNoHeaderFilterSideEffects(table, crud);

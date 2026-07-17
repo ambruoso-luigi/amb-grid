@@ -16,6 +16,7 @@ import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
 import { createSelectionMethods } from './controller/selection-methods.js';
+import { createFilterMethods } from './controller/filter-methods.js';
 import { escapeHtmlText } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
@@ -827,6 +828,7 @@ export function createTable(options = {}) {
 
     const table = new Tabulator(selector, normalizedOptions);
     const dataMethods = createDataMethods({ table });
+    const filterMethods = createFilterMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
@@ -837,6 +839,7 @@ export function createTable(options = {}) {
         rowMethods,
         paginationMethods,
         selectionMethods,
+        filterMethods,
         redrawMethods
     );
     unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
@@ -950,80 +953,6 @@ export function createTable(options = {}) {
 
             searchController.setSearchOptions(options);
             return true;
-        },
-        /**
-         * Returns the current column header filters.
-         *
-         * Header filters are returned independently from programmatic filters
-         * and from the AMB Grid global search state.
-         *
-         * @returns {object[]} Current header filter definitions.
-         */
-        getHeaderFilters() {
-            return table.getHeaderFilters();
-        },
-        /**
-         * Returns the current header filter value for a column.
-         *
-         * The column can be identified using any supported column lookup value.
-         *
-         * @param {*} columnLookup - Column field, component, element or supported lookup value.
-         * @returns {*} Current header filter value.
-         */
-        getHeaderFilterValue(columnLookup) {
-            return table.getHeaderFilterValue(columnLookup);
-        },
-        /**
-         * Sets the header filter value for a column.
-         *
-         * The column can be identified using any supported column lookup value.
-         * The supplied value is applied without AMB Grid normalization.
-         *
-         * Changing a header filter may change which rows are currently visible,
-         * but it does not directly modify CRUD state.
-         *
-         * @param {*} columnLookup - Column field, component, element or supported lookup value.
-         * @param {*} value - Header filter value.
-         * @returns {*} Result of the header filter update.
-         */
-        setHeaderFilterValue(columnLookup, value) {
-            return table.setHeaderFilterValue(columnLookup, value);
-        },
-        /**
-         * Moves focus to the header filter for a column.
-         *
-         * The column can be identified using any supported column lookup value.
-         *
-         * @param {*} columnLookup - Column field, component, element or supported lookup value.
-         * @returns {*} Result of the focus operation.
-         */
-        setHeaderFilterFocus(columnLookup) {
-            return table.setHeaderFilterFocus(columnLookup);
-        },
-        /**
-         * Clears all column header filters.
-         *
-         * Programmatic filters and the AMB Grid global search remain active.
-         *
-         * @returns {*} Result of clearing the header filters.
-         */
-        clearHeaderFilter() {
-            return table.clearHeaderFilter();
-        },
-        /**
-         * Re-runs the filters currently applied to the grid.
-         *
-         * This is useful when a custom filter depends on external values that
-         * have changed. The existing filter configuration and AMB Grid search
-         * state are not replaced or cleared.
-         *
-         * Refreshing filters may change which rows are currently active or
-         * visible, but it does not directly modify CRUD state.
-         *
-         * @returns {void}
-         */
-        refreshFilter() {
-            return table.refreshFilter();
         },
         ...controllerMethods,
         destroy() {

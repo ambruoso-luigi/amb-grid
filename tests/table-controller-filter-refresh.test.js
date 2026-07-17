@@ -232,6 +232,9 @@ describe('AMB table controller filter refresh API', () => {
             expect(typeof controller.redraw).toBe('function');
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
+            expect(controller.filterMethods).toBeUndefined();
+            expect(controller.filters).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
         } finally {
             harness.restore();
         }
