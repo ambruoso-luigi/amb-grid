@@ -197,6 +197,9 @@ describe('AMB table controller pagination page size API', () => {
             expect(typeof controller.redraw).toBe('function');
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
+            expect(controller.paginationMethods).toBeUndefined();
+            expect(controller.pagination).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
 
             clearCrudSetupCalls(crud);
             expectNoPageSizeSideEffects(table, crud);
