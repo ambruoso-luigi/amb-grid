@@ -10,6 +10,7 @@ import { createDeleteColumn } from './delete-column.js';
 import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
 import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-binders.js';
+import { createRedrawMethods } from './controller/redraw-methods.js';
 import { escapeHtmlText } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
@@ -646,9 +647,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} previousPage - Show the previous page.
  * @property {Function} setPageSize - Change the number of rows displayed on each page.
  * @property {Function} setPageToRow - Show the local pagination page containing a row.
- * @property {Function} redraw - Redraw the grid through the internal table engine.
- * @property {Function} blockRedraw - Temporarily suspend automatic redraws through the internal table engine.
- * @property {Function} restoreRedraw - Restore automatic redraws through the internal table engine.
+ * @property {Function} redraw - Redraw the grid.
+ * @property {Function} blockRedraw - Temporarily suspend automatic redraws.
+ * @property {Function} restoreRedraw - Restore automatic redraws.
  * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
  * @property {FeedbackRegion} feedback - Accessible grid status region.
  * @property {Function} destroy - Destroy the complete AMB-managed grid, including the Tabulator table.
@@ -820,6 +821,7 @@ export function createTable(options = {}) {
     }
 
     const table = new Tabulator(selector, normalizedOptions);
+    const redrawMethods = createRedrawMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
@@ -1311,41 +1313,7 @@ export function createTable(options = {}) {
 
             return table.setPageToRow(ambRow || identifier);
         },
-        /**
-         * Redraws the grid.
-         *
-         * This method delegates the operation to the internal table engine and
-         * returns the result produced by that engine.
-         *
-         * @param {...any} args - Arguments forwarded to the internal engine.
-         * @returns {any} Result returned by the internal engine.
-         */
-        redraw(...args) {
-            return table.redraw(...args);
-        },
-        /**
-         * Temporarily suspends automatic redraws.
-         *
-         * Use this around a short group of consecutive grid operations, then
-         * call `restoreRedraw()` to let the internal table engine resume normal
-         * redraw behavior.
-         *
-         * @returns {any} Result returned by the internal engine.
-         */
-        blockRedraw() {
-            return table.blockRedraw();
-        },
-        /**
-         * Restores automatic redraws after `blockRedraw()`.
-         *
-         * This forwards the call to the underlying table engine, allowing it to
-         * perform any redraw that remained pending while redraws were blocked.
-         *
-         * @returns {any} Result returned by the internal engine.
-         */
-        restoreRedraw() {
-            return table.restoreRedraw();
-        },
+        ...redrawMethods,
         destroy() {
             if (toolbarController) {
                 toolbarController.destroy();

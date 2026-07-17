@@ -1407,6 +1407,119 @@ scroll area and does not change grid layout.
     
 
     
+    <h4 class="name" id="blockRedraw"><span class="type-signature"></span>blockRedraw<span class="signature">()</span><span class="type-signature"> &rarr; {any}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Temporarily suspends automatic redraws.
+
+Use this around a short group of consecutive grid operations, then call
+`restoreRedraw()` to resume redraw behavior.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_redraw-methods.js.html">lib/table/controller/redraw-methods.js</a>, <a href="lib_table_controller_redraw-methods.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Result returned by the grid table.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">any</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="checkbox"><span class="type-signature"></span>checkbox<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
     
 
@@ -5630,7 +5743,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line763">line 763</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line764">line 764</a>
     </li></ul></dd>
     
 
@@ -9021,6 +9134,293 @@ named export for advanced or direct module usage.
     
 
     
+    <h4 class="name" id="redraw"><span class="type-signature"></span>redraw<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {any}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Redraws the grid.
+
+All arguments are forwarded unchanged and the result is returned
+directly.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">any</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Redraw arguments.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_redraw-methods.js.html">lib/table/controller/redraw-methods.js</a>, <a href="lib_table_controller_redraw-methods.js.html#line20">line 20</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Result returned by the grid table.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">any</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="restoreRedraw"><span class="type-signature"></span>restoreRedraw<span class="signature">()</span><span class="type-signature"> &rarr; {any}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Restores automatic redraws after `blockRedraw()`.
+
+Any redraw left pending while redraws were suspended is handled by the
+grid table.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_redraw-methods.js.html">lib/table/controller/redraw-methods.js</a>, <a href="lib_table_controller_redraw-methods.js.html#line44">line 44</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Result returned by the grid table.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">any</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="select"><span class="type-signature"></span>select<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
     
 
@@ -10639,7 +11039,7 @@ named export for advanced or direct module usage.
 
             
 
-            <td class="description last">Redraw the grid through the internal table engine.</td>
+            <td class="description last">Redraw the grid.</td>
         </tr>
 
     
@@ -10662,7 +11062,7 @@ named export for advanced or direct module usage.
 
             
 
-            <td class="description last">Temporarily suspend automatic redraws through the internal table engine.</td>
+            <td class="description last">Temporarily suspend automatic redraws.</td>
         </tr>
 
     
@@ -10685,7 +11085,7 @@ named export for advanced or direct module usage.
 
             
 
-            <td class="description last">Restore automatic redraws through the internal table engine.</td>
+            <td class="description last">Restore automatic redraws.</td>
         </tr>
 
     
@@ -10796,7 +11196,7 @@ named export for advanced or direct module usage.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line607">line 607</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line608">line 608</a>
     </li></ul></dd>
     
 
@@ -10826,13 +11226,13 @@ named export for advanced or direct module usage.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 07:38:01 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 10:20:52 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>
