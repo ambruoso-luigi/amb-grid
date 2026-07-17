@@ -47,6 +47,28 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted search method group after search controller creation', () => {
+        const source = readTableFactorySource();
+
+        expect(source).toContain("import { createSearchMethods } from './controller/search-methods.js';");
+        expect(source).toContain('const searchMethods = createSearchMethods({ searchController });');
+        expect(source.indexOf('searchController = createSearchController({'))
+            .toBeLessThan(source.indexOf('const searchMethods = createSearchMethods({ searchController });'));
+
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('dataMethods');
+        expect(composition[1]).toContain('rowMethods');
+        expect(composition[1]).toContain('paginationMethods');
+        expect(composition[1]).toContain('selectionMethods');
+        expect(composition[1]).toContain('filterMethods');
+        expect(composition[1]).toContain('searchMethods');
+        expect(composition[1]).toContain('redrawMethods');
+        expect(source).not.toContain('...searchMethods');
+        expect(source).toContain('...controllerMethods');
+    });
+
     test('does not keep inline selection method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineSelectionDefinitions = [
@@ -75,6 +97,21 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineFilterDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline global search method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineSearchDefinitions = [
+            /^\s*setSearchQuery\(query\) \{/m,
+            /^\s*clearSearch\(\) \{/m,
+            /^\s*getSearchState\(\) \{/m,
+            /^\s*setSearchFields\(fields\) \{/m,
+            /^\s*setSearchOptions\(options\) \{/m
+        ];
+
+        inlineSearchDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });

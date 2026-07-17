@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/selection-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/search-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/selection-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/search-methods.js</h1>
 
     
 
@@ -27,114 +27,103 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the selection methods exposed by the AMB Grid controller.
+ * Creates the global-search methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
- * @param {object} context.table - Grid table instance.
- * @param {object} context.crud - AMB Grid CRUD layer.
- * @returns {object} Selection methods for the flat controller API.
+ * @param {object|null} context.searchController - Optional global-search controller.
+ * @returns {object} Search methods for the flat controller API.
  * @private
  * @internal
  */
-export const createSelectionMethods = ({ table, crud }) => ({
+export const createSearchMethods = ({ searchController }) => ({
     /**
-     * Returns the data objects for the selected rows.
+     * Sets the AMB Grid global search query.
      *
-     * This AMB Grid compatibility method returns selected row data rather than
-     * row components. Use `getSelectedRowComponents()` when component access is
-     * required.
+     * The configured search fields and options are reused. Applying a query may
+     * change which rows are active or visible, but it does not directly modify
+     * row data or CRUD state.
      *
-     * @returns {object[]} Data objects for the selected rows.
+     * @param {*} query - Search value.
+     * @returns {boolean} `true` when search is available, otherwise `false`.
      */
-    getSelectedRows() {
-        return typeof table.getSelectedData === 'function'
-            ? table.getSelectedData()
-            : [];
-    },
+    setSearchQuery(query) {
+        if (!searchController) return false;
 
-    /**
-     * Returns the data objects for the selected rows.
-     *
-     * Rows are returned in their selection order. The method returns runtime
-     * grid data as-is and does not create an AMB Grid save payload or remove
-     * technical fields.
-     *
-     * Returned objects should be treated as read-only because direct mutation
-     * may bypass CRUD tracking.
-     *
-     * @returns {object[]} Data objects for the selected rows.
-     */
-    getSelectedData() {
-        return table.getSelectedData();
-    },
-
-    /**
-     * Returns the row components for the selected rows.
-     *
-     * Components are returned in their selection order. Row components expose
-     * advanced operations, so direct mutations may bypass or interfere with AMB
-     * Grid CRUD tracking.
-     *
-     * @returns {object[]} Components for the selected rows.
-     */
-    getSelectedRowComponents() {
-        return table.getSelectedRows();
-    },
-
-    /**
-     * Clears the current row selection.
-     *
-     * All selected rows are deselected. The method performs no operation when
-     * row deselection is not available.
-     *
-     * @returns {void}
-     */
-    clearSelection() {
-        if (typeof table.deselectRow === 'function') {
-            table.deselectRow();
-        }
-    },
-
-    /**
-     * Selects one row using an AMB Grid row identifier.
-     *
-     * Backend identifiers and AMB Grid temporary identifiers are resolved
-     * through the CRUD layer.
-     *
-     * This method currently selects one row at a time. Arrays, row ranges and
-     * select-all behavior are not part of this AMB Grid method contract.
-     *
-     * @param {*} identifier - Backend id or AMB temporary id.
-     * @returns {boolean} `true` when the row is selected, otherwise `false`.
-     */
-    selectRow(identifier) {
-        const row = crud.findRowByKey(identifier);
-
-        if (!row || typeof row.select !== 'function') return false;
-
-        row.select();
+        searchController.setSearchQuery(query);
         return true;
     },
 
     /**
-     * Deselects one row using an AMB Grid row identifier.
+     * Clears the AMB Grid global search query.
      *
-     * Backend identifiers and AMB Grid temporary identifiers are resolved
-     * through the CRUD layer.
+     * Header filters and developer-managed programmatic filters remain separate.
+     * Clearing search may change which rows are active or visible, but it does
+     * not directly modify row data or CRUD state.
      *
-     * This method currently deselects one row at a time. Arrays, row ranges and
-     * deselect-all behavior are not part of this method; use `clearSelection()`
-     * to clear the complete selection.
-     *
-     * @param {*} identifier - Backend id or AMB temporary id.
-     * @returns {boolean} `true` when the row is deselected, otherwise `false`.
+     * @returns {boolean} `true` when search is available, otherwise `false`.
      */
-    deselectRow(identifier) {
-        const row = crud.findRowByKey(identifier);
+    clearSearch() {
+        if (!searchController) return false;
 
-        if (!row || typeof row.deselect !== 'function') return false;
+        searchController.clearSearch();
+        return true;
+    },
 
-        row.deselect();
+    /**
+     * Returns the AMB Grid global search state.
+     *
+     * The returned state contains the current `query`, `selectedFields`,
+     * `caseSensitive`, and `wholeWord` values. When global search is not
+     * configured, a new empty state object with a new `selectedFields` array is
+     * returned.
+     *
+     * @returns {object} Current global search state.
+     */
+    getSearchState() {
+        if (!searchController) {
+            return {
+                query: '',
+                selectedFields: [],
+                caseSensitive: false,
+                wholeWord: false
+            };
+        }
+
+        return searchController.getSearchState();
+    },
+
+    /**
+     * Sets the fields used by AMB Grid global search.
+     *
+     * Field validation and normalization are handled by the configured search
+     * system. Updating the fields may immediately change which rows are active
+     * or visible.
+     *
+     * @param {string[]} fields - Field names to search.
+     * @returns {boolean} `true` when search is available, otherwise `false`.
+     */
+    setSearchFields(fields) {
+        if (!searchController) return false;
+
+        searchController.setSearchFields(fields);
+        return true;
+    },
+
+    /**
+     * Sets AMB Grid global search options.
+     *
+     * Supported options include `caseSensitive` and `wholeWord`. Updating these
+     * options may immediately change which rows are active or visible.
+     *
+     * @param {object} options - Search options.
+     * @param {boolean} [options.caseSensitive] - Match letter case.
+     * @param {boolean} [options.wholeWord] - Match whole words.
+     * @returns {boolean} `true` when search is available, otherwise `false`.
+     */
+    setSearchOptions(options) {
+        if (!searchController) return false;
+
+        searchController.setSearchOptions(options);
         return true;
     }
 });

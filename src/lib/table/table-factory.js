@@ -17,6 +17,7 @@ import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
 import { createSelectionMethods } from './controller/selection-methods.js';
 import { createFilterMethods } from './controller/filter-methods.js';
+import { createSearchMethods } from './controller/search-methods.js';
 import { escapeHtmlText } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
@@ -834,14 +835,6 @@ export function createTable(options = {}) {
     const rowMethods = createRowMethods({ table, crud });
     const paginationMethods = createPaginationMethods({ table, crud });
     const selectionMethods = createSelectionMethods({ table, crud });
-    const controllerMethods = composeControllerMethods(
-        dataMethods,
-        rowMethods,
-        paginationMethods,
-        selectionMethods,
-        filterMethods,
-        redrawMethods
-    );
     unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
         : null;
@@ -885,6 +878,16 @@ export function createTable(options = {}) {
         showFilterStatus: normalizedFloatingMessages.searchFilterStatus,
         mountElement: toolbarController ? toolbarController.searchMount : null
     });
+    const searchMethods = createSearchMethods({ searchController });
+    const controllerMethods = composeControllerMethods(
+        dataMethods,
+        rowMethods,
+        paginationMethods,
+        selectionMethods,
+        filterMethods,
+        searchMethods,
+        redrawMethods
+    );
 
     if (deleteColumnController) {
         unsubscribeDeleteColumn = crud.on('row-state-changed', ({ row }) => {
@@ -918,42 +921,6 @@ export function createTable(options = {}) {
          * @internal
          */
         _confirmDialog: confirmDialog,
-        setSearchQuery(query) {
-            if (!searchController) return false;
-
-            searchController.setSearchQuery(query);
-            return true;
-        },
-        clearSearch() {
-            if (!searchController) return false;
-
-            searchController.clearSearch();
-            return true;
-        },
-        getSearchState() {
-            if (!searchController) {
-                return {
-                    query: '',
-                    selectedFields: [],
-                    caseSensitive: false,
-                    wholeWord: false
-                };
-            }
-
-            return searchController.getSearchState();
-        },
-        setSearchFields(fields) {
-            if (!searchController) return false;
-
-            searchController.setSearchFields(fields);
-            return true;
-        },
-        setSearchOptions(options) {
-            if (!searchController) return false;
-
-            searchController.setSearchOptions(options);
-            return true;
-        },
         ...controllerMethods,
         destroy() {
             if (toolbarController) {
