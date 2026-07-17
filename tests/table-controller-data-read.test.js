@@ -138,6 +138,10 @@ describe('AMB table controller data read API', () => {
             expect(typeof controller.redraw).toBe('function');
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
+            expect(controller.dataMethods).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
+            expect(controller.data).toBeUndefined();
+            expect(controller.controller).toBeUndefined();
 
             crud.on.mockClear();
             crud.addCellValidator.mockClear();

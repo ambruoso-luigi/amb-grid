@@ -126,6 +126,7 @@ describe('AMB table controller redraw API', () => {
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
             expect(controller.redrawMethods).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
             expect(controller.controller).toBeUndefined();
             expect(typeof controller.getSelectedRows).toBe('function');
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/editors/index.js</title>
+    <title>JSDoc: Source: lib/table/controller/data-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/editors/index.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/data-methods.js</h1>
 
     
 
@@ -26,31 +26,51 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { autocomplete } from './autocomplete-editor.js';
-import { checkbox } from './checkbox-editor.js';
-import { date } from './date-editor.js';
-import { largeText } from './large-text-editor.js';
-import { lookup } from './lookup-editor.js';
-import { decimal, integer } from './number-editors.js';
-import { select } from './select-editor.js';
-import { text } from './text-editor.js';
-
-/**
- * Editor factories for Tabulator columns.
+            <pre class="prettyprint source linenums"><code>/**
+ * Creates the data-reading methods exposed by the AMB Grid controller.
  *
- * @namespace editors
+ * @param {object} context - Required method dependencies.
+ * @param {object} context.table - Grid table instance.
+ * @returns {object} Data-reading methods for the flat controller API.
+ * @private
+ * @internal
  */
-export const editors = {
-    text,
-    integer,
-    decimal,
-    date,
-    checkbox,
-    select,
-    autocomplete,
-    lookup,
-    largeText
-};
+export const createDataMethods = ({ table }) => ({
+    /**
+     * Returns the current grid data.
+     *
+     * An optional row range can be provided to limit the returned rows. For
+     * example, the `"active"` range returns rows currently included after
+     * filters and search conditions have been applied.
+     *
+     * This method returns runtime row data as-is. It does not create an AMB
+     * Grid save payload or remove technical fields. Returned row objects should
+     * be treated as read-only because direct changes may bypass CRUD tracking.
+     *
+     * @param {...any} args - Optional arguments used to select the requested rows.
+     * @returns {object[]} Current row data.
+     */
+    getData(...args) {
+        return table.getData(...args);
+    },
+
+    /**
+     * Returns the number of rows in the requested row range.
+     *
+     * An optional row range can be provided. For example, `"active"` returns
+     * the number of rows currently included after filters and search conditions
+     * have been applied.
+     *
+     * This method reads the current grid state without modifying filters,
+     * search, pagination, selection, or AMB Grid CRUD state.
+     *
+     * @param {...any} args - Optional arguments used to select the row range.
+     * @returns {number} Number of rows in the requested range.
+     */
+    getDataCount(...args) {
+        return table.getDataCount(...args);
+    }
+});
 </code></pre>
         </article>
     </section>

@@ -10,6 +10,8 @@ import { createDeleteColumn } from './delete-column.js';
 import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
 import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-binders.js';
+import { composeControllerMethods } from './controller/compose-controller-methods.js';
+import { createDataMethods } from './controller/data-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { escapeHtmlText } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
@@ -821,7 +823,12 @@ export function createTable(options = {}) {
     }
 
     const table = new Tabulator(selector, normalizedOptions);
+    const dataMethods = createDataMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
+    const controllerMethods = composeControllerMethods(
+        dataMethods,
+        redrawMethods
+    );
     crud = new CrudHelper(table, { errorStyle });
     unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
@@ -1104,40 +1111,7 @@ export function createTable(options = {}) {
         refreshFilter() {
             return table.refreshFilter();
         },
-        /**
-         * Returns the current grid data.
-         *
-         * An optional row range can be provided to limit the returned rows. For
-         * example, the `"active"` range returns rows currently included after
-         * filters and search conditions have been applied.
-         *
-         * This method returns runtime row data as-is. It does not create an AMB
-         * Grid save payload or remove technical fields. Returned row objects
-         * should be treated as read-only because direct changes may bypass CRUD
-         * tracking.
-         *
-         * @param {...any} args - Optional arguments used to select the requested rows.
-         * @returns {object[]} Current row data.
-         */
-        getData(...args) {
-            return table.getData(...args);
-        },
-        /**
-         * Returns the number of rows in the requested row range.
-         *
-         * An optional row range can be provided. For example, `"active"` returns
-         * the number of rows currently included after filters and search
-         * conditions have been applied.
-         *
-         * This method reads the current grid state without modifying filters,
-         * search, pagination, selection, or AMB Grid CRUD state.
-         *
-         * @param {...any} args - Optional arguments used to select the row range.
-         * @returns {number} Number of rows in the requested range.
-         */
-        getDataCount(...args) {
-            return table.getDataCount(...args);
-        },
+        ...controllerMethods,
         /**
          * Returns the row components in the requested row range.
          *
@@ -1313,7 +1287,6 @@ export function createTable(options = {}) {
 
             return table.setPageToRow(ambRow || identifier);
         },
-        ...redrawMethods,
         destroy() {
             if (toolbarController) {
                 toolbarController.destroy();
