@@ -203,11 +203,16 @@ describe('AMB table controller row read API', () => {
             expect(controller.table).toBe(table);
             expect(typeof controller.getRows).toBe('function');
             expect(typeof controller.getRow).toBe('function');
+            expect(typeof controller.getRowPosition).toBe('function');
+            expect(typeof controller.getRowFromPosition).toBe('function');
             expect(typeof controller.getData).toBe('function');
             expect(typeof controller.getDataCount).toBe('function');
             expect(typeof controller.redraw).toBe('function');
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
+            expect(controller.rowMethods).toBeUndefined();
+            expect(controller.rows).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
 
             crud.on.mockClear();
             crud.addCellValidator.mockClear();

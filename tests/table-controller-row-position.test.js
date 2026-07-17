@@ -245,6 +245,9 @@ describe('AMB table controller row position API', () => {
             expect(typeof controller.redraw).toBe('function');
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
+            expect(controller.rowMethods).toBeUndefined();
+            expect(controller.rows).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
 
             clearCrudReadSetupCalls(crud);
 
