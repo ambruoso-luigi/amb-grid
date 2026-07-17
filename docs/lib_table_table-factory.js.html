@@ -43,6 +43,7 @@ import { createDataMethods } from './controller/data-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
+import { createSelectionMethods } from './controller/selection-methods.js';
 import { escapeHtmlText } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
@@ -858,10 +859,12 @@ export function createTable(options = {}) {
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
     const paginationMethods = createPaginationMethods({ table, crud });
+    const selectionMethods = createSelectionMethods({ table, crud });
     const controllerMethods = composeControllerMethods(
         dataMethods,
         rowMethods,
         paginationMethods,
+        selectionMethods,
         redrawMethods
     );
     unsubscribeSelectionColumn = selectionColumnController &amp;&amp; typeof selectionColumnController.bind === 'function'
@@ -940,101 +943,6 @@ export function createTable(options = {}) {
          * @internal
          */
         _confirmDialog: confirmDialog,
-        /**
-         * Returns the data objects for the selected rows.
-         *
-         * This AMB Grid compatibility method returns selected row data rather
-         * than row components. Use `getSelectedRowComponents()` when component
-         * access is required.
-         *
-         * @returns {object[]} Data objects for the selected rows.
-         */
-        getSelectedRows() {
-            return typeof table.getSelectedData === 'function'
-                ? table.getSelectedData()
-                : [];
-        },
-        /**
-         * Returns the data objects for the selected rows.
-         *
-         * Rows are returned in their selection order. The method returns runtime
-         * grid data as-is and does not create an AMB Grid save payload or remove
-         * technical fields.
-         *
-         * Returned objects should be treated as read-only because direct
-         * mutation may bypass CRUD tracking.
-         *
-         * @returns {object[]} Data objects for the selected rows.
-         */
-        getSelectedData() {
-            return table.getSelectedData();
-        },
-        /**
-         * Returns the row components for the selected rows.
-         *
-         * Components are returned in their selection order. Row components
-         * expose advanced operations, so direct mutations may bypass or
-         * interfere with AMB Grid CRUD tracking.
-         *
-         * @returns {object[]} Components for the selected rows.
-         */
-        getSelectedRowComponents() {
-            return table.getSelectedRows();
-        },
-        /**
-         * Clears the current row selection.
-         *
-         * All selected rows are deselected. The method performs no operation
-         * when row deselection is not available.
-         *
-         * @returns {void}
-         */
-        clearSelection() {
-            if (typeof table.deselectRow === 'function') {
-                table.deselectRow();
-            }
-        },
-        /**
-         * Selects one row using an AMB Grid row identifier.
-         *
-         * Backend identifiers and AMB Grid temporary identifiers are resolved
-         * through the CRUD layer.
-         *
-         * This method currently selects one row at a time. Arrays, row ranges
-         * and select-all behavior are not part of this AMB Grid method contract.
-         *
-         * @param {*} identifier - Backend id or AMB temporary id.
-         * @returns {boolean} `true` when the row is selected, otherwise `false`.
-         */
-        selectRow(identifier) {
-            const row = crud.findRowByKey(identifier);
-
-            if (!row || typeof row.select !== 'function') return false;
-
-            row.select();
-            return true;
-        },
-        /**
-         * Deselects one row using an AMB Grid row identifier.
-         *
-         * Backend identifiers and AMB Grid temporary identifiers are resolved
-         * through the CRUD layer.
-         *
-         * This method currently deselects one row at a time. Arrays, row ranges
-         * and deselect-all behavior are not part of this method; use
-         * `clearSelection()` to clear the complete selection.
-         *
-         * @param {*} identifier - Backend id or AMB temporary id.
-         * @returns {boolean} `true` when the row is deselected, otherwise `false`.
-         */
-        deselectRow(identifier) {
-            const row = crud.findRowByKey(identifier);
-
-            if (!row || typeof row.deselect !== 'function') return false;
-
-            row.deselect();
-            return true;
-        },
         setSearchQuery(query) {
             if (!searchController) return false;
 
@@ -1212,13 +1120,13 @@ export function createTable(options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 12:38:51 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 13:00:12 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

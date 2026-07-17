@@ -267,6 +267,9 @@ describe('AMB table controller selection read API', () => {
             expect(typeof controller.redraw).toBe('function');
             expect(typeof controller.blockRedraw).toBe('function');
             expect(typeof controller.restoreRedraw).toBe('function');
+            expect(controller.selectionMethods).toBeUndefined();
+            expect(controller.selection).toBeUndefined();
+            expect(controller.controllerMethods).toBeUndefined();
 
             clearCrudSetupCalls(crud);
             expectNoSelectionSideEffects(table, crud);
