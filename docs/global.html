@@ -6541,7 +6541,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line780">line 780</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line784">line 784</a>
     </li></ul></dd>
     
 
@@ -7897,6 +7897,472 @@ to clear the complete selection.
     <dd>
         
 <span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getColumn"><span class="type-signature"></span>getColumn<span class="signature">(columnLookup)</span><span class="type-signature"> &rarr; {object|false}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a column component using a supported column lookup value.
+
+Column components expose advanced runtime operations. Direct operations
+on a component may affect grid configuration outside higher-level AMB
+Grid workflows.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>columnLookup</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Column field, component, header element or supported lookup.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_column-methods.js.html">lib/table/controller/column-methods.js</a>, <a href="lib_table_controller_column-methods.js.html#line51">line 51</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Matching column component, or `false` when not found.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+|
+
+<span class="param-type">false</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getColumnDefinitions"><span class="type-signature"></span>getColumnDefinitions<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the current grid column definitions.
+
+The result reflects the current runtime column structure, including
+AMB-managed columns and changes made after grid creation. Returned
+definitions should be treated as read-only.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_column-methods.js.html">lib/table/controller/column-methods.js</a>, <a href="lib_table_controller_column-methods.js.html#line20">line 20</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Current column definitions.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;object></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getColumns"><span class="type-signature"></span>getColumns<span class="signature">(includeGroups<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array.&lt;object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the current grid column components.
+
+Pass `true` to request the structured top-level column hierarchy,
+including column groups. The returned components expose advanced runtime
+operations and should be treated carefully.
+
+AMB-managed selection and action columns are included when they belong to
+the current grid structure.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>includeGroups</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Include the structured column hierarchy.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_column-methods.js.html">lib/table/controller/column-methods.js</a>, <a href="lib_table_controller_column-methods.js.html#line37">line 37</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Current column components.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;object></span>
 
 
     </dd>
@@ -16209,6 +16675,75 @@ depends on the grid configuration.
 
         <tr>
             
+                <td class="name"><code>getColumnDefinitions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Return the current grid column definitions.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>getColumns</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Return current column components.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>getColumn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Return one column component using a supported lookup.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>getSelectedRows</code></td>
             
 
@@ -17279,7 +17814,7 @@ depends on the grid configuration.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line616">line 616</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line617">line 617</a>
     </li></ul></dd>
     
 
@@ -17309,13 +17844,13 @@ depends on the grid configuration.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#text">text</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#text">text</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Jul 17 2026 17:21:41 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Jul 18 2026 10:08:20 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

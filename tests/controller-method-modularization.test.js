@@ -10,6 +10,22 @@ const tableFactoryPath = resolve(repositoryRoot, 'src/lib/table/table-factory.js
 const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8');
 
 describe('AMB table controller method modularization', () => {
+    test('wires the extracted column method group into the controller composition', () => {
+        const source = readTableFactorySource();
+
+        expect(source).toContain("import { createColumnMethods } from './controller/column-methods.js';");
+        expect(source).toContain('const columnMethods = createColumnMethods({ table });');
+
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('columnMethods');
+        expect(composition[1]).toContain('dataMethods');
+        expect(composition[1]).toContain('redrawMethods');
+        expect(source).not.toContain('...columnMethods');
+        expect(source).toContain('...controllerMethods');
+    });
+
     test('wires the extracted selection method group into the controller composition', () => {
         const source = readTableFactorySource();
 
@@ -148,6 +164,19 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineSortDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline column method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineColumnDefinitions = [
+            /^\s*getColumnDefinitions\(\) \{/m,
+            /^\s*getColumns\(\.\.\.args\) \{/m,
+            /^\s*getColumn\(columnLookup\) \{/m
+        ];
+
+        inlineColumnDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });

@@ -11,6 +11,7 @@ import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
 import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-binders.js';
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
+import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
@@ -624,6 +625,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @typedef {object} AMBTableController
  * @property {object} table - Raw Tabulator table instance.
  * @property {CrudHelper} crud - CRUD application layer for row state, validation, rollback, and save payloads.
+ * @property {Function} getColumnDefinitions - Return the current grid column definitions.
+ * @property {Function} getColumns - Return current column components.
+ * @property {Function} getColumn - Return one column component using a supported lookup.
  * @property {Function} getSelectedRows - Return selected row data using the existing AMB Grid compatibility behavior.
  * @property {Function} getSelectedData - Return the data objects for the selected rows.
  * @property {Function} getSelectedRowComponents - Return the components for the selected rows.
@@ -837,6 +841,7 @@ export function createTable(options = {}) {
     }
 
     const table = new Tabulator(selector, normalizedOptions);
+    const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
@@ -893,6 +898,7 @@ export function createTable(options = {}) {
     });
     const searchMethods = createSearchMethods({ searchController });
     const controllerMethods = composeControllerMethods(
+        columnMethods,
         dataMethods,
         rowMethods,
         paginationMethods,
