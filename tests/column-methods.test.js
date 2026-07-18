@@ -13,6 +13,8 @@ describe('AMB table controller column method group', () => {
             'getColumnDefinitions',
             'getColumns',
             'hideColumn',
+            'moveColumn',
+            'scrollToColumn',
             'showColumn',
             'toggleColumn'
         ]);
@@ -30,6 +32,8 @@ describe('AMB table controller column method group', () => {
             showColumn: vi.fn(),
             hideColumn: vi.fn(),
             toggleColumn: vi.fn(),
+            scrollToColumn: vi.fn(),
+            moveColumn: vi.fn(),
             setFilter: vi.fn(),
             refreshFilter: vi.fn(),
             setPage: vi.fn()
@@ -48,6 +52,8 @@ describe('AMB table controller column method group', () => {
         expect(table.showColumn).not.toHaveBeenCalled();
         expect(table.hideColumn).not.toHaveBeenCalled();
         expect(table.toggleColumn).not.toHaveBeenCalled();
+        expect(table.scrollToColumn).not.toHaveBeenCalled();
+        expect(table.moveColumn).not.toHaveBeenCalled();
         expect(table.setFilter).not.toHaveBeenCalled();
         expect(table.refreshFilter).not.toHaveBeenCalled();
         expect(table.setPage).not.toHaveBeenCalled();
@@ -71,6 +77,8 @@ describe('AMB table controller column method group', () => {
             showColumn: vi.fn(),
             hideColumn: vi.fn(),
             toggleColumn: vi.fn(),
+            scrollToColumn: vi.fn(),
+            moveColumn: vi.fn(),
             setSort: vi.fn(),
             clearSort: vi.fn(),
             setFilter: vi.fn()
@@ -95,6 +103,8 @@ describe('AMB table controller column method group', () => {
         expect(table.showColumn).not.toHaveBeenCalled();
         expect(table.hideColumn).not.toHaveBeenCalled();
         expect(table.toggleColumn).not.toHaveBeenCalled();
+        expect(table.scrollToColumn).not.toHaveBeenCalled();
+        expect(table.moveColumn).not.toHaveBeenCalled();
         expect(table.setSort).not.toHaveBeenCalled();
         expect(table.clearSort).not.toHaveBeenCalled();
         expect(table.setFilter).not.toHaveBeenCalled();
@@ -116,6 +126,8 @@ describe('AMB table controller column method group', () => {
             showColumn: vi.fn(),
             hideColumn: vi.fn(),
             toggleColumn: vi.fn(),
+            scrollToColumn: vi.fn(),
+            moveColumn: vi.fn(),
             findRowByKey: vi.fn(),
             setPage: vi.fn()
         };
@@ -143,6 +155,8 @@ describe('AMB table controller column method group', () => {
         expect(table.showColumn).not.toHaveBeenCalled();
         expect(table.hideColumn).not.toHaveBeenCalled();
         expect(table.toggleColumn).not.toHaveBeenCalled();
+        expect(table.scrollToColumn).not.toHaveBeenCalled();
+        expect(table.moveColumn).not.toHaveBeenCalled();
         expect(table.findRowByKey).not.toHaveBeenCalled();
         expect(table.setPage).not.toHaveBeenCalled();
     });
@@ -235,5 +249,99 @@ describe('AMB table controller column method group', () => {
         expect(table.hideColumn).not.toHaveBeenCalled();
         expect(table.getColumn).not.toHaveBeenCalled();
         expect(table.getColumnDefinitions).not.toHaveBeenCalled();
+    });
+
+    test('scrolls to columns by returning the original promise unchanged', () => {
+        const columnLookup = { type: 'column-component' };
+        const firstPromise = Promise.resolve();
+        const secondPromise = Promise.resolve('centered');
+        const thirdPromise = Promise.resolve();
+        const error = new Error('scroll failed');
+        const rejectedPromise = Promise.reject(error);
+
+        rejectedPromise.catch(() => {});
+
+        const table = {
+            scrollToColumn: vi.fn()
+                .mockReturnValueOnce(firstPromise)
+                .mockReturnValueOnce(secondPromise)
+                .mockReturnValueOnce(thirdPromise)
+                .mockReturnValueOnce(rejectedPromise),
+            getColumn: vi.fn(),
+            showColumn: vi.fn(),
+            redraw: vi.fn(),
+            setFilter: vi.fn(),
+            setSearchQuery: vi.fn(),
+            setPage: vi.fn(),
+            findRowByKey: vi.fn()
+        };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.scrollToColumn('email')).toBe(firstPromise);
+        expect(table.scrollToColumn).toHaveBeenCalledOnce();
+        expect(table.scrollToColumn).toHaveBeenLastCalledWith('email');
+
+        expect(methods.scrollToColumn('email', 'center')).toBe(secondPromise);
+        expect(table.scrollToColumn).toHaveBeenCalledTimes(2);
+        expect(table.scrollToColumn).toHaveBeenLastCalledWith('email', 'center');
+
+        expect(methods.scrollToColumn(columnLookup, 'right', false)).toBe(thirdPromise);
+        expect(table.scrollToColumn).toHaveBeenCalledTimes(3);
+        expect(table.scrollToColumn).toHaveBeenLastCalledWith(columnLookup, 'right', false);
+        expect(table.scrollToColumn.mock.calls[2][0]).toBe(columnLookup);
+        expect(table.scrollToColumn.mock.calls[2][2]).toBe(false);
+
+        expect(methods.scrollToColumn('email')).toBe(rejectedPromise);
+        expect(table.scrollToColumn).toHaveBeenCalledTimes(4);
+        expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.showColumn).not.toHaveBeenCalled();
+        expect(table.redraw).not.toHaveBeenCalled();
+        expect(table.setFilter).not.toHaveBeenCalled();
+        expect(table.setSearchQuery).not.toHaveBeenCalled();
+        expect(table.setPage).not.toHaveBeenCalled();
+        expect(table.findRowByKey).not.toHaveBeenCalled();
+    });
+
+    test('moves columns by delegating source, target and position unchanged', () => {
+        const sourceComponent = { field: 'name' };
+        const targetComponent = { field: 'age' };
+        const moveResult = { moved: true };
+        const table = {
+            moveColumn: vi.fn()
+                .mockReturnValueOnce(moveResult)
+                .mockReturnValueOnce(undefined),
+            getColumn: vi.fn(),
+            getColumns: vi.fn(),
+            getColumnDefinitions: vi.fn(),
+            setColumns: vi.fn(),
+            redraw: vi.fn(),
+            setFilter: vi.fn(),
+            setSearchQuery: vi.fn(),
+            setSort: vi.fn(),
+            setPage: vi.fn(),
+            findRowByKey: vi.fn()
+        };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.moveColumn('name', 'age', true)).toBe(moveResult);
+        expect(table.moveColumn).toHaveBeenCalledOnce();
+        expect(table.moveColumn).toHaveBeenLastCalledWith('name', 'age', true);
+
+        expect(methods.moveColumn(sourceComponent, targetComponent, false)).toBeUndefined();
+        expect(table.moveColumn).toHaveBeenCalledTimes(2);
+        expect(table.moveColumn).toHaveBeenLastCalledWith(sourceComponent, targetComponent, false);
+        expect(table.moveColumn.mock.calls[1][0]).toBe(sourceComponent);
+        expect(table.moveColumn.mock.calls[1][1]).toBe(targetComponent);
+        expect(table.moveColumn.mock.calls[1][2]).toBe(false);
+        expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.getColumns).not.toHaveBeenCalled();
+        expect(table.getColumnDefinitions).not.toHaveBeenCalled();
+        expect(table.setColumns).not.toHaveBeenCalled();
+        expect(table.redraw).not.toHaveBeenCalled();
+        expect(table.setFilter).not.toHaveBeenCalled();
+        expect(table.setSearchQuery).not.toHaveBeenCalled();
+        expect(table.setSort).not.toHaveBeenCalled();
+        expect(table.setPage).not.toHaveBeenCalled();
+        expect(table.findRowByKey).not.toHaveBeenCalled();
     });
 });

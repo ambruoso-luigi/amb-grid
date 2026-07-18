@@ -90,5 +90,43 @@ export const createColumnMethods = ({ table }) => ({
      */
     toggleColumn(columnLookup) {
         return table.toggleColumn(columnLookup);
+    },
+
+    /**
+     * Scrolls horizontally to a grid column.
+     *
+     * The optional position controls where the column is placed in the visible
+     * area. The optional visibility flag controls whether scrolling also
+     * occurs when the column is already fully visible.
+     *
+     * AMB-managed columns can be addressed explicitly. The operation changes
+     * only the viewport and does not directly modify row data or CRUD state.
+     *
+     * @param {*} columnLookup - Column field or another supported column lookup.
+     * @param {'left'|'center'|'right'} [position] - Requested viewport position.
+     * @param {boolean} [scrollIfVisible] - Scroll even when the column is already visible.
+     * @returns {Promise<void>} Original scrolling promise.
+     */
+    scrollToColumn(...args) {
+        return table.scrollToColumn(...args);
+    },
+
+    /**
+     * Moves a grid column relative to another column.
+     *
+     * Both columns can be identified with supported lookup values. The
+     * relative position flag is forwarded unchanged. AMB-managed columns can
+     * be moved when explicitly addressed.
+     *
+     * Reordering columns changes the runtime layout but does not directly
+     * modify row data or CRUD state.
+     *
+     * @param {*} columnLookup - Column to move.
+     * @param {*} targetLookup - Column used as the destination reference.
+     * @param {boolean} after - Place the column after the target when `true`.
+     * @returns {void}
+     */
+    moveColumn(...args) {
+        return table.moveColumn(...args);
     }
 });

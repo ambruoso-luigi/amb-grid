@@ -177,7 +177,9 @@ describe('AMB table controller method modularization', () => {
             /^\s*getColumn\(columnLookup\) \{/m,
             /^\s*showColumn\(columnLookup\) \{/m,
             /^\s*hideColumn\(columnLookup\) \{/m,
-            /^\s*toggleColumn\(columnLookup\) \{/m
+            /^\s*toggleColumn\(columnLookup\) \{/m,
+            /^\s*scrollToColumn\(\.\.\.args\) \{/m,
+            /^\s*moveColumn\(\.\.\.args\) \{/m
         ];
 
         inlineColumnDefinitions.forEach(pattern => {
@@ -192,7 +194,13 @@ describe('AMB table controller method modularization', () => {
         expect(source).toMatch(/showColumn\(columnLookup\) \{\s*return table\.showColumn\(columnLookup\);/);
         expect(source).toMatch(/hideColumn\(columnLookup\) \{\s*return table\.hideColumn\(columnLookup\);/);
         expect(source).toMatch(/toggleColumn\(columnLookup\) \{\s*return table\.toggleColumn\(columnLookup\);/);
+        expect(source).toMatch(/scrollToColumn\(\.\.\.args\) \{\s*return table\.scrollToColumn\(\.\.\.args\);/);
+        expect(source).toMatch(/moveColumn\(\.\.\.args\) \{\s*return table\.moveColumn\(\.\.\.args\);/);
+        expect(source).not.toContain('column-navigation-methods.js');
+        expect(source).not.toContain('column-move-methods.js');
         expect(source).not.toContain('const column = table.getColumn(columnLookup)');
+        expect(source).not.toContain('setColumns(');
+        expect(source).not.toContain('.move(');
         expect(source).not.toContain('.show()');
         expect(source).not.toContain('.hide()');
     });

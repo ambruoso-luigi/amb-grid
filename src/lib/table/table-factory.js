@@ -631,6 +631,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} showColumn - Show a hidden grid column.
  * @property {Function} hideColumn - Hide a visible grid column.
  * @property {Function} toggleColumn - Toggle a grid column's visibility.
+ * @property {Function} scrollToColumn - Scroll horizontally to a grid column.
+ * @property {Function} moveColumn - Move a grid column relative to another column.
  * @property {Function} getSelectedRows - Return selected row data using the existing AMB Grid compatibility behavior.
  * @property {Function} getSelectedData - Return the data objects for the selected rows.
  * @property {Function} getSelectedRowComponents - Return the components for the selected rows.

@@ -19,6 +19,8 @@ vi.mock('tabulator-tables', () => ({
             this.showColumn = vi.fn();
             this.hideColumn = vi.fn();
             this.toggleColumn = vi.fn();
+            this.scrollToColumn = vi.fn(() => Promise.resolve());
+            this.moveColumn = vi.fn();
             this.getSorters = vi.fn(() => []);
             this.setSort = vi.fn();
             this.clearSort = vi.fn();
@@ -200,12 +202,16 @@ describe('AMB table controller column API', () => {
             const ambComponent = { field: '_amb_actions' };
             const nameComponent = { field: 'name' };
             const ambLookup = { field: '_amb_actions' };
+            const ambTargetLookup = { field: '_amb_select' };
             const flatColumns = [ambComponent, nameComponent];
             const groupComponent = { title: 'Person', columns: [nameComponent] };
             const groupedColumns = [ambComponent, groupComponent];
             const showResult = { shown: true };
             const hideResult = { hidden: true };
             const toggleResult = { toggled: true };
+            const scrollPromise = Promise.resolve();
+            const ambScrollPromise = Promise.resolve();
+            const moveResult = { moved: true };
 
             expect(controller.table).toBe(table);
             expect(typeof controller.getColumnDefinitions).toBe('function');
@@ -214,8 +220,11 @@ describe('AMB table controller column API', () => {
             expect(typeof controller.showColumn).toBe('function');
             expect(typeof controller.hideColumn).toBe('function');
             expect(typeof controller.toggleColumn).toBe('function');
+            expect(typeof controller.scrollToColumn).toBe('function');
+            expect(typeof controller.moveColumn).toBe('function');
             expect(controller.columnMethods).toBeUndefined();
             expect(controller.columns).toBeUndefined();
+            expect(controller.navigation).toBeUndefined();
             expect(controller.visibility).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
 
@@ -280,6 +289,31 @@ describe('AMB table controller column API', () => {
             expect(controller.toggleColumn('name')).toBe(toggleResult);
             expect(table.toggleColumn).toHaveBeenCalledOnce();
             expect(table.toggleColumn).toHaveBeenLastCalledWith('name');
+
+            table.scrollToColumn
+                .mockReturnValueOnce(scrollPromise)
+                .mockReturnValueOnce(ambScrollPromise);
+            expect(controller.scrollToColumn('email', 'center', false)).toBe(scrollPromise);
+            expect(table.scrollToColumn).toHaveBeenCalledOnce();
+            expect(table.scrollToColumn).toHaveBeenLastCalledWith('email', 'center', false);
+            expect(table.scrollToColumn.mock.calls[0][2]).toBe(false);
+            expect(controller.scrollToColumn(ambLookup, 'left', true)).toBe(ambScrollPromise);
+            expect(table.scrollToColumn).toHaveBeenCalledTimes(2);
+            expect(table.scrollToColumn).toHaveBeenLastCalledWith(ambLookup, 'left', true);
+            expect(table.scrollToColumn.mock.calls[1][0]).toBe(ambLookup);
+
+            table.moveColumn
+                .mockReturnValueOnce(moveResult)
+                .mockReturnValueOnce(undefined);
+            expect(controller.moveColumn('name', 'age', true)).toBe(moveResult);
+            expect(table.moveColumn).toHaveBeenCalledOnce();
+            expect(table.moveColumn).toHaveBeenLastCalledWith('name', 'age', true);
+            expect(controller.moveColumn(ambLookup, ambTargetLookup, false)).toBeUndefined();
+            expect(table.moveColumn).toHaveBeenCalledTimes(2);
+            expect(table.moveColumn).toHaveBeenLastCalledWith(ambLookup, ambTargetLookup, false);
+            expect(table.moveColumn.mock.calls[1][0]).toBe(ambLookup);
+            expect(table.moveColumn.mock.calls[1][1]).toBe(ambTargetLookup);
+            expect(table.moveColumn.mock.calls[1][2]).toBe(false);
 
             expect(controller.getSearchState()).toEqual(searchState);
             expect(table.setFilter).not.toHaveBeenCalled();
