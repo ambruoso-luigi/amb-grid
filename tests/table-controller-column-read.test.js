@@ -16,6 +16,9 @@ vi.mock('tabulator-tables', () => ({
             this.getColumnDefinitions = vi.fn(() => []);
             this.getColumns = vi.fn(() => []);
             this.getColumn = vi.fn(() => false);
+            this.showColumn = vi.fn();
+            this.hideColumn = vi.fn();
+            this.toggleColumn = vi.fn();
             this.getSorters = vi.fn(() => []);
             this.setSort = vi.fn();
             this.clearSort = vi.fn();
@@ -173,8 +176,8 @@ const clearCrudSetupCalls = crud => {
     crud.destroy.mockClear();
 };
 
-describe('AMB table controller column-reading API', () => {
-    test('exposes flat column-reading methods and preserves delegation contracts', () => {
+describe('AMB table controller column API', () => {
+    test('exposes flat column methods and preserves delegation contracts', () => {
         const harness = createDocumentHarness();
 
         try {
@@ -196,16 +199,24 @@ describe('AMB table controller column-reading API', () => {
             const definitions = [ambDefinition, dataDefinition];
             const ambComponent = { field: '_amb_actions' };
             const nameComponent = { field: 'name' };
+            const ambLookup = { field: '_amb_actions' };
             const flatColumns = [ambComponent, nameComponent];
             const groupComponent = { title: 'Person', columns: [nameComponent] };
             const groupedColumns = [ambComponent, groupComponent];
+            const showResult = { shown: true };
+            const hideResult = { hidden: true };
+            const toggleResult = { toggled: true };
 
             expect(controller.table).toBe(table);
             expect(typeof controller.getColumnDefinitions).toBe('function');
             expect(typeof controller.getColumns).toBe('function');
             expect(typeof controller.getColumn).toBe('function');
+            expect(typeof controller.showColumn).toBe('function');
+            expect(typeof controller.hideColumn).toBe('function');
+            expect(typeof controller.toggleColumn).toBe('function');
             expect(controller.columnMethods).toBeUndefined();
             expect(controller.columns).toBeUndefined();
+            expect(controller.visibility).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
 
             clearCrudSetupCalls(crud);
@@ -242,6 +253,33 @@ describe('AMB table controller column-reading API', () => {
             expect(controller.getColumn('missing')).toBe(false);
             expect(table.getColumn).toHaveBeenCalledTimes(2);
             expect(table.getColumn).toHaveBeenLastCalledWith('missing');
+
+            table.showColumn
+                .mockReturnValueOnce(showResult)
+                .mockReturnValueOnce(undefined);
+            expect(controller.showColumn('name')).toBe(showResult);
+            expect(table.showColumn).toHaveBeenCalledOnce();
+            expect(table.showColumn).toHaveBeenLastCalledWith('name');
+            expect(controller.showColumn(ambLookup)).toBeUndefined();
+            expect(table.showColumn).toHaveBeenCalledTimes(2);
+            expect(table.showColumn).toHaveBeenLastCalledWith(ambLookup);
+            expect(table.showColumn.mock.calls[1][0]).toBe(ambLookup);
+
+            table.hideColumn
+                .mockReturnValueOnce(hideResult)
+                .mockReturnValueOnce(undefined);
+            expect(controller.hideColumn('name')).toBe(hideResult);
+            expect(table.hideColumn).toHaveBeenCalledOnce();
+            expect(table.hideColumn).toHaveBeenLastCalledWith('name');
+            expect(controller.hideColumn(ambLookup)).toBeUndefined();
+            expect(table.hideColumn).toHaveBeenCalledTimes(2);
+            expect(table.hideColumn).toHaveBeenLastCalledWith(ambLookup);
+            expect(table.hideColumn.mock.calls[1][0]).toBe(ambLookup);
+
+            table.toggleColumn.mockReturnValueOnce(toggleResult);
+            expect(controller.toggleColumn('name')).toBe(toggleResult);
+            expect(table.toggleColumn).toHaveBeenCalledOnce();
+            expect(table.toggleColumn).toHaveBeenLastCalledWith('name');
 
             expect(controller.getSearchState()).toEqual(searchState);
             expect(table.setFilter).not.toHaveBeenCalled();

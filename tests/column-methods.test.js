@@ -2,8 +2,8 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { createColumnMethods } from '../src/lib/table/controller/column-methods.js';
 
-describe('AMB table controller column-reading method group', () => {
-    test('exposes exactly the flat column-reading controller methods', () => {
+describe('AMB table controller column method group', () => {
+    test('exposes exactly the flat column controller methods', () => {
         const methods = createColumnMethods({
             table: {}
         });
@@ -11,7 +11,10 @@ describe('AMB table controller column-reading method group', () => {
         expect(Object.keys(methods).sort()).toEqual([
             'getColumn',
             'getColumnDefinitions',
-            'getColumns'
+            'getColumns',
+            'hideColumn',
+            'showColumn',
+            'toggleColumn'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -24,6 +27,9 @@ describe('AMB table controller column-reading method group', () => {
             getColumnDefinitions: vi.fn(() => definitions),
             getColumns: vi.fn(),
             getColumn: vi.fn(),
+            showColumn: vi.fn(),
+            hideColumn: vi.fn(),
+            toggleColumn: vi.fn(),
             setFilter: vi.fn(),
             refreshFilter: vi.fn(),
             setPage: vi.fn()
@@ -39,6 +45,9 @@ describe('AMB table controller column-reading method group', () => {
         expect(definitions).toContain(dataDefinition);
         expect(table.getColumns).not.toHaveBeenCalled();
         expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.showColumn).not.toHaveBeenCalled();
+        expect(table.hideColumn).not.toHaveBeenCalled();
+        expect(table.toggleColumn).not.toHaveBeenCalled();
         expect(table.setFilter).not.toHaveBeenCalled();
         expect(table.refreshFilter).not.toHaveBeenCalled();
         expect(table.setPage).not.toHaveBeenCalled();
@@ -59,6 +68,9 @@ describe('AMB table controller column-reading method group', () => {
                 .mockReturnValueOnce(groupedColumns),
             getColumnDefinitions: vi.fn(),
             getColumn: vi.fn(),
+            showColumn: vi.fn(),
+            hideColumn: vi.fn(),
+            toggleColumn: vi.fn(),
             setSort: vi.fn(),
             clearSort: vi.fn(),
             setFilter: vi.fn()
@@ -80,6 +92,9 @@ describe('AMB table controller column-reading method group', () => {
         expect(groupedColumns[1].columns[0]).toBe(nameComponent);
         expect(table.getColumnDefinitions).not.toHaveBeenCalled();
         expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.showColumn).not.toHaveBeenCalled();
+        expect(table.hideColumn).not.toHaveBeenCalled();
+        expect(table.toggleColumn).not.toHaveBeenCalled();
         expect(table.setSort).not.toHaveBeenCalled();
         expect(table.clearSort).not.toHaveBeenCalled();
         expect(table.setFilter).not.toHaveBeenCalled();
@@ -98,6 +113,9 @@ describe('AMB table controller column-reading method group', () => {
                 .mockReturnValueOnce(false),
             getColumns: vi.fn(),
             getColumnDefinitions: vi.fn(),
+            showColumn: vi.fn(),
+            hideColumn: vi.fn(),
+            toggleColumn: vi.fn(),
             findRowByKey: vi.fn(),
             setPage: vi.fn()
         };
@@ -122,7 +140,100 @@ describe('AMB table controller column-reading method group', () => {
         expect(table.getColumn).toHaveBeenLastCalledWith('missing');
         expect(table.getColumns).not.toHaveBeenCalled();
         expect(table.getColumnDefinitions).not.toHaveBeenCalled();
+        expect(table.showColumn).not.toHaveBeenCalled();
+        expect(table.hideColumn).not.toHaveBeenCalled();
+        expect(table.toggleColumn).not.toHaveBeenCalled();
         expect(table.findRowByKey).not.toHaveBeenCalled();
         expect(table.setPage).not.toHaveBeenCalled();
+    });
+
+    test('shows columns by delegating one lookup unchanged', () => {
+        const lookup = { type: 'column-lookup' };
+        const shownResult = { shown: true };
+        const table = {
+            showColumn: vi.fn()
+                .mockReturnValueOnce(shownResult)
+                .mockReturnValueOnce(undefined),
+            hideColumn: vi.fn(),
+            toggleColumn: vi.fn(),
+            getColumn: vi.fn(),
+            redraw: vi.fn()
+        };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.showColumn('email')).toBe(shownResult);
+        expect(table.showColumn).toHaveBeenCalledOnce();
+        expect(table.showColumn).toHaveBeenLastCalledWith('email');
+
+        expect(methods.showColumn(lookup)).toBeUndefined();
+        expect(table.showColumn).toHaveBeenCalledTimes(2);
+        expect(table.showColumn).toHaveBeenLastCalledWith(lookup);
+        expect(table.showColumn.mock.calls[1][0]).toBe(lookup);
+        expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.hideColumn).not.toHaveBeenCalled();
+        expect(table.toggleColumn).not.toHaveBeenCalled();
+        expect(table.redraw).not.toHaveBeenCalled();
+    });
+
+    test('hides columns by delegating one lookup unchanged without side effects', () => {
+        const lookup = { type: 'amb-action-column' };
+        const hiddenResult = { hidden: true };
+        const table = {
+            hideColumn: vi.fn()
+                .mockReturnValueOnce(hiddenResult)
+                .mockReturnValueOnce(undefined),
+            showColumn: vi.fn(),
+            toggleColumn: vi.fn(),
+            getColumn: vi.fn(),
+            setFilter: vi.fn(),
+            clearFilter: vi.fn(),
+            setSort: vi.fn(),
+            clearSort: vi.fn(),
+            setSearchQuery: vi.fn(),
+            setPage: vi.fn(),
+            findRowByKey: vi.fn()
+        };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.hideColumn('internalCode')).toBe(hiddenResult);
+        expect(table.hideColumn).toHaveBeenCalledOnce();
+        expect(table.hideColumn).toHaveBeenLastCalledWith('internalCode');
+
+        expect(methods.hideColumn(lookup)).toBeUndefined();
+        expect(table.hideColumn).toHaveBeenCalledTimes(2);
+        expect(table.hideColumn).toHaveBeenLastCalledWith(lookup);
+        expect(table.hideColumn.mock.calls[1][0]).toBe(lookup);
+        expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.showColumn).not.toHaveBeenCalled();
+        expect(table.toggleColumn).not.toHaveBeenCalled();
+        expect(table.setFilter).not.toHaveBeenCalled();
+        expect(table.clearFilter).not.toHaveBeenCalled();
+        expect(table.setSort).not.toHaveBeenCalled();
+        expect(table.clearSort).not.toHaveBeenCalled();
+        expect(table.setSearchQuery).not.toHaveBeenCalled();
+        expect(table.setPage).not.toHaveBeenCalled();
+        expect(table.findRowByKey).not.toHaveBeenCalled();
+    });
+
+    test('toggles columns by delegating one lookup unchanged', () => {
+        const lookup = { type: 'grouped-column' };
+        const toggleResult = { toggled: true };
+        const table = {
+            toggleColumn: vi.fn(() => toggleResult),
+            showColumn: vi.fn(),
+            hideColumn: vi.fn(),
+            getColumn: vi.fn(),
+            getColumnDefinitions: vi.fn()
+        };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.toggleColumn(lookup)).toBe(toggleResult);
+        expect(table.toggleColumn).toHaveBeenCalledOnce();
+        expect(table.toggleColumn).toHaveBeenCalledWith(lookup);
+        expect(table.toggleColumn.mock.calls[0][0]).toBe(lookup);
+        expect(table.showColumn).not.toHaveBeenCalled();
+        expect(table.hideColumn).not.toHaveBeenCalled();
+        expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.getColumnDefinitions).not.toHaveBeenCalled();
     });
 });

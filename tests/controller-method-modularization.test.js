@@ -24,6 +24,7 @@ describe('AMB table controller method modularization', () => {
         expect(composition[1]).toContain('redrawMethods');
         expect(source).not.toContain('...columnMethods');
         expect(source).toContain('...controllerMethods');
+        expect(source).not.toContain('column-visibility-methods.js');
     });
 
     test('wires the extracted selection method group into the controller composition', () => {
@@ -173,11 +174,26 @@ describe('AMB table controller method modularization', () => {
         const inlineColumnDefinitions = [
             /^\s*getColumnDefinitions\(\) \{/m,
             /^\s*getColumns\(\.\.\.args\) \{/m,
-            /^\s*getColumn\(columnLookup\) \{/m
+            /^\s*getColumn\(columnLookup\) \{/m,
+            /^\s*showColumn\(columnLookup\) \{/m,
+            /^\s*hideColumn\(columnLookup\) \{/m,
+            /^\s*toggleColumn\(columnLookup\) \{/m
         ];
 
         inlineColumnDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
+    });
+
+    test('keeps simple column visibility methods in the column method module', () => {
+        const columnMethodsPath = resolve(repositoryRoot, 'src/lib/table/controller/column-methods.js');
+        const source = readFileSync(columnMethodsPath, 'utf8');
+
+        expect(source).toMatch(/showColumn\(columnLookup\) \{\s*return table\.showColumn\(columnLookup\);/);
+        expect(source).toMatch(/hideColumn\(columnLookup\) \{\s*return table\.hideColumn\(columnLookup\);/);
+        expect(source).toMatch(/toggleColumn\(columnLookup\) \{\s*return table\.toggleColumn\(columnLookup\);/);
+        expect(source).not.toContain('const column = table.getColumn(columnLookup)');
+        expect(source).not.toContain('.show()');
+        expect(source).not.toContain('.hide()');
     });
 });

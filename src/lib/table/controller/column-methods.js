@@ -1,9 +1,9 @@
 /**
- * Creates the column-reading methods exposed by the AMB Grid controller.
+ * Creates the column methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Column-reading methods for the flat controller API.
+ * @returns {object} Column methods for the flat controller API.
  * @private
  * @internal
  */
@@ -50,5 +50,45 @@ export const createColumnMethods = ({ table }) => ({
      */
     getColumn(columnLookup) {
         return table.getColumn(columnLookup);
+    },
+
+    /**
+     * Shows a hidden grid column.
+     *
+     * The lookup is applied to the current runtime column structure, including
+     * AMB-managed columns when explicitly addressed. The operation changes only
+     * column visibility and does not directly modify row data or CRUD state.
+     *
+     * @param {*} columnLookup - Column field or another supported column lookup.
+     * @returns {void|false} `false` when no matching column is found.
+     */
+    showColumn(columnLookup) {
+        return table.showColumn(columnLookup);
+    },
+
+    /**
+     * Hides a visible grid column.
+     *
+     * Hiding a column changes its visual availability without removing its
+     * definition or directly modifying row data and CRUD state.
+     *
+     * @param {*} columnLookup - Column field or another supported column lookup.
+     * @returns {void|false} `false` when no matching column is found.
+     */
+    hideColumn(columnLookup) {
+        return table.hideColumn(columnLookup);
+    },
+
+    /**
+     * Toggles the visibility of a grid column.
+     *
+     * The current column visibility is resolved by the grid. The operation
+     * does not directly modify row data or CRUD state.
+     *
+     * @param {*} columnLookup - Column field or another supported column lookup.
+     * @returns {void|false} `false` when no matching column is found.
+     */
+    toggleColumn(columnLookup) {
+        return table.toggleColumn(columnLookup);
     }
 });
