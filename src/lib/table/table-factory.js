@@ -18,6 +18,7 @@ import { createPaginationMethods } from './controller/pagination-methods.js';
 import { createSelectionMethods } from './controller/selection-methods.js';
 import { createFilterMethods } from './controller/filter-methods.js';
 import { createSearchMethods } from './controller/search-methods.js';
+import { createSortMethods } from './controller/sort-methods.js';
 import { escapeHtmlText } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
@@ -645,6 +646,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setFilter - Replace the developer-managed programmatic filters.
  * @property {Function} removeFilter - Remove a programmatic filter.
  * @property {Function} clearFilter - Clear developer-managed filters while preserving global search.
+ * @property {Function} getSorters - Return the current grid sorter definitions.
+ * @property {Function} setSort - Apply one or more grid sorters.
+ * @property {Function} clearSort - Clear the current grid sorting.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} getRows - Return row components in the requested range.
@@ -835,6 +839,7 @@ export function createTable(options = {}) {
     const table = new Tabulator(selector, normalizedOptions);
     const dataMethods = createDataMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
+    const sortMethods = createSortMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
     const paginationMethods = createPaginationMethods({ table, crud });
@@ -894,6 +899,7 @@ export function createTable(options = {}) {
         selectionMethods,
         filterMethods,
         searchMethods,
+        sortMethods,
         redrawMethods
     );
 

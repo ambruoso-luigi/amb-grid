@@ -73,6 +73,20 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted sort method group into the controller composition', () => {
+        const source = readTableFactorySource();
+
+        expect(source).toContain("import { createSortMethods } from './controller/sort-methods.js';");
+        expect(source).toContain('const sortMethods = createSortMethods({ table });');
+
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('sortMethods');
+        expect(source).not.toContain('...sortMethods');
+        expect(source).toContain('...controllerMethods');
+    });
+
     test('does not keep inline selection method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineSelectionDefinitions = [
@@ -121,6 +135,19 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineSearchDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline sorting method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineSortDefinitions = [
+            /^\s*getSorters\(\) \{/m,
+            /^\s*setSort\(\.\.\.args\) \{/m,
+            /^\s*clearSort\(\) \{/m
+        ];
+
+        inlineSortDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });

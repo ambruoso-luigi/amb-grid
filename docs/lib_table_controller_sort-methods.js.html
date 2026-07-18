@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Namespace: editors</title>
+    <title>JSDoc: Source: lib/table/controller/sort-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,99 +17,68 @@
 
 <div id="main">
 
-    <h1 class="page-title">Namespace: editors</h1>
+    <h1 class="page-title">Source: lib/table/controller/sort-methods.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2>editors</h2>
-        
-    
-</header>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Creates the sorting methods exposed by the AMB Grid controller.
+ *
+ * @param {object} context - Required method dependencies.
+ * @param {object} context.table - Grid table instance.
+ * @returns {object} Sorting methods for the flat controller API.
+ * @private
+ * @internal
+ */
+export const createSortMethods = ({ table }) => ({
+    /**
+     * Returns the current grid sorters.
+     *
+     * Each sorter describes its column, field and direction. The returned
+     * definitions retain their runtime object identities and should be treated
+     * as read-only.
+     *
+     * @returns {Array&lt;object>} Current sorter definitions.
+     */
+    getSorters() {
+        return table.getSorters();
+    },
 
-<article>
-    <div class="container-overview">
-    
-        
-            <div class="description">Editor factories for Tabulator columns.</div>
-        
+    /**
+     * Applies one or more grid sorters.
+     *
+     * A sorter can be provided as field and direction arguments, or as a sorter
+     * definition list. Applying sorters may change the active row order, but it
+     * does not directly modify row data or CRUD state. Remote sorting behavior
+     * depends on the grid configuration.
+     *
+     * @param {...*} args - Sort definition arguments.
+     * @returns {*} Result of applying the sorters.
+     */
+    setSort(...args) {
+        return table.setSort(...args);
+    },
 
-        
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_index.js.html">lib/editors/index.js</a>, <a href="lib_editors_index.js.html#line10">line 10</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    /**
+     * Clears the current grid sorting.
+     *
+     * Filters and AMB Grid global search remain active. Clearing sorters does
+     * not directly modify row data or CRUD state.
+     *
+     * @returns {*} Result of clearing the sorters.
+     */
+    clearSort() {
+        return table.clearSort();
+    }
+});
+</code></pre>
+        </article>
+    </section>
 
 
 
