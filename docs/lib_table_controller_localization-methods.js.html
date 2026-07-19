@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/date.js</title>
+    <title>JSDoc: Source: lib/table/controller/localization-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/date.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/localization-methods.js</h1>
 
     
 
@@ -26,116 +26,59 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const DATE_FORMAT_INPUT_ALIASES = {
-    'dd/mm/yyyy': ['dd/mm/yyyy'],
-    'dd-mm-yyyy': ['dd-mm-yyyy'],
-    'dd.mm.yyyy': ['dd.mm.yyyy'],
-    'mm/dd/yyyy': ['mm/dd/yyyy'],
-    'mm-dd-yyyy': ['mm-dd-yyyy'],
-    'yyyy-mm-dd': ['yyyy-mm-dd'],
-    'yyyy/mm/dd': ['yyyy/mm/dd'],
-    yyyymmdd: ['yyyymmdd'],
-    it: ['dd/mm/yyyy'],
-    iso: ['yyyy-mm-dd'],
-    legacy: ['yyyymmdd']
-};
-
-const normalizeMode = options => {
-    if (options.mode) return options.mode;
-    if (options.picker === true) return 'manualWithPickerButton';
-
-    return 'manualWithPickerButton';
-};
-
-const getInputFormats = options => {
-    if (Array.isArray(options.inputFormats) &amp;&amp; options.inputFormats.length > 0) {
-        return options.inputFormats;
-    }
-
-    return DATE_FORMAT_INPUT_ALIASES[options.editFormat]
-        || DATE_FORMAT_INPUT_ALIASES[options.format]
-        || [options.editFormat || options.format];
-};
-
-/**
- * Date helper utilities.
+            <pre class="prettyprint source linenums"><code>/**
+ * Creates the localization methods exposed by the AMB Grid controller.
  *
- * @namespace AMB.date
+ * @param {object} context - Required method dependencies.
+ * @param {object} context.table - Grid table instance.
+ * @returns {object} Localization methods for the flat controller API.
+ * @private
+ * @internal
  */
-export const date = {
+export const createLocalizationMethods = ({ table }) => ({
     /**
-     * Create a shared date configuration for formatter, editor, validator, and parser.
+     * Changes the locale used by the grid.
      *
-     * `format` is a shorthand for display and edit formats. The datepicker
-     * helps selection, but AMB Grid keeps manual input, validation, formatting,
-     * and payload normalization as separate steps.
+     * The requested locale is resolved against the current `langs`
+     * configuration and the grid's built-in localization fallback behavior.
      *
-     * @param {object} [options] - Date configuration options.
-     * @param {string} [options.format='dd/mm/yyyy'] - Shared display/edit format.
-     * @param {string} [options.displayFormat] - Formatter output format.
-     * @param {string} [options.editFormat] - Editor and validator input format.
-     * @param {string[]} [options.inputFormats] - Parser input formats.
-     * @param {string} [options.payloadFormat='yyyy-mm-dd'] - Payload date format.
-     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode='manualWithPickerButton'] - Date editor mode.
-     * @param {string|Date} [options.minDate] - Earliest allowed date.
-     * @param {string|Date} [options.maxDate] - Latest allowed date.
-     * @param {boolean} [options.allowEmpty=true] - Whether empty values are accepted.
-     * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Invalid manual input behavior.
-     * @param {object} [options.messages] - Date validation messages by category.
-     * @returns {{format: string, displayFormat: string, editFormat: string, inputFormats: string[], payloadFormat: string, mode: string, formatter: string, editor: object, validator: object, parser: object, picker: object}}
+     * This method updates localized table content only. AMB Grid validation,
+     * toolbar, confirmation and floating-message texts remain controlled by
+     * their dedicated configuration.
+     *
+     * @param {string|boolean} locale - Locale code, default locale request or automatic detection flag.
+     * @returns {void}
      */
-    createConfig(options = {}) {
-        const format = options.format || 'dd/mm/yyyy';
-        const displayFormat = options.displayFormat || format;
-        const editFormat = options.editFormat || format;
-        const payloadFormat = options.payloadFormat || 'yyyy-mm-dd';
-        const mode = normalizeMode(options);
-        const allowEmpty = options.allowEmpty !== undefined ? options.allowEmpty : true;
-        const invalidBehavior = options.invalidBehavior || 'commitRaw';
-        const inputFormats = getInputFormats({
-            ...options,
-            format,
-            editFormat
-        });
+    setLocale(...args) {
+        return table.setLocale(...args);
+    },
 
-        return {
-            format,
-            displayFormat,
-            editFormat,
-            inputFormats,
-            payloadFormat,
-            mode,
-            formatter: displayFormat,
-            editor: {
-                format: editFormat,
-                allowEmpty,
-                invalidBehavior,
-                minDate: options.minDate,
-                maxDate: options.maxDate,
-                mode
-            },
-            validator: {
-                format: editFormat,
-                allowEmpty,
-                minDate: options.minDate,
-                maxDate: options.maxDate,
-                messages: options.messages
-            },
-            parser: {
-                inputFormats,
-                outputFormat: payloadFormat,
-                allowEmpty,
-                emptyAs: options.emptyAs
-            },
-            picker: {
-                mode,
-                format: editFormat,
-                minDate: options.minDate,
-                maxDate: options.maxDate
-            }
-        };
+    /**
+     * Returns the locale currently used by the grid.
+     *
+     * The result represents the resolved runtime locale and can differ from
+     * the original locale option when fallback or automatic detection is used.
+     *
+     * @returns {string} Current resolved locale code.
+     */
+    getLocale() {
+        return table.getLocale();
+    },
+
+    /**
+     * Returns the current runtime language object.
+     *
+     * The object contains the localized values resolved for the active locale,
+     * including custom properties supplied through the `langs` configuration.
+     * The returned object retains its runtime identity and should be treated
+     * as read-only.
+     *
+     * @returns {object} Current runtime language definition.
+     */
+    getLang() {
+        return table.getLang();
     }
-};
+});
 </code></pre>
         </article>
     </section>

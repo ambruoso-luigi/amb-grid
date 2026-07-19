@@ -134,6 +134,21 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted localization method group into the controller composition', () => {
+        const source = readTableFactorySource();
+
+        expect(source).toContain("import { createLocalizationMethods } from './controller/localization-methods.js';");
+        expect(source).toContain('const localizationMethods = createLocalizationMethods({ table });');
+
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('localizationMethods');
+        expect(composition[1]).toContain('redrawMethods');
+        expect(source).not.toContain('...localizationMethods');
+        expect(source).toContain('...controllerMethods');
+    });
+
     test('does not keep inline selection method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineSelectionDefinitions = [
@@ -236,6 +251,19 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineExportDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline localization method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineLocalizationDefinitions = [
+            /^\s*setLocale\(\.\.\.args\) \{/m,
+            /^\s*getLocale\(\) \{/m,
+            /^\s*getLang\(\) \{/m
+        ];
+
+        inlineLocalizationDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });
@@ -361,5 +389,23 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('calc-results-methods.js');
         expect(controllerModules).not.toContain('recalc-methods.js');
         expect(controllerModules).not.toContain('column-calculation-read-methods.js');
+    });
+
+    test('keeps localization methods in one localization method module', () => {
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const source = readFileSync(resolve(controllerDir, 'localization-methods.js'), 'utf8');
+        const tableFactorySource = readTableFactorySource();
+        const controllerModules = readdirSync(controllerDir);
+
+        expect(source).toMatch(/setLocale\(\.\.\.args\) \{\s*return table\.setLocale\(\.\.\.args\);/);
+        expect(source).toMatch(/getLocale\(\) \{\s*return table\.getLocale\(\);/);
+        expect(source).toMatch(/getLang\(\) \{\s*return table\.getLang\(\);/);
+        expect(tableFactorySource).not.toContain('...localizationMethods');
+        expect(tableFactorySource).toContain('localizationMethods');
+        expect(tableFactorySource).toContain('...controllerMethods');
+        expect(controllerModules).toContain('localization-methods.js');
+        expect(controllerModules).not.toContain('locale-methods.js');
+        expect(controllerModules).not.toContain('language-methods.js');
+        expect(controllerModules).not.toContain('set-locale-methods.js');
     });
 });

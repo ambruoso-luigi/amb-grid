@@ -15,6 +15,7 @@ import { createCalculationMethods } from './controller/calculation-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
 import { createExportMethods } from './controller/export-methods.js';
+import { createLocalizationMethods } from './controller/localization-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
@@ -684,6 +685,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} print - Print grid data using the current print configuration.
  * @property {Function} getCalcResults - Return the current column calculation results.
  * @property {Function} recalc - Recalculate the configured column calculations.
+ * @property {Function} setLocale - Change the locale used by the grid.
+ * @property {Function} getLocale - Return the current resolved grid locale.
+ * @property {Function} getLang - Return the current runtime language definition.
  * @property {Function} redraw - Redraw the grid.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws.
  * @property {Function} restoreRedraw - Restore automatic redraws.
@@ -862,6 +866,7 @@ export function createTable(options = {}) {
     const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
     const exportMethods = createExportMethods({ table });
+    const localizationMethods = createLocalizationMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
@@ -927,6 +932,7 @@ export function createTable(options = {}) {
         searchMethods,
         sortMethods,
         exportMethods,
+        localizationMethods,
         redrawMethods
     );
 
