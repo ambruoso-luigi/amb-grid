@@ -153,9 +153,11 @@ describe('AMB table controller method modularization', () => {
         const rangeMethodsPath = resolve(controllerDir, 'range-methods.js');
         const rangeSource = readFileSync(rangeMethodsPath, 'utf8');
         const rangeImplementationSource = rangeSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const addRangeImplementation = rangeImplementationSource.match(/addRange\(\.\.\.args\) \{([\s\S]*?)\n    \},/);
         const controllerModules = readdirSync(controllerDir);
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
         const inlineRangeDefinitions = [
+            /^\s*addRange\(\.\.\.args\) \{/m,
             /^\s*getRanges\(\) \{/m,
             /^\s*getRangesData\(\) \{/m
         ];
@@ -179,13 +181,26 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('range-selection-methods.js');
         expect(controllerModules).not.toContain('selected-range-methods.js');
         expect(rangeSource).toMatch(/createRangeMethods = \(\{ table \}\) => \(\{/);
+        expect(rangeSource).toMatch(/addRange\(\.\.\.args\) \{\s*return table\.addRange\(\.\.\.args\);/);
         expect(rangeSource).toMatch(/getRanges\(\) \{\s*return table\.getRanges\(\);/);
         expect(rangeSource).toMatch(/getRangesData\(\) \{\s*return table\.getRangesData\(\);/);
+        expect(addRangeImplementation).not.toBeNull();
+        expect(addRangeImplementation[1]).not.toContain('._cell');
+        expect(addRangeImplementation[1]).not.toMatch(/(^|[^A-Za-z])getRows\(/);
+        expect(addRangeImplementation[1]).not.toMatch(/(^|[^A-Za-z])getColumns\(/);
+        expect(addRangeImplementation[1]).not.toMatch(/(^|[^A-Za-z])getRanges\(/);
+        expect(addRangeImplementation[1]).not.toMatch(/(^|[^A-Za-z])getRangesData\(/);
+        expect(addRangeImplementation[1]).not.toMatch(/(^|[^A-Za-z])selectRow\(/);
+        expect(addRangeImplementation[1]).not.toMatch(/(^|[^A-Za-z])deselectRow\(/);
+        expect(addRangeImplementation[1]).not.toMatch(/(^|[^A-Za-z])redraw\(/);
+        expect(addRangeImplementation[1]).not.toContain('CrudHelper');
+        expect(addRangeImplementation[1]).not.toContain('_state');
+        expect(addRangeImplementation[1]).not.toContain('_errors');
+        expect(addRangeImplementation[1]).not.toContain('_ambTempId');
         expect(rangeImplementationSource).not.toContain('CrudHelper');
         expect(rangeImplementationSource).not.toContain('_state');
         expect(rangeImplementationSource).not.toContain('_errors');
         expect(rangeImplementationSource).not.toContain('_ambTempId');
-        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])addRange\(/);
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getSelectedRows\(/);
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getSelectedData\(/);
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])selectRow\(/);
@@ -491,6 +506,7 @@ describe('AMB table controller method modularization', () => {
     test('does not keep inline range-reading method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineRangeDefinitions = [
+            /^\s*addRange\(\.\.\.args\) \{/m,
             /^\s*getRanges\(\) \{/m,
             /^\s*getRangesData\(\) \{/m
         ];

@@ -268,7 +268,39 @@ const expectNoRangeReadSideEffects = (table, crud) => {
     expect(crud.destroy).not.toHaveBeenCalled();
 };
 
-describe('AMB table controller cell-range reading API', () => {
+const expectNoRangeAddSideEffects = (table, crud) => {
+    expect(table.getSelectedRows).not.toHaveBeenCalled();
+    expect(table.getSelectedData).not.toHaveBeenCalled();
+    expect(table.selectRow).not.toHaveBeenCalled();
+    expect(table.deselectRow).not.toHaveBeenCalled();
+    expect(table.getData).not.toHaveBeenCalled();
+    expect(table.getRows).not.toHaveBeenCalled();
+    expect(table.getColumns).not.toHaveBeenCalled();
+    expect(table.setFilter).not.toHaveBeenCalled();
+    expect(table.clearFilter).not.toHaveBeenCalled();
+    expect(table.refreshFilter).not.toHaveBeenCalled();
+    expect(table.setSort).not.toHaveBeenCalled();
+    expect(table.clearSort).not.toHaveBeenCalled();
+    expect(table.setPage).not.toHaveBeenCalled();
+    expect(table.nextPage).not.toHaveBeenCalled();
+    expect(table.previousPage).not.toHaveBeenCalled();
+    expect(table.setPageSize).not.toHaveBeenCalled();
+    expect(table.setPageToRow).not.toHaveBeenCalled();
+    expect(table.recalc).not.toHaveBeenCalled();
+    expect(table.redraw).not.toHaveBeenCalled();
+    expect(crud.findRowByKey).not.toHaveBeenCalled();
+    expect(crud.getSavePayload).not.toHaveBeenCalled();
+    expect(crud.getStateReport).not.toHaveBeenCalled();
+    expect(crud.validateRow).not.toHaveBeenCalled();
+    expect(crud.validateAll).not.toHaveBeenCalled();
+    expect(crud.updateRowFields).not.toHaveBeenCalled();
+    expect(crud.addRow).not.toHaveBeenCalled();
+    expect(crud.deleteRow).not.toHaveBeenCalled();
+    expect(crud.rollbackRow).not.toHaveBeenCalled();
+    expect(crud.destroy).not.toHaveBeenCalled();
+};
+
+describe('AMB table controller cell-range reading and add API', () => {
     test('exposes flat range methods and preserves table-managed range results', () => {
         const harness = createDocumentHarness();
 
@@ -323,6 +355,19 @@ describe('AMB table controller cell-range reading API', () => {
                 firstRangeData,
                 secondRangeData
             ];
+            const topLeftCell = {
+                type: 'top-left-cell',
+                focus: vi.fn(),
+                edit: vi.fn(),
+                getElement: vi.fn()
+            };
+            const bottomRightCell = {
+                type: 'bottom-right-cell',
+                focus: vi.fn(),
+                edit: vi.fn(),
+                getElement: vi.fn()
+            };
+            const rangeComponent = { type: 'range-component' };
             const selectedData = [{ id: 1, name: 'Mario' }];
             const selectedRows = [{ type: 'selected-row' }];
             const filters = [{ field: 'status', type: '=', value: 'active' }];
@@ -332,13 +377,13 @@ describe('AMB table controller cell-range reading API', () => {
             const originalErrors = rowData._errors;
 
             expect(controller.table).toBe(table);
+            expect(typeof controller.addRange).toBe('function');
             expect(typeof controller.getRanges).toBe('function');
             expect(typeof controller.getRangesData).toBe('function');
             expect(controller.ranges).toBeUndefined();
             expect(controller.rangeMethods).toBeUndefined();
             expect(controller.cellRanges).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
-            expect(controller.addRange).toBeUndefined();
             expect(typeof controller.getSelectedRows).toBe('function');
             expect(typeof controller.getSelectedData).toBe('function');
             expect(typeof controller.getSelectedRowComponents).toBe('function');
@@ -401,6 +446,38 @@ describe('AMB table controller cell-range reading API', () => {
             expect(controller.getSorters()).toBe(sorters);
             expect(controller.getPage()).toBe(1);
             expectNoRangeReadSideEffects(table, crud);
+
+            table.getRangesData.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            table.addRange.mockReturnValueOnce(rangeComponent);
+            const returnedRangeComponent = controller.addRange(
+                topLeftCell,
+                bottomRightCell
+            );
+
+            expect(returnedRangeComponent).toBe(rangeComponent);
+            expect(table.addRange).toHaveBeenCalledOnce();
+            expect(table.addRange).toHaveBeenCalledWith(
+                topLeftCell,
+                bottomRightCell
+            );
+            expect(table.addRange.mock.calls[0][0]).toBe(topLeftCell);
+            expect(table.addRange.mock.calls[0][1]).toBe(bottomRightCell);
+            expect(topLeftCell.focus).not.toHaveBeenCalled();
+            expect(topLeftCell.edit).not.toHaveBeenCalled();
+            expect(topLeftCell.getElement).not.toHaveBeenCalled();
+            expect(bottomRightCell.focus).not.toHaveBeenCalled();
+            expect(bottomRightCell.edit).not.toHaveBeenCalled();
+            expect(bottomRightCell.getElement).not.toHaveBeenCalled();
+            expect(rowData._state).toBe(originalState);
+            expect(rowData._errors).toBe(originalErrors);
+            expect(controller.getSearchState()).toEqual(searchState);
+            expect(controller.getFilters()).toEqual(filters);
+            expect(controller.getSorters()).toBe(sorters);
+            expect(controller.getPage()).toBe(1);
+            expectNoRangeAddSideEffects(table, crud);
         } finally {
             harness.restore();
         }

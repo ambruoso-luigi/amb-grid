@@ -9,6 +9,25 @@
  */
 export const createRangeMethods = ({ table }) => ({
     /**
+     * Adds a selected cell range between two cell components.
+     *
+     * The supplied cells define the top-left and bottom-right bounds of the new
+     * range. The grid manages the active range, visual selection, configured
+     * range limits and optional focus behavior.
+     *
+     * The returned Range Component exposes advanced runtime operations. Adding a
+     * range is separate from row selection and does not directly modify row data
+     * or AMB Grid CRUD state.
+     *
+     * @param {object} topLeftCell - Cell component at the top-left range bound.
+     * @param {object} bottomRightCell - Cell component at the bottom-right range bound.
+     * @returns {object} Newly created Range Component.
+     */
+    addRange(...args) {
+        return table.addRange(...args);
+    },
+
+    /**
      * Returns the currently selected cell-range components.
      *
      * Cell ranges are separate from AMB Grid row selection. The returned array

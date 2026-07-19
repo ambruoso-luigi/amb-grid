@@ -3,7 +3,6 @@ import { describe, expect, test, vi } from 'vitest';
 import { createRangeMethods } from '../src/lib/table/controller/range-methods.js';
 
 const forbiddenTableMethodNames = [
-    'addRange',
     'getSelectedRows',
     'getSelectedData',
     'selectRow',
@@ -55,10 +54,104 @@ describe('AMB table controller cell-range reading method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'addRange',
             'getRanges',
             'getRangesData'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('addRange forwards cell components transparently and returns the table range component', () => {
+        const topLeftCell = {
+            type: 'top-left-cell',
+            getRow: vi.fn(),
+            getColumn: vi.fn(),
+            getElement: vi.fn(),
+            focus: vi.fn(),
+            edit: vi.fn()
+        };
+        const bottomRightCell = {
+            type: 'bottom-right-cell',
+            getRow: vi.fn(),
+            getColumn: vi.fn(),
+            getElement: vi.fn(),
+            focus: vi.fn(),
+            edit: vi.fn()
+        };
+        const rangeComponent = {
+            type: 'range-component'
+        };
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = {
+            ...createForbiddenMethods(forbiddenTableMethodNames),
+            addRange: vi.fn().mockReturnValueOnce(rangeComponent),
+            getRanges: vi.fn(),
+            getRangesData: vi.fn()
+        };
+        const methods = createRangeMethods({ table });
+
+        const returned = methods.addRange(
+            topLeftCell,
+            bottomRightCell
+        );
+
+        expect(returned).toBe(rangeComponent);
+        expect(table.addRange).toHaveBeenCalledOnce();
+        expect(table.addRange).toHaveBeenCalledWith(
+            topLeftCell,
+            bottomRightCell
+        );
+        expect(table.addRange.mock.calls[0][0]).toBe(topLeftCell);
+        expect(table.addRange.mock.calls[0][1]).toBe(bottomRightCell);
+        expect(table.getRanges).not.toHaveBeenCalled();
+        expect(table.getRangesData).not.toHaveBeenCalled();
+        expect(topLeftCell._cell).toBeUndefined();
+        expect(bottomRightCell._cell).toBeUndefined();
+
+        [
+            topLeftCell,
+            bottomRightCell
+        ].forEach(cell => {
+            expect(cell.getRow).not.toHaveBeenCalled();
+            expect(cell.getColumn).not.toHaveBeenCalled();
+            expect(cell.getElement).not.toHaveBeenCalled();
+            expect(cell.focus).not.toHaveBeenCalled();
+            expect(cell.edit).not.toHaveBeenCalled();
+        });
+
+        expectMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectMethodsNotCalled(crud, forbiddenCrudMethodNames);
+    });
+
+    test('addRange preserves missing and falsy arguments without fallback', () => {
+        const topLeftCell = {
+            type: 'top-left-cell'
+        };
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = {
+            ...createForbiddenMethods(forbiddenTableMethodNames),
+            addRange: vi.fn()
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(null),
+            getRanges: vi.fn(),
+            getRangesData: vi.fn()
+        };
+        const methods = createRangeMethods({ table });
+
+        expect(methods.addRange()).toBe(false);
+        expect(methods.addRange(topLeftCell)).toBeUndefined();
+        expect(methods.addRange(0, '', false)).toBeNull();
+
+        expect(table.addRange).toHaveBeenCalledTimes(3);
+        expect(table.addRange.mock.calls[0]).toEqual([]);
+        expect(table.addRange.mock.calls[1]).toEqual([topLeftCell]);
+        expect(table.addRange.mock.calls[1][0]).toBe(topLeftCell);
+        expect(table.addRange.mock.calls[2]).toEqual([0, '', false]);
+        expect(table.getRanges).not.toHaveBeenCalled();
+        expect(table.getRangesData).not.toHaveBeenCalled();
+        expectMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectMethodsNotCalled(crud, forbiddenCrudMethodNames);
     });
 
     test('getRanges returns range components without cloning or reading them', () => {
@@ -85,6 +178,7 @@ describe('AMB table controller cell-range reading method group', () => {
         const crud = createForbiddenMethods(forbiddenCrudMethodNames);
         const table = {
             ...createForbiddenMethods(forbiddenTableMethodNames),
+            addRange: vi.fn(),
             getRanges: vi.fn()
                 .mockReturnValueOnce(ranges)
                 .mockReturnValueOnce(emptyRanges),
@@ -115,6 +209,7 @@ describe('AMB table controller cell-range reading method group', () => {
 
         expect(methods.getRanges()).toBe(emptyRanges);
         expect(table.getRanges).toHaveBeenCalledTimes(2);
+        expect(table.addRange).not.toHaveBeenCalled();
         expectMethodsNotCalled(table, forbiddenTableMethodNames);
         expectMethodsNotCalled(crud, forbiddenCrudMethodNames);
     });
@@ -148,6 +243,7 @@ describe('AMB table controller cell-range reading method group', () => {
         const crud = createForbiddenMethods(forbiddenCrudMethodNames);
         const table = {
             ...createForbiddenMethods(forbiddenTableMethodNames),
+            addRange: vi.fn(),
             getRanges: vi.fn(),
             getRangesData: vi.fn()
                 .mockReturnValueOnce(rangeData)
@@ -174,6 +270,7 @@ describe('AMB table controller cell-range reading method group', () => {
 
         expect(methods.getRangesData()).toBe(emptyRangeData);
         expect(table.getRangesData).toHaveBeenCalledTimes(2);
+        expect(table.addRange).not.toHaveBeenCalled();
         expectMethodsNotCalled(table, forbiddenTableMethodNames);
         expectMethodsNotCalled(crud, forbiddenCrudMethodNames);
     });
