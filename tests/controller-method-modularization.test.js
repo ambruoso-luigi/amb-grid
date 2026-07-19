@@ -295,6 +295,56 @@ describe('AMB table controller method modularization', () => {
         expect(historySource).not.toMatch(/createHistoryMethods = \(\{[^}]*searchController/);
     });
 
+    test('wires the extracted persistence method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const persistenceMethodsPath = resolve(controllerDir, 'persistence-methods.js');
+        const persistenceSource = readFileSync(persistenceMethodsPath, 'utf8');
+        const persistenceImplementationSource = persistenceSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlinePersistenceDefinitions = [
+            /^\s*getColumnLayout\(\) \{/m,
+            /^\s*setColumnLayout\(layout\) \{/m
+        ];
+
+        expect(source).toContain("import { createPersistenceMethods } from './controller/persistence-methods.js';");
+        expect(source).toContain('const persistenceMethods = createPersistenceMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('historyMethods');
+        expect(composition[1]).toContain('persistenceMethods');
+        expect(composition[1]).toContain('paginationMethods');
+        expect(source).not.toContain('...persistenceMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlinePersistenceDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('persistence-methods.js');
+        expect(controllerModules).not.toContain('column-layout-methods.js');
+        expect(controllerModules).not.toContain('persistent-layout-methods.js');
+        expect(controllerModules).not.toContain('column-persistence-methods.js');
+        expect(controllerModules).not.toContain('layout-persistence-methods.js');
+        expect(persistenceSource).toMatch(/createPersistenceMethods = \(\{ table \}\) => \(\{/);
+        expect(persistenceSource).toMatch(/getColumnLayout\(\) \{\s*return table\.getColumnLayout\(\);/);
+        expect(persistenceSource).toMatch(/setColumnLayout\(layout\) \{\s*return table\.setColumnLayout\(layout\);/);
+        expect(persistenceImplementationSource).not.toContain('CrudHelper');
+        expect(persistenceImplementationSource).not.toContain('localStorage');
+        expect(persistenceImplementationSource).not.toContain('document.cookie');
+        expect(persistenceImplementationSource).not.toContain('persistenceWriterFunc');
+        expect(persistenceImplementationSource).not.toContain('persistenceReaderFunc');
+        expect(persistenceImplementationSource).not.toMatch(/(^|[^A-Za-z])setColumns\(/);
+        expect(persistenceImplementationSource).not.toMatch(/(^|[^A-Za-z])getColumnDefinitions\(/);
+        expect(persistenceImplementationSource).not.toMatch(/(^|[^A-Za-z])getColumns\(/);
+        expect(persistenceImplementationSource).not.toMatch(/(^|[^A-Za-z])moveColumn\(/);
+        expect(persistenceImplementationSource).not.toMatch(/(^|[^A-Za-z])showColumn\(/);
+        expect(persistenceImplementationSource).not.toMatch(/(^|[^A-Za-z])hideColumn\(/);
+        expect(persistenceImplementationSource).not.toMatch(/(^|[^A-Za-z])redraw\(/);
+        expect(persistenceImplementationSource).not.toMatch(/createPersistenceMethods = \(\{[^}]*crud/);
+        expect(persistenceImplementationSource).not.toMatch(/createPersistenceMethods = \(\{[^}]*searchController/);
+    });
+
     test('wires the extracted export method group into the controller composition', () => {
         const source = readTableFactorySource();
 

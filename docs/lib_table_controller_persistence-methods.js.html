@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/alert-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/persistence-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/alert-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/persistence-methods.js</h1>
 
     
 
@@ -27,44 +27,47 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the table-alert methods exposed by the AMB Grid controller.
+ * Creates the manual persistence methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Alert methods for the flat controller API.
+ * @returns {object} Persistence methods for the flat controller API.
  * @private
  * @internal
  */
-export const createAlertMethods = ({ table }) => ({
+export const createPersistenceMethods = ({ table }) => ({
     /**
-     * Shows a modal alert over the grid.
+     * Returns the current persistable column layout.
      *
-     * The content can be a string, HTML content or a DOM node according to the
-     * current grid alert configuration. An optional style value controls the
-     * alert presentation and is forwarded unchanged.
+     * The result describes the runtime column order, dimensions, visibility,
+     * grouping structure and other properties configured for column persistence.
+     * It is not a complete replacement for the current column definitions.
      *
-     * Table alerts are separate from AMB Grid cell floating messages,
-     * accessible feedback, confirmation dialogs and validation messages.
+     * AMB-managed columns are included when they belong to the current
+     * persisted layout. The returned structure should be treated as read-only.
      *
-     * @param {*} content - Alert text, HTML content or DOM node.
-     * @param {string} [style] - Optional alert style name.
-     * @returns {void}
+     * @returns {object[]} Current persistable column layout.
      */
-    alert(...args) {
-        return table.alert(...args);
+    getColumnLayout() {
+        return table.getColumnLayout();
     },
 
     /**
-     * Clears the current modal grid alert.
+     * Applies a previously captured persistent column layout.
      *
-     * This operation affects only the table alert overlay. It does not clear
-     * AMB Grid floating messages, accessible feedback, confirmation dialogs or
-     * cell validation errors.
+     * The layout is merged with the current runtime column definitions so that
+     * editor, formatter, validator and AMB Grid behavior remain controlled by
+     * the existing definitions. The operation does not store the layout.
      *
-     * @returns {void}
+     * Applying a layout can rebuild runtime column components. Retrieve fresh
+     * column components after the operation instead of relying on references
+     * captured beforehand.
+     *
+     * @param {object[]} layout - Persistent column layout to apply.
+     * @returns {boolean} Whether the layout was applied.
      */
-    clearAlert() {
-        return table.clearAlert();
+    setColumnLayout(layout) {
+        return table.setColumnLayout(layout);
     }
 });
 </code></pre>

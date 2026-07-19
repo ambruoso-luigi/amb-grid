@@ -21,6 +21,7 @@ import { createGroupingMethods } from './controller/grouping-methods.js';
 import { createHistoryMethods } from './controller/history-methods.js';
 import { createLayoutMethods } from './controller/layout-methods.js';
 import { createLocalizationMethods } from './controller/localization-methods.js';
+import { createPersistenceMethods } from './controller/persistence-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
@@ -636,6 +637,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getColumnDefinitions - Return the current grid column definitions.
  * @property {Function} getColumns - Return current column components.
  * @property {Function} getColumn - Return one column component using a supported lookup.
+ * @property {Function} getColumnLayout - Return the current persistable column layout.
+ * @property {Function} setColumnLayout - Apply a persistent column layout.
  * @property {Function} showColumn - Show a hidden grid column.
  * @property {Function} hideColumn - Hide a visible grid column.
  * @property {Function} toggleColumn - Toggle a grid column's visibility.
@@ -891,6 +894,7 @@ export function createTable(options = {}) {
     const historyMethods = createHistoryMethods({ table });
     const layoutMethods = createLayoutMethods({ table });
     const localizationMethods = createLocalizationMethods({ table });
+    const persistenceMethods = createPersistenceMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
@@ -954,6 +958,7 @@ export function createTable(options = {}) {
         rowMethods,
         groupingMethods,
         historyMethods,
+        persistenceMethods,
         paginationMethods,
         selectionMethods,
         filterMethods,
