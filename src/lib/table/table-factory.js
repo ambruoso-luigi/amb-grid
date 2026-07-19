@@ -13,6 +13,7 @@ import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-bi
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
+import { createExportMethods } from './controller/export-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
@@ -675,6 +676,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} previousPage - Show the previous page.
  * @property {Function} setPageSize - Change the number of rows displayed on each page.
  * @property {Function} setPageToRow - Show the local pagination page containing a row.
+ * @property {Function} getHtml - Return grid data as an HTML table string.
+ * @property {Function} download - Download grid data using a configured downloader.
+ * @property {Function} downloadToTab - Open generated export data in a new browser tab.
+ * @property {Function} print - Print grid data using the current print configuration.
  * @property {Function} redraw - Redraw the grid.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws.
  * @property {Function} restoreRedraw - Restore automatic redraws.
@@ -851,6 +856,7 @@ export function createTable(options = {}) {
     const table = new Tabulator(selector, normalizedOptions);
     const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
+    const exportMethods = createExportMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
@@ -914,6 +920,7 @@ export function createTable(options = {}) {
         filterMethods,
         searchMethods,
         sortMethods,
+        exportMethods,
         redrawMethods
     );
 

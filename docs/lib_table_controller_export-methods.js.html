@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/sort-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/export-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/sort-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/export-methods.js</h1>
 
     
 
@@ -27,53 +27,72 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the sorting methods exposed by the AMB Grid controller.
+ * Creates the export and printing methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Sorting methods for the flat controller API.
+ * @returns {object} Export methods for the flat controller API.
  * @private
  * @internal
  */
-export const createSortMethods = ({ table }) => ({
+export const createExportMethods = ({ table }) => ({
     /**
-     * Returns the current grid sorters.
+     * Returns the current grid data as an HTML table string.
      *
-     * Each sorter describes its column, field and direction. The returned
-     * definitions retain their runtime object identities and should be treated
-     * as read-only.
+     * Optional arguments can select the row range, include grid styling and
+     * override the configured HTML output options.
      *
-     * @returns {Array&lt;object>} Current sorter definitions.
+     * The output follows the current column and export configuration. This
+     * method does not create an AMB Grid save payload or modify grid state.
+     *
+     * @param {...*} args - HTML output arguments.
+     * @returns {string} Generated HTML table string.
      */
-    getSorters() {
-        return table.getSorters();
+    getHtml(...args) {
+        return table.getHtml(...args);
     },
 
     /**
-     * Applies one or more grid sorters.
+     * Generates and downloads grid data using a configured downloader.
      *
-     * A sorter can be provided as field and direction arguments, or as a sorter
-     * definition list. Applying sorters may change the active row order, but it
-     * does not directly modify row data or CRUD state. Remote sorting behavior
-     * depends on the grid configuration.
+     * The download type, file name, downloader options and any additional
+     * arguments are forwarded unchanged. The generated output follows the
+     * current export and column configuration.
      *
-     * @param {...*} args - Sort definition arguments.
-     * @returns {*} Result of applying the sorters.
+     * This method does not create an AMB Grid save payload or directly modify
+     * row data and CRUD state.
+     *
+     * @param {...*} args - Download type, file name, options and additional arguments.
+     * @returns {void} Result of starting the download.
      */
-    setSort(...args) {
-        return table.setSort(...args);
+    download(...args) {
+        return table.download(...args);
     },
 
     /**
-     * Clears the current grid sorting.
+     * Generates export data and opens it in a new browser tab.
      *
-     * Filters and AMB Grid global search remain active. Clearing sorters does
-     * not directly modify row data or CRUD state.
+     * Browser handling of the generated content depends on browser
+     * configuration and the selected downloader.
      *
-     * @returns {*} Result of clearing the sorters.
+     * @param {...*} args - Downloader type, options and additional arguments.
+     * @returns {void} Result of opening the generated export.
      */
-    clearSort() {
-        return table.clearSort();
+    downloadToTab(...args) {
+        return table.downloadToTab(...args);
+    },
+
+    /**
+     * Prints grid data using the current print configuration.
+     *
+     * Optional arguments can control the printed row range and formatting. The
+     * operation does not directly modify row data or AMB Grid CRUD state.
+     *
+     * @param {...*} args - Print range, style and configuration arguments.
+     * @returns {void} Result of starting the print operation.
+     */
+    print(...args) {
+        return table.print(...args);
     }
 });
 </code></pre>

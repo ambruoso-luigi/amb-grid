@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -104,6 +104,21 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted export method group into the controller composition', () => {
+        const source = readTableFactorySource();
+
+        expect(source).toContain("import { createExportMethods } from './controller/export-methods.js';");
+        expect(source).toContain('const exportMethods = createExportMethods({ table });');
+
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('exportMethods');
+        expect(composition[1]).toContain('redrawMethods');
+        expect(source).not.toContain('...exportMethods');
+        expect(source).toContain('...controllerMethods');
+    });
+
     test('does not keep inline selection method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineSelectionDefinitions = [
@@ -179,6 +194,20 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineSortDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline export method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineExportDefinitions = [
+            /^\s*getHtml\(\.\.\.args\) \{/m,
+            /^\s*download\(\.\.\.args\) \{/m,
+            /^\s*downloadToTab\(\.\.\.args\) \{/m,
+            /^\s*print\(\.\.\.args\) \{/m
+        ];
+
+        inlineExportDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });
@@ -265,5 +294,25 @@ describe('AMB table controller method modularization', () => {
         expect(tableFactorySource).toContain('dataMethods');
         expect(tableFactorySource).toContain('rowMethods');
         expect(tableFactorySource).toContain('...controllerMethods');
+    });
+
+    test('keeps export methods in one export method module', () => {
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const source = readFileSync(resolve(controllerDir, 'export-methods.js'), 'utf8');
+        const tableFactorySource = readTableFactorySource();
+        const controllerModules = readdirSync(controllerDir);
+
+        expect(source).toMatch(/getHtml\(\.\.\.args\) \{\s*return table\.getHtml\(\.\.\.args\);/);
+        expect(source).toMatch(/download\(\.\.\.args\) \{\s*return table\.download\(\.\.\.args\);/);
+        expect(source).toMatch(/downloadToTab\(\.\.\.args\) \{\s*return table\.downloadToTab\(\.\.\.args\);/);
+        expect(source).toMatch(/print\(\.\.\.args\) \{\s*return table\.print\(\.\.\.args\);/);
+        expect(tableFactorySource).not.toContain('...exportMethods');
+        expect(tableFactorySource).toContain('exportMethods');
+        expect(tableFactorySource).toContain('...controllerMethods');
+        expect(controllerModules).toContain('export-methods.js');
+        expect(controllerModules).not.toContain('download-methods.js');
+        expect(controllerModules).not.toContain('html-methods.js');
+        expect(controllerModules).not.toContain('print-methods.js');
+        expect(controllerModules).not.toContain('output-methods.js');
     });
 });
