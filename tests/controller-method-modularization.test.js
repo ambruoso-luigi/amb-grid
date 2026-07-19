@@ -147,6 +147,56 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted range-reading method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const rangeMethodsPath = resolve(controllerDir, 'range-methods.js');
+        const rangeSource = readFileSync(rangeMethodsPath, 'utf8');
+        const rangeImplementationSource = rangeSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineRangeDefinitions = [
+            /^\s*getRanges\(\) \{/m,
+            /^\s*getRangesData\(\) \{/m
+        ];
+
+        expect(source).toContain("import { createRangeMethods } from './controller/range-methods.js';");
+        expect(source).toContain('const rangeMethods = createRangeMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('selectionMethods');
+        expect(composition[1]).toContain('rangeMethods');
+        expect(composition[1]).toContain('filterMethods');
+        expect(source).not.toContain('...rangeMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlineRangeDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('range-methods.js');
+        expect(controllerModules).not.toContain('range-read-methods.js');
+        expect(controllerModules).not.toContain('cell-range-methods.js');
+        expect(controllerModules).not.toContain('range-selection-methods.js');
+        expect(controllerModules).not.toContain('selected-range-methods.js');
+        expect(rangeSource).toMatch(/createRangeMethods = \(\{ table \}\) => \(\{/);
+        expect(rangeSource).toMatch(/getRanges\(\) \{\s*return table\.getRanges\(\);/);
+        expect(rangeSource).toMatch(/getRangesData\(\) \{\s*return table\.getRangesData\(\);/);
+        expect(rangeImplementationSource).not.toContain('CrudHelper');
+        expect(rangeImplementationSource).not.toContain('_state');
+        expect(rangeImplementationSource).not.toContain('_errors');
+        expect(rangeImplementationSource).not.toContain('_ambTempId');
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])addRange\(/);
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getSelectedRows\(/);
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getSelectedData\(/);
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])selectRow\(/);
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])deselectRow\(/);
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getData\(/);
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getRows\(/);
+        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getColumns\(/);
+        expect(rangeImplementationSource).not.toMatch(/createRangeMethods = \(\{[^}]*crud/);
+        expect(rangeImplementationSource).not.toMatch(/createRangeMethods = \(\{[^}]*searchController/);
+    });
+
     test('wires the extracted filter method group into the controller composition', () => {
         const source = readTableFactorySource();
 
@@ -434,6 +484,18 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineSelectionDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline range-reading method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineRangeDefinitions = [
+            /^\s*getRanges\(\) \{/m,
+            /^\s*getRangesData\(\) \{/m
+        ];
+
+        inlineRangeDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });

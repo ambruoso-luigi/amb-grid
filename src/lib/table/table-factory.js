@@ -26,6 +26,7 @@ import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
 import { createSelectionMethods } from './controller/selection-methods.js';
+import { createRangeMethods } from './controller/range-methods.js';
 import { createFilterMethods } from './controller/filter-methods.js';
 import { createSearchMethods } from './controller/search-methods.js';
 import { createSortMethods } from './controller/sort-methods.js';
@@ -650,6 +651,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearSelection - Clear the complete row selection.
  * @property {Function} selectRow - Select one row by backend id or AMB temporary id.
  * @property {Function} deselectRow - Deselect one row by backend id or AMB temporary id.
+ * @property {Function} getRanges - Return the current selected cell-range components.
+ * @property {Function} getRangesData - Return data grouped by selected cell range.
  * @property {Function} setSearchQuery - Set the global search query.
  * @property {Function} clearSearch - Clear global search state.
  * @property {Function} getSearchState - Return search query and selected search fields.
@@ -901,6 +904,7 @@ export function createTable(options = {}) {
     const rowMethods = createRowMethods({ table, crud });
     const paginationMethods = createPaginationMethods({ table, crud });
     const selectionMethods = createSelectionMethods({ table, crud });
+    const rangeMethods = createRangeMethods({ table });
     unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
         : null;
@@ -961,6 +965,7 @@ export function createTable(options = {}) {
         persistenceMethods,
         paginationMethods,
         selectionMethods,
+        rangeMethods,
         filterMethods,
         searchMethods,
         sortMethods,
