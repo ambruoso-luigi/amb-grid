@@ -15,6 +15,7 @@ import { createCalculationMethods } from './controller/calculation-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
 import { createExportMethods } from './controller/export-methods.js';
+import { createGroupingMethods } from './controller/grouping-methods.js';
 import { createLocalizationMethods } from './controller/localization-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
@@ -670,6 +671,11 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
  * @property {Function} scrollToRow - Scroll vertically to a grid row.
  * @property {Function} searchRows - Return row components matching a filter definition.
+ * @property {Function} getGroups - Return the current top-level group components.
+ * @property {Function} setGroupBy - Change the runtime row grouping definition.
+ * @property {Function} setGroupValues - Change the allowed values for grouping levels.
+ * @property {Function} setGroupStartOpen - Change the initial group opening definition.
+ * @property {Function} setGroupHeader - Change the group-header formatter definition.
  * @property {Function} getPage - Return the current page number.
  * @property {Function} getPageMax - Return the maximum available page number.
  * @property {Function} getPageSize - Return the number of rows allowed per page.
@@ -866,6 +872,7 @@ export function createTable(options = {}) {
     const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
     const exportMethods = createExportMethods({ table });
+    const groupingMethods = createGroupingMethods({ table });
     const localizationMethods = createLocalizationMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
@@ -926,6 +933,7 @@ export function createTable(options = {}) {
         columnMethods,
         dataMethods,
         rowMethods,
+        groupingMethods,
         paginationMethods,
         selectionMethods,
         filterMethods,

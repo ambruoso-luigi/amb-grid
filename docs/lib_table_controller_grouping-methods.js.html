@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/sort-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/grouping-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/sort-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/grouping-methods.js</h1>
 
     
 
@@ -27,53 +27,88 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the sorting methods exposed by the AMB Grid controller.
+ * Creates the row-grouping methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Sorting methods for the flat controller API.
+ * @returns {object} Grouping methods for the flat controller API.
  * @private
  * @internal
  */
-export const createSortMethods = ({ table }) => ({
+export const createGroupingMethods = ({ table }) => ({
     /**
-     * Returns the current grid sorters.
+     * Returns the current top-level group components.
      *
-     * Each sorter describes its column, field and direction. The returned
-     * definitions retain their runtime object identities and should be treated
-     * as read-only.
+     * Group components expose the current runtime group structure and advanced
+     * operations for inspecting or controlling individual groups. Nested groups
+     * remain available through their parent components.
      *
-     * @returns {Array&lt;object>} Current sorter definitions.
+     * The returned array and components retain their runtime identities and
+     * should be treated carefully. Direct component operations can affect the
+     * grid outside higher-level AMB Grid workflows.
+     *
+     * @returns {object[]} Current top-level group components.
      */
-    getSorters() {
-        return table.getSorters();
+    getGroups() {
+        return table.getGroups();
     },
 
     /**
-     * Applies one or more grid sorters.
+     * Changes the fields or functions used to group grid rows.
      *
-     * A sorter can be provided as field and direction arguments, or as a sorter
-     * definition list. Applying sorters may change the active row order, but it
-     * does not directly modify row data or CRUD state. Remote sorting behavior
-     * depends on the grid configuration.
+     * A string or function creates one grouping level, while an array creates
+     * multiple levels. Pass `false` to remove the current grouping.
      *
-     * @param {...*} args - Sort definition arguments.
-     * @returns {*} Result of applying the sorters.
+     * Grouping changes the runtime row organization but does not directly
+     * modify row data or AMB Grid CRUD state.
+     *
+     * @param {string|Function|Array|false} groupBy - Runtime grouping definition.
+     * @returns {*} Result of changing the grouping definition.
      */
-    setSort(...args) {
-        return table.setSort(...args);
+    setGroupBy(groupBy) {
+        return table.setGroupBy(groupBy);
     },
 
     /**
-     * Clears the current grid sorting.
+     * Changes the allowed group values for each grouping level.
      *
-     * Filters and AMB Grid global search remain active. Clearing sorters does
-     * not directly modify row data or CRUD state.
+     * Rows whose values are outside the configured lists can be excluded from
+     * the visible grouped structure according to the runtime grouping behavior.
+     * This does not delete those rows or change their AMB Grid CRUD state.
      *
-     * @returns {*} Result of clearing the sorters.
+     * @param {Array} groupValues - Allowed values for each grouping level.
+     * @returns {*} Result of updating the allowed group values.
      */
-    clearSort() {
-        return table.clearSort();
+    setGroupValues(groupValues) {
+        return table.setGroupValues(groupValues);
+    },
+
+    /**
+     * Changes the initial open state used when groups are generated.
+     *
+     * The value can be a boolean, a callback, or a list of values for
+     * multi-level grouping. Existing and future group rendering follows the
+     * runtime grouping behavior.
+     *
+     * @param {boolean|Function|Array} groupStartOpen - Group opening definition.
+     * @returns {*} Result of updating the opening definition.
+     */
+    setGroupStartOpen(groupStartOpen) {
+        return table.setGroupStartOpen(groupStartOpen);
+    },
+
+    /**
+     * Changes the formatter used to generate group headers.
+     *
+     * A callback can be supplied for one grouping level, or an array of
+     * callbacks for multi-level grouping. Callback identities and returned
+     * content are forwarded without AMB Grid transformations.
+     *
+     * @param {Function|Function[]} groupHeader - Group-header formatter definition.
+     * @returns {*} Result of updating the group-header definition.
+     */
+    setGroupHeader(groupHeader) {
+        return table.setGroupHeader(groupHeader);
     }
 });
 </code></pre>

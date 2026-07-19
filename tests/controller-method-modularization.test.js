@@ -119,6 +119,49 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted grouping method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const groupingMethodsPath = resolve(controllerDir, 'grouping-methods.js');
+        const groupingSource = readFileSync(groupingMethodsPath, 'utf8');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineGroupingDefinitions = [
+            /^\s*getGroups\(\) \{/m,
+            /^\s*setGroupBy\(groupBy\) \{/m,
+            /^\s*setGroupValues\(groupValues\) \{/m,
+            /^\s*setGroupStartOpen\(groupStartOpen\) \{/m,
+            /^\s*setGroupHeader\(groupHeader\) \{/m
+        ];
+
+        expect(source).toContain("import { createGroupingMethods } from './controller/grouping-methods.js';");
+        expect(source).toContain('const groupingMethods = createGroupingMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('rowMethods');
+        expect(composition[1]).toContain('groupingMethods');
+        expect(composition[1]).toContain('paginationMethods');
+        expect(source).not.toContain('...groupingMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlineGroupingDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('grouping-methods.js');
+        expect(controllerModules).not.toContain('group-read-methods.js');
+        expect(controllerModules).not.toContain('group-config-methods.js');
+        expect(controllerModules).not.toContain('group-header-methods.js');
+        expect(controllerModules).not.toContain('group-values-methods.js');
+        expect(groupingSource).toMatch(/createGroupingMethods = \(\{ table \}\) => \(\{/);
+        expect(groupingSource).toMatch(/getGroups\(\) \{\s*return table\.getGroups\(\);/);
+        expect(groupingSource).toMatch(/setGroupBy\(groupBy\) \{\s*return table\.setGroupBy\(groupBy\);/);
+        expect(groupingSource).toMatch(/setGroupValues\(groupValues\) \{\s*return table\.setGroupValues\(groupValues\);/);
+        expect(groupingSource).toMatch(/setGroupStartOpen\(groupStartOpen\) \{\s*return table\.setGroupStartOpen\(groupStartOpen\);/);
+        expect(groupingSource).toMatch(/setGroupHeader\(groupHeader\) \{\s*return table\.setGroupHeader\(groupHeader\);/);
+        expect(groupingSource).not.toMatch(/createGroupingMethods = \(\{[^}]*crud/);
+        expect(groupingSource).not.toMatch(/createGroupingMethods = \(\{[^}]*searchController/);
+    });
+
     test('wires the extracted export method group into the controller composition', () => {
         const source = readTableFactorySource();
 
