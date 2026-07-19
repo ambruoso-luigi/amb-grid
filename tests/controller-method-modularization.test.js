@@ -10,6 +10,46 @@ const tableFactoryPath = resolve(repositoryRoot, 'src/lib/table/table-factory.js
 const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8');
 
 describe('AMB table controller method modularization', () => {
+    test('wires the extracted alert method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const alertMethodsPath = resolve(controllerDir, 'alert-methods.js');
+        const alertSource = readFileSync(alertMethodsPath, 'utf8');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineAlertDefinitions = [
+            /^\s*alert\(\.\.\.args\) \{/m,
+            /^\s*clearAlert\(\) \{/m
+        ];
+
+        expect(source).toContain("import { createAlertMethods } from './controller/alert-methods.js';");
+        expect(source).toContain('const alertMethods = createAlertMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('alertMethods');
+        expect(composition[1]).toContain('calculationMethods');
+        expect(source).not.toContain('...alertMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlineAlertDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('alert-methods.js');
+        expect(controllerModules).not.toContain('table-alert-methods.js');
+        expect(controllerModules).not.toContain('clear-alert-methods.js');
+        expect(controllerModules).not.toContain('modal-methods.js');
+        expect(controllerModules).not.toContain('message-methods.js');
+        expect(alertSource).toMatch(/createAlertMethods = \(\{ table \}\) => \(\{/);
+        expect(alertSource).toMatch(/alert\(\.\.\.args\) \{\s*return table\.alert\(\.\.\.args\);/);
+        expect(alertSource).toMatch(/clearAlert\(\) \{\s*return table\.clearAlert\(\);/);
+        expect(alertSource).not.toContain('FloatingMessage');
+        expect(alertSource).not.toContain('FeedbackRegion');
+        expect(alertSource).not.toContain('ConfirmDialog');
+        expect(alertSource).not.toContain('CrudHelper');
+        expect(alertSource).not.toContain('window.alert');
+        expect(alertSource).not.toContain('document.querySelector');
+    });
+
     test('wires the extracted calculation method group into the controller composition', () => {
         const source = readTableFactorySource();
 

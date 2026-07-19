@@ -11,6 +11,7 @@ import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
 import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-binders.js';
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
+import { createAlertMethods } from './controller/alert-methods.js';
 import { createCalculationMethods } from './controller/calculation-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
@@ -684,6 +685,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} previousPage - Show the previous page.
  * @property {Function} setPageSize - Change the number of rows displayed on each page.
  * @property {Function} setPageToRow - Show the local pagination page containing a row.
+ * @property {Function} alert - Show a modal alert over the grid.
+ * @property {Function} clearAlert - Clear the current modal grid alert.
  * @property {Function} getHtml - Return grid data as an HTML table string.
  * @property {Function} copyToClipboard - Copy grid data to the system clipboard.
  * @property {Function} download - Download grid data using a configured downloader.
@@ -868,6 +871,7 @@ export function createTable(options = {}) {
     }
 
     const table = new Tabulator(selector, normalizedOptions);
+    const alertMethods = createAlertMethods({ table });
     const calculationMethods = createCalculationMethods({ table });
     const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
@@ -929,6 +933,7 @@ export function createTable(options = {}) {
     });
     const searchMethods = createSearchMethods({ searchController });
     const controllerMethods = composeControllerMethods(
+        alertMethods,
         calculationMethods,
         columnMethods,
         dataMethods,
