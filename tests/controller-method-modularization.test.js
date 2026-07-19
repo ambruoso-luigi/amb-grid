@@ -10,6 +10,21 @@ const tableFactoryPath = resolve(repositoryRoot, 'src/lib/table/table-factory.js
 const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8');
 
 describe('AMB table controller method modularization', () => {
+    test('wires the extracted calculation method group into the controller composition', () => {
+        const source = readTableFactorySource();
+
+        expect(source).toContain("import { createCalculationMethods } from './controller/calculation-methods.js';");
+        expect(source).toContain('const calculationMethods = createCalculationMethods({ table });');
+
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('calculationMethods');
+        expect(composition[1]).toContain('columnMethods');
+        expect(source).not.toContain('...calculationMethods');
+        expect(source).toContain('...controllerMethods');
+    });
+
     test('wires the extracted column method group into the controller composition', () => {
         const source = readTableFactorySource();
 
@@ -145,6 +160,18 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineDataDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline calculation method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineCalculationDefinitions = [
+            /^\s*getCalcResults\(\) \{/m,
+            /^\s*recalc\(\) \{/m
+        ];
+
+        inlineCalculationDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });
@@ -317,5 +344,22 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('html-methods.js');
         expect(controllerModules).not.toContain('print-methods.js');
         expect(controllerModules).not.toContain('output-methods.js');
+    });
+
+    test('keeps calculation methods in one calculation method module', () => {
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const source = readFileSync(resolve(controllerDir, 'calculation-methods.js'), 'utf8');
+        const tableFactorySource = readTableFactorySource();
+        const controllerModules = readdirSync(controllerDir);
+
+        expect(source).toMatch(/getCalcResults\(\) \{\s*return table\.getCalcResults\(\);/);
+        expect(source).toMatch(/recalc\(\) \{\s*return table\.recalc\(\);/);
+        expect(tableFactorySource).not.toContain('...calculationMethods');
+        expect(tableFactorySource).toContain('calculationMethods');
+        expect(tableFactorySource).toContain('...controllerMethods');
+        expect(controllerModules).toContain('calculation-methods.js');
+        expect(controllerModules).not.toContain('calc-results-methods.js');
+        expect(controllerModules).not.toContain('recalc-methods.js');
+        expect(controllerModules).not.toContain('column-calculation-read-methods.js');
     });
 });
