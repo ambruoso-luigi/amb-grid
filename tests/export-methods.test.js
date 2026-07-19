@@ -9,6 +9,7 @@ describe('AMB table controller export method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'copyToClipboard',
             'download',
             'downloadToTab',
             'getHtml',
@@ -90,6 +91,74 @@ describe('AMB table controller export method group', () => {
         expect(table.getData).not.toHaveBeenCalled();
         expect(table.createBlob).not.toHaveBeenCalled();
         expect(table.createObjectURL).not.toHaveBeenCalled();
+    });
+
+    test('delegates clipboard copy without reading rows or using browser APIs directly', () => {
+        const originalWindow = globalThis.window;
+        const originalDocument = globalThis.document;
+        const selectedRows = [{ id: 1 }];
+        const rowRange = () => selectedRows;
+        const copyResult = { copied: true };
+        const table = {
+            copyToClipboard: vi.fn()
+                .mockReturnValueOnce(copyResult)
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(copyResult)
+                .mockReturnValueOnce(undefined),
+            getData: vi.fn(),
+            getRows: vi.fn(),
+            getSelectedRows: vi.fn(),
+            getSelectedData: vi.fn(),
+            setFilter: vi.fn(),
+            addFilter: vi.fn(),
+            removeFilter: vi.fn(),
+            clearFilter: vi.fn(),
+            setSort: vi.fn(),
+            setPage: vi.fn(),
+            selectRow: vi.fn(),
+            deselectRow: vi.fn()
+        };
+        const methods = createExportMethods({ table });
+
+        globalThis.window = { navigator: { clipboard: { writeText: vi.fn() } } };
+        globalThis.document = { execCommand: vi.fn(), createElement: vi.fn() };
+
+        try {
+            expect(methods.copyToClipboard()).toBe(copyResult);
+            expect(table.copyToClipboard).toHaveBeenCalledOnce();
+            expect(table.copyToClipboard).toHaveBeenLastCalledWith();
+
+            expect(methods.copyToClipboard('selected')).toBeUndefined();
+            expect(table.copyToClipboard).toHaveBeenCalledTimes(2);
+            expect(table.copyToClipboard).toHaveBeenLastCalledWith('selected');
+
+            expect(methods.copyToClipboard('active')).toBe(copyResult);
+            expect(table.copyToClipboard).toHaveBeenCalledTimes(3);
+            expect(table.copyToClipboard).toHaveBeenLastCalledWith('active');
+
+            expect(methods.copyToClipboard(rowRange)).toBeUndefined();
+            expect(table.copyToClipboard).toHaveBeenCalledTimes(4);
+            expect(table.copyToClipboard).toHaveBeenLastCalledWith(rowRange);
+            expect(table.copyToClipboard.mock.calls[3][0]).toBe(rowRange);
+            expect(table.getData).not.toHaveBeenCalled();
+            expect(table.getRows).not.toHaveBeenCalled();
+            expect(table.getSelectedRows).not.toHaveBeenCalled();
+            expect(table.getSelectedData).not.toHaveBeenCalled();
+            expect(table.setFilter).not.toHaveBeenCalled();
+            expect(table.addFilter).not.toHaveBeenCalled();
+            expect(table.removeFilter).not.toHaveBeenCalled();
+            expect(table.clearFilter).not.toHaveBeenCalled();
+            expect(table.setSort).not.toHaveBeenCalled();
+            expect(table.setPage).not.toHaveBeenCalled();
+            expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.deselectRow).not.toHaveBeenCalled();
+            expect(globalThis.window.navigator.clipboard.writeText).not.toHaveBeenCalled();
+            expect(globalThis.document.execCommand).not.toHaveBeenCalled();
+            expect(globalThis.document.createElement).not.toHaveBeenCalled();
+        } finally {
+            globalThis.window = originalWindow;
+            globalThis.document = originalDocument;
+        }
     });
 
     test('delegates download-to-tab without opening tabs directly', () => {

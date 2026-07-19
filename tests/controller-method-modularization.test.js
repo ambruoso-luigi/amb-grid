@@ -202,6 +202,7 @@ describe('AMB table controller method modularization', () => {
         const source = readTableFactorySource();
         const inlineExportDefinitions = [
             /^\s*getHtml\(\.\.\.args\) \{/m,
+            /^\s*copyToClipboard\(\.\.\.args\) \{/m,
             /^\s*download\(\.\.\.args\) \{/m,
             /^\s*downloadToTab\(\.\.\.args\) \{/m,
             /^\s*print\(\.\.\.args\) \{/m
@@ -303,6 +304,7 @@ describe('AMB table controller method modularization', () => {
         const controllerModules = readdirSync(controllerDir);
 
         expect(source).toMatch(/getHtml\(\.\.\.args\) \{\s*return table\.getHtml\(\.\.\.args\);/);
+        expect(source).toMatch(/copyToClipboard\(\.\.\.args\) \{\s*return table\.copyToClipboard\(\.\.\.args\);/);
         expect(source).toMatch(/download\(\.\.\.args\) \{\s*return table\.download\(\.\.\.args\);/);
         expect(source).toMatch(/downloadToTab\(\.\.\.args\) \{\s*return table\.downloadToTab\(\.\.\.args\);/);
         expect(source).toMatch(/print\(\.\.\.args\) \{\s*return table\.print\(\.\.\.args\);/);
@@ -310,6 +312,7 @@ describe('AMB table controller method modularization', () => {
         expect(tableFactorySource).toContain('exportMethods');
         expect(tableFactorySource).toContain('...controllerMethods');
         expect(controllerModules).toContain('export-methods.js');
+        expect(controllerModules).not.toContain('clipboard-methods.js');
         expect(controllerModules).not.toContain('download-methods.js');
         expect(controllerModules).not.toContain('html-methods.js');
         expect(controllerModules).not.toContain('print-methods.js');

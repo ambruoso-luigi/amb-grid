@@ -25,6 +25,23 @@ export const createExportMethods = ({ table }) => ({
     },
 
     /**
+     * Copies grid data to the system clipboard.
+     *
+     * An optional row range controls which rows are included. Column
+     * visibility, clipboard accessors, formatters and the current clipboard
+     * configuration determine the generated output.
+     *
+     * This method does not create an AMB Grid save payload or directly modify
+     * row data and CRUD state.
+     *
+     * @param {*} [rowRange] - Optional row range or supported row-range lookup.
+     * @returns {void}
+     */
+    copyToClipboard(...args) {
+        return table.copyToClipboard(...args);
+    },
+
+    /**
      * Generates and downloads grid data using a configured downloader.
      *
      * The download type, file name, downloader options and any additional

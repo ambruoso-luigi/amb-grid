@@ -677,6 +677,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setPageSize - Change the number of rows displayed on each page.
  * @property {Function} setPageToRow - Show the local pagination page containing a row.
  * @property {Function} getHtml - Return grid data as an HTML table string.
+ * @property {Function} copyToClipboard - Copy grid data to the system clipboard.
  * @property {Function} download - Download grid data using a configured downloader.
  * @property {Function} downloadToTab - Open generated export data in a new browser tab.
  * @property {Function} print - Print grid data using the current print configuration.

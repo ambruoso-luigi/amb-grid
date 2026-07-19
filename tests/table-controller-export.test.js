@@ -57,6 +57,7 @@ vi.mock('tabulator-tables', () => ({
             this.setPageSize = vi.fn();
             this.setPageToRow = vi.fn();
             this.getHtml = vi.fn(() => '<table></table>');
+            this.copyToClipboard = vi.fn();
             this.download = vi.fn();
             this.downloadToTab = vi.fn();
             this.print = vi.fn();
@@ -188,6 +189,7 @@ const clearTableSideEffects = table => {
     table.nextPage.mockClear();
     table.previousPage.mockClear();
     table.getData.mockClear();
+    table.copyToClipboard.mockClear();
     table.searchData.mockClear();
     table.getRows.mockClear();
     table.searchRows.mockClear();
@@ -228,14 +230,18 @@ describe('AMB table controller export API', () => {
             const options = { sheetName: 'Data' };
             const tabOptions = { orientation: 'landscape' };
             const downloadResult = { downloaded: true };
+            const clipboardResult = { copied: true };
             const tabResult = { opened: true };
             const printResult = { printed: true };
 
             expect(controller.table).toBe(table);
             expect(typeof controller.getHtml).toBe('function');
+            expect(typeof controller.copyToClipboard).toBe('function');
             expect(typeof controller.download).toBe('function');
             expect(typeof controller.downloadToTab).toBe('function');
             expect(typeof controller.print).toBe('function');
+            expect(controller.clipboard).toBeUndefined();
+            expect(controller.clipboardMethods).toBeUndefined();
             expect(controller.exportMethods).toBeUndefined();
             expect(controller.export).toBeUndefined();
             expect(controller.output).toBeUndefined();
@@ -251,6 +257,16 @@ describe('AMB table controller export API', () => {
             expect(controller.getHtml('visible', true, { columnGroups: false })).toBe(html);
             expect(table.getHtml).toHaveBeenCalledOnce();
             expect(table.getHtml).toHaveBeenLastCalledWith('visible', true, { columnGroups: false });
+
+            table.copyToClipboard
+                .mockReturnValueOnce(clipboardResult)
+                .mockReturnValueOnce(undefined);
+            expect(controller.copyToClipboard()).toBe(clipboardResult);
+            expect(table.copyToClipboard).toHaveBeenCalledOnce();
+            expect(table.copyToClipboard).toHaveBeenLastCalledWith();
+            expect(controller.copyToClipboard('selected')).toBeUndefined();
+            expect(table.copyToClipboard).toHaveBeenCalledTimes(2);
+            expect(table.copyToClipboard).toHaveBeenLastCalledWith('selected');
 
             table.download.mockReturnValueOnce(downloadResult);
             expect(controller.download('csv', 'data.csv')).toBe(downloadResult);
