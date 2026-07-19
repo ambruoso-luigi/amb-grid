@@ -9,11 +9,95 @@ describe('AMB table controller data method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'getAjaxUrl',
             'getData',
             'getDataCount',
             'searchData'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('reads the runtime AJAX URL without loading data or building request parameters', () => {
+        const crud = {
+            getSavePayload: vi.fn(),
+            getStateReport: vi.fn(),
+            validateRow: vi.fn(),
+            validateAll: vi.fn(),
+            updateRowFields: vi.fn(),
+            findRowByKey: vi.fn(),
+            addRow: vi.fn(),
+            deleteRow: vi.fn(),
+            rollbackRow: vi.fn()
+        };
+        const table = {
+            getAjaxUrl: vi.fn()
+                .mockReturnValueOnce('https://example.test/api/people')
+                .mockReturnValueOnce('/api/people?department=sales')
+                .mockReturnValueOnce(''),
+            getData: vi.fn(),
+            getDataCount: vi.fn(),
+            searchData: vi.fn(),
+            setData: vi.fn(),
+            replaceData: vi.fn(),
+            updateData: vi.fn(),
+            addData: vi.fn(),
+            clearData: vi.fn(),
+            getPage: vi.fn(),
+            getPageSize: vi.fn(),
+            getFilters: vi.fn(),
+            getSorters: vi.fn(),
+            setFilter: vi.fn(),
+            clearFilter: vi.fn(),
+            refreshFilter: vi.fn(),
+            setSort: vi.fn(),
+            clearSort: vi.fn(),
+            setPage: vi.fn(),
+            setPageSize: vi.fn(),
+            selectRow: vi.fn(),
+            deselectRow: vi.fn(),
+            redraw: vi.fn(),
+            recalc: vi.fn()
+        };
+        const methods = createDataMethods({ table });
+
+        expect(methods.getAjaxUrl()).toBe('https://example.test/api/people');
+        expect(table.getAjaxUrl).toHaveBeenCalledOnce();
+        expect(table.getAjaxUrl).toHaveBeenCalledWith();
+
+        expect(methods.getAjaxUrl()).toBe('/api/people?department=sales');
+        expect(table.getAjaxUrl).toHaveBeenCalledTimes(2);
+        expect(table.getAjaxUrl).toHaveBeenLastCalledWith();
+
+        expect(methods.getAjaxUrl()).toBe('');
+        expect(table.getAjaxUrl).toHaveBeenCalledTimes(3);
+        expect(table.getAjaxUrl).toHaveBeenLastCalledWith();
+        expect(table.getData).not.toHaveBeenCalled();
+        expect(table.getDataCount).not.toHaveBeenCalled();
+        expect(table.searchData).not.toHaveBeenCalled();
+        expect(table.setData).not.toHaveBeenCalled();
+        expect(table.replaceData).not.toHaveBeenCalled();
+        expect(table.updateData).not.toHaveBeenCalled();
+        expect(table.addData).not.toHaveBeenCalled();
+        expect(table.clearData).not.toHaveBeenCalled();
+        expect(table.getPage).not.toHaveBeenCalled();
+        expect(table.getPageSize).not.toHaveBeenCalled();
+        expect(table.getFilters).not.toHaveBeenCalled();
+        expect(table.getSorters).not.toHaveBeenCalled();
+        expect(table.setFilter).not.toHaveBeenCalled();
+        expect(table.clearFilter).not.toHaveBeenCalled();
+        expect(table.refreshFilter).not.toHaveBeenCalled();
+        expect(table.setSort).not.toHaveBeenCalled();
+        expect(table.clearSort).not.toHaveBeenCalled();
+        expect(table.setPage).not.toHaveBeenCalled();
+        expect(table.setPageSize).not.toHaveBeenCalled();
+        expect(table.selectRow).not.toHaveBeenCalled();
+        expect(table.deselectRow).not.toHaveBeenCalled();
+        expect(table.redraw).not.toHaveBeenCalled();
+        expect(table.recalc).not.toHaveBeenCalled();
+
+        Object.values(crud).forEach(method => {
+            expect(method).not.toHaveBeenCalled();
+        });
     });
 
     test('searches row data without changing persistent grid or CRUD state', () => {

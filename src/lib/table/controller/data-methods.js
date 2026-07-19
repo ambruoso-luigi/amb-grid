@@ -9,6 +9,23 @@
  */
 export const createDataMethods = ({ table }) => ({
     /**
+     * Returns the current AJAX data URL used by the grid.
+     *
+     * The result is the URL configured through the runtime data-loading
+     * configuration or the latest URL supplied to a data-loading operation.
+     * Pagination, filter and sorter parameters generated for individual
+     * requests are not included.
+     *
+     * This is a read-only operation and does not load data or modify AMB Grid
+     * CRUD state.
+     *
+     * @returns {string} Current AJAX data URL, or an empty string when unset.
+     */
+    getAjaxUrl() {
+        return table.getAjaxUrl();
+    },
+
+    /**
      * Returns the current grid data.
      *
      * An optional row range can be provided to limit the returned rows. For

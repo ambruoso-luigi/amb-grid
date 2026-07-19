@@ -673,6 +673,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSorters - Return the current grid sorter definitions.
  * @property {Function} setSort - Apply one or more grid sorters.
  * @property {Function} clearSort - Clear the current grid sorting.
+ * @property {Function} getAjaxUrl - Return the current AJAX data URL.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} searchData - Return row data matching a filter definition.

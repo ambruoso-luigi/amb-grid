@@ -129,6 +129,59 @@ describe('AMB table controller method modularization', () => {
         expect(source).not.toContain('column-visibility-methods.js');
     });
 
+    test('wires the extracted data method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const dataMethodsPath = resolve(controllerDir, 'data-methods.js');
+        const dataSource = readFileSync(dataMethodsPath, 'utf8');
+        const dataImplementationSource = dataSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const getAjaxUrlImplementation = dataImplementationSource.match(/getAjaxUrl\(\) \{([\s\S]*?)\n    \},/);
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineDataDefinitions = [
+            /^\s*getAjaxUrl\(\) \{/m,
+            /^\s*getData\(\.\.\.args\) \{/m,
+            /^\s*getDataCount\(\.\.\.args\) \{/m,
+            /^\s*searchData\(\.\.\.args\) \{/m
+        ];
+
+        expect(source).toContain("import { createDataMethods } from './controller/data-methods.js';");
+        expect(source).toContain('const dataMethods = createDataMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('columnMethods');
+        expect(composition[1]).toContain('dataMethods');
+        expect(composition[1]).toContain('rowMethods');
+        expect(source).not.toContain('...dataMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlineDataDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('data-methods.js');
+        expect(controllerModules).not.toContain('ajax-methods.js');
+        expect(controllerModules).not.toContain('ajax-read-methods.js');
+        expect(controllerModules).not.toContain('remote-data-methods.js');
+        expect(controllerModules).not.toContain('data-loading-methods.js');
+        expect(dataSource).toMatch(/createDataMethods = \(\{ table \}\) => \(\{/);
+        expect(dataSource).toMatch(/getAjaxUrl\(\) \{\s*return table\.getAjaxUrl\(\);/);
+        expect(dataSource).toMatch(/getData\(\.\.\.args\) \{\s*return table\.getData\(\.\.\.args\);/);
+        expect(dataSource).toMatch(/getDataCount\(\.\.\.args\) \{\s*return table\.getDataCount\(\.\.\.args\);/);
+        expect(dataSource).toMatch(/searchData\(\.\.\.args\) \{\s*return table\.searchData\(\.\.\.args\);/);
+        expect(getAjaxUrlImplementation).not.toBeNull();
+        expect(getAjaxUrlImplementation[1]).not.toContain('table.options');
+        expect(getAjaxUrlImplementation[1]).not.toContain('table.modules');
+        expect(getAjaxUrlImplementation[1]).not.toContain('table.module(');
+        expect(getAjaxUrlImplementation[1]).not.toMatch(/(^|[^A-Za-z])setData\(/);
+        expect(getAjaxUrlImplementation[1]).not.toMatch(/(^|[^A-Za-z])replaceData\(/);
+        expect(getAjaxUrlImplementation[1]).not.toMatch(/(^|[^A-Za-z])fetch\(/);
+        expect(getAjaxUrlImplementation[1]).not.toContain('XMLHttpRequest');
+        expect(getAjaxUrlImplementation[1]).not.toContain('URLSearchParams');
+        expect(getAjaxUrlImplementation[1]).not.toMatch(/(^|[^A-Za-z])getFilters\(/);
+        expect(getAjaxUrlImplementation[1]).not.toMatch(/(^|[^A-Za-z])getSorters\(/);
+        expect(getAjaxUrlImplementation[1]).not.toMatch(/(^|[^A-Za-z])getPage\(/);
+    });
+
     test('wires the extracted selection method group into the controller composition', () => {
         const source = readTableFactorySource();
 
@@ -519,6 +572,7 @@ describe('AMB table controller method modularization', () => {
     test('does not keep inline data method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineDataDefinitions = [
+            /^\s*getAjaxUrl\(\) \{/m,
             /^\s*getData\(\.\.\.args\) \{/m,
             /^\s*getDataCount\(\.\.\.args\) \{/m,
             /^\s*searchData\(\.\.\.args\) \{/m
@@ -691,10 +745,15 @@ describe('AMB table controller method modularization', () => {
         const searchRowsMethod = rowSource.match(/searchRows\(\.\.\.args\) \{([\s\S]*?)\n    \},/);
 
         expect(dataSource).toMatch(/searchData\(\.\.\.args\) \{\s*return table\.searchData\(\.\.\.args\);/);
+        expect(dataSource).toMatch(/getAjaxUrl\(\) \{\s*return table\.getAjaxUrl\(\);/);
         expect(rowSource).toMatch(/searchRows\(\.\.\.args\) \{\s*return table\.searchRows\(\.\.\.args\);/);
         expect(searchRowsMethod).not.toBeNull();
         expect(searchRowsMethod[1]).not.toContain('crud.findRowByKey');
         expect(tableFactorySource).not.toContain('query-methods.js');
+        expect(tableFactorySource).not.toContain('ajax-methods.js');
+        expect(tableFactorySource).not.toContain('ajax-read-methods.js');
+        expect(tableFactorySource).not.toContain('remote-data-methods.js');
+        expect(tableFactorySource).not.toContain('data-loading-methods.js');
         expect(tableFactorySource).not.toContain('...dataMethods');
         expect(tableFactorySource).not.toContain('...rowMethods');
         expect(tableFactorySource).toContain('dataMethods');
