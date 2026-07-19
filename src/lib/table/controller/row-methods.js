@@ -1,10 +1,10 @@
 /**
- * Creates the row-reading methods exposed by the AMB Grid controller.
+ * Creates the row methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
  * @param {object} context.crud - AMB Grid CRUD layer.
- * @returns {object} Row-reading methods for the flat controller API.
+ * @returns {object} Row methods for the flat controller API.
  * @private
  * @internal
  */
@@ -80,5 +80,30 @@ export const createRowMethods = ({ table, crud }) => ({
      */
     getRowFromPosition(...args) {
         return table.getRowFromPosition(...args);
+    },
+
+    /**
+     * Scrolls vertically to a grid row.
+     *
+     * Backend identifiers and AMB Grid temporary identifiers are resolved
+     * through the CRUD layer before the operation is delegated. Other supported
+     * row lookup values are forwarded unchanged.
+     *
+     * The optional position controls where the row appears in the viewport.
+     * The optional visibility flag controls whether scrolling also occurs when
+     * the row is already visible.
+     *
+     * This method does not change pagination, selection, focus, row data or
+     * CRUD state.
+     *
+     * @param {*} identifier - Backend id, AMB temporary id or supported row lookup.
+     * @param {'top'|'center'|'bottom'|'nearest'} [position] - Requested viewport position.
+     * @param {boolean} [scrollIfVisible] - Scroll even when the row is already visible.
+     * @returns {Promise<void>} Original scrolling promise.
+     */
+    scrollToRow(identifier, ...args) {
+        const ambRow = crud.findRowByKey(identifier);
+
+        return table.scrollToRow(ambRow || identifier, ...args);
     }
 });

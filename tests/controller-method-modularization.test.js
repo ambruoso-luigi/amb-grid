@@ -112,7 +112,8 @@ describe('AMB table controller method modularization', () => {
             /^\s*getSelectedRowComponents\(\) \{/m,
             /^\s*clearSelection\(\) \{/m,
             /^\s*selectRow\(identifier\) \{/m,
-            /^\s*deselectRow\(identifier\) \{/m
+            /^\s*deselectRow\(identifier\) \{/m,
+            /^\s*scrollToRow\(identifier,\s*\.\.\.args\) \{/m
         ];
 
         inlineSelectionDefinitions.forEach(pattern => {
@@ -203,5 +204,17 @@ describe('AMB table controller method modularization', () => {
         expect(source).not.toContain('.move(');
         expect(source).not.toContain('.show()');
         expect(source).not.toContain('.hide()');
+    });
+
+    test('keeps row scrolling in the row method module', () => {
+        const rowMethodsPath = resolve(repositoryRoot, 'src/lib/table/controller/row-methods.js');
+        const source = readFileSync(rowMethodsPath, 'utf8');
+        const tableFactorySource = readTableFactorySource();
+
+        expect(source).toMatch(/scrollToRow\(identifier,\s*\.\.\.args\) \{\s*const ambRow = crud\.findRowByKey\(identifier\);\s*return table\.scrollToRow\(ambRow \|\| identifier, \.\.\.args\);/);
+        expect(tableFactorySource).not.toContain('row-navigation-methods.js');
+        expect(tableFactorySource).not.toContain('...rowMethods');
+        expect(tableFactorySource).toContain('rowMethods');
+        expect(tableFactorySource).toContain('...controllerMethods');
     });
 });
