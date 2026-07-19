@@ -1,9 +1,9 @@
 /**
- * Creates the data-reading methods exposed by the AMB Grid controller.
+ * Creates the data methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Data-reading methods for the flat controller API.
+ * @returns {object} Data methods for the flat controller API.
  * @private
  * @internal
  */
@@ -41,5 +41,21 @@ export const createDataMethods = ({ table }) => ({
      */
     getDataCount(...args) {
         return table.getDataCount(...args);
+    },
+
+    /**
+     * Returns row data matching a filter definition.
+     *
+     * This is a one-off query and does not modify the current programmatic
+     * filters, header filters or AMB Grid global search state.
+     *
+     * Returned objects are the current runtime row data and should be treated
+     * as read-only. Direct mutations may bypass AMB Grid CRUD tracking.
+     *
+     * @param {...*} args - Filter definition arguments.
+     * @returns {object[]} Matching row data.
+     */
+    searchData(...args) {
+        return table.searchData(...args);
     }
 });

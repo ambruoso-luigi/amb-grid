@@ -83,6 +83,22 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Returns row components matching a filter definition.
+     *
+     * This is a one-off query and does not modify the current programmatic
+     * filters, header filters or AMB Grid global search state.
+     *
+     * Returned components expose advanced runtime operations. Direct mutations
+     * may bypass or interfere with AMB Grid CRUD tracking.
+     *
+     * @param {...*} args - Filter definition arguments.
+     * @returns {object[]} Matching row components.
+     */
+    searchRows(...args) {
+        return table.searchRows(...args);
+    },
+
+    /**
      * Scrolls vertically to a grid row.
      *
      * Backend identifiers and AMB Grid temporary identifiers are resolved

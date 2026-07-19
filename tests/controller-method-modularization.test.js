@@ -121,6 +121,19 @@ describe('AMB table controller method modularization', () => {
         });
     });
 
+    test('does not keep inline data method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineDataDefinitions = [
+            /^\s*getData\(\.\.\.args\) \{/m,
+            /^\s*getDataCount\(\.\.\.args\) \{/m,
+            /^\s*searchData\(\.\.\.args\) \{/m
+        ];
+
+        inlineDataDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
     test('does not keep inline header filter method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineFilterDefinitions = [
@@ -170,6 +183,22 @@ describe('AMB table controller method modularization', () => {
         });
     });
 
+    test('does not keep inline row method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineRowDefinitions = [
+            /^\s*getRows\(\.\.\.args\) \{/m,
+            /^\s*getRow\(identifier\) \{/m,
+            /^\s*getRowPosition\(identifier,\s*\.\.\.args\) \{/m,
+            /^\s*getRowFromPosition\(\.\.\.args\) \{/m,
+            /^\s*scrollToRow\(identifier,\s*\.\.\.args\) \{/m,
+            /^\s*searchRows\(\.\.\.args\) \{/m
+        ];
+
+        inlineRowDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
     test('does not keep inline column method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineColumnDefinitions = [
@@ -214,6 +243,26 @@ describe('AMB table controller method modularization', () => {
         expect(source).toMatch(/scrollToRow\(identifier,\s*\.\.\.args\) \{\s*const ambRow = crud\.findRowByKey\(identifier\);\s*return table\.scrollToRow\(ambRow \|\| identifier, \.\.\.args\);/);
         expect(tableFactorySource).not.toContain('row-navigation-methods.js');
         expect(tableFactorySource).not.toContain('...rowMethods');
+        expect(tableFactorySource).toContain('rowMethods');
+        expect(tableFactorySource).toContain('...controllerMethods');
+    });
+
+    test('keeps one-off query search methods in data and row method modules', () => {
+        const dataMethodsPath = resolve(repositoryRoot, 'src/lib/table/controller/data-methods.js');
+        const rowMethodsPath = resolve(repositoryRoot, 'src/lib/table/controller/row-methods.js');
+        const dataSource = readFileSync(dataMethodsPath, 'utf8');
+        const rowSource = readFileSync(rowMethodsPath, 'utf8');
+        const tableFactorySource = readTableFactorySource();
+        const searchRowsMethod = rowSource.match(/searchRows\(\.\.\.args\) \{([\s\S]*?)\n    \},/);
+
+        expect(dataSource).toMatch(/searchData\(\.\.\.args\) \{\s*return table\.searchData\(\.\.\.args\);/);
+        expect(rowSource).toMatch(/searchRows\(\.\.\.args\) \{\s*return table\.searchRows\(\.\.\.args\);/);
+        expect(searchRowsMethod).not.toBeNull();
+        expect(searchRowsMethod[1]).not.toContain('crud.findRowByKey');
+        expect(tableFactorySource).not.toContain('query-methods.js');
+        expect(tableFactorySource).not.toContain('...dataMethods');
+        expect(tableFactorySource).not.toContain('...rowMethods');
+        expect(tableFactorySource).toContain('dataMethods');
         expect(tableFactorySource).toContain('rowMethods');
         expect(tableFactorySource).toContain('...controllerMethods');
     });

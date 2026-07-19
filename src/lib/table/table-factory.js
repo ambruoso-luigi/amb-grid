@@ -660,11 +660,13 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearSort - Clear the current grid sorting.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
+ * @property {Function} searchData - Return row data matching a filter definition.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowPosition - Return the one-based position of a row.
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
  * @property {Function} scrollToRow - Scroll vertically to a grid row.
+ * @property {Function} searchRows - Return row components matching a filter definition.
  * @property {Function} getPage - Return the current page number.
  * @property {Function} getPageMax - Return the maximum available page number.
  * @property {Function} getPageSize - Return the number of rows allowed per page.
