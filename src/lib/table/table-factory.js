@@ -17,6 +17,7 @@ import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
 import { createExportMethods } from './controller/export-methods.js';
 import { createGroupingMethods } from './controller/grouping-methods.js';
+import { createHistoryMethods } from './controller/history-methods.js';
 import { createLayoutMethods } from './controller/layout-methods.js';
 import { createLocalizationMethods } from './controller/localization-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
@@ -678,6 +679,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setGroupValues - Change the allowed values for grouping levels.
  * @property {Function} setGroupStartOpen - Change the initial group opening definition.
  * @property {Function} setGroupHeader - Change the group-header formatter definition.
+ * @property {Function} getHistoryUndoSize - Return the number of actions available for undo.
+ * @property {Function} getHistoryRedoSize - Return the number of actions available for redo.
  * @property {Function} getPage - Return the current page number.
  * @property {Function} getPageMax - Return the maximum available page number.
  * @property {Function} getPageSize - Return the number of rows allowed per page.
@@ -881,6 +884,7 @@ export function createTable(options = {}) {
     const dataMethods = createDataMethods({ table });
     const exportMethods = createExportMethods({ table });
     const groupingMethods = createGroupingMethods({ table });
+    const historyMethods = createHistoryMethods({ table });
     const layoutMethods = createLayoutMethods({ table });
     const localizationMethods = createLocalizationMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
@@ -944,6 +948,7 @@ export function createTable(options = {}) {
         dataMethods,
         rowMethods,
         groupingMethods,
+        historyMethods,
         paginationMethods,
         selectionMethods,
         filterMethods,
