@@ -65,6 +65,53 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted cell-state reading method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const cellStateMethodsPath = resolve(controllerDir, 'cell-state-methods.js');
+        const cellStateSource = readFileSync(cellStateMethodsPath, 'utf8');
+        const cellStateImplementationSource = cellStateSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineCellStateDefinitions = [
+            /^\s*getEditedCells\(\) \{/m,
+            /^\s*getInvalidCells\(\) \{/m
+        ];
+
+        expect(source).toContain("import { createCellStateMethods } from './controller/cell-state-methods.js';");
+        expect(source).toContain('const cellStateMethods = createCellStateMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('calculationMethods');
+        expect(composition[1]).toContain('cellStateMethods');
+        expect(composition[1]).toContain('columnMethods');
+        expect(source).not.toContain('...cellStateMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlineCellStateDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('cell-state-methods.js');
+        expect(controllerModules).not.toContain('edited-cell-methods.js');
+        expect(controllerModules).not.toContain('invalid-cell-methods.js');
+        expect(controllerModules).not.toContain('editing-read-methods.js');
+        expect(controllerModules).not.toContain('validation-read-methods.js');
+        expect(cellStateSource).toMatch(/createCellStateMethods = \(\{ table \}\) => \(\{/);
+        expect(cellStateSource).toMatch(/getEditedCells\(\) \{\s*return table\.getEditedCells\(\);/);
+        expect(cellStateSource).toMatch(/getInvalidCells\(\) \{\s*return table\.getInvalidCells\(\);/);
+        expect(cellStateImplementationSource).not.toContain('CrudHelper');
+        expect(cellStateImplementationSource).not.toContain('_state');
+        expect(cellStateImplementationSource).not.toContain('_errors');
+        expect(cellStateImplementationSource).not.toContain('_ambTempId');
+        expect(cellStateImplementationSource).not.toContain('clearCellEdited');
+        expect(cellStateImplementationSource).not.toContain('clearCellValidation');
+        expect(cellStateImplementationSource).not.toMatch(/(^|[^A-Za-z])validate\(/);
+        expect(cellStateImplementationSource).not.toMatch(/(^|[^A-Za-z])getData\(/);
+        expect(cellStateImplementationSource).not.toMatch(/(^|[^A-Za-z])getRows\(/);
+        expect(cellStateImplementationSource).not.toMatch(/createCellStateMethods = \(\{[^}]*crud/);
+        expect(cellStateImplementationSource).not.toMatch(/createCellStateMethods = \(\{[^}]*searchController/);
+    });
+
     test('wires the extracted column method group into the controller composition', () => {
         const source = readTableFactorySource();
 

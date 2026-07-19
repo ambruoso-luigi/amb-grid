@@ -13,6 +13,7 @@ import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-bi
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
 import { createAlertMethods } from './controller/alert-methods.js';
 import { createCalculationMethods } from './controller/calculation-methods.js';
+import { createCellStateMethods } from './controller/cell-state-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
 import { createExportMethods } from './controller/export-methods.js';
@@ -668,6 +669,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} searchData - Return row data matching a filter definition.
+ * @property {Function} getEditedCells - Return cells marked as edited by the grid.
+ * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowPosition - Return the one-based position of a row.
@@ -880,6 +883,7 @@ export function createTable(options = {}) {
     const table = new Tabulator(selector, normalizedOptions);
     const alertMethods = createAlertMethods({ table });
     const calculationMethods = createCalculationMethods({ table });
+    const cellStateMethods = createCellStateMethods({ table });
     const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
     const exportMethods = createExportMethods({ table });
@@ -944,6 +948,7 @@ export function createTable(options = {}) {
     const controllerMethods = composeControllerMethods(
         alertMethods,
         calculationMethods,
+        cellStateMethods,
         columnMethods,
         dataMethods,
         rowMethods,

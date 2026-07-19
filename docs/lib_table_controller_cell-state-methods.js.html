@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/date.js</title>
+    <title>JSDoc: Source: lib/table/controller/cell-state-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/date.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/cell-state-methods.js</h1>
 
     
 
@@ -26,116 +26,44 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const DATE_FORMAT_INPUT_ALIASES = {
-    'dd/mm/yyyy': ['dd/mm/yyyy'],
-    'dd-mm-yyyy': ['dd-mm-yyyy'],
-    'dd.mm.yyyy': ['dd.mm.yyyy'],
-    'mm/dd/yyyy': ['mm/dd/yyyy'],
-    'mm-dd-yyyy': ['mm-dd-yyyy'],
-    'yyyy-mm-dd': ['yyyy-mm-dd'],
-    'yyyy/mm/dd': ['yyyy/mm/dd'],
-    yyyymmdd: ['yyyymmdd'],
-    it: ['dd/mm/yyyy'],
-    iso: ['yyyy-mm-dd'],
-    legacy: ['yyyymmdd']
-};
-
-const normalizeMode = options => {
-    if (options.mode) return options.mode;
-    if (options.picker === true) return 'manualWithPickerButton';
-
-    return 'manualWithPickerButton';
-};
-
-const getInputFormats = options => {
-    if (Array.isArray(options.inputFormats) &amp;&amp; options.inputFormats.length > 0) {
-        return options.inputFormats;
-    }
-
-    return DATE_FORMAT_INPUT_ALIASES[options.editFormat]
-        || DATE_FORMAT_INPUT_ALIASES[options.format]
-        || [options.editFormat || options.format];
-};
-
-/**
- * Date helper utilities.
+            <pre class="prettyprint source linenums"><code>/**
+ * Creates the runtime cell-state reading methods exposed by the AMB Grid
+ * controller.
  *
- * @namespace AMB.date
+ * @param {object} context - Required method dependencies.
+ * @param {object} context.table - Grid table instance.
+ * @returns {object} Cell-state reading methods for the flat controller API.
+ * @private
+ * @internal
  */
-export const date = {
+export const createCellStateMethods = ({ table }) => ({
     /**
-     * Create a shared date configuration for formatter, editor, validator, and parser.
+     * Returns the cell components currently marked as edited by the grid.
      *
-     * `format` is a shorthand for display and edit formats. The datepicker
-     * helps selection, but AMB Grid keeps manual input, validation, formatting,
-     * and payload normalization as separate steps.
+     * This native editing list is separate from AMB Grid row state, snapshots
+     * and save payload generation. The returned array and cell components
+     * retain their runtime identities and should be treated carefully.
      *
-     * @param {object} [options] - Date configuration options.
-     * @param {string} [options.format='dd/mm/yyyy'] - Shared display/edit format.
-     * @param {string} [options.displayFormat] - Formatter output format.
-     * @param {string} [options.editFormat] - Editor and validator input format.
-     * @param {string[]} [options.inputFormats] - Parser input formats.
-     * @param {string} [options.payloadFormat='yyyy-mm-dd'] - Payload date format.
-     * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode='manualWithPickerButton'] - Date editor mode.
-     * @param {string|Date} [options.minDate] - Earliest allowed date.
-     * @param {string|Date} [options.maxDate] - Latest allowed date.
-     * @param {boolean} [options.allowEmpty=true] - Whether empty values are accepted.
-     * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Invalid manual input behavior.
-     * @param {object} [options.messages] - Date validation messages by category.
-     * @returns {{format: string, displayFormat: string, editFormat: string, inputFormats: string[], payloadFormat: string, mode: string, formatter: string, editor: object, validator: object, parser: object, picker: object}}
+     * @returns {object[]} Cell components currently marked as edited.
      */
-    createConfig(options = {}) {
-        const format = options.format || 'dd/mm/yyyy';
-        const displayFormat = options.displayFormat || format;
-        const editFormat = options.editFormat || format;
-        const payloadFormat = options.payloadFormat || 'yyyy-mm-dd';
-        const mode = normalizeMode(options);
-        const allowEmpty = options.allowEmpty !== undefined ? options.allowEmpty : true;
-        const invalidBehavior = options.invalidBehavior || 'commitRaw';
-        const inputFormats = getInputFormats({
-            ...options,
-            format,
-            editFormat
-        });
+    getEditedCells() {
+        return table.getEditedCells();
+    },
 
-        return {
-            format,
-            displayFormat,
-            editFormat,
-            inputFormats,
-            payloadFormat,
-            mode,
-            formatter: displayFormat,
-            editor: {
-                format: editFormat,
-                allowEmpty,
-                invalidBehavior,
-                minDate: options.minDate,
-                maxDate: options.maxDate,
-                mode
-            },
-            validator: {
-                format: editFormat,
-                allowEmpty,
-                minDate: options.minDate,
-                maxDate: options.maxDate,
-                messages: options.messages
-            },
-            parser: {
-                inputFormats,
-                outputFormat: payloadFormat,
-                allowEmpty,
-                emptyAs: options.emptyAs
-            },
-            picker: {
-                mode,
-                format: editFormat,
-                minDate: options.minDate,
-                maxDate: options.maxDate
-            }
-        };
+    /**
+     * Returns the cell components currently marked as invalid by the grid's
+     * native validation state.
+     *
+     * This list is separate from AMB Grid validation errors and `_errors`
+     * metadata. The method reads the current native state without triggering a
+     * new validation pass.
+     *
+     * @returns {object[]} Cell components currently marked as invalid.
+     */
+    getInvalidCells() {
+        return table.getInvalidCells();
     }
-};
+});
 </code></pre>
         </article>
     </section>
