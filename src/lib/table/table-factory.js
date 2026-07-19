@@ -17,6 +17,7 @@ import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
 import { createExportMethods } from './controller/export-methods.js';
 import { createGroupingMethods } from './controller/grouping-methods.js';
+import { createLayoutMethods } from './controller/layout-methods.js';
 import { createLocalizationMethods } from './controller/localization-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
@@ -697,6 +698,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setLocale - Change the locale used by the grid.
  * @property {Function} getLocale - Return the current resolved grid locale.
  * @property {Function} getLang - Return the current runtime language definition.
+ * @property {Function} setHeight - Change the runtime grid height.
+ * @property {Function} setMinHeight - Change the runtime minimum grid height.
+ * @property {Function} setMaxHeight - Change the runtime maximum grid height.
  * @property {Function} redraw - Redraw the grid.
  * @property {Function} blockRedraw - Temporarily suspend automatic redraws.
  * @property {Function} restoreRedraw - Restore automatic redraws.
@@ -877,6 +881,7 @@ export function createTable(options = {}) {
     const dataMethods = createDataMethods({ table });
     const exportMethods = createExportMethods({ table });
     const groupingMethods = createGroupingMethods({ table });
+    const layoutMethods = createLayoutMethods({ table });
     const localizationMethods = createLocalizationMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
@@ -946,6 +951,7 @@ export function createTable(options = {}) {
         sortMethods,
         exportMethods,
         localizationMethods,
+        layoutMethods,
         redrawMethods
     );
 

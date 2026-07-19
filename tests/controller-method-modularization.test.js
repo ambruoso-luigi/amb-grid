@@ -232,6 +232,52 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted layout method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const layoutMethodsPath = resolve(controllerDir, 'layout-methods.js');
+        const layoutSource = readFileSync(layoutMethodsPath, 'utf8');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineLayoutDefinitions = [
+            /^\s*setHeight\(\.\.\.args\) \{/m,
+            /^\s*setMinHeight\(\.\.\.args\) \{/m,
+            /^\s*setMaxHeight\(\.\.\.args\) \{/m
+        ];
+
+        expect(source).toContain("import { createLayoutMethods } from './controller/layout-methods.js';");
+        expect(source).toContain('const layoutMethods = createLayoutMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('localizationMethods');
+        expect(composition[1]).toContain('layoutMethods');
+        expect(composition[1]).toContain('redrawMethods');
+        expect(source).not.toContain('...layoutMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlineLayoutDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('layout-methods.js');
+        expect(controllerModules).not.toContain('height-methods.js');
+        expect(controllerModules).not.toContain('min-height-methods.js');
+        expect(controllerModules).not.toContain('max-height-methods.js');
+        expect(controllerModules).not.toContain('table-sizing-methods.js');
+        expect(layoutSource).toMatch(/createLayoutMethods = \(\{ table \}\) => \(\{/);
+        expect(layoutSource).toMatch(/setHeight\(\.\.\.args\) \{\s*return table\.setHeight\(\.\.\.args\);/);
+        expect(layoutSource).toMatch(/setMinHeight\(\.\.\.args\) \{\s*return table\.setMinHeight\(\.\.\.args\);/);
+        expect(layoutSource).toMatch(/setMaxHeight\(\.\.\.args\) \{\s*return table\.setMaxHeight\(\.\.\.args\);/);
+        expect(layoutSource).not.toContain('style.height');
+        expect(layoutSource).not.toContain('style.minHeight');
+        expect(layoutSource).not.toContain('style.maxHeight');
+        expect(layoutSource).not.toContain('redraw(');
+        expect(layoutSource).not.toContain('ResizeObserver');
+        expect(layoutSource).not.toContain('window.addEventListener');
+        expect(layoutSource).not.toContain('CrudHelper');
+        expect(layoutSource).not.toMatch(/createLayoutMethods = \(\{[^}]*crud/);
+        expect(layoutSource).not.toMatch(/createLayoutMethods = \(\{[^}]*searchController/);
+    });
+
     test('does not keep inline selection method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineSelectionDefinitions = [
