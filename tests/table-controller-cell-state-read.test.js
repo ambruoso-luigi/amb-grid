@@ -239,7 +239,40 @@ const clearCrudSetupCalls = crud => {
     crud.destroy.mockClear();
 };
 
-describe('AMB table controller cell-state reading API', () => {
+const expectNoCellStateSideEffects = (table, crud) => {
+    expect(table.validate).not.toHaveBeenCalled();
+    expect(table.setFilter).not.toHaveBeenCalled();
+    expect(table.addFilter).not.toHaveBeenCalled();
+    expect(table.removeFilter).not.toHaveBeenCalled();
+    expect(table.clearFilter).not.toHaveBeenCalled();
+    expect(table.refreshFilter).not.toHaveBeenCalled();
+    expect(table.setSort).not.toHaveBeenCalled();
+    expect(table.clearSort).not.toHaveBeenCalled();
+    expect(table.setPage).not.toHaveBeenCalled();
+    expect(table.nextPage).not.toHaveBeenCalled();
+    expect(table.previousPage).not.toHaveBeenCalled();
+    expect(table.setPageSize).not.toHaveBeenCalled();
+    expect(table.setPageToRow).not.toHaveBeenCalled();
+    expect(table.selectRow).not.toHaveBeenCalled();
+    expect(table.deselectRow).not.toHaveBeenCalled();
+    expect(table.recalc).not.toHaveBeenCalled();
+    expect(table.redraw).not.toHaveBeenCalled();
+    expect(table.getData).not.toHaveBeenCalled();
+    expect(table.getRows).not.toHaveBeenCalled();
+    expect(table.getColumns).not.toHaveBeenCalled();
+    expect(crud.findRowByKey).not.toHaveBeenCalled();
+    expect(crud.getSavePayload).not.toHaveBeenCalled();
+    expect(crud.getStateReport).not.toHaveBeenCalled();
+    expect(crud.validateRow).not.toHaveBeenCalled();
+    expect(crud.validateAll).not.toHaveBeenCalled();
+    expect(crud.updateRowFields).not.toHaveBeenCalled();
+    expect(crud.addRow).not.toHaveBeenCalled();
+    expect(crud.deleteRow).not.toHaveBeenCalled();
+    expect(crud.rollbackRow).not.toHaveBeenCalled();
+    expect(crud.destroy).not.toHaveBeenCalled();
+};
+
+describe('AMB table controller native cell-state reading and clearing API', () => {
     test('exposes flat cell-state methods and preserves native cell component identities', () => {
         const harness = createDocumentHarness();
 
@@ -272,22 +305,26 @@ describe('AMB table controller cell-state reading API', () => {
             const invalidCell = { type: 'invalid-cell' };
             const editedCells = [editedCellA, editedCellB];
             const invalidCells = [invalidCell];
+            const cellsToClear = [editedCellA, editedCellB];
+            const clearEditedResult = { type: 'clear-edited-result' };
+            const clearValidationResult = { type: 'clear-validation-result' };
             const selectedRows = [{ id: 1 }];
             const filters = [{ field: 'department', type: '=', value: 'Sales' }];
             const sorters = [{ field: 'name', dir: 'asc' }];
             const rowData = table.options.data[0];
             const originalState = rowData._state;
             const originalErrors = rowData._errors;
+            const originalTempId = rowData._ambTempId;
 
             expect(controller.table).toBe(table);
+            expect(typeof controller.clearCellEdited).toBe('function');
+            expect(typeof controller.clearCellValidation).toBe('function');
             expect(typeof controller.getEditedCells).toBe('function');
             expect(typeof controller.getInvalidCells).toBe('function');
             expect(controller.cellState).toBeUndefined();
             expect(controller.cellStateMethods).toBeUndefined();
             expect(controller.cells).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
-            expect(controller.clearCellEdited).toBeUndefined();
-            expect(controller.clearCellValidation).toBeUndefined();
             expect(controller.validate).toBeUndefined();
 
             expect(controller.setSearchQuery('department')).toBe(true);
@@ -322,6 +359,7 @@ describe('AMB table controller cell-state reading API', () => {
             expect(table.getInvalidCells).toHaveBeenCalledWith();
             expect(rowData._state).toBe(originalState);
             expect(rowData._errors).toBe(originalErrors);
+            expect(rowData._ambTempId).toBe(originalTempId);
             expect(controller.getSearchState()).toEqual(searchState);
             expect(controller.getSelectedData()).toBe(selectedRows);
             expect(controller.getFilters()).toEqual(filters);
@@ -329,36 +367,79 @@ describe('AMB table controller cell-state reading API', () => {
             expect(controller.getPage()).toBe(1);
             expect(table.clearCellEdited).not.toHaveBeenCalled();
             expect(table.clearCellValidation).not.toHaveBeenCalled();
-            expect(table.validate).not.toHaveBeenCalled();
-            expect(table.setFilter).not.toHaveBeenCalled();
-            expect(table.addFilter).not.toHaveBeenCalled();
-            expect(table.removeFilter).not.toHaveBeenCalled();
-            expect(table.clearFilter).not.toHaveBeenCalled();
-            expect(table.refreshFilter).not.toHaveBeenCalled();
-            expect(table.setSort).not.toHaveBeenCalled();
-            expect(table.clearSort).not.toHaveBeenCalled();
-            expect(table.setPage).not.toHaveBeenCalled();
-            expect(table.nextPage).not.toHaveBeenCalled();
-            expect(table.previousPage).not.toHaveBeenCalled();
-            expect(table.setPageSize).not.toHaveBeenCalled();
-            expect(table.setPageToRow).not.toHaveBeenCalled();
-            expect(table.selectRow).not.toHaveBeenCalled();
-            expect(table.deselectRow).not.toHaveBeenCalled();
-            expect(table.recalc).not.toHaveBeenCalled();
-            expect(table.redraw).not.toHaveBeenCalled();
-            expect(table.getData).not.toHaveBeenCalled();
-            expect(table.getRows).not.toHaveBeenCalled();
-            expect(table.getColumns).not.toHaveBeenCalled();
-            expect(crud.findRowByKey).not.toHaveBeenCalled();
-            expect(crud.getSavePayload).not.toHaveBeenCalled();
-            expect(crud.getStateReport).not.toHaveBeenCalled();
-            expect(crud.validateRow).not.toHaveBeenCalled();
-            expect(crud.validateAll).not.toHaveBeenCalled();
-            expect(crud.updateRowFields).not.toHaveBeenCalled();
-            expect(crud.addRow).not.toHaveBeenCalled();
-            expect(crud.deleteRow).not.toHaveBeenCalled();
-            expect(crud.rollbackRow).not.toHaveBeenCalled();
-            expect(crud.destroy).not.toHaveBeenCalled();
+            expect(controller._floatingMessage).toBeDefined();
+            expect(controller._cellMessageBinder).toBeDefined();
+            expectNoCellStateSideEffects(table, crud);
+
+            table.getEditedCells.mockClear();
+            table.getInvalidCells.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            table.clearCellEdited
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(clearEditedResult);
+            expect(controller.clearCellEdited()).toBeUndefined();
+            expect(table.clearCellEdited).toHaveBeenCalledOnce();
+            expect(table.clearCellEdited).toHaveBeenCalledWith();
+            expect(table.getEditedCells).not.toHaveBeenCalled();
+            expect(table.getInvalidCells).not.toHaveBeenCalled();
+            expect(table.clearCellValidation).not.toHaveBeenCalled();
+            expectNoCellStateSideEffects(table, crud);
+
+            const returnedClearEdited = controller.clearCellEdited(cellsToClear);
+
+            expect(returnedClearEdited).toBe(clearEditedResult);
+            expect(table.clearCellEdited).toHaveBeenCalledTimes(2);
+            expect(table.clearCellEdited).toHaveBeenLastCalledWith(cellsToClear);
+            expect(table.clearCellEdited.mock.calls[1][0]).toBe(cellsToClear);
+            expect(table.clearCellEdited.mock.calls[1][0][0]).toBe(editedCellA);
+            expect(table.clearCellEdited.mock.calls[1][0][1]).toBe(editedCellB);
+            expect(table.getEditedCells).not.toHaveBeenCalled();
+            expect(table.getInvalidCells).not.toHaveBeenCalled();
+            expect(table.clearCellValidation).not.toHaveBeenCalled();
+            expect(rowData._state).toBe(originalState);
+            expect(rowData._errors).toBe(originalErrors);
+            expect(rowData._ambTempId).toBe(originalTempId);
+            expect(controller.getSearchState()).toEqual(searchState);
+            expect(controller.getSelectedData()).toBe(selectedRows);
+            expect(controller.getFilters()).toEqual(filters);
+            expect(controller.getSorters()).toBe(sorters);
+            expect(controller.getPage()).toBe(1);
+
+            table.clearCellEdited.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            table.clearCellValidation
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(clearValidationResult);
+            expect(controller.clearCellValidation()).toBeUndefined();
+            expect(table.clearCellValidation).toHaveBeenCalledOnce();
+            expect(table.clearCellValidation).toHaveBeenCalledWith();
+            expect(table.getEditedCells).not.toHaveBeenCalled();
+            expect(table.getInvalidCells).not.toHaveBeenCalled();
+            expect(table.clearCellEdited).not.toHaveBeenCalled();
+            expectNoCellStateSideEffects(table, crud);
+
+            const returnedClearValidation = controller.clearCellValidation(invalidCell);
+
+            expect(returnedClearValidation).toBe(clearValidationResult);
+            expect(table.clearCellValidation).toHaveBeenCalledTimes(2);
+            expect(table.clearCellValidation).toHaveBeenLastCalledWith(invalidCell);
+            expect(table.clearCellValidation.mock.calls[1][0]).toBe(invalidCell);
+            expect(table.getEditedCells).not.toHaveBeenCalled();
+            expect(table.getInvalidCells).not.toHaveBeenCalled();
+            expect(table.clearCellEdited).not.toHaveBeenCalled();
+            expect(rowData._state).toBe(originalState);
+            expect(rowData._errors).toBe(originalErrors);
+            expect(rowData._ambTempId).toBe(originalTempId);
+            expect(controller.getSearchState()).toEqual(searchState);
+            expect(controller.getSelectedData()).toBe(selectedRows);
+            expect(controller.getFilters()).toEqual(filters);
+            expect(controller.getSorters()).toBe(sorters);
+            expect(controller.getPage()).toBe(1);
+            expectNoCellStateSideEffects(table, crud);
         } finally {
             harness.restore();
         }

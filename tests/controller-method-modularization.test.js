@@ -71,9 +71,13 @@ describe('AMB table controller method modularization', () => {
         const cellStateMethodsPath = resolve(controllerDir, 'cell-state-methods.js');
         const cellStateSource = readFileSync(cellStateMethodsPath, 'utf8');
         const cellStateImplementationSource = cellStateSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const clearCellEditedImplementation = cellStateImplementationSource.match(/clearCellEdited\(\.\.\.args\) \{([\s\S]*?)\n    \},/);
+        const clearCellValidationImplementation = cellStateImplementationSource.match(/clearCellValidation\(\.\.\.args\) \{([\s\S]*?)\n    \},/);
         const controllerModules = readdirSync(controllerDir);
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
         const inlineCellStateDefinitions = [
+            /^\s*clearCellEdited\(\.\.\.args\) \{/m,
+            /^\s*clearCellValidation\(\.\.\.args\) \{/m,
             /^\s*getEditedCells\(\) \{/m,
             /^\s*getInvalidCells\(\) \{/m
         ];
@@ -96,15 +100,37 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('invalid-cell-methods.js');
         expect(controllerModules).not.toContain('editing-read-methods.js');
         expect(controllerModules).not.toContain('validation-read-methods.js');
+        expect(controllerModules).not.toContain('cell-edit-state-methods.js');
+        expect(controllerModules).not.toContain('cell-validation-methods.js');
+        expect(controllerModules).not.toContain('cell-state-clear-methods.js');
+        expect(controllerModules).not.toContain('validation-state-methods.js');
         expect(cellStateSource).toMatch(/createCellStateMethods = \(\{ table \}\) => \(\{/);
+        expect(cellStateSource).toMatch(/clearCellEdited\(\.\.\.args\) \{\s*return table\.clearCellEdited\(\.\.\.args\);/);
+        expect(cellStateSource).toMatch(/clearCellValidation\(\.\.\.args\) \{\s*return table\.clearCellValidation\(\.\.\.args\);/);
         expect(cellStateSource).toMatch(/getEditedCells\(\) \{\s*return table\.getEditedCells\(\);/);
         expect(cellStateSource).toMatch(/getInvalidCells\(\) \{\s*return table\.getInvalidCells\(\);/);
+        expect(clearCellEditedImplementation).not.toBeNull();
+        expect(clearCellValidationImplementation).not.toBeNull();
+        [
+            clearCellEditedImplementation[1],
+            clearCellValidationImplementation[1]
+        ].forEach(methodBody => {
+            expect(methodBody).not.toMatch(/(^|[^A-Za-z])getEditedCells\(/);
+            expect(methodBody).not.toMatch(/(^|[^A-Za-z])getInvalidCells\(/);
+            expect(methodBody).not.toMatch(/(^|[^A-Za-z])validate\(/);
+            expect(methodBody).not.toContain('._cell');
+            expect(methodBody).not.toContain('._getSelf');
+            expect(methodBody).not.toMatch(/(^|[^A-Za-z])for\s*\(/);
+            expect(methodBody).not.toMatch(/(^|[^A-Za-z])forEach\(/);
+            expect(methodBody).not.toContain('CrudHelper');
+            expect(methodBody).not.toContain('_state');
+            expect(methodBody).not.toContain('_errors');
+            expect(methodBody).not.toContain('_ambTempId');
+        });
         expect(cellStateImplementationSource).not.toContain('CrudHelper');
         expect(cellStateImplementationSource).not.toContain('_state');
         expect(cellStateImplementationSource).not.toContain('_errors');
         expect(cellStateImplementationSource).not.toContain('_ambTempId');
-        expect(cellStateImplementationSource).not.toContain('clearCellEdited');
-        expect(cellStateImplementationSource).not.toContain('clearCellValidation');
         expect(cellStateImplementationSource).not.toMatch(/(^|[^A-Za-z])validate\(/);
         expect(cellStateImplementationSource).not.toMatch(/(^|[^A-Za-z])getData\(/);
         expect(cellStateImplementationSource).not.toMatch(/(^|[^A-Za-z])getRows\(/);
@@ -579,6 +605,20 @@ describe('AMB table controller method modularization', () => {
         ];
 
         inlineDataDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+    });
+
+    test('does not keep inline cell-state method implementations in table-factory', () => {
+        const source = readTableFactorySource();
+        const inlineCellStateDefinitions = [
+            /^\s*clearCellEdited\(\.\.\.args\) \{/m,
+            /^\s*clearCellValidation\(\.\.\.args\) \{/m,
+            /^\s*getEditedCells\(\) \{/m,
+            /^\s*getInvalidCells\(\) \{/m
+        ];
+
+        inlineCellStateDefinitions.forEach(pattern => {
             expect(source).not.toMatch(pattern);
         });
     });

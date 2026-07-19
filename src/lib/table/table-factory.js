@@ -677,6 +677,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} searchData - Return row data matching a filter definition.
+ * @property {Function} clearCellEdited - Clear native edited markers from cells.
+ * @property {Function} clearCellValidation - Clear native validation markers from cells.
  * @property {Function} getEditedCells - Return cells marked as edited by the grid.
  * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
  * @property {Function} getRows - Return row components in the requested range.

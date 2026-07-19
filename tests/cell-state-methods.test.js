@@ -3,8 +3,6 @@ import { describe, expect, test, vi } from 'vitest';
 import { createCellStateMethods } from '../src/lib/table/controller/cell-state-methods.js';
 
 const forbiddenMethodNames = [
-    'clearCellEdited',
-    'clearCellValidation',
     'validate',
     'getData',
     'getRows',
@@ -52,10 +50,148 @@ describe('AMB table controller cell-state reading method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'clearCellEdited',
+            'clearCellValidation',
             'getEditedCells',
             'getInvalidCells'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('clearCellEdited delegates native edited marker cleanup without reading or mutating cells', () => {
+        const cellA = {
+            type: 'cell-a',
+            clearEdited: vi.fn(),
+            clearValidation: vi.fn(),
+            validate: vi.fn(),
+            getElement: vi.fn()
+        };
+        const cellB = {
+            type: 'cell-b',
+            clearEdited: vi.fn(),
+            clearValidation: vi.fn(),
+            validate: vi.fn(),
+            getElement: vi.fn()
+        };
+        const cells = [cellA, cellB];
+        const sentinelResult = { type: 'sentinel-result' };
+        const crud = createForbiddenMethods();
+        const table = {
+            ...createForbiddenMethods(),
+            clearCellEdited: vi.fn()
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(sentinelResult)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(null)
+                .mockReturnValueOnce('null-result'),
+            clearCellValidation: vi.fn(),
+            getEditedCells: vi.fn(),
+            getInvalidCells: vi.fn()
+        };
+        const methods = createCellStateMethods({ table });
+
+        expect(methods.clearCellEdited()).toBeUndefined();
+        expect(methods.clearCellEdited(cellA)).toBe(sentinelResult);
+        expect(methods.clearCellEdited(cells)).toBe(false);
+        expect(methods.clearCellEdited(undefined)).toBeNull();
+        expect(methods.clearCellEdited(null)).toBe('null-result');
+
+        expect(table.clearCellEdited).toHaveBeenCalledTimes(5);
+        expect(table.clearCellEdited.mock.calls[0]).toEqual([]);
+        expect(table.clearCellEdited.mock.calls[1][0]).toBe(cellA);
+        expect(table.clearCellEdited.mock.calls[2][0]).toBe(cells);
+        expect(table.clearCellEdited.mock.calls[2][0][0]).toBe(cellA);
+        expect(table.clearCellEdited.mock.calls[2][0][1]).toBe(cellB);
+        expect(table.clearCellEdited.mock.calls[3]).toEqual([undefined]);
+        expect(table.clearCellEdited.mock.calls[4]).toEqual([null]);
+        expect(table.getEditedCells).not.toHaveBeenCalled();
+        expect(table.getInvalidCells).not.toHaveBeenCalled();
+        expect(table.clearCellValidation).not.toHaveBeenCalled();
+
+        [
+            cellA,
+            cellB
+        ].forEach(cell => {
+            expect(cell.clearEdited).not.toHaveBeenCalled();
+            expect(cell.clearValidation).not.toHaveBeenCalled();
+            expect(cell.validate).not.toHaveBeenCalled();
+            expect(cell.getElement).not.toHaveBeenCalled();
+        });
+
+        expectForbiddenMethodsNotCalled(table);
+        expectForbiddenMethodsNotCalled(crud);
+    });
+
+    test('clearCellValidation delegates native validation marker cleanup without validating or changing AMB errors', () => {
+        const cellA = {
+            type: 'cell-a',
+            clearEdited: vi.fn(),
+            clearValidation: vi.fn(),
+            validate: vi.fn(),
+            getElement: vi.fn()
+        };
+        const cellB = {
+            type: 'cell-b',
+            clearEdited: vi.fn(),
+            clearValidation: vi.fn(),
+            validate: vi.fn(),
+            getElement: vi.fn()
+        };
+        const cells = [cellA, cellB];
+        const rowData = {
+            _errors: {
+                name: ['Required']
+            }
+        };
+        const sentinelResult = { type: 'validation-result' };
+        const crud = createForbiddenMethods();
+        const table = {
+            ...createForbiddenMethods(),
+            clearCellEdited: vi.fn(),
+            clearCellValidation: vi.fn()
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(sentinelResult)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(null)
+                .mockReturnValueOnce('null-result'),
+            getEditedCells: vi.fn(),
+            getInvalidCells: vi.fn()
+        };
+        const methods = createCellStateMethods({ table });
+
+        expect(methods.clearCellValidation()).toBeUndefined();
+        expect(methods.clearCellValidation(cellA)).toBe(sentinelResult);
+        expect(methods.clearCellValidation(cells)).toBe(false);
+        expect(methods.clearCellValidation(undefined)).toBeNull();
+        expect(methods.clearCellValidation(null)).toBe('null-result');
+
+        expect(table.clearCellValidation).toHaveBeenCalledTimes(5);
+        expect(table.clearCellValidation.mock.calls[0]).toEqual([]);
+        expect(table.clearCellValidation.mock.calls[1][0]).toBe(cellA);
+        expect(table.clearCellValidation.mock.calls[2][0]).toBe(cells);
+        expect(table.clearCellValidation.mock.calls[2][0][0]).toBe(cellA);
+        expect(table.clearCellValidation.mock.calls[2][0][1]).toBe(cellB);
+        expect(table.clearCellValidation.mock.calls[3]).toEqual([undefined]);
+        expect(table.clearCellValidation.mock.calls[4]).toEqual([null]);
+        expect(table.getEditedCells).not.toHaveBeenCalled();
+        expect(table.getInvalidCells).not.toHaveBeenCalled();
+        expect(table.clearCellEdited).not.toHaveBeenCalled();
+        expect(rowData._errors).toEqual({
+            name: ['Required']
+        });
+
+        [
+            cellA,
+            cellB
+        ].forEach(cell => {
+            expect(cell.clearEdited).not.toHaveBeenCalled();
+            expect(cell.clearValidation).not.toHaveBeenCalled();
+            expect(cell.validate).not.toHaveBeenCalled();
+            expect(cell.getElement).not.toHaveBeenCalled();
+        });
+
+        expectForbiddenMethodsNotCalled(table);
+        expectForbiddenMethodsNotCalled(crud);
     });
 
     test('returns edited cell components without cloning or reading cell data', () => {
@@ -75,6 +211,8 @@ describe('AMB table controller cell-state reading method group', () => {
         const emptyEditedCells = [];
         const table = {
             ...createForbiddenMethods(),
+            clearCellEdited: vi.fn(),
+            clearCellValidation: vi.fn(),
             getEditedCells: vi.fn()
                 .mockReturnValueOnce(editedCells)
                 .mockReturnValueOnce(emptyEditedCells),
@@ -99,6 +237,8 @@ describe('AMB table controller cell-state reading method group', () => {
         expect(methods.getEditedCells()).toBe(emptyEditedCells);
         expect(table.getEditedCells).toHaveBeenCalledTimes(2);
         expect(table.getInvalidCells).not.toHaveBeenCalled();
+        expect(table.clearCellEdited).not.toHaveBeenCalled();
+        expect(table.clearCellValidation).not.toHaveBeenCalled();
         expectForbiddenMethodsNotCalled(table);
     });
 
@@ -124,6 +264,8 @@ describe('AMB table controller cell-state reading method group', () => {
         };
         const table = {
             ...createForbiddenMethods(),
+            clearCellEdited: vi.fn(),
+            clearCellValidation: vi.fn(),
             getEditedCells: vi.fn(),
             getInvalidCells: vi.fn()
                 .mockReturnValueOnce(invalidCells)
@@ -148,6 +290,8 @@ describe('AMB table controller cell-state reading method group', () => {
         expect(methods.getInvalidCells()).toBe(emptyInvalidCells);
         expect(table.getInvalidCells).toHaveBeenCalledTimes(2);
         expect(table.getEditedCells).not.toHaveBeenCalled();
+        expect(table.clearCellEdited).not.toHaveBeenCalled();
+        expect(table.clearCellValidation).not.toHaveBeenCalled();
         expect(rowData._errors).toEqual({
             name: ['Required']
         });
