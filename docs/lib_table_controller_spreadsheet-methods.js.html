@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/data-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/spreadsheet-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/data-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/spreadsheet-methods.js</h1>
 
     
 
@@ -27,81 +27,73 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the data methods exposed by the AMB Grid controller.
+ * Creates the spreadsheet reading methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Data methods for the flat controller API.
+ * @returns {object} Spreadsheet reading methods for the flat controller API.
  * @private
  * @internal
  */
-export const createDataMethods = ({ table }) => ({
+export const createSpreadsheetMethods = ({ table }) => ({
     /**
-     * Returns the current AJAX data URL used by the grid.
+     * Returns the current spreadsheet sheet definitions.
      *
-     * The result is the URL configured through the runtime data-loading
-     * configuration or the latest URL supplied to a data-loading operation.
-     * Pagination, filter and sorter parameters generated for individual
-     * requests are not included.
+     * Definitions contain the runtime spreadsheet metadata and data exposed by
+     * the grid's Spreadsheet module. The returned structure retains its
+     * runtime identity and should be treated as read-only.
      *
-     * This is a read-only operation and does not load data or modify AMB Grid
-     * CRUD state.
+     * Spreadsheet data uses a matrix-oriented format and is separate from the
+     * standard AMB Grid object-row CRUD contract.
      *
-     * @returns {string} Current AJAX data URL, or an empty string when unset.
+     * @returns {object[]} Current spreadsheet sheet definitions.
      */
-    getAjaxUrl() {
-        return table.getAjaxUrl();
+    getSheetDefinitions() {
+        return table.getSheetDefinitions();
     },
 
     /**
-     * Returns the current grid data.
+     * Returns the current spreadsheet Sheet Components.
      *
-     * An optional row range can be provided to limit the returned rows. For
-     * example, the `"active"` range returns rows currently included after
-     * filters and search conditions have been applied.
+     * Sheet Components expose advanced runtime operations that can modify
+     * their sheets. The returned array and components retain their runtime
+     * identities and should be handled carefully.
      *
-     * This method returns runtime row data as-is. It does not create an AMB
-     * Grid save payload or remove technical fields. Returned row objects should
-     * be treated as read-only because direct changes may bypass CRUD tracking.
-     *
-     * @param {...any} args - Optional arguments used to select the requested rows.
-     * @returns {object[]} Current row data.
+     * @returns {object[]} Current Sheet Components.
      */
-    getData(...args) {
-        return table.getData(...args);
+    getSheets() {
+        return table.getSheets();
     },
 
     /**
-     * Returns the number of rows in the requested row range.
+     * Returns a spreadsheet Sheet Component.
      *
-     * An optional row range can be provided. For example, `"active"` returns
-     * the number of rows currently included after filters and search conditions
-     * have been applied.
+     * Omit the lookup to request the active sheet, or pass a supported sheet
+     * key or Sheet Component. The method returns false when no matching sheet
+     * is available according to the runtime Spreadsheet implementation.
      *
-     * This method reads the current grid state without modifying filters,
-     * search, pagination, selection, or AMB Grid CRUD state.
-     *
-     * @param {...any} args - Optional arguments used to select the row range.
-     * @returns {number} Number of rows in the requested range.
+     * @param {*} [sheetLookup] - Sheet key, Sheet Component or supported lookup.
+     * @returns {object|false} Matching Sheet Component, or false when unavailable.
      */
-    getDataCount(...args) {
-        return table.getDataCount(...args);
+    getSheet(...args) {
+        return table.getSheet(...args);
     },
 
     /**
-     * Returns row data matching a filter definition.
+     * Returns the matrix data for a spreadsheet sheet.
      *
-     * This is a one-off query and does not modify the current programmatic
-     * filters, header filters or AMB Grid global search state.
+     * Omit the lookup to read the active sheet, or pass a supported sheet
+     * lookup. Spreadsheet rows are represented as arrays rather than the object
+     * rows used by the standard AMB Grid CRUD workflow.
      *
-     * Returned objects are the current runtime row data and should be treated
-     * as read-only. Direct mutations may bypass AMB Grid CRUD tracking.
+     * Reading sheet data does not generate a CRUD payload or modify sheet
+     * state.
      *
-     * @param {...*} args - Filter definition arguments.
-     * @returns {object[]} Matching row data.
+     * @param {*} [sheetLookup] - Sheet key, Sheet Component or supported lookup.
+     * @returns {Array&lt;Array&lt;*>>|false} Sheet matrix data, or false when unavailable.
      */
-    searchData(...args) {
-        return table.searchData(...args);
+    getSheetData(...args) {
+        return table.getSheetData(...args);
     }
 });
 </code></pre>

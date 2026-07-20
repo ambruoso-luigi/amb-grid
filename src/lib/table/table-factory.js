@@ -27,6 +27,7 @@ import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
 import { createSelectionMethods } from './controller/selection-methods.js';
+import { createSpreadsheetMethods } from './controller/spreadsheet-methods.js';
 import { createRangeMethods } from './controller/range-methods.js';
 import { createFilterMethods } from './controller/filter-methods.js';
 import { createSearchMethods } from './controller/search-methods.js';
@@ -678,6 +679,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} searchData - Return row data matching a filter definition.
+ * @property {Function} getSheetDefinitions - Return the current spreadsheet sheet definitions.
+ * @property {Function} getSheets - Return the current spreadsheet Sheet Components.
+ * @property {Function} getSheet - Return one spreadsheet Sheet Component.
+ * @property {Function} getSheetData - Return matrix data for a spreadsheet sheet.
  * @property {Function} clearCellEdited - Clear native edited markers from cells.
  * @property {Function} clearCellValidation - Clear native validation markers from cells.
  * @property {Function} getEditedCells - Return cells marked as edited by the grid.
@@ -912,6 +917,7 @@ export function createTable(options = {}) {
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
     const navigationMethods = createNavigationMethods({ table });
+    const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
     const paginationMethods = createPaginationMethods({ table, crud });
@@ -971,6 +977,7 @@ export function createTable(options = {}) {
         cellStateMethods,
         columnMethods,
         dataMethods,
+        spreadsheetMethods,
         rowMethods,
         navigationMethods,
         groupingMethods,
