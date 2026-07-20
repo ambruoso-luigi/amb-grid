@@ -1,9 +1,9 @@
 /**
- * Creates the spreadsheet reading methods exposed by the AMB Grid controller.
+ * Creates the spreadsheet methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Spreadsheet reading methods for the flat controller API.
+ * @returns {object} Spreadsheet methods for the flat controller API.
  * @private
  * @internal
  */
@@ -66,5 +66,51 @@ export const createSpreadsheetMethods = ({ table }) => ({
      */
     getSheetData(...args) {
         return table.getSheetData(...args);
+    },
+
+    /**
+     * Replaces the current spreadsheet sheets.
+     *
+     * Definitions and matrix data are forwarded unchanged. The operation belongs
+     * to the Spreadsheet runtime and does not synchronize AMB Grid CRUD state.
+     *
+     * @param {object[]} sheets - Sheet definitions to load.
+     * @returns {object[]} Newly created Sheet Components.
+     */
+    setSheets(...args) {
+        return table.setSheets(...args);
+    },
+
+    /**
+     * Adds a spreadsheet sheet.
+     *
+     * @param {object} sheetDefinition - Definition of the sheet to add.
+     * @returns {object} Newly created Sheet Component.
+     */
+    addSheet(...args) {
+        return table.addSheet(...args);
+    },
+
+    /**
+     * Makes a spreadsheet sheet active.
+     *
+     * @param {*} [sheetLookup] - Sheet key, component or supported lookup.
+     * @returns {void|false} False when no matching sheet is available.
+     */
+    activeSheet(...args) {
+        return table.activeSheet(...args);
+    },
+
+    /**
+     * Removes a spreadsheet sheet.
+     *
+     * The runtime keeps at least one sheet available and manages any change to
+     * the active sheet.
+     *
+     * @param {*} [sheetLookup] - Sheet key, component or supported lookup.
+     * @returns {void}
+     */
+    removeSheet(...args) {
+        return table.removeSheet(...args);
     }
 });

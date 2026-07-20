@@ -208,7 +208,7 @@ describe('AMB table controller method modularization', () => {
         expect(getAjaxUrlImplementation[1]).not.toMatch(/(^|[^A-Za-z])getPage\(/);
     });
 
-    test('wires the extracted spreadsheet reading method group into the controller composition', () => {
+    test('wires the extracted spreadsheet method group into the controller composition', () => {
         const source = readTableFactorySource();
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
         const spreadsheetMethodsPath = resolve(controllerDir, 'spreadsheet-methods.js');
@@ -220,7 +220,11 @@ describe('AMB table controller method modularization', () => {
             /^\s*getSheetDefinitions\(\) \{/m,
             /^\s*getSheets\(\) \{/m,
             /^\s*getSheet\(\.\.\.args\) \{/m,
-            /^\s*getSheetData\(\.\.\.args\) \{/m
+            /^\s*getSheetData\(\.\.\.args\) \{/m,
+            /^\s*setSheets\(\.\.\.args\) \{/m,
+            /^\s*addSheet\(\.\.\.args\) \{/m,
+            /^\s*activeSheet\(\.\.\.args\) \{/m,
+            /^\s*removeSheet\(\.\.\.args\) \{/m
         ];
 
         expect(source).toContain("import { createSpreadsheetMethods } from './controller/spreadsheet-methods.js';");
@@ -244,21 +248,24 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('spreadsheet-read-methods.js');
         expect(controllerModules).not.toContain('sheet-data-methods.js');
         expect(controllerModules).not.toContain('sheet-component-methods.js');
+        expect(controllerModules).not.toContain('spreadsheet-write-methods.js');
+        expect(controllerModules).not.toContain('sheet-management-methods.js');
+        expect(controllerModules).not.toContain('sheet-structure-methods.js');
         expect(spreadsheetSource).toMatch(/createSpreadsheetMethods = \(\{ table \}\) => \(\{/);
         expect(spreadsheetSource).toMatch(/getSheetDefinitions\(\) \{\s*return table\.getSheetDefinitions\(\);/);
         expect(spreadsheetSource).toMatch(/getSheets\(\) \{\s*return table\.getSheets\(\);/);
         expect(spreadsheetSource).toMatch(/getSheet\(\.\.\.args\) \{\s*return table\.getSheet\(\.\.\.args\);/);
         expect(spreadsheetSource).toMatch(/getSheetData\(\.\.\.args\) \{\s*return table\.getSheetData\(\.\.\.args\);/);
+        expect(spreadsheetSource).toMatch(/setSheets\(\.\.\.args\) \{\s*return table\.setSheets\(\.\.\.args\);/);
+        expect(spreadsheetSource).toMatch(/addSheet\(\.\.\.args\) \{\s*return table\.addSheet\(\.\.\.args\);/);
+        expect(spreadsheetSource).toMatch(/activeSheet\(\.\.\.args\) \{\s*return table\.activeSheet\(\.\.\.args\);/);
+        expect(spreadsheetSource).toMatch(/removeSheet\(\.\.\.args\) \{\s*return table\.removeSheet\(\.\.\.args\);/);
         expect(spreadsheetImplementationSource).not.toContain('CrudHelper');
         expect(spreadsheetImplementationSource).not.toContain('table.modules');
         expect(spreadsheetImplementationSource).not.toContain('table.module(');
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])modExists\(/);
-        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])setSheets\(/);
-        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])addSheet\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])setSheetData\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])clearSheet\(/);
-        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])removeSheet\(/);
-        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])activeSheet\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])getData\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])getRows\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])getColumns\(/);
@@ -736,13 +743,17 @@ describe('AMB table controller method modularization', () => {
         });
     });
 
-    test('does not keep inline spreadsheet reading method implementations in table-factory', () => {
+    test('does not keep inline spreadsheet method implementations in table-factory', () => {
         const source = readTableFactorySource();
         const inlineSpreadsheetDefinitions = [
             /^\s*getSheetDefinitions\(\) \{/m,
             /^\s*getSheets\(\) \{/m,
             /^\s*getSheet\(\.\.\.args\) \{/m,
-            /^\s*getSheetData\(\.\.\.args\) \{/m
+            /^\s*getSheetData\(\.\.\.args\) \{/m,
+            /^\s*setSheets\(\.\.\.args\) \{/m,
+            /^\s*addSheet\(\.\.\.args\) \{/m,
+            /^\s*activeSheet\(\.\.\.args\) \{/m,
+            /^\s*removeSheet\(\.\.\.args\) \{/m
         ];
 
         inlineSpreadsheetDefinitions.forEach(pattern => {

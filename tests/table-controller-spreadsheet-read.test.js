@@ -299,8 +299,61 @@ const expectNoSpreadsheetReadSideEffects = (table, crud) => {
     expect(crud.destroy).not.toHaveBeenCalled();
 };
 
-describe('AMB table controller spreadsheet reading API', () => {
-    test('exposes flat spreadsheet reads and preserves runtime sheet results', () => {
+const expectNoSpreadsheetWriteSideEffects = (table, crud, activeName, count) => {
+    [
+        'getSheetDefinitions',
+        'getSheets',
+        'getSheet',
+        'getSheetData',
+        'setSheets',
+        'addSheet',
+        'removeSheet',
+        'activeSheet'
+    ].forEach(name => {
+        if (name === activeName) {
+            expect(table[name]).toHaveBeenCalledTimes(count);
+            return;
+        }
+
+        expect(table[name]).not.toHaveBeenCalled();
+    });
+    expect(table.setSheetData).not.toHaveBeenCalled();
+    expect(table.clearSheet).not.toHaveBeenCalled();
+    expect(table.getData).not.toHaveBeenCalled();
+    expect(table.getRows).not.toHaveBeenCalled();
+    expect(table.getColumns).not.toHaveBeenCalled();
+    expect(table.getFilters).not.toHaveBeenCalled();
+    expect(table.getSorters).not.toHaveBeenCalled();
+    expect(table.getSelectedData).not.toHaveBeenCalled();
+    expect(table.getSelectedRows).not.toHaveBeenCalled();
+    expect(table.setFilter).not.toHaveBeenCalled();
+    expect(table.clearFilter).not.toHaveBeenCalled();
+    expect(table.refreshFilter).not.toHaveBeenCalled();
+    expect(table.setSort).not.toHaveBeenCalled();
+    expect(table.clearSort).not.toHaveBeenCalled();
+    expect(table.setPage).not.toHaveBeenCalled();
+    expect(table.nextPage).not.toHaveBeenCalled();
+    expect(table.previousPage).not.toHaveBeenCalled();
+    expect(table.setPageSize).not.toHaveBeenCalled();
+    expect(table.setPageToRow).not.toHaveBeenCalled();
+    expect(table.selectRow).not.toHaveBeenCalled();
+    expect(table.deselectRow).not.toHaveBeenCalled();
+    expect(table.redraw).not.toHaveBeenCalled();
+    expect(table.recalc).not.toHaveBeenCalled();
+    expect(crud.findRowByKey).not.toHaveBeenCalled();
+    expect(crud.getSavePayload).not.toHaveBeenCalled();
+    expect(crud.getStateReport).not.toHaveBeenCalled();
+    expect(crud.validateRow).not.toHaveBeenCalled();
+    expect(crud.validateAll).not.toHaveBeenCalled();
+    expect(crud.updateRowFields).not.toHaveBeenCalled();
+    expect(crud.addRow).not.toHaveBeenCalled();
+    expect(crud.deleteRow).not.toHaveBeenCalled();
+    expect(crud.rollbackRow).not.toHaveBeenCalled();
+    expect(crud.destroy).not.toHaveBeenCalled();
+};
+
+describe('AMB table controller spreadsheet API', () => {
+    test('exposes flat spreadsheet methods and preserves runtime sheet results', () => {
         const harness = createDocumentHarness();
 
         try {
@@ -356,16 +409,16 @@ describe('AMB table controller spreadsheet reading API', () => {
             expect(typeof controller.getSheets).toBe('function');
             expect(typeof controller.getSheet).toBe('function');
             expect(typeof controller.getSheetData).toBe('function');
+            expect(typeof controller.setSheets).toBe('function');
+            expect(typeof controller.addSheet).toBe('function');
+            expect(typeof controller.activeSheet).toBe('function');
+            expect(typeof controller.removeSheet).toBe('function');
             expect(controller.spreadsheet).toBeUndefined();
             expect(controller.spreadsheetMethods).toBeUndefined();
             expect(controller.sheets).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
-            expect(controller.setSheets).toBeUndefined();
-            expect(controller.addSheet).toBeUndefined();
             expect(controller.setSheetData).toBeUndefined();
             expect(controller.clearSheet).toBeUndefined();
-            expect(controller.removeSheet).toBeUndefined();
-            expect(controller.activeSheet).toBeUndefined();
 
             expect(controller.setSearchQuery('Mario')).toBe(true);
             const searchState = controller.getSearchState();
@@ -451,6 +504,70 @@ describe('AMB table controller spreadsheet reading API', () => {
             expect(Array.isArray(activeData[0])).toBe(true);
             expect(Object.prototype.hasOwnProperty.call(activeData[0], 'name')).toBe(false);
             expectNoSpreadsheetReadSideEffects(table, crud);
+
+            table.getSheetData.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            const replacedSheet = { key: 'replaced-sheet' };
+            const replacedSheets = [replacedSheet];
+
+            table.setSheets.mockReturnValueOnce(replacedSheets);
+            expect(controller.setSheets(definitions)).toBe(replacedSheets);
+            expect(table.setSheets).toHaveBeenCalledOnce();
+            expect(table.setSheets.mock.calls[0][0]).toBe(definitions);
+            expect(definitions[0]).toBe(definition);
+            expect(definitions[0].data).toBe(sheetData);
+            expect(definitions[0].data[0]).toBe(firstRow);
+            expect(Array.isArray(definitions[0].data[0])).toBe(true);
+            expect(Object.prototype.hasOwnProperty.call(definitions[0].data[0], 'name')).toBe(false);
+            expectNoSpreadsheetWriteSideEffects(table, crud, 'setSheets', 1);
+
+            table.setSheets.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            const addedSheet = { key: 'added-sheet' };
+
+            table.addSheet.mockReturnValueOnce(addedSheet);
+            expect(controller.addSheet(definition)).toBe(addedSheet);
+            expect(table.addSheet).toHaveBeenCalledOnce();
+            expect(table.addSheet.mock.calls[0][0]).toBe(definition);
+            expect(definition.data).toBe(sheetData);
+            expectNoSpreadsheetWriteSideEffects(table, crud, 'addSheet', 1);
+
+            table.addSheet.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            table.activeSheet
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(false);
+
+            expect(controller.activeSheet('sales')).toBeUndefined();
+            expect(table.activeSheet.mock.calls[0]).toEqual(['sales']);
+            expect(controller.activeSheet(lookupSheet)).toBeUndefined();
+            expect(table.activeSheet.mock.calls[1][0]).toBe(lookupSheet);
+            expect(controller.activeSheet()).toBeUndefined();
+            expect(table.activeSheet.mock.calls[2]).toEqual([]);
+            expect(controller.activeSheet(null)).toBe(false);
+            expect(table.activeSheet.mock.calls[3]).toEqual([null]);
+            expect(controller.activeSheet('')).toBe(false);
+            expect(table.activeSheet.mock.calls[4]).toEqual(['']);
+            expectNoSpreadsheetWriteSideEffects(table, crud, 'activeSheet', 5);
+
+            table.activeSheet.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            table.removeSheet.mockReturnValueOnce(undefined);
+            expect(controller.removeSheet(lookupSheet)).toBeUndefined();
+            expect(table.removeSheet).toHaveBeenCalledOnce();
+            expect(table.removeSheet.mock.calls[0][0]).toBe(lookupSheet);
+            expectNoSpreadsheetWriteSideEffects(table, crud, 'removeSheet', 1);
 
             expect(controller.getSearchState()).toEqual(searchState);
             expect(controller.getFilters()).toEqual(filters);

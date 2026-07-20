@@ -3,19 +3,19 @@ import { describe, expect, test, vi } from 'vitest';
 import { createSpreadsheetMethods } from '../src/lib/table/controller/spreadsheet-methods.js';
 
 const spreadsheetMethodNames = [
+    'activeSheet',
+    'addSheet',
     'getSheetDefinitions',
     'getSheets',
     'getSheet',
-    'getSheetData'
+    'getSheetData',
+    'removeSheet',
+    'setSheets'
 ];
 
 const forbiddenTableMethodNames = [
-    'setSheets',
-    'addSheet',
     'setSheetData',
     'clearSheet',
-    'removeSheet',
-    'activeSheet',
     'getData',
     'getRows',
     'getColumns',
@@ -54,7 +54,11 @@ const createTable = () => ({
     getSheetDefinitions: vi.fn(),
     getSheets: vi.fn(),
     getSheet: vi.fn(),
-    getSheetData: vi.fn()
+    getSheetData: vi.fn(),
+    setSheets: vi.fn(),
+    addSheet: vi.fn(),
+    activeSheet: vi.fn(),
+    removeSheet: vi.fn()
 });
 
 const expectSpreadsheetCalls = (table, activeName, count) => {
@@ -74,17 +78,21 @@ const expectForbiddenMethodsNotCalled = (target, methodNames) => {
     });
 };
 
-describe('AMB table controller spreadsheet reading method group', () => {
-    test('exposes exactly the flat spreadsheet reading controller methods', () => {
+describe('AMB table controller spreadsheet method group', () => {
+    test('exposes exactly the flat spreadsheet controller methods', () => {
         const methods = createSpreadsheetMethods({
             table: createTable()
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'activeSheet',
+            'addSheet',
             'getSheet',
             'getSheetData',
             'getSheetDefinitions',
-            'getSheets'
+            'getSheets',
+            'removeSheet',
+            'setSheets'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -277,6 +285,149 @@ describe('AMB table controller spreadsheet reading method group', () => {
         expect(Object.prototype.hasOwnProperty.call(activeData[0], '_state')).toBe(false);
         expect(Object.prototype.hasOwnProperty.call(activeData[0], '_errors')).toBe(false);
         expect(Object.prototype.hasOwnProperty.call(activeData[0], '_ambTempId')).toBe(false);
+        expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
+    });
+
+    test('setSheets forwards definitions and matrix data unchanged', () => {
+        const firstRow = ['Mario', 42];
+        const secondRow = ['Anna', 35];
+        const sheetDefinition = {
+            key: 'sales',
+            title: 'Sales',
+            rows: 2,
+            columns: 2,
+            data: [firstRow, secondRow]
+        };
+        const definitions = [sheetDefinition];
+        const componentA = { type: 'sheet-a' };
+        const componentB = { type: 'sheet-b' };
+        const components = [componentA, componentB];
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = createTable();
+        const methods = createSpreadsheetMethods({ table });
+
+        table.setSheets.mockReturnValueOnce(components);
+
+        const returned = methods.setSheets(definitions);
+
+        expect(returned).toBe(components);
+        expect(returned[0]).toBe(componentA);
+        expect(returned[1]).toBe(componentB);
+        expect(table.setSheets).toHaveBeenCalledOnce();
+        expect(table.setSheets.mock.calls[0][0]).toBe(definitions);
+        expect(table.setSheets.mock.calls[0]).toEqual([definitions]);
+        expect(definitions[0]).toBe(sheetDefinition);
+        expect(definitions[0].data).toBe(sheetDefinition.data);
+        expect(definitions[0].data[0]).toBe(firstRow);
+        expect(definitions[0].data[1]).toBe(secondRow);
+        expect(Array.isArray(definitions[0].data[0])).toBe(true);
+        expect(Object.prototype.hasOwnProperty.call(definitions[0].data[0], 'name')).toBe(false);
+        expectSpreadsheetCalls(table, 'setSheets', 1);
+        expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
+    });
+
+    test('addSheet forwards one definition unchanged and returns the Sheet Component', () => {
+        const matrixRow = ['Mario', 42, false];
+        const sheetDefinition = {
+            key: 'new-sheet',
+            title: 'New Sheet',
+            data: [matrixRow]
+        };
+        const sheetComponent = {
+            key: 'new-sheet-component'
+        };
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = createTable();
+        const methods = createSpreadsheetMethods({ table });
+
+        table.addSheet.mockReturnValueOnce(sheetComponent);
+
+        const returned = methods.addSheet(sheetDefinition);
+
+        expect(returned).toBe(sheetComponent);
+        expect(table.addSheet).toHaveBeenCalledOnce();
+        expect(table.addSheet.mock.calls[0][0]).toBe(sheetDefinition);
+        expect(table.addSheet.mock.calls[0]).toEqual([sheetDefinition]);
+        expect(sheetDefinition.data[0]).toBe(matrixRow);
+        expect(Object.prototype.hasOwnProperty.call(sheetDefinition, 'rows')).toBe(false);
+        expect(Object.prototype.hasOwnProperty.call(sheetDefinition, 'columns')).toBe(false);
+        expectSpreadsheetCalls(table, 'addSheet', 1);
+        expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
+    });
+
+    test('activeSheet forwards lookups exactly and preserves undefined and false', () => {
+        const lookupComponent = {
+            key: 'component-lookup'
+        };
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = createTable();
+        const methods = createSpreadsheetMethods({ table });
+
+        table.activeSheet
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(false);
+
+        expect(methods.activeSheet()).toBeUndefined();
+        expect(table.activeSheet.mock.calls[0]).toEqual([]);
+
+        expect(methods.activeSheet('sales')).toBeUndefined();
+        expect(table.activeSheet.mock.calls[1]).toEqual(['sales']);
+
+        expect(methods.activeSheet(lookupComponent)).toBeUndefined();
+        expect(table.activeSheet.mock.calls[2][0]).toBe(lookupComponent);
+
+        expect(methods.activeSheet(undefined)).toBe(false);
+        expect(table.activeSheet.mock.calls[3]).toEqual([undefined]);
+
+        expect(methods.activeSheet(null)).toBe(false);
+        expect(table.activeSheet.mock.calls[4]).toEqual([null]);
+
+        expect(methods.activeSheet('')).toBe(false);
+        expect(table.activeSheet.mock.calls[5]).toEqual(['']);
+
+        expect(table.activeSheet).toHaveBeenCalledTimes(6);
+        expectSpreadsheetCalls(table, 'activeSheet', 6);
+        expect(table.getSheets).not.toHaveBeenCalled();
+        expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
+    });
+
+    test('removeSheet forwards the lookup unchanged and returns the runtime result', () => {
+        const lookupComponent = {
+            key: 'component-lookup'
+        };
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = createTable();
+        const methods = createSpreadsheetMethods({ table });
+
+        table.removeSheet
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(undefined);
+
+        expect(methods.removeSheet('sales')).toBeUndefined();
+        expect(table.removeSheet.mock.calls[0]).toEqual(['sales']);
+
+        expect(methods.removeSheet(lookupComponent)).toBeUndefined();
+        expect(table.removeSheet.mock.calls[1][0]).toBe(lookupComponent);
+
+        expect(methods.removeSheet(undefined)).toBeUndefined();
+        expect(table.removeSheet.mock.calls[2]).toEqual([undefined]);
+
+        expect(methods.removeSheet()).toBeUndefined();
+        expect(table.removeSheet.mock.calls[3]).toEqual([]);
+
+        expect(table.removeSheet).toHaveBeenCalledTimes(4);
+        expectSpreadsheetCalls(table, 'removeSheet', 4);
+        expect(table.getSheets).not.toHaveBeenCalled();
         expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
         expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
     });
