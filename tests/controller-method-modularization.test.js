@@ -225,6 +225,9 @@ describe('AMB table controller method modularization', () => {
 
         expect(source).toContain("import { createSpreadsheetMethods } from './controller/spreadsheet-methods.js';");
         expect(source).toContain('const spreadsheetMethods = createSpreadsheetMethods({ table });');
+        expect(source).not.toContain('createSpreadsheetMethods({ table, crud');
+        expect(source).not.toContain('createSpreadsheetMethods({ table, searchController');
+        expect(source).not.toContain('createSpreadsheetMethods({ table, controller');
         expect(composition).not.toBeNull();
         expect(composition[1]).toContain('dataMethods');
         expect(composition[1]).toContain('spreadsheetMethods');
