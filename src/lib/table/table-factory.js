@@ -21,6 +21,7 @@ import { createGroupingMethods } from './controller/grouping-methods.js';
 import { createHistoryMethods } from './controller/history-methods.js';
 import { createLayoutMethods } from './controller/layout-methods.js';
 import { createLocalizationMethods } from './controller/localization-methods.js';
+import { createNavigationMethods } from './controller/navigation-methods.js';
 import { createPersistenceMethods } from './controller/persistence-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
@@ -687,6 +688,12 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
  * @property {Function} scrollToRow - Scroll vertically to a grid row.
  * @property {Function} searchRows - Return row components matching a filter definition.
+ * @property {Function} navigatePrev - Move to the previous editable cell.
+ * @property {Function} navigateNext - Move to the next editable cell.
+ * @property {Function} navigateLeft - Move to the editable cell on the left.
+ * @property {Function} navigateRight - Move to the editable cell on the right.
+ * @property {Function} navigateUp - Move to the corresponding cell in the previous row.
+ * @property {Function} navigateDown - Move to the corresponding cell in the next row.
  * @property {Function} getGroups - Return the current top-level group components.
  * @property {Function} setGroupBy - Change the runtime row grouping definition.
  * @property {Function} setGroupValues - Change the allowed values for grouping levels.
@@ -904,6 +911,7 @@ export function createTable(options = {}) {
     const persistenceMethods = createPersistenceMethods({ table });
     const redrawMethods = createRedrawMethods({ table });
     const sortMethods = createSortMethods({ table });
+    const navigationMethods = createNavigationMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
     const paginationMethods = createPaginationMethods({ table, crud });
@@ -964,6 +972,7 @@ export function createTable(options = {}) {
         columnMethods,
         dataMethods,
         rowMethods,
+        navigationMethods,
         groupingMethods,
         historyMethods,
         persistenceMethods,

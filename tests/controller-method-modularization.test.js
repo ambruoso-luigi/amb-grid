@@ -291,6 +291,71 @@ describe('AMB table controller method modularization', () => {
         expect(rangeImplementationSource).not.toMatch(/createRangeMethods = \(\{[^}]*searchController/);
     });
 
+    test('wires the extracted editable-cell navigation method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const navigationMethodsPath = resolve(controllerDir, 'navigation-methods.js');
+        const navigationSource = readFileSync(navigationMethodsPath, 'utf8');
+        const navigationImplementationSource = navigationSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineNavigationDefinitions = [
+            /^\s*navigatePrev\(\) \{/m,
+            /^\s*navigateNext\(\) \{/m,
+            /^\s*navigateLeft\(\) \{/m,
+            /^\s*navigateRight\(\) \{/m,
+            /^\s*navigateUp\(\) \{/m,
+            /^\s*navigateDown\(\) \{/m
+        ];
+
+        expect(source).toContain("import { createNavigationMethods } from './controller/navigation-methods.js';");
+        expect(source).toContain('const navigationMethods = createNavigationMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('rowMethods');
+        expect(composition[1]).toContain('navigationMethods');
+        expect(composition[1]).toContain('groupingMethods');
+        expect(source).not.toContain('...navigationMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlineNavigationDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('navigation-methods.js');
+        expect(controllerModules).not.toContain('cell-navigation-methods.js');
+        expect(controllerModules).not.toContain('editor-navigation-methods.js');
+        expect(controllerModules).not.toContain('navigation-horizontal-methods.js');
+        expect(controllerModules).not.toContain('navigation-vertical-methods.js');
+        expect(navigationSource).toMatch(/createNavigationMethods = \(\{ table \}\) => \(\{/);
+        expect(navigationSource).toMatch(/navigatePrev\(\) \{\s*return table\.navigatePrev\(\);/);
+        expect(navigationSource).toMatch(/navigateNext\(\) \{\s*return table\.navigateNext\(\);/);
+        expect(navigationSource).toMatch(/navigateLeft\(\) \{\s*return table\.navigateLeft\(\);/);
+        expect(navigationSource).toMatch(/navigateRight\(\) \{\s*return table\.navigateRight\(\);/);
+        expect(navigationSource).toMatch(/navigateUp\(\) \{\s*return table\.navigateUp\(\);/);
+        expect(navigationSource).toMatch(/navigateDown\(\) \{\s*return table\.navigateDown\(\);/);
+        expect(navigationImplementationSource).not.toContain('CrudHelper');
+        expect(navigationImplementationSource).not.toContain('table.modules');
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])getRows\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])getColumns\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])getEditedCells\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])selectRow\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])deselectRow\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])scrollToRow\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])scrollToColumn\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])addRow\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])focus\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])blur\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])edit\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])querySelector\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])redraw\(/);
+        expect(navigationImplementationSource).not.toMatch(/(^|[^A-Za-z])validate\(/);
+        expect(navigationImplementationSource).not.toContain('_state');
+        expect(navigationImplementationSource).not.toContain('_errors');
+        expect(navigationImplementationSource).not.toContain('_ambTempId');
+        expect(navigationImplementationSource).not.toMatch(/createNavigationMethods = \(\{[^}]*crud/);
+        expect(navigationImplementationSource).not.toMatch(/createNavigationMethods = \(\{[^}]*searchController/);
+    });
+
     test('wires the extracted filter method group into the controller composition', () => {
         const source = readTableFactorySource();
 

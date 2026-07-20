@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/search-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/navigation-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/search-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/navigation-methods.js</h1>
 
     
 
@@ -27,104 +27,93 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the global-search methods exposed by the AMB Grid controller.
+ * Creates the editable-cell navigation methods exposed by the AMB Grid
+ * controller.
  *
  * @param {object} context - Required method dependencies.
- * @param {object|null} context.searchController - Optional global-search controller.
- * @returns {object} Search methods for the flat controller API.
+ * @param {object} context.table - Grid table instance.
+ * @returns {object} Cell-navigation methods for the flat controller API.
  * @private
  * @internal
  */
-export const createSearchMethods = ({ searchController }) => ({
+export const createNavigationMethods = ({ table }) => ({
     /**
-     * Sets the AMB Grid global search query.
+     * Moves the active editor to the previous editable cell.
      *
-     * The configured search fields and options are reused. Applying a query may
-     * change which rows are active or visible, but it does not directly modify
-     * row data or CRUD state.
+     * Navigation can wrap to the last editable cell of the previous displayed
+     * row. The operation succeeds only when the runtime grid has an active
+     * editing context and a valid editable destination.
      *
-     * @param {*} query - Search value.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
+     * Native editor, focus and scrolling behavior remain controlled by the
+     * grid.
+     *
+     * @returns {boolean} Whether navigation reached an editable cell.
      */
-    setSearchQuery(query) {
-        if (!searchController) return false;
-
-        searchController.setSearchQuery(query);
-        return true;
+    navigatePrev() {
+        return table.navigatePrev();
     },
 
     /**
-     * Clears the AMB Grid global search query.
+     * Moves the active editor to the next editable cell.
      *
-     * Header filters and developer-managed programmatic filters remain separate.
-     * Clearing search may change which rows are active or visible, but it does
-     * not directly modify row data or CRUD state.
+     * Navigation can wrap to the first editable cell of the next displayed
+     * row. Runtime options and keybindings control any special end-of-table
+     * behavior.
      *
-     * @returns {boolean} `true` when search is available, otherwise `false`.
+     * @returns {boolean} Whether navigation reached an editable cell.
      */
-    clearSearch() {
-        if (!searchController) return false;
-
-        searchController.clearSearch();
-        return true;
+    navigateNext() {
+        return table.navigateNext();
     },
 
     /**
-     * Returns the AMB Grid global search state.
+     * Moves the active editor to the previous editable cell in the current row.
      *
-     * The returned state contains the current `query`, `selectedFields`,
-     * `caseSensitive`, and `wholeWord` values. When global search is not
-     * configured, a new empty state object with a new `selectedFields` array is
-     * returned.
+     * The method does not wrap manually to another row and returns false when
+     * no editable cell is available to the left.
      *
-     * @returns {object} Current global search state.
+     * @returns {boolean} Whether navigation reached an editable cell.
      */
-    getSearchState() {
-        if (!searchController) {
-            return {
-                query: '',
-                selectedFields: [],
-                caseSensitive: false,
-                wholeWord: false
-            };
-        }
-
-        return searchController.getSearchState();
+    navigateLeft() {
+        return table.navigateLeft();
     },
 
     /**
-     * Sets the fields used by AMB Grid global search.
+     * Moves the active editor to the next editable cell in the current row.
      *
-     * Field validation and normalization are handled by the configured search
-     * system. Updating the fields may immediately change which rows are active
-     * or visible.
+     * The method does not wrap manually to another row and returns false when
+     * no editable cell is available to the right.
      *
-     * @param {string[]} fields - Field names to search.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
+     * @returns {boolean} Whether navigation reached an editable cell.
      */
-    setSearchFields(fields) {
-        if (!searchController) return false;
-
-        searchController.setSearchFields(fields);
-        return true;
+    navigateRight() {
+        return table.navigateRight();
     },
 
     /**
-     * Sets AMB Grid global search options.
+     * Moves the active editor to the corresponding cell in the previous
+     * displayed row.
      *
-     * Supported options include `caseSensitive` and `wholeWord`. Updating these
-     * options may immediately change which rows are active or visible.
+     * The grid determines whether the destination can be edited and manages
+     * any required focus and internal scrolling.
      *
-     * @param {object} options - Search options.
-     * @param {boolean} [options.caseSensitive] - Match letter case.
-     * @param {boolean} [options.wholeWord] - Match whole words.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
+     * @returns {boolean} Whether navigation reached an editable cell.
      */
-    setSearchOptions(options) {
-        if (!searchController) return false;
+    navigateUp() {
+        return table.navigateUp();
+    },
 
-        searchController.setSearchOptions(options);
-        return true;
+    /**
+     * Moves the active editor to the corresponding cell in the next displayed
+     * row.
+     *
+     * The grid determines whether the destination can be edited and manages
+     * any required focus and internal scrolling.
+     *
+     * @returns {boolean} Whether navigation reached an editable cell.
+     */
+    navigateDown() {
+        return table.navigateDown();
     }
 });
 </code></pre>
