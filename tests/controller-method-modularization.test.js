@@ -264,6 +264,7 @@ describe('AMB table controller method modularization', () => {
         expect(spreadsheetImplementationSource).not.toContain('_ambTempId');
         expect(spreadsheetImplementationSource).not.toMatch(/createSpreadsheetMethods = \(\{[^}]*crud/);
         expect(spreadsheetImplementationSource).not.toMatch(/createSpreadsheetMethods = \(\{[^}]*searchController/);
+        expect(spreadsheetImplementationSource).not.toMatch(/createSpreadsheetMethods = \(\{[^}]*controller/);
     });
 
     test('wires the extracted selection method group into the controller composition', () => {
