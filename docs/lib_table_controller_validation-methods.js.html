@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: ui/floating-message.js</title>
+    <title>JSDoc: Source: lib/table/controller/validation-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: ui/floating-message.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/validation-methods.js</h1>
 
     
 
@@ -26,146 +26,44 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const MESSAGE_TYPES = new Set(['error', 'warning', 'info', 'success']);
-
-/**
- * Floating message shown near a target element.
+            <pre class="prettyprint source linenums"><code>/**
+ * Creates the AMB-aware validation methods exposed by the public controller.
+ *
+ * Validation is performed by the AMB Grid CRUD layer because column rules,
+ * error tracking and validation reports belong to the AMB-managed workflow.
+ * The similarly named method of the underlying table engine is intentionally
+ * not used.
+ *
+ * @param {object} context - Required method dependencies.
+ * @param {CrudHelper} context.crud
+ *   AMB Grid CRUD and validation layer.
+ * @returns {object} Validation methods for the flat controller API.
+ * @private
+ * @internal
  */
-export class FloatingMessage {
+export const createValidationMethods = ({ crud }) => ({
     /**
-     * Create a floating message controller.
+     * Validates the AMB-managed rows.
      *
-     * @param {object} [options] - Message options.
-     * @param {number} [options.offset=8] - Vertical offset from the target element in pixels.
-     * @param {number} [options.hoverDelay=300] - Delay used by `scheduleShow`, in milliseconds.
-     * @param {boolean} [options.enabled=true] - When `false`, no floating message DOM or timers are created.
-     */
-    constructor(options = {}) {
-        this.options = {
-            offset: 8,
-            hoverDelay: 300,
-            enabled: true,
-            ...options
-        };
-        this.options.enabled = this.options.enabled !== false;
-        this.element = null;
-        this.titleElement = null;
-        this.bodyElement = null;
-        this.showTimer = null;
-    }
-
-    _ensureElement() {
-        if (this.element) return;
-
-        this.element = document.createElement('div');
-        this.element.className = 'teh-floating-message';
-        this.element.setAttribute('role', 'status');
-
-        this.titleElement = document.createElement('div');
-        this.titleElement.className = 'teh-floating-message__title';
-
-        this.bodyElement = document.createElement('div');
-        this.bodyElement.className = 'teh-floating-message__body';
-
-        this.element.append(this.titleElement, this.bodyElement);
-        document.body.appendChild(this.element);
-    }
-
-    _setType(type) {
-        const normalizedType = MESSAGE_TYPES.has(type) ? type : 'info';
-
-        MESSAGE_TYPES.forEach(messageType => {
-            this.element.classList.remove(`teh-floating-message--${messageType}`);
-        });
-
-        this.element.classList.add(`teh-floating-message--${normalizedType}`);
-    }
-
-    _positionNear(targetElement) {
-        const rect = targetElement.getBoundingClientRect();
-
-        this.element.style.top = `${window.scrollY + rect.top - this.options.offset}px`;
-        this.element.style.left = `${window.scrollX + rect.left + rect.width / 2}px`;
-    }
-
-    _clearShowTimer() {
-        if (!this.showTimer) return;
-
-        clearTimeout(this.showTimer);
-        this.showTimer = null;
-    }
-
-    /**
-     * Show a message near a target element.
+     * The supplied options are forwarded unchanged to the CRUD validation
+     * layer. Validation can update AMB Grid error tracking and visual error
+     * markers, but it does not change row lifecycle state, original snapshots
+     * or save-payload classification.
      *
-     * @param {HTMLElement} targetElement - Element used for positioning.
-     * @param {object} [messageOptions] - Message content.
-     * @param {'error'|'warning'|'info'|'success'} [messageOptions.type='info'] - Visual message type.
-     * @param {string} [messageOptions.title] - Message title.
-     * @param {string} [messageOptions.message] - Message body.
-     * @returns {void}
-     */
-    show(targetElement, messageOptions = {}) {
-        if (!this.options.enabled) return;
-        if (!targetElement) return;
-
-        this._ensureElement();
-        this._setType(messageOptions.type);
-
-        this.titleElement.textContent = messageOptions.title || '';
-        this.bodyElement.textContent = messageOptions.message || '';
-
-        this._positionNear(targetElement);
-        this.element.classList.add('teh-floating-message--visible');
-    }
-
-    /**
-     * Show a message after the configured hover delay.
+     * This public controller method intentionally overrides the similarly named
+     * engine operation so application code receives the AMB Grid validation
+     * report.
      *
-     * @param {HTMLElement} targetElement - Element used for positioning.
-     * @param {object} [messageOptions] - Same options accepted by `show`.
-     * @returns {void}
+     * @param {object} [options] - AMB Grid validation options.
+     * @param {boolean} [options.includeDeleted=false]
+     *   Include rows marked for deletion in the technical validation report.
+     * @returns {{isValid: boolean, rows: object[], errors: object[]}}
+     *   AMB Grid validation report.
      */
-    scheduleShow(targetElement, messageOptions = {}) {
-        this._clearShowTimer();
-
-        if (!this.options.enabled) return;
-
-        this.showTimer = window.setTimeout(() => {
-            this.showTimer = null;
-            this.show(targetElement, messageOptions);
-        }, this.options.hoverDelay);
+    validate(...args) {
+        return crud.validateAll(...args);
     }
-
-    /**
-     * Hide the message and cancel any scheduled display.
-     *
-     * @returns {void}
-     */
-    hide() {
-        this._clearShowTimer();
-
-        if (!this.element) return;
-
-        this.element.classList.remove('teh-floating-message--visible');
-    }
-
-    /**
-     * Remove the message element and cancel timers.
-     *
-     * @returns {void}
-     */
-    destroy() {
-        this._clearShowTimer();
-
-        if (!this.element) return;
-
-        this.element.remove();
-        this.element = null;
-        this.titleElement = null;
-        this.bodyElement = null;
-    }
-}
+});
 </code></pre>
         </article>
     </section>

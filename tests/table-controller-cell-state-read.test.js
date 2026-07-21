@@ -325,7 +325,7 @@ describe('AMB table controller native cell-state reading and clearing API', () =
             expect(controller.cellStateMethods).toBeUndefined();
             expect(controller.cells).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
-            expect(controller.validate).toBeUndefined();
+            expect(typeof controller.validate).toBe('function');
 
             expect(controller.setSearchQuery('department')).toBe(true);
             const searchState = controller.getSearchState();

@@ -33,6 +33,7 @@ import { createRangeMethods } from './controller/range-methods.js';
 import { createFilterMethods } from './controller/filter-methods.js';
 import { createSearchMethods } from './controller/search-methods.js';
 import { createSortMethods } from './controller/sort-methods.js';
+import { createValidationMethods } from './controller/validation-methods.js';
 import { escapeHtmlText } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
@@ -703,6 +704,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearCellValidation - Clear native validation markers from cells.
  * @property {Function} getEditedCells - Return cells marked as edited by the grid.
  * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
+ * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowPosition - Return the one-based position of a row.
@@ -953,6 +955,7 @@ export function createTable(options = {}) {
     const rowMethods = createRowMethods({ table, crud });
     const paginationMethods = createPaginationMethods({ table, crud });
     const selectionMethods = createSelectionMethods({ table, crud });
+    const validationMethods = createValidationMethods({ crud });
     const rangeMethods = createRangeMethods({ table });
     unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
@@ -1010,6 +1013,7 @@ export function createTable(options = {}) {
         dataMethods,
         spreadsheetMethods,
         rowMethods,
+        validationMethods,
         navigationMethods,
         groupingMethods,
         historyMethods,

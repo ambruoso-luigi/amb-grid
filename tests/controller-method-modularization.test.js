@@ -186,6 +186,57 @@ describe('AMB table controller method modularization', () => {
         expect(cellStateImplementationSource).not.toMatch(/createCellStateMethods = \(\{[^}]*searchController/);
     });
 
+    test('wires the AMB-aware validation method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const validationMethodsPath = resolve(controllerDir, 'validation-methods.js');
+        const validationSource = readFileSync(validationMethodsPath, 'utf8');
+        const validationImplementationSource = validationSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const controllerMethodsSpreads = source.match(/\.\.\.controllerMethods/g) || [];
+        const crudCreationIndex = source.indexOf('crud = new CrudHelper(table, { errorStyle });');
+        const validationCreationIndex = source.indexOf('const validationMethods = createValidationMethods({ crud });');
+
+        expect(source).toContain("import { createValidationMethods } from './controller/validation-methods.js';");
+        expect(crudCreationIndex).toBeGreaterThanOrEqual(0);
+        expect(validationCreationIndex).toBeGreaterThan(crudCreationIndex);
+        expect(source).toContain('const validationMethods = createValidationMethods({ crud });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('rowMethods');
+        expect(composition[1]).toContain('validationMethods');
+        expect(composition[1]).toContain('navigationMethods');
+        expect(source).not.toContain('...validationMethods');
+        expect(controllerMethodsSpreads).toHaveLength(1);
+        expect(source).toContain('...controllerMethods');
+        expect(source).not.toMatch(/^\s*validate\(\.\.\.args\) \{/m);
+
+        expect(controllerModules).toContain('validation-methods.js');
+        expect(controllerModules).not.toContain('validate-methods.js');
+        expect(controllerModules).not.toContain('crud-validation-methods.js');
+        expect(controllerModules).not.toContain('table-validation-methods.js');
+        expect(controllerModules).not.toContain('validation-controller.js');
+        expect(validationSource).toMatch(/createValidationMethods = \(\{ crud \}\) => \(\{/);
+        expect(validationSource).toMatch(/validate\(\.\.\.args\) \{\s*return crud\.validateAll\(\.\.\.args\);/);
+        expect(validationSource).not.toContain('table.validate');
+        expect(validationSource).not.toContain('table.getInvalidCells');
+        expect(validationSource).not.toContain('table.clearCellValidation');
+        expect(validationSource).not.toContain('validateChanges');
+        expect(validationSource).not.toContain('validateRow');
+        expect(validationSource).not.toContain('getSavePayload');
+        expect(validationSource).not.toContain('getStateReport');
+        expect(validationSource).not.toContain('_state');
+        expect(validationSource).not.toContain('_errors');
+        expect(validationSource).not.toContain('_ambTempId');
+        expect(validationImplementationSource).not.toMatch(/(^|[^A-Za-z])table\b/);
+        expect(validationImplementationSource).not.toContain('searchController');
+        expect(validationImplementationSource).not.toContain('toolbarController');
+        expect(validationImplementationSource).not.toContain('FloatingMessage');
+        expect(validationImplementationSource).not.toContain('FeedbackRegion');
+        expect(validationImplementationSource).not.toContain('validation:');
+        expect(validationImplementationSource).not.toContain('validationMethods:');
+    });
+
     test('wires the extracted column method group into the controller composition', () => {
         const source = readTableFactorySource();
 
