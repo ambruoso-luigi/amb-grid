@@ -610,6 +610,9 @@ describe('AMB table controller method modularization', () => {
         const getGroupedDataImplementation = groupingImplementationSource.match(/getGroupedData\(\) \{([\s\S]*?)\n    \},/);
 
         expect(getGroupedDataImplementation).not.toBeNull();
+        expect(getGroupedDataImplementation[1]).toContain('return table.getGroupedData();');
+        expect(getGroupedDataImplementation[1]).not.toContain('table.getGroups(');
+        expect(getGroupedDataImplementation[1]).not.toContain('table.getData(');
         expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])getGroups\(/);
         expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])getData\(/);
         expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])for\s*\(/);
