@@ -12,15 +12,21 @@ const forbiddenMethodNames = [
     'addRow',
     'deleteRow',
     'rollbackRow',
+    'getFilters',
     'setFilter',
     'addFilter',
     'removeFilter',
     'clearFilter',
     'refreshFilter',
+    'getSorters',
     'setSort',
     'clearSort',
+    'getPage',
+    'getPageMax',
     'setPage',
     'setPageSize',
+    'getSelectedData',
+    'getSelectedRows',
     'selectRow',
     'deselectRow',
     'recalc',
@@ -44,6 +50,7 @@ describe('AMB table controller grouping method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'getGroupedData',
             'getGroups',
             'setGroupBy',
             'setGroupHeader',
@@ -51,6 +58,82 @@ describe('AMB table controller grouping method group', () => {
             'setGroupValues'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('returns grouped data output without cloning, flattening or reading groups', () => {
+        const groupHeader = {
+            level: 0,
+            rowCount: 2,
+            headerContent: 'Sales (2)'
+        };
+        const firstRow = {
+            id: 1,
+            department: 'Sales'
+        };
+        const nestedHeader = {
+            level: 1,
+            rowCount: 1,
+            headerContent: 'Support (1)'
+        };
+        const secondRow = {
+            id: 2,
+            department: 'Sales',
+            team: 'Support'
+        };
+        const falsyRow = {
+            id: 0,
+            department: '',
+            active: false,
+            score: null
+        };
+        const groupedData = [
+            groupHeader,
+            firstRow,
+            nestedHeader,
+            secondRow,
+            falsyRow
+        ];
+        const emptyGroupedData = [];
+        const table = {
+            ...createForbiddenMethods(),
+            getGroupedData: vi.fn()
+                .mockReturnValueOnce(groupedData)
+                .mockReturnValueOnce(emptyGroupedData),
+            getGroups: vi.fn(),
+            getData: vi.fn(),
+            setGroupBy: vi.fn(),
+            setGroupValues: vi.fn(),
+            setGroupStartOpen: vi.fn(),
+            setGroupHeader: vi.fn()
+        };
+        const methods = createGroupingMethods({ table });
+
+        const returned = methods.getGroupedData();
+
+        expect(returned).toBe(groupedData);
+        expect(returned[0]).toBe(groupHeader);
+        expect(returned[1]).toBe(firstRow);
+        expect(returned[2]).toBe(nestedHeader);
+        expect(returned[3]).toBe(secondRow);
+        expect(returned[4]).toBe(falsyRow);
+        expect(returned[4].id).toBe(0);
+        expect(returned[4].department).toBe('');
+        expect(returned[4].active).toBe(false);
+        expect(returned[4].score).toBeNull();
+        expect(table.getGroupedData).toHaveBeenCalledOnce();
+        expect(table.getGroupedData).toHaveBeenCalledWith();
+
+        const returnedEmptyGroupedData = methods.getGroupedData();
+
+        expect(returnedEmptyGroupedData).toBe(emptyGroupedData);
+        expect(table.getGroupedData).toHaveBeenCalledTimes(2);
+        expect(table.getGroups).not.toHaveBeenCalled();
+        expect(table.getData).not.toHaveBeenCalled();
+        expect(table.setGroupBy).not.toHaveBeenCalled();
+        expect(table.setGroupValues).not.toHaveBeenCalled();
+        expect(table.setGroupStartOpen).not.toHaveBeenCalled();
+        expect(table.setGroupHeader).not.toHaveBeenCalled();
+        expectForbiddenMethodsNotCalled(table);
     });
 
     test('returns top-level group components without cloning or traversing groups', () => {

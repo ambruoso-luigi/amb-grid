@@ -706,6 +706,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} navigateRight - Move to the editable cell on the right.
  * @property {Function} navigateUp - Move to the corresponding cell in the previous row.
  * @property {Function} navigateDown - Move to the corresponding cell in the next row.
+ * @property {Function} getGroupedData - Return data in the current grouped output order.
  * @property {Function} getGroups - Return the current top-level group components.
  * @property {Function} setGroupBy - Change the runtime row grouping definition.
  * @property {Function} setGroupValues - Change the allowed values for grouping levels.

@@ -13,6 +13,7 @@ vi.mock('tabulator-tables', () => ({
         constructor(selector, options) {
             this.selector = selector;
             this.options = options;
+            this.getGroupedData = vi.fn(() => []);
             this.getGroups = vi.fn(() => []);
             this.setGroupBy = vi.fn();
             this.setGroupValues = vi.fn();
@@ -204,6 +205,7 @@ const clearTableSideEffects = table => {
     table.deselectRow.mockClear();
     table.recalc.mockClear();
     table.redraw.mockClear();
+    table.getGroupedData.mockClear();
     table.getData.mockClear();
     table.getRows.mockClear();
     table.getColumns.mockClear();
@@ -261,6 +263,7 @@ describe('AMB table controller grouping API', () => {
             const clearGroupByResult = { grouped: false };
 
             expect(controller.table).toBe(table);
+            expect(typeof controller.getGroupedData).toBe('function');
             expect(typeof controller.getGroups).toBe('function');
             expect(typeof controller.setGroupBy).toBe('function');
             expect(typeof controller.setGroupValues).toBe('function');
@@ -273,16 +276,84 @@ describe('AMB table controller grouping API', () => {
 
             expect(controller.setSearchQuery('department')).toBe(true);
             const searchState = controller.getSearchState();
-            const selectedRows = [{ id: 1 }];
             const filters = [{ field: 'department', type: '=', value: 'Sales' }];
+            const sorters = [{ field: 'team', dir: 'asc' }];
+            const currentPage = 3;
+            const selectedData = [
+                {
+                    id: 1,
+                    department: 'Sales',
+                    _state: 'updated',
+                    _errors: { department: ['required'] },
+                    _ambTempId: 'tmp-1'
+                }
+            ];
+            const selectedRowComponents = [{ id: 1 }];
+            const rowState = selectedData[0]._state;
+            const rowErrors = selectedData[0]._errors;
+            const rowTempId = selectedData[0]._ambTempId;
+            const groupHeaderDescriptor = {
+                level: 0,
+                rowCount: 2,
+                headerContent: 'Sales (2)'
+            };
+            const firstRow = {
+                id: 1,
+                department: 'Sales'
+            };
+            const nestedHeaderDescriptor = {
+                level: 1,
+                rowCount: 1,
+                headerContent: 'Support (1)'
+            };
+            const secondRow = {
+                id: 2,
+                department: 'Sales',
+                team: 'Support'
+            };
+            const groupedData = [
+                groupHeaderDescriptor,
+                firstRow,
+                nestedHeaderDescriptor,
+                secondRow
+            ];
+            const ungroupedRuntimeData = [];
 
-            table.getSelectedData.mockReturnValue(selectedRows);
+            table.getSelectedData.mockReturnValue(selectedData);
+            table.getSelectedRows.mockReturnValue(selectedRowComponents);
             table.getFilters.mockReturnValue(filters);
-            expect(controller.getSelectedData()).toBe(selectedRows);
+            table.getSorters.mockReturnValue(sorters);
+            table.getPage.mockReturnValue(currentPage);
+            expect(controller.getSelectedData()).toBe(selectedData);
+            expect(controller.getSelectedRows()).toBe(selectedData);
+            expect(controller.getSelectedRowComponents()).toBe(selectedRowComponents);
             expect(controller.getFilters()).toEqual(filters);
+            expect(controller.getSorters()).toBe(sorters);
+            expect(controller.getPage()).toBe(currentPage);
 
             clearTableSideEffects(table);
             clearCrudSetupCalls(crud);
+
+            table.getGroupedData.mockReturnValueOnce(groupedData);
+            expect(controller.getGroupedData()).toBe(groupedData);
+            expect(table.getGroupedData).toHaveBeenCalledOnce();
+            expect(table.getGroupedData).toHaveBeenCalledWith();
+            expect(groupedData[0]).toBe(groupHeaderDescriptor);
+            expect(groupedData[1]).toBe(firstRow);
+            expect(groupedData[2]).toBe(nestedHeaderDescriptor);
+            expect(groupedData[3]).toBe(secondRow);
+
+            table.getGroupedData.mockReturnValueOnce(ungroupedRuntimeData);
+            expect(controller.getGroupedData()).toBe(ungroupedRuntimeData);
+            expect(table.getGroupedData).toHaveBeenCalledTimes(2);
+            expect(table.getGroups).not.toHaveBeenCalled();
+            expect(table.getData).not.toHaveBeenCalled();
+            expect(table.setFilter).not.toHaveBeenCalled();
+            expect(table.setSort).not.toHaveBeenCalled();
+            expect(table.setPage).not.toHaveBeenCalled();
+            expect(table.selectRow).not.toHaveBeenCalled();
+            expect(crud.getSavePayload).not.toHaveBeenCalled();
+            expect(crud.getStateReport).not.toHaveBeenCalled();
 
             table.getGroups.mockReturnValueOnce(getGroupsResult);
             expect(controller.getGroups()).toBe(getGroupsResult);
@@ -324,8 +395,15 @@ describe('AMB table controller grouping API', () => {
             expect(table.setGroupBy).toHaveBeenLastCalledWith(false);
 
             expect(controller.getSearchState()).toEqual(searchState);
-            expect(controller.getSelectedData()).toBe(selectedRows);
+            expect(controller.getSelectedData()).toBe(selectedData);
+            expect(controller.getSelectedRows()).toBe(selectedData);
+            expect(controller.getSelectedRowComponents()).toBe(selectedRowComponents);
             expect(controller.getFilters()).toEqual(filters);
+            expect(controller.getSorters()).toBe(sorters);
+            expect(controller.getPage()).toBe(currentPage);
+            expect(selectedData[0]._state).toBe(rowState);
+            expect(selectedData[0]._errors).toBe(rowErrors);
+            expect(selectedData[0]._ambTempId).toBe(rowTempId);
             expect(table.setFilter).not.toHaveBeenCalled();
             expect(table.addFilter).not.toHaveBeenCalled();
             expect(table.removeFilter).not.toHaveBeenCalled();

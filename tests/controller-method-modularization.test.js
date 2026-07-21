@@ -567,6 +567,7 @@ describe('AMB table controller method modularization', () => {
         const controllerModules = readdirSync(controllerDir);
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
         const inlineGroupingDefinitions = [
+            /^\s*getGroupedData\(\) \{/m,
             /^\s*getGroups\(\) \{/m,
             /^\s*setGroupBy\(groupBy\) \{/m,
             /^\s*setGroupValues\(groupValues\) \{/m,
@@ -592,7 +593,11 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('group-config-methods.js');
         expect(controllerModules).not.toContain('group-header-methods.js');
         expect(controllerModules).not.toContain('group-values-methods.js');
+        expect(controllerModules).not.toContain('grouped-data-methods.js');
+        expect(controllerModules).not.toContain('group-data-methods.js');
+        expect(controllerModules).not.toContain('group-output-methods.js');
         expect(groupingSource).toMatch(/createGroupingMethods = \(\{ table \}\) => \(\{/);
+        expect(groupingSource).toMatch(/getGroupedData\(\) \{\s*return table\.getGroupedData\(\);/);
         expect(groupingSource).toMatch(/getGroups\(\) \{\s*return table\.getGroups\(\);/);
         expect(groupingSource).toMatch(/setGroupBy\(groupBy\) \{\s*return table\.setGroupBy\(groupBy\);/);
         expect(groupingSource).toMatch(/setGroupValues\(groupValues\) \{\s*return table\.setGroupValues\(groupValues\);/);
@@ -600,6 +605,18 @@ describe('AMB table controller method modularization', () => {
         expect(groupingSource).toMatch(/setGroupHeader\(groupHeader\) \{\s*return table\.setGroupHeader\(groupHeader\);/);
         expect(groupingSource).not.toMatch(/createGroupingMethods = \(\{[^}]*crud/);
         expect(groupingSource).not.toMatch(/createGroupingMethods = \(\{[^}]*searchController/);
+
+        const groupingImplementationSource = groupingSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const getGroupedDataImplementation = groupingImplementationSource.match(/getGroupedData\(\) \{([\s\S]*?)\n    \},/);
+
+        expect(getGroupedDataImplementation).not.toBeNull();
+        expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])getGroups\(/);
+        expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])getData\(/);
+        expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])for\s*\(/);
+        expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])forEach\(/);
+        expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])map\(/);
+        expect(getGroupedDataImplementation[1]).not.toMatch(/(^|[^A-Za-z])flatMap\(/);
+        expect(getGroupedDataImplementation[1]).not.toMatch(/\[\.\.\./);
     });
 
     test('wires the extracted history-reading method group into the controller composition', () => {

@@ -9,6 +9,23 @@
  */
 export const createGroupingMethods = ({ table }) => ({
     /**
+     * Returns the current data in the runtime grouped output order.
+     *
+     * When grouping is active, the result contains group-header descriptors and
+     * row data in grouped display order. When grouping is inactive, the runtime
+     * returns the normal table data representation.
+     *
+     * Group-header descriptors can contain properties such as `level`,
+     * `rowCount` and `headerContent`. This output is not an AMB Grid save payload
+     * and must not be used to infer CRUD state.
+     *
+     * @returns {Array} Current grouped data output.
+     */
+    getGroupedData() {
+        return table.getGroupedData();
+    },
+
+    /**
      * Returns the current top-level group components.
      *
      * Group components expose the current runtime group structure and advanced
