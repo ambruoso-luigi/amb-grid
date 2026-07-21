@@ -653,6 +653,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearSelection - Clear the complete row selection.
  * @property {Function} selectRow - Select one row by backend id or AMB temporary id.
  * @property {Function} deselectRow - Deselect one row by backend id or AMB temporary id.
+ * @property {Function} toggleSelectRow - Toggle one row using a backend or AMB temporary identifier.
  * @property {Function} addRange - Add a selected range between two cell components.
  * @property {Function} getRanges - Return the current selected cell-range components.
  * @property {Function} getRangesData - Return data grouped by selected cell range.

@@ -15,7 +15,8 @@ describe('AMB table controller selection method group', () => {
             'getSelectedData',
             'getSelectedRowComponents',
             'getSelectedRows',
-            'selectRow'
+            'selectRow',
+            'toggleSelectRow'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -25,15 +26,46 @@ describe('AMB table controller selection method group', () => {
         const selectedRows = [{ name: 'selected-row' }];
         const row = {
             select: vi.fn(),
+            deselect: vi.fn(),
+            toggleSelect: vi.fn()
+        };
+        const zeroRow = {
+            select: vi.fn(),
+            deselect: vi.fn(),
+            toggleSelect: vi.fn()
+        };
+        const emptyStringRow = {
+            select: vi.fn(),
+            deselect: vi.fn(),
+            toggleSelect: vi.fn()
+        };
+        const withoutToggleRow = {
+            select: vi.fn(),
             deselect: vi.fn()
         };
         const table = {
             getSelectedData: vi.fn(() => selectedData),
             getSelectedRows: vi.fn(() => selectedRows),
-            deselectRow: vi.fn()
+            deselectRow: vi.fn(),
+            toggleSelectRow: vi.fn(),
+            setData: vi.fn(),
+            updateData: vi.fn(),
+            replaceData: vi.fn()
         };
         const crud = {
-            findRowByKey: vi.fn(identifier => (identifier === 1 ? row : null))
+            findRowByKey: vi.fn(identifier => {
+                if (identifier === 1) return row;
+                if (identifier === 0) return zeroRow;
+                if (identifier === '') return emptyStringRow;
+                if (identifier === 'without-toggle') return withoutToggleRow;
+
+                return null;
+            }),
+            updateRowFields: vi.fn(),
+            validateRow: vi.fn(),
+            validateAll: vi.fn(),
+            getSavePayload: vi.fn(),
+            getStateReport: vi.fn()
         };
         const methods = createSelectionMethods({ table, crud });
 
@@ -53,5 +85,47 @@ describe('AMB table controller selection method group', () => {
         expect(methods.deselectRow(1)).toBe(true);
         expect(row.deselect).toHaveBeenCalledOnce();
         expect(methods.deselectRow('missing')).toBe(false);
+
+        crud.findRowByKey.mockClear();
+
+        expect(methods.toggleSelectRow(1)).toBe(true);
+        expect(crud.findRowByKey).toHaveBeenCalledOnce();
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith(1);
+        expect(row.toggleSelect).toHaveBeenCalledOnce();
+        expect(row.select).toHaveBeenCalledOnce();
+        expect(row.deselect).toHaveBeenCalledOnce();
+
+        expect(methods.toggleSelectRow(0)).toBe(true);
+        expect(crud.findRowByKey).toHaveBeenCalledTimes(2);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith(0);
+        expect(zeroRow.toggleSelect).toHaveBeenCalledOnce();
+        expect(zeroRow.select).not.toHaveBeenCalled();
+        expect(zeroRow.deselect).not.toHaveBeenCalled();
+
+        expect(methods.toggleSelectRow('')).toBe(true);
+        expect(crud.findRowByKey).toHaveBeenCalledTimes(3);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('');
+        expect(emptyStringRow.toggleSelect).toHaveBeenCalledOnce();
+        expect(emptyStringRow.select).not.toHaveBeenCalled();
+        expect(emptyStringRow.deselect).not.toHaveBeenCalled();
+
+        expect(methods.toggleSelectRow('missing')).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenCalledTimes(4);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('missing');
+
+        expect(methods.toggleSelectRow('without-toggle')).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenCalledTimes(5);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('without-toggle');
+        expect(withoutToggleRow.select).not.toHaveBeenCalled();
+        expect(withoutToggleRow.deselect).not.toHaveBeenCalled();
+        expect(table.toggleSelectRow).not.toHaveBeenCalled();
+        expect(table.setData).not.toHaveBeenCalled();
+        expect(table.updateData).not.toHaveBeenCalled();
+        expect(table.replaceData).not.toHaveBeenCalled();
+        expect(crud.updateRowFields).not.toHaveBeenCalled();
+        expect(crud.validateRow).not.toHaveBeenCalled();
+        expect(crud.validateAll).not.toHaveBeenCalled();
+        expect(crud.getSavePayload).not.toHaveBeenCalled();
+        expect(crud.getStateReport).not.toHaveBeenCalled();
     });
 });

@@ -108,5 +108,32 @@ export const createSelectionMethods = ({ table, crud }) => ({
 
         row.deselect();
         return true;
+    },
+
+    /**
+     * Toggles the selection state of one row using an AMB Grid identifier.
+     *
+     * Backend identifiers and AMB Grid temporary identifiers are resolved
+     * through the CRUD layer before the runtime Row Component is toggled.
+     *
+     * This operation changes only row selection and does not modify row data,
+     * snapshots or AMB Grid CRUD state.
+     *
+     * @param {*} identifier - Backend id or AMB temporary id.
+     * @returns {boolean} `true` when the row selection is toggled, otherwise `false`.
+     */
+    toggleSelectRow(identifier) {
+        const row = crud.findRowByKey(identifier);
+
+        if (
+            !row ||
+            typeof row.toggleSelect !== 'function'
+        ) {
+            return false;
+        }
+
+        row.toggleSelect();
+
+        return true;
     }
 });

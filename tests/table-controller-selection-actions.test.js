@@ -46,6 +46,17 @@ const selectionActionMock = vi.hoisted(() => {
             pageTo: vi.fn(),
             show: vi.fn(),
             edit: vi.fn()
+        },
+        noToggleRow: {
+            name: 'no-toggle-row',
+            select: vi.fn(),
+            deselect: vi.fn(),
+            update: vi.fn(),
+            delete: vi.fn(),
+            scrollTo: vi.fn(),
+            pageTo: vi.fn(),
+            show: vi.fn(),
+            edit: vi.fn()
         }
     };
 });
@@ -59,6 +70,9 @@ vi.mock('tabulator-tables', () => ({
             this.getSelectedRows = vi.fn(() => []);
             this.selectRow = vi.fn();
             this.deselectRow = vi.fn();
+            this.toggleSelectRow = vi.fn();
+            this.getFilters = vi.fn(() => []);
+            this.getSorters = vi.fn(() => []);
             this.getData = vi.fn(() => []);
             this.getDataCount = vi.fn(() => 0);
             this.getRows = vi.fn(() => []);
@@ -97,12 +111,14 @@ vi.mock('../src/lib/crud-helper.js', () => ({
                 if (identifier === 'amb-temp-1') return selectionActionMock.tempRow;
                 if (identifier === 'no-select') return selectionActionMock.noSelectRow;
                 if (identifier === 'no-deselect') return selectionActionMock.noDeselectRow;
+                if (identifier === 'no-toggle') return selectionActionMock.noToggleRow;
 
                 return null;
             });
             this.getSavePayload = vi.fn();
             this.getStateReport = vi.fn();
             this.validateRow = vi.fn();
+            this.validateAll = vi.fn();
             this.updateRowFields = vi.fn();
             this.deleteRow = vi.fn();
             this.rollbackRow = vi.fn();
@@ -161,7 +177,8 @@ const getRows = () => [
     selectionActionMock.savedRow,
     selectionActionMock.tempRow,
     selectionActionMock.noSelectRow,
-    selectionActionMock.noDeselectRow
+    selectionActionMock.noDeselectRow,
+    selectionActionMock.noToggleRow
 ];
 
 const createDocumentHarness = () => {
@@ -201,6 +218,7 @@ const clearCrudSetupCalls = crud => {
     crud.getSavePayload.mockClear();
     crud.getStateReport.mockClear();
     crud.validateRow.mockClear();
+    crud.validateAll.mockClear();
     crud.updateRowFields.mockClear();
     crud.deleteRow.mockClear();
     crud.rollbackRow.mockClear();
@@ -211,15 +229,19 @@ const expectNoCrudMutation = crud => {
     expect(crud.getSavePayload).not.toHaveBeenCalled();
     expect(crud.getStateReport).not.toHaveBeenCalled();
     expect(crud.validateRow).not.toHaveBeenCalled();
+    expect(crud.validateAll).not.toHaveBeenCalled();
     expect(crud.updateRowFields).not.toHaveBeenCalled();
     expect(crud.deleteRow).not.toHaveBeenCalled();
     expect(crud.rollbackRow).not.toHaveBeenCalled();
     expect(crud.destroy).not.toHaveBeenCalled();
 };
 
-const expectNoRowSideEffects = ({ allowSelect = [], allowDeselect = [] } = {}) => {
+const expectNoRowSideEffects = ({ allowSelect = [], allowDeselect = [], allowToggleSelect = [] } = {}) => {
     const allowedSelectRows = Array.isArray(allowSelect) ? allowSelect : [allowSelect];
     const allowedDeselectRows = Array.isArray(allowDeselect) ? allowDeselect : [allowDeselect];
+    const allowedToggleSelectRows = Array.isArray(allowToggleSelect)
+        ? allowToggleSelect
+        : [allowToggleSelect];
 
     getRows().forEach(row => {
         if (!allowedSelectRows.includes(row) && typeof row.select === 'function') {
@@ -228,7 +250,9 @@ const expectNoRowSideEffects = ({ allowSelect = [], allowDeselect = [] } = {}) =
         if (!allowedDeselectRows.includes(row) && typeof row.deselect === 'function') {
             expect(row.deselect).not.toHaveBeenCalled();
         }
-        expect(row.toggleSelect).not.toHaveBeenCalled();
+        if (!allowedToggleSelectRows.includes(row) && typeof row.toggleSelect === 'function') {
+            expect(row.toggleSelect).not.toHaveBeenCalled();
+        }
         expect(row.update).not.toHaveBeenCalled();
         expect(row.delete).not.toHaveBeenCalled();
         expect(row.scrollTo).not.toHaveBeenCalled();
@@ -256,6 +280,7 @@ describe('AMB table controller selection action API', () => {
             expect(typeof controller.clearSelection).toBe('function');
             expect(typeof controller.selectRow).toBe('function');
             expect(typeof controller.deselectRow).toBe('function');
+            expect(typeof controller.toggleSelectRow).toBe('function');
             expect(typeof controller.setPageToRow).toBe('function');
             expect(typeof controller.setPageSize).toBe('function');
             expect(typeof controller.setPage).toBe('function');
@@ -299,6 +324,7 @@ describe('AMB table controller selection action API', () => {
             expect(table.deselectRow).toHaveBeenCalledOnce();
             expect(table.deselectRow).toHaveBeenCalledWith();
             expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expect(crud.findRowByKey).not.toHaveBeenCalled();
             expectNoCrudMutation(crud);
             expectNoRowSideEffects();
@@ -325,6 +351,7 @@ describe('AMB table controller selection action API', () => {
             expect(() => controller.clearSelection()).not.toThrow();
             expect(controller.clearSelection()).toBeUndefined();
             expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expect(crud.findRowByKey).not.toHaveBeenCalled();
             expectNoCrudMutation(crud);
             expectNoRowSideEffects();
@@ -352,6 +379,7 @@ describe('AMB table controller selection action API', () => {
             expect(crud.findRowByKey).toHaveBeenLastCalledWith(15);
             expect(selectionActionMock.savedRow.select).toHaveBeenCalledOnce();
             expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expectNoRowSideEffects({ allowSelect: selectionActionMock.savedRow });
 
             expect(controller.selectRow('amb-temp-1')).toBe(true);
@@ -359,6 +387,7 @@ describe('AMB table controller selection action API', () => {
             expect(crud.findRowByKey).toHaveBeenLastCalledWith('amb-temp-1');
             expect(selectionActionMock.tempRow.select).toHaveBeenCalledOnce();
             expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expectNoCrudMutation(crud);
             expectNoRowSideEffects({
                 allowSelect: [
@@ -389,12 +418,14 @@ describe('AMB table controller selection action API', () => {
             expect(crud.findRowByKey).toHaveBeenCalledOnce();
             expect(crud.findRowByKey).toHaveBeenLastCalledWith('missing-row');
             expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expectNoRowSideEffects();
 
             expect(controller.selectRow('no-select')).toBe(false);
             expect(crud.findRowByKey).toHaveBeenCalledTimes(2);
             expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-select');
             expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expect(selectionActionMock.noSelectRow.deselect).not.toHaveBeenCalled();
             expectNoCrudMutation(crud);
             expectNoRowSideEffects();
@@ -422,6 +453,7 @@ describe('AMB table controller selection action API', () => {
             expect(crud.findRowByKey).toHaveBeenLastCalledWith(15);
             expect(selectionActionMock.savedRow.deselect).toHaveBeenCalledOnce();
             expect(table.deselectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expectNoRowSideEffects({ allowDeselect: selectionActionMock.savedRow });
 
             expect(controller.deselectRow('amb-temp-1')).toBe(true);
@@ -429,6 +461,7 @@ describe('AMB table controller selection action API', () => {
             expect(crud.findRowByKey).toHaveBeenLastCalledWith('amb-temp-1');
             expect(selectionActionMock.tempRow.deselect).toHaveBeenCalledOnce();
             expect(table.deselectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expectNoCrudMutation(crud);
             expectNoRowSideEffects({
                 allowDeselect: [
@@ -459,15 +492,164 @@ describe('AMB table controller selection action API', () => {
             expect(crud.findRowByKey).toHaveBeenCalledOnce();
             expect(crud.findRowByKey).toHaveBeenLastCalledWith('missing-row');
             expect(table.deselectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expectNoRowSideEffects();
 
             expect(controller.deselectRow('no-deselect')).toBe(false);
             expect(crud.findRowByKey).toHaveBeenCalledTimes(2);
             expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-deselect');
             expect(table.deselectRow).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
             expect(selectionActionMock.noDeselectRow.select).not.toHaveBeenCalled();
             expectNoCrudMutation(crud);
             expectNoRowSideEffects();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('toggleSelectRow toggles one row resolved by backend id or AMB temporary id', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const controller = createTable({
+                selector: harness.mount,
+                columns: [],
+                data: [
+                    {
+                        id: 15,
+                        name: 'Saved',
+                        _state: 'clean',
+                        _errors: {},
+                        _ambTempId: 'amb-saved'
+                    },
+                    {
+                        id: null,
+                        name: 'Temp',
+                        _state: 'created',
+                        _errors: { name: ['Required'] },
+                        _ambTempId: 'amb-temp-1'
+                    }
+                ],
+                toolbar: false
+            });
+            const table = tabulatorMock.instances[0];
+            const crud = crudMock.instances[0];
+            const rows = table.options.data;
+            const originalSavedState = rows[0]._state;
+            const originalSavedErrors = rows[0]._errors;
+            const originalSavedTempId = rows[0]._ambTempId;
+            const originalTempState = rows[1]._state;
+            const originalTempErrors = rows[1]._errors;
+            const originalTempId = rows[1]._ambTempId;
+            const filters = [{ field: 'name', type: 'like', value: 'a' }];
+            const sorters = [{ field: 'name', dir: 'asc' }];
+
+            clearCrudSetupCalls(crud);
+
+            table.getSelectedData.mockReturnValueOnce([{ id: 15 }]);
+            table.getSelectedRows.mockReturnValueOnce([selectionActionMock.savedRow]);
+            table.getFilters.mockReturnValue(filters);
+            table.getSorters.mockReturnValue(sorters);
+            const searchState = controller.getSearchState();
+
+            expect(controller.toggleSelectRow(15)).toBe(true);
+            expect(crud.findRowByKey).toHaveBeenCalledOnce();
+            expect(crud.findRowByKey).toHaveBeenLastCalledWith(15);
+            expect(selectionActionMock.savedRow.toggleSelect).toHaveBeenCalledOnce();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
+            expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.deselectRow).not.toHaveBeenCalled();
+            expectNoRowSideEffects({ allowToggleSelect: selectionActionMock.savedRow });
+
+            expect(controller.getSelectedData()).toEqual([{ id: 15 }]);
+            expect(controller.getSelectedRowComponents()).toEqual([selectionActionMock.savedRow]);
+            expect(controller.getSearchState()).toEqual(searchState);
+            expect(controller.getFilters()).toBe(filters);
+            expect(controller.getSorters()).toBe(sorters);
+            expect(controller.getPage()).toBe(1);
+            expect(controller.getPageMax()).toBe(5);
+            expect(controller.getPageSize()).toBe(25);
+
+            expect(controller.toggleSelectRow('amb-temp-1')).toBe(true);
+            expect(crud.findRowByKey).toHaveBeenCalledTimes(2);
+            expect(crud.findRowByKey).toHaveBeenLastCalledWith('amb-temp-1');
+            expect(selectionActionMock.tempRow.toggleSelect).toHaveBeenCalledOnce();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
+            expect(table.selectRow).not.toHaveBeenCalled();
+            expect(table.deselectRow).not.toHaveBeenCalled();
+            expectNoCrudMutation(crud);
+            expectNoRowSideEffects({
+                allowToggleSelect: [
+                    selectionActionMock.savedRow,
+                    selectionActionMock.tempRow
+                ]
+            });
+
+            expect(rows[0]._state).toBe(originalSavedState);
+            expect(rows[0]._errors).toBe(originalSavedErrors);
+            expect(rows[0]._ambTempId).toBe(originalSavedTempId);
+            expect(rows[1]._state).toBe(originalTempState);
+            expect(rows[1]._errors).toBe(originalTempErrors);
+            expect(rows[1]._ambTempId).toBe(originalTempId);
+            expect(table.getData).not.toHaveBeenCalled();
+            expect(table.setPage).not.toHaveBeenCalled();
+            expect(table.nextPage).not.toHaveBeenCalled();
+            expect(table.previousPage).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('toggleSelectRow returns false when the row is missing or cannot be toggled', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const controller = createTable({
+                selector: harness.mount,
+                columns: [],
+                data: [
+                    {
+                        id: 1,
+                        name: 'Stable',
+                        _state: 'modified',
+                        _errors: { name: ['Too short'] },
+                        _ambTempId: 'amb-stable'
+                    }
+                ],
+                toolbar: false
+            });
+            const table = tabulatorMock.instances[0];
+            const crud = crudMock.instances[0];
+            const rowData = table.options.data[0];
+            const originalState = rowData._state;
+            const originalErrors = rowData._errors;
+            const originalTempId = rowData._ambTempId;
+
+            clearCrudSetupCalls(crud);
+
+            expect(controller.toggleSelectRow('missing-row')).toBe(false);
+            expect(crud.findRowByKey).toHaveBeenCalledOnce();
+            expect(crud.findRowByKey).toHaveBeenLastCalledWith('missing-row');
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
+            expectNoRowSideEffects();
+
+            expect(controller.toggleSelectRow('no-toggle')).toBe(false);
+            expect(crud.findRowByKey).toHaveBeenCalledTimes(2);
+            expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-toggle');
+            expect(selectionActionMock.noToggleRow.select).not.toHaveBeenCalled();
+            expect(selectionActionMock.noToggleRow.deselect).not.toHaveBeenCalled();
+            expect(table.toggleSelectRow).not.toHaveBeenCalled();
+            expectNoCrudMutation(crud);
+            expectNoRowSideEffects();
+
+            expect(rowData._state).toBe(originalState);
+            expect(rowData._errors).toBe(originalErrors);
+            expect(rowData._ambTempId).toBe(originalTempId);
+            expect(table.getData).not.toHaveBeenCalled();
+            expect(table.setPage).not.toHaveBeenCalled();
+            expect(table.nextPage).not.toHaveBeenCalled();
+            expect(table.previousPage).not.toHaveBeenCalled();
         } finally {
             harness.restore();
         }

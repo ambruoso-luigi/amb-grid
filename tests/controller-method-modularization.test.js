@@ -288,6 +288,12 @@ describe('AMB table controller method modularization', () => {
 
     test('wires the extracted selection method group into the controller composition', () => {
         const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const selectionMethodsPath = resolve(controllerDir, 'selection-methods.js');
+        const selectionSource = readFileSync(selectionMethodsPath, 'utf8');
+        const selectionImplementationSource = selectionSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const toggleSelectRowImplementation = selectionImplementationSource.match(/toggleSelectRow\(identifier\) \{([\s\S]*?)\n    \}/);
+        const controllerModules = readdirSync(controllerDir);
 
         expect(source).toContain("import { createSelectionMethods } from './controller/selection-methods.js';");
         expect(source).toContain('const selectionMethods = createSelectionMethods({ table, crud });');
@@ -302,6 +308,23 @@ describe('AMB table controller method modularization', () => {
         expect(composition[1]).toContain('redrawMethods');
         expect(source).not.toContain('...selectionMethods');
         expect(source).toContain('...controllerMethods');
+        expect(controllerModules).toContain('selection-methods.js');
+        expect(controllerModules).not.toContain('selection-toggle-methods.js');
+        expect(controllerModules).not.toContain('toggle-selection-methods.js');
+        expect(controllerModules).not.toContain('row-toggle-methods.js');
+        expect(selectionSource).toMatch(/createSelectionMethods = \(\{ table, crud \}\) => \(\{/);
+        expect(selectionSource).toMatch(/toggleSelectRow\(identifier\) \{\s*const row = crud\.findRowByKey\(identifier\);[\s\S]*?row\.toggleSelect\(\);[\s\S]*?return true;/);
+        expect(toggleSelectRowImplementation).not.toBeNull();
+        expect(toggleSelectRowImplementation[1]).not.toContain('table.toggleSelectRow');
+        expect(toggleSelectRowImplementation[1]).not.toContain('table.selectRow');
+        expect(toggleSelectRowImplementation[1]).not.toContain('table.deselectRow');
+        expect(toggleSelectRowImplementation[1]).not.toContain('row.select(');
+        expect(toggleSelectRowImplementation[1]).not.toContain('row.deselect(');
+        expect(toggleSelectRowImplementation[1]).not.toContain('updateRowFields');
+        expect(toggleSelectRowImplementation[1]).not.toContain('validateRow');
+        expect(toggleSelectRowImplementation[1]).not.toContain('validateAll');
+        expect(toggleSelectRowImplementation[1]).not.toContain('getSavePayload');
+        expect(toggleSelectRowImplementation[1]).not.toContain('getStateReport');
     });
 
     test('wires the extracted range-reading method group into the controller composition', () => {
@@ -717,6 +740,7 @@ describe('AMB table controller method modularization', () => {
             /^\s*clearSelection\(\) \{/m,
             /^\s*selectRow\(identifier\) \{/m,
             /^\s*deselectRow\(identifier\) \{/m,
+            /^\s*toggleSelectRow\(identifier\) \{/m,
             /^\s*scrollToRow\(identifier,\s*\.\.\.args\) \{/m
         ];
 
