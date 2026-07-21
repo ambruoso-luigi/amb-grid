@@ -8,7 +8,7 @@ import { select } from './select-editor.js';
 import { text } from './text-editor.js';
 
 /**
- * Editor factories for Tabulator columns.
+ * Editor factories for AMB Grid columns, compatible with the internal table engine.
  *
  * @namespace editors
  */

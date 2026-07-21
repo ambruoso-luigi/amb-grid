@@ -32,7 +32,7 @@ export const escapeHtmlText = value => {
 };
 
 /**
- * Formatter factories for Tabulator columns.
+ * Formatter functions for AMB Grid columns, compatible with the internal table engine.
  *
  * @namespace formatters
  */
@@ -40,7 +40,7 @@ export const formatters = {
     /**
      * Plain text formatter.
      *
-     * @returns {Function} Tabulator formatter returning an empty string for nullish values.
+     * @returns {Function} Grid formatter returning an empty string for nullish values.
      */
     text() {
         return cell => {
@@ -51,7 +51,7 @@ export const formatters = {
     /**
      * Uppercase text formatter.
      *
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     uppercase() {
         return cell => {
@@ -62,7 +62,7 @@ export const formatters = {
     /**
      * Lowercase text formatter.
      *
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     lowercase() {
         return cell => {
@@ -75,7 +75,7 @@ export const formatters = {
      *
      * @param {number} [decimals=2] - Minimum and maximum fraction digits.
      * @param {object} [options] - Locale and Intl number format options.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     decimal(decimals = 2, options = {}) {
         const formatter = cell => {
@@ -107,7 +107,7 @@ export const formatters = {
      * Integer numeric formatter.
      *
      * @param {object} [options] - Locale and Intl number format options.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     integer(options = {}) {
         const formatter = formatters.decimal(0, options);
@@ -121,7 +121,7 @@ export const formatters = {
      * Currency formatter.
      *
      * @param {object} [options] - Locale, currency code, and Intl options.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     currency(options = {}) {
         const formatter = cell => {
@@ -160,7 +160,7 @@ export const formatters = {
      * @param {object} [options] - Parser format overrides.
      * @param {string|Date} [options.inputFormat] - Source date format.
      * @param {string} [options.outputFormat] - Display date format.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     date(format = 'dd/mm/yyyy', options = {}) {
         const formatter = cell => {
@@ -190,7 +190,7 @@ export const formatters = {
      *
      * @param {number} [decimals=2] - Minimum and maximum fraction digits.
      * @param {object} [options] - Locale and Intl options.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     percent(decimals = 2, options = {}) {
         const formatter = cell => {
@@ -228,7 +228,7 @@ export const formatters = {
      *
      * @param {number} [ratioDecimalDigits=2] - Maximum decimal digits stored in the ratio.
      * @param {object} [options] - Locale and Intl options.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      * @example
      * formatter: AMB.formatters.percentFromRatio(3)
      */
@@ -252,7 +252,7 @@ export const formatters = {
      * Placeholder formatter for empty values.
      *
      * @param {string} [placeholder='-'] - Text used for null, undefined, or empty string.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     emptyPlaceholder(placeholder = '-') {
         return cell => {
@@ -274,7 +274,7 @@ export const formatters = {
      * @param {string} [options.uncheckedLabel] - Optional label for unchecked values.
      * @param {string} [options.checkedSymbol='☑'] - Symbol for checked values.
      * @param {string} [options.uncheckedSymbol='☐'] - Symbol for unchecked values.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     checkbox(options = {}) {
         const hasCheckedLabel = Object.prototype.hasOwnProperty.call(options, 'checkedLabel');
@@ -312,7 +312,7 @@ export const formatters = {
      * @param {object} [options] - Preview options.
      * @param {number} [options.maxLength=40] - Maximum preview length before truncation.
      * @param {string} [options.ellipsis='...'] - Text appended after truncated previews.
-     * @returns {Function} Tabulator formatter.
+     * @returns {Function} Grid formatter function compatible with the internal table engine.
      */
     largeTextPreview(options = {}) {
         const normalizedOptions = {

@@ -87,7 +87,7 @@ export const parseDecimalValue = (value, decimalSeparator) => {
      * @param {number} [options.max] - Maximum accepted value.
      * @param {number} [options.maxLength] - Native input maximum length.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
-     * @returns {Function} Tabulator editor.
+     * @returns {Function} Grid editor function compatible with the internal table engine.
      */
 export function integer(options = {}) {
         const normalizedOptions = {
@@ -195,7 +195,7 @@ export function integer(options = {}) {
      * @param {number} [options.min] - Minimum accepted value.
      * @param {number} [options.max] - Maximum accepted value.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
-     * @returns {Function} Tabulator editor.
+     * @returns {Function} Grid editor function compatible with the internal table engine.
      */
 export function decimal(options = {}) {
         const normalizedOptions = {

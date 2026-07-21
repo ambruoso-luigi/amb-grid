@@ -28,7 +28,7 @@ const keyMatches = (event, keys) => keys.includes(event.key);
      * @param {string[]} [options.toggleKeys=[' ']] - Keys that toggle the current checkbox state.
      * @param {string[]} [options.checkedKeys=['1','y','Y','s','S']] - Keys that force checked state.
      * @param {string[]} [options.uncheckedKeys=['0','n','N']] - Keys that force unchecked state.
-     * @returns {Function} Tabulator editor.
+     * @returns {Function} Grid editor function compatible with the internal table engine.
      */
 export function checkbox(options = {}) {
         const hasCheckedLabel = Object.prototype.hasOwnProperty.call(options, 'checkedLabel');

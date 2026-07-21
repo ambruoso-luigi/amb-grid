@@ -9,7 +9,7 @@ import { focusInput, getInitialValue } from './shared.js';
      * @param {boolean} [options.lowercase=false] - Convert input to lowercase while editing.
      * @param {number} [options.maxLength] - Native input maximum length.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
-     * @returns {Function} Tabulator editor.
+     * @returns {Function} Grid editor function compatible with the internal table engine.
      */
 export function text(options = {}) {
         return (cell, onRendered, success, cancel) => {

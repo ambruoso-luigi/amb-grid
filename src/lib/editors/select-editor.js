@@ -9,7 +9,7 @@ import { createSelectOption, getInitialValue, normalizeSelectOption } from './sh
      * @param {string} [options.emptyLabel=''] - Label for the empty option.
      * @param {string} [options.valueField='value'] - Value field for object options.
      * @param {string} [options.labelField='label'] - Label field for object options.
-     * @returns {Function} Tabulator editor.
+     * @returns {Function} Grid editor function compatible with the internal table engine.
      */
 export function select(options = {}) {
         const normalizedOptions = {

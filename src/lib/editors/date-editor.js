@@ -95,7 +95,7 @@ const createPickerOptions = options => {
      * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode] - Editing mode. `manualWithPickerButton` opens from its side button; `pickerOnly` opens immediately on render.
      * @param {boolean} [options.picker=false] - Backward-compatible shortcut for `mode: 'manualWithPickerButton'`.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
-     * @returns {Function} Tabulator editor.
+     * @returns {Function} Grid editor function compatible with the internal table engine.
      */
 export function date(options = {}) {
         const normalizedOptions = normalizeDateEditorOptions(options);

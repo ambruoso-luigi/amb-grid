@@ -34,7 +34,7 @@ import { getInitialValue, getLookupOptionValue } from './shared.js';
      * @param {string} [options.valueField] - Stored value field override.
      * @param {string} [options.labelField] - Display label field override.
      * @param {object} [options.dialogOptions] - Options forwarded to `LookupDialog.open`. Editor-calculated title, columns, data, and search fields take precedence.
-     * @returns {Function} Tabulator editor.
+     * @returns {Function} Grid editor function compatible with the internal table engine.
      * @example
      * const products = AMB.lookup({
      *   valueField: 'sku',

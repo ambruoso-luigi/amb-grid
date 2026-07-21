@@ -187,8 +187,8 @@ const createFloatingAutocomplete = ({
  * lifecycle cleanup. Suggestions have no separate hidden associated data, and
  * this editor does not perform remote lookup or asynchronous validation.
  * The suggestion list is rendered as a floating overlay under `document.body`
- * and positioned from the active input, so it is not clipped by the Tabulator
- * scroll area and does not change grid layout.
+ * and positioned from the active input, so it is not clipped by the internal
+ * table engine scroll area and does not change grid layout.
  *
  * @param {Array<string>} values - Suggested text values.
  * @param {object} [options] - Autocomplete options.
@@ -201,7 +201,7 @@ const createFloatingAutocomplete = ({
  * @param {boolean} [options.caseSensitive=false] - Match suggestions with case sensitivity. The default ignores case.
  * @param {boolean} [options.commitMatchedValue=true] - Commit the canonical list value when typed text exactly or partially matches a suggestion.
  * @param {string} [options.placeholder] - Native input placeholder.
- * @returns {Function} Tabulator editor.
+ * @returns {Function} Grid editor function compatible with the internal table engine.
  */
 export function autocomplete(values, options = {}) {
     const normalizedOptions = normalizeAutocompleteOptions(options);
