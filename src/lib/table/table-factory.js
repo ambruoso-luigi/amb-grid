@@ -720,6 +720,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} nextPage - Show the next page.
  * @property {Function} previousPage - Show the previous page.
  * @property {Function} setPageSize - Change the number of rows displayed on each page.
+ * @property {Function} setMaxPage - Change the maximum page available to the grid.
  * @property {Function} setPageToRow - Show the local pagination page containing a row.
  * @property {Function} alert - Show a modal alert over the grid.
  * @property {Function} clearAlert - Clear the current modal grid alert.

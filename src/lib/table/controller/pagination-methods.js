@@ -101,6 +101,23 @@ export const createPaginationMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Changes the maximum page available to the grid.
+     *
+     * The value is forwarded unchanged to the runtime pagination engine. When the
+     * current page exceeds the new limit, the grid can move to the new final page
+     * and perform the corresponding local refresh or remote data request.
+     *
+     * This operation does not automatically save, validate or confirm pending AMB
+     * Grid changes.
+     *
+     * @param {*} max - Maximum page value accepted by the runtime engine.
+     * @returns {void}
+     */
+    setMaxPage(max) {
+        return table.setMaxPage(max);
+    },
+
+    /**
      * Shows the local pagination page containing the requested row.
      *
      * Backend identifiers and AMB Grid temporary identifiers are resolved

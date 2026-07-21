@@ -502,6 +502,49 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted pagination method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const paginationMethodsPath = resolve(controllerDir, 'pagination-methods.js');
+        const paginationSource = readFileSync(paginationMethodsPath, 'utf8');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlinePaginationDefinitions = [
+            /^\s*getPage\(\) \{/m,
+            /^\s*getPageMax\(\) \{/m,
+            /^\s*getPageSize\(\) \{/m,
+            /^\s*setPage\(page\) \{/m,
+            /^\s*nextPage\(\) \{/m,
+            /^\s*previousPage\(\) \{/m,
+            /^\s*setPageSize\(size\) \{/m,
+            /^\s*setMaxPage\(max\) \{/m,
+            /^\s*setPageToRow\(identifier\) \{/m
+        ];
+
+        expect(source).toContain("import { createPaginationMethods } from './controller/pagination-methods.js';");
+        expect(source).toContain('const paginationMethods = createPaginationMethods({ table, crud });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('rowMethods');
+        expect(composition[1]).toContain('paginationMethods');
+        expect(composition[1]).toContain('selectionMethods');
+        expect(source).not.toContain('...paginationMethods');
+        expect(source).toContain('...controllerMethods');
+
+        inlinePaginationDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('pagination-methods.js');
+        expect(controllerModules).not.toContain('pagination-limit-methods.js');
+        expect(controllerModules).not.toContain('page-limit-methods.js');
+        expect(controllerModules).not.toContain('max-page-methods.js');
+        expect(paginationSource).toMatch(/createPaginationMethods = \(\{ table, crud \}\) => \(\{/);
+        expect(paginationSource).toMatch(/setMaxPage\(max\) \{\s*return table\.setMaxPage\(max\);/);
+        expect(paginationSource).not.toContain('parseInt');
+        expect(paginationSource).not.toMatch(/Number\(max\)/);
+        expect(paginationSource).not.toContain('Math.max');
+    });
+
     test('wires the extracted sort method group into the controller composition', () => {
         const source = readTableFactorySource();
 

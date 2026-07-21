@@ -26,7 +26,10 @@ vi.mock('tabulator-tables', () => ({
             this.nextPage = vi.fn();
             this.previousPage = vi.fn();
             this.setPageSize = vi.fn();
+            this.setMaxPage = vi.fn();
             this.setPageToRow = vi.fn();
+            this.getFilters = vi.fn(() => []);
+            this.getSorters = vi.fn(() => []);
             this.setFilter = vi.fn();
             this.clearFilter = vi.fn();
             this.selectRow = vi.fn();
@@ -35,6 +38,7 @@ vi.mock('tabulator-tables', () => ({
             this.blockRedraw = vi.fn(() => 'block-result');
             this.restoreRedraw = vi.fn(() => 'restore-result');
             this.getSelectedData = vi.fn(() => []);
+            this.getSelectedRows = vi.fn(() => []);
             tabulatorMock.instances.push(this);
         }
     }
@@ -55,6 +59,7 @@ vi.mock('../src/lib/crud-helper.js', () => ({
             this.getSavePayload = vi.fn();
             this.getStateReport = vi.fn();
             this.validateRow = vi.fn();
+            this.validateAll = vi.fn();
             this.updateRowFields = vi.fn();
             this.deleteRow = vi.fn();
             this.rollbackRow = vi.fn();
@@ -138,6 +143,7 @@ const clearCrudSetupCalls = crud => {
     crud.getSavePayload.mockClear();
     crud.getStateReport.mockClear();
     crud.validateRow.mockClear();
+    crud.validateAll.mockClear();
     crud.updateRowFields.mockClear();
     crud.deleteRow.mockClear();
     crud.rollbackRow.mockClear();
@@ -149,6 +155,7 @@ const expectNoPageSizeSideEffects = (table, crud) => {
     expect(table.nextPage).not.toHaveBeenCalled();
     expect(table.previousPage).not.toHaveBeenCalled();
     expect(table.setPageToRow).not.toHaveBeenCalled();
+    expect(table.setMaxPage).not.toHaveBeenCalled();
     expect(table.getPage).not.toHaveBeenCalled();
     expect(table.getPageMax).not.toHaveBeenCalled();
     expect(table.getPageSize).not.toHaveBeenCalled();
@@ -159,6 +166,31 @@ const expectNoPageSizeSideEffects = (table, crud) => {
     expect(crud.getSavePayload).not.toHaveBeenCalled();
     expect(crud.getStateReport).not.toHaveBeenCalled();
     expect(crud.validateRow).not.toHaveBeenCalled();
+    expect(crud.validateAll).not.toHaveBeenCalled();
+    expect(crud.updateRowFields).not.toHaveBeenCalled();
+    expect(crud.deleteRow).not.toHaveBeenCalled();
+    expect(crud.rollbackRow).not.toHaveBeenCalled();
+    expect(crud.findRowByKey).not.toHaveBeenCalled();
+    expect(crud.destroy).not.toHaveBeenCalled();
+};
+
+const expectNoSetMaxPageSideEffects = (table, crud) => {
+    expect(table.setPage).not.toHaveBeenCalled();
+    expect(table.nextPage).not.toHaveBeenCalled();
+    expect(table.previousPage).not.toHaveBeenCalled();
+    expect(table.setPageSize).not.toHaveBeenCalled();
+    expect(table.setPageToRow).not.toHaveBeenCalled();
+    expect(table.getPage).not.toHaveBeenCalled();
+    expect(table.getPageMax).not.toHaveBeenCalled();
+    expect(table.redraw).not.toHaveBeenCalled();
+    expect(table.setFilter).not.toHaveBeenCalled();
+    expect(table.clearFilter).not.toHaveBeenCalled();
+    expect(table.selectRow).not.toHaveBeenCalled();
+    expect(table.deselectRow).not.toHaveBeenCalled();
+    expect(crud.getSavePayload).not.toHaveBeenCalled();
+    expect(crud.getStateReport).not.toHaveBeenCalled();
+    expect(crud.validateRow).not.toHaveBeenCalled();
+    expect(crud.validateAll).not.toHaveBeenCalled();
     expect(crud.updateRowFields).not.toHaveBeenCalled();
     expect(crud.deleteRow).not.toHaveBeenCalled();
     expect(crud.rollbackRow).not.toHaveBeenCalled();
@@ -181,6 +213,7 @@ describe('AMB table controller pagination page size API', () => {
 
             expect(controller.table).toBe(table);
             expect(typeof controller.setPageSize).toBe('function');
+            expect(typeof controller.setMaxPage).toBe('function');
             expect(typeof controller.setPageToRow).toBe('function');
             expect(typeof controller.setPage).toBe('function');
             expect(typeof controller.nextPage).toBe('function');
@@ -203,6 +236,83 @@ describe('AMB table controller pagination page size API', () => {
 
             clearCrudSetupCalls(crud);
             expectNoPageSizeSideEffects(table, crud);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('forwards maximum page values unchanged and preserves runtime results', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const controller = createTable({
+                selector: harness.mount,
+                columns: [],
+                data: [
+                    {
+                        id: 1,
+                        name: 'Mario',
+                        _state: 'modified',
+                        _errors: { name: ['Required'] },
+                        _ambTempId: 'amb-1'
+                    }
+                ],
+                toolbar: false
+            });
+            const table = tabulatorMock.instances[0];
+            const crud = crudMock.instances[0];
+            const rowData = table.options.data[0];
+            const originalState = rowData._state;
+            const originalErrors = rowData._errors;
+            const originalTempId = rowData._ambTempId;
+            const filters = [{ field: 'name', type: 'like', value: 'm' }];
+            const sorters = [{ field: 'name', dir: 'asc' }];
+            const selectedData = [{ id: 1, name: 'Mario' }];
+            const selectedRows = [{ type: 'selected-row' }];
+            const sentinel = { pageLimit: 'sentinel' };
+
+            clearCrudSetupCalls(crud);
+
+            table.getFilters.mockReturnValue(filters);
+            table.getSorters.mockReturnValue(sorters);
+            table.getSelectedData.mockReturnValue(selectedData);
+            table.getSelectedRows.mockReturnValue(selectedRows);
+            const searchState = controller.getSearchState();
+
+            table.setMaxPage
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(sentinel)
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce('empty-limit-result');
+
+            expect(controller.setMaxPage(12)).toBeUndefined();
+            expect(table.setMaxPage).toHaveBeenCalledOnce();
+            expect(table.setMaxPage).toHaveBeenLastCalledWith(12);
+            expectNoSetMaxPageSideEffects(table, crud);
+
+            expect(controller.setMaxPage('8')).toBe(sentinel);
+            expect(table.setMaxPage).toHaveBeenCalledTimes(2);
+            expect(table.setMaxPage).toHaveBeenLastCalledWith('8');
+            expectNoSetMaxPageSideEffects(table, crud);
+
+            expect(controller.setMaxPage(0)).toBeUndefined();
+            expect(table.setMaxPage).toHaveBeenCalledTimes(3);
+            expect(table.setMaxPage).toHaveBeenLastCalledWith(0);
+            expectNoSetMaxPageSideEffects(table, crud);
+
+            expect(controller.setMaxPage('')).toBe('empty-limit-result');
+            expect(table.setMaxPage).toHaveBeenCalledTimes(4);
+            expect(table.setMaxPage).toHaveBeenLastCalledWith('');
+            expectNoSetMaxPageSideEffects(table, crud);
+
+            expect(controller.getSearchState()).toEqual(searchState);
+            expect(controller.getFilters()).toBe(filters);
+            expect(controller.getSorters()).toBe(sorters);
+            expect(controller.getSelectedData()).toBe(selectedData);
+            expect(controller.getSelectedRowComponents()).toBe(selectedRows);
+            expect(rowData._state).toBe(originalState);
+            expect(rowData._errors).toBe(originalErrors);
+            expect(rowData._ambTempId).toBe(originalTempId);
         } finally {
             harness.restore();
         }
