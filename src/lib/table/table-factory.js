@@ -723,6 +723,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} setGroupHeader - Change the group-header formatter definition.
  * @property {Function} getHistoryUndoSize - Return the number of actions available for undo.
  * @property {Function} getHistoryRedoSize - Return the number of actions available for redo.
+ * @property {Function} clearHistory - Clear the native interaction history without changing AMB Grid CRUD state.
  * @property {Function} getPage - Return the current page number.
  * @property {Function} getPageMax - Return the maximum available page number.
  * @property {Function} getPageSize - Return the number of rows allowed per page.

@@ -1,14 +1,27 @@
 /**
- * Creates the interaction-history reading methods exposed by the AMB Grid
- * controller.
+ * Creates the interaction-history methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} History-reading methods for the flat controller API.
+ * @returns {object} Interaction-history methods for the flat controller API.
  * @private
  * @internal
  */
 export const createHistoryMethods = ({ table }) => ({
+    /**
+     * Clears the interaction history maintained by the internal table engine.
+     *
+     * This removes the actions available through the native undo and redo
+     * history, but does not revert row data, clear validation errors or reset
+     * AMB Grid CRUD state. Use `rollbackRow()` when an AMB-managed row must be
+     * restored through the CRUD workflow.
+     *
+     * @returns {void}
+     */
+    clearHistory() {
+        return table.clearHistory();
+    },
+
     /**
      * Returns the number of interaction-history actions currently available
      * for undo.

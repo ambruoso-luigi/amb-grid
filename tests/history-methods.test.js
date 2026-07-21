@@ -5,7 +5,6 @@ import { createHistoryMethods } from '../src/lib/table/controller/history-method
 const forbiddenMethodNames = [
     'undo',
     'redo',
-    'clearHistory',
     'getData',
     'getRows',
     'getColumns',
@@ -44,17 +43,57 @@ const expectForbiddenMethodsNotCalled = target => {
     });
 };
 
-describe('AMB table controller history-reading method group', () => {
-    test('exposes exactly the flat history-reading controller methods', () => {
+describe('AMB table controller interaction-history method group', () => {
+    test('exposes exactly the flat interaction-history controller methods', () => {
         const methods = createHistoryMethods({
             table: {}
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'clearHistory',
             'getHistoryRedoSize',
             'getHistoryUndoSize'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('clears native interaction history without changing AMB Grid state', () => {
+        const table = {
+            ...createForbiddenMethods(),
+            clearHistory: vi.fn(),
+            getHistoryUndoSize: vi.fn(),
+            getHistoryRedoSize: vi.fn()
+        };
+        const methods = createHistoryMethods({ table });
+
+        expect(methods.clearHistory()).toBeUndefined();
+        expect(table.clearHistory).toHaveBeenCalledOnce();
+        expect(table.clearHistory).toHaveBeenCalledWith();
+        expect(table.getHistoryUndoSize).not.toHaveBeenCalled();
+        expect(table.getHistoryRedoSize).not.toHaveBeenCalled();
+        expect(table).not.toHaveProperty('history');
+        expect(table).not.toHaveProperty('modules');
+        expectForbiddenMethodsNotCalled(table);
+    });
+
+    test('preserves the native clear-history result unchanged', () => {
+        const sentinel = { cleared: true };
+        const table = {
+            ...createForbiddenMethods(),
+            clearHistory: vi.fn().mockReturnValue(sentinel),
+            getHistoryUndoSize: vi.fn(),
+            getHistoryRedoSize: vi.fn()
+        };
+        const methods = createHistoryMethods({ table });
+
+        expect(methods.clearHistory()).toBe(sentinel);
+        expect(table.clearHistory).toHaveBeenCalledOnce();
+        expect(table.clearHistory).toHaveBeenCalledWith();
+        expect(table.getHistoryUndoSize).not.toHaveBeenCalled();
+        expect(table.getHistoryRedoSize).not.toHaveBeenCalled();
+        expect(table).not.toHaveProperty('history');
+        expect(table).not.toHaveProperty('modules');
+        expectForbiddenMethodsNotCalled(table);
     });
 
     test('returns undo history counts without calculating or mutating history', () => {

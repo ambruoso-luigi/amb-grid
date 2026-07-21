@@ -670,14 +670,16 @@ describe('AMB table controller method modularization', () => {
         expect(getGroupedDataImplementation[1]).not.toMatch(/\[\.\.\./);
     });
 
-    test('wires the extracted history-reading method group into the controller composition', () => {
+    test('wires the extracted interaction-history method group into the controller composition', () => {
         const source = readTableFactorySource();
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
         const historyMethodsPath = resolve(controllerDir, 'history-methods.js');
         const historySource = readFileSync(historyMethodsPath, 'utf8');
+        const historyImplementationSource = historySource.replace(/\/\*\*[\s\S]*?\*\//g, '');
         const controllerModules = readdirSync(controllerDir);
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
         const inlineHistoryDefinitions = [
+            /^\s*clearHistory\(\) \{/m,
             /^\s*getHistoryUndoSize\(\) \{/m,
             /^\s*getHistoryRedoSize\(\) \{/m
         ];
@@ -700,18 +702,21 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('undo-count-methods.js');
         expect(controllerModules).not.toContain('redo-count-methods.js');
         expect(controllerModules).not.toContain('interaction-history-methods.js');
+        expect(controllerModules).not.toContain('history-clear-methods.js');
+        expect(controllerModules).not.toContain('clear-history-methods.js');
+        expect(controllerModules).not.toContain('history-action-methods.js');
         expect(historySource).toMatch(/createHistoryMethods = \(\{ table \}\) => \(\{/);
+        expect(historySource).toMatch(/clearHistory\(\) \{\s*return table\.clearHistory\(\);/);
         expect(historySource).toMatch(/getHistoryUndoSize\(\) \{\s*return table\.getHistoryUndoSize\(\);/);
         expect(historySource).toMatch(/getHistoryRedoSize\(\) \{\s*return table\.getHistoryRedoSize\(\);/);
         expect(historySource).not.toContain('CrudHelper');
         expect(historySource).not.toContain('_state');
         expect(historySource).not.toContain('_errors');
         expect(historySource).not.toContain('_ambTempId');
-        expect(historySource).not.toMatch(/(^|[^A-Za-z])undo\(/);
-        expect(historySource).not.toMatch(/(^|[^A-Za-z])redo\(/);
-        expect(historySource).not.toMatch(/(^|[^A-Za-z])clearHistory\(/);
-        expect(historySource).not.toContain('table.modules');
-        expect(historySource).not.toContain('table.history');
+        expect(historyImplementationSource).not.toMatch(/(^|[^A-Za-z])undo\(/);
+        expect(historyImplementationSource).not.toMatch(/(^|[^A-Za-z])redo\(/);
+        expect(historyImplementationSource).not.toContain('table.modules');
+        expect(historyImplementationSource).not.toContain('table.history');
         expect(historySource).not.toMatch(/createHistoryMethods = \(\{[^}]*crud/);
         expect(historySource).not.toMatch(/createHistoryMethods = \(\{[^}]*searchController/);
     });

@@ -20,11 +20,16 @@ vi.mock('tabulator-tables', () => ({
             this.setGroupValues = vi.fn();
             this.setGroupStartOpen = vi.fn();
             this.setGroupHeader = vi.fn();
-            this.getHistoryUndoSize = vi.fn(() => 0);
-            this.getHistoryRedoSize = vi.fn(() => 0);
+            this.historyUndoSize = 0;
+            this.historyRedoSize = 0;
+            this.getHistoryUndoSize = vi.fn(() => this.historyUndoSize);
+            this.getHistoryRedoSize = vi.fn(() => this.historyRedoSize);
             this.undo = vi.fn();
             this.redo = vi.fn();
-            this.clearHistory = vi.fn();
+            this.clearHistory = vi.fn(() => {
+                this.historyUndoSize = 0;
+                this.historyRedoSize = 0;
+            });
             this.setHeight = vi.fn();
             this.setMinHeight = vi.fn();
             this.setMaxHeight = vi.fn();
@@ -58,6 +63,10 @@ vi.mock('tabulator-tables', () => ({
             this.deselectRow = vi.fn();
             this.getData = vi.fn(() => []);
             this.getDataCount = vi.fn(() => 0);
+            this.setData = vi.fn();
+            this.replaceData = vi.fn();
+            this.updateData = vi.fn();
+            this.addData = vi.fn();
             this.searchData = vi.fn(() => []);
             this.getRows = vi.fn(() => []);
             this.getRow = vi.fn(() => false);
@@ -199,6 +208,10 @@ const clearTableSideEffects = table => {
     table.undo.mockClear();
     table.redo.mockClear();
     table.clearHistory.mockClear();
+    table.setData.mockClear();
+    table.replaceData.mockClear();
+    table.updateData.mockClear();
+    table.addData.mockClear();
     table.addFilter.mockClear();
     table.setFilter.mockClear();
     table.removeFilter.mockClear();
@@ -237,8 +250,8 @@ const clearCrudSetupCalls = crud => {
     crud.destroy.mockClear();
 };
 
-describe('AMB table controller history-reading API', () => {
-    test('exposes flat history count methods without exposing history actions', () => {
+describe('AMB table controller history API', () => {
+    test('exposes flat history count and cleanup methods without exposing undo or redo', () => {
         const harness = createDocumentHarness();
 
         try {
@@ -255,6 +268,17 @@ describe('AMB table controller history-reading API', () => {
             });
             const table = tabulatorMock.instances[0];
             const crud = crudMock.instances[0];
+            const rowData = [{
+                id: 1,
+                name: 'Ada',
+                department: 'Sales',
+                _state: 'updated',
+                _errors: {
+                    name: 'Required'
+                },
+                _ambTempId: 'tmp-1'
+            }];
+            const rowComponents = [{ id: 'row-component-1' }];
             const selectedRows = [{ id: 1 }];
             const filters = [{ field: 'department', type: '=', value: 'Sales' }];
             const sorters = [{ field: 'name', dir: 'asc' }];
@@ -267,48 +291,69 @@ describe('AMB table controller history-reading API', () => {
             expect(controller.controllerMethods).toBeUndefined();
             expect(controller.undo).toBeUndefined();
             expect(controller.redo).toBeUndefined();
-            expect(controller.clearHistory).toBeUndefined();
+            expect(typeof controller.clearHistory).toBe('function');
 
             expect(controller.setSearchQuery('department')).toBe(true);
             const searchState = controller.getSearchState();
 
+            table.historyUndoSize = 4;
+            table.historyRedoSize = 3;
+            table.getData.mockReturnValue(rowData);
+            table.getRows.mockReturnValue(rowComponents);
             table.getSelectedData.mockReturnValue(selectedRows);
+            table.getSelectedRows.mockReturnValue(rowComponents);
             table.getFilters.mockReturnValue(filters);
             table.getSorters.mockReturnValue(sorters);
+            expect(controller.getHistoryUndoSize()).toBe(4);
+            expect(controller.getHistoryRedoSize()).toBe(3);
+            expect(controller.getData()).toBe(rowData);
+            expect(controller.getRows()).toBe(rowComponents);
             expect(controller.getSelectedData()).toBe(selectedRows);
+            expect(controller.getSelectedRows()).toBe(selectedRows);
+            expect(controller.getSelectedRowComponents()).toBe(rowComponents);
             expect(controller.getFilters()).toEqual(filters);
             expect(controller.getSorters()).toBe(sorters);
             expect(controller.getPage()).toBe(1);
 
             clearTableSideEffects(table);
+            table.getHistoryUndoSize.mockClear();
+            table.getHistoryRedoSize.mockClear();
             clearCrudSetupCalls(crud);
 
-            table.getHistoryUndoSize.mockReturnValueOnce(0).mockReturnValueOnce(4);
-            table.getHistoryRedoSize.mockReturnValueOnce(0).mockReturnValueOnce(3);
+            expect(controller.clearHistory()).toBeUndefined();
+            expect(table.clearHistory).toHaveBeenCalledOnce();
+            expect(table.clearHistory).toHaveBeenCalledWith();
+            expect(table.historyUndoSize).toBe(0);
+            expect(table.historyRedoSize).toBe(0);
+
             expect(controller.getHistoryUndoSize()).toBe(0);
             expect(table.getHistoryUndoSize).toHaveBeenCalledOnce();
             expect(table.getHistoryUndoSize).toHaveBeenCalledWith();
-
             expect(controller.getHistoryRedoSize()).toBe(0);
             expect(table.getHistoryRedoSize).toHaveBeenCalledOnce();
             expect(table.getHistoryRedoSize).toHaveBeenCalledWith();
 
-            expect(controller.getHistoryUndoSize()).toBe(4);
-            expect(table.getHistoryUndoSize).toHaveBeenCalledTimes(2);
-            expect(table.getHistoryUndoSize).toHaveBeenLastCalledWith();
-
-            expect(controller.getHistoryRedoSize()).toBe(3);
-            expect(table.getHistoryRedoSize).toHaveBeenCalledTimes(2);
-            expect(table.getHistoryRedoSize).toHaveBeenLastCalledWith();
-
+            expect(rowData).toEqual([{
+                id: 1,
+                name: 'Ada',
+                department: 'Sales',
+                _state: 'updated',
+                _errors: {
+                    name: 'Required'
+                },
+                _ambTempId: 'tmp-1'
+            }]);
+            expect(rowComponents).toEqual([{ id: 'row-component-1' }]);
+            expect(selectedRows).toEqual([{ id: 1 }]);
+            expect(filters).toEqual([{ field: 'department', type: '=', value: 'Sales' }]);
+            expect(sorters).toEqual([{ field: 'name', dir: 'asc' }]);
             expect(controller.getSearchState()).toEqual(searchState);
-            expect(controller.getSelectedData()).toBe(selectedRows);
-            expect(controller.getFilters()).toEqual(filters);
-            expect(controller.getSorters()).toBe(sorters);
-            expect(controller.getPage()).toBe(1);
             expect(table.undo).not.toHaveBeenCalled();
             expect(table.redo).not.toHaveBeenCalled();
-            expect(table.clearHistory).not.toHaveBeenCalled();
+            expect(table.setData).not.toHaveBeenCalled();
+            expect(table.replaceData).not.toHaveBeenCalled();
+            expect(table.updateData).not.toHaveBeenCalled();
+            expect(table.addData).not.toHaveBeenCalled();
             expect(table.setFilter).not.toHaveBeenCalled();
             expect(table.addFilter).not.toHaveBeenCalled();
             expect(table.removeFilter).not.toHaveBeenCalled();
