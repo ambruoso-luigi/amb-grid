@@ -655,15 +655,23 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
 };
 
 /**
- * Controller returned by `AMB.table(...)`.
+ * Public controller returned by `AMB.table(...)`.
  *
- * `destroy()` releases the full AMB-managed grid: AMB event bindings, lookup
- * and large-text hover helpers, search helpers, floating messages, dialogs,
- * the CrudHelper layer, and finally the Tabulator table when Tabulator exposes
- * `table.destroy()`.
+ * The controller is the main AMB Grid API for data access, row operations,
+ * selection, pagination, filters, search, validation, payload generation and
+ * lifecycle cleanup.
+ *
+ * AMB Grid manages the underlying table engine internally. Advanced engine
+ * access remains available for integration scenarios not covered by the
+ * controller API, but normal application code should prefer the methods
+ * exposed directly on this controller.
+ *
+ * `destroy()` releases the complete AMB-managed grid, including AMB event
+ * bindings, lookup and large-text helpers, search helpers, floating messages,
+ * dialogs, the CRUD layer and the internally managed table engine.
  *
  * @typedef {object} AMBTableController
- * @property {object} table - Raw Tabulator table instance.
+ * @property {object} table - Internal table engine instance for advanced integrations. Prefer controller methods for normal usage.
  * @property {CrudHelper} crud - CRUD application layer for row state, validation, rollback, and save payloads.
  * @property {Function} getColumnDefinitions - Return the current grid column definitions.
  * @property {Function} getColumns - Return current column components.
@@ -771,23 +779,30 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} restoreRedraw - Restore automatic redraws.
  * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
  * @property {FeedbackRegion} feedback - Accessible grid status region.
- * @property {Function} destroy - Destroy the complete AMB-managed grid, including the Tabulator table.
+ * @property {Function} destroy - Destroy the complete AMB-managed grid and its internally managed resources.
  */
 
 /**
- * Create an AMB-managed CRUD grid powered by a Tabulator table.
+ * Creates an AMB-managed CRUD grid controller.
  *
- * The returned object exposes the raw Tabulator instance as `table` and a
- * CrudHelper instance as `crud`. Tabulator provides the table engine; AMB Grid
- * provides the CRUD application layer, column validation, rollback handling,
- * lookup behavior, initial lookup description metadata for loaded rows, save
- * payloads, optional row action and selection columns, hover messages, large
- * text previews, search helpers, and lifecycle cleanup. Lookup columns created
- * with `AMB.editors.lookup(...)` are marked on rendered cells and their
- * prefilled values are resolved asynchronously into internal metadata after
- * table build and data reloads. When lookup description floating messages are
- * enabled, lookup cells are marked on render so hover descriptions can work
- * before a cell is edited.
+ * The returned controller is the main public API for data access, row
+ * operations, selection, pagination, filters, search, validation, payload
+ * generation and lifecycle cleanup.
+ *
+ * AMB Grid manages the underlying table engine internally. Advanced engine
+ * access is available through `table` for integration scenarios not yet
+ * covered by the controller API, while normal application code should prefer
+ * methods exposed directly on the controller.
+ *
+ * AMB Grid provides the CRUD application layer, column validation, rollback
+ * handling, lookup behavior, initial lookup description metadata for loaded
+ * rows, save payloads, optional row action and selection columns, hover
+ * messages, large text previews, search helpers, and lifecycle cleanup.
+ * Lookup columns created with `AMB.editors.lookup(...)` are marked on rendered
+ * cells and their prefilled values are resolved asynchronously into internal
+ * metadata after table build and data reloads. When lookup description
+ * floating messages are enabled, lookup cells are marked on render so hover
+ * descriptions can work before a cell is edited.
  *
  * Column validators can be provided with `validator`, `required`, or a
  * structured `validation` object. Most validators do not imply required:
@@ -796,29 +811,31 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * AMB numeric editors/formatters receive `hozAlign: 'right'` by default and
  * AMB date editors/formatters receive `hozAlign: 'center'` by default, only
  * when the column did not already define `hozAlign`.
- * Tabulator pagination options are still passed through unchanged when
- * `pagination` is boolean. AMB also accepts an object-style pagination
+ * Internal-engine pagination options are still passed through unchanged when
+ * `pagination` is boolean. AMB Grid also accepts an object-style pagination
  * convenience layer:
  * `{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.
- * Object-style pagination is translated to Tabulator options before table
- * creation and takes precedence over equivalent `paginationMode`,
+ * Object-style pagination is translated to the corresponding internal-engine
+ * options before grid creation and takes precedence over equivalent `paginationMode`,
  * `paginationSize`, and `paginationSizeSelector` values. Remote pagination is
- * only forwarded to Tabulator; AMB does not add backend/server-side behavior.
- * When pagination is enabled, AMB sets Tabulator's `paginationAddRow` to
- * `'table'` unless explicitly provided, so `crud.addRow(...)` appends to the
- * whole table, uses the Tabulator row component to open the page containing
- * the new row when possible, and attempts to focus the first editable visible
- * data cell. Action/delete columns are not candidates for automatic focus.
+ * only delegated to the underlying table engine; AMB Grid does not add
+ * backend/server-side behavior.
+ * When pagination is enabled, AMB Grid sets the underlying engine's
+ * `paginationAddRow` to `'table'` unless explicitly provided, so
+ * `crud.addRow(...)` appends to the whole grid, uses the underlying engine row
+ * component to open the page containing the new row when possible, and attempts
+ * to focus the first editable visible data cell. Action/delete columns are not
+ * candidates for automatic focus.
  *
- * @param {object} options - AMB table and Tabulator options.
- * @param {string|HTMLElement} options.selector - CSS selector or element passed to Tabulator.
+ * @param {object} options - AMB Grid options, including supported internal-engine configuration.
+ * @param {string|HTMLElement} options.selector - CSS selector or element used to mount the grid.
  * @param {object[]} [options.data] - Initial row data.
- * @param {object[]} [options.columns] - Tabulator columns plus AMB validation metadata.
- * @param {boolean|object} [options.pagination] - Tabulator boolean pagination or AMB object-style pagination convenience.
+ * @param {object[]} [options.columns] - Grid column definitions with optional AMB validation metadata.
+ * @param {boolean|object} [options.pagination] - Boolean pagination configuration or AMB object-style pagination convenience.
  * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using AMB object-style pagination.
- * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode forwarded to Tabulator as `paginationMode`.
- * @param {number} [options.pagination.pageSize=10] - Page size forwarded to Tabulator as `paginationSize`.
- * @param {number[]} [options.pagination.pageSizeSelector] - Page size options forwarded to Tabulator as `paginationSizeSelector`.
+ * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode delegated to the underlying table engine as `paginationMode`.
+ * @param {number} [options.pagination.pageSize=10] - Page size delegated to the underlying table engine as `paginationSize`.
+ * @param {number[]} [options.pagination.pageSizeSelector] - Page size options delegated to the underlying table engine as `paginationSizeSelector`.
  * @param {object} [options.deleteColumn] - Optional row action column.
  * @param {boolean} [options.deleteColumn.enabled=false] - Add the delete/rollback/remove column.
  * @param {object} [options.deleteColumn.actions] - Action visibility flags.
@@ -1137,7 +1154,7 @@ export function createTable(options = {}) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Jul 21 2026 07:57:58 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Jul 21 2026 15:03:01 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>
