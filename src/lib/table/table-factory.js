@@ -705,6 +705,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getEditedCells - Return cells marked as edited by the grid.
  * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
  * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
+ * @property {Function} validateChanges - Validate AMB rows with pending insert or update changes.
+ * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowPosition - Return the one-based position of a row.

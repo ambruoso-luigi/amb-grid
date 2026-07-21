@@ -34,5 +34,41 @@ export const createValidationMethods = ({ crud }) => ({
      */
     validate(...args) {
         return crud.validateAll(...args);
+    },
+
+    /**
+     * Validates rows with pending insert or update changes.
+     *
+     * Only AMB Grid rows in the `new` or `modified` lifecycle states are
+     * included in the returned validation report. Clean, saved and deleted rows
+     * are not validated or marked by this operation, although cross-row
+     * validators can still inspect them when required.
+     *
+     * The operation can update AMB Grid validation errors and visual markers,
+     * but it does not change row lifecycle state, original snapshots or
+     * save-payload classification.
+     *
+     * @returns {{isValid: boolean, rows: object[], errors: object[]}}
+     *   Validation report for pending insert and update changes.
+     */
+    validateChanges() {
+        return crud.validateChanges();
+    },
+
+    /**
+     * Validates one AMB-managed row.
+     *
+     * Backend identifiers and AMB temporary identifiers are resolved by the CRUD
+     * layer. The operation can update validation errors for the requested row
+     * but does not change its lifecycle state or original snapshot.
+     *
+     * @param {*} identifier - Backend id or AMB temporary id.
+     * @param {object} [options] - Row validation options.
+     * @param {boolean} [options.markDeletedErrors=true]
+     *   Whether a deleted row can receive visual error markers.
+     * @returns {object|null} Row validation result, or `null` when not found.
+     */
+    validateRow(...args) {
+        return crud.validateRow(...args);
     }
 });

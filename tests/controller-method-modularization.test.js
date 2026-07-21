@@ -194,6 +194,11 @@ describe('AMB table controller method modularization', () => {
         const validationImplementationSource = validationSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
         const controllerModules = readdirSync(controllerDir);
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineValidationDefinitions = [
+            /^\s*validate\(\.\.\.args\) \{/m,
+            /^\s*validateChanges\(\) \{/m,
+            /^\s*validateRow\(\.\.\.args\) \{/m
+        ];
         const controllerMethodsSpreads = source.match(/\.\.\.controllerMethods/g) || [];
         const crudCreationIndex = source.indexOf('crud = new CrudHelper(');
         const validationCreationIndex = source.indexOf('const validationMethods = createValidationMethods({ crud });');
@@ -208,25 +213,37 @@ describe('AMB table controller method modularization', () => {
         expect(source).not.toContain('...validationMethods');
         expect(controllerMethodsSpreads).toHaveLength(1);
         expect(source).toContain('...controllerMethods');
-        expect(source).not.toMatch(/^\s*validate\(\.\.\.args\) \{/m);
+
+        inlineValidationDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
 
         expect(controllerModules).toContain('validation-methods.js');
         expect(controllerModules).not.toContain('validate-methods.js');
         expect(controllerModules).not.toContain('crud-validation-methods.js');
         expect(controllerModules).not.toContain('table-validation-methods.js');
         expect(controllerModules).not.toContain('validation-controller.js');
+        expect(controllerModules).not.toContain('validation-row-methods.js');
+        expect(controllerModules).not.toContain('validation-changes-methods.js');
+        expect(controllerModules).not.toContain('row-validation-methods.js');
         expect(validationSource).toMatch(/createValidationMethods = \(\{ crud \}\) => \(\{/);
         expect(validationSource).toMatch(/validate\(\.\.\.args\) \{\s*return crud\.validateAll\(\.\.\.args\);/);
+        expect(validationSource).toMatch(/validateChanges\(\) \{\s*return crud\.validateChanges\(\);/);
+        expect(validationSource).toMatch(/validateRow\(\.\.\.args\) \{\s*return crud\.validateRow\(\.\.\.args\);/);
         expect(validationImplementationSource).not.toContain('table.validate');
         expect(validationImplementationSource).not.toContain('getInvalidCells');
         expect(validationImplementationSource).not.toContain('clearCellValidation');
-        expect(validationImplementationSource).not.toContain('validateChanges');
-        expect(validationImplementationSource).not.toContain('validateRow');
         expect(validationImplementationSource).not.toContain('getSavePayload');
         expect(validationImplementationSource).not.toContain('getStateReport');
+        expect(validationImplementationSource).not.toContain('findRowByKey');
         expect(validationImplementationSource).not.toContain('_state');
         expect(validationImplementationSource).not.toContain('_errors');
         expect(validationImplementationSource).not.toContain('_ambTempId');
+        expect(validationImplementationSource).not.toMatch(/\bfilter\(/);
+        expect(validationImplementationSource).not.toMatch(/\bmap\(/);
+        expect(validationImplementationSource).not.toMatch(/\bforEach\(/);
+        expect(validationImplementationSource).not.toMatch(/validateChanges\(\) \{[\s\S]*?validateAll\(/);
+        expect(validationImplementationSource).not.toMatch(/validateRow\(\.\.\.args\) \{[\s\S]*?validateChanges\(/);
         expect(validationImplementationSource).not.toMatch(/(^|[^A-Za-z])table\b/);
         expect(validationImplementationSource).not.toContain('searchController');
         expect(validationImplementationSource).not.toContain('toolbarController');

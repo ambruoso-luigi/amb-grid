@@ -203,20 +203,68 @@ describe('AMB table controller validation API', () => {
             });
             const table = tabulatorMock.instances[0];
             const crud = crudMock.instances[0];
-            const rowData = [{
-                id: 1,
-                name: '',
-                _state: 'modified',
-                _errors: {
-                    name: 'Required'
-                },
-                _ambTempId: 'tmp-1',
-                _original: {
+            const rowData = [
+                {
                     id: 1,
-                    name: 'Ada'
+                    name: 'Clean',
+                    _state: 'clean',
+                    _errors: {},
+                    _ambTempId: undefined,
+                    _original: {
+                        id: 1,
+                        name: 'Clean'
+                    }
+                },
+                {
+                    id: undefined,
+                    name: '',
+                    _state: 'new',
+                    _errors: {
+                        name: 'Required'
+                    },
+                    _ambTempId: 'amb-temp-1',
+                    _original: null
+                },
+                {
+                    id: 2,
+                    name: '',
+                    _state: 'modified',
+                    _errors: {
+                        name: 'Required'
+                    },
+                    _ambTempId: 'tmp-2',
+                    _original: {
+                        id: 2,
+                        name: 'Ada'
+                    }
+                },
+                {
+                    id: 3,
+                    name: 'Deleted',
+                    _state: 'deleted',
+                    _errors: {},
+                    _ambTempId: undefined,
+                    _original: {
+                        id: 3,
+                        name: 'Deleted'
+                    }
+                },
+                {
+                    id: 4,
+                    name: 'Saved',
+                    _state: 'saved',
+                    _errors: {},
+                    _ambTempId: undefined,
+                    _original: {
+                        id: 4,
+                        name: 'Saved'
+                    }
                 }
-            }];
-            const rowComponents = [{ id: 'row-component-1' }];
+            ];
+            const rowComponents = rowData.map(row => ({
+                data: row,
+                validate: vi.fn()
+            }));
             const filters = [{ field: 'department', type: '=', value: 'Sales' }];
             const sorters = [{ field: 'name', dir: 'asc' }];
             const selectedData = [rowData[0]];
@@ -228,9 +276,9 @@ describe('AMB table controller validation API', () => {
                 isValid: false,
                 rows: [
                     {
-                        id: 1,
+                        id: 2,
                         tempId: undefined,
-                        rowNumber: 1,
+                        rowNumber: 3,
                         isValid: false,
                         errors: [
                             {
@@ -242,14 +290,95 @@ describe('AMB table controller validation API', () => {
                 ],
                 errors: [
                     {
-                        id: 1,
+                        id: 2,
                         field: 'name',
                         message: 'Required'
                     }
                 ]
             };
-            const originalSnapshot = rowData[0]._original;
-            const originalErrors = rowData[0]._errors;
+            const changesReport = {
+                isValid: false,
+                rows: [
+                    {
+                        id: undefined,
+                        tempId: 'amb-temp-1',
+                        rowNumber: 2,
+                        isValid: false,
+                        errors: [
+                            {
+                                field: 'name',
+                                message: 'Required'
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        tempId: 'tmp-2',
+                        rowNumber: 3,
+                        isValid: false,
+                        errors: [
+                            {
+                                field: 'name',
+                                message: 'Required'
+                            }
+                        ]
+                    }
+                ],
+                errors: [
+                    {
+                        tempId: 'amb-temp-1',
+                        field: 'name',
+                        message: 'Required'
+                    },
+                    {
+                        id: 2,
+                        field: 'name',
+                        message: 'Required'
+                    }
+                ]
+            };
+            const backendRowReport = {
+                id: 2,
+                tempId: 'tmp-2',
+                rowNumber: 3,
+                isValid: true,
+                errors: []
+            };
+            const temporaryRowReport = {
+                id: undefined,
+                tempId: 'amb-temp-1',
+                rowNumber: 2,
+                isValid: false,
+                errors: [
+                    {
+                        field: 'name',
+                        message: 'Required'
+                    }
+                ]
+            };
+            const zeroRowReport = {
+                id: 0,
+                tempId: undefined,
+                rowNumber: 6,
+                isValid: true,
+                errors: []
+            };
+            const emptyStringRowReport = {
+                id: '',
+                tempId: undefined,
+                rowNumber: 7,
+                isValid: true,
+                errors: []
+            };
+            const originalRowsSnapshot = rowData.map(row => ({
+                state: row._state,
+                errors: row._errors,
+                tempId: row._ambTempId,
+                original: row._original
+            }));
+            const rowOptions = {
+                markDeletedErrors: false
+            };
 
             table.data = rowData;
             table.rows = rowComponents;
@@ -259,9 +388,18 @@ describe('AMB table controller validation API', () => {
             table.selectedRows = selectedRows;
             table.page = 3;
             crud.validateAll.mockReturnValue(report);
+            crud.validateChanges.mockReturnValue(changesReport);
+            crud.validateRow
+                .mockReturnValueOnce(backendRowReport)
+                .mockReturnValueOnce(temporaryRowReport)
+                .mockReturnValueOnce(null)
+                .mockReturnValueOnce(zeroRowReport)
+                .mockReturnValueOnce(emptyStringRowReport);
 
             expect(controller.table).toBe(table);
             expect(typeof controller.validate).toBe('function');
+            expect(typeof controller.validateChanges).toBe('function');
+            expect(typeof controller.validateRow).toBe('function');
             expect(controller.validation).toBeUndefined();
             expect(controller.validationMethods).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
@@ -276,26 +414,49 @@ describe('AMB table controller validation API', () => {
             expect(crud.validateAll).toHaveBeenCalledOnce();
             expect(crud.validateAll).toHaveBeenCalledWith(options);
             expect(crud.validateAll.mock.calls[0][0]).toBe(options);
+            expect(crud.validateChanges).not.toHaveBeenCalled();
+            expect(crud.validateRow).not.toHaveBeenCalled();
+
+            const changesResult = controller.validateChanges();
+
+            expect(changesResult).toBe(changesReport);
+            expect(changesResult.rows).toBe(changesReport.rows);
+            expect(changesResult.errors).toBe(changesReport.errors);
+            expect(changesResult.rows.map(row => row.tempId || row.id)).toEqual([
+                'amb-temp-1',
+                'tmp-2'
+            ]);
+            expect(crud.validateChanges).toHaveBeenCalledOnce();
+            expect(crud.validateChanges).toHaveBeenCalledWith();
+            expect(crud.validateAll).toHaveBeenCalledOnce();
+
+            expect(controller.validateRow(2, rowOptions)).toBe(backendRowReport);
+            expect(controller.validateRow('amb-temp-1')).toBe(temporaryRowReport);
+            expect(controller.validateRow('missing-row')).toBeNull();
+            expect(controller.validateRow(0)).toBe(zeroRowReport);
+            expect(controller.validateRow('')).toBe(emptyStringRowReport);
+
+            expect(crud.validateRow).toHaveBeenCalledTimes(5);
+            expect(crud.validateRow).toHaveBeenNthCalledWith(1, 2, rowOptions);
+            expect(crud.validateRow.mock.calls[0][1]).toBe(rowOptions);
+            expect(crud.validateRow).toHaveBeenNthCalledWith(2, 'amb-temp-1');
+            expect(crud.validateRow).toHaveBeenNthCalledWith(3, 'missing-row');
+            expect(crud.validateRow).toHaveBeenNthCalledWith(4, 0);
+            expect(crud.validateRow).toHaveBeenNthCalledWith(5, '');
+            expect(crud.validateAll).toHaveBeenCalledOnce();
+            expect(crud.validateChanges).toHaveBeenCalledOnce();
             expect(table.validate).not.toHaveBeenCalled();
             expect(table.getInvalidCells).not.toHaveBeenCalled();
             expect(table.clearCellValidation).not.toHaveBeenCalled();
-            expect(rowData[0]).toEqual({
-                id: 1,
-                name: '',
-                _state: 'modified',
-                _errors: {
-                    name: 'Required'
-                },
-                _ambTempId: 'tmp-1',
-                _original: {
-                    id: 1,
-                    name: 'Ada'
-                }
+            rowComponents.forEach(row => {
+                expect(row.validate).not.toHaveBeenCalled();
             });
-            expect(rowData[0]._state).toBe('modified');
-            expect(rowData[0]._ambTempId).toBe('tmp-1');
-            expect(rowData[0]._errors).toBe(originalErrors);
-            expect(rowData[0]._original).toBe(originalSnapshot);
+            rowData.forEach((row, index) => {
+                expect(row._state).toBe(originalRowsSnapshot[index].state);
+                expect(row._errors).toBe(originalRowsSnapshot[index].errors);
+                expect(row._ambTempId).toBe(originalRowsSnapshot[index].tempId);
+                expect(row._original).toBe(originalRowsSnapshot[index].original);
+            });
             expect(table.data).toBe(rowData);
             expect(table.rows).toBe(rowComponents);
             expect(table.filters).toBe(filters);
@@ -305,8 +466,7 @@ describe('AMB table controller validation API', () => {
             expect(table.page).toBe(3);
             expect(crud.getSavePayload).not.toHaveBeenCalled();
             expect(crud.getStateReport).not.toHaveBeenCalled();
-            expect(crud.validateChanges).not.toHaveBeenCalled();
-            expect(crud.validateRow).not.toHaveBeenCalled();
+            expect(crud.findRowByKey).not.toHaveBeenCalled();
             expect(crud.updateRowFields).not.toHaveBeenCalled();
             expect(crud.addRow).not.toHaveBeenCalled();
             expect(crud.deleteRow).not.toHaveBeenCalled();
