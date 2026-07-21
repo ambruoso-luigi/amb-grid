@@ -305,6 +305,8 @@ const expectNoSpreadsheetWriteSideEffects = (table, crud, activeName, count) => 
         'getSheets',
         'getSheet',
         'getSheetData',
+        'setSheetData',
+        'clearSheet',
         'setSheets',
         'addSheet',
         'removeSheet',
@@ -317,8 +319,6 @@ const expectNoSpreadsheetWriteSideEffects = (table, crud, activeName, count) => 
 
         expect(table[name]).not.toHaveBeenCalled();
     });
-    expect(table.setSheetData).not.toHaveBeenCalled();
-    expect(table.clearSheet).not.toHaveBeenCalled();
     expect(table.getData).not.toHaveBeenCalled();
     expect(table.getRows).not.toHaveBeenCalled();
     expect(table.getColumns).not.toHaveBeenCalled();
@@ -409,6 +409,8 @@ describe('AMB table controller spreadsheet API', () => {
             expect(typeof controller.getSheets).toBe('function');
             expect(typeof controller.getSheet).toBe('function');
             expect(typeof controller.getSheetData).toBe('function');
+            expect(typeof controller.setSheetData).toBe('function');
+            expect(typeof controller.clearSheet).toBe('function');
             expect(typeof controller.setSheets).toBe('function');
             expect(typeof controller.addSheet).toBe('function');
             expect(typeof controller.activeSheet).toBe('function');
@@ -417,8 +419,6 @@ describe('AMB table controller spreadsheet API', () => {
             expect(controller.spreadsheetMethods).toBeUndefined();
             expect(controller.sheets).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
-            expect(controller.setSheetData).toBeUndefined();
-            expect(controller.clearSheet).toBeUndefined();
 
             expect(controller.setSearchQuery('Mario')).toBe(true);
             const searchState = controller.getSearchState();
@@ -506,6 +506,68 @@ describe('AMB table controller spreadsheet API', () => {
             expectNoSpreadsheetReadSideEffects(table, crud);
 
             table.getSheetData.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            const setSheetDataSentinel = { status: 'sheet-data-updated' };
+
+            table.setSheetData
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(setSheetDataSentinel)
+                .mockReturnValueOnce(undefined);
+
+            expect(controller.setSheetData(sheetData)).toBeUndefined();
+            expect(table.setSheetData.mock.calls[0][0]).toBe(sheetData);
+            expect(table.setSheetData.mock.calls[0]).toEqual([sheetData]);
+            expect(controller.setSheetData('sales', sheetData)).toBe(false);
+            expect(table.setSheetData.mock.calls[1][0]).toBe('sales');
+            expect(table.setSheetData.mock.calls[1][1]).toBe(sheetData);
+            expect(controller.setSheetData(lookupSheet, sheetData)).toBe(setSheetDataSentinel);
+            expect(table.setSheetData.mock.calls[2][0]).toBe(lookupSheet);
+            expect(table.setSheetData.mock.calls[2][1]).toBe(sheetData);
+            expect(controller.setSheetData('sales', null)).toBeUndefined();
+            expect(table.setSheetData.mock.calls[3]).toEqual(['sales', null]);
+            expect(sheetData[0]).toBe(firstRow);
+            expect(sheetData[1]).toBe(secondRow);
+            expect(sheetData[0][2]).toBe(false);
+            expect(sheetData[0][3]).toBe(0);
+            expect(sheetData[0][4]).toBe('');
+            expect(sheetData[1][3]).toBeUndefined();
+            expect(sheetData[1][4]).toBeNull();
+            expect(Array.isArray(sheetData[0])).toBe(true);
+            expect(Object.prototype.hasOwnProperty.call(sheetData[0], 'name')).toBe(false);
+            expectNoSpreadsheetWriteSideEffects(table, crud, 'setSheetData', 4);
+
+            table.setSheetData.mockClear();
+            clearTableSideEffects(table);
+            clearCrudSetupCalls(crud);
+
+            const clearSheetSentinel = { status: 'sheet-cleared' };
+
+            table.clearSheet
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(undefined)
+                .mockReturnValueOnce(clearSheetSentinel)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce(false);
+
+            expect(controller.clearSheet()).toBeUndefined();
+            expect(table.clearSheet.mock.calls[0]).toEqual([]);
+            expect(controller.clearSheet('sales')).toBeUndefined();
+            expect(table.clearSheet.mock.calls[1]).toEqual(['sales']);
+            expect(controller.clearSheet(lookupSheet)).toBe(clearSheetSentinel);
+            expect(table.clearSheet.mock.calls[2][0]).toBe(lookupSheet);
+            expect(controller.clearSheet(undefined)).toBe(false);
+            expect(table.clearSheet.mock.calls[3]).toEqual([undefined]);
+            expect(controller.clearSheet(null)).toBe(false);
+            expect(table.clearSheet.mock.calls[4]).toEqual([null]);
+            expect(controller.clearSheet('')).toBe(false);
+            expect(table.clearSheet.mock.calls[5]).toEqual(['']);
+            expectNoSpreadsheetWriteSideEffects(table, crud, 'clearSheet', 6);
+
+            table.clearSheet.mockClear();
             clearTableSideEffects(table);
             clearCrudSetupCalls(crud);
 

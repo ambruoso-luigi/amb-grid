@@ -221,6 +221,8 @@ describe('AMB table controller method modularization', () => {
             /^\s*getSheets\(\) \{/m,
             /^\s*getSheet\(\.\.\.args\) \{/m,
             /^\s*getSheetData\(\.\.\.args\) \{/m,
+            /^\s*setSheetData\(\.\.\.args\) \{/m,
+            /^\s*clearSheet\(\.\.\.args\) \{/m,
             /^\s*setSheets\(\.\.\.args\) \{/m,
             /^\s*addSheet\(\.\.\.args\) \{/m,
             /^\s*activeSheet\(\.\.\.args\) \{/m,
@@ -251,11 +253,16 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('spreadsheet-write-methods.js');
         expect(controllerModules).not.toContain('sheet-management-methods.js');
         expect(controllerModules).not.toContain('sheet-structure-methods.js');
+        expect(controllerModules).not.toContain('spreadsheet-data-methods.js');
+        expect(controllerModules).not.toContain('sheet-data-write-methods.js');
+        expect(controllerModules).not.toContain('sheet-clear-methods.js');
         expect(spreadsheetSource).toMatch(/createSpreadsheetMethods = \(\{ table \}\) => \(\{/);
         expect(spreadsheetSource).toMatch(/getSheetDefinitions\(\) \{\s*return table\.getSheetDefinitions\(\);/);
         expect(spreadsheetSource).toMatch(/getSheets\(\) \{\s*return table\.getSheets\(\);/);
         expect(spreadsheetSource).toMatch(/getSheet\(\.\.\.args\) \{\s*return table\.getSheet\(\.\.\.args\);/);
         expect(spreadsheetSource).toMatch(/getSheetData\(\.\.\.args\) \{\s*return table\.getSheetData\(\.\.\.args\);/);
+        expect(spreadsheetSource).toMatch(/setSheetData\(\.\.\.args\) \{\s*return table\.setSheetData\(\.\.\.args\);/);
+        expect(spreadsheetSource).toMatch(/clearSheet\(\.\.\.args\) \{\s*return table\.clearSheet\(\.\.\.args\);/);
         expect(spreadsheetSource).toMatch(/setSheets\(\.\.\.args\) \{\s*return table\.setSheets\(\.\.\.args\);/);
         expect(spreadsheetSource).toMatch(/addSheet\(\.\.\.args\) \{\s*return table\.addSheet\(\.\.\.args\);/);
         expect(spreadsheetSource).toMatch(/activeSheet\(\.\.\.args\) \{\s*return table\.activeSheet\(\.\.\.args\);/);
@@ -264,8 +271,10 @@ describe('AMB table controller method modularization', () => {
         expect(spreadsheetImplementationSource).not.toContain('table.modules');
         expect(spreadsheetImplementationSource).not.toContain('table.module(');
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])modExists\(/);
-        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])setSheetData\(/);
-        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])clearSheet\(/);
+        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])setData\(/);
+        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])replaceData\(/);
+        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])updateData\(/);
+        expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])addData\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])getData\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])getRows\(/);
         expect(spreadsheetImplementationSource).not.toMatch(/(^|[^A-Za-z])getColumns\(/);
@@ -750,6 +759,8 @@ describe('AMB table controller method modularization', () => {
             /^\s*getSheets\(\) \{/m,
             /^\s*getSheet\(\.\.\.args\) \{/m,
             /^\s*getSheetData\(\.\.\.args\) \{/m,
+            /^\s*setSheetData\(\.\.\.args\) \{/m,
+            /^\s*clearSheet\(\.\.\.args\) \{/m,
             /^\s*setSheets\(\.\.\.args\) \{/m,
             /^\s*addSheet\(\.\.\.args\) \{/m,
             /^\s*activeSheet\(\.\.\.args\) \{/m,

@@ -5,17 +5,17 @@ import { createSpreadsheetMethods } from '../src/lib/table/controller/spreadshee
 const spreadsheetMethodNames = [
     'activeSheet',
     'addSheet',
+    'clearSheet',
     'getSheetDefinitions',
     'getSheets',
     'getSheet',
     'getSheetData',
     'removeSheet',
+    'setSheetData',
     'setSheets'
 ];
 
 const forbiddenTableMethodNames = [
-    'setSheetData',
-    'clearSheet',
     'getData',
     'getRows',
     'getColumns',
@@ -55,6 +55,8 @@ const createTable = () => ({
     getSheets: vi.fn(),
     getSheet: vi.fn(),
     getSheetData: vi.fn(),
+    setSheetData: vi.fn(),
+    clearSheet: vi.fn(),
     setSheets: vi.fn(),
     addSheet: vi.fn(),
     activeSheet: vi.fn(),
@@ -87,11 +89,13 @@ describe('AMB table controller spreadsheet method group', () => {
         expect(Object.keys(methods).sort()).toEqual([
             'activeSheet',
             'addSheet',
+            'clearSheet',
             'getSheet',
             'getSheetData',
             'getSheetDefinitions',
             'getSheets',
             'removeSheet',
+            'setSheetData',
             'setSheets'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
@@ -285,6 +289,112 @@ describe('AMB table controller spreadsheet method group', () => {
         expect(Object.prototype.hasOwnProperty.call(activeData[0], '_state')).toBe(false);
         expect(Object.prototype.hasOwnProperty.call(activeData[0], '_errors')).toBe(false);
         expect(Object.prototype.hasOwnProperty.call(activeData[0], '_ambTempId')).toBe(false);
+        expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
+    });
+
+    test('setSheetData forwards matrix data and all lookup forms unchanged', () => {
+        const firstRow = ['Mario', 42, false, 0, ''];
+        const secondRow = ['Anna', 35, true, null, undefined];
+        const matrix = [firstRow, secondRow];
+        const lookupComponent = {
+            key: 'component-lookup'
+        };
+        const sentinelResult = {
+            status: 'sentinel'
+        };
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = createTable();
+        const methods = createSpreadsheetMethods({ table });
+
+        table.setSheetData
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(sentinelResult)
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(undefined);
+
+        expect(methods.setSheetData(matrix)).toBeUndefined();
+        expect(table.setSheetData.mock.calls[0][0]).toBe(matrix);
+        expect(table.setSheetData.mock.calls[0]).toEqual([matrix]);
+
+        expect(methods.setSheetData('sales', matrix)).toBeUndefined();
+        expect(table.setSheetData.mock.calls[1][0]).toBe('sales');
+        expect(table.setSheetData.mock.calls[1][1]).toBe(matrix);
+
+        expect(methods.setSheetData(lookupComponent, matrix)).toBe(sentinelResult);
+        expect(table.setSheetData.mock.calls[2][0]).toBe(lookupComponent);
+        expect(table.setSheetData.mock.calls[2][1]).toBe(matrix);
+
+        expect(methods.setSheetData('missing', matrix)).toBe(false);
+        expect(table.setSheetData.mock.calls[3][0]).toBe('missing');
+        expect(table.setSheetData.mock.calls[3][1]).toBe(matrix);
+
+        expect(methods.setSheetData('sales', null)).toBeUndefined();
+        expect(table.setSheetData.mock.calls[4]).toEqual(['sales', null]);
+
+        expect(matrix[0]).toBe(firstRow);
+        expect(matrix[1]).toBe(secondRow);
+        expect(matrix[0]).toEqual(['Mario', 42, false, 0, '']);
+        expect(matrix[1]).toEqual(['Anna', 35, true, null, undefined]);
+        expect(matrix[0][2]).toBe(false);
+        expect(matrix[0][3]).toBe(0);
+        expect(matrix[0][4]).toBe('');
+        expect(matrix[1][3]).toBeNull();
+        expect(matrix[1][4]).toBeUndefined();
+        expect(Array.isArray(matrix[0])).toBe(true);
+        expect(Object.prototype.hasOwnProperty.call(matrix[0], 'name')).toBe(false);
+        expect(table.setSheetData).toHaveBeenCalledTimes(5);
+        expectSpreadsheetCalls(table, 'setSheetData', 5);
+        expect(table.getSheet).not.toHaveBeenCalled();
+        expect(table.getSheets).not.toHaveBeenCalled();
+        expect(table.setData).not.toHaveBeenCalled();
+        expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
+        expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
+    });
+
+    test('clearSheet forwards lookups unchanged and preserves runtime results', () => {
+        const lookupComponent = {
+            key: 'component-lookup'
+        };
+        const sentinelResult = {
+            status: 'cleared'
+        };
+        const crud = createForbiddenMethods(forbiddenCrudMethodNames);
+        const table = createTable();
+        const methods = createSpreadsheetMethods({ table });
+
+        table.clearSheet
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(undefined)
+            .mockReturnValueOnce(sentinelResult)
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(false);
+
+        expect(methods.clearSheet()).toBeUndefined();
+        expect(table.clearSheet.mock.calls[0]).toEqual([]);
+
+        expect(methods.clearSheet('sales')).toBeUndefined();
+        expect(table.clearSheet.mock.calls[1]).toEqual(['sales']);
+
+        expect(methods.clearSheet(lookupComponent)).toBe(sentinelResult);
+        expect(table.clearSheet.mock.calls[2][0]).toBe(lookupComponent);
+
+        expect(methods.clearSheet(undefined)).toBe(false);
+        expect(table.clearSheet.mock.calls[3]).toEqual([undefined]);
+
+        expect(methods.clearSheet(null)).toBe(false);
+        expect(table.clearSheet.mock.calls[4]).toEqual([null]);
+
+        expect(methods.clearSheet('')).toBe(false);
+        expect(table.clearSheet.mock.calls[5]).toEqual(['']);
+
+        expect(table.clearSheet).toHaveBeenCalledTimes(6);
+        expectSpreadsheetCalls(table, 'clearSheet', 6);
+        expect(table.setSheetData).not.toHaveBeenCalled();
+        expect(table.getSheet).not.toHaveBeenCalled();
+        expect(table.getSheets).not.toHaveBeenCalled();
         expectForbiddenMethodsNotCalled(table, forbiddenTableMethodNames);
         expectForbiddenMethodsNotCalled(crud, forbiddenCrudMethodNames);
     });

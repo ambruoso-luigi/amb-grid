@@ -683,6 +683,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSheets - Return the current spreadsheet Sheet Components.
  * @property {Function} getSheet - Return one spreadsheet Sheet Component.
  * @property {Function} getSheetData - Return matrix data for a spreadsheet sheet.
+ * @property {Function} setSheetData - Replace matrix data for a spreadsheet sheet.
+ * @property {Function} clearSheet - Clear matrix data from a spreadsheet sheet.
  * @property {Function} setSheets - Replace the current spreadsheet sheets.
  * @property {Function} addSheet - Add a spreadsheet sheet.
  * @property {Function} activeSheet - Make a spreadsheet sheet active.

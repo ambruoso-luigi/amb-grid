@@ -69,6 +69,35 @@ export const createSpreadsheetMethods = ({ table }) => ({
     },
 
     /**
+     * Replaces the matrix data of a spreadsheet sheet.
+     *
+     * Pass only the matrix to update the active sheet, or pass a sheet lookup
+     * followed by the matrix to update a specific sheet.
+     *
+     * Spreadsheet data is separate from the standard AMB Grid object-row CRUD
+     * workflow and does not synchronize row state or save payloads.
+     *
+     * @param {...*} args - Sheet lookup and matrix data, or only matrix data.
+     * @returns {void|false} False when no matching sheet is available.
+     */
+    setSheetData(...args) {
+        return table.setSheetData(...args);
+    },
+
+    /**
+     * Clears all matrix data from a spreadsheet sheet.
+     *
+     * Omit the lookup to clear the active sheet, or pass a supported sheet
+     * lookup. Clearing spreadsheet data does not reset AMB Grid CRUD state.
+     *
+     * @param {*} [sheetLookup] - Sheet key, Sheet Component or supported lookup.
+     * @returns {void|false} False when no matching sheet is available.
+     */
+    clearSheet(...args) {
+        return table.clearSheet(...args);
+    },
+
+    /**
      * Replaces the current spreadsheet sheets.
      *
      * Definitions and matrix data are forwarded unchanged. The operation belongs
