@@ -16,6 +16,7 @@ import { createCalculationMethods } from './controller/calculation-methods.js';
 import { createCellStateMethods } from './controller/cell-state-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
+import { createEventMethods } from './controller/event-methods.js';
 import { createExportMethods } from './controller/export-methods.js';
 import { createGroupingMethods } from './controller/grouping-methods.js';
 import { createHistoryMethods } from './controller/history-methods.js';
@@ -751,6 +752,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} restoreRedraw - Restore automatic redraws.
  * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
  * @property {FeedbackRegion} feedback - Accessible grid status region.
+ * @property {Function} on - Subscribe an application callback to a public grid event.
+ * @property {Function} off - Remove application listeners while preserving AMB Grid internal bindings.
  * @property {Function} destroy - Destroy the complete AMB-managed grid and its internally managed resources.
  */
 
@@ -934,6 +937,7 @@ export function createTable(options = {}) {
     const cellStateMethods = createCellStateMethods({ table });
     const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
+    const eventMethods = createEventMethods({ table });
     const exportMethods = createExportMethods({ table });
     const groupingMethods = createGroupingMethods({ table });
     const historyMethods = createHistoryMethods({ table });
@@ -1016,6 +1020,7 @@ export function createTable(options = {}) {
         searchMethods,
         sortMethods,
         exportMethods,
+        eventMethods,
         localizationMethods,
         layoutMethods,
         redrawMethods

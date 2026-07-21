@@ -65,6 +65,54 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('...controllerMethods');
     });
 
+    test('wires the extracted event method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const eventMethodsPath = resolve(controllerDir, 'event-methods.js');
+        const eventSource = readFileSync(eventMethodsPath, 'utf8');
+        const eventImplementationSource = eventSource.replace(/\/\*\*[\s\S]*?\*\//g, '');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inlineEventDefinitions = [
+            /^\s*on\(eventName,\s*callback\) \{/m,
+            /^\s*off\(eventName,\s*callback\) \{/m
+        ];
+        const controllerMethodsSpreads = source.match(/\.\.\.controllerMethods/g) || [];
+
+        expect(source).toContain("import { createEventMethods } from './controller/event-methods.js';");
+        expect(source).toContain('const eventMethods = createEventMethods({ table });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('alertMethods');
+        expect(composition[1]).toContain('eventMethods');
+        expect(composition[1]).toContain('redrawMethods');
+        expect(source).not.toContain('...eventMethods');
+        expect(controllerMethodsSpreads).toHaveLength(1);
+        expect(source).toContain('...controllerMethods');
+
+        inlineEventDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+
+        expect(controllerModules).toContain('event-methods.js');
+        expect(controllerModules).not.toContain('events-methods.js');
+        expect(controllerModules).not.toContain('table-event-methods.js');
+        expect(controllerModules).not.toContain('event-controller.js');
+        expect(eventSource).toMatch(/createEventMethods = \(\{ table \}\) => \{/);
+        expect(eventSource).toMatch(/const listeners = new Map\(\);/);
+        expect(eventSource).toMatch(/on\(eventName,\s*callback\) \{[\s\S]*?table\.on\(eventName,\s*callback\);[\s\S]*?eventListeners\.push\(callback\);/);
+        expect(eventSource).toMatch(/off\(eventName,\s*callback\) \{/);
+        expect(eventImplementationSource).not.toContain('table.off(eventName);');
+        expect(eventImplementationSource).not.toMatch(/table\.off\(eventName\)\s*[;\n]/);
+        expect(eventImplementationSource).toMatch(/table\.off\(eventName,\s*callback\);/);
+        expect(eventImplementationSource).toMatch(/table\.off\(eventName,\s*listener\);/);
+        expect(eventImplementationSource).not.toContain('CrudHelper');
+        expect(eventImplementationSource).not.toMatch(/(^|[^A-Za-z])crud\b/);
+        expect(eventImplementationSource).not.toContain('searchController');
+        expect(eventImplementationSource).not.toContain('toolbarController');
+        expect(eventImplementationSource).not.toContain('events:');
+        expect(eventImplementationSource).not.toContain('eventMethods:');
+    });
+
     test('wires the extracted cell-state reading method group into the controller composition', () => {
         const source = readTableFactorySource();
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
