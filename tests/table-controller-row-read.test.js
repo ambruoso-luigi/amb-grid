@@ -9,21 +9,33 @@ const crudMock = vi.hoisted(() => ({
 }));
 
 const rowReadMock = vi.hoisted(() => {
-    const createRowComponent = (name, data) => ({
-        name,
-        data,
-        getData: vi.fn(() => data),
-        getIndex: vi.fn(() => data.id || data._ambTempId || false),
-        getNextRow: vi.fn(() => false),
-        getPrevRow: vi.fn(() => false),
-        select: vi.fn(),
-        deselect: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
-        scrollTo: vi.fn(),
-        pageTo: vi.fn(),
-        show: vi.fn()
-    });
+    const createRowComponent = (name, data) => {
+        const element = { name: `${name}-element` };
+        const cells = [];
+        const cell = { name: `${name}-cell` };
+
+        return {
+            name,
+            data,
+            element,
+            cells,
+            cell,
+            getData: vi.fn(() => data),
+            getIndex: vi.fn(() => data.id || data._ambTempId || false),
+            getNextRow: vi.fn(() => false),
+            getPrevRow: vi.fn(() => false),
+            getElement: vi.fn(() => element),
+            getCells: vi.fn(() => cells),
+            getCell: vi.fn(() => cell),
+            select: vi.fn(),
+            deselect: vi.fn(),
+            update: vi.fn(),
+            delete: vi.fn(),
+            scrollTo: vi.fn(),
+            pageTo: vi.fn(),
+            show: vi.fn()
+        };
+    };
     const savedData = { id: 15, name: 'Saved', _state: 'clean', _ambTempId: 'amb-saved' };
     const tempData = { id: null, name: 'Temporary', _state: 'created', _ambTempId: 'amb-temp-1' };
     const fallbackData = { id: 30, name: 'Fallback', _state: 'modified', _ambTempId: 'amb-fallback' };
@@ -184,6 +196,9 @@ const createDocumentHarness = () => {
         row.getIndex.mockClear();
         row.getNextRow.mockClear();
         row.getPrevRow.mockClear();
+        row.getElement.mockClear();
+        row.getCells.mockClear();
+        row.getCell.mockClear();
         row.select.mockClear();
         row.deselect.mockClear();
         row.update.mockClear();
@@ -380,10 +395,12 @@ describe('AMB table controller row read API', () => {
             expect(typeof controller.getRowIndex).toBe('function');
             expect(typeof controller.getNextRow).toBe('function');
             expect(typeof controller.getPrevRow).toBe('function');
+            expect(typeof controller.getRowElement).toBe('function');
+            expect(typeof controller.getRowCells).toBe('function');
+            expect(typeof controller.getRowCell).toBe('function');
             expect(controller.rows).toBeUndefined();
             expect(controller.rowReads).toBeUndefined();
             expect(controller.rowContext).toBeUndefined();
-            expect(controller.getRowElement).toBeUndefined();
             expect(controller.watchRowPosition).toBeUndefined();
 
             expect(controller.getRowData(15)).toBe(rowReadMock.savedData);
@@ -396,6 +413,13 @@ describe('AMB table controller row read API', () => {
             expect(controller.getPrevRow('fallback-lookup')).toBe(rowReadMock.tempRow);
             expect(table.getRow).toHaveBeenLastCalledWith('fallback-lookup');
             expect(controller.getNextRow('missing-row')).toBe(false);
+
+            const column = { field: 'name' };
+
+            expect(controller.getRowElement(15)).toBe(rowReadMock.savedRow.element);
+            expect(controller.getRowCells('amb-temp-1')).toBe(rowReadMock.tempRow.cells);
+            expect(controller.getRowCell('fallback-lookup', column)).toBe(rowReadMock.fallbackRow.cell);
+            expect(rowReadMock.fallbackRow.getCell).toHaveBeenLastCalledWith(column);
 
             expect([
                 rowReadMock.savedData,

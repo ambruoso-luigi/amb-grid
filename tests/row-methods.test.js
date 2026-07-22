@@ -14,7 +14,10 @@ const ROW_CONTEXT_METHOD_NAMES = [
     'getRowData',
     'getRowIndex',
     'getNextRow',
-    'getPrevRow'
+    'getPrevRow',
+    'getRowElement',
+    'getRowCells',
+    'getRowCell'
 ];
 
 const createFreezableRow = (overrides = {}) => ({
@@ -165,6 +168,9 @@ const createReadableRow = (overrides = {}) => {
         getIndex: vi.fn(() => data.id),
         getNextRow: vi.fn(() => false),
         getPrevRow: vi.fn(() => false),
+        getElement: vi.fn(() => false),
+        getCells: vi.fn(() => []),
+        getCell: vi.fn(() => false),
         select: vi.fn(),
         deselect: vi.fn(),
         update: vi.fn(),
@@ -237,7 +243,10 @@ describe('AMB table controller row method group', () => {
             'getNextRow',
             'getPrevRow',
             'getRow',
+            'getRowCell',
+            'getRowCells',
             'getRowData',
+            'getRowElement',
             'getRowFromPosition',
             'getRowIndex',
             'getRowPosition',
@@ -270,9 +279,6 @@ describe('AMB table controller row method group', () => {
         expect(methods.expandTreeRows).toBeUndefined();
         expect(methods.collapseTreeRows).toBeUndefined();
         expect(methods.toggleTreeRows).toBeUndefined();
-        expect(methods.getRowElement).toBeUndefined();
-        expect(methods.getRowCells).toBeUndefined();
-        expect(methods.getRowCell).toBeUndefined();
         expect(methods.getRowTable).toBeUndefined();
         expect(methods.watchRowPosition).toBeUndefined();
     });
@@ -550,6 +556,41 @@ describe('AMB table controller row method group', () => {
         expect(methods.getNextRow('no-next')).toBe(false);
         expect(methods.getPrevRow('no-prev')).toBe(false);
         expectNoReadableSideEffects(table, crud);
+    });
+
+    test('delegates structural row reads through AMB identifiers and fallback lookup', () => {
+        const column = { field: 'status' };
+        const element = { nodeType: 1 };
+        const cells = [];
+        const cell = { field: 'status' };
+        const lookup = { lookup: 'engine-row' };
+        const backendRow = createReadableRow({
+            getElement: vi.fn(() => element),
+            getCells: vi.fn(() => cells),
+            getCell: vi.fn(() => cell)
+        });
+        const fallbackRow = createReadableRow({ getCells: vi.fn(() => false) });
+        const { table, crud, methods } = createReadableHarness({
+            crudRows: new Map([[15, backendRow], ['no-cell', createReadableRow({ getCell: undefined })]]),
+            fallbackRows: new Map([[lookup, fallbackRow]])
+        });
+        const cases = [
+            ['getRowElement', [15], backendRow, 'getElement', element],
+            ['getRowCells', [15], backendRow, 'getCells', cells],
+            ['getRowCell', [15, column], backendRow, 'getCell', cell],
+            ['getRowCells', [lookup], fallbackRow, 'getCells', false]
+        ];
+
+        cases.forEach(([method, args, row, rowMethod, expected]) => {
+            expect(methods[method](...args)).toBe(expected);
+            expect(row[rowMethod]).toHaveBeenCalledOnce();
+        });
+        expect(backendRow.getCell).toHaveBeenLastCalledWith(column);
+        expect(table.getRow).toHaveBeenCalledOnce();
+        expect(table.getRow).toHaveBeenLastCalledWith(lookup);
+        expect(methods.getRowElement('missing-row')).toBe(false);
+        expect(methods.getRowCell('no-cell', column)).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-cell');
     });
 
     test('resolves Data Tree row methods through AMB identifiers before engine fallback', () => {

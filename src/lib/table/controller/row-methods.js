@@ -164,6 +164,85 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Returns the runtime DOM element for one row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * This exposes the row's runtime DOM node by identity. Directly modifying
+     * the DOM may bypass normal AMB Grid behavior; normal application code
+     * should prefer AMB Grid public APIs when changing row data. The result is
+     * returned by identity, including falsy values produced by the engine. The
+     * method returns `false` when the row or operation is not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {Element|false} Runtime row DOM element, or `false` when unavailable.
+     */
+    getRowElement(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getElement !== 'function') return false;
+
+        return row.getElement();
+    },
+
+    /**
+     * Returns the Cell Components for one row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Cell Components are advanced runtime objects and are returned by
+     * identity, including empty arrays. Directly modifying components may
+     * bypass normal AMB Grid behavior; normal application code should prefer
+     * AMB Grid public APIs when changing row data. The result is returned by
+     * identity, including falsy values produced by the engine. The method
+     * returns `false` when the row or operation is not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {object[]|false} Row Cell Components, or `false` when unavailable.
+     */
+    getRowCells(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getCells !== 'function') return false;
+
+        return row.getCells();
+    },
+
+    /**
+     * Returns one Cell Component from a row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * The column lookup is forwarded unchanged to the row component. Cell
+     * Components are advanced runtime objects and are returned by identity.
+     * Directly modifying components may bypass normal AMB Grid behavior; normal
+     * application code should prefer AMB Grid public APIs when changing row
+     * data. The result is returned by identity, including `false` when the
+     * column or cell is not available. The method also returns `false` when the
+     * row or operation is not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @param {*} column - Column lookup supported by the row component.
+     * @returns {object|false} Matching Cell Component, or `false`.
+     */
+    getRowCell(identifier, column) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getCell !== 'function') return false;
+
+        return row.getCell(column);
+    },
+
+    /**
      * Freezes one row through the AMB Grid controller.
      *
      * The AMB Grid row identifier is resolved through the CRUD layer first, so

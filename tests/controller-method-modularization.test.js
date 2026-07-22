@@ -1091,6 +1091,9 @@ describe('AMB table controller method modularization', () => {
             /^\s*getRowIndex\(identifier\) \{/m,
             /^\s*getNextRow\(identifier\) \{/m,
             /^\s*getPrevRow\(identifier\) \{/m,
+            /^\s*getRowElement\(identifier\) \{/m,
+            /^\s*getRowCells\(identifier\) \{/m,
+            /^\s*getRowCell\(identifier,\s*column\) \{/m,
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
             /^\s*isRowFrozen\(identifier\) \{/m,
@@ -1161,6 +1164,9 @@ describe('AMB table controller method modularization', () => {
             /^\s*getRowIndex\(identifier\) \{/m,
             /^\s*getNextRow\(identifier\) \{/m,
             /^\s*getPrevRow\(identifier\) \{/m,
+            /^\s*getRowElement\(identifier\) \{/m,
+            /^\s*getRowCells\(identifier\) \{/m,
+            /^\s*getRowCell\(identifier,\s*column\) \{/m,
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
             /^\s*isRowFrozen\(identifier\) \{/m,
@@ -1195,11 +1201,15 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('tree-row-methods.js');
         expect(controllerModules).not.toContain('row-read-methods.js');
         expect(controllerModules).not.toContain('row-context-methods.js');
+        expect(controllerModules).not.toContain('row-structural-methods.js');
 
         expect(source).toMatch(/getRowData\(identifier,\s*transform\) \{/);
         expect(source).toMatch(/getRowIndex\(identifier\) \{/);
         expect(source).toMatch(/getNextRow\(identifier\) \{/);
         expect(source).toMatch(/getPrevRow\(identifier\) \{/);
+        expect(source).toMatch(/getRowElement\(identifier\) \{/);
+        expect(source).toMatch(/getRowCells\(identifier\) \{/);
+        expect(source).toMatch(/getRowCell\(identifier,\s*column\) \{/);
         expect(source).toMatch(/freezeRow\(identifier\) \{/);
         expect(source).toMatch(/unfreezeRow\(identifier\) \{/);
         expect(source).toMatch(/isRowFrozen\(identifier\) \{/);
