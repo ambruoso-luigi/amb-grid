@@ -1090,6 +1090,12 @@ describe('AMB table controller method modularization', () => {
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
             /^\s*isRowFrozen\(identifier\) \{/m,
+            /^\s*expandTreeRow\(identifier\) \{/m,
+            /^\s*collapseTreeRow\(identifier\) \{/m,
+            /^\s*toggleTreeRow\(identifier\) \{/m,
+            /^\s*getTreeParent\(identifier\) \{/m,
+            /^\s*getTreeChildren\(identifier\) \{/m,
+            /^\s*isTreeExpanded\(identifier\) \{/m,
             /^\s*getRowPosition\(identifier,\s*\.\.\.args\) \{/m,
             /^\s*getRowFromPosition\(\.\.\.args\) \{/m,
             /^\s*scrollToRow\(identifier,\s*\.\.\.args\) \{/m,
@@ -1149,7 +1155,13 @@ describe('AMB table controller method modularization', () => {
         const inlineFrozenRowDefinitions = [
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
-            /^\s*isRowFrozen\(identifier\) \{/m
+            /^\s*isRowFrozen\(identifier\) \{/m,
+            /^\s*expandTreeRow\(identifier\) \{/m,
+            /^\s*collapseTreeRow\(identifier\) \{/m,
+            /^\s*toggleTreeRow\(identifier\) \{/m,
+            /^\s*getTreeParent\(identifier\) \{/m,
+            /^\s*getTreeChildren\(identifier\) \{/m,
+            /^\s*isTreeExpanded\(identifier\) \{/m
         ];
 
         expect(source).toMatch(/scrollToRow\(identifier,\s*\.\.\.args\) \{\s*const ambRow = crud\.findRowByKey\(identifier\);\s*return table\.scrollToRow\(ambRow \|\| identifier, \.\.\.args\);/);
@@ -1170,25 +1182,68 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('row-freezing-methods.js');
         expect(controllerModules).not.toContain('freeze-row-methods.js');
         expect(controllerModules).not.toContain('unfreeze-row-methods.js');
+        expect(controllerModules).not.toContain('data-tree-methods.js');
+        expect(controllerModules).not.toContain('tree-methods.js');
+        expect(controllerModules).not.toContain('tree-row-methods.js');
 
         expect(source).toMatch(/freezeRow\(identifier\) \{/);
         expect(source).toMatch(/unfreezeRow\(identifier\) \{/);
         expect(source).toMatch(/isRowFrozen\(identifier\) \{/);
+        expect(source).toMatch(/expandTreeRow\(identifier\) \{/);
+        expect(source).toMatch(/collapseTreeRow\(identifier\) \{/);
+        expect(source).toMatch(/toggleTreeRow\(identifier\) \{/);
+        expect(source).toMatch(/getTreeParent\(identifier\) \{/);
+        expect(source).toMatch(/getTreeChildren\(identifier\) \{/);
+        expect(source).toMatch(/isTreeExpanded\(identifier\) \{/);
         expect(implementationSource).toContain('crud.findRowByKey(identifier)');
         expect(implementationSource).toContain('table.getRow(identifier)');
+        expect(implementationSource).toContain('resolveTreeRowOperation(table, crud, identifier');
         expect(implementationSource).toMatch(/row\.freeze\(\);/);
         expect(implementationSource).toMatch(/row\.unfreeze\(\);/);
         expect(implementationSource).toMatch(/return row\.isFrozen\(\);/);
+        expect(implementationSource).toMatch(/row\.treeExpand\(\);/);
+        expect(implementationSource).toMatch(/row\.treeCollapse\(\);/);
+        expect(implementationSource).toMatch(/row\.treeToggle\(\);/);
+        expect(implementationSource).toMatch(/return row\.getTreeParent\(\);/);
+        expect(implementationSource).toMatch(/return row\.getTreeChildren\(\);/);
+        expect(implementationSource).toMatch(/return row\.isTreeExpanded\(\);/);
         expect(implementationSource).not.toMatch(/table\.freezeRow\(/);
         expect(implementationSource).not.toMatch(/table\.unfreezeRow\(/);
         expect(implementationSource).not.toMatch(/table\.isRowFrozen\(/);
+        expect(implementationSource).not.toMatch(/table\.expandTreeRow\(/);
+        expect(implementationSource).not.toMatch(/table\.collapseTreeRow\(/);
+        expect(implementationSource).not.toMatch(/table\.toggleTreeRow\(/);
+        expect(implementationSource).not.toMatch(/table\.getTreeParent\(/);
+        expect(implementationSource).not.toMatch(/table\.getTreeChildren\(/);
+        expect(implementationSource).not.toMatch(/table\.isTreeExpanded\(/);
+        expect(implementationSource).not.toContain('addTreeChild');
+        expect(implementationSource).not.toMatch(/updateRowFields\(/);
+        expect(implementationSource).not.toMatch(/addRow\(/);
+        expect(implementationSource).not.toMatch(/deleteRow\(/);
+        expect(implementationSource).not.toMatch(/validateAll\(/);
+        expect(implementationSource).not.toMatch(/setData\(/);
+        expect(implementationSource).not.toMatch(/replaceData\(/);
+        expect(implementationSource).not.toMatch(/updateData\(/);
+        expect(implementationSource).not.toMatch(/addData\(/);
+        expect(implementationSource).not.toMatch(/refreshFilter\(/);
+        expect(implementationSource).not.toMatch(/setFilter\(/);
+        expect(implementationSource).not.toMatch(/setSort\(/);
+        expect(implementationSource).not.toMatch(/setPage\(/);
+        expect(implementationSource).not.toMatch(/redraw\(/);
         expect(implementationSource).not.toContain('searchController');
         expect(implementationSource).not.toContain('toolbarController');
         expect(implementationSource).not.toContain('FloatingMessage');
         expect(implementationSource).not.toContain('FeedbackRegion');
         expect(implementationSource).not.toContain('eventManager');
         expect(implementationSource).not.toContain('EventManager');
+        expect(implementationSource).not.toContain('createToolbar');
+        expect(implementationSource).not.toContain('searchFilter');
+        expect(implementationSource).not.toContain('floatingMessage');
+        expect(implementationSource).not.toMatch(/\.on\(/);
+        expect(implementationSource).not.toMatch(/\.off\(/);
         expect(implementationSource).not.toContain('rows:');
+        expect(implementationSource).not.toContain('tree:');
+        expect(implementationSource).not.toContain('dataTree:');
         expect(implementationSource).not.toContain('frozenRows:');
         expect(implementationSource).not.toContain('rowFreezing:');
 

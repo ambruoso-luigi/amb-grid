@@ -712,6 +712,12 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} freezeRow - Freeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} unfreezeRow - Unfreeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} isRowFrozen - Return whether one row is currently frozen through the AMB Grid public API.
+ * @property {Function} expandTreeRow - Expand one Data Tree row when Data Tree is enabled, returning `true` only when delegated.
+ * @property {Function} collapseTreeRow - Collapse one Data Tree row when Data Tree is enabled, returning `true` only when delegated.
+ * @property {Function} toggleTreeRow - Toggle one Data Tree row when Data Tree is enabled, returning `true` only when delegated.
+ * @property {Function} getTreeParent - Return the Data Tree parent Row Component, or `false` when unavailable or at a root row.
+ * @property {Function} getTreeChildren - Return the direct Data Tree child Row Components, or `false` when unavailable.
+ * @property {Function} isTreeExpanded - Return the Data Tree runtime expanded state, or `false` when unavailable.
  * @property {Function} getRowPosition - Return the one-based position of a row.
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
  * @property {Function} scrollToRow - Scroll vertically to a grid row.

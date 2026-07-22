@@ -6,6 +6,18 @@ const resolveRowComponent = (table, crud, identifier) => {
     return table.getRow(identifier);
 };
 
+const isDataTreeEnabled = table => Boolean(table && table.options && table.options.dataTree);
+
+const resolveTreeRowOperation = (table, crud, identifier, methodName) => {
+    if (!isDataTreeEnabled(table)) return false;
+
+    const row = resolveRowComponent(table, crud, identifier);
+
+    if (!row || typeof row[methodName] !== 'function') return false;
+
+    return row;
+};
+
 /**
  * Creates the row methods exposed by the AMB Grid controller.
  *
@@ -123,6 +135,170 @@ export const createRowMethods = ({ table, crud }) => ({
         if (!row || typeof row.isFrozen !== 'function') return false;
 
         return row.isFrozen();
+    },
+
+    /**
+     * Expands one Data Tree row through the AMB Grid controller.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Data Tree must be enabled for the operation to be delegated. Expansion
+     * changes only Data Tree runtime state managed by the underlying table
+     * engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
+     * not modified. The returned `true` means the operation was delegated, not
+     * that the row had children or changed state. `false` is returned when Data
+     * Tree, the row or the operation is not available. `addTreeChild` is not
+     * part of this non-mutative Data Tree block.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} `true` when expansion is delegated, otherwise `false`.
+     */
+    expandTreeRow(identifier) {
+        const row = resolveTreeRowOperation(table, crud, identifier, 'treeExpand');
+
+        if (!row) return false;
+
+        row.treeExpand();
+        return true;
+    },
+
+    /**
+     * Collapses one Data Tree row through the AMB Grid controller.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Data Tree must be enabled for the operation to be delegated. Collapse
+     * changes only Data Tree runtime state managed by the underlying table
+     * engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
+     * not modified. The returned `true` means the operation was delegated, not
+     * that the row had children or changed state. `false` is returned when Data
+     * Tree, the row or the operation is not available. `addTreeChild` is not
+     * part of this non-mutative Data Tree block.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} `true` when collapse is delegated, otherwise `false`.
+     */
+    collapseTreeRow(identifier) {
+        const row = resolveTreeRowOperation(table, crud, identifier, 'treeCollapse');
+
+        if (!row) return false;
+
+        row.treeCollapse();
+        return true;
+    },
+
+    /**
+     * Toggles one Data Tree row through the AMB Grid controller.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Data Tree must be enabled for the operation to be delegated. Toggling
+     * changes only Data Tree runtime state managed by the underlying table
+     * engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
+     * not modified. The returned `true` means the operation was delegated, not
+     * that the row had children or changed state. `false` is returned when Data
+     * Tree, the row or the operation is not available. `addTreeChild` is not
+     * part of this non-mutative Data Tree block.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} `true` when toggle is delegated, otherwise `false`.
+     */
+    toggleTreeRow(identifier) {
+        const row = resolveTreeRowOperation(table, crud, identifier, 'treeToggle');
+
+        if (!row) return false;
+
+        row.treeToggle();
+        return true;
+    },
+
+    /**
+     * Returns the parent Row Component for one Data Tree row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Data Tree must be enabled. This method reads Data Tree runtime state from
+     * the underlying table engine and does not modify row data, snapshots, CRUD
+     * state or AMB Grid save payloads. It returns the parent managed row
+     * component by identity, or `false` when Data Tree, the row or the
+     * operation is not available, or when the underlying table engine reports
+     * that the row is a root. `addTreeChild` is not part of this non-mutative
+     * Data Tree block.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {object|false} Parent Row Component, or `false`.
+     */
+    getTreeParent(identifier) {
+        const row = resolveTreeRowOperation(table, crud, identifier, 'getTreeParent');
+
+        if (!row) return false;
+
+        return row.getTreeParent();
+    },
+
+    /**
+     * Returns the direct child Row Components for one Data Tree row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Data Tree must be enabled. This method reads Data Tree runtime state from
+     * the underlying table engine and does not modify row data, snapshots, CRUD
+     * state or AMB Grid save payloads. It returns the direct child managed row
+     * components by identity, preserving the engine array, empty arrays and row
+     * component references. `false` is returned when Data Tree, the row or the
+     * operation is not available. `addTreeChild` is not part of this
+     * non-mutative Data Tree block.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {object[]|false} Direct child Row Components, or `false`.
+     */
+    getTreeChildren(identifier) {
+        const row = resolveTreeRowOperation(table, crud, identifier, 'getTreeChildren');
+
+        if (!row) return false;
+
+        return row.getTreeChildren();
+    },
+
+    /**
+     * Reports whether one Data Tree row is expanded.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Data Tree must be enabled. This method reads Data Tree runtime state from
+     * the underlying table engine and does not modify row data, snapshots, CRUD
+     * state or AMB Grid save payloads. It preserves both `true` and `false`
+     * returned by the engine. `false` is also returned when Data Tree, the row
+     * or the operation is not available. `addTreeChild` is not part of this
+     * non-mutative Data Tree block.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} Current Data Tree expanded state, or `false` when unavailable.
+     */
+    isTreeExpanded(identifier) {
+        const row = resolveTreeRowOperation(table, crud, identifier, 'isTreeExpanded');
+
+        if (!row) return false;
+
+        return row.isTreeExpanded();
     },
 
     /**
