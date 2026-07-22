@@ -1,3 +1,11 @@
+const resolveRowComponent = (table, crud, identifier) => {
+    const ambRow = crud.findRowByKey(identifier);
+
+    if (ambRow) return ambRow;
+
+    return table.getRow(identifier);
+};
+
 /**
  * Creates the row methods exposed by the AMB Grid controller.
  *
@@ -41,11 +49,80 @@ export const createRowMethods = ({ table, crud }) => ({
      * @returns {object|false} Matching row component, or `false` when no row is found.
      */
     getRow(identifier) {
-        const ambRow = crud.findRowByKey(identifier);
+        return resolveRowComponent(table, crud, identifier);
+    },
 
-        if (ambRow) return ambRow;
+    /**
+     * Freezes one row through the AMB Grid controller.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * row component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Freezing changes only the runtime row position used by the grid display.
+     * Row data, snapshots, CRUD state and AMB Grid save payloads are not
+     * modified. The method returns `false` when the row or operation is not
+     * available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} `true` when the runtime row position is frozen, otherwise `false`.
+     */
+    freezeRow(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
 
-        return table.getRow(identifier);
+        if (!row || typeof row.freeze !== 'function') return false;
+
+        row.freeze();
+        return true;
+    },
+
+    /**
+     * Unfreezes one row through the AMB Grid controller.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * row component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * Unfreezing changes only the runtime row position used by the grid display.
+     * Row data, snapshots, CRUD state and AMB Grid save payloads are not
+     * modified. The method returns `false` when the row or operation is not
+     * available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} `true` when the runtime row position is unfrozen, otherwise `false`.
+     */
+    unfreezeRow(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.unfreeze !== 'function') return false;
+
+        row.unfreeze();
+        return true;
+    },
+
+    /**
+     * Reports whether one row is currently frozen in the AMB Grid controller.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * row component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * The check reads the current runtime row position state only. Row data,
+     * snapshots, CRUD state and AMB Grid save payloads are not modified. The
+     * method returns `false` when the row or operation is not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} Current frozen state, or `false` when unavailable.
+     */
+    isRowFrozen(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.isFrozen !== 'function') return false;
+
+        return row.isFrozen();
     },
 
     /**

@@ -1087,6 +1087,9 @@ describe('AMB table controller method modularization', () => {
         const inlineRowDefinitions = [
             /^\s*getRows\(\.\.\.args\) \{/m,
             /^\s*getRow\(identifier\) \{/m,
+            /^\s*freezeRow\(identifier\) \{/m,
+            /^\s*unfreezeRow\(identifier\) \{/m,
+            /^\s*isRowFrozen\(identifier\) \{/m,
             /^\s*getRowPosition\(identifier,\s*\.\.\.args\) \{/m,
             /^\s*getRowFromPosition\(\.\.\.args\) \{/m,
             /^\s*scrollToRow\(identifier,\s*\.\.\.args\) \{/m,
@@ -1134,16 +1137,64 @@ describe('AMB table controller method modularization', () => {
         expect(source).not.toContain('.hide()');
     });
 
-    test('keeps row scrolling in the row method module', () => {
+    test('keeps AMB-aware row methods in the row method module', () => {
         const rowMethodsPath = resolve(repositoryRoot, 'src/lib/table/controller/row-methods.js');
         const source = readFileSync(rowMethodsPath, 'utf8');
+        const implementationSource = source.replace(/\/\*\*[\s\S]*?\*\//g, '');
         const tableFactorySource = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = tableFactorySource.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const controllerMethodsSpreads = tableFactorySource.match(/\.\.\.controllerMethods/g) || [];
+        const inlineFrozenRowDefinitions = [
+            /^\s*freezeRow\(identifier\) \{/m,
+            /^\s*unfreezeRow\(identifier\) \{/m,
+            /^\s*isRowFrozen\(identifier\) \{/m
+        ];
 
         expect(source).toMatch(/scrollToRow\(identifier,\s*\.\.\.args\) \{\s*const ambRow = crud\.findRowByKey\(identifier\);\s*return table\.scrollToRow\(ambRow \|\| identifier, \.\.\.args\);/);
+        expect(tableFactorySource).toContain("import { createRowMethods } from './controller/row-methods.js';");
+        expect(tableFactorySource).toContain('const rowMethods = createRowMethods({ table, crud });');
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('dataMethods');
+        expect(composition[1]).toContain('rowMethods');
+        expect(composition[1]).toContain('validationMethods');
         expect(tableFactorySource).not.toContain('row-navigation-methods.js');
         expect(tableFactorySource).not.toContain('...rowMethods');
+        expect(controllerMethodsSpreads).toHaveLength(1);
         expect(tableFactorySource).toContain('rowMethods');
         expect(tableFactorySource).toContain('...controllerMethods');
+        expect(controllerModules).toContain('row-methods.js');
+        expect(controllerModules).not.toContain('frozen-row-methods.js');
+        expect(controllerModules).not.toContain('frozen-rows-methods.js');
+        expect(controllerModules).not.toContain('row-freezing-methods.js');
+        expect(controllerModules).not.toContain('freeze-row-methods.js');
+        expect(controllerModules).not.toContain('unfreeze-row-methods.js');
+
+        expect(source).toMatch(/freezeRow\(identifier\) \{/);
+        expect(source).toMatch(/unfreezeRow\(identifier\) \{/);
+        expect(source).toMatch(/isRowFrozen\(identifier\) \{/);
+        expect(implementationSource).toContain('crud.findRowByKey(identifier)');
+        expect(implementationSource).toContain('table.getRow(identifier)');
+        expect(implementationSource).toMatch(/row\.freeze\(\);/);
+        expect(implementationSource).toMatch(/row\.unfreeze\(\);/);
+        expect(implementationSource).toMatch(/return row\.isFrozen\(\);/);
+        expect(implementationSource).not.toMatch(/table\.freezeRow\(/);
+        expect(implementationSource).not.toMatch(/table\.unfreezeRow\(/);
+        expect(implementationSource).not.toMatch(/table\.isRowFrozen\(/);
+        expect(implementationSource).not.toContain('searchController');
+        expect(implementationSource).not.toContain('toolbarController');
+        expect(implementationSource).not.toContain('FloatingMessage');
+        expect(implementationSource).not.toContain('FeedbackRegion');
+        expect(implementationSource).not.toContain('eventManager');
+        expect(implementationSource).not.toContain('EventManager');
+        expect(implementationSource).not.toContain('rows:');
+        expect(implementationSource).not.toContain('frozenRows:');
+        expect(implementationSource).not.toContain('rowFreezing:');
+
+        inlineFrozenRowDefinitions.forEach(pattern => {
+            expect(tableFactorySource).not.toMatch(pattern);
+        });
     });
 
     test('keeps one-off query search methods in data and row method modules', () => {

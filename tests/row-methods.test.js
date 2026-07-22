@@ -2,6 +2,64 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { createRowMethods } from '../src/lib/table/controller/row-methods.js';
 
+const createFreezableRow = (overrides = {}) => ({
+    freeze: vi.fn(),
+    unfreeze: vi.fn(),
+    isFrozen: vi.fn(() => false),
+    getData: vi.fn(),
+    select: vi.fn(),
+    deselect: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    ...overrides
+});
+
+const createFreezingHarness = ({
+    crudRows = new Map(),
+    fallbackRows = new Map()
+} = {}) => {
+    const table = {
+        getRow: vi.fn(identifier => fallbackRows.get(identifier) || false),
+        freezeRow: vi.fn(),
+        unfreezeRow: vi.fn(),
+        isRowFrozen: vi.fn(),
+        selectRow: vi.fn(),
+        deselectRow: vi.fn(),
+        setFilter: vi.fn(),
+        setSort: vi.fn(),
+        setPage: vi.fn(),
+        redraw: vi.fn()
+    };
+    const crud = {
+        findRowByKey: vi.fn(identifier => crudRows.get(identifier) || null),
+        updateRowFields: vi.fn(),
+        addRow: vi.fn(),
+        deleteRow: vi.fn()
+    };
+    const methods = createRowMethods({ table, crud });
+
+    return {
+        table,
+        crud,
+        methods
+    };
+};
+
+const expectNoFreezingSideEffects = (table, crud) => {
+    expect(crud.updateRowFields).not.toHaveBeenCalled();
+    expect(crud.addRow).not.toHaveBeenCalled();
+    expect(crud.deleteRow).not.toHaveBeenCalled();
+    expect(table.freezeRow).not.toHaveBeenCalled();
+    expect(table.unfreezeRow).not.toHaveBeenCalled();
+    expect(table.isRowFrozen).not.toHaveBeenCalled();
+    expect(table.selectRow).not.toHaveBeenCalled();
+    expect(table.deselectRow).not.toHaveBeenCalled();
+    expect(table.setFilter).not.toHaveBeenCalled();
+    expect(table.setSort).not.toHaveBeenCalled();
+    expect(table.setPage).not.toHaveBeenCalled();
+    expect(table.redraw).not.toHaveBeenCalled();
+};
+
 describe('AMB table controller row method group', () => {
     test('exposes exactly the flat row controller methods', () => {
         const methods = createRowMethods({
@@ -10,14 +68,185 @@ describe('AMB table controller row method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'freezeRow',
             'getRow',
             'getRowFromPosition',
             'getRowPosition',
             'getRows',
+            'isRowFrozen',
             'scrollToRow',
-            'searchRows'
+            'searchRows',
+            'unfreezeRow'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+        expect(methods.rows).toBeUndefined();
+        expect(methods.frozenRows).toBeUndefined();
+        expect(methods.rowFreezing).toBeUndefined();
+        expect(methods.freezeRows).toBeUndefined();
+        expect(methods.unfreezeRows).toBeUndefined();
+        expect(methods.toggleRowFrozen).toBeUndefined();
+    });
+
+    test('resolves row freezing methods through AMB identifiers before engine fallback', () => {
+        const backendId = 15;
+        const tempId = 'amb-temp-1';
+        const zeroId = 0;
+        const emptyId = '';
+        const identifiers = [backendId, tempId, zeroId, emptyId];
+        const operations = [
+            {
+                name: 'freezeRow',
+                rowFactory: label => createFreezableRow({ label })
+            },
+            {
+                name: 'unfreezeRow',
+                rowFactory: label => createFreezableRow({ label })
+            },
+            {
+                name: 'isRowFrozen',
+                rowFactory: label => createFreezableRow({
+                    label,
+                    isFrozen: vi.fn(() => true)
+                })
+            }
+        ];
+
+        operations.forEach(operation => {
+            const crudRows = new Map(identifiers.map(identifier => [
+                identifier,
+                operation.rowFactory(`row-${String(identifier)}`)
+            ]));
+            const { table, crud, methods } = createFreezingHarness({ crudRows });
+
+            identifiers.forEach(identifier => {
+                expect(methods[operation.name](identifier)).toBe(true);
+                expect(crud.findRowByKey).toHaveBeenLastCalledWith(identifier);
+                expect(crud.findRowByKey.mock.calls.at(-1)[0]).toBe(identifier);
+            });
+
+            expect(crud.findRowByKey).toHaveBeenCalledTimes(identifiers.length);
+            expect(table.getRow).not.toHaveBeenCalled();
+            expectNoFreezingSideEffects(table, crud);
+        });
+    });
+
+    test('uses the engine row lookup fallback without transforming identifiers', () => {
+        const lookup = { lookup: 'engine-supported-row' };
+        const operations = [
+            {
+                name: 'freezeRow',
+                operation: 'freeze',
+                row: createFreezableRow()
+            },
+            {
+                name: 'unfreezeRow',
+                operation: 'unfreeze',
+                row: createFreezableRow()
+            },
+            {
+                name: 'isRowFrozen',
+                operation: 'isFrozen',
+                row: createFreezableRow({ isFrozen: vi.fn(() => true) })
+            }
+        ];
+
+        operations.forEach(({ name, operation, row }) => {
+            const { table, crud, methods } = createFreezingHarness({
+                fallbackRows: new Map([[lookup, row]])
+            });
+
+            expect(methods[name](lookup)).toBe(true);
+            expect(crud.findRowByKey).toHaveBeenCalledOnce();
+            expect(crud.findRowByKey).toHaveBeenLastCalledWith(lookup);
+            expect(crud.findRowByKey.mock.calls[0][0]).toBe(lookup);
+            expect(table.getRow).toHaveBeenCalledOnce();
+            expect(table.getRow).toHaveBeenLastCalledWith(lookup);
+            expect(table.getRow.mock.calls[0][0]).toBe(lookup);
+            expect(row[operation]).toHaveBeenCalledOnce();
+            expectNoFreezingSideEffects(table, crud);
+        });
+    });
+
+    test('freezeRow calls only row.freeze once and returns false when unavailable', () => {
+        const row = createFreezableRow();
+        const missingFreezeRow = createFreezableRow({ freeze: undefined });
+        const { table, crud, methods } = createFreezingHarness({
+            crudRows: new Map([
+                [15, row],
+                ['no-freeze', missingFreezeRow]
+            ])
+        });
+
+        expect(methods.freezeRow(15)).toBe(true);
+        expect(row.freeze).toHaveBeenCalledOnce();
+        expect(row.unfreeze).not.toHaveBeenCalled();
+        expect(row.isFrozen).not.toHaveBeenCalled();
+
+        expect(methods.freezeRow('missing-row')).toBe(false);
+        expect(table.getRow).toHaveBeenCalledOnce();
+        expect(table.getRow).toHaveBeenLastCalledWith('missing-row');
+
+        expect(methods.freezeRow('no-freeze')).toBe(false);
+        expect(missingFreezeRow.unfreeze).not.toHaveBeenCalled();
+        expect(missingFreezeRow.isFrozen).not.toHaveBeenCalled();
+        expectNoFreezingSideEffects(table, crud);
+    });
+
+    test('unfreezeRow calls only row.unfreeze once and returns false when unavailable', () => {
+        const row = createFreezableRow();
+        const missingUnfreezeRow = createFreezableRow({ unfreeze: undefined });
+        const { table, crud, methods } = createFreezingHarness({
+            crudRows: new Map([
+                [15, row],
+                ['no-unfreeze', missingUnfreezeRow]
+            ])
+        });
+
+        expect(methods.unfreezeRow(15)).toBe(true);
+        expect(row.unfreeze).toHaveBeenCalledOnce();
+        expect(row.freeze).not.toHaveBeenCalled();
+        expect(row.isFrozen).not.toHaveBeenCalled();
+
+        expect(methods.unfreezeRow('missing-row')).toBe(false);
+        expect(table.getRow).toHaveBeenCalledOnce();
+        expect(table.getRow).toHaveBeenLastCalledWith('missing-row');
+
+        expect(methods.unfreezeRow('no-unfreeze')).toBe(false);
+        expect(missingUnfreezeRow.freeze).not.toHaveBeenCalled();
+        expect(missingUnfreezeRow.isFrozen).not.toHaveBeenCalled();
+        expectNoFreezingSideEffects(table, crud);
+    });
+
+    test('isRowFrozen calls only row.isFrozen once and forwards boolean results', () => {
+        const frozenRow = createFreezableRow({ isFrozen: vi.fn(() => true) });
+        const movableRow = createFreezableRow({ isFrozen: vi.fn(() => false) });
+        const missingIsFrozenRow = createFreezableRow({ isFrozen: undefined });
+        const { table, crud, methods } = createFreezingHarness({
+            crudRows: new Map([
+                ['frozen', frozenRow],
+                ['movable', movableRow],
+                ['no-is-frozen', missingIsFrozenRow]
+            ])
+        });
+
+        expect(methods.isRowFrozen('frozen')).toBe(true);
+        expect(frozenRow.isFrozen).toHaveBeenCalledOnce();
+        expect(frozenRow.freeze).not.toHaveBeenCalled();
+        expect(frozenRow.unfreeze).not.toHaveBeenCalled();
+
+        expect(methods.isRowFrozen('movable')).toBe(false);
+        expect(movableRow.isFrozen).toHaveBeenCalledOnce();
+        expect(movableRow.freeze).not.toHaveBeenCalled();
+        expect(movableRow.unfreeze).not.toHaveBeenCalled();
+
+        expect(methods.isRowFrozen('missing-row')).toBe(false);
+        expect(table.getRow).toHaveBeenCalledOnce();
+        expect(table.getRow).toHaveBeenLastCalledWith('missing-row');
+
+        expect(methods.isRowFrozen('no-is-frozen')).toBe(false);
+        expect(missingIsFrozenRow.freeze).not.toHaveBeenCalled();
+        expect(missingIsFrozenRow.unfreeze).not.toHaveBeenCalled();
+        expectNoFreezingSideEffects(table, crud);
     });
 
     test('searches row components without touching CRUD or persistent grid state', () => {
