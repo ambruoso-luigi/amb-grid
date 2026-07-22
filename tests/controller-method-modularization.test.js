@@ -1087,6 +1087,10 @@ describe('AMB table controller method modularization', () => {
         const inlineRowDefinitions = [
             /^\s*getRows\(\.\.\.args\) \{/m,
             /^\s*getRow\(identifier\) \{/m,
+            /^\s*getRowData\(identifier,\s*transform\) \{/m,
+            /^\s*getRowIndex\(identifier\) \{/m,
+            /^\s*getNextRow\(identifier\) \{/m,
+            /^\s*getPrevRow\(identifier\) \{/m,
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
             /^\s*isRowFrozen\(identifier\) \{/m,
@@ -1153,6 +1157,10 @@ describe('AMB table controller method modularization', () => {
         const composition = tableFactorySource.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
         const controllerMethodsSpreads = tableFactorySource.match(/\.\.\.controllerMethods/g) || [];
         const inlineFrozenRowDefinitions = [
+            /^\s*getRowData\(identifier,\s*transform\) \{/m,
+            /^\s*getRowIndex\(identifier\) \{/m,
+            /^\s*getNextRow\(identifier\) \{/m,
+            /^\s*getPrevRow\(identifier\) \{/m,
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
             /^\s*isRowFrozen\(identifier\) \{/m,
@@ -1185,7 +1193,13 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('data-tree-methods.js');
         expect(controllerModules).not.toContain('tree-methods.js');
         expect(controllerModules).not.toContain('tree-row-methods.js');
+        expect(controllerModules).not.toContain('row-read-methods.js');
+        expect(controllerModules).not.toContain('row-context-methods.js');
 
+        expect(source).toMatch(/getRowData\(identifier,\s*transform\) \{/);
+        expect(source).toMatch(/getRowIndex\(identifier\) \{/);
+        expect(source).toMatch(/getNextRow\(identifier\) \{/);
+        expect(source).toMatch(/getPrevRow\(identifier\) \{/);
         expect(source).toMatch(/freezeRow\(identifier\) \{/);
         expect(source).toMatch(/unfreezeRow\(identifier\) \{/);
         expect(source).toMatch(/isRowFrozen\(identifier\) \{/);
@@ -1198,6 +1212,10 @@ describe('AMB table controller method modularization', () => {
         expect(implementationSource).toContain('crud.findRowByKey(identifier)');
         expect(implementationSource).toContain('table.getRow(identifier)');
         expect(implementationSource).toContain('resolveTreeRowOperation(table, crud, identifier');
+        expect(implementationSource).toMatch(/return row\.getData\(transform\);/);
+        expect(implementationSource).toMatch(/return row\.getIndex\(\);/);
+        expect(implementationSource).toMatch(/return row\.getNextRow\(\);/);
+        expect(implementationSource).toMatch(/return row\.getPrevRow\(\);/);
         expect(implementationSource).toMatch(/row\.freeze\(\);/);
         expect(implementationSource).toMatch(/row\.unfreeze\(\);/);
         expect(implementationSource).toMatch(/return row\.isFrozen\(\);/);
@@ -1216,6 +1234,10 @@ describe('AMB table controller method modularization', () => {
         expect(implementationSource).not.toMatch(/table\.getTreeParent\(/);
         expect(implementationSource).not.toMatch(/table\.getTreeChildren\(/);
         expect(implementationSource).not.toMatch(/table\.isTreeExpanded\(/);
+        expect(implementationSource).not.toMatch(/table\.getRowData\(/);
+        expect(implementationSource).not.toMatch(/table\.getRowIndex\(/);
+        expect(implementationSource).not.toMatch(/table\.getNextRow\(/);
+        expect(implementationSource).not.toMatch(/table\.getPrevRow\(/);
         expect(implementationSource).not.toContain('addTreeChild');
         expect(implementationSource).not.toMatch(/updateRowFields\(/);
         expect(implementationSource).not.toMatch(/addRow\(/);
@@ -1242,6 +1264,8 @@ describe('AMB table controller method modularization', () => {
         expect(implementationSource).not.toMatch(/\.on\(/);
         expect(implementationSource).not.toMatch(/\.off\(/);
         expect(implementationSource).not.toContain('rows:');
+        expect(implementationSource).not.toContain('rowReads:');
+        expect(implementationSource).not.toContain('rowContext:');
         expect(implementationSource).not.toContain('tree:');
         expect(implementationSource).not.toContain('dataTree:');
         expect(implementationSource).not.toContain('frozenRows:');

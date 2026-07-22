@@ -65,6 +65,105 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Returns the managed row data for one row through the AMB Grid controller.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * row component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * The returned object is the row data managed by the underlying table
+     * engine. Directly mutating it may bypass AMB Grid CRUD tracking; normal
+     * application code should prefer AMB Grid APIs when changing row data. The
+     * optional transform value is forwarded unchanged. The result is returned
+     * by identity, including falsy values produced by the engine. The method
+     * returns `false` only when the row or operation is not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @param {*} [transform] - Optional transform selector forwarded to the row component.
+     * @returns {*|false} Row data result, or `false` when unavailable.
+     */
+    getRowData(identifier, transform) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getData !== 'function') return false;
+
+        return row.getData(transform);
+    },
+
+    /**
+     * Returns the identifying index value for one row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * row component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * This reads the row index value reported by the underlying table engine.
+     * It is not the numerical row position exposed by `getRowPosition`. The
+     * value is returned without conversion, including falsy values. The method
+     * returns `false` only when the row or operation is not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {*|false} Row index value, or `false` when unavailable.
+     */
+    getRowIndex(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getIndex !== 'function') return false;
+
+        return row.getIndex();
+    },
+
+    /**
+     * Returns the next managed row component relative to one row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * row component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * The result from the underlying table engine is returned by identity. This
+     * preserves the next managed row component, or `false` when there is no
+     * next row. The method also returns `false` when the row or operation is not
+     * available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {object|false} Next managed row component, or `false`.
+     */
+    getNextRow(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getNextRow !== 'function') return false;
+
+        return row.getNextRow();
+    },
+
+    /**
+     * Returns the previous managed row component relative to one row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * row component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * The result from the underlying table engine is returned by identity. This
+     * preserves the previous managed row component, or `false` when there is no
+     * previous row. The method also returns `false` when the row or operation is
+     * not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {object|false} Previous managed row component, or `false`.
+     */
+    getPrevRow(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getPrevRow !== 'function') return false;
+
+        return row.getPrevRow();
+    },
+
+    /**
      * Freezes one row through the AMB Grid controller.
      *
      * The AMB Grid row identifier is resolved through the CRUD layer first, so

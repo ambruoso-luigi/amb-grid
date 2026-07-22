@@ -709,6 +709,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
+ * @property {Function} getRowData - Return managed data for one row by backend id, AMB temporary id, or supported lookup value.
+ * @property {Function} getRowIndex - Return the identifying index value for one row.
+ * @property {Function} getNextRow - Return the next row component relative to one row, or `false`.
+ * @property {Function} getPrevRow - Return the previous row component relative to one row, or `false`.
  * @property {Function} freezeRow - Freeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} unfreezeRow - Unfreeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} isRowFrozen - Return whether one row is currently frozen through the AMB Grid public API.

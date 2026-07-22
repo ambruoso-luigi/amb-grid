@@ -4388,7 +4388,7 @@ part of this non-mutative Data Tree block.
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line187">line 187</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line286">line 286</a>
     </li></ul></dd>
 
 
@@ -8402,7 +8402,7 @@ candidates for automatic focus.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line889">line 889</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line893">line 893</a>
     </li></ul></dd>
     
 
@@ -10241,7 +10241,7 @@ part of this non-mutative Data Tree block.
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line159">line 159</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line258">line 258</a>
     </li></ul></dd>
 
 
@@ -10410,7 +10410,7 @@ available.
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line83">line 83</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line182">line 182</a>
     </li></ul></dd>
 
 
@@ -13199,6 +13199,178 @@ the original locale option when fallback or automatic detection is used.
     
 
     
+    <h4 class="name" id="getNextRow"><span class="type-signature"></span>getNextRow<span class="signature">(identifier)</span><span class="type-signature"> &rarr; {object|false}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the next managed row component relative to one row.
+
+The AMB Grid row identifier is resolved through the CRUD layer first, so
+backend id values and AMB Grid temporary identifiers address the managed
+row component. Other supported row lookup values can be resolved by the
+underlying table engine.
+
+The result from the underlying table engine is returned by identity. This
+preserves the next managed row component, or `false` when there is no
+next row. The method also returns `false` when the row or operation is not
+available.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>identifier</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+
+
+
+            <td class="description last">AMB Grid row identifier or supported row lookup value.</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line134">line 134</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Next managed row component, or `false`.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+|
+
+<span class="param-type">false</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="getPage"><span class="type-signature"></span>getPage<span class="signature">()</span><span class="type-signature"> &rarr; {number|false}</span></h4>
     
 
@@ -13540,10 +13712,182 @@ The method returns `false` when pagination is disabled.
     
 
     
-    <h4 class="name" id="getRanges"><span class="type-signature"></span>getRanges<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;object>}</span></h4>
+    <h4 class="name" id="getPrevRow"><span class="type-signature"></span>getPrevRow<span class="signature">(identifier)</span><span class="type-signature"> &rarr; {object|false}</span></h4>
     
 
     
+
+
+
+<div class="description">
+    Returns the previous managed row component relative to one row.
+
+The AMB Grid row identifier is resolved through the CRUD layer first, so
+backend id values and AMB Grid temporary identifiers address the managed
+row component. Other supported row lookup values can be resolved by the
+underlying table engine.
+
+The result from the underlying table engine is returned by identity. This
+preserves the previous managed row component, or `false` when there is no
+previous row. The method also returns `false` when the row or operation is
+not available.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>identifier</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+
+
+
+            <td class="description last">AMB Grid row identifier or supported row lookup value.</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line158">line 158</a>
+    </li></ul></dd>
+    
+
+    
+
+
+
+
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+
+<div class="param-desc">
+    Previous managed row component, or `false`.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+
+<span class="param-type">object</span>
+|
+
+<span class="param-type">false</span>
+
+
+    </dd>
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="name" id="getRanges"><span class="type-signature"></span>getRanges<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;object>}</span></h4>
+
+
+
 
 
 
@@ -13573,42 +13917,42 @@ configuration.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_table_controller_range-methods.js.html">lib/table/controller/range-methods.js</a>, <a href="lib_table_controller_range-methods.js.html#line43">line 43</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -13627,7 +13971,7 @@ configuration.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Current cell-range components.
 </div>
@@ -13639,29 +13983,29 @@ configuration.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Array.&lt;object></span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
+
+
+
+
+
     <h4 class="name" id="getRangesData"><span class="type-signature"></span>getRangesData<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;Array.&lt;object>>}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -13690,42 +14034,42 @@ payload generation.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_table_controller_range-methods.js.html">lib/table/controller/range-methods.js</a>, <a href="lib_table_controller_range-methods.js.html#line59">line 59</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -13744,7 +14088,7 @@ payload generation.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Data grouped by selected cell range.
 </div>
@@ -13756,29 +14100,29 @@ payload generation.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Array.&lt;Array.&lt;object>></span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
+
+
+
+
+
     <h4 class="name" id="getRow"><span class="type-signature"></span>getRow<span class="signature">(identifier)</span><span class="type-signature"> &rarr; {object|false}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -13803,7 +14147,574 @@ tracking.
 
 
     <h5>Parameters:</h5>
-    
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>identifier</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+
+
+
+            <td class="description last">Backend id, AMB temporary id, or supported row lookup value.</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line63">line 63</a>
+    </li></ul></dd>
+
+
+
+
+
+
+
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+
+<div class="param-desc">
+    Matching row component, or `false` when no row is found.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+
+<span class="param-type">object</span>
+|
+
+<span class="param-type">false</span>
+
+
+    </dd>
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="name" id="getRowData"><span class="type-signature"></span>getRowData<span class="signature">(identifier, transform<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {*|false}</span></h4>
+
+
+
+
+
+
+<div class="description">
+    Returns the managed row data for one row through the AMB Grid controller.
+
+The AMB Grid row identifier is resolved through the CRUD layer first, so
+backend id values and AMB Grid temporary identifiers address the managed
+row component. Other supported row lookup values can be resolved by the
+underlying table engine.
+
+The returned object is the row data managed by the underlying table
+engine. Directly mutating it may bypass AMB Grid CRUD tracking; normal
+application code should prefer AMB Grid APIs when changing row data. The
+optional transform value is forwarded unchanged. The result is returned
+by identity, including falsy values produced by the engine. The method
+returns `false` only when the row or operation is not available.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+        <th>Attributes</th>
+
+
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>identifier</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+
+
+
+
+                </td>
+
+
+
+
+            <td class="description last">AMB Grid row identifier or supported row lookup value.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>transform</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+
+            <td class="description last">Optional transform selector forwarded to the row component.</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line86">line 86</a>
+    </li></ul></dd>
+
+
+
+
+
+
+
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+
+<div class="param-desc">
+    Row data result, or `false` when unavailable.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+
+<span class="param-type">*</span>
+|
+
+<span class="param-type">false</span>
+
+
+    </dd>
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="name" id="getRowFromPosition"><span class="type-signature"></span>getRowFromPosition<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {object|false}</span></h4>
+
+
+
+
+
+
+<div class="description">
+    Returns the row component at a numerical position.
+
+Positions start at 1. The returned component exposes advanced row
+operations, so direct mutations may bypass or interfere with AMB Grid CRUD
+tracking.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+        <th>Attributes</th>
+
+
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>args</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">any</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+
+
+
+
+                    &lt;repeatable><br>
+
+                </td>
+
+
+
+
+            <td class="description last">Position lookup arguments.</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line433">line 433</a>
+    </li></ul></dd>
+
+
+
+
+
+
+
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+
+<div class="param-desc">
+    Row component at the requested position, or `false`.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+
+<span class="param-type">object</span>
+|
+
+<span class="param-type">false</span>
+
+
+    </dd>
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h4 class="name" id="getRowIndex"><span class="type-signature"></span>getRowIndex<span class="signature">(identifier)</span><span class="type-signature"> &rarr; {*|false}</span></h4>
+
+
+
+
+
+
+<div class="description">
+    Returns the identifying index value for one row.
+
+The AMB Grid row identifier is resolved through the CRUD layer first, so
+backend id values and AMB Grid temporary identifiers address the managed
+row component. Other supported row lookup values can be resolved by the
+underlying table engine.
+
+This reads the row index value reported by the underlying table engine.
+It is not the numerical row position exposed by `getRowPosition`. The
+value is returned without conversion, including falsy values. The method
+returns `false` only when the row or operation is not available.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+
 
 <table class="params">
     <thead>
@@ -13843,7 +14754,7 @@ tracking.
 
             
 
-            <td class="description last">Backend id, AMB temporary id, or supported row lookup value.</td>
+            <td class="description last">AMB Grid row identifier or supported row lookup value.</td>
         </tr>
 
     
@@ -13884,7 +14795,7 @@ tracking.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line63">line 63</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line110">line 110</a>
     </li></ul></dd>
     
 
@@ -13913,7 +14824,7 @@ tracking.
 
         
 <div class="param-desc">
-    Matching row component, or `false` when no row is found.
+    Row index value, or `false` when unavailable.
 </div>
 
 
@@ -13924,185 +14835,7 @@ tracking.
     </dt>
     <dd>
         
-<span class="param-type">object</span>
-|
-
-<span class="param-type">false</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="getRowFromPosition"><span class="type-signature"></span>getRowFromPosition<span class="signature">(&hellip;args)</span><span class="type-signature"> &rarr; {object|false}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Returns the row component at a numerical position.
-
-Positions start at 1. The returned component exposes advanced row
-operations, so direct mutations may bypass or interfere with AMB Grid CRUD
-tracking.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">any</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Position lookup arguments.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line334">line 334</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Row component at the requested position, or `false`.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">object</span>
+<span class="param-type">*</span>
 |
 
 <span class="param-type">false</span>
@@ -14274,7 +15007,7 @@ does not modify the row or grid state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line318">line 318</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line417">line 417</a>
     </li></ul></dd>
     
 
@@ -15791,7 +16524,7 @@ non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line270">line 270</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line369">line 369</a>
     </li></ul></dd>
     
 
@@ -15966,7 +16699,7 @@ Data Tree block.
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line243">line 243</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line342">line 342</a>
     </li></ul></dd>
 
 
@@ -16768,7 +17501,7 @@ method returns `false` when the row or operation is not available.
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line132">line 132</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line231">line 231</a>
     </li></ul></dd>
 
 
@@ -16939,7 +17672,7 @@ non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line296">line 296</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line395">line 395</a>
     </li></ul></dd>
     
 
@@ -21702,7 +22435,7 @@ CRUD state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line373">line 373</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line472">line 472</a>
     </li></ul></dd>
     
 
@@ -22056,7 +22789,7 @@ may bypass or interfere with AMB Grid CRUD tracking.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line350">line 350</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line449">line 449</a>
     </li></ul></dd>
     
 
@@ -27469,7 +28202,7 @@ part of this non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line215">line 215</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line314">line 314</a>
     </li></ul></dd>
     
 
@@ -27638,7 +28371,7 @@ available.
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line108">line 108</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line207">line 207</a>
     </li></ul></dd>
 
 
@@ -29880,6 +30613,98 @@ dialogs, the CRUD layer and the internally managed table engine.
 
         <tr>
 
+                <td class="name"><code>getRowData</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">function</span>
+
+
+
+            </td>
+
+
+
+
+
+            <td class="description last">Return managed data for one row by backend id, AMB temporary id, or supported lookup value.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>getRowIndex</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">function</span>
+
+
+
+            </td>
+
+
+
+
+
+            <td class="description last">Return the identifying index value for one row.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>getNextRow</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">function</span>
+
+
+
+            </td>
+
+
+
+
+
+            <td class="description last">Return the next row component relative to one row, or `false`.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>getPrevRow</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">function</span>
+
+
+
+            </td>
+
+
+
+
+
+            <td class="description last">Return the previous row component relative to one row, or `false`.</td>
+        </tr>
+
+
+
+        <tr>
+
                 <td class="name"><code>freezeRow</code></td>
 
 
@@ -31325,13 +32150,13 @@ dialogs, the CRUD layer and the internally managed table engine.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateRow">validateRow</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateRow">validateRow</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jul 22 2026 22:28:03 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Jul 22 2026 22:47:27 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

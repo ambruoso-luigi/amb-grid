@@ -10,6 +10,12 @@ const DATA_TREE_METHOD_NAMES = [
     'getTreeChildren',
     'isTreeExpanded'
 ];
+const ROW_CONTEXT_METHOD_NAMES = [
+    'getRowData',
+    'getRowIndex',
+    'getNextRow',
+    'getPrevRow'
+];
 
 const createFreezableRow = (overrides = {}) => ({
     freeze: vi.fn(),
@@ -151,6 +157,72 @@ const expectNoTreeSideEffects = (table, crud) => {
     expect(table.refreshFilter).not.toHaveBeenCalled();
 };
 
+const createReadableRow = (overrides = {}) => {
+    const data = overrides.data || { id: 15, name: 'Ada' };
+
+    return {
+        getData: vi.fn(() => data),
+        getIndex: vi.fn(() => data.id),
+        getNextRow: vi.fn(() => false),
+        getPrevRow: vi.fn(() => false),
+        select: vi.fn(),
+        deselect: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        ...overrides
+    };
+};
+
+const createReadableHarness = ({
+    crudRows = new Map(),
+    fallbackRows = new Map()
+} = {}) => {
+    const table = {
+        getRow: vi.fn(identifier => fallbackRows.get(identifier) || false),
+        setData: vi.fn(),
+        replaceData: vi.fn(),
+        updateData: vi.fn(),
+        addData: vi.fn(),
+        selectRow: vi.fn(),
+        deselectRow: vi.fn(),
+        setFilter: vi.fn(),
+        setSort: vi.fn(),
+        setPage: vi.fn(),
+        redraw: vi.fn()
+    };
+    const crud = {
+        findRowByKey: vi.fn(identifier => crudRows.get(identifier) || null),
+        updateRowFields: vi.fn(),
+        addRow: vi.fn(),
+        deleteRow: vi.fn(),
+        validateRow: vi.fn()
+    };
+    const methods = createRowMethods({ table, crud });
+
+    return {
+        table,
+        crud,
+        methods
+    };
+};
+
+const expectNoReadableSideEffects = (table, crud) => {
+    expect(crud.updateRowFields).not.toHaveBeenCalled();
+    expect(crud.addRow).not.toHaveBeenCalled();
+    expect(crud.deleteRow).not.toHaveBeenCalled();
+    expect(crud.validateRow).not.toHaveBeenCalled();
+    expect(table.setData).not.toHaveBeenCalled();
+    expect(table.replaceData).not.toHaveBeenCalled();
+    expect(table.updateData).not.toHaveBeenCalled();
+    expect(table.addData).not.toHaveBeenCalled();
+    expect(table.selectRow).not.toHaveBeenCalled();
+    expect(table.deselectRow).not.toHaveBeenCalled();
+    expect(table.setFilter).not.toHaveBeenCalled();
+    expect(table.setSort).not.toHaveBeenCalled();
+    expect(table.setPage).not.toHaveBeenCalled();
+    expect(table.redraw).not.toHaveBeenCalled();
+};
+
 describe('AMB table controller row method group', () => {
     test('exposes exactly the flat row controller methods', () => {
         const methods = createRowMethods({
@@ -162,8 +234,12 @@ describe('AMB table controller row method group', () => {
             'collapseTreeRow',
             'expandTreeRow',
             'freezeRow',
+            'getNextRow',
+            'getPrevRow',
             'getRow',
+            'getRowData',
             'getRowFromPosition',
+            'getRowIndex',
             'getRowPosition',
             'getRows',
             'getTreeChildren',
@@ -179,6 +255,9 @@ describe('AMB table controller row method group', () => {
         DATA_TREE_METHOD_NAMES.forEach(name => {
             expect(typeof methods[name]).toBe('function');
         });
+        ROW_CONTEXT_METHOD_NAMES.forEach(name => {
+            expect(typeof methods[name]).toBe('function');
+        });
         expect(methods.rows).toBeUndefined();
         expect(methods.tree).toBeUndefined();
         expect(methods.dataTree).toBeUndefined();
@@ -191,6 +270,11 @@ describe('AMB table controller row method group', () => {
         expect(methods.expandTreeRows).toBeUndefined();
         expect(methods.collapseTreeRows).toBeUndefined();
         expect(methods.toggleTreeRows).toBeUndefined();
+        expect(methods.getRowElement).toBeUndefined();
+        expect(methods.getRowCells).toBeUndefined();
+        expect(methods.getRowCell).toBeUndefined();
+        expect(methods.getRowTable).toBeUndefined();
+        expect(methods.watchRowPosition).toBeUndefined();
     });
 
     test('resolves row freezing methods through AMB identifiers before engine fallback', () => {
@@ -353,6 +437,119 @@ describe('AMB table controller row method group', () => {
         expect(missingIsFrozenRow.freeze).not.toHaveBeenCalled();
         expect(missingIsFrozenRow.unfreeze).not.toHaveBeenCalled();
         expectNoFreezingSideEffects(table, crud);
+    });
+
+    test('resolves contextual row reads through AMB identifiers before engine fallback', () => {
+        const backendRow = createReadableRow();
+        const tempRow = createReadableRow({ data: { id: null, _ambTempId: 'amb-temp-1' } });
+        const fallbackRow = createReadableRow({ data: { id: 30 } });
+        const lookup = { lookup: 'engine-row' };
+        const { table, crud, methods } = createReadableHarness({
+            crudRows: new Map([
+                [15, backendRow],
+                ['amb-temp-1', tempRow]
+            ]),
+            fallbackRows: new Map([[lookup, fallbackRow]])
+        });
+
+        expect(methods.getRowData(15)).toBe(backendRow.getData());
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith(15);
+        expect(table.getRow).not.toHaveBeenCalled();
+
+        expect(methods.getRowIndex('amb-temp-1')).toBe(null);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('amb-temp-1');
+        expect(table.getRow).not.toHaveBeenCalled();
+
+        expect(methods.getNextRow(lookup)).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith(lookup);
+        expect(table.getRow).toHaveBeenCalledOnce();
+        expect(table.getRow).toHaveBeenLastCalledWith(lookup);
+        expect(table.getRow.mock.calls[0][0]).toBe(lookup);
+        expectNoReadableSideEffects(table, crud);
+    });
+
+    test('delegates contextual row reads and preserves identity and falsy results', () => {
+        const transform = { transform: 'data' };
+        const data = { id: 0, name: 'Zero' };
+        const nextRow = { name: 'next-row' };
+        const prevRow = { name: 'prev-row' };
+        const descriptors = [
+            {
+                method: 'getRowData',
+                rowMethod: 'getData',
+                row: createReadableRow({ getData: vi.fn(() => data) }),
+                args: ['row-data', transform],
+                expected: data
+            },
+            {
+                method: 'getRowIndex',
+                rowMethod: 'getIndex',
+                row: createReadableRow({ getIndex: vi.fn(() => 0) }),
+                args: ['row-index'],
+                expected: 0
+            },
+            {
+                method: 'getNextRow',
+                rowMethod: 'getNextRow',
+                row: createReadableRow({ getNextRow: vi.fn(() => nextRow) }),
+                args: ['row-next'],
+                expected: nextRow
+            },
+            {
+                method: 'getPrevRow',
+                rowMethod: 'getPrevRow',
+                row: createReadableRow({ getPrevRow: vi.fn(() => prevRow) }),
+                args: ['row-prev'],
+                expected: prevRow
+            }
+        ];
+        const { table, crud, methods } = createReadableHarness({
+            crudRows: new Map(descriptors.map(({ args, row }) => [args[0], row]))
+        });
+
+        descriptors.forEach(({ method, rowMethod, row, args, expected }) => {
+            expect(methods[method](...args)).toBe(expected);
+            expect(row[rowMethod]).toHaveBeenCalledOnce();
+        });
+        expect(descriptors[0].row.getData).toHaveBeenLastCalledWith(transform);
+
+        descriptors.forEach(({ row }) => {
+            row.getData.mockClear();
+            row.getIndex.mockClear();
+            row.getNextRow.mockClear();
+            row.getPrevRow.mockClear();
+        });
+
+        descriptors[0].row.getData.mockReturnValueOnce('');
+        descriptors[1].row.getIndex.mockReturnValueOnce('');
+        descriptors[2].row.getNextRow.mockReturnValueOnce(false);
+        descriptors[3].row.getPrevRow.mockReturnValueOnce(false);
+
+        expect(methods.getRowData('row-data')).toBe('');
+        expect(methods.getRowIndex('row-index')).toBe('');
+        expect(methods.getNextRow('row-next')).toBe(false);
+        expect(methods.getPrevRow('row-prev')).toBe(false);
+        expectNoReadableSideEffects(table, crud);
+    });
+
+    test('returns false for contextual row reads when row or operation is missing', () => {
+        const missingMethodRows = new Map([
+            ['no-data', createReadableRow({ getData: undefined })],
+            ['no-index', createReadableRow({ getIndex: undefined })],
+            ['no-next', createReadableRow({ getNextRow: undefined })],
+            ['no-prev', createReadableRow({ getPrevRow: undefined })]
+        ]);
+        const { table, crud, methods } = createReadableHarness({
+            crudRows: missingMethodRows
+        });
+
+        expect(methods.getRowData('missing-row')).toBe(false);
+        expect(table.getRow).toHaveBeenLastCalledWith('missing-row');
+        expect(methods.getRowData('no-data')).toBe(false);
+        expect(methods.getRowIndex('no-index')).toBe(false);
+        expect(methods.getNextRow('no-next')).toBe(false);
+        expect(methods.getPrevRow('no-prev')).toBe(false);
+        expectNoReadableSideEffects(table, crud);
     });
 
     test('resolves Data Tree row methods through AMB identifiers before engine fallback', () => {
