@@ -282,7 +282,7 @@ describe('AMB table controller method modularization', () => {
         const source = readTableFactorySource();
         const columnMethodsPath = resolve(repositoryRoot, 'src/lib/table/controller/column-methods.js');
         const columnSource = readFileSync(columnMethodsPath, 'utf8');
-        const inlineColumnContext = [/^\s*getColumnDefinition\(columnLookup\) \{/m, /^\s*getColumnElement\(columnLookup\) \{/m, /^\s*getColumnField\(columnLookup\) \{/m, /^\s*getColumnCells\(columnLookup\) \{/m, /^\s*isColumnVisible\(columnLookup\) \{/m, /^\s*getColumnWidth\(columnLookup\) \{/m];
+        const inlineColumnContext = [/^\s*getColumnDefinition\(columnLookup\) \{/m, /^\s*getColumnElement\(columnLookup\) \{/m, /^\s*getColumnField\(columnLookup\) \{/m, /^\s*getColumnCells\(columnLookup\) \{/m, /^\s*isColumnVisible\(columnLookup\) \{/m, /^\s*getColumnWidth\(columnLookup\) \{/m, /^\s*getColumnSubColumns\(columnLookup\) \{/m, /^\s*getColumnParent\(columnLookup\) \{/m, /^\s*getNextColumn\(columnLookup\) \{/m, /^\s*getPrevColumn\(columnLookup\) \{/m, /^\s*getColumnDownloadTitle\(columnLookup\) \{/m];
 
         expect(source).toContain("import { createColumnMethods } from './controller/column-methods.js';");
         expect(source).toContain('const columnMethods = createColumnMethods({ table });');
@@ -296,7 +296,7 @@ describe('AMB table controller method modularization', () => {
         expect(source).not.toContain('...columnMethods');
         expect(source).toContain('...controllerMethods');
         expect(source).not.toContain('column-visibility-methods.js');
-        ['getColumnDefinition', 'getColumnElement', 'getColumnField', 'getColumnCells', 'isColumnVisible', 'getColumnWidth'].forEach(name => expect(columnSource).toContain(`${name}(`));
+        ['getColumnDefinition', 'getColumnElement', 'getColumnField', 'getColumnCells', 'isColumnVisible', 'getColumnWidth', 'getColumnSubColumns', 'getColumnParent', 'getNextColumn', 'getPrevColumn', 'getColumnDownloadTitle'].forEach(name => expect(columnSource).toContain(`${name}(`));
         inlineColumnContext.forEach(pattern => expect(source).not.toMatch(pattern));
     });
 

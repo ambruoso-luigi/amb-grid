@@ -657,6 +657,11 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getColumnCells - Return runtime Cell Components for one column.
  * @property {Function} isColumnVisible - Return the runtime visibility state for one column.
  * @property {Function} getColumnWidth - Return the runtime width for one column.
+ * @property {Function} getColumnSubColumns - Return runtime child Column Components for one column.
+ * @property {Function} getColumnParent - Return the runtime parent Column Component for one column.
+ * @property {Function} getNextColumn - Return the next runtime Column Component.
+ * @property {Function} getPrevColumn - Return the previous runtime Column Component.
+ * @property {Function} getColumnDownloadTitle - Return the runtime title used for column downloads.
  * @property {Function} getColumnLayout - Return the current persistable column layout.
  * @property {Function} setColumnLayout - Apply a persistent column layout.
  * @property {Function} showColumn - Show a hidden grid column.

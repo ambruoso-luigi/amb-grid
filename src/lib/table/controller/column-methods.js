@@ -157,6 +157,86 @@ export const createColumnMethods = ({ table }) => ({
     },
 
     /**
+     * Returns the runtime child Column Components for one managed column.
+     *
+     * The `columnLookup` value is forwarded unchanged to the supported column
+     * lookup system. This reads runtime column structure only and returns the
+     * array and contained Column Components without copies. Direct component
+     * mutation can bypass AMB Grid workflows. Data and CRUD state are not
+     * modified. `false` means the column or operation is unavailable.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @returns {Array<object>|false} Runtime child Column Components, or `false` when unavailable.
+     */
+    getColumnSubColumns(columnLookup) {
+        return readColumn(table, columnLookup, 'getSubColumns');
+    },
+
+    /**
+     * Returns the runtime parent Column Component for one managed column.
+     *
+     * The `columnLookup` value is forwarded unchanged to the supported column
+     * lookup system. Parent columns are advanced runtime components and are
+     * returned without conversion to definitions, fields or identifiers. Direct
+     * mutation can bypass AMB Grid workflows. Data and CRUD state are not
+     * modified. `false` means unavailable or no parent when reported that way.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @returns {object|false} Runtime parent Column Component, or `false` when unavailable.
+     */
+    getColumnParent(columnLookup) {
+        return readColumn(table, columnLookup, 'getParentColumn');
+    },
+
+    /**
+     * Returns the next runtime Column Component adjacent to one managed column.
+     *
+     * The `columnLookup` value is forwarded unchanged to the supported column
+     * lookup system. This reads runtime column structure only; it does not move
+     * or scroll columns. The adjacent component is returned by identity. Direct
+     * mutation can bypass AMB Grid workflows. Data and CRUD state are not
+     * modified. `false` means the column, relation or operation is unavailable.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @returns {object|false} Next runtime Column Component, or `false` when unavailable.
+     */
+    getNextColumn(columnLookup) {
+        return readColumn(table, columnLookup, 'getNextColumn');
+    },
+
+    /**
+     * Returns the previous runtime Column Component adjacent to one managed column.
+     *
+     * The `columnLookup` value is forwarded unchanged to the supported column
+     * lookup system. This reads runtime column structure only; it does not move
+     * or scroll columns. The adjacent component is returned by identity. Direct
+     * mutation can bypass AMB Grid workflows. Data and CRUD state are not
+     * modified. `false` means the column, relation or operation is unavailable.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @returns {object|false} Previous runtime Column Component, or `false` when unavailable.
+     */
+    getPrevColumn(columnLookup) {
+        return readColumn(table, columnLookup, 'getPrevColumn');
+    },
+
+    /**
+     * Returns the runtime title used for column downloads.
+     *
+     * The `columnLookup` value is forwarded unchanged to the supported column
+     * lookup system. The returned download title is read from runtime column
+     * state without fallbacks, conversion or reconstruction from AMB Grid
+     * metadata. Data and CRUD state are not modified. `false` means the column
+     * or operation is unavailable, unless the engine returns `false` as title.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @returns {*|false} Runtime download title, or `false` when unavailable.
+     */
+    getColumnDownloadTitle(columnLookup) {
+        return readColumn(table, columnLookup, 'getTitleDownload');
+    },
+
+    /**
      * Shows a hidden grid column.
      *
      * The lookup is applied to the current runtime column structure, including

@@ -206,7 +206,7 @@ describe('AMB table controller column API', () => {
             const flatColumns = [ambComponent, nameComponent];
             const groupComponent = { title: 'Person', columns: [nameComponent] };
             const groupedColumns = [ambComponent, groupComponent];
-            const columnDefinition = { title: 'Runtime', field: 'runtime' }, columnCells = [], runtimeColumn = { getDefinition: vi.fn(() => columnDefinition), getCells: vi.fn(() => columnCells), isVisible: vi.fn(() => false), getWidth: vi.fn(() => 0) };
+            const columnDefinition = { title: 'Runtime', field: 'runtime' }, columnCells = [], subColumns = [], nextColumn = {}, runtimeColumn = { getDefinition: vi.fn(() => columnDefinition), getCells: vi.fn(() => columnCells), isVisible: vi.fn(() => false), getWidth: vi.fn(() => 0), getSubColumns: vi.fn(() => subColumns), getNextColumn: vi.fn(() => nextColumn), getTitleDownload: vi.fn(() => '') };
             const showResult = { shown: true };
             const hideResult = { hidden: true };
             const toggleResult = { toggled: true };
@@ -223,7 +223,7 @@ describe('AMB table controller column API', () => {
             expect(typeof controller.toggleColumn).toBe('function');
             expect(typeof controller.scrollToColumn).toBe('function');
             expect(typeof controller.moveColumn).toBe('function');
-            ['getColumnDefinition', 'getColumnElement', 'getColumnField', 'getColumnCells', 'isColumnVisible', 'getColumnWidth'].forEach(name => expect(typeof controller[name]).toBe('function'));
+            ['getColumnDefinition', 'getColumnElement', 'getColumnField', 'getColumnCells', 'isColumnVisible', 'getColumnWidth', 'getColumnSubColumns', 'getColumnParent', 'getNextColumn', 'getPrevColumn', 'getColumnDownloadTitle'].forEach(name => expect(typeof controller[name]).toBe('function'));
             expect(controller.columnMethods).toBeUndefined();
             expect(controller.columns).toBeUndefined();
             expect(controller.navigation).toBeUndefined();
@@ -269,6 +269,9 @@ describe('AMB table controller column API', () => {
             expect(controller.getColumnCells('runtime')).toBe(columnCells);
             expect(controller.isColumnVisible('runtime')).toBe(false);
             expect(controller.getColumnWidth('runtime')).toBe(0);
+            expect(controller.getColumnSubColumns('runtime')).toBe(subColumns);
+            expect(controller.getNextColumn('runtime')).toBe(nextColumn);
+            expect(controller.getColumnDownloadTitle('runtime')).toBe('');
 
             table.showColumn
                 .mockReturnValueOnce(showResult)
