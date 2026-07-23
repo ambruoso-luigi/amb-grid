@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/navigation-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/cell-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,103 +17,122 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/navigation-methods.js</h1>
-
-    
+    <h1 class="page-title">Source: lib/table/controller/cell-methods.js</h1>
 
 
 
-    
+
+
+
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Creates the editable-cell navigation methods exposed by the AMB Grid
+            <pre class="prettyprint source linenums"><code>const readCell = (rowMethods, rowIdentifier, column, methodName) => {
+    const cell = rowMethods.getRowCell(rowIdentifier, column);
+
+    if (!cell || typeof cell[methodName] !== 'function') return false;
+
+    return cell[methodName]();
+};
+
+/**
+ * Creates contextual Cell Component reading methods exposed by the AMB Grid
  * controller.
  *
  * @param {object} context - Required method dependencies.
- * @param {object} context.table - Grid table instance.
- * @returns {object} Cell-navigation methods for the flat controller API.
+ * @param {object} context.rowMethods - Row methods used to resolve cells.
+ * @returns {object} Cell reading methods for the flat controller API.
  * @private
  * @internal
  */
-export const createNavigationMethods = ({ table }) => ({
+export const createCellMethods = ({ rowMethods }) => ({
     /**
-     * Moves the active editor to the previous editable cell.
+     * Returns the current runtime value for one Cell Component.
      *
-     * Navigation can wrap to the last editable cell of the previous displayed
-     * row. The operation succeeds only when the runtime grid has an active
-     * editing context and a valid editable destination.
+     * The row is resolved through backend id, `_ambTempId` or another
+     * supported row lookup via AMB Grid row methods. The column lookup is
+     * forwarded unchanged. This reads Cell Component runtime state and returns
+     * `false` when the cell or operation is unavailable.
      *
-     * Native editor, focus and scrolling behavior remain controlled by the
-     * grid.
-     *
-     * @returns {boolean} Whether navigation reached an editable cell.
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {*|false} Current cell value, or `false` when unavailable.
      */
-    navigatePrev() {
-        return table.navigatePrev();
+    getCellValue(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getValue');
     },
 
     /**
-     * Moves the active editor to the next editable cell.
+     * Returns the previous runtime value known by the grid engine.
      *
-     * Navigation can wrap to the first editable cell of the next displayed
-     * row. Runtime options and keybindings control any special end-of-table
-     * behavior.
+     * This value is read from the Cell Component and must not be confused with
+     * AMB Grid CRUD snapshots or row state. The row lookup is AMB-aware, the
+     * column lookup is forwarded unchanged, and `false` means unavailable.
      *
-     * @returns {boolean} Whether navigation reached an editable cell.
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {*|false} Previous runtime cell value, or `false` when unavailable.
      */
-    navigateNext() {
-        return table.navigateNext();
+    getCellOldValue(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getOldValue');
     },
 
     /**
-     * Moves the active editor to the previous editable cell in the current row.
+     * Returns the initial runtime value recorded by the Cell Component.
      *
-     * The method does not wrap manually to another row and returns false when
-     * no editable cell is available to the left.
+     * This engine value is not guaranteed to equal AMB Grid application
+     * snapshots. The row lookup is AMB-aware, the column lookup is forwarded
+     * unchanged, and `false` means the cell or operation is unavailable.
      *
-     * @returns {boolean} Whether navigation reached an editable cell.
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {*|false} Initial runtime cell value, or `false` when unavailable.
      */
-    navigateLeft() {
-        return table.navigateLeft();
+    getCellInitialValue(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getInitialValue');
     },
 
     /**
-     * Moves the active editor to the next editable cell in the current row.
+     * Returns the runtime DOM element for one Cell Component.
      *
-     * The method does not wrap manually to another row and returns false when
-     * no editable cell is available to the right.
+     * DOM nodes are advanced runtime objects. Direct manipulation can bypass
+     * AMB Grid behavior. The row lookup is AMB-aware, the column lookup is
+     * forwarded unchanged, and `false` means unavailable.
      *
-     * @returns {boolean} Whether navigation reached an editable cell.
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {Element|false} Runtime cell DOM element, or `false` when unavailable.
      */
-    navigateRight() {
-        return table.navigateRight();
+    getCellElement(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getElement');
     },
 
     /**
-     * Moves the active editor to the corresponding cell in the previous
-     * displayed row.
+     * Returns the runtime field reported by one Cell Component.
      *
-     * The grid determines whether the destination can be edited and manages
-     * any required focus and internal scrolling.
+     * The row lookup is AMB-aware and the column lookup is forwarded unchanged.
+     * The field is returned without conversion, and `false` means unavailable.
      *
-     * @returns {boolean} Whether navigation reached an editable cell.
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {*|false} Runtime cell field, or `false` when unavailable.
      */
-    navigateUp() {
-        return table.navigateUp();
+    getCellField(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getField');
     },
 
     /**
-     * Moves the active editor to the corresponding cell in the next displayed
-     * row.
+     * Returns the Column Component for one Cell Component.
      *
-     * The grid determines whether the destination can be edited and manages
-     * any required focus and internal scrolling.
+     * Column Components are advanced runtime objects. Direct operations can
+     * bypass AMB Grid behavior. The row lookup is AMB-aware, the column lookup
+     * is forwarded unchanged, and `false` means unavailable.
      *
-     * @returns {boolean} Whether navigation reached an editable cell.
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {object|false} Runtime Column Component, or `false` when unavailable.
      */
-    navigateDown() {
-        return table.navigateDown();
+    getCellColumn(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getColumn');
     }
 });
 </code></pre>

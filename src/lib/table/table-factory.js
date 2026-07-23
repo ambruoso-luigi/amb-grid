@@ -13,6 +13,7 @@ import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-bi
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
 import { createAlertMethods } from './controller/alert-methods.js';
 import { createCalculationMethods } from './controller/calculation-methods.js';
+import { createCellMethods } from './controller/cell-methods.js';
 import { createCellStateMethods } from './controller/cell-state-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
@@ -716,6 +717,12 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getRowElement - Return the runtime DOM element for one row.
  * @property {Function} getRowCells - Return the Cell Components for one row.
  * @property {Function} getRowCell - Return one Cell Component from a row.
+ * @property {Function} getCellValue - Return the runtime value for one cell.
+ * @property {Function} getCellOldValue - Return the previous runtime value for one cell.
+ * @property {Function} getCellInitialValue - Return the initial runtime value for one cell.
+ * @property {Function} getCellElement - Return the runtime DOM element for one cell.
+ * @property {Function} getCellField - Return the runtime field for one cell.
+ * @property {Function} getCellColumn - Return the Column Component for one cell.
  * @property {Function} normalizeRowHeight - Normalize the runtime height of one row.
  * @property {Function} reformatRow - Reapply runtime formatting for one row.
  * @property {Function} freezeRow - Freeze one row through the AMB Grid public API, changing only its runtime row position.
@@ -973,6 +980,7 @@ export function createTable(options = {}) {
     const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
+    const cellMethods = createCellMethods({ rowMethods });
     const paginationMethods = createPaginationMethods({ table, crud });
     const selectionMethods = createSelectionMethods({ table, crud });
     const validationMethods = createValidationMethods({ crud });
@@ -1033,6 +1041,7 @@ export function createTable(options = {}) {
         dataMethods,
         spreadsheetMethods,
         rowMethods,
+        cellMethods,
         validationMethods,
         navigationMethods,
         groupingMethods,

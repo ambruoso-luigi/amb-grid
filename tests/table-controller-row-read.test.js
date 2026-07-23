@@ -12,7 +12,14 @@ const rowReadMock = vi.hoisted(() => {
     const createRowComponent = (name, data) => {
         const element = { name: `${name}-element` };
         const cells = [];
-        const cell = { name: `${name}-cell` };
+        const cellElement = { name: `${name}-cell-element` };
+        const columnComponent = { name: `${name}-column` };
+        const cell = {
+            name: `${name}-cell`,
+            getValue: vi.fn(() => data.name),
+            getElement: vi.fn(() => cellElement),
+            getColumn: vi.fn(() => columnComponent)
+        };
 
         return {
             name,
@@ -20,6 +27,8 @@ const rowReadMock = vi.hoisted(() => {
             element,
             cells,
             cell,
+            cellElement,
+            columnComponent,
             getData: vi.fn(() => data),
             getIndex: vi.fn(() => data.id || data._ambTempId || false),
             getNextRow: vi.fn(() => false),
@@ -402,12 +411,15 @@ describe('AMB table controller row read API', () => {
             expect(typeof controller.getRowElement).toBe('function');
             expect(typeof controller.getRowCells).toBe('function');
             expect(typeof controller.getRowCell).toBe('function');
+            ['getCellValue', 'getCellOldValue', 'getCellInitialValue', 'getCellElement', 'getCellField', 'getCellColumn']
+                .forEach(name => expect(typeof controller[name]).toBe('function'));
             expect(typeof controller.normalizeRowHeight).toBe('function');
             expect(typeof controller.reformatRow).toBe('function');
             expect(controller.rows).toBeUndefined();
             expect(controller.rowReads).toBeUndefined();
             expect(controller.rowContext).toBeUndefined();
             expect(controller.rowRuntime).toBeUndefined();
+            expect(controller.cells).toBeUndefined();
             expect(controller.watchRowPosition).toBeUndefined();
 
             expect(controller.getRowData(15)).toBe(rowReadMock.savedData);
@@ -426,6 +438,8 @@ describe('AMB table controller row read API', () => {
             expect(controller.getRowElement(15)).toBe(rowReadMock.savedRow.element);
             expect(controller.getRowCells('amb-temp-1')).toBe(rowReadMock.tempRow.cells);
             expect(controller.getRowCell('fallback-lookup', column)).toBe(rowReadMock.fallbackRow.cell);
+            expect(controller.getCellValue('fallback-lookup', column)).toBe(rowReadMock.fallbackData.name);
+            expect(controller.getCellElement('fallback-lookup', column)).toBe(rowReadMock.fallbackRow.cellElement);
             expect(rowReadMock.fallbackRow.getCell).toHaveBeenLastCalledWith(column);
             expect(controller.normalizeRowHeight(15)).toBe(true);
             expect(rowReadMock.savedRow.normalizeHeight).toHaveBeenCalledOnce();

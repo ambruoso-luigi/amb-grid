@@ -186,6 +186,28 @@ describe('AMB table controller method modularization', () => {
         expect(cellStateImplementationSource).not.toMatch(/createCellStateMethods = \(\{[^}]*searchController/);
     });
 
+    test('wires contextual cell methods as a separate row-dependent group', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const modules = readdirSync(controllerDir);
+        const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const inline = [/^\s*getCellValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellOldValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellInitialValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellElement\(rowIdentifier,\s*column\) \{/m, /^\s*getCellField\(rowIdentifier,\s*column\) \{/m, /^\s*getCellColumn\(rowIdentifier,\s*column\) \{/m];
+
+        expect(source).toContain("import { createCellMethods } from './controller/cell-methods.js';");
+        expect(source.indexOf('const rowMethods = createRowMethods({ table, crud });')).toBeLessThan(source.indexOf('const cellMethods = createCellMethods({ rowMethods });'));
+        expect(source).toContain('const cellMethods = createCellMethods({ rowMethods });');
+        expect(composition[1]).toContain('rowMethods');
+        expect(composition[1]).toContain('cellMethods');
+        expect(composition[1]).toContain('validationMethods');
+        expect(source).not.toContain('...cellMethods');
+        expect(source.match(/\.\.\.controllerMethods/g)).toHaveLength(1);
+        inline.forEach(pattern => expect(source).not.toMatch(pattern));
+        expect(modules).toContain('cell-methods.js');
+        expect(modules).toContain('cell-state-methods.js');
+        expect(source).not.toContain('cells:');
+        expect(source).not.toContain('cellMethods:');
+    });
+
     test('wires the AMB-aware validation method group into the controller composition', () => {
         const source = readTableFactorySource();
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
