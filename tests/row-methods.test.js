@@ -171,6 +171,8 @@ const createReadableRow = (overrides = {}) => {
         getElement: vi.fn(() => false),
         getCells: vi.fn(() => []),
         getCell: vi.fn(() => false),
+        normalizeHeight: vi.fn(),
+        reformat: vi.fn(),
         select: vi.fn(),
         deselect: vi.fn(),
         update: vi.fn(),
@@ -255,6 +257,8 @@ describe('AMB table controller row method group', () => {
             'getTreeParent',
             'isRowFrozen',
             'isTreeExpanded',
+            'normalizeRowHeight',
+            'reformatRow',
             'scrollToRow',
             'searchRows',
             'toggleTreeRow',
@@ -591,6 +595,23 @@ describe('AMB table controller row method group', () => {
         expect(methods.getRowElement('missing-row')).toBe(false);
         expect(methods.getRowCell('no-cell', column)).toBe(false);
         expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-cell');
+    });
+
+    test('delegates runtime row refresh methods and returns false when unavailable', () => {
+        const row = createReadableRow();
+        const fallbackRow = createReadableRow();
+        const { table, methods } = createReadableHarness({
+            crudRows: new Map([[15, row], ['no-reformat', createReadableRow({ reformat: undefined })]]),
+            fallbackRows: new Map([['fallback-row', fallbackRow]])
+        });
+
+        expect(methods.normalizeRowHeight(15)).toBe(true);
+        expect(row.normalizeHeight).toHaveBeenCalledOnce();
+        expect(methods.reformatRow('fallback-row')).toBe(true);
+        expect(fallbackRow.reformat).toHaveBeenCalledOnce();
+        expect(table.getRow).toHaveBeenCalledOnce();
+        expect(methods.normalizeRowHeight('missing-row')).toBe(false);
+        expect(methods.reformatRow('no-reformat')).toBe(false);
     });
 
     test('resolves Data Tree row methods through AMB identifiers before engine fallback', () => {

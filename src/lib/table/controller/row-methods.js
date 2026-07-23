@@ -243,6 +243,58 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Normalizes the runtime height of one row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * This realigns the row's runtime cell heights. It does not directly
+     * modify row data, snapshots, save payloads or AMB Grid CRUD tracking, and
+     * it does not trigger an explicit table redraw. The method returns `false`
+     * when the row or operation is not available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} `true` when delegated, otherwise `false`.
+     */
+    normalizeRowHeight(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.normalizeHeight !== 'function') return false;
+
+        row.normalizeHeight();
+        return true;
+    },
+
+    /**
+     * Reapplies the runtime formatting for one row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values can be resolved by the
+     * underlying table engine.
+     *
+     * This updates the row's runtime representation. It does not directly
+     * modify row data, snapshots, save payloads or AMB Grid CRUD tracking.
+     * Formatters and formatting callbacks configured by the application may be
+     * executed again and can therefore have the effects defined by application
+     * code. The method returns `false` when the row or operation is not
+     * available.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {boolean} `true` when delegated, otherwise `false`.
+     */
+    reformatRow(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.reformat !== 'function') return false;
+
+        row.reformat();
+        return true;
+    },
+
+    /**
      * Freezes one row through the AMB Grid controller.
      *
      * The AMB Grid row identifier is resolved through the CRUD layer first, so

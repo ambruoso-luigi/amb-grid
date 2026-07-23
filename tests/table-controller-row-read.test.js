@@ -27,6 +27,8 @@ const rowReadMock = vi.hoisted(() => {
             getElement: vi.fn(() => element),
             getCells: vi.fn(() => cells),
             getCell: vi.fn(() => cell),
+            normalizeHeight: vi.fn(),
+            reformat: vi.fn(),
             select: vi.fn(),
             deselect: vi.fn(),
             update: vi.fn(),
@@ -199,6 +201,8 @@ const createDocumentHarness = () => {
         row.getElement.mockClear();
         row.getCells.mockClear();
         row.getCell.mockClear();
+        row.normalizeHeight.mockClear();
+        row.reformat.mockClear();
         row.select.mockClear();
         row.deselect.mockClear();
         row.update.mockClear();
@@ -398,9 +402,12 @@ describe('AMB table controller row read API', () => {
             expect(typeof controller.getRowElement).toBe('function');
             expect(typeof controller.getRowCells).toBe('function');
             expect(typeof controller.getRowCell).toBe('function');
+            expect(typeof controller.normalizeRowHeight).toBe('function');
+            expect(typeof controller.reformatRow).toBe('function');
             expect(controller.rows).toBeUndefined();
             expect(controller.rowReads).toBeUndefined();
             expect(controller.rowContext).toBeUndefined();
+            expect(controller.rowRuntime).toBeUndefined();
             expect(controller.watchRowPosition).toBeUndefined();
 
             expect(controller.getRowData(15)).toBe(rowReadMock.savedData);
@@ -420,6 +427,8 @@ describe('AMB table controller row read API', () => {
             expect(controller.getRowCells('amb-temp-1')).toBe(rowReadMock.tempRow.cells);
             expect(controller.getRowCell('fallback-lookup', column)).toBe(rowReadMock.fallbackRow.cell);
             expect(rowReadMock.fallbackRow.getCell).toHaveBeenLastCalledWith(column);
+            expect(controller.normalizeRowHeight(15)).toBe(true);
+            expect(rowReadMock.savedRow.normalizeHeight).toHaveBeenCalledOnce();
 
             expect([
                 rowReadMock.savedData,

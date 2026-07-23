@@ -1094,6 +1094,8 @@ describe('AMB table controller method modularization', () => {
             /^\s*getRowElement\(identifier\) \{/m,
             /^\s*getRowCells\(identifier\) \{/m,
             /^\s*getRowCell\(identifier,\s*column\) \{/m,
+            /^\s*normalizeRowHeight\(identifier\) \{/m,
+            /^\s*reformatRow\(identifier\) \{/m,
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
             /^\s*isRowFrozen\(identifier\) \{/m,
@@ -1167,6 +1169,8 @@ describe('AMB table controller method modularization', () => {
             /^\s*getRowElement\(identifier\) \{/m,
             /^\s*getRowCells\(identifier\) \{/m,
             /^\s*getRowCell\(identifier,\s*column\) \{/m,
+            /^\s*normalizeRowHeight\(identifier\) \{/m,
+            /^\s*reformatRow\(identifier\) \{/m,
             /^\s*freezeRow\(identifier\) \{/m,
             /^\s*unfreezeRow\(identifier\) \{/m,
             /^\s*isRowFrozen\(identifier\) \{/m,
@@ -1210,6 +1214,8 @@ describe('AMB table controller method modularization', () => {
         expect(source).toMatch(/getRowElement\(identifier\) \{/);
         expect(source).toMatch(/getRowCells\(identifier\) \{/);
         expect(source).toMatch(/getRowCell\(identifier,\s*column\) \{/);
+        expect(source).toMatch(/normalizeRowHeight\(identifier\) \{/);
+        expect(source).toMatch(/reformatRow\(identifier\) \{/);
         expect(source).toMatch(/freezeRow\(identifier\) \{/);
         expect(source).toMatch(/unfreezeRow\(identifier\) \{/);
         expect(source).toMatch(/isRowFrozen\(identifier\) \{/);
