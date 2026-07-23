@@ -10,15 +10,47 @@ describe('AMB table controller column method group', () => {
 
         expect(Object.keys(methods).sort()).toEqual([
             'getColumn',
+            'getColumnCells',
+            'getColumnDefinition',
             'getColumnDefinitions',
+            'getColumnElement',
+            'getColumnField',
+            'getColumnWidth',
             'getColumns',
             'hideColumn',
+            'isColumnVisible',
             'moveColumn',
             'scrollToColumn',
             'showColumn',
             'toggleColumn'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('reads contextual column component state through one private resolver', () => {
+        const lookup = { field: 'name' }, definition = {}, element = {}, cells = [];
+        const column = {
+            getDefinition: vi.fn(() => definition),
+            getElement: vi.fn(() => element),
+            getField: vi.fn(() => ''),
+            getCells: vi.fn(() => cells),
+            isVisible: vi.fn(() => false),
+            getWidth: vi.fn(() => 0)
+        };
+        const table = { getColumn: vi.fn(() => column) };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.getColumnDefinition(lookup)).toBe(definition);
+        expect(methods.getColumnElement(lookup)).toBe(element);
+        expect(methods.getColumnField(lookup)).toBe('');
+        expect(methods.getColumnCells(lookup)).toBe(cells);
+        expect(methods.isColumnVisible(lookup)).toBe(false);
+        expect(methods.getColumnWidth(lookup)).toBe(0);
+        expect(table.getColumn.mock.calls).toEqual(Array.from({ length: 6 }, () => [lookup]));
+        Object.values(column).forEach(method => expect(method).toHaveBeenCalledOnce());
+        table.getColumn.mockReturnValueOnce(false).mockReturnValueOnce({});
+        expect(methods.getColumnDefinition('missing')).toBe(false);
+        expect(methods.getColumnDefinition('missing-method')).toBe(false);
     });
 
     test('returns current column definitions without cloning or filtering AMB-managed columns', () => {

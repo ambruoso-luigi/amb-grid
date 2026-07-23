@@ -280,6 +280,9 @@ describe('AMB table controller method modularization', () => {
 
     test('wires the extracted column method group into the controller composition', () => {
         const source = readTableFactorySource();
+        const columnMethodsPath = resolve(repositoryRoot, 'src/lib/table/controller/column-methods.js');
+        const columnSource = readFileSync(columnMethodsPath, 'utf8');
+        const inlineColumnContext = [/^\s*getColumnDefinition\(columnLookup\) \{/m, /^\s*getColumnElement\(columnLookup\) \{/m, /^\s*getColumnField\(columnLookup\) \{/m, /^\s*getColumnCells\(columnLookup\) \{/m, /^\s*isColumnVisible\(columnLookup\) \{/m, /^\s*getColumnWidth\(columnLookup\) \{/m];
 
         expect(source).toContain("import { createColumnMethods } from './controller/column-methods.js';");
         expect(source).toContain('const columnMethods = createColumnMethods({ table });');
@@ -293,6 +296,8 @@ describe('AMB table controller method modularization', () => {
         expect(source).not.toContain('...columnMethods');
         expect(source).toContain('...controllerMethods');
         expect(source).not.toContain('column-visibility-methods.js');
+        ['getColumnDefinition', 'getColumnElement', 'getColumnField', 'getColumnCells', 'isColumnVisible', 'getColumnWidth'].forEach(name => expect(columnSource).toContain(`${name}(`));
+        inlineColumnContext.forEach(pattern => expect(source).not.toMatch(pattern));
     });
 
     test('wires the extracted data method group into the controller composition', () => {
@@ -1170,7 +1175,7 @@ describe('AMB table controller method modularization', () => {
         expect(source).toMatch(/moveColumn\(\.\.\.args\) \{\s*return table\.moveColumn\(\.\.\.args\);/);
         expect(source).not.toContain('column-navigation-methods.js');
         expect(source).not.toContain('column-move-methods.js');
-        expect(source).not.toContain('const column = table.getColumn(columnLookup)');
+        expect(source).not.toMatch(/(?:showColumn|hideColumn|toggleColumn|scrollToColumn|moveColumn)[\s\S]*?table\.getColumn\(columnLookup\)/);
         expect(source).not.toContain('setColumns(');
         expect(source).not.toContain('.move(');
         expect(source).not.toContain('.show()');

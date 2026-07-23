@@ -206,6 +206,7 @@ describe('AMB table controller column API', () => {
             const flatColumns = [ambComponent, nameComponent];
             const groupComponent = { title: 'Person', columns: [nameComponent] };
             const groupedColumns = [ambComponent, groupComponent];
+            const columnDefinition = { title: 'Runtime', field: 'runtime' }, columnCells = [], runtimeColumn = { getDefinition: vi.fn(() => columnDefinition), getCells: vi.fn(() => columnCells), isVisible: vi.fn(() => false), getWidth: vi.fn(() => 0) };
             const showResult = { shown: true };
             const hideResult = { hidden: true };
             const toggleResult = { toggled: true };
@@ -222,6 +223,7 @@ describe('AMB table controller column API', () => {
             expect(typeof controller.toggleColumn).toBe('function');
             expect(typeof controller.scrollToColumn).toBe('function');
             expect(typeof controller.moveColumn).toBe('function');
+            ['getColumnDefinition', 'getColumnElement', 'getColumnField', 'getColumnCells', 'isColumnVisible', 'getColumnWidth'].forEach(name => expect(typeof controller[name]).toBe('function'));
             expect(controller.columnMethods).toBeUndefined();
             expect(controller.columns).toBeUndefined();
             expect(controller.navigation).toBeUndefined();
@@ -262,6 +264,11 @@ describe('AMB table controller column API', () => {
             expect(controller.getColumn('missing')).toBe(false);
             expect(table.getColumn).toHaveBeenCalledTimes(2);
             expect(table.getColumn).toHaveBeenLastCalledWith('missing');
+            table.getColumn.mockReturnValue(runtimeColumn);
+            expect(controller.getColumnDefinition('runtime')).toBe(columnDefinition);
+            expect(controller.getColumnCells('runtime')).toBe(columnCells);
+            expect(controller.isColumnVisible('runtime')).toBe(false);
+            expect(controller.getColumnWidth('runtime')).toBe(0);
 
             table.showColumn
                 .mockReturnValueOnce(showResult)
