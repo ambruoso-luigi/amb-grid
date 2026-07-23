@@ -723,6 +723,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getCellElement - Return the runtime DOM element for one cell.
  * @property {Function} getCellField - Return the runtime field for one cell.
  * @property {Function} getCellColumn - Return the Column Component for one cell.
+ * @property {Function} getCellRow - Return the Row Component for one cell.
+ * @property {Function} getCellData - Return runtime row data in the context of one cell.
+ * @property {Function} getCellType - Return the runtime type for one cell.
+ * @property {Function} checkCellHeight - Check the runtime height for one cell.
  * @property {Function} normalizeRowHeight - Normalize the runtime height of one row.
  * @property {Function} reformatRow - Reapply runtime formatting for one row.
  * @property {Function} freezeRow - Freeze one row through the AMB Grid public API, changing only its runtime row position.

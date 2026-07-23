@@ -191,7 +191,9 @@ describe('AMB table controller method modularization', () => {
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
         const modules = readdirSync(controllerDir);
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
-        const inline = [/^\s*getCellValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellOldValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellInitialValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellElement\(rowIdentifier,\s*column\) \{/m, /^\s*getCellField\(rowIdentifier,\s*column\) \{/m, /^\s*getCellColumn\(rowIdentifier,\s*column\) \{/m];
+        const cellMethodsPath = resolve(controllerDir, 'cell-methods.js');
+        const cellSource = readFileSync(cellMethodsPath, 'utf8');
+        const inline = [/^\s*getCellValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellOldValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellInitialValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellElement\(rowIdentifier,\s*column\) \{/m, /^\s*getCellField\(rowIdentifier,\s*column\) \{/m, /^\s*getCellColumn\(rowIdentifier,\s*column\) \{/m, /^\s*getCellRow\(rowIdentifier,\s*column\) \{/m, /^\s*getCellData\(rowIdentifier,\s*column,\s*transform\) \{/m, /^\s*getCellType\(rowIdentifier,\s*column\) \{/m, /^\s*checkCellHeight\(rowIdentifier,\s*column\) \{/m];
 
         expect(source).toContain("import { createCellMethods } from './controller/cell-methods.js';");
         expect(source.indexOf('const rowMethods = createRowMethods({ table, crud });')).toBeLessThan(source.indexOf('const cellMethods = createCellMethods({ rowMethods });'));
@@ -201,6 +203,7 @@ describe('AMB table controller method modularization', () => {
         expect(composition[1]).toContain('validationMethods');
         expect(source).not.toContain('...cellMethods');
         expect(source.match(/\.\.\.controllerMethods/g)).toHaveLength(1);
+        ['getCellRow', 'getCellData', 'getCellType', 'checkCellHeight'].forEach(name => expect(cellSource).toContain(`${name}(`));
         inline.forEach(pattern => expect(source).not.toMatch(pattern));
         expect(modules).toContain('cell-methods.js');
         expect(modules).toContain('cell-state-methods.js');

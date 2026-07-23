@@ -1,9 +1,9 @@
-const readCell = (rowMethods, rowIdentifier, column, methodName) => {
+const readCell = (rowMethods, rowIdentifier, column, methodName, args = [], normalize = value => value) => {
     const cell = rowMethods.getRowCell(rowIdentifier, column);
 
     if (!cell || typeof cell[methodName] !== 'function') return false;
 
-    return cell[methodName]();
+    return normalize(cell[methodName](...args));
 };
 
 /**
@@ -105,5 +105,73 @@ export const createCellMethods = ({ rowMethods }) => ({
      */
     getCellColumn(rowIdentifier, column) {
         return readCell(rowMethods, rowIdentifier, column, 'getColumn');
+    },
+
+    /**
+     * Returns the Row Component for one Cell Component.
+     *
+     * The row is resolved through backend id, `_ambTempId` or another
+     * supported row lookup via AMB Grid row methods. The column lookup is
+     * forwarded unchanged. Row Components are advanced runtime objects; use
+     * AMB Grid APIs for normal data changes. `false` means unavailable.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {object|false} Runtime Row Component, or `false` when unavailable.
+     */
+    getCellRow(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getRow');
+    },
+
+    /**
+     * Returns runtime row data in the context of one Cell Component.
+     *
+     * The row is resolved through backend id, `_ambTempId` or another
+     * supported row lookup via AMB Grid row methods. The column lookup and
+     * `transform` option are forwarded unchanged. Returned data is runtime
+     * row data, not an AMB Grid CRUD snapshot; direct object mutation can
+     * bypass CRUD tracking, so prefer AMB Grid APIs for data changes.
+     * `false` means unavailable.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @param {*} transform - Transform option forwarded to the Cell Component.
+     * @returns {*|false} Runtime row data for the cell, or `false` when unavailable.
+     */
+    getCellData(rowIdentifier, column, transform) {
+        return readCell(rowMethods, rowIdentifier, column, 'getData', [transform]);
+    },
+
+    /**
+     * Returns the type declared by one Cell Component.
+     *
+     * The row is resolved through backend id, `_ambTempId` or another
+     * supported row lookup via AMB Grid row methods. The column lookup is
+     * forwarded unchanged, the runtime type is returned as declared by the
+     * Cell Component, and `false` means unavailable.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {*|false} Runtime cell type, or `false` when unavailable.
+     */
+    getCellType(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'getType');
+    },
+
+    /**
+     * Delegates the runtime height check for one Cell Component.
+     *
+     * The row is resolved through backend id, `_ambTempId` or another
+     * supported row lookup via AMB Grid row methods. The column lookup is
+     * forwarded unchanged. This only updates runtime layout through the Cell
+     * Component and does not redraw the table or modify data. `false` means
+     * unavailable.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} `true` when delegated, or `false` when unavailable.
+     */
+    checkCellHeight(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'checkHeight', [], () => true);
     }
 });

@@ -18,10 +18,15 @@ const rowReadMock = vi.hoisted(() => {
             name: `${name}-cell`,
             getValue: vi.fn(() => data.name),
             getElement: vi.fn(() => cellElement),
-            getColumn: vi.fn(() => columnComponent)
+            getColumn: vi.fn(() => columnComponent),
+            getRow: vi.fn(),
+            getData: vi.fn(() => data),
+            getType: vi.fn(() => 'cell'),
+            checkHeight: vi.fn()
         };
+        cell.getRow.mockImplementation(() => row);
 
-        return {
+        const row = {
             name,
             data,
             element,
@@ -46,6 +51,8 @@ const rowReadMock = vi.hoisted(() => {
             pageTo: vi.fn(),
             show: vi.fn()
         };
+
+        return row;
     };
     const savedData = { id: 15, name: 'Saved', _state: 'clean', _ambTempId: 'amb-saved' };
     const tempData = { id: null, name: 'Temporary', _state: 'created', _ambTempId: 'amb-temp-1' };
@@ -411,7 +418,7 @@ describe('AMB table controller row read API', () => {
             expect(typeof controller.getRowElement).toBe('function');
             expect(typeof controller.getRowCells).toBe('function');
             expect(typeof controller.getRowCell).toBe('function');
-            ['getCellValue', 'getCellOldValue', 'getCellInitialValue', 'getCellElement', 'getCellField', 'getCellColumn']
+            ['getCellValue', 'getCellOldValue', 'getCellInitialValue', 'getCellElement', 'getCellField', 'getCellColumn', 'getCellRow', 'getCellData', 'getCellType', 'checkCellHeight']
                 .forEach(name => expect(typeof controller[name]).toBe('function'));
             expect(typeof controller.normalizeRowHeight).toBe('function');
             expect(typeof controller.reformatRow).toBe('function');
@@ -440,6 +447,10 @@ describe('AMB table controller row read API', () => {
             expect(controller.getRowCell('fallback-lookup', column)).toBe(rowReadMock.fallbackRow.cell);
             expect(controller.getCellValue('fallback-lookup', column)).toBe(rowReadMock.fallbackData.name);
             expect(controller.getCellElement('fallback-lookup', column)).toBe(rowReadMock.fallbackRow.cellElement);
+            expect(controller.getCellData('fallback-lookup', column, true)).toBe(rowReadMock.fallbackData);
+            expect(rowReadMock.fallbackRow.cell.getData).toHaveBeenCalledWith(true);
+            expect(controller.checkCellHeight('fallback-lookup', column)).toBe(true);
+            expect(rowReadMock.fallbackRow.cell.checkHeight).toHaveBeenCalledOnce();
             expect(rowReadMock.fallbackRow.getCell).toHaveBeenLastCalledWith(column);
             expect(controller.normalizeRowHeight(15)).toBe(true);
             expect(rowReadMock.savedRow.normalizeHeight).toHaveBeenCalledOnce();
