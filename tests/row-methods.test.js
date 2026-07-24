@@ -11,6 +11,7 @@ const DATA_TREE_METHOD_NAMES = [
     'isTreeExpanded'
 ];
 const ROW_CONTEXT_METHOD_NAMES = [
+    'getRowGroup',
     'getRowData',
     'getRowIndex',
     'getNextRow',
@@ -168,6 +169,7 @@ const createReadableRow = (overrides = {}) => {
         getIndex: vi.fn(() => data.id),
         getNextRow: vi.fn(() => false),
         getPrevRow: vi.fn(() => false),
+        getGroup: vi.fn(() => false),
         getElement: vi.fn(() => false),
         getCells: vi.fn(() => []),
         getCell: vi.fn(() => false),
@@ -250,6 +252,7 @@ describe('AMB table controller row method group', () => {
             'getRowData',
             'getRowElement',
             'getRowFromPosition',
+            'getRowGroup',
             'getRowIndex',
             'getRowPosition',
             'getRows',
@@ -483,7 +486,15 @@ describe('AMB table controller row method group', () => {
         const data = { id: 0, name: 'Zero' };
         const nextRow = { name: 'next-row' };
         const prevRow = { name: 'prev-row' };
+        const group = { name: 'runtime-group' };
         const descriptors = [
+            {
+                method: 'getRowGroup',
+                rowMethod: 'getGroup',
+                row: createReadableRow({ getGroup: vi.fn(() => group) }),
+                args: ['row-group'],
+                expected: group
+            },
             {
                 method: 'getRowData',
                 rowMethod: 'getData',
@@ -521,20 +532,23 @@ describe('AMB table controller row method group', () => {
             expect(methods[method](...args)).toBe(expected);
             expect(row[rowMethod]).toHaveBeenCalledOnce();
         });
-        expect(descriptors[0].row.getData).toHaveBeenLastCalledWith(transform);
+        expect(descriptors[1].row.getData).toHaveBeenLastCalledWith(transform);
 
         descriptors.forEach(({ row }) => {
+            row.getGroup.mockClear();
             row.getData.mockClear();
             row.getIndex.mockClear();
             row.getNextRow.mockClear();
             row.getPrevRow.mockClear();
         });
 
-        descriptors[0].row.getData.mockReturnValueOnce('');
-        descriptors[1].row.getIndex.mockReturnValueOnce('');
-        descriptors[2].row.getNextRow.mockReturnValueOnce(false);
-        descriptors[3].row.getPrevRow.mockReturnValueOnce(false);
+        descriptors[0].row.getGroup.mockReturnValueOnce(false);
+        descriptors[1].row.getData.mockReturnValueOnce('');
+        descriptors[2].row.getIndex.mockReturnValueOnce('');
+        descriptors[3].row.getNextRow.mockReturnValueOnce(false);
+        descriptors[4].row.getPrevRow.mockReturnValueOnce(false);
 
+        expect(methods.getRowGroup('row-group')).toBe(false);
         expect(methods.getRowData('row-data')).toBe('');
         expect(methods.getRowIndex('row-index')).toBe('');
         expect(methods.getNextRow('row-next')).toBe(false);
@@ -544,6 +558,7 @@ describe('AMB table controller row method group', () => {
 
     test('returns false for contextual row reads when row or operation is missing', () => {
         const missingMethodRows = new Map([
+            ['no-group', createReadableRow({ getGroup: undefined })],
             ['no-data', createReadableRow({ getData: undefined })],
             ['no-index', createReadableRow({ getIndex: undefined })],
             ['no-next', createReadableRow({ getNextRow: undefined })],
@@ -555,6 +570,8 @@ describe('AMB table controller row method group', () => {
 
         expect(methods.getRowData('missing-row')).toBe(false);
         expect(table.getRow).toHaveBeenLastCalledWith('missing-row');
+        expect(methods.getRowGroup('missing-row')).toBe(false);
+        expect(methods.getRowGroup('no-group')).toBe(false);
         expect(methods.getRowData('no-data')).toBe(false);
         expect(methods.getRowIndex('no-index')).toBe(false);
         expect(methods.getNextRow('no-next')).toBe(false);

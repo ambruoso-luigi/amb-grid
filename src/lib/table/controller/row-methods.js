@@ -65,6 +65,30 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Returns the current runtime group for one managed row component.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and `_ambTempId` values address the managed row
+     * component. Other supported row lookup values retain the engine fallback.
+     *
+     * The Group Component is returned by identity for advanced use. Normal
+     * group operations remain available through the dedicated AMB Grid
+     * controller methods. The method returns `false` when the row is not
+     * grouped or the operation is unavailable, and it does not modify grouping,
+     * row data or CRUD state.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {object|false} Runtime Group Component, or `false`.
+     */
+    getRowGroup(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getGroup !== 'function') return false;
+
+        return row.getGroup();
+    },
+
+    /**
      * Returns the managed row data for one row through the AMB Grid controller.
      *
      * The AMB Grid row identifier is resolved through the CRUD layer first, so

@@ -745,6 +745,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
+ * @property {Function} getRowGroup - Return the row's runtime Group Component, or `false`.
  * @property {Function} getRowData - Return managed data for one row by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowIndex - Return the identifying index value for one row.
  * @property {Function} getNextRow - Return the next row component relative to one row, or `false`.
