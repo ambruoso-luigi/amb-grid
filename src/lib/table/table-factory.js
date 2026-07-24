@@ -810,6 +810,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} downloadToTab - Open generated export data in a new browser tab.
  * @property {Function} print - Print grid data using the current print configuration.
  * @property {Function} getCalcResults - Return the current column calculation results.
+ * @property {Function} getCalcData - Return runtime data for one calculation row.
+ * @property {Function} getCalcElement - Return the runtime DOM element for one calculation row.
+ * @property {Function} getCalcCells - Return runtime Cell Components for one calculation row.
+ * @property {Function} getCalcCell - Return one runtime Cell Component from a calculation row.
  * @property {Function} recalc - Recalculate the configured column calculations.
  * @property {Function} setLocale - Change the locale used by the grid.
  * @property {Function} getLocale - Return the current resolved grid locale.

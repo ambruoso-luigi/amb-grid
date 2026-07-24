@@ -9,10 +9,59 @@ describe('AMB table controller calculation method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'getCalcCell',
+            'getCalcCells',
+            'getCalcData',
+            'getCalcElement',
             'getCalcResults',
             'recalc'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('calculation component reads delegate with unchanged arguments and preserve runtime results', () => {
+        const transform = {
+            type: 'transform'
+        };
+        const column = {
+            type: 'column'
+        };
+        const data = {
+            amount: 120
+        };
+        const element = {
+            type: 'calc-element'
+        };
+        const cells = [];
+        const cell = {
+            type: 'cell'
+        };
+        const cases = [
+            ['getCalcData', 'getData', [transform], data],
+            ['getCalcElement', 'getElement', [], element],
+            ['getCalcCells', 'getCells', [], cells],
+            ['getCalcCell', 'getCell', [column], cell],
+            ['getCalcCell', 'getCell', [column], false]
+        ];
+        const methods = createCalculationMethods({
+            table: {}
+        });
+
+        cases.forEach(([ambMethodName, calcMethodName, args, result]) => {
+            const calcMethod = vi.fn(() => result);
+            const calc = {
+                [calcMethodName]: calcMethod
+            };
+
+            expect(methods[ambMethodName](calc, ...args)).toBe(result);
+            expect(calcMethod).toHaveBeenCalledOnce();
+            expect(calcMethod).toHaveBeenCalledWith(...args);
+            args.forEach((arg, index) => {
+                expect(calcMethod.mock.calls[0][index]).toBe(arg);
+            });
+            expect(methods[ambMethodName]()).toBe(false);
+            expect(methods[ambMethodName]({})).toBe(false);
+        });
     });
 
     test('returns ungrouped calculation results without cloning or recalculating', () => {
