@@ -58,11 +58,15 @@ describe('AMB table controller grouping method group', () => {
             'getGroupSubGroups',
             'getGroupedData',
             'getGroups',
+            'hideGroup',
             'isGroupVisible',
+            'scrollToGroup',
             'setGroupBy',
             'setGroupHeader',
             'setGroupStartOpen',
-            'setGroupValues'
+            'setGroupValues',
+            'showGroup',
+            'toggleGroup'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -210,6 +214,34 @@ describe('AMB table controller grouping method group', () => {
             expect(methods[controllerMethod](false)).toBe(false);
             expect(methods[controllerMethod]({})).toBe(false);
         });
+    });
+
+    test('runs contextual group runtime actions without resolving groups', () => {
+        const methods = createGroupingMethods({ table: { getGroups: vi.fn() } });
+        const actionCases = [
+            ['showGroup', 'show'],
+            ['hideGroup', 'hide'],
+            ['toggleGroup', 'toggle']
+        ];
+
+        actionCases.forEach(([controllerMethod, componentMethod]) => {
+            const group = { [componentMethod]: vi.fn() };
+
+            expect(methods[controllerMethod](group)).toBe(true);
+            expect(group[componentMethod]).toHaveBeenCalledOnce();
+            expect(group[componentMethod]).toHaveBeenCalledWith();
+            expect(methods[controllerMethod](false)).toBe(false);
+            expect(methods[controllerMethod]({})).toBe(false);
+        });
+
+        const position = { position: 'middle' }, ifVisible = { ifVisible: true }, scrollResult = Promise.resolve('done');
+        const group = { scrollTo: vi.fn(() => scrollResult) };
+
+        expect(methods.scrollToGroup(group, position, ifVisible)).toBe(scrollResult);
+        expect(group.scrollTo).toHaveBeenCalledOnce();
+        expect(group.scrollTo).toHaveBeenCalledWith(position, ifVisible);
+        expect(methods.scrollToGroup(false, position, ifVisible)).toBe(false);
+        expect(methods.scrollToGroup({}, position, ifVisible)).toBe(false);
     });
 
     test('changes group definitions by forwarding values unchanged', () => {

@@ -16,6 +16,24 @@ const readGroup = (group, methodName) => {
 };
 
 /**
+ * Runs a runtime action on an AMB-provided Group Component.
+ *
+ * @param {object} group - Group Component obtained through AMB Grid.
+ * @param {string} methodName - Group Component action method to call.
+ * @returns {boolean} `true` when delegated, or `false` when unavailable.
+ * @private
+ * @internal
+ */
+const runGroupAction = (group, methodName) => {
+    if (!group || typeof group[methodName] !== 'function') {
+        return false;
+    }
+
+    group[methodName]();
+    return true;
+};
+
+/**
  * Creates the row-grouping methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
@@ -167,6 +185,77 @@ export const createGroupingMethods = ({ table }) => ({
      */
     isGroupVisible(group) {
         return readGroup(group, 'isVisible');
+    },
+
+    /**
+     * Shows a Group Component obtained through AMB Grid.
+     *
+     * This delegates to the runtime group component and can only change that
+     * group's runtime open/visibility state. It does not rebuild grouping,
+     * redraw the table, or modify row data and AMB Grid CRUD state. `false`
+     * indicates the component or operation is unavailable. `true` indicates the
+     * action was delegated to the runtime component.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {boolean} `true` when delegated, or `false` when unavailable.
+     */
+    showGroup(group) {
+        return runGroupAction(group, 'show');
+    },
+
+    /**
+     * Hides a Group Component obtained through AMB Grid.
+     *
+     * This delegates to the runtime group component and can only change that
+     * group's runtime open/visibility state. It does not rebuild grouping,
+     * redraw the table, or modify row data and AMB Grid CRUD state. `false`
+     * indicates the component or operation is unavailable. `true` indicates the
+     * action was delegated to the runtime component.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {boolean} `true` when delegated, or `false` when unavailable.
+     */
+    hideGroup(group) {
+        return runGroupAction(group, 'hide');
+    },
+
+    /**
+     * Toggles a Group Component obtained through AMB Grid.
+     *
+     * This delegates to the runtime group component and can only change that
+     * group's runtime open/visibility state. It does not rebuild grouping,
+     * redraw the table, or modify row data and AMB Grid CRUD state. `false`
+     * indicates the component or operation is unavailable. `true` indicates the
+     * action was delegated to the runtime component.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {boolean} `true` when delegated, or `false` when unavailable.
+     */
+    toggleGroup(group) {
+        return runGroupAction(group, 'toggle');
+    },
+
+    /**
+     * Scrolls to a Group Component obtained through AMB Grid.
+     *
+     * The `position` and `ifVisible` values are forwarded unchanged so the
+     * runtime engine can apply its own defaults when either value is
+     * `undefined`. This can only change the displayed scroll position. It does
+     * not rebuild grouping or modify row data and AMB Grid CRUD state. `false`
+     * indicates the component or operation is unavailable. Otherwise, the
+     * runtime scroll result is returned directly.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @param {*} position - Runtime scroll position forwarded unchanged.
+     * @param {*} ifVisible - Runtime visibility behavior forwarded unchanged.
+     * @returns {*|false} Runtime scroll result, or `false` when unavailable.
+     */
+    scrollToGroup(group, position, ifVisible) {
+        if (!group || typeof group.scrollTo !== 'function') {
+            return false;
+        }
+
+        return group.scrollTo(position, ifVisible);
     },
 
     /**
