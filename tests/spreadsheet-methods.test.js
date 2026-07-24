@@ -98,7 +98,9 @@ describe('AMB table controller spreadsheet method group', () => {
             'getSheetTitle',
             'getSheets',
             'removeSheet',
+            'setSheetColumns',
             'setSheetData',
+            'setSheetRows',
             'setSheetTitle',
             'setSheets'
         ]);
@@ -156,6 +158,35 @@ describe('AMB table controller spreadsheet method group', () => {
         expect(methods.setSheetTitle()).toBe(false);
         expect(methods.setSheetTitle({})).toBe(false);
         expect(setTitle).toHaveBeenCalledTimes(2);
+    });
+
+    test('sheet structural resizes delegate unchanged to the matching component methods', () => {
+        const rowResult = {
+            resized: 'rows'
+        };
+        const columnResult = {
+            resized: 'columns'
+        };
+        const cases = [
+            ['setSheetRows', 'setRows', 25, rowResult],
+            ['setSheetColumns', 'setColumns', 7, columnResult]
+        ];
+        const methods = createSpreadsheetMethods({
+            table: createTable()
+        });
+
+        cases.forEach(([ambMethodName, sheetMethodName, value, result]) => {
+            const sheetMethod = vi.fn(() => result);
+            const sheet = {
+                [sheetMethodName]: sheetMethod
+            };
+
+            expect(methods[ambMethodName](sheet, value)).toBe(result);
+            expect(sheetMethod).toHaveBeenCalledOnce();
+            expect(sheetMethod.mock.calls[0][0]).toBe(value);
+            expect(methods[ambMethodName]()).toBe(false);
+            expect(methods[ambMethodName]({})).toBe(false);
+        });
     });
 
     test('getSheetDefinitions returns runtime definitions without cloning or rebuilding', () => {

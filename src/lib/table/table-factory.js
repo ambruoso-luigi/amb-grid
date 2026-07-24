@@ -722,6 +722,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSheet - Return one spreadsheet Sheet Component.
  * @property {Function} getSheetTitle - Return the runtime title of one spreadsheet sheet.
  * @property {Function} setSheetTitle - Set the runtime title of one spreadsheet sheet.
+ * @property {Function} setSheetRows - Set the runtime row count of one spreadsheet sheet.
+ * @property {Function} setSheetColumns - Set the runtime column count of one spreadsheet sheet.
  * @property {Function} getSheetKey - Return the runtime key of one spreadsheet sheet.
  * @property {Function} getSheetDefinition - Return the runtime definition of one spreadsheet sheet.
  * @property {Function} getSheetData - Return matrix data for a spreadsheet sheet.

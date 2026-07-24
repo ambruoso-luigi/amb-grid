@@ -97,6 +97,53 @@ export const createSpreadsheetMethods = ({ table }) => ({
     },
 
     /**
+     * Sets the runtime row count of one spreadsheet sheet.
+     *
+     * `sheet` must be a Sheet Component obtained through the AMB Grid API, for
+     * example with `getSheet()` or `getSheets()`. `rows` is forwarded without
+     * transformations. The operation resizes the Spreadsheet runtime structure
+     * and preserves the engine's Spreadsheet events. An active sheet can be
+     * reconstructed internally, so previously acquired Row, Column and Cell
+     * Components and related DOM elements may be stale and should be acquired
+     * again through the AMB Grid API. This does not update the normal object-row
+     * CRUD state. The component result is returned directly; `false` means the
+     * component or operation is unavailable.
+     *
+     * @param {object} sheet - Sheet Component obtained through the AMB Grid API.
+     * @param {*} rows - Runtime spreadsheet row count forwarded unchanged.
+     * @returns {*|false} Sheet Component result, or `false` when unavailable.
+     */
+    setSheetRows(sheet, rows) {
+        if (!sheet || typeof sheet.setRows !== 'function') return false;
+
+        return sheet.setRows(rows);
+    },
+
+    /**
+     * Sets the runtime column count of one spreadsheet sheet.
+     *
+     * `sheet` must be a Sheet Component obtained through the AMB Grid API, for
+     * example with `getSheet()` or `getSheets()`. `columns` is forwarded without
+     * transformations. The operation resizes the Spreadsheet runtime structure
+     * and preserves the engine's Spreadsheet events. An active sheet can be
+     * reconstructed internally, so previously acquired Row, Column and Cell
+     * Components and related DOM elements may be stale and should be acquired
+     * again through the AMB Grid API. This is separate from general table-column
+     * structure and does not update the normal object-row CRUD state. The
+     * component result is returned directly; `false` means the component or
+     * operation is unavailable.
+     *
+     * @param {object} sheet - Sheet Component obtained through the AMB Grid API.
+     * @param {*} columns - Runtime spreadsheet column count forwarded unchanged.
+     * @returns {*|false} Sheet Component result, or `false` when unavailable.
+     */
+    setSheetColumns(sheet, columns) {
+        if (!sheet || typeof sheet.setColumns !== 'function') return false;
+
+        return sheet.setColumns(columns);
+    },
+
+    /**
      * Returns the runtime key of one spreadsheet sheet.
      *
      * `sheet` must be a Sheet Component obtained through the AMB Grid API, for
