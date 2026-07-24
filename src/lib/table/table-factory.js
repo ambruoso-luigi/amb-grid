@@ -738,6 +738,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearCellValidation - Clear native validation markers from cells.
  * @property {Function} getEditedCells - Return cells marked as edited by the grid.
  * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
+ * @property {Function} isCellEdited - Read a native edited marker independently from CRUD state and save payloads.
+ * @property {Function} isCellValid - Read native runtime validation state independently from AMB Grid validation.
  * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
  * @property {Function} validateChanges - Validate AMB rows with pending insert or update changes.
  * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
@@ -1016,7 +1018,6 @@ export function createTable(options = {}) {
     const table = new Tabulator(selector, normalizedOptions);
     const alertMethods = createAlertMethods({ table });
     const calculationMethods = createCalculationMethods({ table });
-    const cellStateMethods = createCellStateMethods({ table });
     const columnMethods = createColumnMethods({ table });
     const dataMethods = createDataMethods({ table });
     const eventMethods = createEventMethods({ table });
@@ -1032,6 +1033,7 @@ export function createTable(options = {}) {
     const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     const rowMethods = createRowMethods({ table, crud });
+    const cellStateMethods = createCellStateMethods({ table, rowMethods });
     const cellMethods = createCellMethods({ rowMethods });
     const paginationMethods = createPaginationMethods({ table, crud });
     const selectionMethods = createSelectionMethods({ table, crud });

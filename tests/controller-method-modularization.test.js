@@ -131,7 +131,9 @@ describe('AMB table controller method modularization', () => {
         ];
 
         expect(source).toContain("import { createCellStateMethods } from './controller/cell-state-methods.js';");
-        expect(source).toContain('const cellStateMethods = createCellStateMethods({ table });');
+        expect(source.indexOf('const rowMethods = createRowMethods({ table, crud });')).toBeLessThan(source.indexOf('const cellStateMethods = createCellStateMethods({ table, rowMethods });'));
+        expect(source).toContain('const cellStateMethods = createCellStateMethods({ table, rowMethods });');
+        expect(source).not.toContain('const cellStateMethods = createCellStateMethods({ table });');
         expect(composition).not.toBeNull();
         expect(composition[1]).toContain('calculationMethods');
         expect(composition[1]).toContain('cellStateMethods');
@@ -152,7 +154,7 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('cell-validation-methods.js');
         expect(controllerModules).not.toContain('cell-state-clear-methods.js');
         expect(controllerModules).not.toContain('validation-state-methods.js');
-        expect(cellStateSource).toMatch(/createCellStateMethods = \(\{ table \}\) => \(\{/);
+        expect(cellStateSource).toMatch(/createCellStateMethods = \(\{ table, rowMethods \}\) => \(\{/);
         expect(cellStateSource).toMatch(/clearCellEdited\(\.\.\.args\) \{\s*return table\.clearCellEdited\(\.\.\.args\);/);
         expect(cellStateSource).toMatch(/clearCellValidation\(\.\.\.args\) \{\s*return table\.clearCellValidation\(\.\.\.args\);/);
         expect(cellStateSource).toMatch(/getEditedCells\(\) \{\s*return table\.getEditedCells\(\);/);

@@ -1,14 +1,23 @@
+const readCellState = (rowMethods, rowIdentifier, column, methodName) => {
+    const cell = rowMethods?.getRowCell?.(rowIdentifier, column);
+
+    if (!cell || typeof cell[methodName] !== 'function') return false;
+
+    return cell[methodName]();
+};
+
 /**
  * Creates the runtime cell-state reading methods exposed by the AMB Grid
  * controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
+ * @param {object} context.rowMethods - AMB Grid row methods.
  * @returns {object} Cell-state reading methods for the flat controller API.
  * @private
  * @internal
  */
-export const createCellStateMethods = ({ table }) => ({
+export const createCellStateMethods = ({ table, rowMethods }) => ({
     /**
      * Clears the grid's native edited marker from one or more cells.
      *
@@ -58,6 +67,27 @@ export const createCellStateMethods = ({ table }) => ({
     },
 
     /**
+     * Reads the native runtime edited marker of one managed cell component.
+     *
+     * The AMB Grid controller resolves the cell through an AMB Grid row
+     * identifier and a supported column lookup. The marker is separate from
+     * CRUD state and save-payload membership, and reading it does not modify
+     * the cell value.
+     *
+     * @param {*} rowIdentifier - AMB Grid row identifier.
+     * @param {*} column - Supported column lookup.
+     * @returns {boolean} `true` when edited; `false` when not edited or when the cell or operation is unavailable.
+     */
+    isCellEdited(rowIdentifier, column) {
+        return readCellState(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'isEdited'
+        );
+    },
+
+    /**
      * Returns the cell components currently marked as invalid by the grid's
      * native validation state.
      *
@@ -69,5 +99,32 @@ export const createCellStateMethods = ({ table }) => ({
      */
     getInvalidCells() {
         return table.getInvalidCells();
+    },
+
+    /**
+     * Reads the previously calculated native runtime validation state of one
+     * managed cell component.
+     *
+     * The AMB Grid controller resolves the cell through an AMB Grid row
+     * identifier and a supported column lookup. No new validation is run:
+     * `true` indicates a valid runtime state, while an array identifies the
+     * failed validators. `false` means that the cell or operation is
+     * unavailable.
+     *
+     * This result is not an AMB Grid validation report and does not replace
+     * `validate()`, `validateRow()` or `validateChanges()` for application-level
+     * AMB Grid validation.
+     *
+     * @param {*} rowIdentifier - AMB Grid row identifier.
+     * @param {*} column - Supported column lookup.
+     * @returns {boolean|object[]} Native state result, failed validators by identity, or `false` when unavailable.
+     */
+    isCellValid(rowIdentifier, column) {
+        return readCellState(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'isValid'
+        );
     }
 });

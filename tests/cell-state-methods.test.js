@@ -53,9 +53,76 @@ describe('AMB table controller cell-state reading method group', () => {
             'clearCellEdited',
             'clearCellValidation',
             'getEditedCells',
-            'getInvalidCells'
+            'getInvalidCells',
+            'isCellEdited',
+            'isCellValid'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('reads managed cell runtime markers without mutating or validating', () => {
+        const rowIdentifier = { _ambTempId: 'temp-1' };
+        const column = { field: 'name' };
+        const failedValidators = [{ type: 'required' }];
+        const forbiddenCellMethods = {
+            validate: vi.fn(),
+            clearEdited: vi.fn(),
+            clearValidation: vi.fn(),
+            edit: vi.fn(),
+            cancelEdit: vi.fn()
+        };
+        const editedCell = {
+            ...forbiddenCellMethods,
+            isEdited: vi.fn(() => true)
+        };
+        const uneditedCell = {
+            ...forbiddenCellMethods,
+            isEdited: vi.fn(() => false)
+        };
+        const validCell = {
+            ...forbiddenCellMethods,
+            isValid: vi.fn(() => true)
+        };
+        const invalidCell = {
+            ...forbiddenCellMethods,
+            isValid: vi.fn(() => failedValidators)
+        };
+        const cellWithoutStateMethod = {
+            ...forbiddenCellMethods
+        };
+        const rowMethods = {
+            getRowCell: vi.fn()
+                .mockReturnValueOnce(editedCell)
+                .mockReturnValueOnce(uneditedCell)
+                .mockReturnValueOnce(validCell)
+                .mockReturnValueOnce(invalidCell)
+                .mockReturnValueOnce(null)
+                .mockReturnValueOnce(cellWithoutStateMethod)
+        };
+        const methods = createCellStateMethods({
+            table: {},
+            rowMethods
+        });
+
+        expect(methods.isCellEdited(rowIdentifier, column)).toBe(true);
+        expect(methods.isCellEdited(rowIdentifier, column)).toBe(false);
+        expect(methods.isCellValid(rowIdentifier, column)).toBe(true);
+        expect(methods.isCellValid(rowIdentifier, column)).toBe(failedValidators);
+        expect(methods.isCellEdited(rowIdentifier, column)).toBe(false);
+        expect(methods.isCellValid(rowIdentifier, column)).toBe(false);
+
+        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(6);
+        rowMethods.getRowCell.mock.calls.forEach(([receivedRow, receivedColumn]) => {
+            expect(receivedRow).toBe(rowIdentifier);
+            expect(receivedColumn).toBe(column);
+        });
+        expect(editedCell.isEdited).toHaveBeenCalledOnce();
+        expect(uneditedCell.isEdited).toHaveBeenCalledOnce();
+        expect(validCell.isValid).toHaveBeenCalledOnce();
+        expect(invalidCell.isValid).toHaveBeenCalledOnce();
+        Object.values(forbiddenCellMethods).forEach(method => {
+            expect(method).not.toHaveBeenCalled();
+        });
     });
 
     test('clearCellEdited delegates native edited marker cleanup without reading or mutating cells', () => {
