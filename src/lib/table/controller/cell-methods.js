@@ -113,6 +113,82 @@ export const createCellMethods = ({ rowMethods }) => ({
     },
 
     /**
+     * Navigates left from one managed Cell Component.
+     *
+     * The AMB Grid row methods resolve `rowIdentifier`, while `column` is
+     * forwarded as a supported column lookup. The runtime engine selects the
+     * destination and manages focus, scrolling and any editor while respecting
+     * normal editability checks. Unlike the global `navigateLeft()`, this
+     * operation starts from the resolved cell. Its runtime result is returned
+     * directly; `false` also covers an unavailable cell or operation. No data
+     * or AMB Grid CRUD state is modified directly.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} Runtime navigation result, or `false` when unavailable.
+     */
+    navigateCellLeft(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'navigateLeft');
+    },
+
+    /**
+     * Navigates right from one managed Cell Component.
+     *
+     * The AMB Grid row methods resolve `rowIdentifier`, while `column` is
+     * forwarded as a supported column lookup. The runtime engine selects the
+     * destination and manages focus, scrolling and any editor while respecting
+     * normal editability checks. Unlike the global `navigateRight()`, this
+     * operation starts from the resolved cell. Its runtime result is returned
+     * directly; `false` also covers an unavailable cell or operation. No data
+     * or AMB Grid CRUD state is modified directly.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} Runtime navigation result, or `false` when unavailable.
+     */
+    navigateCellRight(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'navigateRight');
+    },
+
+    /**
+     * Navigates upward from one managed Cell Component.
+     *
+     * The AMB Grid row methods resolve `rowIdentifier`, while `column` is
+     * forwarded as a supported column lookup. The runtime engine selects the
+     * destination and manages focus, scrolling and any editor while respecting
+     * normal editability checks. Unlike the global `navigateUp()`, this
+     * operation starts from the resolved cell. Its runtime result is returned
+     * directly; `false` also covers an unavailable cell or operation. No data
+     * or AMB Grid CRUD state is modified directly.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} Runtime navigation result, or `false` when unavailable.
+     */
+    navigateCellUp(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'navigateUp');
+    },
+
+    /**
+     * Navigates downward from one managed Cell Component.
+     *
+     * The AMB Grid row methods resolve `rowIdentifier`, while `column` is
+     * forwarded as a supported column lookup. The runtime engine selects the
+     * destination and manages focus, scrolling and any editor while respecting
+     * normal editability checks. Unlike the global `navigateDown()`, this
+     * operation starts from the resolved cell. Its runtime result is returned
+     * directly; `false` also covers an unavailable cell or operation. No data
+     * or AMB Grid CRUD state is modified directly.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} Runtime navigation result, or `false` when unavailable.
+     */
+    navigateCellDown(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'navigateDown');
+    },
+
+    /**
      * Returns the runtime DOM element for one Cell Component.
      *
      * DOM nodes are advanced runtime objects. Direct manipulation can bypass

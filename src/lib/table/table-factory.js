@@ -758,6 +758,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getCellInitialValue - Return the initial runtime value for one cell.
  * @property {Function} editCell - Attempt runtime editing with normal AMB editability checks, without replacing CRUD APIs.
  * @property {Function} cancelCellEdit - Cancel only the active runtime cell editor, without replacing CRUD APIs.
+ * @property {Function} navigateCellLeft - Navigate left from the cell resolved through its row and column.
+ * @property {Function} navigateCellRight - Navigate right from the cell resolved through its row and column.
+ * @property {Function} navigateCellUp - Navigate upward from the cell resolved through its row and column.
+ * @property {Function} navigateCellDown - Navigate downward from the cell resolved through its row and column.
  * @property {Function} getCellElement - Return the runtime DOM element for one cell.
  * @property {Function} getCellField - Return the runtime field for one cell.
  * @property {Function} getCellColumn - Return the Column Component for one cell.
