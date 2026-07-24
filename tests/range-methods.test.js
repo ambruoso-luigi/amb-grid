@@ -67,7 +67,10 @@ describe('AMB table controller cell-range reading method group', () => {
             'getRangeStructuredCells',
             'getRangeTopEdge',
             'getRanges',
-            'getRangesData'
+            'getRangesData',
+            'removeRange',
+            'setRangeBounds',
+            'setRangeEndBound'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -119,6 +122,39 @@ describe('AMB table controller cell-range reading method group', () => {
             expect(methods[ambMethodName](range)).toBe(result);
             expect(rangeMethod).toHaveBeenCalledOnce();
             expect(rangeMethod).toHaveBeenCalledWith();
+            expect(methods[ambMethodName]()).toBe(false);
+            expect(methods[ambMethodName]({})).toBe(false);
+        });
+    });
+
+    test('range runtime actions delegate once with unchanged arguments and report availability', () => {
+        const start = {
+            type: 'start-cell'
+        };
+        const end = {
+            type: 'end-cell'
+        };
+        const cases = [
+            ['setRangeBounds', 'setBounds', [start, end]],
+            ['setRangeEndBound', 'setEndBound', [end]],
+            ['removeRange', 'remove', []]
+        ];
+        const methods = createRangeMethods({
+            table: {}
+        });
+
+        cases.forEach(([ambMethodName, rangeMethodName, args]) => {
+            const rangeMethod = vi.fn(() => false);
+            const range = {
+                [rangeMethodName]: rangeMethod
+            };
+
+            expect(methods[ambMethodName](range, ...args)).toBe(true);
+            expect(rangeMethod).toHaveBeenCalledOnce();
+            expect(rangeMethod).toHaveBeenCalledWith(...args);
+            args.forEach((arg, index) => {
+                expect(rangeMethod.mock.calls[0][index]).toBe(arg);
+            });
             expect(methods[ambMethodName]()).toBe(false);
             expect(methods[ambMethodName]({})).toBe(false);
         });

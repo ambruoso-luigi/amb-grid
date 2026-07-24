@@ -7,12 +7,22 @@ const readRange = (range, methodName) => {
     return method.call(range);
 };
 
+const runRangeAction = (range, methodName, args = []) => {
+    if (!range) return false;
+
+    const method = range[methodName];
+    if (typeof method !== 'function') return false;
+
+    method.apply(range, args);
+    return true;
+};
+
 /**
- * Creates the cell-range reading methods exposed by the AMB Grid controller.
+ * Creates the cell-range methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
- * @returns {object} Cell-range reading methods for the flat controller API.
+ * @returns {object} Cell-range methods for the flat controller API.
  * @private
  * @internal
  */
@@ -226,5 +236,52 @@ export const createRangeMethods = ({ table }) => ({
      */
     getRangeRightEdge(range) {
         return readRange(range, 'getRightEdge');
+    },
+
+    /**
+     * Updates both runtime bounds of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. `start` and
+     * `end` are forwarded unchanged to the internal engine. This operation
+     * modifies only the runtime range selection; row data and AMB Grid CRUD
+     * state are not modified.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @param {*} start - Runtime start bound supported by the internal engine.
+     * @param {*} end - Runtime end bound supported by the internal engine.
+     * @returns {boolean} `true` when the operation was delegated; `false` when the component or operation is unavailable.
+     */
+    setRangeBounds(range, start, end) {
+        return runRangeAction(range, 'setBounds', [start, end]);
+    },
+
+    /**
+     * Updates the runtime end bound of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. `end` is
+     * forwarded unchanged to the internal engine. This operation modifies only
+     * the runtime range selection; row data and AMB Grid CRUD state are not
+     * modified.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @param {*} end - Runtime end bound supported by the internal engine.
+     * @returns {boolean} `true` when the operation was delegated; `false` when the component or operation is unavailable.
+     */
+    setRangeEndBound(range, end) {
+        return runRangeAction(range, 'setEndBound', [end]);
+    },
+
+    /**
+     * Removes one selected range from the runtime selection.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The operation
+     * removes only the selected runtime interval; it does not remove rows or
+     * data and does not modify AMB Grid CRUD state.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {boolean} `true` when the operation was delegated; `false` when the component or operation is unavailable.
+     */
+    removeRange(range) {
+        return runRangeAction(range, 'remove');
     }
 });
