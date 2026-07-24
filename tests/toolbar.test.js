@@ -660,6 +660,10 @@ describe('AMB toolbar', () => {
             new URL('../src/lib/table/table-factory.js', import.meta.url),
             'utf8'
         );
+        const lifecycleMethodsSource = fs.readFileSync(
+            new URL('../src/lib/table/controller/lifecycle-methods.js', import.meta.url),
+            'utf8'
+        );
         const libraryCss = fs.readFileSync(
             new URL('../src/amb-grid.css', import.meta.url),
             'utf8'
@@ -668,7 +672,7 @@ describe('AMB toolbar', () => {
         expect(tableFactorySource)
             .toContain("import { FeedbackRegion }");
         expect(tableFactorySource).toContain('feedback,');
-        expect(tableFactorySource).toContain('feedback.destroy()');
+        expect(lifecycleMethodsSource).toContain('resources.feedback.destroy()');
         expect(libraryCss).toContain("@import './ui/feedback-region.css'");
     });
 

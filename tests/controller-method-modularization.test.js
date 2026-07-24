@@ -10,6 +10,42 @@ const tableFactoryPath = resolve(repositoryRoot, 'src/lib/table/table-factory.js
 const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8');
 
 describe('AMB table controller method modularization', () => {
+    test('wires the extracted lifecycle method group into the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const controllerModules = readdirSync(controllerDir);
+        const lifecycleSource = readFileSync(
+            resolve(controllerDir, 'lifecycle-methods.js'),
+            'utf8'
+        );
+        const composition = source.match(
+            /const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/
+        );
+        const lifecycleCreationIndex = source.indexOf(
+            'const lifecycleMethods = createLifecycleMethods({'
+        );
+        const searchCreationIndex = source.indexOf(
+            'lifecycleResources.searchController = createSearchController({'
+        );
+        const deleteSubscriptionIndex = source.indexOf(
+            'lifecycleResources.unsubscribeDeleteColumn = crud.on('
+        );
+        const controllerMethodsSpreads = source.match(/\.\.\.controllerMethods/g) || [];
+
+        expect(source).toContain(
+            "import { createLifecycleMethods } from './controller/lifecycle-methods.js';"
+        );
+        expect(lifecycleCreationIndex).toBeGreaterThan(searchCreationIndex);
+        expect(lifecycleCreationIndex).toBeGreaterThan(deleteSubscriptionIndex);
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('lifecycleMethods');
+        expect(source).not.toContain('...lifecycleMethods');
+        expect(controllerMethodsSpreads).toHaveLength(1);
+        expect(source).not.toMatch(/^\s*destroy\(\) \{/m);
+        expect(lifecycleSource).toMatch(/^\s*destroy\(\) \{/m);
+        expect(controllerModules).toContain('lifecycle-methods.js');
+    });
+
     test('wires the extracted alert method group into the controller composition', () => {
         const source = readTableFactorySource();
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
@@ -611,7 +647,7 @@ describe('AMB table controller method modularization', () => {
         expect(source).toContain('const filterMethods = createFilterMethods({');
         expect(source).toContain('searchController');
         expect(source).not.toContain('const filterMethods = createFilterMethods({ table });');
-        expect(source.indexOf('searchController = createSearchController({'))
+        expect(source.indexOf('lifecycleResources.searchController = createSearchController({'))
             .toBeLessThan(source.indexOf('const filterMethods = createFilterMethods({'));
 
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
@@ -631,9 +667,9 @@ describe('AMB table controller method modularization', () => {
         const source = readTableFactorySource();
 
         expect(source).toContain("import { createSearchMethods } from './controller/search-methods.js';");
-        expect(source).toContain('const searchMethods = createSearchMethods({ searchController });');
-        expect(source.indexOf('searchController = createSearchController({'))
-            .toBeLessThan(source.indexOf('const searchMethods = createSearchMethods({ searchController });'));
+        expect(source).toContain('searchController: lifecycleResources.searchController');
+        expect(source.indexOf('lifecycleResources.searchController = createSearchController({'))
+            .toBeLessThan(source.indexOf('const searchMethods = createSearchMethods({'));
 
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
 

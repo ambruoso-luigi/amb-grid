@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/redraw-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/lifecycle-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/redraw-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/lifecycle-methods.js</h1>
 
     
 
@@ -27,50 +27,94 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the redraw methods exposed by the AMB Grid controller.
+ * Creates lifecycle methods for the AMB Grid controller.
  *
- * @param {object} context - Required method dependencies.
- * @param {object} context.table - Grid table instance.
- * @returns {object} Redraw methods for the flat controller API.
+ * @param {object} context - Owned lifecycle dependencies.
+ * @param {object} context.table - Internal table engine.
+ * @param {object} context.crud - AMB Grid CRUD layer.
+ * @param {object} context.resources - Mutable owned AMB Grid resources.
+ * @param {Function} context.getController - Returns the public AMB Grid controller.
+ * @param {object} context.cellMessageBinder - Managed cell-message binder.
+ * @param {object} context.floatingMessage - Managed floating-message region.
+ * @param {object} context.confirmDialog - Managed confirmation dialog.
+ * @returns {object} Lifecycle methods for the flat controller API.
  * @private
  * @internal
  */
-export const createRedrawMethods = ({ table }) => ({
+export const createLifecycleMethods = ({
+    table,
+    crud,
+    resources,
+    getController,
+    cellMessageBinder,
+    floatingMessage,
+    confirmDialog
+}) => ({
     /**
-     * Redraws the grid.
+     * Releases the complete AMB Grid controller.
      *
-     * All arguments are forwarded unchanged and the result is returned
-     * directly.
+     * Lifecycle cleanup destroys owned AMB Grid resources first: toolbar,
+     * column and binder subscriptions, search, feedback, cell messages,
+     * floating messages and dialogs. CRUD event bindings are disconnected
+     * before the internal table engine is destroyed as the final phase.
      *
-     * @param {...any} args - Redraw arguments.
-     * @returns {any} Result returned by the grid table.
+     * The controller should not normally be reused after destruction.
+     *
+     * @returns {void}
      */
-    redraw(...args) {
-        return table.redraw(...args);
-    },
+    destroy() {
+        const controller = getController();
 
-    /**
-     * Temporarily suspends automatic redraws.
-     *
-     * Use this around a short group of consecutive grid operations, then call
-     * `restoreRedraw()` to resume redraw behavior.
-     *
-     * @returns {any} Result returned by the grid table.
-     */
-    blockRedraw() {
-        return table.blockRedraw();
-    },
+        if (resources.toolbarController) {
+            resources.toolbarController.destroy();
+            resources.toolbarController = null;
+            controller.toolbar = null;
+        }
 
-    /**
-     * Restores automatic redraws after `blockRedraw()`.
-     *
-     * Any redraw left pending while redraws were suspended is handled by the
-     * grid table.
-     *
-     * @returns {any} Result returned by the grid table.
-     */
-    restoreRedraw() {
-        return table.restoreRedraw();
+        if (resources.unsubscribeDeleteColumn) {
+            resources.unsubscribeDeleteColumn();
+            resources.unsubscribeDeleteColumn = null;
+        }
+
+        if (resources.unsubscribeSelectionColumn) {
+            resources.unsubscribeSelectionColumn();
+            resources.unsubscribeSelectionColumn = null;
+        }
+
+        if (resources.unsubscribeLookupDescriptions) {
+            resources.unsubscribeLookupDescriptions();
+            resources.unsubscribeLookupDescriptions = null;
+        }
+
+        if (resources.unsubscribeLookupMetadata) {
+            resources.unsubscribeLookupMetadata();
+            resources.unsubscribeLookupMetadata = null;
+        }
+
+        if (resources.unsubscribeLargeText) {
+            resources.unsubscribeLargeText();
+            resources.unsubscribeLargeText = null;
+        }
+
+        if (resources.searchController) {
+            resources.searchController.destroy();
+            resources.searchController = null;
+        }
+
+        if (resources.feedback) {
+            resources.feedback.destroy();
+            resources.feedback = null;
+            controller.feedback = null;
+        }
+
+        cellMessageBinder.destroy();
+        floatingMessage.destroy();
+        confirmDialog.destroy();
+        crud.destroy();
+
+        if (typeof table.destroy === 'function') {
+            table.destroy();
+        }
     }
 });
 </code></pre>

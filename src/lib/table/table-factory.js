@@ -22,6 +22,7 @@ import { createExportMethods } from './controller/export-methods.js';
 import { createGroupingMethods } from './controller/grouping-methods.js';
 import { createHistoryMethods } from './controller/history-methods.js';
 import { createLayoutMethods } from './controller/layout-methods.js';
+import { createLifecycleMethods } from './controller/lifecycle-methods.js';
 import { createLocalizationMethods } from './controller/localization-methods.js';
 import { createNavigationMethods } from './controller/navigation-methods.js';
 import { createPersistenceMethods } from './controller/persistence-methods.js';
@@ -993,14 +994,16 @@ export function createTable(options = {}) {
     const lookupColumns = collectLookupColumns(alignedDataColumns);
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     let crud = null;
-    let unsubscribeDeleteColumn = null;
-    let unsubscribeSelectionColumn = null;
-    let unsubscribeLookupMetadata = null;
-    let unsubscribeLookupDescriptions = null;
-    let unsubscribeLargeText = null;
-    let searchController = null;
-    let toolbarController = null;
-    let feedback = null;
+    const lifecycleResources = {
+        toolbarController: null,
+        unsubscribeDeleteColumn: null,
+        unsubscribeSelectionColumn: null,
+        unsubscribeLookupDescriptions: null,
+        unsubscribeLookupMetadata: null,
+        unsubscribeLargeText: null,
+        searchController: null,
+        feedback: null
+    };
     let controller = null;
     const confirmDialog = new ConfirmDialog();
     const selectionColumnController = createSelectionColumn(selectionColumn);
@@ -1046,7 +1049,7 @@ export function createTable(options = {}) {
     const selectionMethods = createSelectionMethods({ table, crud });
     const validationMethods = createValidationMethods({ crud });
     const rangeMethods = createRangeMethods({ table });
-    unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
+    lifecycleResources.unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
         : null;
     const floatingMessage = new FloatingMessage({
@@ -1055,22 +1058,22 @@ export function createTable(options = {}) {
     const cellMessageBinder = new CellMessageBinder(crud, floatingMessage, {
         enabled: normalizedFloatingMessages.validationErrors
     });
-    unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage, {
+    lifecycleResources.unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage, {
         enabled: normalizedFloatingMessages.lookupDescriptions
     });
-    unsubscribeLookupMetadata = bindLookupMetadataInitialization(table, lookupColumns);
-    unsubscribeLargeText = createLargeTextBinder(table, floatingMessage, {
+    lifecycleResources.unsubscribeLookupMetadata = bindLookupMetadataInitialization(table, lookupColumns);
+    lifecycleResources.unsubscribeLargeText = createLargeTextBinder(table, floatingMessage, {
         enabled: normalizedFloatingMessages.largeTextPreviews
     });
-    toolbarController = createToolbar({
+    lifecycleResources.toolbarController = createToolbar({
         selector,
         toolbar,
         getGrid: () => controller
     });
-    feedback = new FeedbackRegion({
+    lifecycleResources.feedback = new FeedbackRegion({
         className: [
             'amb-feedback-region--grid',
-            toolbarController ? 'amb-feedback-region--connected' : ''
+            lifecycleResources.toolbarController ? 'amb-feedback-region--connected' : ''
         ].filter(Boolean).join(' ')
     });
     const tableElement = typeof selector === 'string'
@@ -1078,22 +1081,42 @@ export function createTable(options = {}) {
         : selector;
 
     if (tableElement && tableElement.parentNode) {
-        tableElement.parentNode.insertBefore(feedback.element, tableElement);
+        tableElement.parentNode.insertBefore(lifecycleResources.feedback.element, tableElement);
     }
-    searchController = createSearchController({
+    lifecycleResources.searchController = createSearchController({
         selector,
         search,
         columns: alignedDataColumns,
         table,
         floatingMessage,
         showFilterStatus: normalizedFloatingMessages.searchFilterStatus,
-        mountElement: toolbarController ? toolbarController.searchMount : null
+        mountElement: lifecycleResources.toolbarController
+            ? lifecycleResources.toolbarController.searchMount
+            : null
     });
     const filterMethods = createFilterMethods({
         table,
-        searchController
+        searchController: lifecycleResources.searchController
     });
-    const searchMethods = createSearchMethods({ searchController });
+    const searchMethods = createSearchMethods({
+        searchController: lifecycleResources.searchController
+    });
+
+    if (deleteColumnController) {
+        lifecycleResources.unsubscribeDeleteColumn = crud.on('row-state-changed', ({ row }) => {
+            deleteColumnController.updateRowButton(row);
+        });
+    }
+
+    const lifecycleMethods = createLifecycleMethods({
+        table,
+        crud,
+        resources: lifecycleResources,
+        getController: () => controller,
+        cellMessageBinder,
+        floatingMessage,
+        confirmDialog
+    });
     const controllerMethods = composeControllerMethods(
         alertMethods,
         calculationMethods,
@@ -1118,14 +1141,9 @@ export function createTable(options = {}) {
         eventMethods,
         localizationMethods,
         layoutMethods,
-        redrawMethods
+        redrawMethods,
+        lifecycleMethods
     );
-
-    if (deleteColumnController) {
-        unsubscribeDeleteColumn = crud.on('row-state-changed', ({ row }) => {
-            deleteColumnController.updateRowButton(row);
-        });
-    }
 
     extracted.validators.forEach(validator => {
         if (typeof validator.validate !== 'function') return;
@@ -1136,8 +1154,8 @@ export function createTable(options = {}) {
     controller = {
         table,
         crud,
-        toolbar: toolbarController,
-        feedback,
+        toolbar: lifecycleResources.toolbarController,
+        feedback: lifecycleResources.feedback,
         /**
          * @private
          * @internal
@@ -1153,59 +1171,7 @@ export function createTable(options = {}) {
          * @internal
          */
         _confirmDialog: confirmDialog,
-        ...controllerMethods,
-        destroy() {
-            if (toolbarController) {
-                toolbarController.destroy();
-                toolbarController = null;
-                controller.toolbar = null;
-            }
-
-            if (unsubscribeDeleteColumn) {
-                unsubscribeDeleteColumn();
-                unsubscribeDeleteColumn = null;
-            }
-
-            if (unsubscribeSelectionColumn) {
-                unsubscribeSelectionColumn();
-                unsubscribeSelectionColumn = null;
-            }
-
-            if (unsubscribeLookupDescriptions) {
-                unsubscribeLookupDescriptions();
-                unsubscribeLookupDescriptions = null;
-            }
-
-            if (unsubscribeLookupMetadata) {
-                unsubscribeLookupMetadata();
-                unsubscribeLookupMetadata = null;
-            }
-
-            if (unsubscribeLargeText) {
-                unsubscribeLargeText();
-                unsubscribeLargeText = null;
-            }
-
-            if (searchController) {
-                searchController.destroy();
-                searchController = null;
-            }
-
-            if (feedback) {
-                feedback.destroy();
-                feedback = null;
-                controller.feedback = null;
-            }
-
-            cellMessageBinder.destroy();
-            floatingMessage.destroy();
-            confirmDialog.destroy();
-            crud.destroy();
-
-            if (typeof table.destroy === 'function') {
-                table.destroy();
-            }
-        }
+        ...controllerMethods
     };
 
     return controller;
