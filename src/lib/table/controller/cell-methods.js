@@ -64,6 +64,55 @@ export const createCellMethods = ({ rowMethods }) => ({
     },
 
     /**
+     * Attempts to open the runtime editor for one managed Cell Component.
+     *
+     * The row and cell are resolved through the AMB Grid API. The native force
+     * flag is deliberately not exposed, so normal `editable` checks and AMB
+     * protections, including deleted-row restrictions, remain effective.
+     *
+     * `true` means the call was delegated, not that the editor necessarily
+     * opened. No cell value, row data or AMB Grid CRUD state is modified
+     * directly.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} `true` when delegated, or `false` when unavailable.
+     */
+    editCell(rowIdentifier, column) {
+        return readCell(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'edit',
+            [],
+            () => true
+        );
+    },
+
+    /**
+     * Delegates cancellation of the runtime editor for one managed cell.
+     *
+     * The operation has an effect only when the resolved cell is currently
+     * being edited. It does not clear the historical edited marker and does not
+     * perform an AMB Grid CRUD rollback. `true` means the call was delegated,
+     * not that cancellation necessarily occurred.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} `true` when delegated, or `false` when unavailable.
+     */
+    cancelCellEdit(rowIdentifier, column) {
+        return readCell(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'cancelEdit',
+            [],
+            () => true
+        );
+    },
+
+    /**
      * Returns the runtime DOM element for one Cell Component.
      *
      * DOM nodes are advanced runtime objects. Direct manipulation can bypass
