@@ -679,6 +679,17 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} addRange - Add a selected range between two cell components.
  * @property {Function} getRanges - Return the current selected cell-range components.
  * @property {Function} getRangesData - Return data grouped by selected cell range.
+ * @property {Function} getRangeElement - Return the runtime DOM element for one selected range.
+ * @property {Function} getRangeData - Return runtime data for one selected range.
+ * @property {Function} getRangeCells - Return runtime Cell Components for one selected range.
+ * @property {Function} getRangeStructuredCells - Return structured runtime Cell Components for one selected range.
+ * @property {Function} getRangeRows - Return runtime Row Components for one selected range.
+ * @property {Function} getRangeColumns - Return runtime Column Components for one selected range.
+ * @property {Function} getRangeBounds - Return the runtime bounds structure for one selected range.
+ * @property {Function} getRangeTopEdge - Return the runtime top edge value for one selected range.
+ * @property {Function} getRangeBottomEdge - Return the runtime bottom edge value for one selected range.
+ * @property {Function} getRangeLeftEdge - Return the runtime left edge value for one selected range.
+ * @property {Function} getRangeRightEdge - Return the runtime right edge value for one selected range.
  * @property {Function} setSearchQuery - Set the global search query.
  * @property {Function} clearSearch - Clear global search state.
  * @property {Function} getSearchState - Return search query and selected search fields.

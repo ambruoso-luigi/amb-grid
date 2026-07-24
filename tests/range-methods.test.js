@@ -55,10 +55,73 @@ describe('AMB table controller cell-range reading method group', () => {
 
         expect(Object.keys(methods).sort()).toEqual([
             'addRange',
+            'getRangeBottomEdge',
+            'getRangeBounds',
+            'getRangeCells',
+            'getRangeColumns',
+            'getRangeData',
+            'getRangeElement',
+            'getRangeLeftEdge',
+            'getRangeRightEdge',
+            'getRangeRows',
+            'getRangeStructuredCells',
+            'getRangeTopEdge',
             'getRanges',
             'getRangesData'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('range component reads delegate once without arguments and preserve runtime results', () => {
+        const element = {
+            type: 'range-element'
+        };
+        const data = [{
+            name: 'Mario'
+        }];
+        const cells = [{
+            type: 'cell'
+        }];
+        const structuredCells = [[cells[0]]];
+        const rows = [{
+            type: 'row'
+        }];
+        const columns = [{
+            type: 'column'
+        }];
+        const bounds = {
+            start: cells[0],
+            end: cells[0]
+        };
+        const cases = [
+            ['getRangeElement', 'getElement', element],
+            ['getRangeData', 'getData', data],
+            ['getRangeCells', 'getCells', cells],
+            ['getRangeStructuredCells', 'getStructuredCells', structuredCells],
+            ['getRangeRows', 'getRows', rows],
+            ['getRangeColumns', 'getColumns', columns],
+            ['getRangeBounds', 'getBounds', bounds],
+            ['getRangeTopEdge', 'getTopEdge', 0],
+            ['getRangeBottomEdge', 'getBottomEdge', 4],
+            ['getRangeLeftEdge', 'getLeftEdge', 0],
+            ['getRangeRightEdge', 'getRightEdge', 3]
+        ];
+        const methods = createRangeMethods({
+            table: {}
+        });
+
+        cases.forEach(([ambMethodName, rangeMethodName, result]) => {
+            const rangeMethod = vi.fn(() => result);
+            const range = {
+                [rangeMethodName]: rangeMethod
+            };
+
+            expect(methods[ambMethodName](range)).toBe(result);
+            expect(rangeMethod).toHaveBeenCalledOnce();
+            expect(rangeMethod).toHaveBeenCalledWith();
+            expect(methods[ambMethodName]()).toBe(false);
+            expect(methods[ambMethodName]({})).toBe(false);
+        });
     });
 
     test('addRange forwards cell components transparently and returns the table range component', () => {

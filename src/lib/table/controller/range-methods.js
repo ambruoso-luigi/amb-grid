@@ -1,3 +1,12 @@
+const readRange = (range, methodName) => {
+    if (!range) return false;
+
+    const method = range[methodName];
+    if (typeof method !== 'function') return false;
+
+    return method.call(range);
+};
+
 /**
  * Creates the cell-range reading methods exposed by the AMB Grid controller.
  *
@@ -58,5 +67,164 @@ export const createRangeMethods = ({ table }) => ({
      */
     getRangesData() {
         return table.getRangesData();
+    },
+
+    /**
+     * Returns the runtime DOM element of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid, for example
+     * from `addRange()` or `getRanges()`. The element is returned without a copy;
+     * modifying it directly can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {Element|false} Runtime DOM element, or `false` when the component or operation is unavailable.
+     */
+    getRangeElement(range) {
+        return readRange(range, 'getElement');
+    },
+
+    /**
+     * Returns the runtime data contained in one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The engine's
+     * data structure and references are returned without copies or
+     * normalization. This is runtime range data, not an AMB Grid CRUD payload;
+     * modifying it directly can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {*|false} Runtime range data, or `false` when the component or operation is unavailable.
+     */
+    getRangeData(range) {
+        return readRange(range, 'getData');
+    },
+
+    /**
+     * Returns the runtime Cell Components contained in one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The engine's
+     * structure, order and references are returned without copies. Modifying
+     * returned components directly can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {*|false} Runtime Cell Component structure, or `false` when the component or operation is unavailable.
+     */
+    getRangeCells(range) {
+        return readRange(range, 'getCells');
+    },
+
+    /**
+     * Returns the runtime structured Cell Components of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The result of
+     * the component's structured read is returned by identity, without copies
+     * or AMB transformations. Modifying returned components directly can bypass
+     * normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {*|false} Runtime structured Cell Component result, or `false` when the component or operation is unavailable.
+     */
+    getRangeStructuredCells(range) {
+        return readRange(range, 'getStructuredCells');
+    },
+
+    /**
+     * Returns the runtime Row Components contained in one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The array,
+     * component references and runtime order are returned without copies,
+     * including an empty array. Modifying them directly can bypass normal AMB
+     * Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {object[]|false} Runtime Row Components, or `false` when the component or operation is unavailable.
+     */
+    getRangeRows(range) {
+        return readRange(range, 'getRows');
+    },
+
+    /**
+     * Returns the runtime Column Components contained in one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The array,
+     * component references and runtime order are returned without copies,
+     * including an empty array. Modifying them directly can bypass normal AMB
+     * Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {object[]|false} Runtime Column Components, or `false` when the component or operation is unavailable.
+     */
+    getRangeColumns(range) {
+        return readRange(range, 'getColumns');
+    },
+
+    /**
+     * Returns the runtime bounds structure of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The exact
+     * structure and references produced by the installed engine are returned
+     * without normalization or copies. Modifying returned components directly
+     * can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {object|false} Runtime bounds structure, or `false` when the component or operation is unavailable.
+     */
+    getRangeBounds(range) {
+        return readRange(range, 'getBounds');
+    },
+
+    /**
+     * Returns the runtime top edge value of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The value is
+     * returned unchanged, including `0`; it is an edge value, not a component.
+     * Direct use of returned runtime state can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {number|false} Runtime top edge, or `false` when the component or operation is unavailable.
+     */
+    getRangeTopEdge(range) {
+        return readRange(range, 'getTopEdge');
+    },
+
+    /**
+     * Returns the runtime bottom edge value of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The value is
+     * returned unchanged, including `0`; it is an edge value, not a component.
+     * Direct use of returned runtime state can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {number|false} Runtime bottom edge, or `false` when the component or operation is unavailable.
+     */
+    getRangeBottomEdge(range) {
+        return readRange(range, 'getBottomEdge');
+    },
+
+    /**
+     * Returns the runtime left edge value of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The value is
+     * returned unchanged, including `0`; it is an edge value, not a component.
+     * Direct use of returned runtime state can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {number|false} Runtime left edge, or `false` when the component or operation is unavailable.
+     */
+    getRangeLeftEdge(range) {
+        return readRange(range, 'getLeftEdge');
+    },
+
+    /**
+     * Returns the runtime right edge value of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. The value is
+     * returned unchanged, including `0`; it is an edge value, not a component.
+     * Direct use of returned runtime state can bypass normal AMB Grid workflows.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {number|false} Runtime right edge, or `false` when the component or operation is unavailable.
+     */
+    getRangeRightEdge(range) {
+        return readRange(range, 'getRightEdge');
     }
 });
