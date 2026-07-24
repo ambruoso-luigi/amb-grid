@@ -76,6 +76,27 @@ export const createSpreadsheetMethods = ({ table }) => ({
     },
 
     /**
+     * Sets the runtime title of one spreadsheet sheet.
+     *
+     * `sheet` must be a Sheet Component obtained through the AMB Grid API, for
+     * example with `getSheet()` or `getSheets()`. `title` is forwarded without
+     * transformations. The operation updates the title and its runtime
+     * representation while preserving the Spreadsheet events produced by the
+     * underlying engine. Sheet data, rows, columns and AMB Grid CRUD state are
+     * not modified directly. The component result is returned unchanged;
+     * `false` means the component or operation is unavailable.
+     *
+     * @param {object} sheet - Sheet Component obtained through the AMB Grid API.
+     * @param {*} title - Runtime sheet title forwarded unchanged.
+     * @returns {*|false} Sheet Component result, or `false` when unavailable.
+     */
+    setSheetTitle(sheet, title) {
+        if (!sheet || typeof sheet.setTitle !== 'function') return false;
+
+        return sheet.setTitle(title);
+    },
+
+    /**
      * Returns the runtime key of one spreadsheet sheet.
      *
      * `sheet` must be a Sheet Component obtained through the AMB Grid API, for

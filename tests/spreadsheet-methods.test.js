@@ -99,6 +99,7 @@ describe('AMB table controller spreadsheet method group', () => {
             'getSheets',
             'removeSheet',
             'setSheetData',
+            'setSheetTitle',
             'setSheets'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
@@ -130,6 +131,31 @@ describe('AMB table controller spreadsheet method group', () => {
             expect(methods[ambMethodName]()).toBe(false);
             expect(methods[ambMethodName]({})).toBe(false);
         });
+    });
+
+    test('sets one Sheet Component title without transforming the value', () => {
+        const result = {
+            updated: true
+        };
+        const setTitle = vi.fn()
+            .mockReturnValueOnce(result)
+            .mockReturnValueOnce(undefined);
+        const sheet = {
+            setTitle
+        };
+        const methods = createSpreadsheetMethods({
+            table: createTable()
+        });
+
+        expect(methods.setSheetTitle(sheet, 'Vendite')).toBe(result);
+        expect(setTitle.mock.calls[0][0]).toBe('Vendite');
+
+        expect(methods.setSheetTitle(sheet, '')).toBeUndefined();
+        expect(setTitle.mock.calls[1][0]).toBe('');
+
+        expect(methods.setSheetTitle()).toBe(false);
+        expect(methods.setSheetTitle({})).toBe(false);
+        expect(setTitle).toHaveBeenCalledTimes(2);
     });
 
     test('getSheetDefinitions returns runtime definitions without cloning or rebuilding', () => {
