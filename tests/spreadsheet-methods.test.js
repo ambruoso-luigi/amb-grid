@@ -92,13 +92,44 @@ describe('AMB table controller spreadsheet method group', () => {
             'clearSheet',
             'getSheet',
             'getSheetData',
+            'getSheetDefinition',
             'getSheetDefinitions',
+            'getSheetKey',
+            'getSheetTitle',
             'getSheets',
             'removeSheet',
             'setSheetData',
             'setSheets'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('sheet metadata reads delegate without arguments and preserve runtime results', () => {
+        const definition = {
+            key: 'sales',
+            title: 'Sales'
+        };
+        const cases = [
+            ['getSheetTitle', 'getTitle', ''],
+            ['getSheetKey', 'getKey', 0],
+            ['getSheetDefinition', 'getDefinition', definition]
+        ];
+        const methods = createSpreadsheetMethods({
+            table: createTable()
+        });
+
+        cases.forEach(([ambMethodName, sheetMethodName, result]) => {
+            const sheetMethod = vi.fn(() => result);
+            const sheet = {
+                [sheetMethodName]: sheetMethod
+            };
+
+            expect(methods[ambMethodName](sheet)).toBe(result);
+            expect(sheetMethod).toHaveBeenCalledOnce();
+            expect(sheetMethod).toHaveBeenCalledWith();
+            expect(methods[ambMethodName]()).toBe(false);
+            expect(methods[ambMethodName]({})).toBe(false);
+        });
     });
 
     test('getSheetDefinitions returns runtime definitions without cloning or rebuilding', () => {

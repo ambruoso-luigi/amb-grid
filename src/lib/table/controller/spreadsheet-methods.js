@@ -1,3 +1,12 @@
+const readSheet = (sheet, methodName) => {
+    if (!sheet) return false;
+
+    const method = sheet[methodName];
+    if (typeof method !== 'function') return false;
+
+    return method.call(sheet);
+};
+
 /**
  * Creates the spreadsheet methods exposed by the AMB Grid controller.
  *
@@ -49,6 +58,53 @@ export const createSpreadsheetMethods = ({ table }) => ({
      */
     getSheet(...args) {
         return table.getSheet(...args);
+    },
+
+    /**
+     * Returns the runtime title of one spreadsheet sheet.
+     *
+     * `sheet` must be a Sheet Component obtained through the AMB Grid API, for
+     * example with `getSheet()` or `getSheets()`. The runtime title is returned
+     * without transformations, including an empty string. Reading it does not
+     * modify sheet data or AMB Grid CRUD state.
+     *
+     * @param {object} sheet - Sheet Component obtained through the AMB Grid API.
+     * @returns {*|false} Runtime sheet title, or `false` when the component or operation is unavailable.
+     */
+    getSheetTitle(sheet) {
+        return readSheet(sheet, 'getTitle');
+    },
+
+    /**
+     * Returns the runtime key of one spreadsheet sheet.
+     *
+     * `sheet` must be a Sheet Component obtained through the AMB Grid API, for
+     * example with `getSheet()` or `getSheets()`. The runtime key is returned
+     * without string, number or other transformations. Reading it does not
+     * modify sheet data or AMB Grid CRUD state.
+     *
+     * @param {object} sheet - Sheet Component obtained through the AMB Grid API.
+     * @returns {*|false} Runtime sheet key, or `false` when the component or operation is unavailable.
+     */
+    getSheetKey(sheet) {
+        return readSheet(sheet, 'getKey');
+    },
+
+    /**
+     * Returns the runtime definition of one spreadsheet sheet.
+     *
+     * `sheet` must be a Sheet Component obtained through the AMB Grid API, for
+     * example with `getSheet()` or `getSheets()`. The runtime configuration is
+     * returned by identity without transformations and should be treated as
+     * read-only. Direct structural changes can bypass normal AMB Grid workflows;
+     * use explicitly designed AMB Grid APIs instead. Reading the definition does
+     * not modify sheet data or AMB Grid CRUD state.
+     *
+     * @param {object} sheet - Sheet Component obtained through the AMB Grid API.
+     * @returns {object|false} Runtime sheet definition, or `false` when the component or operation is unavailable.
+     */
+    getSheetDefinition(sheet) {
+        return readSheet(sheet, 'getDefinition');
     },
 
     /**
