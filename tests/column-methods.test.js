@@ -26,6 +26,7 @@ describe('AMB table controller column method group', () => {
             'isColumnVisible',
             'moveColumn',
             'scrollToColumn',
+            'setColumnWidth',
             'showColumn',
             'toggleColumn'
         ]);
@@ -66,6 +67,42 @@ describe('AMB table controller column method group', () => {
         table.getColumn.mockReturnValueOnce(false).mockReturnValueOnce({});
         expect(methods.getColumnDefinition('missing')).toBe(false);
         expect(methods.getColumnDefinition('missing-method')).toBe(false);
+    });
+
+    test('sets runtime column width through the resolved component', () => {
+        const lookup = {
+            field: 'amount'
+        };
+        const result = {
+            resized: true
+        };
+        const setWidth = vi.fn()
+            .mockReturnValueOnce(result)
+            .mockReturnValueOnce(undefined);
+        const column = {
+            setWidth
+        };
+        const table = {
+            getColumn: vi.fn()
+                .mockReturnValueOnce(column)
+                .mockReturnValueOnce(column)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce({})
+        };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.setColumnWidth(lookup, 120)).toBe(result);
+        expect(table.getColumn.mock.calls[0][0]).toBe(lookup);
+        expect(setWidth.mock.calls[0][0]).toBe(120);
+
+        expect(methods.setColumnWidth(lookup, true)).toBeUndefined();
+        expect(table.getColumn.mock.calls[1][0]).toBe(lookup);
+        expect(setWidth.mock.calls[1][0]).toBe(true);
+
+        expect(methods.setColumnWidth('missing', 80)).toBe(false);
+        expect(methods.setColumnWidth('missing-method', 80)).toBe(false);
+        expect(table.getColumn).toHaveBeenCalledTimes(4);
+        expect(setWidth).toHaveBeenCalledTimes(2);
     });
 
     test('returns current column definitions without cloning or filtering AMB-managed columns', () => {

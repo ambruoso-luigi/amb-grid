@@ -157,6 +157,29 @@ export const createColumnMethods = ({ table }) => ({
     },
 
     /**
+     * Sets the runtime width of one managed column component.
+     *
+     * The AMB Grid controller forwards `columnLookup` unchanged to the
+     * underlying table engine's supported column lookup system. `width` is
+     * passed without transformations or AMB defaults to the managed column
+     * component. The operation changes only runtime column width and layout;
+     * the underlying table engine manages column realignment. Row data and CRUD
+     * state are not modified. The component result is returned directly, while
+     * `false` means the column or operation is unavailable.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @param {*} width - Runtime column width forwarded unchanged.
+     * @returns {*|false} Managed column component result, or `false` when unavailable.
+     */
+    setColumnWidth(columnLookup, width) {
+        const column = table.getColumn(columnLookup);
+
+        if (!column || typeof column.setWidth !== 'function') return false;
+
+        return column.setWidth(width);
+    },
+
+    /**
      * Returns the runtime child Column Components for one managed column.
      *
      * The `columnLookup` value is forwarded unchanged to the supported column
