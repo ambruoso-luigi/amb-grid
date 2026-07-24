@@ -761,6 +761,13 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} navigateDown - Move to the corresponding cell in the next row.
  * @property {Function} getGroupedData - Return data in the current grouped output order.
  * @property {Function} getGroups - Return the current top-level group components.
+ * @property {Function} getGroupKey - Return the runtime key for a group.
+ * @property {Function} getGroupField - Return the runtime grouping field for a group.
+ * @property {Function} getGroupElement - Return the runtime DOM element for a group.
+ * @property {Function} getGroupRows - Return runtime Row Components for a group.
+ * @property {Function} getGroupSubGroups - Return runtime child Group Components for a group.
+ * @property {Function} getGroupParent - Return the runtime parent Group Component for a group.
+ * @property {Function} isGroupVisible - Return the runtime visibility state for a group.
  * @property {Function} setGroupBy - Change the runtime row grouping definition.
  * @property {Function} setGroupValues - Change the allowed values for grouping levels.
  * @property {Function} setGroupStartOpen - Change the initial group opening definition.

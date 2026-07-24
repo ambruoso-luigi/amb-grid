@@ -50,8 +50,15 @@ describe('AMB table controller grouping method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'getGroupElement',
+            'getGroupField',
+            'getGroupKey',
+            'getGroupParent',
+            'getGroupRows',
+            'getGroupSubGroups',
             'getGroupedData',
             'getGroups',
+            'isGroupVisible',
             'setGroupBy',
             'setGroupHeader',
             'setGroupStartOpen',
@@ -179,6 +186,30 @@ describe('AMB table controller grouping method group', () => {
         expect(table.setGroupStartOpen).not.toHaveBeenCalled();
         expect(table.setGroupHeader).not.toHaveBeenCalled();
         expectForbiddenMethodsNotCalled(table);
+    });
+
+    test('reads contextual group component state through one private resolver', () => {
+        const key = '', field = 0, element = {}, rows = [], subGroups = [], parent = {};
+        const cases = [
+            ['getGroupKey', 'getKey', key],
+            ['getGroupField', 'getField', field],
+            ['getGroupElement', 'getElement', element],
+            ['getGroupRows', 'getRows', rows],
+            ['getGroupSubGroups', 'getSubGroups', subGroups],
+            ['getGroupParent', 'getParentGroup', parent],
+            ['isGroupVisible', 'isVisible', false]
+        ];
+        const methods = createGroupingMethods({ table: { getGroups: vi.fn() } });
+
+        cases.forEach(([controllerMethod, componentMethod, result]) => {
+            const group = { [componentMethod]: vi.fn(() => result) };
+
+            expect(methods[controllerMethod](group)).toBe(result);
+            expect(group[componentMethod]).toHaveBeenCalledOnce();
+            expect(group[componentMethod]).toHaveBeenCalledWith();
+            expect(methods[controllerMethod](false)).toBe(false);
+            expect(methods[controllerMethod]({})).toBe(false);
+        });
     });
 
     test('changes group definitions by forwarding values unchanged', () => {

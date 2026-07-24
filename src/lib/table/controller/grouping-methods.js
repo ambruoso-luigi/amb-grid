@@ -1,4 +1,21 @@
 /**
+ * Reads a value from an AMB-provided runtime Group Component.
+ *
+ * @param {object} group - Group Component obtained through AMB Grid.
+ * @param {string} methodName - Group Component read method to call.
+ * @returns {*|false} Runtime value, or `false` when unavailable.
+ * @private
+ * @internal
+ */
+const readGroup = (group, methodName) => {
+    if (!group || typeof group[methodName] !== 'function') {
+        return false;
+    }
+
+    return group[methodName]();
+};
+
+/**
  * Creates the row-grouping methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
@@ -40,6 +57,116 @@ export const createGroupingMethods = ({ table }) => ({
      */
     getGroups() {
         return table.getGroups();
+    },
+
+    /**
+     * Returns the runtime key for a Group Component obtained through AMB Grid.
+     *
+     * The group component is read directly and the runtime key is returned
+     * without conversion, including falsy keys. Group components are advanced
+     * objects; direct mutation of returned component-related values can bypass
+     * normal AMB Grid workflows. Data and CRUD state are not modified. `false`
+     * indicates the component or operation is unavailable.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {*|false} Runtime group key, or `false` when unavailable.
+     */
+    getGroupKey(group) {
+        return readGroup(group, 'getKey');
+    },
+
+    /**
+     * Returns the runtime grouping field for a Group Component obtained through AMB Grid.
+     *
+     * The field is read from the provided group component without rebuilding it
+     * from table configuration. Group components are advanced runtime objects;
+     * direct mutation of returned component-related values can bypass normal AMB
+     * Grid workflows. Data and CRUD state are not modified. `false` indicates
+     * the component or operation is unavailable.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {*|false} Runtime grouping field, or `false` when unavailable.
+     */
+    getGroupField(group) {
+        return readGroup(group, 'getField');
+    },
+
+    /**
+     * Returns the runtime DOM element for a Group Component obtained through AMB Grid.
+     *
+     * The element is returned by identity and without copies. The DOM node is an
+     * advanced runtime object; manipulating it directly can bypass normal AMB
+     * Grid behavior and workflows. Data and CRUD state are not modified. `false`
+     * indicates the component or operation is unavailable.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {Element|false} Runtime group DOM element, or `false` when unavailable.
+     */
+    getGroupElement(group) {
+        return readGroup(group, 'getElement');
+    },
+
+    /**
+     * Returns runtime Row Components for a Group Component obtained through AMB Grid.
+     *
+     * The array, contained Row Components and runtime order are returned without
+     * copies or transformation, including an empty array. Row Components are
+     * advanced runtime objects; direct mutation can bypass normal AMB Grid
+     * workflows. Data and CRUD state are not modified. `false` indicates the
+     * component or operation is unavailable.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {Array<object>|false} Runtime Row Components, or `false` when unavailable.
+     */
+    getGroupRows(group) {
+        return readGroup(group, 'getRows');
+    },
+
+    /**
+     * Returns runtime child Group Components for a Group Component obtained through AMB Grid.
+     *
+     * The child group array and contained Group Components are returned without
+     * copies. Group Components are advanced runtime objects; direct mutation can
+     * bypass normal AMB Grid workflows. Data and CRUD state are not modified.
+     * `false` indicates the component, relation or operation is unavailable.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {Array<object>|false} Runtime child Group Components, or `false` when unavailable.
+     */
+    getGroupSubGroups(group) {
+        return readGroup(group, 'getSubGroups');
+    },
+
+    /**
+     * Returns the runtime parent Group Component for a Group Component obtained through AMB Grid.
+     *
+     * The parent component is returned by identity and without copies. Group
+     * Components are advanced runtime objects; direct mutation can bypass normal
+     * AMB Grid workflows. Data and CRUD state are not modified. `false`
+     * indicates the component, relation or operation is unavailable.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {object|false} Runtime parent Group Component, or `false` when unavailable.
+     */
+    getGroupParent(group) {
+        return readGroup(group, 'getParentGroup');
+    },
+
+    /**
+     * Returns the runtime visibility state for a Group Component obtained through AMB Grid.
+     *
+     * The visibility value is read directly from the group component and both
+     * `true` and `false` are preserved. This method does not show, hide, toggle
+     * or scroll the group. Group Components are advanced runtime objects; direct
+     * mutation can bypass normal AMB Grid workflows. Data and CRUD state are not
+     * modified. `false` indicates the component or operation is unavailable, or
+     * the group is currently not visible.
+     *
+     * @param {object} group - Group Component obtained through AMB Grid.
+     * @returns {boolean|false} Runtime visibility state, or `false` when unavailable.
+     */
+    isGroupVisible(group) {
+        return readGroup(group, 'isVisible');
     },
 
     /**
