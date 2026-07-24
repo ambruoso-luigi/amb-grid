@@ -15,6 +15,7 @@ describe('AMB table controller selection method group', () => {
             'getSelectedData',
             'getSelectedRowComponents',
             'getSelectedRows',
+            'isRowSelected',
             'selectRow',
             'toggleSelectRow'
         ]);
@@ -27,12 +28,14 @@ describe('AMB table controller selection method group', () => {
         const row = {
             select: vi.fn(),
             deselect: vi.fn(),
-            toggleSelect: vi.fn()
+            toggleSelect: vi.fn(),
+            isSelected: vi.fn(() => true)
         };
         const zeroRow = {
             select: vi.fn(),
             deselect: vi.fn(),
-            toggleSelect: vi.fn()
+            toggleSelect: vi.fn(),
+            isSelected: vi.fn(() => false)
         };
         const emptyStringRow = {
             select: vi.fn(),
@@ -57,6 +60,7 @@ describe('AMB table controller selection method group', () => {
                 if (identifier === 1) return row;
                 if (identifier === 0) return zeroRow;
                 if (identifier === '') return emptyStringRow;
+                if (identifier === 'amb-temp-1') return zeroRow;
                 if (identifier === 'without-toggle') return withoutToggleRow;
 
                 return null;
@@ -77,6 +81,25 @@ describe('AMB table controller selection method group', () => {
         expect(methods.clearSelection()).toBeUndefined();
         expect(table.deselectRow).toHaveBeenCalledOnce();
         expect(table.deselectRow).toHaveBeenCalledWith();
+
+        expect(methods.isRowSelected(1)).toBe(true);
+        expect(row.isSelected).toHaveBeenCalledOnce();
+        expect(row.select).not.toHaveBeenCalled();
+        expect(row.deselect).not.toHaveBeenCalled();
+        expect(row.toggleSelect).not.toHaveBeenCalled();
+
+        expect(methods.isRowSelected('amb-temp-1')).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('amb-temp-1');
+        expect(zeroRow.isSelected).toHaveBeenCalledOnce();
+        expect(zeroRow.select).not.toHaveBeenCalled();
+        expect(zeroRow.deselect).not.toHaveBeenCalled();
+        expect(zeroRow.toggleSelect).not.toHaveBeenCalled();
+
+        expect(methods.isRowSelected('missing')).toBe(false);
+        expect(methods.isRowSelected('')).toBe(false);
+        expect(emptyStringRow.select).not.toHaveBeenCalled();
+        expect(emptyStringRow.deselect).not.toHaveBeenCalled();
+        expect(emptyStringRow.toggleSelect).not.toHaveBeenCalled();
 
         expect(methods.selectRow(1)).toBe(true);
         expect(row.select).toHaveBeenCalledOnce();

@@ -674,6 +674,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getSelectedData - Return the data objects for the selected rows.
  * @property {Function} getSelectedRowComponents - Return the components for the selected rows.
  * @property {Function} clearSelection - Clear the complete row selection.
+ * @property {Function} isRowSelected - Return whether one AMB Grid row is selected.
  * @property {Function} selectRow - Select one row by backend id or AMB temporary id.
  * @property {Function} deselectRow - Deselect one row by backend id or AMB temporary id.
  * @property {Function} toggleSelectRow - Toggle one row using a backend or AMB temporary identifier.

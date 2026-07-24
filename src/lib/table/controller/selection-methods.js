@@ -68,6 +68,25 @@ export const createSelectionMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Reports whether one managed row component is currently selected.
+     *
+     * The AMB Grid row identifier can be a backend id or an AMB temporary
+     * identifier. The managed row component is resolved through the CRUD layer,
+     * then its runtime selection state is read without changing the selection.
+     * This method does not modify row data or AMB Grid CRUD state.
+     *
+     * @param {*} identifier - AMB Grid row identifier.
+     * @returns {boolean} `true` when selected; `false` when not selected or when the row or operation is unavailable.
+     */
+    isRowSelected(identifier) {
+        const row = crud.findRowByKey(identifier);
+
+        if (!row || typeof row.isSelected !== 'function') return false;
+
+        return row.isSelected();
+    },
+
+    /**
      * Selects one row using an AMB Grid row identifier.
      *
      * Backend identifiers and AMB Grid temporary identifiers are resolved
