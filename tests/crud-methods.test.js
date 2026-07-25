@@ -2,9 +2,13 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { createCrudMethods } from '../src/lib/table/controller/crud-methods.js';
 
-describe('AMB table CRUD report methods', () => {
-    test('exposes the exact read methods and delegates each call in isolation', () => {
+describe('AMB table CRUD facade methods', () => {
+    test('exposes the exact methods and delegates each call in isolation', () => {
         const options = { onlyValid: false, includeInvalid: true };
+        const identifier = 'amb-temp-1';
+        const field = 'name';
+        const cellMessage = 'Campo non valido';
+        const rowMessage = 'Riga non valida';
         const results = {
             getChanges: { inserted: [], updated: [], deleted: [] },
             getStateReport: { rows: [], changes: {} },
@@ -16,7 +20,11 @@ describe('AMB table CRUD report methods', () => {
                 cells: [{ key: 'row-1', field: 'name', message: 'Cell error' }]
             },
             getRowErrors: [{ key: 'row-1', message: 'Row error' }],
-            getCellErrors: [{ key: 'row-1', field: 'name', message: 'Cell error' }]
+            getCellErrors: [{ key: 'row-1', field: 'name', message: 'Cell error' }],
+            markCellError: true,
+            clearCellError: false,
+            markRowError: false,
+            clearRowError: true
         };
         const crud = {
             getChanges: vi.fn(() => results.getChanges),
@@ -25,7 +33,11 @@ describe('AMB table CRUD report methods', () => {
             hasErrors: vi.fn(() => results.hasErrors),
             getErrors: vi.fn(() => results.getErrors),
             getRowErrors: vi.fn(() => results.getRowErrors),
-            getCellErrors: vi.fn(() => results.getCellErrors)
+            getCellErrors: vi.fn(() => results.getCellErrors),
+            markCellError: vi.fn(() => results.markCellError),
+            clearCellError: vi.fn(() => results.clearCellError),
+            markRowError: vi.fn(() => results.markRowError),
+            clearRowError: vi.fn(() => results.clearRowError)
         };
         const methods = createCrudMethods({ crud });
         const cases = [
@@ -35,7 +47,23 @@ describe('AMB table CRUD report methods', () => {
             { methodName: 'hasErrors', args: [] },
             { methodName: 'getErrors', args: [] },
             { methodName: 'getRowErrors', args: [] },
-            { methodName: 'getCellErrors', args: [] }
+            { methodName: 'getCellErrors', args: [] },
+            {
+                methodName: 'markCellError',
+                args: [identifier, field, cellMessage]
+            },
+            {
+                methodName: 'clearCellError',
+                args: [identifier, field]
+            },
+            {
+                methodName: 'markRowError',
+                args: [identifier, rowMessage]
+            },
+            {
+                methodName: 'clearRowError',
+                args: [identifier]
+            }
         ];
 
         expect(Object.keys(methods)).toEqual([
@@ -45,7 +73,11 @@ describe('AMB table CRUD report methods', () => {
             'hasErrors',
             'getErrors',
             'getRowErrors',
-            'getCellErrors'
+            'getCellErrors',
+            'markCellError',
+            'clearCellError',
+            'markRowError',
+            'clearRowError'
         ]);
 
         cases.forEach(({ methodName, args }) => {
