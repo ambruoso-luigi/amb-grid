@@ -765,6 +765,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearRowError - Clear only an AMB row-level error, preserving cell-field errors and lifecycle state.
  * @property {Function} clearCellErrorsForRow - Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.
  * @property {Function} clearErrorsForRow - Clear every AMB application error for one row only, preserving native cell-validation markers.
+ * @property {Function} onCrud - Subscribe to an AMB CRUD application event and return its unsubscribe function, distinct from engine `on`.
+ * @property {Function} offCrud - Remove one specific AMB CRUD callback, distinct from engine `off`; remaining subscriptions are released on destroy.
  * @property {Function} addCellValidator - Append a runtime AMB rule for a field without immediately validating data.
  * @property {Function} removeCellValidators - Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.
  * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
@@ -892,6 +894,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * access is available through `table` for integration scenarios not yet
  * covered by the controller API, while normal application code should prefer
  * methods exposed directly on the controller.
+ * `grid.on(...)` and `grid.off(...)` manage public engine events, while
+ * `grid.onCrud(...)` and `grid.offCrud(...)` manage AMB CRUD lifecycle events.
  *
  * AMB Grid provides the CRUD application layer, column validation, rollback
  * handling, lookup behavior, initial lookup description metadata for loaded

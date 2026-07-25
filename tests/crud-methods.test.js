@@ -25,6 +25,9 @@ describe('AMB table CRUD facade methods', () => {
         const rowComponent = {
             component: 'row'
         };
+        const crudEventName = 'row-state-changed';
+        const crudEventCallback = vi.fn();
+        const crudUnsubscribe = vi.fn();
         const field = 'name';
         const cellMessage = 'Campo non valido';
         const rowMessage = 'Riga non valida';
@@ -61,7 +64,9 @@ describe('AMB table CRUD facade methods', () => {
             markRowError: false,
             clearRowError: true,
             clearRowErrors: false,
-            clearAllErrors: true
+            clearAllErrors: true,
+            on: crudUnsubscribe,
+            off: undefined
         };
         const crud = {
             getChanges: vi.fn(() => results.getChanges),
@@ -85,7 +90,9 @@ describe('AMB table CRUD facade methods', () => {
             markRowError: vi.fn(() => results.markRowError),
             clearRowError: vi.fn(() => results.clearRowError),
             clearRowErrors: vi.fn(() => results.clearRowErrors),
-            clearAllErrors: vi.fn(() => results.clearAllErrors)
+            clearAllErrors: vi.fn(() => results.clearAllErrors),
+            on: vi.fn(() => results.on),
+            off: vi.fn(() => results.off)
         };
         const methods = createCrudMethods({ crud });
         const cases = [
@@ -154,6 +161,22 @@ describe('AMB table CRUD facade methods', () => {
                 methodName: 'clearErrorsForRow',
                 crudMethodName: 'clearAllErrors',
                 args: [identifier]
+            },
+            {
+                methodName: 'onCrud',
+                crudMethodName: 'on',
+                args: [
+                    crudEventName,
+                    crudEventCallback
+                ]
+            },
+            {
+                methodName: 'offCrud',
+                crudMethodName: 'off',
+                args: [
+                    crudEventName,
+                    crudEventCallback
+                ]
             }
         ];
 
@@ -178,7 +201,9 @@ describe('AMB table CRUD facade methods', () => {
             'markRowError',
             'clearRowError',
             'clearCellErrorsForRow',
-            'clearErrorsForRow'
+            'clearErrorsForRow',
+            'onCrud',
+            'offCrud'
         ]);
 
         cases.forEach(testCase => {
@@ -190,6 +215,10 @@ describe('AMB table CRUD facade methods', () => {
             const result = methods[methodName](...args);
 
             expect(result).toBe(results[crudMethodName]);
+            if (methodName === 'onCrud') {
+                expect(result).toBe(crudUnsubscribe);
+                expect(crudEventCallback).not.toHaveBeenCalled();
+            }
             expect(crud[crudMethodName]).toHaveBeenCalledOnce();
             expect(crud[crudMethodName].mock.calls[0]).toEqual(args);
             args.forEach((argument, index) => {

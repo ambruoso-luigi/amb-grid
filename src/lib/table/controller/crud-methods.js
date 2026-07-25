@@ -1,10 +1,11 @@
 /**
  * Creates the AMB-owned CRUD facade methods exposed by the public controller.
  *
- * The facade includes report and payload reads, error queries, and targeted or
- * row-scoped application-error management. Every method preserves the
- * semantics of the current `CrudHelper`; it does not reconstruct results,
- * duplicate CRUD behavior or delegate to the internal table engine.
+ * The facade includes report and payload reads, error queries, targeted or
+ * row-scoped application-error management, and CRUD application event
+ * subscriptions. Every method preserves the semantics of the current
+ * `CrudHelper`; it does not reconstruct results, duplicate CRUD behavior or
+ * delegate to the internal table engine.
  *
  * @param {object} context - Required method dependencies.
  * @param {CrudHelper} context.crud - Current AMB Grid CRUD layer.
@@ -423,5 +424,56 @@ export const createCrudMethods = ({ crud }) => ({
      */
     clearErrorsForRow(identifier) {
         return crud.clearAllErrors(identifier);
+    },
+
+    /**
+     * Subscribes to an AMB CRUD application event.
+     *
+     * Current events include `row-state-changed`, `row-saved`, `cell-error`,
+     * `cell-error-cleared`, `row-error` and `row-error-cleared`; this is not a
+     * whitelist and later versions may add more. The event name and callback
+     * are forwarded unchanged. Event-specific payloads can contain row or cell
+     * components, identifiers, fields, messages and state details.
+     *
+     * This is distinct from `grid.on('cellEdited', callback)`, which subscribes
+     * to an engine runtime event. CRUD events describe tracked updates, state
+     * changes, application errors and save confirmations.
+     *
+     * @example
+     * const unsubscribe = grid.onCrud(
+     *   'row-state-changed',
+     *   callback
+     * );
+     *
+     * unsubscribe();
+     *
+     * @param {string} eventName - CRUD event name forwarded unchanged.
+     * @param {Function} callback - Callback forwarded by identity.
+     * @returns {Function} Unsubscribe function returned directly by `CrudHelper`.
+     */
+    onCrud(eventName, callback) {
+        return crud.on(
+            eventName,
+            callback
+        );
+    },
+
+    /**
+     * Removes one specific AMB CRUD application-event callback.
+     *
+     * The event name and previously registered callback are required and
+     * forwarded unchanged. This does not affect engine listeners registered
+     * through `grid.on(...)`. Remaining CRUD subscriptions are released by the
+     * AMB lifecycle when `grid.destroy()` runs.
+     *
+     * @param {string} eventName - CRUD event name forwarded unchanged.
+     * @param {Function} callback - Specific registered callback to remove.
+     * @returns {undefined} Result returned directly by `CrudHelper`.
+     */
+    offCrud(eventName, callback) {
+        return crud.off(
+            eventName,
+            callback
+        );
     }
 });
