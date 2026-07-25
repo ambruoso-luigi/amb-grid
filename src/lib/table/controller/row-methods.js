@@ -239,6 +239,31 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Returns the selected Range Components that overlap one managed row.
+     *
+     * The AMB Grid row identifier is resolved through the CRUD layer first, so
+     * backend id values and AMB Grid temporary identifiers address the managed
+     * Row Component. Unlike `grid.getRanges()`, this returns only ranges that
+     * involve the resolved row.
+     *
+     * The array and its advanced runtime Range Components are returned without
+     * copies, preserving engine order; an empty array means no selected range
+     * overlaps the row. This read does not add, change or remove ranges and
+     * does not modify cell values, row data or CRUD state. `false` means the
+     * row or operation is unavailable.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {object[]|false} Overlapping runtime Range Components, or `false`.
+     */
+    getRowRanges(identifier) {
+        const row = resolveRowComponent(table, crud, identifier);
+
+        if (!row || typeof row.getRanges !== 'function') return false;
+
+        return row.getRanges();
+    },
+
+    /**
      * Returns one Cell Component from a row.
      *
      * The AMB Grid row identifier is resolved through the CRUD layer first, so

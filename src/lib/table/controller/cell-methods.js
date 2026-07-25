@@ -64,6 +64,33 @@ export const createCellMethods = ({ rowMethods }) => ({
     },
 
     /**
+     * Returns the selected Range Components that overlap one managed cell.
+     *
+     * The row identifier is resolved through the AMB Grid row layer and the
+     * column lookup is forwarded unchanged to `rowMethods.getRowCell`. Unlike
+     * `grid.getRanges()`, this returns only ranges that involve the resolved
+     * Cell Component.
+     *
+     * The array and its advanced runtime Range Components are returned without
+     * copies, preserving engine order; an empty array means no selected range
+     * overlaps the cell. This read does not add, change or remove ranges and
+     * does not modify cell values, row data or CRUD state. `false` means the
+     * cell or operation is unavailable.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {object[]|false} Overlapping runtime Range Components, or `false`.
+     */
+    getCellRanges(rowIdentifier, column) {
+        return readCell(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'getRanges'
+        );
+    },
+
+    /**
      * Attempts to open the runtime editor for one managed Cell Component.
      *
      * The row and cell are resolved through the AMB Grid API. The native force

@@ -17,6 +17,7 @@ describe('AMB table controller column method group', () => {
             'getColumnElement',
             'getColumnField',
             'getColumnParent',
+            'getColumnRanges',
             'getColumnSubColumns',
             'getColumnWidth',
             'getColumns',
@@ -34,12 +35,13 @@ describe('AMB table controller column method group', () => {
     });
 
     test('reads contextual column component state through one private resolver', () => {
-        const lookup = { field: 'name' }, definition = {}, element = {}, cells = [], subColumns = [], parent = {}, next = {}, prev = {};
+        const lookup = { field: 'name' }, definition = {}, element = {}, cells = [], ranges = [], subColumns = [], parent = {}, next = {}, prev = {};
         const column = {
             getDefinition: vi.fn(() => definition),
             getElement: vi.fn(() => element),
             getField: vi.fn(() => ''),
             getCells: vi.fn(() => cells),
+            getRanges: vi.fn(() => ranges),
             isVisible: vi.fn(() => false),
             getWidth: vi.fn(() => 0),
             getSubColumns: vi.fn(() => subColumns),
@@ -55,6 +57,7 @@ describe('AMB table controller column method group', () => {
         expect(methods.getColumnElement(lookup)).toBe(element);
         expect(methods.getColumnField(lookup)).toBe('');
         expect(methods.getColumnCells(lookup)).toBe(cells);
+        expect(methods.getColumnRanges(lookup)).toBe(ranges);
         expect(methods.isColumnVisible(lookup)).toBe(false);
         expect(methods.getColumnWidth(lookup)).toBe(0);
         expect(methods.getColumnSubColumns(lookup)).toBe(subColumns);
@@ -62,7 +65,7 @@ describe('AMB table controller column method group', () => {
         expect(methods.getNextColumn(lookup)).toBe(next);
         expect(methods.getPrevColumn(lookup)).toBe(prev);
         expect(methods.getColumnDownloadTitle(lookup)).toBe('');
-        expect(table.getColumn.mock.calls).toEqual(Array.from({ length: 11 }, () => [lookup]));
+        expect(table.getColumn.mock.calls).toEqual(Array.from({ length: 12 }, () => [lookup]));
         Object.values(column).forEach(method => expect(method).toHaveBeenCalledOnce());
         table.getColumn.mockReturnValueOnce(false).mockReturnValueOnce({});
         expect(methods.getColumnDefinition('missing')).toBe(false);

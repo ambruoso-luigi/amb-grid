@@ -125,6 +125,26 @@ export const createColumnMethods = ({ table }) => ({
     },
 
     /**
+     * Returns the selected Range Components that overlap one column.
+     *
+     * The `columnLookup` value is forwarded unchanged to the normal supported
+     * column lookup. Unlike `grid.getRanges()`, this returns only ranges that
+     * involve the resolved Column Component.
+     *
+     * The array and its advanced runtime Range Components are returned without
+     * copies, preserving engine order; an empty array means no selected range
+     * overlaps the column. This read does not add, change or remove ranges and
+     * does not modify cell values, data or CRUD state. `false` means the column
+     * or operation is unavailable.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @returns {object[]|false} Overlapping runtime Range Components, or `false`.
+     */
+    getColumnRanges(columnLookup) {
+        return readColumn(table, columnLookup, 'getRanges');
+    },
+
+    /**
      * Returns whether one managed column component is currently visible.
      *
      * The `columnLookup` value is forwarded to the underlying table engine's

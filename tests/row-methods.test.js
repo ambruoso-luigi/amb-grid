@@ -18,6 +18,7 @@ const ROW_CONTEXT_METHOD_NAMES = [
     'getPrevRow',
     'getRowElement',
     'getRowCells',
+    'getRowRanges',
     'getRowCell'
 ];
 
@@ -172,6 +173,7 @@ const createReadableRow = (overrides = {}) => {
         getGroup: vi.fn(() => false),
         getElement: vi.fn(() => false),
         getCells: vi.fn(() => []),
+        getRanges: vi.fn(() => []),
         getCell: vi.fn(() => false),
         normalizeHeight: vi.fn(),
         reformat: vi.fn(),
@@ -255,6 +257,7 @@ describe('AMB table controller row method group', () => {
             'getRowGroup',
             'getRowIndex',
             'getRowPosition',
+            'getRowRanges',
             'getRows',
             'getTreeChildren',
             'getTreeParent',
@@ -487,6 +490,8 @@ describe('AMB table controller row method group', () => {
         const nextRow = { name: 'next-row' };
         const prevRow = { name: 'prev-row' };
         const group = { name: 'runtime-group' };
+        const ranges = [{ name: 'first-range' }, { name: 'second-range' }];
+        const emptyRanges = [];
         const descriptors = [
             {
                 method: 'getRowGroup',
@@ -522,6 +527,13 @@ describe('AMB table controller row method group', () => {
                 row: createReadableRow({ getPrevRow: vi.fn(() => prevRow) }),
                 args: ['row-prev'],
                 expected: prevRow
+            },
+            {
+                method: 'getRowRanges',
+                rowMethod: 'getRanges',
+                row: createReadableRow({ getRanges: vi.fn(() => ranges) }),
+                args: ['row-ranges'],
+                expected: ranges
             }
         ];
         const { table, crud, methods } = createReadableHarness({
@@ -540,6 +552,7 @@ describe('AMB table controller row method group', () => {
             row.getIndex.mockClear();
             row.getNextRow.mockClear();
             row.getPrevRow.mockClear();
+            row.getRanges.mockClear();
         });
 
         descriptors[0].row.getGroup.mockReturnValueOnce(false);
@@ -547,12 +560,14 @@ describe('AMB table controller row method group', () => {
         descriptors[2].row.getIndex.mockReturnValueOnce('');
         descriptors[3].row.getNextRow.mockReturnValueOnce(false);
         descriptors[4].row.getPrevRow.mockReturnValueOnce(false);
+        descriptors[5].row.getRanges.mockReturnValueOnce(emptyRanges);
 
         expect(methods.getRowGroup('row-group')).toBe(false);
         expect(methods.getRowData('row-data')).toBe('');
         expect(methods.getRowIndex('row-index')).toBe('');
         expect(methods.getNextRow('row-next')).toBe(false);
         expect(methods.getPrevRow('row-prev')).toBe(false);
+        expect(methods.getRowRanges('row-ranges')).toBe(emptyRanges);
         expectNoReadableSideEffects(table, crud);
     });
 
@@ -562,7 +577,8 @@ describe('AMB table controller row method group', () => {
             ['no-data', createReadableRow({ getData: undefined })],
             ['no-index', createReadableRow({ getIndex: undefined })],
             ['no-next', createReadableRow({ getNextRow: undefined })],
-            ['no-prev', createReadableRow({ getPrevRow: undefined })]
+            ['no-prev', createReadableRow({ getPrevRow: undefined })],
+            ['no-ranges', createReadableRow({ getRanges: undefined })]
         ]);
         const { table, crud, methods } = createReadableHarness({
             crudRows: missingMethodRows
@@ -576,6 +592,7 @@ describe('AMB table controller row method group', () => {
         expect(methods.getRowIndex('no-index')).toBe(false);
         expect(methods.getNextRow('no-next')).toBe(false);
         expect(methods.getPrevRow('no-prev')).toBe(false);
+        expect(methods.getRowRanges('no-ranges')).toBe(false);
         expectNoReadableSideEffects(table, crud);
     });
 

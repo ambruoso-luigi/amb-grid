@@ -656,6 +656,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getColumnElement - Return the runtime DOM element for one column.
  * @property {Function} getColumnField - Return the runtime field for one column.
  * @property {Function} getColumnCells - Return runtime Cell Components for one column.
+ * @property {Function} getColumnRanges - Return selected Range Components overlapping one column.
  * @property {Function} isColumnVisible - Return the runtime visibility state for one column.
  * @property {Function} getColumnWidth - Return the runtime width for one column.
  * @property {Function} setColumnWidth - Set the runtime width for one column.
@@ -753,10 +754,12 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getPrevRow - Return the previous row component relative to one row, or `false`.
  * @property {Function} getRowElement - Return the runtime DOM element for one row.
  * @property {Function} getRowCells - Return the Cell Components for one row.
+ * @property {Function} getRowRanges - Return selected Range Components overlapping one row.
  * @property {Function} getRowCell - Return one Cell Component from a row.
  * @property {Function} getCellValue - Return the runtime value for one cell.
  * @property {Function} getCellOldValue - Return the previous runtime value for one cell.
  * @property {Function} getCellInitialValue - Return the initial runtime value for one cell.
+ * @property {Function} getCellRanges - Return selected Range Components overlapping one cell.
  * @property {Function} editCell - Attempt runtime editing with normal AMB editability checks, without replacing CRUD APIs.
  * @property {Function} cancelCellEdit - Cancel only the active runtime cell editor, without replacing CRUD APIs.
  * @property {Function} navigateCellLeft - Navigate left from the cell resolved through its row and column.
