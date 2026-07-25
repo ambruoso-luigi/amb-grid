@@ -77,5 +77,73 @@ export const createCrudMethods = ({ crud }) => ({
      */
     getSavePayload(options) {
         return crud.getSavePayload(options);
+    },
+
+    /**
+     * Reads whether the AMB CRUD layer currently tracks application errors.
+     *
+     * Both row-level and cell-field errors are included. This does not run
+     * `validate()`, clear errors or change messages and markers. CRUD errors
+     * can come from AMB validators or application logic and are distinct from
+     * the native Cell Component validation state exposed by
+     * `getInvalidCells()` and `isCellValid(...)`.
+     *
+     * @returns {boolean} `true` when a row or cell error is tracked.
+     */
+    hasErrors() {
+        return crud.hasErrors();
+    },
+
+    /**
+     * Reads the complete summary of errors currently tracked by AMB CRUD.
+     *
+     * Row errors and cell-field errors remain separated in the `rows` and
+     * `cells` arrays. Unlike `getStateReport()`, this focused result does not
+     * include rows, lifecycle states, changes or save candidates. Reading it
+     * does not validate rows or modify native validation markers, messages or
+     * CRUD error state.
+     *
+     * The result is returned directly from `CrudHelper`; treat it as a read
+     * snapshot and do not mutate it expecting to update AMB Grid state.
+     *
+     * @returns {{hasErrors: boolean, rows: object[], cells: object[]}}
+     *   Current grouped CRUD error summary.
+     */
+    getErrors() {
+        return crud.getErrors();
+    },
+
+    /**
+     * Reads the row-level errors currently tracked by AMB CRUD.
+     *
+     * Each item contains the available row key, backend id, temporary id, row
+     * number and message. An empty array means that no row error is registered.
+     * Reading the array does not validate rows, clear messages or modify native
+     * validation markers.
+     *
+     * The array is returned directly from `CrudHelper`; treat it as a read
+     * result and do not mutate it expecting to update AMB Grid state.
+     *
+     * @returns {object[]} Current AMB row errors.
+     */
+    getRowErrors() {
+        return crud.getRowErrors();
+    },
+
+    /**
+     * Reads the cell-field errors currently tracked by AMB CRUD.
+     *
+     * Each item contains the available row identifiers, field and message. An
+     * empty array means that no cell error is registered. This method does not
+     * return native Cell Components and does not read or change their separate
+     * runtime validation markers.
+     *
+     * The array is returned directly from `CrudHelper`; treat it as a read
+     * result and do not mutate it expecting to update AMB Grid state.
+     *
+     * @returns {object[]} Current AMB cell-field errors.
+     */
+    getCellErrors() {
+        return crud.getCellErrors();
     }
 });

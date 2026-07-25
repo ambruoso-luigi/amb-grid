@@ -747,6 +747,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getChanges - Read changes currently classified by the AMB CRUD lifecycle.
  * @property {Function} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
  * @property {Function} getSavePayload - Generate the AMB save payload using the supported payload options.
+ * @property {Function} hasErrors - Return whether AMB CRUD currently tracks row or cell-field application errors.
+ * @property {Function} getErrors - Return the grouped AMB CRUD error summary without reading native cell-validation markers.
+ * @property {Function} getRowErrors - Return the currently registered AMB row-level errors.
+ * @property {Function} getCellErrors - Return the currently registered AMB cell-field errors, not native Cell Components.
  * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
  * @property {Function} validateChanges - Validate AMB rows with pending insert or update changes.
  * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
