@@ -10,6 +10,46 @@ const tableFactoryPath = resolve(repositoryRoot, 'src/lib/table/table-factory.js
 const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8');
 
 describe('AMB table controller method modularization', () => {
+    test('wires contextual popup methods through the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(
+            /const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/
+        );
+        const columnCreationIndex = source.indexOf(
+            'const columnMethods = createColumnMethods({ table });'
+        );
+        const rowCreationIndex = source.indexOf(
+            'const rowMethods = createRowMethods({ table, crud });'
+        );
+        const popupCreationIndex = source.indexOf(
+            'const popupMethods = createPopupMethods({'
+        );
+        const inlinePopupDefinitions = [
+            /^\s*showRowPopup\(/m,
+            /^\s*showColumnPopup\(/m,
+            /^\s*showCellPopup\(/m,
+            /^\s*showGroupPopup\(/m
+        ];
+
+        expect(source).toContain(
+            "import { createPopupMethods } from './controller/popup-methods.js';"
+        );
+        expect(source).toMatch(
+            /const popupMethods = createPopupMethods\(\{\s*rowMethods,\s*columnMethods\s*\}\);/
+        );
+        expect(popupCreationIndex).toBeGreaterThan(columnCreationIndex);
+        expect(popupCreationIndex).toBeGreaterThan(rowCreationIndex);
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('popupMethods');
+        expect(source).not.toContain('...popupMethods');
+        inlinePopupDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+        expect(controllerModules).toContain('popup-methods.js');
+    });
+
     test('wires the extracted lifecycle method group into the controller composition', () => {
         const source = readTableFactorySource();
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');

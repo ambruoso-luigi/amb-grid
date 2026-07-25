@@ -26,6 +26,7 @@ import { createLifecycleMethods } from './controller/lifecycle-methods.js';
 import { createLocalizationMethods } from './controller/localization-methods.js';
 import { createNavigationMethods } from './controller/navigation-methods.js';
 import { createPersistenceMethods } from './controller/persistence-methods.js';
+import { createPopupMethods } from './controller/popup-methods.js';
 import { createRedrawMethods } from './controller/redraw-methods.js';
 import { createRowMethods } from './controller/row-methods.js';
 import { createPaginationMethods } from './controller/pagination-methods.js';
@@ -807,6 +808,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} hideGroup - Hide a runtime group component.
  * @property {Function} toggleGroup - Toggle a runtime group component.
  * @property {Function} scrollToGroup - Scroll to a runtime group component.
+ * @property {Function} showRowPopup - Show a popup anchored to one resolved Row Component.
+ * @property {Function} showColumnPopup - Show a popup anchored to one resolved Column Component.
+ * @property {Function} showCellPopup - Show a popup anchored to one resolved Cell Component.
+ * @property {Function} showGroupPopup - Show a popup anchored to a supplied Group Component.
  * @property {Function} setGroupBy - Change the runtime row grouping definition.
  * @property {Function} setGroupValues - Change the allowed values for grouping levels.
  * @property {Function} setGroupStartOpen - Change the initial group opening definition.
@@ -1048,6 +1053,10 @@ export function createTable(options = {}) {
     const rowMethods = createRowMethods({ table, crud });
     const cellStateMethods = createCellStateMethods({ table, rowMethods });
     const cellMethods = createCellMethods({ rowMethods });
+    const popupMethods = createPopupMethods({
+        rowMethods,
+        columnMethods
+    });
     const paginationMethods = createPaginationMethods({ table, crud });
     const selectionMethods = createSelectionMethods({ table, crud });
     const validationMethods = createValidationMethods({ crud });
@@ -1129,6 +1138,7 @@ export function createTable(options = {}) {
         spreadsheetMethods,
         rowMethods,
         cellMethods,
+        popupMethods,
         validationMethods,
         navigationMethods,
         groupingMethods,
