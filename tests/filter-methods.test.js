@@ -17,6 +17,7 @@ describe('AMB table controller filter method group', () => {
             'getHeaderFilterValue',
             'getHeaderFilters',
             'refreshFilter',
+            'reloadHeaderFilter',
             'removeFilter',
             'setFilter',
             'setHeaderFilterFocus',
@@ -33,6 +34,19 @@ describe('AMB table controller filter method group', () => {
         const focusResult = { focused: true };
         const clearResult = { cleared: true };
         const refreshResult = { refreshed: true };
+        const reloadResult = {
+            reloaded: true
+        };
+        const reloadableColumn = {
+            reloadHeaderFilter: vi.fn(() => reloadResult)
+        };
+        const unavailableColumn = {};
+        const missingColumnLookup = {
+            field: 'missing'
+        };
+        const unavailableLookup = {
+            field: 'without-reload'
+        };
         const table = {
             getHeaderFilters: vi.fn(() => headerFilters),
             getHeaderFilterValue: vi.fn(lookup => (lookup === 'false-field' ? false : 0)),
@@ -45,7 +59,17 @@ describe('AMB table controller filter method group', () => {
             clearFilter: vi.fn(),
             setFilter: vi.fn(),
             removeFilter: vi.fn(),
-            getColumn: vi.fn()
+            getColumn: vi.fn(lookup => {
+                if (lookup === columnLookup) {
+                    return reloadableColumn;
+                }
+
+                if (lookup === unavailableLookup) {
+                    return unavailableColumn;
+                }
+
+                return false;
+            })
         };
         const crud = {
             findRowByKey: vi.fn()
@@ -79,12 +103,33 @@ describe('AMB table controller filter method group', () => {
         expect(table.refreshFilter).toHaveBeenCalledOnce();
         expect(table.refreshFilter).toHaveBeenCalledWith();
 
+        Object.values(table).forEach(mock => mock.mockClear());
+
+        expect(methods.reloadHeaderFilter(columnLookup)).toBe(reloadResult);
+        expect(table.getColumn).toHaveBeenCalledOnce();
+        expect(table.getColumn).toHaveBeenCalledWith(columnLookup);
+        expect(table.getColumn.mock.calls[0][0]).toBe(columnLookup);
+        expect(reloadableColumn.reloadHeaderFilter).toHaveBeenCalledOnce();
+        expect(reloadableColumn.reloadHeaderFilter).toHaveBeenCalledWith();
+
+        expect(methods.reloadHeaderFilter(missingColumnLookup)).toBe(false);
+        expect(methods.reloadHeaderFilter(unavailableLookup)).toBe(false);
+        expect(table.getColumn).toHaveBeenCalledTimes(3);
+        expect(table.getColumn.mock.calls[1][0]).toBe(missingColumnLookup);
+        expect(table.getColumn.mock.calls[2][0]).toBe(unavailableLookup);
+        expect(reloadableColumn.reloadHeaderFilter).toHaveBeenCalledOnce();
+
+        expect(table.getHeaderFilters).not.toHaveBeenCalled();
+        expect(table.getHeaderFilterValue).not.toHaveBeenCalled();
+        expect(table.setHeaderFilterValue).not.toHaveBeenCalled();
+        expect(table.setHeaderFilterFocus).not.toHaveBeenCalled();
+        expect(table.clearHeaderFilter).not.toHaveBeenCalled();
+        expect(table.refreshFilter).not.toHaveBeenCalled();
         expect(table.getFilters).not.toHaveBeenCalled();
         expect(table.addFilter).not.toHaveBeenCalled();
         expect(table.clearFilter).not.toHaveBeenCalled();
         expect(table.setFilter).not.toHaveBeenCalled();
         expect(table.removeFilter).not.toHaveBeenCalled();
-        expect(table.getColumn).not.toHaveBeenCalled();
         expect(crud.findRowByKey).not.toHaveBeenCalled();
         expect(searchController.setSearchQuery).not.toHaveBeenCalled();
     });

@@ -708,6 +708,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getHeaderFilterValue - Return the current header filter value for a column.
  * @property {Function} setHeaderFilterValue - Set the header filter value for a column.
  * @property {Function} setHeaderFilterFocus - Move focus to a column header filter.
+ * @property {Function} reloadHeaderFilter - Rebuild a column's runtime header filter and re-evaluate its editor parameters.
  * @property {Function} clearHeaderFilter - Clear all column header filters.
  * @property {Function} refreshFilter - Re-run the filters currently applied to the grid.
  * @property {Function} getFilters - Return the current developer-managed filters.

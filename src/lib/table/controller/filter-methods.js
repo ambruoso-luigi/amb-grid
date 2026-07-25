@@ -83,6 +83,35 @@ export const createFilterMethods = ({ table, searchController = null }) => ({
     },
 
     /**
+     * Rebuilds the runtime header-filter element for one column.
+     *
+     * The column is resolved through a normal column lookup. Rebuilding the UI
+     * re-evaluates dynamic editor parameters and passes the engine's current
+     * stored filter value into the newly generated element. This is distinct
+     * from `refreshFilter()`, which re-runs current filters against the data
+     * without necessarily rebuilding an editor.
+     *
+     * The operation does not directly modify row data or AMB CRUD lifecycle
+     * state. The Column Component result is returned unchanged; `false` means
+     * that the column or operation is unavailable.
+     *
+     * @param {*} columnLookup - Column field, component, element or supported lookup value.
+     * @returns {undefined|false} Native Column Component result, or `false`.
+     */
+    reloadHeaderFilter(columnLookup) {
+        const column = table.getColumn(columnLookup);
+
+        if (
+            !column
+            || typeof column.reloadHeaderFilter !== 'function'
+        ) {
+            return false;
+        }
+
+        return column.reloadHeaderFilter();
+    },
+
+    /**
      * Clears all column header filters.
      *
      * Programmatic filters and the AMB Grid global search remain active.
