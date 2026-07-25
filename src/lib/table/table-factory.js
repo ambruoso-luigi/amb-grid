@@ -16,6 +16,7 @@ import { createCalculationMethods } from './controller/calculation-methods.js';
 import { createCellMethods } from './controller/cell-methods.js';
 import { createCellStateMethods } from './controller/cell-state-methods.js';
 import { createColumnMethods } from './controller/column-methods.js';
+import { createCrudMethods } from './controller/crud-methods.js';
 import { createDataMethods } from './controller/data-methods.js';
 import { createEventMethods } from './controller/event-methods.js';
 import { createExportMethods } from './controller/export-methods.js';
@@ -649,7 +650,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  *
  * @typedef {object} AMBTableController
  * @property {object} table - Internal table engine instance for advanced integrations. Prefer controller methods for normal usage.
- * @property {CrudHelper} crud - CRUD application layer for row state, validation, rollback, and save payloads.
+ * @property {CrudHelper} crud - Advanced, compatible access to the CRUD layer. Prefer direct controller methods for normal reports and save payloads.
  * @property {Function} getColumnDefinitions - Return the current grid column definitions.
  * @property {Function} getColumns - Return current column components.
  * @property {Function} getColumn - Return one column component using a supported lookup.
@@ -743,6 +744,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
  * @property {Function} isCellEdited - Read a native edited marker independently from CRUD state and save payloads.
  * @property {Function} isCellValid - Read native runtime validation state independently from AMB Grid validation.
+ * @property {Function} getChanges - Read changes currently classified by the AMB CRUD lifecycle.
+ * @property {Function} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
+ * @property {Function} getSavePayload - Generate the AMB save payload using the supported payload options.
  * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
  * @property {Function} validateChanges - Validate AMB rows with pending insert or update changes.
  * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
@@ -1050,6 +1054,7 @@ export function createTable(options = {}) {
     const navigationMethods = createNavigationMethods({ table });
     const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
+    const crudMethods = createCrudMethods({ crud });
     const rowMethods = createRowMethods({ table, crud });
     const cellStateMethods = createCellStateMethods({ table, rowMethods });
     const cellMethods = createCellMethods({ rowMethods });
@@ -1133,6 +1138,7 @@ export function createTable(options = {}) {
         alertMethods,
         calculationMethods,
         cellStateMethods,
+        crudMethods,
         columnMethods,
         dataMethods,
         spreadsheetMethods,

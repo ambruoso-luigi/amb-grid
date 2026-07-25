@@ -10,6 +10,41 @@ const tableFactoryPath = resolve(repositoryRoot, 'src/lib/table/table-factory.js
 const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8');
 
 describe('AMB table controller method modularization', () => {
+    test('wires read-only CRUD report methods through the controller composition', () => {
+        const source = readTableFactorySource();
+        const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');
+        const controllerModules = readdirSync(controllerDir);
+        const composition = source.match(
+            /const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/
+        );
+        const crudCreationIndex = source.indexOf(
+            'crud = new CrudHelper(table, { errorStyle });'
+        );
+        const crudMethodsCreationIndex = source.indexOf(
+            'const crudMethods = createCrudMethods({ crud });'
+        );
+        const inlineCrudDefinitions = [
+            /^\s*getChanges\(\) \{/m,
+            /^\s*getStateReport\(\) \{/m,
+            /^\s*getSavePayload\(options\) \{/m
+        ];
+
+        expect(source).toContain(
+            "import { createCrudMethods } from './controller/crud-methods.js';"
+        );
+        expect(source).toContain(
+            'const crudMethods = createCrudMethods({ crud });'
+        );
+        expect(crudMethodsCreationIndex).toBeGreaterThan(crudCreationIndex);
+        expect(composition).not.toBeNull();
+        expect(composition[1]).toContain('crudMethods');
+        expect(source).not.toContain('...crudMethods');
+        inlineCrudDefinitions.forEach(pattern => {
+            expect(source).not.toMatch(pattern);
+        });
+        expect(controllerModules).toContain('crud-methods.js');
+    });
+
     test('wires contextual popup methods through the controller composition', () => {
         const source = readTableFactorySource();
         const controllerDir = resolve(repositoryRoot, 'src/lib/table/controller');

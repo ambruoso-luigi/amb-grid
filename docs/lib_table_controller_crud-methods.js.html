@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/search-methods.js</title>
+    <title>JSDoc: Source: lib/table/controller/crud-methods.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/search-methods.js</h1>
+    <h1 class="page-title">Source: lib/table/controller/crud-methods.js</h1>
 
     
 
@@ -27,104 +27,84 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Creates the global-search methods exposed by the AMB Grid controller.
+ * Creates the AMB-owned, read-only CRUD report methods exposed by the public
+ * controller.
+ *
+ * These methods preserve the semantics of the current `CrudHelper`; they do
+ * not reconstruct reports or payloads and do not delegate to the internal
+ * table engine.
  *
  * @param {object} context - Required method dependencies.
- * @param {object|null} context.searchController - Optional global-search controller.
- * @returns {object} Search methods for the flat controller API.
+ * @param {CrudHelper} context.crud - Current AMB Grid CRUD layer.
+ * @returns {object} CRUD report methods for the flat controller API.
  * @private
  * @internal
  */
-export const createSearchMethods = ({ searchController }) => ({
+export const createCrudMethods = ({ crud }) => ({
     /**
-     * Sets the AMB Grid global search query.
+     * Reads changes currently classified by the AMB CRUD lifecycle.
      *
-     * The configured search fields and options are reused. Applying a query may
-     * change which rows are active or visible, but it does not directly modify
-     * row data or CRUD state.
+     * Unlike `getStateReport()`, this returns only inserted, updated and
+     * deleted changes. It does not exclude invalid changes automatically or
+     * perform validation. The result is returned directly from `CrudHelper`;
+     * treat it as a read snapshot and do not mutate it expecting to update AMB
+     * Grid state.
      *
-     * @param {*} query - Search value.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
+     * @returns {{inserted: object[], updated: object[], deleted: object[]}}
+     *   Current grouped change set.
      */
-    setSearchQuery(query) {
-        if (!searchController) return false;
-
-        searchController.setSearchQuery(query);
-        return true;
+    getChanges() {
+        return crud.getChanges();
     },
 
     /**
-     * Clears the AMB Grid global search query.
+     * Reads the complete AMB CRUD state report.
      *
-     * Header filters and developer-managed programmatic filters remain separate.
-     * Clearing search may change which rows are active or visible, but it does
-     * not directly modify row data or CRUD state.
+     * The report is a broader snapshot than `getChanges()`: it describes rows,
+     * lifecycle state, errors, all changes and valid save candidates. It does
+     * not run `validate()` and does not convert the report into the focused
+     * structure returned by `getSavePayload()`. The result is returned directly
+     * from `CrudHelper`; treat it as a read snapshot and do not mutate it
+     * expecting to update AMB Grid state.
      *
-     * @returns {boolean} `true` when search is available, otherwise `false`.
+     * @returns {{
+     *   hasChanges: boolean,
+     *   hasErrors: boolean,
+     *   totalRows: number,
+     *   changedRowsCount: number,
+     *   errorRowsCount: number,
+     *   validChangedRowsCount: number,
+     *   invalidChangedRowsCount: number,
+     *   rows: object[],
+     *   changedRows: object[],
+     *   validChangedRows: object[],
+     *   invalidChangedRows: object[],
+     *   changes: {inserted: object[], updated: object[], deleted: object[]},
+     *   validChanges: {inserted: object[], updated: object[], deleted: object[]},
+     *   errors: {hasErrors: boolean, rows: object[], cells: object[]}
+     * }} Complete AMB Grid state report.
      */
-    clearSearch() {
-        if (!searchController) return false;
-
-        searchController.clearSearch();
-        return true;
+    getStateReport() {
+        return crud.getStateReport();
     },
 
     /**
-     * Returns the AMB Grid global search state.
+     * Builds the AMB save payload using the options supported by `CrudHelper`.
      *
-     * The returned state contains the current `query`, `selectedFields`,
-     * `caseSensitive`, and `wholeWord` values. When global search is not
-     * configured, a new empty state object with a new `selectedFields` array is
-     * returned.
+     * The supplied options object is forwarded unchanged. Defaults, filtering
+     * and payload structure remain owned by `CrudHelper`. This operation does
+     * not send the payload, validate rows or mark them as saved. The result is
+     * returned directly; treat it as a generated read result and do not mutate
+     * it expecting to update AMB Grid state.
      *
-     * @returns {object} Current global search state.
+     * @param {object} [options] - Save payload options forwarded unchanged.
+     * @param {boolean} [options.onlyValid=true] - Use only valid changes.
+     * @param {boolean} [options.includeInvalid=false]
+     *   Include invalid changed rows in the payload report.
+     * @returns {object} Save payload generated by the current CRUD layer.
      */
-    getSearchState() {
-        if (!searchController) {
-            return {
-                query: '',
-                selectedFields: [],
-                caseSensitive: false,
-                wholeWord: false
-            };
-        }
-
-        return searchController.getSearchState();
-    },
-
-    /**
-     * Sets the fields used by AMB Grid global search.
-     *
-     * Field validation and normalization are handled by the configured search
-     * system. Updating the fields may immediately change which rows are active
-     * or visible.
-     *
-     * @param {string[]} fields - Field names to search.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
-     */
-    setSearchFields(fields) {
-        if (!searchController) return false;
-
-        searchController.setSearchFields(fields);
-        return true;
-    },
-
-    /**
-     * Sets AMB Grid global search options.
-     *
-     * Supported options include `caseSensitive` and `wholeWord`. Updating these
-     * options may immediately change which rows are active or visible.
-     *
-     * @param {object} options - Search options.
-     * @param {boolean} [options.caseSensitive] - Match letter case.
-     * @param {boolean} [options.wholeWord] - Match whole words.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
-     */
-    setSearchOptions(options) {
-        if (!searchController) return false;
-
-        searchController.setSearchOptions(options);
-        return true;
+    getSavePayload(options) {
+        return crud.getSavePayload(options);
     }
 });
 </code></pre>

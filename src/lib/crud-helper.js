@@ -2293,7 +2293,7 @@ export class CrudHelper {
      * @param {boolean} [options.includeInvalid=false] - Include invalid changed rows.
      * @returns {object} Save payload snapshot.
      * @example
-     * const payload = grid.crud.getSavePayload();
+     * const payload = grid.getSavePayload();
      *
      * if (payload.canSave) {
      *   await saveRows(payload.changes);
