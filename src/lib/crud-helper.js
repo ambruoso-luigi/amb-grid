@@ -1728,7 +1728,7 @@ export class CrudHelper {
      * @param {boolean} [options.keepTempIdAfterBackendId=false] - Keep the temporary id after assigning backend id.
      * @returns {{applied: object[], notFound: object[], invalid: object[], duplicates: object[]}} Apply result.
      * @example
-     * grid.crud.applyBackendIds([
+     * grid.applyBackendIds([
      *   { tempId: 'amb-temp-1', id: 42 }
      * ]);
      */
@@ -2055,7 +2055,7 @@ export class CrudHelper {
     /**
      * Mark all valid changed rows from the current state report as saved.
      *
-     * @returns {boolean} True only when every valid changed row was marked successfully.
+     * @returns {{saved: object[], skipped: object[]}} Rows saved and skipped.
      */
     markValidChangesSaved() {
         const report = this.getStateReport();

@@ -6,6 +6,16 @@ describe('AMB table CRUD facade methods', () => {
     test('exposes the exact methods and delegates each call in isolation', () => {
         const options = { onlyValid: false, includeInvalid: true };
         const identifier = 'amb-temp-1';
+        const mappings = [
+            {
+                tempId: 'amb-temp-1',
+                id: 42
+            }
+        ];
+        const backendIdOptions = {
+            keepTempIdAfterBackendId: true
+        };
+        const identifiers = [42, 43];
         const field = 'name';
         const cellMessage = 'Campo non valido';
         const rowMessage = 'Riga non valida';
@@ -13,6 +23,18 @@ describe('AMB table CRUD facade methods', () => {
             getChanges: { inserted: [], updated: [], deleted: [] },
             getStateReport: { rows: [], changes: {} },
             getSavePayload: { canSave: true, changes: {} },
+            applyBackendIds: {
+                applied: [],
+                notFound: [],
+                invalid: [],
+                duplicates: []
+            },
+            markRowSaved: true,
+            markRowsSaved: false,
+            markValidChangesSaved: {
+                saved: [],
+                skipped: []
+            },
             hasErrors: true,
             getErrors: {
                 hasErrors: true,
@@ -32,6 +54,10 @@ describe('AMB table CRUD facade methods', () => {
             getChanges: vi.fn(() => results.getChanges),
             getStateReport: vi.fn(() => results.getStateReport),
             getSavePayload: vi.fn(() => results.getSavePayload),
+            applyBackendIds: vi.fn(() => results.applyBackendIds),
+            markRowSaved: vi.fn(() => results.markRowSaved),
+            markRowsSaved: vi.fn(() => results.markRowsSaved),
+            markValidChangesSaved: vi.fn(() => results.markValidChangesSaved),
             hasErrors: vi.fn(() => results.hasErrors),
             getErrors: vi.fn(() => results.getErrors),
             getRowErrors: vi.fn(() => results.getRowErrors),
@@ -48,6 +74,22 @@ describe('AMB table CRUD facade methods', () => {
             { methodName: 'getChanges', args: [] },
             { methodName: 'getStateReport', args: [] },
             { methodName: 'getSavePayload', args: [options] },
+            {
+                methodName: 'applyBackendIds',
+                args: [mappings, backendIdOptions]
+            },
+            {
+                methodName: 'markRowSaved',
+                args: [identifier]
+            },
+            {
+                methodName: 'markRowsSaved',
+                args: [identifiers]
+            },
+            {
+                methodName: 'markValidChangesSaved',
+                args: []
+            },
             { methodName: 'hasErrors', args: [] },
             { methodName: 'getErrors', args: [] },
             { methodName: 'getRowErrors', args: [] },
@@ -84,6 +126,10 @@ describe('AMB table CRUD facade methods', () => {
             'getChanges',
             'getStateReport',
             'getSavePayload',
+            'applyBackendIds',
+            'markRowSaved',
+            'markRowsSaved',
+            'markValidChangesSaved',
             'hasErrors',
             'getErrors',
             'getRowErrors',

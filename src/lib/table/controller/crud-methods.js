@@ -80,6 +80,84 @@ export const createCrudMethods = ({ crud }) => ({
     },
 
     /**
+     * Reconciles AMB temporary row ids with ids assigned by the backend.
+     *
+     * Mappings and options are forwarded unchanged to `CrudHelper`, which owns
+     * row resolution, duplicate detection, data and snapshot updates, and
+     * internal map reconciliation. This method does not send a backend request.
+     *
+     * A normal application flow is:
+     *
+     * @example
+     * const payload = grid.getSavePayload();
+     *
+     * const response = await saveRows(payload.changes);
+     *
+     * grid.applyBackendIds(response.insertedIds);
+     * const result = grid.markValidChangesSaved();
+     *
+     * @param {object[]} mappings - Backend id mappings keyed by temporary id.
+     * @param {*} mappings[].tempId - AMB temporary id.
+     * @param {*} mappings[].id - Backend id assigned to the row.
+     * @param {object} [options] - Reconciliation options forwarded unchanged.
+     * @param {boolean} [options.keepTempIdAfterBackendId=false]
+     *   Keep the temporary id after assigning the backend id.
+     * @returns {{applied: object[], notFound: object[], invalid: object[], duplicates: object[]}}
+     *   Result returned directly by `CrudHelper`.
+     */
+    applyBackendIds(mappings, options) {
+        return crud.applyBackendIds(
+            mappings,
+            options
+        );
+    },
+
+    /**
+     * Confirms one row as saved after a positive backend response.
+     *
+     * New and modified rows are consolidated; a confirmed deleted row can be
+     * physically removed. A new row must receive its backend id before it can
+     * be confirmed. The identifier is forwarded unchanged and can be a backend
+     * id or `_ambTempId`. This method changes CRUD state but sends no request.
+     *
+     * @param {*} identifier - Backend id or AMB temporary row id.
+     * @returns {boolean} Boolean returned directly by `CrudHelper`.
+     */
+    markRowSaved(identifier) {
+        return crud.markRowSaved(identifier);
+    },
+
+    /**
+     * Confirms an explicit list of rows after a positive backend response.
+     *
+     * Identifiers are forwarded unchanged. `true` is returned only when every
+     * identifier is handled successfully. The operation is not atomic and
+     * provides no group rollback: earlier rows may already be consolidated
+     * when a later row fails. This method sends no backend request.
+     *
+     * @param {Array.<*>} identifiers - Backend or AMB temporary row ids.
+     * @returns {boolean} Boolean returned directly by `CrudHelper`.
+     */
+    markRowsSaved(identifiers) {
+        return crud.markRowsSaved(identifiers);
+    },
+
+    /**
+     * Confirms the valid changes in the current CRUD report.
+     *
+     * Call this only after the application receives a positive response from
+     * its own save request. `CrudHelper` decides which valid changes can be
+     * consolidated; new rows without backend ids are skipped. The returned
+     * object lists saved and skipped rows. This method sends no backend request.
+     *
+     * @returns {{saved: object[], skipped: object[]}}
+     *   Result returned directly by `CrudHelper`.
+     */
+    markValidChangesSaved() {
+        return crud.markValidChangesSaved();
+    },
+
+    /**
      * Reads whether the AMB CRUD layer currently tracks application errors.
      *
      * Both row-level and cell-field errors are included. This does not run
