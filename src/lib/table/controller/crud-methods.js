@@ -1,10 +1,10 @@
 /**
  * Creates the AMB-owned CRUD facade methods exposed by the public controller.
  *
- * The facade includes report and payload reads, error queries and targeted
- * application-error management. Every method preserves the semantics of the
- * current `CrudHelper`; it does not reconstruct results, duplicate CRUD
- * behavior or delegate to the internal table engine.
+ * The facade includes report and payload reads, error queries, and targeted or
+ * row-scoped application-error management. Every method preserves the
+ * semantics of the current `CrudHelper`; it does not reconstruct results,
+ * duplicate CRUD behavior or delegate to the internal table engine.
  *
  * @param {object} context - Required method dependencies.
  * @param {CrudHelper} context.crud - Current AMB Grid CRUD layer.
@@ -233,5 +233,48 @@ export const createCrudMethods = ({ crud }) => ({
      */
     clearRowError(identifier) {
         return crud.clearRowError(identifier);
+    },
+
+    /**
+     * Clears every AMB application error associated with fields of one row.
+     *
+     * The backend id or `_ambTempId` is forwarded unchanged. The general
+     * row-level error, if present, remains registered; use
+     * `clearErrorsForRow(...)` to clear both levels. `CrudHelper` owns error-map
+     * updates, runtime markers, titles, row highlighting and the existing
+     * `cell-error-cleared` events.
+     *
+     * This operation does not run validation, change lifecycle state or clear
+     * native Cell Component validation markers. Errors can reappear during a
+     * later validation when their underlying condition remains. `true` means
+     * the row was found and the cleanup was handled, even when it had no cell
+     * errors.
+     *
+     * @param {*} identifier - Backend id or AMB temporary row id.
+     * @returns {boolean} Boolean result returned directly by `CrudHelper`.
+     */
+    clearCellErrorsForRow(identifier) {
+        return crud.clearRowErrors(identifier);
+    },
+
+    /**
+     * Clears all AMB application errors belonging to one row.
+     *
+     * Both the general row error and all field errors are removed for the row
+     * resolved by backend id or `_ambTempId`; errors belonging to other rows
+     * are untouched. `CrudHelper` remains responsible for its error maps,
+     * runtime markers/titles, row highlighting and existing cleared events.
+     *
+     * The operation does not remove or modify validators, run validation,
+     * change row data or lifecycle state, or clear native Cell Component
+     * validation markers. Errors can reappear during a later validation when
+     * their underlying condition remains. The boolean is returned directly
+     * from `CrudHelper`.
+     *
+     * @param {*} identifier - Backend id or AMB temporary row id.
+     * @returns {boolean} Whether `CrudHelper` handled cleanup for the row.
+     */
+    clearErrorsForRow(identifier) {
+        return crud.clearAllErrors(identifier);
     }
 });

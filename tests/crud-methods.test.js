@@ -24,7 +24,9 @@ describe('AMB table CRUD facade methods', () => {
             markCellError: true,
             clearCellError: false,
             markRowError: false,
-            clearRowError: true
+            clearRowError: true,
+            clearRowErrors: false,
+            clearAllErrors: true
         };
         const crud = {
             getChanges: vi.fn(() => results.getChanges),
@@ -37,7 +39,9 @@ describe('AMB table CRUD facade methods', () => {
             markCellError: vi.fn(() => results.markCellError),
             clearCellError: vi.fn(() => results.clearCellError),
             markRowError: vi.fn(() => results.markRowError),
-            clearRowError: vi.fn(() => results.clearRowError)
+            clearRowError: vi.fn(() => results.clearRowError),
+            clearRowErrors: vi.fn(() => results.clearRowErrors),
+            clearAllErrors: vi.fn(() => results.clearAllErrors)
         };
         const methods = createCrudMethods({ crud });
         const cases = [
@@ -63,6 +67,16 @@ describe('AMB table CRUD facade methods', () => {
             {
                 methodName: 'clearRowError',
                 args: [identifier]
+            },
+            {
+                methodName: 'clearCellErrorsForRow',
+                crudMethodName: 'clearRowErrors',
+                args: [identifier]
+            },
+            {
+                methodName: 'clearErrorsForRow',
+                crudMethodName: 'clearAllErrors',
+                args: [identifier]
             }
         ];
 
@@ -77,23 +91,28 @@ describe('AMB table CRUD facade methods', () => {
             'markCellError',
             'clearCellError',
             'markRowError',
-            'clearRowError'
+            'clearRowError',
+            'clearCellErrorsForRow',
+            'clearErrorsForRow'
         ]);
 
-        cases.forEach(({ methodName, args }) => {
+        cases.forEach(testCase => {
+            const { methodName, args } = testCase;
+            const crudMethodName = testCase.crudMethodName || methodName;
+
             Object.values(crud).forEach(mock => mock.mockClear());
 
             const result = methods[methodName](...args);
 
-            expect(result).toBe(results[methodName]);
-            expect(crud[methodName]).toHaveBeenCalledOnce();
-            expect(crud[methodName].mock.calls[0]).toEqual(args);
+            expect(result).toBe(results[crudMethodName]);
+            expect(crud[crudMethodName]).toHaveBeenCalledOnce();
+            expect(crud[crudMethodName].mock.calls[0]).toEqual(args);
             args.forEach((argument, index) => {
-                expect(crud[methodName].mock.calls[0][index]).toBe(argument);
+                expect(crud[crudMethodName].mock.calls[0][index]).toBe(argument);
             });
 
             Object.entries(crud)
-                .filter(([name]) => name !== methodName)
+                .filter(([name]) => name !== crudMethodName)
                 .forEach(([, mock]) => {
                     expect(mock).not.toHaveBeenCalled();
                 });
