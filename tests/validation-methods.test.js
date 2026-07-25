@@ -28,6 +28,8 @@ describe('AMB-aware validation method group', () => {
     test('exposes exactly the flat validation controller methods', () => {
         const methods = createValidationMethods({
             crud: {
+                addCellValidator: vi.fn(),
+                removeCellValidator: vi.fn(),
                 validateAll: vi.fn(),
                 validateChanges: vi.fn(),
                 validateRow: vi.fn()
@@ -35,6 +37,8 @@ describe('AMB-aware validation method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'addCellValidator',
+            'removeCellValidators',
             'validate',
             'validateChanges',
             'validateRow'
@@ -42,6 +46,51 @@ describe('AMB-aware validation method group', () => {
         expect(typeof methods.validate).toBe('function');
         expect(typeof methods.validateChanges).toBe('function');
         expect(typeof methods.validateRow).toBe('function');
+    });
+
+    test('configures field validators through the AMB CRUD layer only', () => {
+        const field = 'email';
+        const message = 'Email non valida';
+        const validateFn = vi.fn(() => true);
+        const crud = {
+            addCellValidator: vi.fn(),
+            removeCellValidator: vi.fn(),
+            validateAll: vi.fn(),
+            validateChanges: vi.fn(),
+            validateRow: vi.fn()
+        };
+        const methods = createValidationMethods({ crud });
+
+        methods.addCellValidator(
+            field,
+            message,
+            validateFn
+        );
+
+        expect(crud.addCellValidator).toHaveBeenCalledOnce();
+        expect(crud.addCellValidator).toHaveBeenCalledWith(
+            field,
+            message,
+            validateFn
+        );
+        expect(crud.addCellValidator.mock.calls[0][2]).toBe(validateFn);
+        expect(validateFn).not.toHaveBeenCalled();
+        expect(crud.removeCellValidator).not.toHaveBeenCalled();
+        expect(crud.validateAll).not.toHaveBeenCalled();
+        expect(crud.validateChanges).not.toHaveBeenCalled();
+        expect(crud.validateRow).not.toHaveBeenCalled();
+
+        Object.values(crud).forEach(mock => mock.mockClear());
+
+        methods.removeCellValidators(field);
+
+        expect(crud.removeCellValidator).toHaveBeenCalledOnce();
+        expect(crud.removeCellValidator).toHaveBeenCalledWith(field);
+        expect(crud.addCellValidator).not.toHaveBeenCalled();
+        expect(validateFn).not.toHaveBeenCalled();
+        expect(crud.validateAll).not.toHaveBeenCalled();
+        expect(crud.validateChanges).not.toHaveBeenCalled();
+        expect(crud.validateRow).not.toHaveBeenCalled();
     });
 
     test('delegates validation without arguments to the AMB CRUD validation layer', () => {

@@ -765,6 +765,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} clearRowError - Clear only an AMB row-level error, preserving cell-field errors and lifecycle state.
  * @property {Function} clearCellErrorsForRow - Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.
  * @property {Function} clearErrorsForRow - Clear every AMB application error for one row only, preserving native cell-validation markers.
+ * @property {Function} addCellValidator - Append a runtime AMB rule for a field without immediately validating data.
+ * @property {Function} removeCellValidators - Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.
  * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
  * @property {Function} validateChanges - Validate AMB rows with pending insert or update changes.
  * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
@@ -905,6 +907,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * structured `validation` object. Most validators do not imply required:
  * use `required: true`, `validation.required`, or `AMB.validators.required()`
  * when empty values should fail validation.
+ * Validators can also be added dynamically with `grid.addCellValidator(...)`;
+ * `grid.removeCellValidators(field)` removes all current AMB rules for a field.
  * AMB numeric editors/formatters receive `hozAlign: 'right'` by default and
  * AMB date editors/formatters receive `hozAlign: 'center'` by default, only
  * when the column did not already define `hozAlign`.

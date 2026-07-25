@@ -1,10 +1,10 @@
 /**
  * Creates the AMB-aware validation methods exposed by the public controller.
  *
- * Validation is performed by the AMB Grid CRUD layer because column rules,
- * error tracking and validation reports belong to the AMB-managed workflow.
- * The similarly named method of the underlying table engine is intentionally
- * not used.
+ * Validation execution and dynamic AMB validator configuration are owned by
+ * the AMB Grid CRUD layer because column rules, error tracking and validation
+ * reports belong to the AMB-managed workflow. Similarly named validation from
+ * the underlying table engine is intentionally not used.
  *
  * @param {object} context - Required method dependencies.
  * @param {CrudHelper} context.crud
@@ -14,6 +14,53 @@
  * @internal
  */
 export const createValidationMethods = ({ crud }) => ({
+    /**
+     * Appends a runtime AMB validator for a field.
+     *
+     * The callback receives `(value, rowData, cell, helper)` and may return a
+     * boolean or an AMB-compatible object such as
+     * `{ isValid: false, message: 'Specific message', code: 'optional-code' }`.
+     * The registration message is the fallback when the callback does not
+     * provide a more specific message.
+     *
+     * Registration does not validate existing data or change current errors
+     * and markers. The rule is used by later AMB flows such as cell editing,
+     * `grid.updateRow(...)`, `grid.validateRow(...)`,
+     * `grid.validateChanges()` and `grid.validate()`. This configures AMB CRUD
+     * validators, not the native validator definition of an existing column.
+     *
+     * @param {string} field - Field whose AMB validator collection is extended.
+     * @param {*} message - Fallback validation message forwarded unchanged.
+     * @param {Function} validateFn - Validator callback forwarded by identity.
+     * @returns {undefined} Result returned directly by `CrudHelper`.
+     */
+    addCellValidator(field, message, validateFn) {
+        return crud.addCellValidator(
+            field,
+            message,
+            validateFn
+        );
+    },
+
+    /**
+     * Removes all AMB validators currently associated with a field.
+     *
+     * This includes dynamically registered validators and declarative rules
+     * extracted from the initial column configuration. Validators for other
+     * fields are unchanged. Existing application errors and runtime markers
+     * are not cleared, and no validation is run; the application can explicitly
+     * clear errors or validate later according to its own flow.
+     *
+     * This changes AMB CRUD validator configuration rather than the native
+     * validator definition of a constructed engine column.
+     *
+     * @param {string} field - Field whose complete AMB validator collection is removed.
+     * @returns {undefined} Result returned directly by `CrudHelper`.
+     */
+    removeCellValidators(field) {
+        return crud.removeCellValidator(field);
+    },
+
     /**
      * Validates the AMB-managed rows.
      *
