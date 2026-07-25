@@ -16,6 +16,15 @@ describe('AMB table CRUD facade methods', () => {
             keepTempIdAfterBackendId: true
         };
         const identifiers = [42, 43];
+        const rowData = {
+            name: 'Nuova riga'
+        };
+        const rowPatch = {
+            name: 'Nome aggiornato'
+        };
+        const rowComponent = {
+            component: 'row'
+        };
         const field = 'name';
         const cellMessage = 'Campo non valido';
         const rowMessage = 'Riga non valida';
@@ -23,6 +32,10 @@ describe('AMB table CRUD facade methods', () => {
             getChanges: { inserted: [], updated: [], deleted: [] },
             getStateReport: { rows: [], changes: {} },
             getSavePayload: { canSave: true, changes: {} },
+            addRow: rowComponent,
+            updateRowFields: rowComponent,
+            deleteRow: false,
+            rollbackRow: true,
             applyBackendIds: {
                 applied: [],
                 notFound: [],
@@ -54,6 +67,11 @@ describe('AMB table CRUD facade methods', () => {
             getChanges: vi.fn(() => results.getChanges),
             getStateReport: vi.fn(() => results.getStateReport),
             getSavePayload: vi.fn(() => results.getSavePayload),
+            addRow: vi.fn(() => results.addRow),
+            updateRowFields: vi.fn(() => results.updateRowFields),
+            updateRow: vi.fn(),
+            deleteRow: vi.fn(() => results.deleteRow),
+            rollbackRow: vi.fn(() => results.rollbackRow),
             applyBackendIds: vi.fn(() => results.applyBackendIds),
             markRowSaved: vi.fn(() => results.markRowSaved),
             markRowsSaved: vi.fn(() => results.markRowsSaved),
@@ -74,6 +92,23 @@ describe('AMB table CRUD facade methods', () => {
             { methodName: 'getChanges', args: [] },
             { methodName: 'getStateReport', args: [] },
             { methodName: 'getSavePayload', args: [options] },
+            {
+                methodName: 'addRow',
+                args: [rowData]
+            },
+            {
+                methodName: 'updateRow',
+                crudMethodName: 'updateRowFields',
+                args: [identifier, rowPatch]
+            },
+            {
+                methodName: 'deleteRow',
+                args: [identifier]
+            },
+            {
+                methodName: 'rollbackRow',
+                args: [identifier]
+            },
             {
                 methodName: 'applyBackendIds',
                 args: [mappings, backendIdOptions]
@@ -126,6 +161,10 @@ describe('AMB table CRUD facade methods', () => {
             'getChanges',
             'getStateReport',
             'getSavePayload',
+            'addRow',
+            'updateRow',
+            'deleteRow',
+            'rollbackRow',
             'applyBackendIds',
             'markRowSaved',
             'markRowsSaved',
@@ -163,5 +202,18 @@ describe('AMB table CRUD facade methods', () => {
                     expect(mock).not.toHaveBeenCalled();
                 });
         });
+
+        Object.values(crud).forEach(mock => mock.mockClear());
+
+        methods.addRow(rowData, true, 12);
+
+        expect(crud.addRow).toHaveBeenCalledOnce();
+        expect(crud.addRow.mock.calls[0]).toEqual([rowData]);
+        expect(crud.addRow.mock.calls[0][0]).toBe(rowData);
+        Object.entries(crud)
+            .filter(([name]) => name !== 'addRow')
+            .forEach(([, mock]) => {
+                expect(mock).not.toHaveBeenCalled();
+            });
     });
 });

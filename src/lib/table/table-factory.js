@@ -747,6 +747,10 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getChanges - Read changes currently classified by the AMB CRUD lifecycle.
  * @property {Function} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
  * @property {Function} getSavePayload - Generate the AMB save payload using the supported payload options.
+ * @property {Function} addRow - Add a row through the AMB lifecycle rather than directly through the engine.
+ * @property {Function} updateRow - Patch a row through AMB tracking and validation rather than directly through the engine.
+ * @property {Function} deleteRow - Delete or mark one row deleted according to the AMB lifecycle.
+ * @property {Function} rollbackRow - Restore or remove one row according to its AMB lifecycle state.
  * @property {Function} applyBackendIds - Reconcile temporary and backend ids without sending data to the backend.
  * @property {Function} markRowSaved - Confirm one row as saved without sending data to the backend.
  * @property {Function} markRowsSaved - Confirm an explicit row list as saved without sending data to the backend.
@@ -915,7 +919,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * backend/server-side behavior.
  * When pagination is enabled, AMB Grid sets the underlying engine's
  * `paginationAddRow` to `'table'` unless explicitly provided, so
- * `crud.addRow(...)` appends to the whole grid, uses the underlying engine row
+ * `grid.addRow(...)` appends to the whole grid, uses the underlying engine row
  * component to open the page containing the new row when possible, and attempts
  * to focus the first editable visible data cell. Action/delete columns are not
  * candidates for automatic focus.

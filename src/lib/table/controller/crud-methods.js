@@ -80,6 +80,75 @@ export const createCrudMethods = ({ crud }) => ({
     },
 
     /**
+     * Adds a row managed by the AMB CRUD lifecycle.
+     *
+     * `CrudHelper` assigns the new state and temporary identifier, adds the
+     * technical fields, and attempts to reveal and focus the new row. Data is
+     * forwarded unchanged and no request is sent to the backend. The flat API
+     * intentionally does not support the engine's positioning arguments; use
+     * `grid.table.addRow(...)` only for advanced direct engine access, which
+     * can bypass AMB tracking.
+     *
+     * @param {object} data - Row data forwarded unchanged.
+     * @returns {object|Promise<object>} Row Component or Promise returned
+     *   directly by `CrudHelper`.
+     */
+    addRow(data) {
+        return crud.addRow(data);
+    },
+
+    /**
+     * Applies a partial patch through the AMB CRUD lifecycle.
+     *
+     * The identifier can be a backend id or `_ambTempId`. `CrudHelper` updates
+     * modification tracking and revalidates each patched field, while deleted
+     * rows are not updated. This AMB-aware method intentionally overrides the
+     * similarly named engine operation. `grid.table.updateRow(...)` is advanced
+     * direct access and can bypass AMB lifecycle tracking.
+     *
+     * @param {*} identifier - Backend id or AMB temporary row id.
+     * @param {object} patch - Partial row data forwarded unchanged.
+     * @returns {object|null} Row Component, or `null` when it cannot be updated.
+     */
+    updateRow(identifier, patch) {
+        return crud.updateRowFields(
+            identifier,
+            patch
+        );
+    },
+
+    /**
+     * Applies a local deletion through the AMB CRUD lifecycle.
+     *
+     * A new row is physically removed; a persisted row is cleared of errors
+     * and markers and remains tracked as `deleted` until backend confirmation
+     * through a save-confirmation method. This method accepts one backend id or
+     * `_ambTempId`, sends no backend request, and intentionally overrides the
+     * engine's similarly named operation.
+     *
+     * @param {*} identifier - One backend id or AMB temporary row id.
+     * @returns {boolean} Boolean returned directly by `CrudHelper`.
+     */
+    deleteRow(identifier) {
+        return crud.deleteRow(identifier);
+    },
+
+    /**
+     * Rolls back the local CRUD changes for one row.
+     *
+     * A new row is removed, while modified or deleted rows are restored.
+     * Snapshot data, lookup metadata, errors, markers and clean state remain
+     * owned by `CrudHelper`. The identifier is forwarded unchanged and this
+     * method sends no request to the backend.
+     *
+     * @param {*} identifier - Backend id or AMB temporary row id.
+     * @returns {boolean} Boolean returned directly by `CrudHelper`.
+     */
+    rollbackRow(identifier) {
+        return crud.rollbackRow(identifier);
+    },
+
+    /**
      * Reconciles AMB temporary row ids with ids assigned by the backend.
      *
      * Mappings and options are forwarded unchanged to `CrudHelper`, which owns
