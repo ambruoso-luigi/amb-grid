@@ -741,7 +741,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} activeSheet - Make a spreadsheet sheet active.
  * @property {Function} removeSheet - Remove a spreadsheet sheet.
  * @property {Function} clearCellEdited - Clear native edited markers from cells.
+ * @property {Function} clearCellEditedMarker - Clear the native edited marker of one AMB-resolved cell without changing CRUD state.
  * @property {Function} clearCellValidation - Clear native validation markers from cells.
+ * @property {Function} clearCellValidationMarker - Clear the native validation marker of one AMB-resolved cell without clearing AMB errors.
  * @property {Function} getEditedCells - Return cells marked as edited by the grid.
  * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
  * @property {Function} isCellEdited - Read a native edited marker independently from CRUD state and save payloads.

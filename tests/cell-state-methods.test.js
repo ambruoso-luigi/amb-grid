@@ -51,7 +51,9 @@ describe('AMB table controller cell-state reading method group', () => {
 
         expect(Object.keys(methods).sort()).toEqual([
             'clearCellEdited',
+            'clearCellEditedMarker',
             'clearCellValidation',
+            'clearCellValidationMarker',
             'getEditedCells',
             'getInvalidCells',
             'isCellEdited',
@@ -60,7 +62,7 @@ describe('AMB table controller cell-state reading method group', () => {
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
 
-    test('reads managed cell runtime markers without mutating or validating', () => {
+    test('reads and clears managed cell runtime markers without AMB mutations', () => {
         const rowIdentifier = { _ambTempId: 'temp-1' };
         const column = { field: 'name' };
         const failedValidators = [{ type: 'required' }];
@@ -98,6 +100,8 @@ describe('AMB table controller cell-state reading method group', () => {
                 .mockReturnValueOnce(invalidCell)
                 .mockReturnValueOnce(null)
                 .mockReturnValueOnce(cellWithoutStateMethod)
+                .mockReturnValueOnce(editedCell)
+                .mockReturnValueOnce(validCell)
         };
         const methods = createCellStateMethods({
             table: {},
@@ -111,7 +115,21 @@ describe('AMB table controller cell-state reading method group', () => {
         expect(methods.isCellEdited(rowIdentifier, column)).toBe(false);
         expect(methods.isCellValid(rowIdentifier, column)).toBe(false);
 
-        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(6);
+        expect(
+            methods.clearCellEditedMarker(
+                rowIdentifier,
+                column
+            )
+        ).toBe(true);
+
+        expect(
+            methods.clearCellValidationMarker(
+                rowIdentifier,
+                column
+            )
+        ).toBe(true);
+
+        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(8);
         rowMethods.getRowCell.mock.calls.forEach(([receivedRow, receivedColumn]) => {
             expect(receivedRow).toBe(rowIdentifier);
             expect(receivedColumn).toBe(column);
@@ -120,9 +138,25 @@ describe('AMB table controller cell-state reading method group', () => {
         expect(uneditedCell.isEdited).toHaveBeenCalledOnce();
         expect(validCell.isValid).toHaveBeenCalledOnce();
         expect(invalidCell.isValid).toHaveBeenCalledOnce();
-        Object.values(forbiddenCellMethods).forEach(method => {
-            expect(method).not.toHaveBeenCalled();
-        });
+        expect(
+            forbiddenCellMethods.clearEdited
+        ).toHaveBeenCalledOnce();
+
+        expect(
+            forbiddenCellMethods.clearValidation
+        ).toHaveBeenCalledOnce();
+
+        expect(
+            forbiddenCellMethods.validate
+        ).not.toHaveBeenCalled();
+
+        expect(
+            forbiddenCellMethods.edit
+        ).not.toHaveBeenCalled();
+
+        expect(
+            forbiddenCellMethods.cancelEdit
+        ).not.toHaveBeenCalled();
     });
 
     test('clearCellEdited delegates native edited marker cleanup without reading or mutating cells', () => {

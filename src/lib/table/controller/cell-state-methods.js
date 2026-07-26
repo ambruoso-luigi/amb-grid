@@ -1,19 +1,35 @@
-const readCellState = (rowMethods, rowIdentifier, column, methodName) => {
-    const cell = rowMethods?.getRowCell?.(rowIdentifier, column);
+const callCellState = (
+    rowMethods,
+    rowIdentifier,
+    column,
+    methodName,
+    normalize = value => value
+) => {
+    const cell = rowMethods?.getRowCell?.(
+        rowIdentifier,
+        column
+    );
 
-    if (!cell || typeof cell[methodName] !== 'function') return false;
+    if (
+        !cell
+        || typeof cell[methodName] !== 'function'
+    ) {
+        return false;
+    }
 
-    return cell[methodName]();
+    return normalize(
+        cell[methodName]()
+    );
 };
 
 /**
- * Creates the runtime cell-state reading methods exposed by the AMB Grid
+ * Creates the runtime cell-state methods exposed by the AMB Grid
  * controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
  * @param {object} context.rowMethods - AMB Grid row methods.
- * @returns {object} Cell-state reading methods for the flat controller API.
+ * @returns {object} Cell-state methods for the flat controller API.
  * @private
  * @internal
  */
@@ -38,6 +54,25 @@ export const createCellStateMethods = ({ table, rowMethods }) => ({
     },
 
     /**
+     * Resolves one Cell Component and clears only its native edited marker.
+     * This does not restore its value or change AMB Grid CRUD state or payload;
+     * returns `true` when delegated and `false` when unavailable.
+     *
+     * @param {*} rowIdentifier - AMB Grid row identifier.
+     * @param {*} column - Supported column lookup.
+     * @returns {boolean} Whether marker cleanup was delegated.
+     */
+    clearCellEditedMarker(rowIdentifier, column) {
+        return callCellState(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'clearEdited',
+            () => true
+        );
+    },
+
+    /**
      * Clears the grid's native validation marker from one or more cells.
      *
      * Pass a cell component, an array of cell components, or omit the argument
@@ -51,6 +86,25 @@ export const createCellStateMethods = ({ table, rowMethods }) => ({
      */
     clearCellValidation(...args) {
         return table.clearCellValidation(...args);
+    },
+
+    /**
+     * Clears only the native validation marker of one AMB-resolved cell.
+     * This does not run validation or clear AMB Grid errors; returns `true`
+     * when delegated and `false` when unavailable.
+     *
+     * @param {*} rowIdentifier - AMB Grid row identifier.
+     * @param {*} column - Supported column lookup.
+     * @returns {boolean} Whether marker cleanup was delegated.
+     */
+    clearCellValidationMarker(rowIdentifier, column) {
+        return callCellState(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'clearValidation',
+            () => true
+        );
     },
 
     /**
@@ -79,7 +133,7 @@ export const createCellStateMethods = ({ table, rowMethods }) => ({
      * @returns {boolean} `true` when edited; `false` when not edited or when the cell or operation is unavailable.
      */
     isCellEdited(rowIdentifier, column) {
-        return readCellState(
+        return callCellState(
             rowMethods,
             rowIdentifier,
             column,
@@ -120,7 +174,7 @@ export const createCellStateMethods = ({ table, rowMethods }) => ({
      * @returns {boolean|object[]} Native state result, failed validators by identity, or `false` when unavailable.
      */
     isCellValid(rowIdentifier, column) {
-        return readCellState(
+        return callCellState(
             rowMethods,
             rowIdentifier,
             column,
