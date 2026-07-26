@@ -292,6 +292,50 @@ export const createCellMethods = ({ rowMethods, crud }) => ({
     },
 
     /**
+     * Navigates to the previous editable cell from one managed Cell Component.
+     *
+     * The AMB Grid row methods resolve `rowIdentifier`, while `column` is
+     * forwarded as a supported column lookup. Navigation starts from the
+     * resolved Cell Component and looks for the previous editable cell,
+     * continuing to the last editable cell of the previous displayed row when
+     * available. The runtime engine manages focus, scrolling and any editor.
+     *
+     * Unlike the global `grid.navigatePrev()`, this operation has an explicit
+     * cell context. Its runtime boolean result is returned directly; `false`
+     * also covers an unavailable cell or operation. No data or AMB Grid CRUD
+     * state is modified directly.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} Runtime navigation result, or `false` when unavailable.
+     */
+    navigateCellPrev(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'navigatePrev');
+    },
+
+    /**
+     * Navigates to the next editable cell from one managed Cell Component.
+     *
+     * The AMB Grid row methods resolve `rowIdentifier`, while `column` is
+     * forwarded as a supported column lookup. Navigation starts from the
+     * resolved Cell Component and looks for the next editable cell, continuing
+     * to the first editable cell of the next displayed row when available. The
+     * runtime engine manages focus, scrolling and any editor.
+     *
+     * Unlike the global `grid.navigateNext()`, this operation has an explicit
+     * cell context. Its runtime boolean result is returned directly; `false`
+     * also covers an unavailable cell or operation. No data or AMB Grid CRUD
+     * state is modified directly.
+     *
+     * @param {*} rowIdentifier - Backend id, AMB temporary id, or supported row lookup.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {boolean} Runtime navigation result, or `false` when unavailable.
+     */
+    navigateCellNext(rowIdentifier, column) {
+        return readCell(rowMethods, rowIdentifier, column, 'navigateNext');
+    },
+
+    /**
      * Navigates left from one managed Cell Component.
      *
      * The AMB Grid row methods resolve `rowIdentifier`, while `column` is

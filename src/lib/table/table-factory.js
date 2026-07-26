@@ -800,6 +800,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} validateCell - Run native validation for one cell, distinct from AMB validation reports.
  * @property {Function} editCell - Attempt runtime editing with normal AMB editability checks, without replacing CRUD APIs.
  * @property {Function} cancelCellEdit - Cancel only the active runtime cell editor, without replacing CRUD APIs.
+ * @property {Function} navigateCellPrev - Navigate to the previous editable cell starting from the cell resolved through its row and column.
+ * @property {Function} navigateCellNext - Navigate to the next editable cell starting from the cell resolved through its row and column.
  * @property {Function} navigateCellLeft - Navigate left from the cell resolved through its row and column.
  * @property {Function} navigateCellRight - Navigate right from the cell resolved through its row and column.
  * @property {Function} navigateCellUp - Navigate upward from the cell resolved through its row and column.

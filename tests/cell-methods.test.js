@@ -24,6 +24,8 @@ describe('AMB table contextual cell methods', () => {
             validate: vi.fn(() => failedValidators),
             edit: vi.fn(),
             cancelEdit: vi.fn(),
+            navigatePrev: vi.fn(() => true),
+            navigateNext: vi.fn(() => false),
             navigateLeft: vi.fn(() => true),
             navigateRight: vi.fn(() => false),
             navigateUp: vi.fn(() => true),
@@ -51,7 +53,7 @@ describe('AMB table contextual cell methods', () => {
             crud
         });
 
-        expect(Object.keys(methods).sort()).toEqual(['cancelCellEdit', 'checkCellHeight', 'editCell', 'getCellColumn', 'getCellData', 'getCellElement', 'getCellField', 'getCellInitialValue', 'getCellOldValue', 'getCellRanges', 'getCellRow', 'getCellType', 'getCellValue', 'navigateCellDown', 'navigateCellLeft', 'navigateCellRight', 'navigateCellUp', 'restoreCellInitialValue', 'restoreCellOldValue', 'setCellValue', 'validateCell']);
+        expect(Object.keys(methods).sort()).toEqual(['cancelCellEdit', 'checkCellHeight', 'editCell', 'getCellColumn', 'getCellData', 'getCellElement', 'getCellField', 'getCellInitialValue', 'getCellOldValue', 'getCellRanges', 'getCellRow', 'getCellType', 'getCellValue', 'navigateCellDown', 'navigateCellLeft', 'navigateCellNext', 'navigateCellPrev', 'navigateCellRight', 'navigateCellUp', 'restoreCellInitialValue', 'restoreCellOldValue', 'setCellValue', 'validateCell']);
         expect(
             methods.setCellValue(
                 rowIdentifier,
@@ -83,6 +85,8 @@ describe('AMB table contextual cell methods', () => {
         expect(cell.cancelEdit).toHaveBeenCalledOnce();
         expect(cell.cancelEdit).toHaveBeenCalledWith();
         [
+            ['navigateCellPrev', 'navigatePrev', true],
+            ['navigateCellNext', 'navigateNext', false],
             ['navigateCellLeft', 'navigateLeft', true],
             ['navigateCellRight', 'navigateRight', false],
             ['navigateCellUp', 'navigateUp', true],
@@ -100,7 +104,7 @@ describe('AMB table contextual cell methods', () => {
         expect(cell.getData).toHaveBeenCalledWith(transform);
         expect(methods.getCellType(rowIdentifier, column)).toBe('amb-type');
         expect(methods.checkCellHeight(rowIdentifier, column)).toBe(true);
-        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(21);
+        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(23);
         rowMethods.getRowCell.mock.calls.forEach(call => expect(call).toEqual([rowIdentifier, column]));
         expect(
             mutableCell.getField
