@@ -6,6 +6,46 @@ const readCell = (rowMethods, rowIdentifier, column, methodName, args = [], norm
     return normalize(cell[methodName](...args));
 };
 
+const restoreCellValue = (
+    rowMethods,
+    crud,
+    rowIdentifier,
+    column,
+    valueMethodName
+) => {
+    const cell = rowMethods.getRowCell(
+        rowIdentifier,
+        column
+    );
+
+    if (
+        !cell
+        || typeof cell.getField !== 'function'
+        || typeof cell[valueMethodName] !== 'function'
+    ) {
+        return null;
+    }
+
+    const field = cell.getField();
+
+    if (
+        field === null
+        || field === undefined
+        || field === ''
+    ) {
+        return null;
+    }
+
+    const value = cell[valueMethodName]();
+
+    return crud.updateRowFields(
+        rowIdentifier,
+        {
+            [field]: value
+        }
+    );
+};
+
 /**
  * Creates contextual Cell Component methods exposed by the AMB Grid
  * controller.
@@ -96,6 +136,29 @@ export const createCellMethods = ({ rowMethods, crud }) => ({
     },
 
     /**
+     * Applies the previous runtime cell value through the AMB CRUD lifecycle.
+     *
+     * This does not call the native restore operation, preserving AMB tracking
+     * and validation.
+     *
+     * @param {*} rowIdentifier - Backend id or AMB temporary id.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {object|null} Updated Row Component, or `null`.
+     */
+    restoreCellOldValue(
+        rowIdentifier,
+        column
+    ) {
+        return restoreCellValue(
+            rowMethods,
+            crud,
+            rowIdentifier,
+            column,
+            'getOldValue'
+        );
+    },
+
+    /**
      * Returns the initial runtime value recorded by the Cell Component.
      *
      * This engine value is not guaranteed to equal AMB Grid application
@@ -108,6 +171,29 @@ export const createCellMethods = ({ rowMethods, crud }) => ({
      */
     getCellInitialValue(rowIdentifier, column) {
         return readCell(rowMethods, rowIdentifier, column, 'getInitialValue');
+    },
+
+    /**
+     * Applies the initial runtime cell value through the AMB CRUD lifecycle.
+     *
+     * The runtime initial value is not necessarily the CRUD snapshot, and this
+     * does not call the native restore operation.
+     *
+     * @param {*} rowIdentifier - Backend id or AMB temporary id.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @returns {object|null} Updated Row Component, or `null`.
+     */
+    restoreCellInitialValue(
+        rowIdentifier,
+        column
+    ) {
+        return restoreCellValue(
+            rowMethods,
+            crud,
+            rowIdentifier,
+            column,
+            'getInitialValue'
+        );
     },
 
     /**

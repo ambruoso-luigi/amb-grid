@@ -10,7 +10,11 @@ describe('AMB table contextual cell methods', () => {
         };
         const mutableCell = {
             getField: vi.fn(() => 'name'),
-            setValue: vi.fn()
+            getOldValue: vi.fn(() => 'Previous'),
+            getInitialValue: vi.fn(() => 'Initial'),
+            setValue: vi.fn(),
+            restoreOldValue: vi.fn(),
+            restoreInitialValue: vi.fn()
         };
         const cell = {
             getValue: vi.fn(() => 0),
@@ -35,6 +39,8 @@ describe('AMB table contextual cell methods', () => {
         const rowMethods = {
             getRowCell: vi.fn()
                 .mockReturnValueOnce(mutableCell)
+                .mockReturnValueOnce(mutableCell)
+                .mockReturnValueOnce(mutableCell)
                 .mockReturnValue(cell)
         };
         const crud = {
@@ -45,12 +51,24 @@ describe('AMB table contextual cell methods', () => {
             crud
         });
 
-        expect(Object.keys(methods).sort()).toEqual(['cancelCellEdit', 'checkCellHeight', 'editCell', 'getCellColumn', 'getCellData', 'getCellElement', 'getCellField', 'getCellInitialValue', 'getCellOldValue', 'getCellRanges', 'getCellRow', 'getCellType', 'getCellValue', 'navigateCellDown', 'navigateCellLeft', 'navigateCellRight', 'navigateCellUp', 'setCellValue', 'validateCell']);
+        expect(Object.keys(methods).sort()).toEqual(['cancelCellEdit', 'checkCellHeight', 'editCell', 'getCellColumn', 'getCellData', 'getCellElement', 'getCellField', 'getCellInitialValue', 'getCellOldValue', 'getCellRanges', 'getCellRow', 'getCellType', 'getCellValue', 'navigateCellDown', 'navigateCellLeft', 'navigateCellRight', 'navigateCellUp', 'restoreCellInitialValue', 'restoreCellOldValue', 'setCellValue', 'validateCell']);
         expect(
             methods.setCellValue(
                 rowIdentifier,
                 column,
                 'Alice'
+            )
+        ).toBe(updatedRow);
+        expect(
+            methods.restoreCellOldValue(
+                rowIdentifier,
+                column
+            )
+        ).toBe(updatedRow);
+        expect(
+            methods.restoreCellInitialValue(
+                rowIdentifier,
+                column
             )
         ).toBe(updatedRow);
         expect(methods.getCellValue(rowIdentifier, column)).toBe(0);
@@ -82,19 +100,39 @@ describe('AMB table contextual cell methods', () => {
         expect(cell.getData).toHaveBeenCalledWith(transform);
         expect(methods.getCellType(rowIdentifier, column)).toBe('amb-type');
         expect(methods.checkCellHeight(rowIdentifier, column)).toBe(true);
-        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(19);
+        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(21);
         rowMethods.getRowCell.mock.calls.forEach(call => expect(call).toEqual([rowIdentifier, column]));
         expect(
             mutableCell.getField
         ).toHaveBeenCalledWith();
         expect(
-            crud.updateRowFields
-        ).toHaveBeenCalledWith(
-            rowIdentifier,
-            {
-                name: 'Alice'
-            }
-        );
+            crud.updateRowFields.mock.calls
+        ).toEqual([
+            [
+                rowIdentifier,
+                {
+                    name: 'Alice'
+                }
+            ],
+            [
+                rowIdentifier,
+                {
+                    name: 'Previous'
+                }
+            ],
+            [
+                rowIdentifier,
+                {
+                    name: 'Initial'
+                }
+            ]
+        ]);
+        expect(
+            mutableCell.restoreOldValue
+        ).not.toHaveBeenCalled();
+        expect(
+            mutableCell.restoreInitialValue
+        ).not.toHaveBeenCalled();
         expect(
             mutableCell.setValue
         ).not.toHaveBeenCalled();
@@ -107,7 +145,19 @@ describe('AMB table contextual cell methods', () => {
                 'Missing'
             )
         ).toBe(null);
-        expect(crud.updateRowFields).toHaveBeenCalledOnce();
+        expect(crud.updateRowFields).toHaveBeenCalledTimes(3);
+        rowMethods.getRowCell.mockReturnValueOnce({
+            getField: vi.fn(() => 'name')
+        });
+        expect(
+            methods.restoreCellOldValue(
+                999,
+                'name'
+            )
+        ).toBe(null);
+        expect(
+            crud.updateRowFields
+        ).toHaveBeenCalledTimes(3);
         rowMethods.getRowCell.mockReturnValueOnce(false).mockReturnValueOnce({ getValue: 'not-a-function' });
         expect(methods.getCellRanges(1, 'name')).toBe(false);
         expect(methods.getCellRanges(1, 'name')).toBe(false);

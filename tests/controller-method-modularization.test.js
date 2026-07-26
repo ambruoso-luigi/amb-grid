@@ -306,11 +306,17 @@ describe('AMB table controller method modularization', () => {
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
         const cellMethodsPath = resolve(controllerDir, 'cell-methods.js');
         const cellSource = readFileSync(cellMethodsPath, 'utf8');
+        const cellMethodsWiring = [
+            'const cellMethods = createCellMethods({',
+            '        rowMethods,',
+            '        crud',
+            '    });'
+        ].join('\n');
         const inline = [/^\s*getCellValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellOldValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellInitialValue\(rowIdentifier,\s*column\) \{/m, /^\s*getCellElement\(rowIdentifier,\s*column\) \{/m, /^\s*getCellField\(rowIdentifier,\s*column\) \{/m, /^\s*getCellColumn\(rowIdentifier,\s*column\) \{/m, /^\s*getCellRow\(rowIdentifier,\s*column\) \{/m, /^\s*getCellData\(rowIdentifier,\s*column,\s*transform\) \{/m, /^\s*getCellType\(rowIdentifier,\s*column\) \{/m, /^\s*checkCellHeight\(rowIdentifier,\s*column\) \{/m];
 
         expect(source).toContain("import { createCellMethods } from './controller/cell-methods.js';");
-        expect(source.indexOf('const rowMethods = createRowMethods({ table, crud });')).toBeLessThan(source.indexOf('const cellMethods = createCellMethods({ rowMethods });'));
-        expect(source).toContain('const cellMethods = createCellMethods({ rowMethods });');
+        expect(source.indexOf('const rowMethods = createRowMethods({ table, crud });')).toBeLessThan(source.indexOf(cellMethodsWiring));
+        expect(source).toContain(cellMethodsWiring);
         expect(composition[1]).toContain('rowMethods');
         expect(composition[1]).toContain('cellMethods');
         expect(composition[1]).toContain('validationMethods');

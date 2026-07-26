@@ -792,7 +792,9 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getCellValue - Return the runtime value for one cell.
  * @property {Function} setCellValue - Update one resolved cell through AMB CRUD tracking and validation.
  * @property {Function} getCellOldValue - Return the previous runtime value for one cell.
+ * @property {Function} restoreCellOldValue - Apply the previous runtime cell value through AMB CRUD tracking.
  * @property {Function} getCellInitialValue - Return the initial runtime value for one cell.
+ * @property {Function} restoreCellInitialValue - Apply the initial runtime cell value through AMB CRUD tracking.
  * @property {Function} getCellRanges - Return selected Range Components overlapping one cell.
  * @property {Function} validateCell - Run native validation for one cell, distinct from AMB validation reports.
  * @property {Function} editCell - Attempt runtime editing with normal AMB editability checks, without replacing CRUD APIs.
@@ -1091,7 +1093,6 @@ export function createTable(options = {}) {
     const crudMethods = createCrudMethods({ crud });
     const rowMethods = createRowMethods({ table, crud });
     const cellStateMethods = createCellStateMethods({ table, rowMethods });
-    // The former row-only wiring was: const cellMethods = createCellMethods({ rowMethods });
     const cellMethods = createCellMethods({
         rowMethods,
         crud
