@@ -4,11 +4,13 @@ import { createCellMethods } from '../src/lib/table/controller/cell-methods.js';
 describe('AMB table contextual cell methods', () => {
     test('exposes flat cell methods and delegates through rowMethods.getRowCell', () => {
         const rowIdentifier = { id: 1 }, column = { field: 'name' }, element = {}, columnComponent = {}, initial = { value: null }, ranges = [], rowComponent = {}, data = {}, transform = true;
+        const failedValidators = [{ type: 'required' }];
         const cell = {
             getValue: vi.fn(() => 0),
             getOldValue: vi.fn(() => false),
             getInitialValue: vi.fn(() => initial),
             getRanges: vi.fn(() => ranges),
+            validate: vi.fn(() => failedValidators),
             edit: vi.fn(),
             cancelEdit: vi.fn(),
             navigateLeft: vi.fn(() => true),
@@ -26,11 +28,12 @@ describe('AMB table contextual cell methods', () => {
         const rowMethods = { getRowCell: vi.fn(() => cell) };
         const methods = createCellMethods({ rowMethods });
 
-        expect(Object.keys(methods).sort()).toEqual(['cancelCellEdit', 'checkCellHeight', 'editCell', 'getCellColumn', 'getCellData', 'getCellElement', 'getCellField', 'getCellInitialValue', 'getCellOldValue', 'getCellRanges', 'getCellRow', 'getCellType', 'getCellValue', 'navigateCellDown', 'navigateCellLeft', 'navigateCellRight', 'navigateCellUp']);
+        expect(Object.keys(methods).sort()).toEqual(['cancelCellEdit', 'checkCellHeight', 'editCell', 'getCellColumn', 'getCellData', 'getCellElement', 'getCellField', 'getCellInitialValue', 'getCellOldValue', 'getCellRanges', 'getCellRow', 'getCellType', 'getCellValue', 'navigateCellDown', 'navigateCellLeft', 'navigateCellRight', 'navigateCellUp', 'validateCell']);
         expect(methods.getCellValue(rowIdentifier, column)).toBe(0);
         expect(methods.getCellOldValue(rowIdentifier, column)).toBe(false);
         expect(methods.getCellInitialValue(rowIdentifier, column)).toBe(initial);
         expect(methods.getCellRanges(rowIdentifier, column)).toBe(ranges);
+        expect(methods.validateCell(rowIdentifier, column)).toBe(failedValidators);
         expect(methods.editCell(rowIdentifier, column, true)).toBe(true);
         expect(cell.edit).toHaveBeenCalledOnce();
         expect(cell.edit).toHaveBeenCalledWith();
@@ -55,7 +58,7 @@ describe('AMB table contextual cell methods', () => {
         expect(cell.getData).toHaveBeenCalledWith(transform);
         expect(methods.getCellType(rowIdentifier, column)).toBe('amb-type');
         expect(methods.checkCellHeight(rowIdentifier, column)).toBe(true);
-        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(17);
+        expect(rowMethods.getRowCell).toHaveBeenCalledTimes(18);
         rowMethods.getRowCell.mock.calls.forEach(call => expect(call).toEqual([rowIdentifier, column]));
         Object.values(cell).forEach(method => expect(method).toHaveBeenCalledOnce());
         rowMethods.getRowCell.mockReturnValueOnce(false).mockReturnValueOnce({ getValue: 'not-a-function' });

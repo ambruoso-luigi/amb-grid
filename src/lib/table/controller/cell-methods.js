@@ -7,12 +7,12 @@ const readCell = (rowMethods, rowIdentifier, column, methodName, args = [], norm
 };
 
 /**
- * Creates contextual Cell Component reading methods exposed by the AMB Grid
+ * Creates contextual Cell Component methods exposed by the AMB Grid
  * controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.rowMethods - Row methods used to resolve cells.
- * @returns {object} Cell reading methods for the flat controller API.
+ * @returns {object} Cell methods for the flat controller API.
  * @private
  * @internal
  */
@@ -87,6 +87,25 @@ export const createCellMethods = ({ rowMethods }) => ({
             rowIdentifier,
             column,
             'getRanges'
+        );
+    },
+
+    /**
+     * Runs native runtime validation for one resolved cell.
+     *
+     * Unlike `isCellValid`, this starts a new native validation. The result is
+     * separate from AMB Grid validation reports and CRUD application errors.
+     *
+     * @param {*} rowIdentifier - AMB Grid row identifier or supported lookup.
+     * @param {*} column - Supported column lookup.
+     * @returns {true|object[]|false} Native validation result, or `false`.
+     */
+    validateCell(rowIdentifier, column) {
+        return readCell(
+            rowMethods,
+            rowIdentifier,
+            column,
+            'validate'
         );
     },
 
