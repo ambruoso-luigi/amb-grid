@@ -12,11 +12,12 @@ const readCell = (rowMethods, rowIdentifier, column, methodName, args = [], norm
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.rowMethods - Row methods used to resolve cells.
+ * @param {object} context.crud - AMB Grid CRUD layer.
  * @returns {object} Cell methods for the flat controller API.
  * @private
  * @internal
  */
-export const createCellMethods = ({ rowMethods }) => ({
+export const createCellMethods = ({ rowMethods, crud }) => ({
     /**
      * Returns the current runtime value for one Cell Component.
      *
@@ -31,6 +32,52 @@ export const createCellMethods = ({ rowMethods }) => ({
      */
     getCellValue(rowIdentifier, column) {
         return readCell(rowMethods, rowIdentifier, column, 'getValue');
+    },
+
+    /**
+     * Resolves a cell from an AMB row identifier and column lookup, reads its
+     * runtime field and delegates a single-field update to the CRUD lifecycle.
+     * This preserves AMB tracking, validation and deleted-row guards without
+     * calling `cell.setValue()` directly, returning the Row Component or `null`.
+     *
+     * @param {*} rowIdentifier - Backend id or AMB temporary id.
+     * @param {*} column - Column lookup forwarded to the row component.
+     * @param {*} value - Value applied through AMB CRUD.
+     * @returns {object|null} Updated Row Component, or `null`.
+     */
+    setCellValue(
+        rowIdentifier,
+        column,
+        value
+    ) {
+        const cell = rowMethods.getRowCell(
+            rowIdentifier,
+            column
+        );
+
+        if (
+            !cell
+            || typeof cell.getField !== 'function'
+        ) {
+            return null;
+        }
+
+        const field = cell.getField();
+
+        if (
+            field === null
+            || field === undefined
+            || field === ''
+        ) {
+            return null;
+        }
+
+        return crud.updateRowFields(
+            rowIdentifier,
+            {
+                [field]: value
+            }
+        );
     },
 
     /**

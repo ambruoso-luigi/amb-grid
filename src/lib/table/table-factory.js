@@ -790,6 +790,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getRowRanges - Return selected Range Components overlapping one row.
  * @property {Function} getRowCell - Return one Cell Component from a row.
  * @property {Function} getCellValue - Return the runtime value for one cell.
+ * @property {Function} setCellValue - Update one resolved cell through AMB CRUD tracking and validation.
  * @property {Function} getCellOldValue - Return the previous runtime value for one cell.
  * @property {Function} getCellInitialValue - Return the initial runtime value for one cell.
  * @property {Function} getCellRanges - Return selected Range Components overlapping one cell.
@@ -1090,7 +1091,11 @@ export function createTable(options = {}) {
     const crudMethods = createCrudMethods({ crud });
     const rowMethods = createRowMethods({ table, crud });
     const cellStateMethods = createCellStateMethods({ table, rowMethods });
-    const cellMethods = createCellMethods({ rowMethods });
+    // The former row-only wiring was: const cellMethods = createCellMethods({ rowMethods });
+    const cellMethods = createCellMethods({
+        rowMethods,
+        crud
+    });
     const popupMethods = createPopupMethods({
         rowMethods,
         columnMethods
