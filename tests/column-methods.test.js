@@ -29,7 +29,8 @@ describe('AMB table controller column method group', () => {
             'scrollToColumn',
             'setColumnWidth',
             'showColumn',
-            'toggleColumn'
+            'toggleColumn',
+            'validateColumnCells'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -106,6 +107,57 @@ describe('AMB table controller column method group', () => {
         expect(methods.setColumnWidth('missing-method', 80)).toBe(false);
         expect(table.getColumn).toHaveBeenCalledTimes(4);
         expect(setWidth).toHaveBeenCalledTimes(2);
+    });
+
+    test('validates native cells for one resolved column', () => {
+        const lookup = {
+            field: 'email'
+        };
+        const firstInvalidCell = {
+            component: 'first-invalid-cell'
+        };
+        const secondInvalidCell = {
+            component: 'second-invalid-cell'
+        };
+        const failedCells = [
+            firstInvalidCell,
+            secondInvalidCell
+        ];
+        const validate = vi.fn()
+            .mockReturnValueOnce(failedCells)
+            .mockReturnValueOnce(true);
+        const column = {
+            validate
+        };
+        const table = {
+            getColumn: vi.fn()
+                .mockReturnValueOnce(column)
+                .mockReturnValueOnce(column)
+                .mockReturnValueOnce(false)
+                .mockReturnValueOnce({}),
+            validate: vi.fn(),
+            getInvalidCells: vi.fn(),
+            clearCellValidation: vi.fn()
+        };
+        const methods = createColumnMethods({ table });
+
+        expect(methods.validateColumnCells(lookup)).toBe(failedCells);
+        expect(failedCells[0]).toBe(firstInvalidCell);
+        expect(failedCells[1]).toBe(secondInvalidCell);
+        expect(table.getColumn.mock.calls[0][0]).toBe(lookup);
+        expect(validate).toHaveBeenNthCalledWith(1);
+
+        expect(methods.validateColumnCells(lookup)).toBe(true);
+        expect(table.getColumn.mock.calls[1][0]).toBe(lookup);
+        expect(validate).toHaveBeenNthCalledWith(2);
+
+        expect(methods.validateColumnCells('missing')).toBe(false);
+        expect(methods.validateColumnCells('missing-method')).toBe(false);
+        expect(table.getColumn).toHaveBeenCalledTimes(4);
+        expect(validate).toHaveBeenCalledTimes(2);
+        expect(table.validate).not.toHaveBeenCalled();
+        expect(table.getInvalidCells).not.toHaveBeenCalled();
+        expect(table.clearCellValidation).not.toHaveBeenCalled();
     });
 
     test('returns current column definitions without cloning or filtering AMB-managed columns', () => {

@@ -658,6 +658,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getColumnElement - Return the runtime DOM element for one column.
  * @property {Function} getColumnField - Return the runtime field for one column.
  * @property {Function} getColumnCells - Return runtime Cell Components for one column.
+ * @property {Function} validateColumnCells - Run native validation for one column's cells and return true or the failed Cell Components, not an AMB report.
  * @property {Function} getColumnRanges - Return selected Range Components overlapping one column.
  * @property {Function} isColumnVisible - Return the runtime visibility state for one column.
  * @property {Function} getColumnWidth - Return the runtime width for one column.

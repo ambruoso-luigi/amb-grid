@@ -125,6 +125,36 @@ export const createColumnMethods = ({ table }) => ({
     },
 
     /**
+     * Runs native runtime validation for every cell in one resolved column.
+     *
+     * This performs a new validation using validators from the native column
+     * definition; it is not a read of previously calculated state. `true`
+     * means every cell is valid, while an array contains the failed native Cell
+     * Components. The array and components are returned without copies.
+     *
+     * Native column validation is distinct from `grid.validate()`,
+     * `grid.validateRow(...)` and `grid.validateChanges()`: it does not produce
+     * an AMB validation report or automatically register CRUD application
+     * errors. Row data and lifecycle state are not directly modified. `false`
+     * means that the column or validation operation is unavailable.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @returns {true|object[]|false} Native validation result, or `false`.
+     */
+    validateColumnCells(columnLookup) {
+        const column = table.getColumn(columnLookup);
+
+        if (
+            !column
+            || typeof column.validate !== 'function'
+        ) {
+            return false;
+        }
+
+        return column.validate();
+    },
+
+    /**
      * Returns the selected Range Components that overlap one column.
      *
      * The `columnLookup` value is forwarded unchanged to the normal supported
