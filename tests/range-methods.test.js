@@ -55,6 +55,7 @@ describe('AMB table controller cell-range reading method group', () => {
 
         expect(Object.keys(methods).sort()).toEqual([
             'addRange',
+            'clearRangeValues',
             'getRangeBottomEdge',
             'getRangeBounds',
             'getRangeCells',
@@ -74,6 +75,100 @@ describe('AMB table controller cell-range reading method group', () => {
             'setRangeStartBound'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('clears range values through grouped AMB CRUD patches', () => {
+        const firstRow = {
+            getData: vi.fn(() => ({
+                id: 10
+            }))
+        };
+        const secondRow = {
+            getData: vi.fn(() => ({
+                id: null,
+                _ambTempId: 'amb-temp-2'
+            }))
+        };
+        const createCell = (row, field) => ({
+            getRow: vi.fn(() => row),
+            getField: vi.fn(() => field),
+            setValue: vi.fn()
+        });
+        const cells = [
+            createCell(firstRow, 'name'),
+            createCell(firstRow, 'age'),
+            createCell(firstRow, '_state'),
+            createCell(secondRow, 'name')
+        ];
+        const range = {
+            getCells: vi.fn(() => cells),
+            clearValues: vi.fn()
+        };
+        const firstUpdatedRow = {
+            component: 'first-updated'
+        };
+        const secondUpdatedRow = {
+            component: 'second-updated'
+        };
+        const crud = {
+            options: {
+                idField: 'id',
+                tempIdField: '_ambTempId',
+                stateField: '_state',
+                originalDataField: '_originalData',
+                rowNumberField: '_ambRowNumber',
+                rowNumbering: {
+                    field: '_ambRowNumber'
+                }
+            },
+            updateRowFields: vi.fn()
+                .mockReturnValueOnce(firstUpdatedRow)
+                .mockReturnValueOnce(secondUpdatedRow)
+        };
+        const table = {
+            options: {
+                selectableRangeClearCellsValue: null
+            }
+        };
+        const methods = createRangeMethods({
+            table,
+            crud
+        });
+
+        expect(
+            methods.clearRangeValues(range)
+        ).toEqual([
+            firstUpdatedRow,
+            secondUpdatedRow
+        ]);
+
+        expect(
+            crud.updateRowFields.mock.calls
+        ).toEqual([
+            [
+                10,
+                {
+                    name: null,
+                    age: null
+                }
+            ],
+            [
+                'amb-temp-2',
+                {
+                    name: null
+                }
+            ]
+        ]);
+
+        expect(range.clearValues).not.toHaveBeenCalled();
+
+        cells.forEach(cell => {
+            expect(cell.setValue).not.toHaveBeenCalled();
+        });
+
+        expect(
+            methods.clearRangeValues({})
+        ).toBe(false);
     });
 
     test('range component reads delegate once without arguments and preserve runtime results', () => {

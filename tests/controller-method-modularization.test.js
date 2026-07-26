@@ -607,7 +607,7 @@ describe('AMB table controller method modularization', () => {
         ];
 
         expect(source).toContain("import { createRangeMethods } from './controller/range-methods.js';");
-        expect(source).toContain('const rangeMethods = createRangeMethods({ table });');
+        expect(source).toMatch(/const rangeMethods = createRangeMethods\(\{\s*table,\s*crud\s*\}\);/);
         expect(composition).not.toBeNull();
         expect(composition[1]).toContain('selectionMethods');
         expect(composition[1]).toContain('rangeMethods');
@@ -624,7 +624,7 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('cell-range-methods.js');
         expect(controllerModules).not.toContain('range-selection-methods.js');
         expect(controllerModules).not.toContain('selected-range-methods.js');
-        expect(rangeSource).toMatch(/createRangeMethods = \(\{ table \}\) => \(\{/);
+        expect(rangeSource).toMatch(/createRangeMethods = \(\{\s*table,\s*crud\s*\}\) => \(\{/);
         expect(rangeSource).toMatch(/addRange\(\.\.\.args\) \{\s*return table\.addRange\(\.\.\.args\);/);
         expect(rangeSource).toMatch(/getRanges\(\) \{\s*return table\.getRanges\(\);/);
         expect(rangeSource).toMatch(/getRangesData\(\) \{\s*return table\.getRangesData\(\);/);
@@ -649,10 +649,8 @@ describe('AMB table controller method modularization', () => {
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getSelectedData\(/);
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])selectRow\(/);
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])deselectRow\(/);
-        expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getData\(/);
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getRows\(/);
         expect(rangeImplementationSource).not.toMatch(/(^|[^A-Za-z])getColumns\(/);
-        expect(rangeImplementationSource).not.toMatch(/createRangeMethods = \(\{[^}]*crud/);
         expect(rangeImplementationSource).not.toMatch(/createRangeMethods = \(\{[^}]*searchController/);
     });
 

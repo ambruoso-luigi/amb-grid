@@ -1,3 +1,52 @@
+const hasIdentifierValue = value => {
+    return value !== null
+        && value !== undefined
+        && value !== '';
+};
+
+const getCrudRowIdentifier = (
+    crud,
+    row
+) => {
+    if (
+        !crud
+        || !crud.options
+        || !row
+        || typeof row.getData !== 'function'
+    ) {
+        return null;
+    }
+
+    const data = row.getData();
+    const id = data[crud.options.idField];
+
+    if (hasIdentifierValue(id)) {
+        return id;
+    }
+
+    const tempId = data[crud.options.tempIdField];
+
+    return hasIdentifierValue(tempId)
+        ? tempId
+        : null;
+};
+
+const getProtectedCrudFields = crud => {
+    if (!crud || !crud.options) {
+        return new Set();
+    }
+
+    return new Set([
+        crud.options.idField,
+        crud.options.tempIdField,
+        crud.options.stateField,
+        crud.options.originalDataField,
+        crud.options.rowNumberField,
+        crud.options.rowNumbering
+            && crud.options.rowNumbering.field
+    ].filter(Boolean));
+};
+
 const readRange = (range, methodName) => {
     if (!range) return false;
 
@@ -22,11 +71,15 @@ const runRangeAction = (range, methodName, args = []) => {
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
+ * @param {object} context.crud - AMB Grid CRUD layer used for data mutations.
  * @returns {object} Cell-range methods for the flat controller API.
  * @private
  * @internal
  */
-export const createRangeMethods = ({ table }) => ({
+export const createRangeMethods = ({
+    table,
+    crud
+}) => ({
     /**
      * Adds a selected cell range between two cell components.
      *
@@ -106,6 +159,92 @@ export const createRangeMethods = ({ table }) => ({
      */
     getRangeData(range) {
         return readRange(range, 'getData');
+    },
+
+    /**
+     * Clears application fields in a Range Component obtained through AMB Grid.
+     *
+     * Cells are read with `getCells` and grouped into one patch per row. The
+     * configured `selectableRangeClearCellsValue`, or `undefined` by default,
+     * is applied through `crud.updateRowFields`; technical AMB fields are
+     * excluded. This avoids native range clearing and preserves the AMB CRUD
+     * lifecycle. Advanced `range.clearValues()` remains available on Range
+     * Components but can bypass AMB tracking.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @returns {object[]|false} Updated Row Components, or `false` when unavailable.
+     */
+    clearRangeValues(range) {
+        if (
+            !range
+            || typeof range.getCells !== 'function'
+        ) {
+            return false;
+        }
+
+        const cells = range.getCells();
+
+        if (!Array.isArray(cells)) {
+            return false;
+        }
+
+        const clearValue = table
+            && table.options
+            ? table.options.selectableRangeClearCellsValue
+            : undefined;
+        const protectedFields = getProtectedCrudFields(
+            crud
+        );
+        const patches = new Map();
+
+        cells.forEach(cell => {
+            if (
+                !cell
+                || typeof cell.getRow !== 'function'
+                || typeof cell.getField !== 'function'
+            ) {
+                return;
+            }
+
+            const row = cell.getRow();
+            const identifier = getCrudRowIdentifier(
+                crud,
+                row
+            );
+            const field = cell.getField();
+
+            if (
+                identifier === null
+                || identifier === undefined
+                || field === null
+                || field === undefined
+                || field === ''
+                || protectedFields.has(field)
+            ) {
+                return;
+            }
+
+            if (!patches.has(identifier)) {
+                patches.set(identifier, {});
+            }
+
+            patches.get(identifier)[field] = clearValue;
+        });
+
+        const updatedRows = [];
+
+        patches.forEach((patch, identifier) => {
+            const updatedRow = crud.updateRowFields(
+                identifier,
+                patch
+            );
+
+            if (updatedRow) {
+                updatedRows.push(updatedRow);
+            }
+        });
+
+        return updatedRows;
     },
 
     /**

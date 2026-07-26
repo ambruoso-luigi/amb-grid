@@ -688,6 +688,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getRangesData - Return data grouped by selected cell range.
  * @property {Function} getRangeElement - Return the runtime DOM element for one selected range.
  * @property {Function} getRangeData - Return runtime data for one selected range.
+ * @property {Function} clearRangeValues - Clear application fields in one selected range through grouped AMB CRUD updates.
  * @property {Function} getRangeCells - Return runtime Cell Components for one selected range.
  * @property {Function} getRangeStructuredCells - Return structured runtime Cell Components for one selected range.
  * @property {Function} getRangeRows - Return runtime Row Components for one selected range.
@@ -1104,7 +1105,10 @@ export function createTable(options = {}) {
     const paginationMethods = createPaginationMethods({ table, crud });
     const selectionMethods = createSelectionMethods({ table, crud });
     const validationMethods = createValidationMethods({ crud });
-    const rangeMethods = createRangeMethods({ table });
+    const rangeMethods = createRangeMethods({
+        table,
+        crud
+    });
     lifecycleResources.unsubscribeSelectionColumn = selectionColumnController && typeof selectionColumnController.bind === 'function'
         ? selectionColumnController.bind(table)
         : null;
