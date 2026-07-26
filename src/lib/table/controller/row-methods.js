@@ -239,6 +239,33 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Runs a new native validation of the cells in one resolved row.
+     *
+     * `true` means every cell is valid; an array contains the invalid native
+     * Cell Components. This is not the structured AMB result from
+     * `grid.validateRow(...)`. `false` means the row or operation is unavailable.
+     *
+     * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
+     * @returns {true|object[]|false} Native validation result, or `false`.
+     */
+    validateRowCells(identifier) {
+        const row = resolveRowComponent(
+            table,
+            crud,
+            identifier
+        );
+
+        if (
+            !row
+            || typeof row.validate !== 'function'
+        ) {
+            return false;
+        }
+
+        return row.validate();
+    },
+
+    /**
      * Returns the selected Range Components that overlap one managed row.
      *
      * The AMB Grid row identifier is resolved through the CRUD layer first, so

@@ -268,7 +268,8 @@ describe('AMB table controller row method group', () => {
             'scrollToRow',
             'searchRows',
             'toggleTreeRow',
-            'unfreezeRow'
+            'unfreezeRow',
+            'validateRowCells'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
         DATA_TREE_METHOD_NAMES.forEach(name => {
@@ -631,11 +632,20 @@ describe('AMB table controller row method group', () => {
         expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-cell');
     });
 
-    test('delegates runtime row refresh methods and returns false when unavailable', () => {
-        const row = createReadableRow();
+    test('delegates runtime row component operations and returns false when unavailable', () => {
+        const failedCells = [
+            { component: 'invalid-cell' }
+        ];
+        const row = createReadableRow({
+            validate: vi.fn(() => failedCells)
+        });
         const fallbackRow = createReadableRow();
-        const { table, methods } = createReadableHarness({
-            crudRows: new Map([[15, row], ['no-reformat', createReadableRow({ reformat: undefined })]]),
+        const { table, crud, methods } = createReadableHarness({
+            crudRows: new Map([
+                [15, row],
+                ['no-reformat', createReadableRow({ reformat: undefined })],
+                ['no-validate', createReadableRow({ validate: undefined })]
+            ]),
             fallbackRows: new Map([['fallback-row', fallbackRow]])
         });
 
@@ -646,6 +656,10 @@ describe('AMB table controller row method group', () => {
         expect(table.getRow).toHaveBeenCalledOnce();
         expect(methods.normalizeRowHeight('missing-row')).toBe(false);
         expect(methods.reformatRow('no-reformat')).toBe(false);
+        expect(methods.validateRowCells(15)).toBe(failedCells);
+        expect(row.validate).toHaveBeenCalledWith();
+        expect(methods.validateRowCells('no-validate')).toBe(false);
+        expect(crud.validateRow).not.toHaveBeenCalled();
     });
 
     test('resolves Data Tree row methods through AMB identifiers before engine fallback', () => {

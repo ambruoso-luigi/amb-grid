@@ -783,6 +783,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getPrevRow - Return the previous row component relative to one row, or `false`.
  * @property {Function} getRowElement - Return the runtime DOM element for one row.
  * @property {Function} getRowCells - Return the Cell Components for one row.
+ * @property {Function} validateRowCells - Run native cell validation for one row, distinct from the structured AMB `validateRow` result.
  * @property {Function} getRowRanges - Return selected Range Components overlapping one row.
  * @property {Function} getRowCell - Return one Cell Component from a row.
  * @property {Function} getCellValue - Return the runtime value for one cell.
