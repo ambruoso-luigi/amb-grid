@@ -698,6 +698,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getRangeLeftEdge - Return the runtime left edge value for one selected range.
  * @property {Function} getRangeRightEdge - Return the runtime right edge value for one selected range.
  * @property {Function} setRangeBounds - Update both runtime bounds of one selected range.
+ * @property {Function} setRangeStartBound - Update the runtime start bound of one selected range.
  * @property {Function} setRangeEndBound - Update the runtime end bound of one selected range.
  * @property {Function} removeRange - Remove one selected range from the runtime selection.
  * @property {Function} setSearchQuery - Set the global search query.

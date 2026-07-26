@@ -256,6 +256,26 @@ export const createRangeMethods = ({ table }) => ({
     },
 
     /**
+     * Updates the runtime start bound of one selected range.
+     *
+     * `range` must be a Range Component obtained through AMB Grid. `start` is
+     * forwarded unchanged to the internal engine. This operation modifies only
+     * the runtime range selection; row data and AMB Grid CRUD state are not
+     * modified.
+     *
+     * @param {object} range - Range Component obtained through AMB Grid.
+     * @param {*} start - Runtime start bound supported by the internal engine.
+     * @returns {boolean} `true` when the operation was delegated; `false` when the component or operation is unavailable.
+     */
+    setRangeStartBound(range, start) {
+        return runRangeAction(
+            range,
+            'setStartBound',
+            [start]
+        );
+    },
+
+    /**
      * Updates the runtime end bound of one selected range.
      *
      * `range` must be a Range Component obtained through AMB Grid. `end` is

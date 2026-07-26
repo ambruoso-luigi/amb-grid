@@ -70,7 +70,8 @@ describe('AMB table controller cell-range reading method group', () => {
             'getRangesData',
             'removeRange',
             'setRangeBounds',
-            'setRangeEndBound'
+            'setRangeEndBound',
+            'setRangeStartBound'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -136,6 +137,7 @@ describe('AMB table controller cell-range reading method group', () => {
         };
         const cases = [
             ['setRangeBounds', 'setBounds', [start, end]],
+            ['setRangeStartBound', 'setStartBound', [start]],
             ['setRangeEndBound', 'setEndBound', [end]],
             ['removeRange', 'remove', []]
         ];
