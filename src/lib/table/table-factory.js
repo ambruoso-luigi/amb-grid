@@ -822,6 +822,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} expandTreeRow - Expand one Data Tree row when Data Tree is enabled, returning `true` only when delegated.
  * @property {Function} collapseTreeRow - Collapse one Data Tree row when Data Tree is enabled, returning `true` only when delegated.
  * @property {Function} toggleTreeRow - Toggle one Data Tree row when Data Tree is enabled, returning `true` only when delegated.
+ * @property {Function} addTreeChild - Add a managed child row through the AMB Grid CRUD lifecycle.
  * @property {Function} getTreeParent - Return the Data Tree parent Row Component, or `false` when unavailable or at a root row.
  * @property {Function} getTreeChildren - Return the direct Data Tree child Row Components, or `false` when unavailable.
  * @property {Function} isTreeExpanded - Return the Data Tree runtime expanded state, or `false` when unavailable.

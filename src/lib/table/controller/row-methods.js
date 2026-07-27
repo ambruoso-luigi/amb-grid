@@ -444,6 +444,65 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Adds a new managed child row through the AMB Grid controller.
+     *
+     * Data Tree must be enabled. The public controller API resolves the parent
+     * managed row component from a backend id, `_ambTempId` or another
+     * supported lookup. The optional relative row is resolved in the same way
+     * and is accepted only when it belongs to the same parent. The position
+     * flag is forwarded unchanged to support placement above or below it.
+     *
+     * The child receives CRUD state `new`, an `_ambTempId` when it has no
+     * backend id, and the normal technical numbering. It is included in normal
+     * AMB Grid changes and CRUD payloads. AMB Grid delegates the operation
+     * internally to the underlying table engine and preserves its result.
+     * Adding the child does not alter the parent CRUD state or Data Tree runtime
+     * state, and does not expand, focus or select rows automatically. `false`
+     * is returned when the operation is unavailable or invalid.
+     *
+     * @param {*} parentIdentifier - AMB Grid parent identifier or supported row lookup value.
+     * @param {object} [data={}] - Application data for the new managed child row.
+     * @param {*} [addToTop] - Position flag forwarded without normalization.
+     * @param {*} [relativeToIdentifier] - Identifier for a relative row with the same parent.
+     * @returns {*|false} Result from the underlying table engine, or `false`.
+     */
+    addTreeChild(
+        parentIdentifier,
+        data = {},
+        addToTop,
+        relativeToIdentifier
+    ) {
+        if (!isDataTreeEnabled(table)) return false;
+
+        const parent = resolveRowComponent(
+            table,
+            crud,
+            parentIdentifier
+        );
+
+        if (!parent) return false;
+
+        let relativeTo;
+
+        if (relativeToIdentifier !== undefined) {
+            relativeTo = resolveRowComponent(
+                table,
+                crud,
+                relativeToIdentifier
+            );
+
+            if (!relativeTo) return false;
+        }
+
+        return crud.addTreeChild(
+            parent,
+            data,
+            addToTop,
+            relativeTo
+        );
+    },
+
+    /**
      * Expands one Data Tree row through the AMB Grid controller.
      *
      * The AMB Grid row identifier is resolved through the CRUD layer first, so
@@ -456,8 +515,7 @@ export const createRowMethods = ({ table, crud }) => ({
      * engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
      * not modified. The returned `true` means the operation was delegated, not
      * that the row had children or changed state. `false` is returned when Data
-     * Tree, the row or the operation is not available. `addTreeChild` is not
-     * part of this non-mutative Data Tree block.
+     * Tree, the row or the operation is not available.
      *
      * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
      * @returns {boolean} `true` when expansion is delegated, otherwise `false`.
@@ -484,8 +542,7 @@ export const createRowMethods = ({ table, crud }) => ({
      * engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
      * not modified. The returned `true` means the operation was delegated, not
      * that the row had children or changed state. `false` is returned when Data
-     * Tree, the row or the operation is not available. `addTreeChild` is not
-     * part of this non-mutative Data Tree block.
+     * Tree, the row or the operation is not available.
      *
      * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
      * @returns {boolean} `true` when collapse is delegated, otherwise `false`.
@@ -512,8 +569,7 @@ export const createRowMethods = ({ table, crud }) => ({
      * engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
      * not modified. The returned `true` means the operation was delegated, not
      * that the row had children or changed state. `false` is returned when Data
-     * Tree, the row or the operation is not available. `addTreeChild` is not
-     * part of this non-mutative Data Tree block.
+     * Tree, the row or the operation is not available.
      *
      * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
      * @returns {boolean} `true` when toggle is delegated, otherwise `false`.
@@ -540,8 +596,7 @@ export const createRowMethods = ({ table, crud }) => ({
      * state or AMB Grid save payloads. It returns the parent managed row
      * component by identity, or `false` when Data Tree, the row or the
      * operation is not available, or when the underlying table engine reports
-     * that the row is a root. `addTreeChild` is not part of this non-mutative
-     * Data Tree block.
+     * that the row is a root.
      *
      * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
      * @returns {object|false} Parent Row Component, or `false`.
@@ -567,8 +622,7 @@ export const createRowMethods = ({ table, crud }) => ({
      * state or AMB Grid save payloads. It returns the direct child managed row
      * components by identity, preserving the engine array, empty arrays and row
      * component references. `false` is returned when Data Tree, the row or the
-     * operation is not available. `addTreeChild` is not part of this
-     * non-mutative Data Tree block.
+     * operation is not available.
      *
      * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
      * @returns {object[]|false} Direct child Row Components, or `false`.
@@ -593,8 +647,7 @@ export const createRowMethods = ({ table, crud }) => ({
      * the underlying table engine and does not modify row data, snapshots, CRUD
      * state or AMB Grid save payloads. It preserves both `true` and `false`
      * returned by the engine. `false` is also returned when Data Tree, the row
-     * or the operation is not available. `addTreeChild` is not part of this
-     * non-mutative Data Tree block.
+     * or the operation is not available.
      *
      * @param {*} identifier - AMB Grid row identifier or supported row lookup value.
      * @returns {boolean} Current Data Tree expanded state, or `false` when unavailable.

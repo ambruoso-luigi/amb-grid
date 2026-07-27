@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { createRowMethods } from '../src/lib/table/controller/row-methods.js';
 
 const DATA_TREE_METHOD_NAMES = [
+    'addTreeChild',
     'expandTreeRow',
     'collapseTreeRow',
     'toggleTreeRow',
@@ -131,6 +132,7 @@ const createTreeHarness = ({
     const crud = {
         findRowByKey: vi.fn(identifier => crudRows.get(identifier) || null),
         updateRowFields: vi.fn(),
+        addTreeChild: vi.fn(),
         addRow: vi.fn(),
         deleteRow: vi.fn(),
         validateAll: vi.fn()
@@ -147,6 +149,7 @@ const createTreeHarness = ({
 
 const expectNoTreeSideEffects = (table, crud) => {
     expect(crud.updateRowFields).not.toHaveBeenCalled();
+    expect(crud.addTreeChild).not.toHaveBeenCalled();
     expect(crud.addRow).not.toHaveBeenCalled();
     expect(crud.deleteRow).not.toHaveBeenCalled();
     expect(crud.validateAll).not.toHaveBeenCalled();
@@ -243,6 +246,7 @@ describe('AMB table controller row method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'addTreeChild',
             'collapseTreeRow',
             'expandTreeRow',
             'freezeRow',
@@ -287,7 +291,6 @@ describe('AMB table controller row method group', () => {
         expect(methods.freezeRows).toBeUndefined();
         expect(methods.unfreezeRows).toBeUndefined();
         expect(methods.toggleRowFrozen).toBeUndefined();
-        expect(methods.addTreeChild).toBeUndefined();
         expect(methods.expandTreeRows).toBeUndefined();
         expect(methods.collapseTreeRows).toBeUndefined();
         expect(methods.toggleTreeRows).toBeUndefined();
@@ -777,6 +780,30 @@ describe('AMB table controller row method group', () => {
             expect(fallbackRow[rowMethod]).toHaveBeenCalledOnce();
             expectNoTreeSideEffects(table, crud);
         });
+
+        const parent = createTreeRow();
+        const relativeTo = createTreeRow({ parent });
+        const childData = { id: null, name: 'New child' };
+        const internalResult = { operation: 'delegated' };
+        const { table, crud, methods } = createTreeHarness({
+            crudRows: new Map([
+                [15, parent],
+                [0, relativeTo]
+            ])
+        });
+
+        crud.addTreeChild.mockReturnValue(internalResult);
+
+        expect(methods.addTreeChild(15, childData, false, 0)).toBe(internalResult);
+        expect(crud.findRowByKey.mock.calls.map(([identifier]) => identifier))
+            .toEqual([15, 0]);
+        expect(table.getRow).not.toHaveBeenCalled();
+        expect(crud.addTreeChild).toHaveBeenCalledWith(
+            parent,
+            childData,
+            false,
+            relativeTo
+        );
     });
 
     test('returns false for Data Tree methods when Data Tree is disabled without side effects', () => {

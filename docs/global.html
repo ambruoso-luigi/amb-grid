@@ -1900,6 +1900,311 @@ can bypass AMB tracking.
     
 
     
+    <h4 class="name" id="addTreeChild"><span class="type-signature"></span>addTreeChild<span class="signature">(parentIdentifier, data<span class="signature-attributes">opt</span>, addToTop<span class="signature-attributes">opt</span>, relativeToIdentifier<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {*|false}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adds a new managed child row through the AMB Grid controller.
+
+Data Tree must be enabled. The public controller API resolves the parent
+managed row component from a backend id, `_ambTempId` or another
+supported lookup. The optional relative row is resolved in the same way
+and is accepted only when it belongs to the same parent. The position
+flag is forwarded unchanged to support placement above or below it.
+
+The child receives CRUD state `new`, an `_ambTempId` when it has no
+backend id, and the normal technical numbering. It is included in normal
+AMB Grid changes and CRUD payloads. AMB Grid delegates the operation
+internally to the underlying table engine and preserves its result.
+Adding the child does not alter the parent CRUD state or Data Tree runtime
+state, and does not expand, focus or select rows automatically. `false`
+is returned when the operation is unavailable or invalid.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>parentIdentifier</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">AMB Grid parent identifier or supported row lookup value.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last">Application data for the new managed child row.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>addToTop</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Position flag forwarded without normalization.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>relativeToIdentifier</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Identifier for a relative row with the same parent.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line469">line 469</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Result from the underlying table engine, or `false`.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">*</span>
+|
+
+<span class="param-type">false</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="alert"><span class="type-signature"></span>alert<span class="signature">(content, style<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
@@ -6651,8 +6956,7 @@ changes only Data Tree runtime state managed by the underlying table
 engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
 not modified. The returned `true` means the operation was delegated, not
 that the row had children or changed state. `false` is returned when Data
-Tree, the row or the operation is not available. `addTreeChild` is not
-part of this non-mutative Data Tree block.
+Tree, the row or the operation is not available.
 </div>
 
 
@@ -6745,7 +7049,7 @@ part of this non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line493">line 493</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line550">line 550</a>
     </li></ul></dd>
     
 
@@ -10767,7 +11071,7 @@ candidates for automatic focus.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line1020">line 1020</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line1021">line 1021</a>
     </li></ul></dd>
     
 
@@ -12980,8 +13284,7 @@ changes only Data Tree runtime state managed by the underlying table
 engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
 not modified. The returned `true` means the operation was delegated, not
 that the row had children or changed state. `false` is returned when Data
-Tree, the row or the operation is not available. `addTreeChild` is not
-part of this non-mutative Data Tree block.
+Tree, the row or the operation is not available.
 </div>
 
 
@@ -13074,7 +13377,7 @@ part of this non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line465">line 465</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line523">line 523</a>
     </li></ul></dd>
     
 
@@ -25798,7 +26101,7 @@ tracking.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line680">line 680</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line733">line 733</a>
     </li></ul></dd>
     
 
@@ -26354,7 +26657,7 @@ does not modify the row or grid state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line664">line 664</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line717">line 717</a>
     </li></ul></dd>
     
 
@@ -28855,8 +29158,7 @@ the underlying table engine and does not modify row data, snapshots, CRUD
 state or AMB Grid save payloads. It returns the direct child managed row
 components by identity, preserving the engine array, empty arrays and row
 component references. `false` is returned when Data Tree, the row or the
-operation is not available. `addTreeChild` is not part of this
-non-mutative Data Tree block.
+operation is not available.
 </div>
 
 
@@ -28949,7 +29251,7 @@ non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line576">line 576</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line630">line 630</a>
     </li></ul></dd>
     
 
@@ -29030,8 +29332,7 @@ the underlying table engine and does not modify row data, snapshots, CRUD
 state or AMB Grid save payloads. It returns the parent managed row
 component by identity, or `false` when Data Tree, the row or the
 operation is not available, or when the underlying table engine reports
-that the row is a root. `addTreeChild` is not part of this non-mutative
-Data Tree block.
+that the row is a root.
 </div>
 
 
@@ -29124,7 +29425,7 @@ Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line549">line 549</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line604">line 604</a>
     </li></ul></dd>
     
 
@@ -31165,8 +31466,7 @@ Data Tree must be enabled. This method reads Data Tree runtime state from
 the underlying table engine and does not modify row data, snapshots, CRUD
 state or AMB Grid save payloads. It preserves both `true` and `false`
 returned by the engine. `false` is also returned when Data Tree, the row
-or the operation is not available. `addTreeChild` is not part of this
-non-mutative Data Tree block.
+or the operation is not available.
 </div>
 
 
@@ -31259,7 +31559,7 @@ non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line602">line 602</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line655">line 655</a>
     </li></ul></dd>
     
 
@@ -40002,7 +40302,7 @@ CRUD state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line719">line 719</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line772">line 772</a>
     </li></ul></dd>
     
 
@@ -40356,7 +40656,7 @@ may bypass or interfere with AMB Grid CRUD tracking.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line696">line 696</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line749">line 749</a>
     </li></ul></dd>
     
 
@@ -48773,8 +49073,7 @@ changes only Data Tree runtime state managed by the underlying table
 engine. Row data, snapshots, CRUD state and AMB Grid save payloads are
 not modified. The returned `true` means the operation was delegated, not
 that the row had children or changed state. `false` is returned when Data
-Tree, the row or the operation is not available. `addTreeChild` is not
-part of this non-mutative Data Tree block.
+Tree, the row or the operation is not available.
 </div>
 
 
@@ -48867,7 +49166,7 @@ part of this non-mutative Data Tree block.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line521">line 521</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line577">line 577</a>
     </li></ul></dd>
     
 
@@ -50604,7 +50903,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line630">line 630</a>
+        <a href="lib_table_controller_row-methods.js.html">lib/table/controller/row-methods.js</a>, <a href="lib_table_controller_row-methods.js.html#line683">line 683</a>
     </li></ul></dd>
     
 
@@ -54707,6 +55006,29 @@ dialogs, the CRUD layer and the internally managed table engine.
 
         <tr>
             
+                <td class="name"><code>addTreeChild</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Add a managed child row through the AMB Grid CRUD lifecycle.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>getTreeParent</code></td>
             
 
@@ -56474,13 +56796,13 @@ dialogs, the CRUD layer and the internally managed table engine.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#addTreeChild">addTreeChild</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getAwesompleteOptions">getAwesompleteOptions</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Jul 27 2026 16:17:18 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Jul 27 2026 16:59:09 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

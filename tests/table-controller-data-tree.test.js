@@ -360,7 +360,7 @@ describe('AMB table controller Data Tree row API', () => {
             expect(controller.rows).toBeUndefined();
             expect(controller.dataTree).toBeUndefined();
             expect(controller.rowMethods).toBeUndefined();
-            expect(controller.addTreeChild).toBeUndefined();
+            expect(typeof controller.addTreeChild).toBe('function');
         } finally {
             harness.restore();
         }
@@ -486,7 +486,7 @@ describe('AMB table controller Data Tree row API', () => {
             expect(dataTreeMock.savedRow.treeCollapse).not.toHaveBeenCalled();
             expect(dataTreeMock.savedRow.treeToggle).not.toHaveBeenCalled();
             expect(dataTreeMock.savedRow.addTreeChild).not.toHaveBeenCalled();
-            expect(controller.addTreeChild).toBeUndefined();
+            expect(typeof controller.addTreeChild).toBe('function');
             expectNoRuntimeSideEffects(table, crud);
         } finally {
             harness.restore();

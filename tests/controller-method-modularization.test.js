@@ -1401,7 +1401,7 @@ describe('AMB table controller method modularization', () => {
         expect(implementationSource).not.toMatch(/table\.getRowIndex\(/);
         expect(implementationSource).not.toMatch(/table\.getNextRow\(/);
         expect(implementationSource).not.toMatch(/table\.getPrevRow\(/);
-        expect(implementationSource).not.toContain('addTreeChild');
+        expect(implementationSource).toContain('addTreeChild');
         expect(implementationSource).not.toMatch(/updateRowFields\(/);
         expect(implementationSource).not.toMatch(/addRow\(/);
         expect(implementationSource).not.toMatch(/deleteRow\(/);

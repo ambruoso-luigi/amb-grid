@@ -195,6 +195,68 @@ const createRowsData = count => {
 };
 
 describe('CrudHelper row reveal and pagination normalization', () => {
+    test('addTreeChild prepares managed data, preserves delegation, and rejects deleted parents', () => {
+        const { table, rows } = createTableMock({
+            rowsData: [
+                { id: 15, name: 'Parent' },
+                { id: 16, name: 'Relative' }
+            ],
+            asyncAdd: false
+        });
+        const crud = new CrudHelper(table);
+        const parent = rows[0];
+        const relativeTo = rows[1];
+        const internalResult = { operation: 'delegated' };
+        let childRow;
+
+        relativeTo.getTreeParent = vi.fn(() => parent);
+        parent.getTreeChildren = vi.fn(() => childRow ? [childRow] : []);
+        parent.addTreeChild = vi.fn(rowData => {
+            childRow = {
+                getData: vi.fn(() => rowData),
+                getTreeChildren: vi.fn(() => [])
+            };
+
+            return internalResult;
+        });
+
+        const result = crud.addTreeChild(
+            parent,
+            { id: null, name: 'Child', category: 'application-data' },
+            false,
+            relativeTo
+        );
+        const [rowData, addToTop, relativeRow] = parent.addTreeChild.mock.calls[0];
+
+        expect(result).toBe(internalResult);
+        expect(rowData).toMatchObject({
+            id: null,
+            name: 'Child',
+            category: 'application-data',
+            _state: ROW_STATE.NEW,
+            _ambRowNumber: 3
+        });
+        expect(rowData._ambTempId).toMatch(/^amb-temp-\d+$/);
+        expect(addToTop).toBe(false);
+        expect(relativeRow).toBe(relativeTo);
+        expect(crud.findRowByKey(rowData._ambTempId)).toBe(childRow);
+        expect(crud.getSavePayload().changes.inserted).toEqual([
+            expect.objectContaining({
+                id: null,
+                name: 'Child',
+                category: 'application-data',
+                _ambTempId: rowData._ambTempId,
+                _ambRowNumber: 3
+            })
+        ]);
+        expect(parent.getData()._state).toBe(ROW_STATE.CLEAN);
+
+        parent.getData()._state = ROW_STATE.DELETED;
+
+        expect(crud.addTreeChild(parent, { name: 'Rejected' })).toBe(false);
+        expect(parent.addTreeChild).toHaveBeenCalledOnce();
+    });
+
     test('addRow without pagination appends, scrolls, and focuses the first editable cell', async () => {
         const { table, rows } = createTableMock({
             rowsData: createRowsData(2),

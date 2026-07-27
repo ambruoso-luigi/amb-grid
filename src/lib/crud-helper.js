@@ -147,7 +147,7 @@ export class CrudHelper {
         this._assignMissingRowNumbers();
         this._assignMissingTempIds();
 
-        const rows = this.table.getRows();
+        const rows = this._getManagedRows();
 
         rows.forEach(row => {
             const data = row.getData();
@@ -278,7 +278,7 @@ export class CrudHelper {
 
     _syncNextTempIdNumber() {
         const field = this._getTempIdField();
-        const maxTempIdNumber = this.table.getRows().reduce((max, row) => {
+        const maxTempIdNumber = this._getManagedRows().reduce((max, row) => {
             const tempIdNumber = this._extractTempIdNumber(row.getData()[field]);
 
             return tempIdNumber > max ? tempIdNumber : max;
@@ -293,7 +293,7 @@ export class CrudHelper {
         if (!this._isRowNumberingEnabled()) return 0;
 
         const field = this._getRowNumberField();
-        const rowNumbers = this.table.getRows().map(row => {
+        const rowNumbers = this._getManagedRows().map(row => {
             return Number(row.getData()[field]);
         });
 
@@ -308,7 +308,7 @@ export class CrudHelper {
         const field = this._getRowNumberField();
         let nextRowNumber = this._getMaxRowNumber() + 1;
 
-        this.table.getRows().forEach(row => {
+        this._getManagedRows().forEach(row => {
             const data = row.getData();
 
             if (data[field] !== undefined && data[field] !== null) return;
@@ -327,7 +327,7 @@ export class CrudHelper {
 
         this._syncNextTempIdNumber();
 
-        this.table.getRows().forEach(row => {
+        this._getManagedRows().forEach(row => {
             const data = row.getData();
 
             if (!this._isMissingId(data[idField]) || data[tempIdField]) return;
@@ -360,12 +360,19 @@ export class CrudHelper {
         return nextRowData;
     }
 
+    _prepareNewRowData(data = {}) {
+        return this._assignInternalFieldsOnAdd({
+            ...data,
+            [this.options.stateField]: ROW_STATE.NEW
+        });
+    }
+
     _renumberRows() {
         if (!this._isRowNumberingEnabled()) return;
 
         const field = this._getRowNumberField();
 
-        this.table.getRows().forEach((row, index) => {
+        this._getManagedRows().forEach((row, index) => {
             const rowNumber = index + 1;
             const key = this._getRowKey(row);
 
@@ -610,13 +617,39 @@ export class CrudHelper {
         return Array.isArray(rows) ? rows : [];
     }
 
+    _getManagedRows() {
+        const managedRows = [];
+        const visited = new Set();
+        const collect = row => {
+            if (!row || visited.has(row)) return;
+
+            visited.add(row);
+            managedRows.push(row);
+
+            if (typeof row.getTreeChildren !== 'function') return;
+
+            const children = row.getTreeChildren();
+
+            if (!Array.isArray(children)) return;
+
+            children.forEach(collect);
+        };
+
+        this._getRows().forEach(collect);
+
+        return managedRows;
+    }
+
     _resolveRowByKey(key) {
         if (!key) return null;
 
         const scopes = ['visible', 'active', undefined];
 
         for (const scope of scopes) {
-            const row = this._getRows(scope).find(candidate => {
+            const rows = scope === undefined
+                ? this._getManagedRows()
+                : this._getRows(scope);
+            const row = rows.find(candidate => {
                 return this._getRowKey(candidate) === key;
             });
 
@@ -1187,7 +1220,7 @@ export class CrudHelper {
             includeDeleted: false,
             ...options
         };
-        const rows = this.table.getRows()
+        const rows = this._getManagedRows()
             .filter(row => {
                 return normalizedOptions.includeDeleted
                     || this._getBaseRowState(row) !== ROW_STATE.DELETED;
@@ -1209,7 +1242,7 @@ export class CrudHelper {
      * @returns {{isValid: boolean, rows: object[], errors: object[]}}
      */
     validateChanges() {
-        const rows = this.table.getRows()
+        const rows = this._getManagedRows()
             .filter(row => {
                 const state = this._getBaseRowState(row);
 
@@ -1620,10 +1653,7 @@ export class CrudHelper {
      * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one after reveal/focus.
      */
     addRow(data) {
-        const rowData = this._assignInternalFieldsOnAdd({
-            ...data,
-            [this.options.stateField]: ROW_STATE.NEW
-        });
+        const rowData = this._prepareNewRowData(data);
         const finalize = row => {
             this._applyRowStateBeforeReveal(row, ROW_STATE.NEW)
                 .then(() => this._revealAndFocusRow(row))
@@ -1648,6 +1678,57 @@ export class CrudHelper {
     }
 
     /**
+     * Adds a new managed child row through the AMB Grid CRUD lifecycle.
+     *
+     * The parent and optional relative managed row component are resolved by
+     * the AMB Grid controller through its public controller API. Child data
+     * receives CRUD state `new`, an `_ambTempId` when it has no backend id, and
+     * the normal technical row numbering. The position above or below a
+     * relative row is supported only when that row has the same parent.
+     *
+     * This method delegates the operation internally to the underlying table
+     * engine and returns its result without transformation. The child is
+     * included in normal AMB Grid changes and CRUD payloads. Adding it does not
+     * alter the parent CRUD state or Data Tree runtime state, and does not
+     * expand, focus or select rows automatically. `false` is returned when the
+     * operation is unavailable or invalid.
+     *
+     * @param {object} parent - Parent managed row component.
+     * @param {object} [data={}] - Application data for the new child row.
+     * @param {*} [addToTop] - Position flag forwarded without normalization.
+     * @param {object} [relativeTo] - Relative managed row component with the same parent.
+     * @returns {*|false} Result from the underlying table engine, or `false`.
+     */
+    addTreeChild(parent, data = {}, addToTop, relativeTo) {
+        if (
+            !parent
+            || typeof parent.addTreeChild !== 'function'
+            || this._getBaseRowState(parent) === ROW_STATE.DELETED
+        ) {
+            return false;
+        }
+
+        if (
+            relativeTo !== undefined
+            && (
+                !relativeTo
+                || typeof relativeTo.getTreeParent !== 'function'
+                || relativeTo.getTreeParent() !== parent
+            )
+        ) {
+            return false;
+        }
+
+        const rowData = this._prepareNewRowData(data);
+
+        return parent.addTreeChild(
+            rowData,
+            addToTop,
+            relativeTo
+        );
+    }
+
+    /**
      * Find a row by the configured identifier field.
      *
      * @param {*} id - Row identifier.
@@ -1655,7 +1736,7 @@ export class CrudHelper {
      */
     findRowById(id) {
         const idField = this.options.idField;
-        const rows = this.table.getRows();
+        const rows = this._getManagedRows();
 
         if (this._isMissingId(id)) return null;
 
@@ -1672,7 +1753,7 @@ export class CrudHelper {
      * @returns {object|null} Tabulator row component, or null when no row matches.
      */
     findRowByKey(identifier) {
-        const rows = this.table.getRows();
+        const rows = this._getManagedRows();
 
         return rows.find(row => {
             const data = row.getData();
@@ -1687,7 +1768,7 @@ export class CrudHelper {
     _findRowByTempId(tempId) {
         const tempIdField = this._getTempIdField();
 
-        return this.table.getRows().find(row => {
+        return this._getManagedRows().find(row => {
             return row.getData()[tempIdField] === tempId;
         }) || null;
     }
@@ -2119,7 +2200,7 @@ export class CrudHelper {
             deleted: []
         };
 
-        this.table.getRows().forEach(row => {
+        this._getManagedRows().forEach(row => {
             const data = row.getData();
             const id = data[this.options.idField];
             const tempId = data[this._getTempIdField()];
@@ -2186,7 +2267,7 @@ export class CrudHelper {
      * }} Full table state report.
      */
     getStateReport() {
-        const rows = this.table.getRows().map(row => {
+        const rows = this._getManagedRows().map(row => {
             const data = row.getData();
             const id = data[this.options.idField];
             const tempId = data[this._getTempIdField()];
