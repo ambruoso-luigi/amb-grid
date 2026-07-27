@@ -30,7 +30,8 @@
     
         <h2><span class="attribs"><span class="type-signature"></span></span>CrudHelper<span class="signature">(table, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">Track row insert, update, delete, validation, and save state for a Tabulator table.Uses backend ids for persisted rows and AMB temporary ids for new rows.Reports changes as inserted, updated, and deleted payload groups.</div>
+            <div class="class-description">Tracks row lifecycle, validation and save state for an AMB Grid managed table.
+Uses backend ids for persisted rows and AMB temporary ids for new rows.Reports changes as inserted, updated, and deleted payload groups.</div>
         
     
 </header>
@@ -53,7 +54,7 @@
 
 
 <div class="description">
-    Create a helper that tracks CRUD state and validation markers for a Tabulator table.
+    Creates the AMB Grid CRUD state and validation tracker.
 </div>
 
 
@@ -115,7 +116,7 @@
 
             
 
-            <td class="description last">Tabulator table instance.</td>
+            <td class="description last">Internal table engine used by the CRUD layer.</td>
         </tr>
 
     
@@ -853,7 +854,7 @@
 
 <div class="description">
     Add a new row, mark it as inserted, reveal it, and focus the first editable data cell.
-With pagination, AMB uses the Tabulator row component to reach the page
+With pagination, AMB Grid uses the managed row component to reach the page
 containing the new row when possible. Action/delete columns are not
 candidates for automatic focus.
 </div>
@@ -977,7 +978,7 @@ candidates for automatic focus.
 
         
 <div class="param-desc">
-    Tabulator row component, or a promise resolving to one after reveal/focus.
+    Managed row component, or a Promise resolving to one after reveal and focus.
 </div>
 
 
@@ -2488,17 +2489,17 @@ operation is unavailable or invalid.
 
 
 <div class="description">
-    Release the CRUD layer attached to the Tabulator table.
+    Releases the AMB Grid CRUD layer.
 
-Removes the Tabulator event handlers registered by this CrudHelper,
-clears tracking state for original rows, modified cells, validation
-errors, cell validators, and custom CrudHelper subscriptions. The method
-is safe to call more than once.
+Removes the event handlers registered on the internal table engine and
+clears CRUD state, original-row tracking, modified cells, validation
+errors, cell validators, and custom subscriptions. The method is safe to
+call more than once.
 
-This does not destroy the Tabulator table and does not call
+This does not destroy the internal table engine and does not call
 `table.destroy()`. It is intended for lifecycle cleanup in modals, tabs,
 dynamic page sections, SPA views, or grid reinitialization flows where
-the table engine may be owned separately from the CRUD layer.
+the engine may be owned separately from the AMB Grid CRUD layer.
 </div>
 
 
@@ -2716,7 +2717,7 @@ crud.destroy();</code></pre>
 
         
 <div class="param-desc">
-    Tabulator row component, or null when no row matches.
+    Managed row component, or `null` when no row matches.
 </div>
 
 
@@ -2878,7 +2879,7 @@ crud.destroy();</code></pre>
 
         
 <div class="param-desc">
-    Tabulator row component, or null when no row matches.
+    Managed row component, or `null` when no row matches.
 </div>
 
 
@@ -3072,7 +3073,7 @@ crud.destroy();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2196">line 2196</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2197">line 2197</a>
     </li></ul></dd>
     
 
@@ -3571,7 +3572,7 @@ crud.destroy();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2383">line 2383</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2384">line 2384</a>
     </li></ul></dd>
     
 
@@ -3687,7 +3688,7 @@ crud.destroy();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2269">line 2269</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2270">line 2270</a>
     </li></ul></dd>
     
 
@@ -5316,7 +5317,8 @@ crud.destroy();</code></pre>
 
 
 <div class="description">
-    Search rows by a field value using Tabulator's equality search.
+    Searches managed rows by field value using an equality query delegated to
+the underlying table engine.
 </div>
 
 
@@ -5432,7 +5434,7 @@ crud.destroy();</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2187">line 2187</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line2188">line 2188</a>
     </li></ul></dd>
     
 
@@ -5461,7 +5463,7 @@ crud.destroy();</code></pre>
 
         
 <div class="param-desc">
-    Matching Tabulator row components.
+    Matching managed row components.
 </div>
 
 
@@ -5643,7 +5645,7 @@ crud.destroy();</code></pre>
 
         
 <div class="param-desc">
-    Updated Tabulator row component, or null when no row matches.
+    Updated managed row component, or `null` when no row matches.
 </div>
 
 
@@ -6499,7 +6501,7 @@ such as `unique`, but they are not validated or marked by this method.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Jul 27 2026 16:59:09 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Jul 27 2026 22:12:32 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

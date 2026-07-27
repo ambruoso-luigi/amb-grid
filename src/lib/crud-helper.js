@@ -29,16 +29,16 @@ const cloneData = (data) => {
 };
 
 /**
- * Track row insert, update, delete, validation, and save state for a Tabulator table.
+ * Tracks row lifecycle, validation and save state for an AMB Grid managed table.
  *
  * Uses backend ids for persisted rows and AMB temporary ids for new rows.
  * Reports changes as inserted, updated, and deleted payload groups.
  */
 export class CrudHelper {
     /**
-     * Create a helper that tracks CRUD state and validation markers for a Tabulator table.
+     * Creates the AMB Grid CRUD state and validation tracker.
      *
-     * @param {object} table - Tabulator table instance.
+     * @param {object} table - Internal table engine used by the CRUD layer.
      * @param {object} [options] - Field names used by the helper.
      * @param {string} [options.idField='id'] - Unique row identifier field.
      * @param {string} [options.stateField='_state'] - Field used to store the row state.
@@ -1296,17 +1296,17 @@ export class CrudHelper {
     }
 
     /**
-     * Release the CRUD layer attached to the Tabulator table.
+     * Releases the AMB Grid CRUD layer.
      *
-     * Removes the Tabulator event handlers registered by this CrudHelper,
-     * clears tracking state for original rows, modified cells, validation
-     * errors, cell validators, and custom CrudHelper subscriptions. The method
-     * is safe to call more than once.
+     * Removes the event handlers registered on the internal table engine and
+     * clears CRUD state, original-row tracking, modified cells, validation
+     * errors, cell validators, and custom subscriptions. The method is safe to
+     * call more than once.
      *
-     * This does not destroy the Tabulator table and does not call
+     * This does not destroy the internal table engine and does not call
      * `table.destroy()`. It is intended for lifecycle cleanup in modals, tabs,
      * dynamic page sections, SPA views, or grid reinitialization flows where
-     * the table engine may be owned separately from the CRUD layer.
+     * the engine may be owned separately from the AMB Grid CRUD layer.
      *
      * @example
      * const crud = new CrudHelper(table);
@@ -1645,12 +1645,12 @@ export class CrudHelper {
 
     /**
      * Add a new row, mark it as inserted, reveal it, and focus the first editable data cell.
-     * With pagination, AMB uses the Tabulator row component to reach the page
+     * With pagination, AMB Grid uses the managed row component to reach the page
      * containing the new row when possible. Action/delete columns are not
      * candidates for automatic focus.
      *
      * @param {object} data - Row data to insert.
-     * @returns {object|Promise<object>} Tabulator row component, or a promise resolving to one after reveal/focus.
+     * @returns {object|Promise<object>} Managed row component, or a Promise resolving to one after reveal and focus.
      */
     addRow(data) {
         const rowData = this._prepareNewRowData(data);
@@ -1732,7 +1732,7 @@ export class CrudHelper {
      * Find a row by the configured identifier field.
      *
      * @param {*} id - Row identifier.
-     * @returns {object|null} Tabulator row component, or null when no row matches.
+     * @returns {object|null} Managed row component, or `null` when no row matches.
      */
     findRowById(id) {
         const idField = this.options.idField;
@@ -1750,7 +1750,7 @@ export class CrudHelper {
      * Find a row by backend id when present, otherwise by AMB temporary id.
      *
      * @param {*} identifier - Backend id or temporary AMB id.
-     * @returns {object|null} Tabulator row component, or null when no row matches.
+     * @returns {object|null} Managed row component, or `null` when no row matches.
      */
     findRowByKey(identifier) {
         const rows = this._getManagedRows();
@@ -1926,7 +1926,7 @@ export class CrudHelper {
      *
      * @param {*} id - Row identifier.
      * @param {object} data - Partial row data to apply.
-     * @returns {object|null} Updated Tabulator row component, or null when no row matches.
+     * @returns {object|null} Updated managed row component, or `null` when no row matches.
      */
     updateRow(id, data) {
         const row = this.findRowById(id);
@@ -2178,11 +2178,12 @@ export class CrudHelper {
     }
 
     /**
-     * Search rows by a field value using Tabulator's equality search.
+     * Searches managed rows by field value using an equality query delegated to
+     * the underlying table engine.
      *
      * @param {string} field - Field name to search.
      * @param {*} value - Value to match.
-     * @returns {object[]} Matching Tabulator row components.
+     * @returns {object[]} Matching managed row components.
      */
     searchByField(field, value) {
         return this.table.searchRows(field, '=', value);

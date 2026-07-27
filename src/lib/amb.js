@@ -15,8 +15,8 @@ import { validators } from './validators.js';
  * Public AMB Grid namespace.
  *
  * @namespace AMB
- * @property {object} editors - Editor factories for Tabulator columns.
- * @property {object} formatters - Formatter factories for Tabulator columns.
+ * @property {object} editors - Editor factories for AMB Grid column definitions.
+ * @property {object} formatters - Formatter factories for AMB Grid column definitions.
  * @property {object} validators - Validator factories used by CrudHelper.
  * @property {object} parsers - Parser factories used by editors, formatters, and validators.
  * @property {object} date - Date configuration helpers.
