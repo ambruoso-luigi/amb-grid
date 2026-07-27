@@ -427,7 +427,7 @@ describe('AMB table controller row read API', () => {
             expect(controller.rowContext).toBeUndefined();
             expect(controller.rowRuntime).toBeUndefined();
             expect(controller.cells).toBeUndefined();
-            expect(controller.watchRowPosition).toBeUndefined();
+            expect(typeof controller.watchRowPosition).toBe('function');
 
             expect(controller.getRowData(15)).toBe(rowReadMock.savedData);
             expect(crud.findRowByKey).toHaveBeenLastCalledWith(15);

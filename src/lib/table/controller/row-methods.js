@@ -608,6 +608,46 @@ export const createRowMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Registers a callback for runtime display-position changes of one row.
+     *
+     * Backend identifiers, `_ambTempId` values and other supported lookups are
+     * resolved through the AMB Grid row resolver. The callback is forwarded by
+     * identity and receives the position values produced by the runtime engine,
+     * without AMB normalization. The engine invokes it immediately with the
+     * current position and can invoke it again when filtering, sorting,
+     * grouping, pagination or other runtime changes affect the displayed
+     * position.
+     *
+     * This observation does not modify row data, snapshots, errors or CRUD
+     * state. The current runtime engine exposes no public unsubscribe mechanism
+     * for this registration. `true` means registration was delegated; `false`
+     * means the callback, row or operation is unavailable.
+     *
+     * @param {*} identifier - Backend id, AMB temporary id, or supported row lookup value.
+     * @param {Function} callback - Runtime position callback forwarded by identity.
+     * @returns {boolean} `true` when registration is delegated, otherwise `false`.
+     */
+    watchRowPosition(identifier, callback) {
+        if (typeof callback !== 'function') return false;
+
+        const row = resolveRowComponent(
+            table,
+            crud,
+            identifier
+        );
+
+        if (
+            !row
+            || typeof row.watchPosition !== 'function'
+        ) {
+            return false;
+        }
+
+        row.watchPosition(callback);
+        return true;
+    },
+
+    /**
      * Returns the current numerical position of a row.
      *
      * Positions start at 1. Backend identifiers and AMB Grid temporary

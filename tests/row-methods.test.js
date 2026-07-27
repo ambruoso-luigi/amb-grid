@@ -269,7 +269,8 @@ describe('AMB table controller row method group', () => {
             'searchRows',
             'toggleTreeRow',
             'unfreezeRow',
-            'validateRowCells'
+            'validateRowCells',
+            'watchRowPosition'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
         DATA_TREE_METHOD_NAMES.forEach(name => {
@@ -291,7 +292,68 @@ describe('AMB table controller row method group', () => {
         expect(methods.collapseTreeRows).toBeUndefined();
         expect(methods.toggleTreeRows).toBeUndefined();
         expect(methods.getRowTable).toBeUndefined();
-        expect(methods.watchRowPosition).toBeUndefined();
+    });
+
+    test('watches AMB-resolved row positions with identity-preserving delegation and guards', () => {
+        const backendCallback = vi.fn();
+        const tempCallback = vi.fn();
+        const fallbackCallback = vi.fn();
+        const backendRow = {
+            watchPosition: vi.fn()
+        };
+        const tempRow = {
+            watchPosition: vi.fn()
+        };
+        const fallbackRow = {
+            watchPosition: vi.fn()
+        };
+        const lookup = { lookup: 'engine-row' };
+        const { table, crud, methods } = createReadableHarness({
+            crudRows: new Map([
+                [15, backendRow],
+                ['amb-temp-1', tempRow],
+                ['no-watch', {}]
+            ]),
+            fallbackRows: new Map([[lookup, fallbackRow]])
+        });
+
+        expect(methods.watchRowPosition(15, backendCallback)).toBe(true);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith(15);
+        expect(table.getRow).not.toHaveBeenCalled();
+        expect(backendRow.watchPosition).toHaveBeenCalledOnce();
+        expect(backendRow.watchPosition).toHaveBeenCalledWith(backendCallback);
+        expect(backendRow.watchPosition.mock.calls[0][0]).toBe(backendCallback);
+
+        expect(methods.watchRowPosition('amb-temp-1', tempCallback)).toBe(true);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('amb-temp-1');
+        expect(table.getRow).not.toHaveBeenCalled();
+        expect(tempRow.watchPosition).toHaveBeenCalledOnce();
+        expect(tempRow.watchPosition).toHaveBeenCalledWith(tempCallback);
+        expect(tempRow.watchPosition.mock.calls[0][0]).toBe(tempCallback);
+
+        expect(methods.watchRowPosition(lookup, fallbackCallback)).toBe(true);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith(lookup);
+        expect(crud.findRowByKey.mock.calls[2][0]).toBe(lookup);
+        expect(table.getRow).toHaveBeenCalledOnce();
+        expect(table.getRow).toHaveBeenLastCalledWith(lookup);
+        expect(table.getRow.mock.calls[0][0]).toBe(lookup);
+        expect(fallbackRow.watchPosition).toHaveBeenCalledOnce();
+        expect(fallbackRow.watchPosition).toHaveBeenCalledWith(fallbackCallback);
+        expect(fallbackRow.watchPosition.mock.calls[0][0]).toBe(fallbackCallback);
+
+        expect(methods.watchRowPosition(15, null)).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenCalledTimes(3);
+        expect(table.getRow).toHaveBeenCalledOnce();
+
+        expect(methods.watchRowPosition('missing-row', vi.fn())).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('missing-row');
+        expect(table.getRow).toHaveBeenCalledTimes(2);
+        expect(table.getRow).toHaveBeenLastCalledWith('missing-row');
+
+        expect(methods.watchRowPosition('no-watch', vi.fn())).toBe(false);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-watch');
+        expect(table.getRow).toHaveBeenCalledTimes(2);
+        expectNoReadableSideEffects(table, crud);
     });
 
     test('resolves row freezing methods through AMB identifiers before engine fallback', () => {
