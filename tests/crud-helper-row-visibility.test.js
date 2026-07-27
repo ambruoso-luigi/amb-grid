@@ -21,6 +21,12 @@ const createColumnMock = (definition = {}) => ({
 const createCellMock = (row, definition = {}) => {
     const column = createColumnMock(definition);
     const field = definition.field;
+    const cellElement = {
+        dataset: {},
+        removeAttribute: vi.fn(function (attribute) {
+            delete this[attribute];
+        })
+    };
     const focusElement = {
         className: definition.focusClassName || '',
         dataset: { field },
@@ -38,7 +44,7 @@ const createCellMock = (row, definition = {}) => {
             }
         }),
         getColumn: () => column,
-        getElement: () => ({ dataset: {} }),
+        getElement: () => cellElement,
         getField: () => field,
         getRow: () => row,
         getValue: () => row.getData()[field]
@@ -302,6 +308,125 @@ describe('CrudHelper row reveal and pagination normalization', () => {
 
         expect(crud.addTreeChild(parent, { name: 'Rejected' })).toBe(false);
         expect(parent.addTreeChild).toHaveBeenCalledOnce();
+    });
+
+    test('rebaseCurrentData turns the current managed dataset into a clean baseline', async () => {
+        const { table, rows } = createTableMock({
+            rowsData: [
+                {
+                    id: 1,
+                    name: 'Before edit',
+                    _state: ROW_STATE.CLEAN,
+                    _ambRowNumber: 1
+                },
+                {
+                    id: null,
+                    name: 'Unsaved row',
+                    _state: ROW_STATE.NEW,
+                    _ambTempId: 'amb-temp-12',
+                    _ambRowNumber: 2
+                },
+                {
+                    id: 3,
+                    name: 'Pending delete',
+                    _state: ROW_STATE.DELETED,
+                    _ambRowNumber: 3,
+                    _originalData: {
+                        id: 3,
+                        name: 'Original deleted row'
+                    }
+                }
+            ]
+        });
+        const crud = new CrudHelper(table);
+        const subscription = vi.fn();
+
+        crud.addCellValidator('name', 'Name is required', value => Boolean(value));
+        crud.on('row-state-changed', subscription);
+        crud.updateRowFields(1, { name: 'Edited before replacement' });
+        crud.markCellError(1, 'name', 'Old cell error');
+        crud.markRowError(1, 'Old row error');
+        subscription.mockClear();
+
+        delete rows[1].getData()._ambTempId;
+        delete rows[2].getData()._ambRowNumber;
+
+        await crud.rebaseCurrentData();
+
+        const emptyChanges = {
+            inserted: [],
+            updated: [],
+            deleted: []
+        };
+        const rebasedData = rows.map(row => row.getData());
+        const secondTempId = rebasedData[1]._ambTempId;
+
+        expect(rebasedData.map(data => data._state)).toEqual([
+            ROW_STATE.CLEAN,
+            ROW_STATE.CLEAN,
+            ROW_STATE.CLEAN
+        ]);
+        expect(crud.getChanges()).toEqual(emptyChanges);
+        expect(crud.getSavePayload().changes).toEqual(emptyChanges);
+        expect(crud.getErrors()).toEqual({
+            hasErrors: false,
+            rows: [],
+            cells: []
+        });
+        expect(rebasedData.every(data => !Object.hasOwn(data, '_originalData'))).toBe(true);
+        expect(rebasedData.map(data => data._ambRowNumber)).toEqual([1, 2, 3]);
+        expect(secondTempId).toMatch(/^amb-temp-\d+$/);
+        expect(Number(secondTempId.replace('amb-temp-', ''))).toBeGreaterThan(12);
+        expect(crud.originalRows.get(1)).toEqual({
+            id: 1,
+            name: 'Edited before replacement',
+            _ambRowNumber: 1
+        });
+        expect(crud.originalRows.get(secondTempId)).toEqual({
+            id: null,
+            name: 'Unsaved row',
+            _ambTempId: secondTempId,
+            _ambRowNumber: 2
+        });
+        expect(crud.originalRows.get(3)).toEqual({
+            id: 3,
+            name: 'Pending delete',
+            _ambRowNumber: 3
+        });
+        expect(rows[0].getElement().dataset.rowError).toBeUndefined();
+        expect(rows[0].getCell('name').getElement().dataset.cellState).toBeUndefined();
+        expect(rows[0].getCell('name').getElement().dataset.cellError).toBeUndefined();
+        expect(crud.cellValidators.get('name')).toHaveLength(1);
+        expect(crud.eventHandlers.get('row-state-changed')).toContain(subscription);
+        expect(subscription).not.toHaveBeenCalled();
+        expect(crud.validateRow(1)).toEqual({
+            id: 1,
+            tempId: undefined,
+            rowNumber: 1,
+            isValid: true,
+            errors: []
+        });
+
+        crud.updateRowFields(1, { name: 'Edited after replacement' });
+
+        expect(crud.getChanges().updated).toEqual([
+            {
+                id: 1,
+                tempId: undefined,
+                rowNumber: 1,
+                before: {
+                    id: 1,
+                    name: 'Edited before replacement',
+                    _ambRowNumber: 1
+                },
+                after: {
+                    id: 1,
+                    name: 'Edited after replacement',
+                    _ambRowNumber: 1
+                },
+                changedFields: ['name']
+            }
+        ]);
     });
 
     test('addRow without pagination appends, scrolls, and focuses the first editable cell', async () => {

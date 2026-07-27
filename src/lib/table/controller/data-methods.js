@@ -1,13 +1,59 @@
 /**
+ * Delegates a full dataset replacement to the internal table engine and then
+ * registers the loaded managed rows as a new CRUD baseline.
+ *
+ * @param {object} table - Internal table engine.
+ * @param {object} crud - AMB Grid CRUD helper.
+ * @param {string} methodName - Internal replacement method name.
+ * @param {Array.<*>} args - Arguments forwarded without transformation.
+ * @returns {*|false} Delegated result, a Promise preserving its resolved value, or `false`.
+ * @private
+ * @internal
+ */
+const replaceDataAndRebase = (table, crud, methodName, args) => {
+    if (
+        !table
+        || typeof table[methodName] !== 'function'
+        || !crud
+        || typeof crud.rebaseCurrentData !== 'function'
+    ) {
+        return false;
+    }
+
+    const operation = table[methodName](...args);
+
+    if (!operation || typeof operation.then !== 'function') {
+        const rebase = crud.rebaseCurrentData();
+
+        if (rebase && typeof rebase.then === 'function') {
+            return rebase.then(() => operation);
+        }
+
+        return operation;
+    }
+
+    return operation.then(result => {
+        const rebase = crud.rebaseCurrentData();
+
+        if (rebase && typeof rebase.then === 'function') {
+            return rebase.then(() => result);
+        }
+
+        return result;
+    });
+};
+
+/**
  * Creates the data methods exposed by the AMB Grid controller.
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
+ * @param {object} context.crud - AMB Grid CRUD helper.
  * @returns {object} Data methods for the flat controller API.
  * @private
  * @internal
  */
-export const createDataMethods = ({ table }) => ({
+export const createDataMethods = ({ table, crud }) => ({
     /**
      * Returns the current AJAX data URL used by the grid.
      *
@@ -58,6 +104,47 @@ export const createDataMethods = ({ table }) => ({
      */
     getDataCount(...args) {
         return table.getDataCount(...args);
+    },
+
+    /**
+     * Replaces runtime data through the AMB Grid controller.
+     *
+     * The public controller API delegates the operation internally and, only
+     * after it succeeds, registers all loaded managed rows as the new CRUD
+     * baseline. Pending changes and application errors from the previous
+     * dataset are intentionally discarded, while validators and CRUD
+     * subscriptions remain active.
+     *
+     * A rejected internal operation leaves the previous tracking unchanged and
+     * rejects with the same error. On success, the resolved value is preserved
+     * after every row has a clean CRUD state.
+     *
+     * @param {...*} args - Data-loading arguments forwarded without transformation.
+     * @returns {Promise<*>|*|false} Replacement result, or `false` when unavailable.
+     */
+    setData(...args) {
+        return replaceDataAndRebase(table, crud, 'setData', args);
+    },
+
+    /**
+     * Silently replaces runtime data through the AMB Grid controller.
+     *
+     * The public controller API preserves the internal table engine's runtime
+     * replacement behavior, delegates the operation internally and, only after
+     * it succeeds, registers all loaded managed rows as the new CRUD baseline.
+     * Pending changes and application errors from the previous dataset are
+     * intentionally discarded, while validators and CRUD subscriptions remain
+     * active.
+     *
+     * A rejected internal operation leaves the previous tracking unchanged and
+     * rejects with the same error. On success, the resolved value is preserved
+     * after every row has a clean CRUD state.
+     *
+     * @param {...*} args - Data-replacement arguments forwarded without transformation.
+     * @returns {Promise<*>|*|false} Replacement result, or `false` when unavailable.
+     */
+    replaceData(...args) {
+        return replaceDataAndRebase(table, crud, 'replaceData', args);
     },
 
     /**

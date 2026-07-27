@@ -303,27 +303,31 @@ export class CrudHelper {
     }
 
     _assignMissingRowNumbers() {
-        if (!this._isRowNumberingEnabled()) return;
+        if (!this._isRowNumberingEnabled()) return [];
 
         const field = this._getRowNumberField();
         let nextRowNumber = this._getMaxRowNumber() + 1;
+        const operations = [];
 
         this._getManagedRows().forEach(row => {
             const data = row.getData();
 
             if (data[field] !== undefined && data[field] !== null) return;
 
-            this._patchRow(row, {
+            operations.push(this._patchRow(row, {
                 [field]: nextRowNumber
-            });
+            }));
 
             nextRowNumber += 1;
         });
+
+        return operations;
     }
 
     _assignMissingTempIds() {
         const idField = this.options.idField;
         const tempIdField = this._getTempIdField();
+        const operations = [];
 
         this._syncNextTempIdNumber();
 
@@ -332,10 +336,12 @@ export class CrudHelper {
 
             if (!this._isMissingId(data[idField]) || data[tempIdField]) return;
 
-            this._patchRow(row, {
+            operations.push(this._patchRow(row, {
                 [tempIdField]: this._createTempId()
-            });
+            }));
         });
+
+        return operations;
     }
 
     _assignInternalFieldsOnAdd(rowData) {
@@ -1293,6 +1299,91 @@ export class CrudHelper {
         if (callbacks.size === 0) {
             this.eventHandlers.delete(eventName);
         }
+    }
+
+    /**
+     * Register all managed rows as a new clean CRUD baseline.
+     *
+     * This internal AMB Grid operation is used after a successful full
+     * replacement of runtime data. It clears pending changes, application
+     * errors, obsolete original-data fields, and visual markers before
+     * rebuilding snapshots for the current managed rows. Existing validators,
+     * CRUD subscriptions, internal table engine handlers, configuration, and
+     * temporary identifier progression remain active.
+     *
+     * The operation waits for asynchronous row updates and does not emit
+     * save-confirmation events.
+     *
+     * @returns {Promise<void>} Promise fulfilled when the new CRUD baseline is coherent.
+     * @throws {Error} When the CRUD helper has already been destroyed.
+     * @internal
+     */
+    async rebaseCurrentData() {
+        if (this.isDestroyed) {
+            throw new Error('Cannot rebase a destroyed CrudHelper');
+        }
+
+        const rows = this._getManagedRows();
+        const originalDataField = this.options.originalDataField;
+        const stateField = this.options.stateField;
+        const waitForUpdates = operations => {
+            const pending = operations.filter(operation => {
+                return operation && typeof operation.then === 'function';
+            });
+
+            return pending.length > 0 ? Promise.all(pending) : Promise.resolve();
+        };
+        const stateOperations = rows.map(row => {
+            const data = row.getData();
+            const rowElement = row.getElement && row.getElement();
+            const cells = row.getCells && row.getCells();
+
+            delete data[originalDataField];
+
+            if (rowElement) {
+                if (rowElement.dataset) {
+                    delete rowElement.dataset.rowError;
+                    delete rowElement.dataset.hasCellError;
+                }
+
+                if (typeof rowElement.removeAttribute === 'function') {
+                    rowElement.removeAttribute('title');
+                }
+            }
+
+            if (Array.isArray(cells)) {
+                cells.forEach(cell => {
+                    const cellElement = cell && cell.getElement && cell.getElement();
+
+                    if (!cellElement) return;
+
+                    if (cellElement.dataset) {
+                        delete cellElement.dataset.cellState;
+                        delete cellElement.dataset.cellError;
+                    }
+
+                    if (typeof cellElement.removeAttribute === 'function') {
+                        cellElement.removeAttribute('title');
+                    }
+                });
+            }
+
+            return this._patchRow(row, {
+                [stateField]: ROW_STATE.CLEAN
+            });
+        });
+
+        await waitForUpdates(stateOperations);
+
+        this.originalRows.clear();
+        this.modifiedCells.clear();
+        this.cellErrors.clear();
+        this.rowErrors.clear();
+
+        await waitForUpdates(this._assignMissingRowNumbers());
+        await waitForUpdates(this._assignMissingTempIds());
+
+        this._captureInitialSnapshot();
     }
 
     /**

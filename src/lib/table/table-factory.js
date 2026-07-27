@@ -726,6 +726,8 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getAjaxUrl - Return the current AJAX data URL.
  * @property {Function} getData - Return the current grid row data.
  * @property {Function} getDataCount - Return the number of rows in the requested range.
+ * @property {Function} setData - Replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {Function} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
  * @property {Function} searchData - Return row data matching a filter definition.
  * @property {Function} getSheetDefinitions - Return the current spreadsheet sheet definitions.
  * @property {Function} getSheets - Return the current spreadsheet Sheet Components.
@@ -1084,7 +1086,6 @@ export function createTable(options = {}) {
     const alertMethods = createAlertMethods({ table });
     const calculationMethods = createCalculationMethods({ table });
     const columnMethods = createColumnMethods({ table });
-    const dataMethods = createDataMethods({ table });
     const eventMethods = createEventMethods({ table });
     const exportMethods = createExportMethods({ table });
     const groupingMethods = createGroupingMethods({ table });
@@ -1097,6 +1098,10 @@ export function createTable(options = {}) {
     const navigationMethods = createNavigationMethods({ table });
     const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
+    const dataMethods = createDataMethods({
+        table,
+        crud
+    });
     const crudMethods = createCrudMethods({ crud });
     const rowMethods = createRowMethods({ table, crud });
     const cellStateMethods = createCellStateMethods({ table, rowMethods });

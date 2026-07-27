@@ -5,17 +5,88 @@ import { createDataMethods } from '../src/lib/table/controller/data-methods.js';
 describe('AMB table controller data method group', () => {
     test('exposes exactly the flat data controller methods', () => {
         const methods = createDataMethods({
-            table: {}
+            table: {},
+            crud: {}
         });
 
         expect(Object.keys(methods).sort()).toEqual([
             'getAjaxUrl',
             'getData',
             'getDataCount',
-            'searchData'
+            'replaceData',
+            'searchData',
+            'setData'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
+
+    test.each(['setData', 'replaceData'])(
+        '%s delegates by identity and rebases only after a successful replacement',
+        async methodName => {
+            const args = [
+                [{ id: 1, name: 'Ada' }],
+                { source: 'runtime' },
+                undefined
+            ];
+            const resolvedValue = { loaded: true };
+            const rejection = new Error(`${methodName} failed`);
+            let resolveOperation;
+            const operation = new Promise(resolve => {
+                resolveOperation = resolve;
+            });
+            const table = {
+                setData: vi.fn(),
+                replaceData: vi.fn()
+            };
+            const otherMethodName = methodName === 'setData'
+                ? 'replaceData'
+                : 'setData';
+            const crud = {
+                rebaseCurrentData: vi.fn(() => Promise.resolve())
+            };
+            const methods = createDataMethods({ table, crud });
+
+            table[methodName].mockReturnValueOnce(operation);
+
+            const resultPromise = methods[methodName](...args);
+
+            expect(table[methodName]).toHaveBeenCalledOnce();
+            expect(table[methodName]).toHaveBeenCalledWith(...args);
+            expect(table[methodName].mock.calls[0][0]).toBe(args[0]);
+            expect(table[methodName].mock.calls[0][1]).toBe(args[1]);
+            expect(table[methodName].mock.calls[0][2]).toBe(args[2]);
+            expect(table[otherMethodName]).not.toHaveBeenCalled();
+            expect(crud.rebaseCurrentData).not.toHaveBeenCalled();
+
+            resolveOperation(resolvedValue);
+
+            await expect(resultPromise).resolves.toBe(resolvedValue);
+            expect(crud.rebaseCurrentData).toHaveBeenCalledOnce();
+
+            table[methodName].mockReturnValueOnce(Promise.reject(rejection));
+
+            await expect(methods[methodName](...args)).rejects.toBe(rejection);
+            expect(crud.rebaseCurrentData).toHaveBeenCalledOnce();
+
+            const unavailableTableMethod = createDataMethods({
+                table: {},
+                crud
+            });
+
+            expect(unavailableTableMethod[methodName](...args)).toBe(false);
+
+            const availableMethod = vi.fn();
+            const unavailableRebase = createDataMethods({
+                table: {
+                    [methodName]: availableMethod
+                },
+                crud: {}
+            });
+
+            expect(unavailableRebase[methodName](...args)).toBe(false);
+            expect(availableMethod).not.toHaveBeenCalled();
+        }
+    );
 
     test('reads the runtime AJAX URL without loading data or building request parameters', () => {
         const crud = {
