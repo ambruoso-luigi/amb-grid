@@ -64,6 +64,7 @@ const createTableMock = ({
     const handlers = new Map();
     const updateResolvers = [];
     const tableColumns = columns.map(createColumnMock);
+    const moveResult = { operation: 'moved' };
     const rerenderCurrentPage = () => {
         const start = (currentPage - 1) * pageSize;
         const end = start + pageSize;
@@ -84,6 +85,19 @@ const createTableMock = ({
             rows.push(row);
 
             return asyncAdd ? Promise.resolve(row) : row;
+        }),
+        moveRow: vi.fn((row, targetRow, aboveTarget) => {
+            const rowIndex = rows.indexOf(row);
+
+            if (rowIndex < 0) return moveResult;
+
+            rows.splice(rowIndex, 1);
+
+            const targetIndex = rows.indexOf(targetRow);
+
+            rows.splice(aboveTarget ? targetIndex : targetIndex + 1, 0, row);
+
+            return moveResult;
         }),
         getColumns: vi.fn(() => tableColumns),
         getPage: vi.fn(() => currentPage),
@@ -182,6 +196,7 @@ const createTableMock = ({
     return {
         table,
         rows,
+        moveResult,
         updateResolvers,
         getCurrentPage: () => currentPage
     };
@@ -195,6 +210,38 @@ const createRowsData = count => {
 };
 
 describe('CrudHelper row reveal and pagination normalization', () => {
+    test('moveRow preserves delegation and realigns technical numbering without CRUD changes', () => {
+        const { table, rows, moveResult } = createTableMock({
+            rowsData: [
+                { id: 1, name: 'First' },
+                { id: 2, name: 'Second' },
+                { id: 3, name: 'Third' }
+            ]
+        });
+        const crud = new CrudHelper(table);
+        const source = rows[2];
+        const target = rows[0];
+
+        expect(crud.moveRow(source, target, true)).toBe(moveResult);
+        expect(table.moveRow).toHaveBeenCalledWith(source, target, true);
+        expect(rows.map(row => row.getData().id)).toEqual([3, 1, 2]);
+        expect(rows.map(row => row.getData()._ambRowNumber)).toEqual([1, 2, 3]);
+        expect(rows.map(row => row.getData()._state))
+            .toEqual([ROW_STATE.CLEAN, ROW_STATE.CLEAN, ROW_STATE.CLEAN]);
+        expect(crud.getSavePayload().changes).toEqual({
+            inserted: [],
+            updated: [],
+            deleted: []
+        });
+
+        expect(crud.moveRow(target, target, false)).toBe(false);
+
+        source.getData()._state = ROW_STATE.DELETED;
+
+        expect(crud.moveRow(source, target, false)).toBe(false);
+        expect(table.moveRow).toHaveBeenCalledOnce();
+    });
+
     test('addTreeChild prepares managed data, preserves delegation, and rejects deleted parents', () => {
         const { table, rows } = createTableMock({
             rowsData: [

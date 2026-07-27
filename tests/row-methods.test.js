@@ -267,6 +267,7 @@ describe('AMB table controller row method group', () => {
             'getTreeParent',
             'isRowFrozen',
             'isTreeExpanded',
+            'moveRow',
             'normalizeRowHeight',
             'reformatRow',
             'scrollToRow',
@@ -357,6 +358,53 @@ describe('AMB table controller row method group', () => {
         expect(crud.findRowByKey).toHaveBeenLastCalledWith('no-watch');
         expect(table.getRow).toHaveBeenCalledTimes(2);
         expectNoReadableSideEffects(table, crud);
+    });
+
+    test('moves AMB-resolved rows only in flat ungrouped grids', () => {
+        const source = { name: 'source-row' };
+        const target = { name: 'target-row' };
+        const internalResult = { operation: 'delegated' };
+        const table = {
+            options: {
+                dataTree: false,
+                groupBy: false
+            },
+            getRow: vi.fn()
+        };
+        const crud = {
+            findRowByKey: vi.fn(identifier => {
+                if (identifier === 15) return source;
+                if (identifier === 'amb-temp-1') return target;
+                if (identifier === 'same-row') return source;
+
+                return null;
+            }),
+            moveRow: vi.fn(() => internalResult)
+        };
+        const methods = createRowMethods({ table, crud });
+
+        expect(methods.moveRow(15, 'amb-temp-1', false)).toBe(internalResult);
+        expect(crud.findRowByKey.mock.calls.map(([identifier]) => identifier))
+            .toEqual([15, 'amb-temp-1']);
+        expect(crud.moveRow).toHaveBeenCalledWith(source, target, false);
+
+        crud.findRowByKey.mockClear();
+        crud.moveRow.mockClear();
+        table.options.dataTree = true;
+
+        expect(methods.moveRow(15, 'amb-temp-1', true)).toBe(false);
+        expect(crud.findRowByKey).not.toHaveBeenCalled();
+
+        table.options.dataTree = false;
+        table.options.groupBy = 'department';
+
+        expect(methods.moveRow(15, 'amb-temp-1', true)).toBe(false);
+        expect(crud.findRowByKey).not.toHaveBeenCalled();
+
+        table.options.groupBy = false;
+
+        expect(methods.moveRow('same-row', 'same-row', true)).toBe(false);
+        expect(crud.moveRow).not.toHaveBeenCalled();
     });
 
     test('resolves row freezing methods through AMB identifiers before engine fallback', () => {

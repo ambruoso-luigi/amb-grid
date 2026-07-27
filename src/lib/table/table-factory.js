@@ -829,6 +829,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} watchRowPosition - Register a callback for runtime display-position changes of one AMB-resolved row.
  * @property {Function} getRowPosition - Return the one-based position of a row.
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
+ * @property {Function} moveRow - Move one managed row relative to another in a flat grid and realign technical row numbering.
  * @property {Function} scrollToRow - Scroll vertically to a grid row.
  * @property {Function} searchRows - Return row components matching a filter definition.
  * @property {Function} navigatePrev - Move to the previous editable cell.

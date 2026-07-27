@@ -8,6 +8,14 @@ const resolveRowComponent = (table, crud, identifier) => {
 
 const isDataTreeEnabled = table => Boolean(table && table.options && table.options.dataTree);
 
+const isGroupingEnabled = table => {
+    const groupBy = table && table.options && table.options.groupBy;
+
+    return typeof groupBy === 'function'
+        || (typeof groupBy === 'string' && groupBy.length > 0)
+        || (Array.isArray(groupBy) && groupBy.length > 0);
+};
+
 const resolveTreeRowOperation = (table, crud, identifier, methodName) => {
     if (!isDataTreeEnabled(table)) return false;
 
@@ -732,6 +740,58 @@ export const createRowMethods = ({ table, crud }) => ({
      */
     getRowFromPosition(...args) {
         return table.getRowFromPosition(...args);
+    },
+
+    /**
+     * Moves one managed row component relative to another in a flat grid.
+     *
+     * The AMB Grid controller public controller API resolves both rows from
+     * backend ids, `_ambTempId` values or other supported lookups. The move
+     * changes runtime order only: `true` places the source above the target and
+     * `false` places it below. AMB Grid delegates the operation internally to
+     * the underlying table engine, then realigns technical row numbering.
+     *
+     * Application data and CRUD state are not modified. Grouping and Data Tree
+     * are not supported by this controlled runtime operation. `false` indicates
+     * that the operation is unavailable or invalid.
+     *
+     * @param {*} rowIdentifier - Identifier or supported lookup for the managed row component to move.
+     * @param {*} targetIdentifier - Identifier or supported lookup for the target managed row component.
+     * @param {*} aboveTarget - Relative position flag forwarded unchanged.
+     * @returns {*|false} Result from the underlying table engine, or `false`.
+     */
+    moveRow(
+        rowIdentifier,
+        targetIdentifier,
+        aboveTarget
+    ) {
+        if (
+            isDataTreeEnabled(table)
+            || isGroupingEnabled(table)
+        ) {
+            return false;
+        }
+
+        const row = resolveRowComponent(
+            table,
+            crud,
+            rowIdentifier
+        );
+        const targetRow = resolveRowComponent(
+            table,
+            crud,
+            targetIdentifier
+        );
+
+        if (!row || !targetRow || row === targetRow) {
+            return false;
+        }
+
+        return crud.moveRow(
+            row,
+            targetRow,
+            aboveTarget
+        );
     },
 
     /**

@@ -1729,6 +1729,42 @@ export class CrudHelper {
     }
 
     /**
+     * Moves one managed row component relative to another in a flat AMB Grid.
+     *
+     * The operation is delegated internally to the underlying table engine,
+     * then technical row numbering and its managed snapshots are realigned.
+     * Application data and CRUD state are not modified. The internal result is
+     * returned unchanged; `false` indicates an unavailable or invalid
+     * operation.
+     *
+     * @param {object} row - Managed row component to move.
+     * @param {object} targetRow - Managed row component used as the target.
+     * @param {*} aboveTarget - Relative position flag forwarded unchanged.
+     * @returns {*|false} Result from the underlying table engine, or `false`.
+     */
+    moveRow(row, targetRow, aboveTarget) {
+        if (
+            !row
+            || !targetRow
+            || row === targetRow
+            || typeof this.table.moveRow !== 'function'
+            || this._getBaseRowState(row) === ROW_STATE.DELETED
+        ) {
+            return false;
+        }
+
+        const result = this.table.moveRow(
+            row,
+            targetRow,
+            aboveTarget
+        );
+
+        this._renumberRows();
+
+        return result;
+    }
+
+    /**
      * Find a row by the configured identifier field.
      *
      * @param {*} id - Row identifier.
