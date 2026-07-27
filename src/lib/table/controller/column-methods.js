@@ -230,6 +230,35 @@ export const createColumnMethods = ({ table }) => ({
     },
 
     /**
+     * Updates exclusively the runtime title of one managed column.
+     *
+     * The AMB Grid controller forwards `columnLookup` unchanged to the normal
+     * supported column lookup and does not modify the field, editor, formatter,
+     * validator, row data or CRUD state. The grid engine reconstructs the
+     * Column Component, so previous component references may become stale.
+     * The original Promise is returned and resolves with the new Column
+     * Component. `false` means the column or operation is unavailable.
+     *
+     * @param {*} columnLookup - Supported column lookup forwarded unchanged.
+     * @param {*} title - Runtime column title forwarded unchanged.
+     * @returns {Promise|false} Original update Promise, or `false` when unavailable.
+     */
+    setColumnTitle(columnLookup, title) {
+        const column = table.getColumn(columnLookup);
+
+        if (
+            !column
+            || typeof column.updateDefinition !== 'function'
+        ) {
+            return false;
+        }
+
+        return column.updateDefinition({
+            title
+        });
+    },
+
+    /**
      * Returns the runtime child Column Components for one managed column.
      *
      * The `columnLookup` value is forwarded unchanged to the supported column

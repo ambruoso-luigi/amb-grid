@@ -27,6 +27,7 @@ describe('AMB table controller column method group', () => {
             'isColumnVisible',
             'moveColumn',
             'scrollToColumn',
+            'setColumnTitle',
             'setColumnWidth',
             'showColumn',
             'toggleColumn',
@@ -73,18 +74,24 @@ describe('AMB table controller column method group', () => {
         expect(methods.getColumnDefinition('missing-method')).toBe(false);
     });
 
-    test('sets runtime column width through the resolved component', () => {
+    test('updates safe runtime column presentation through the resolved component', () => {
         const lookup = {
             field: 'amount'
         };
         const result = {
             resized: true
         };
+        const updatedColumn = {
+            field: 'amount'
+        };
+        const updatePromise = Promise.resolve(updatedColumn);
+        const updateDefinition = vi.fn(() => updatePromise);
         const setWidth = vi.fn()
             .mockReturnValueOnce(result)
             .mockReturnValueOnce(undefined);
         const column = {
-            setWidth
+            setWidth,
+            updateDefinition
         };
         const table = {
             getColumn: vi.fn()
@@ -92,6 +99,8 @@ describe('AMB table controller column method group', () => {
                 .mockReturnValueOnce(column)
                 .mockReturnValueOnce(false)
                 .mockReturnValueOnce({})
+                .mockReturnValueOnce(column)
+                .mockReturnValueOnce(false)
         };
         const methods = createColumnMethods({ table });
 
@@ -105,8 +114,20 @@ describe('AMB table controller column method group', () => {
 
         expect(methods.setColumnWidth('missing', 80)).toBe(false);
         expect(methods.setColumnWidth('missing-method', 80)).toBe(false);
-        expect(table.getColumn).toHaveBeenCalledTimes(4);
         expect(setWidth).toHaveBeenCalledTimes(2);
+
+        expect(
+            methods.setColumnTitle(lookup, 'Updated title')
+        ).toBe(updatePromise);
+        expect(table.getColumn).toHaveBeenCalledWith(lookup);
+        expect(updateDefinition).toHaveBeenCalledWith({
+            title: 'Updated title'
+        });
+
+        expect(
+            methods.setColumnTitle('missing', 'Title')
+        ).toBe(false);
+        expect(table.getColumn).toHaveBeenCalledTimes(6);
     });
 
     test('validates native cells for one resolved column', () => {
