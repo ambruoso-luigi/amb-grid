@@ -10,6 +10,7 @@ describe('AMB table controller data method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'addData',
             'getAjaxUrl',
             'getData',
             'getDataCount',
@@ -87,6 +88,62 @@ describe('AMB table controller data method group', () => {
             expect(availableMethod).not.toHaveBeenCalled();
         }
     );
+
+    test('addData resolves AMB positions and delegates all insertion arguments by identity', () => {
+        const rowsData = [
+            { id: null, name: 'First' },
+            { id: null, name: 'Second' }
+        ];
+        const backendRow = { component: 'backend' };
+        const temporaryRow = { component: 'temporary' };
+        const zeroRow = { component: 'zero' };
+        const unresolvedLookup = { lookup: 'internal' };
+        const internalResult = Promise.resolve([backendRow, temporaryRow]);
+        const crud = {
+            addData: vi.fn(() => internalResult),
+            findRowByKey: vi.fn(identifier => {
+                if (identifier === 15) return backendRow;
+                if (identifier === 'amb-temp-8') return temporaryRow;
+                if (identifier === 0) return zeroRow;
+
+                return null;
+            })
+        };
+        const methods = createDataMethods({ table: {}, crud });
+
+        expect(methods.addData(rowsData, false, 15)).toBe(internalResult);
+        expect(crud.addData).toHaveBeenLastCalledWith(rowsData, false, backendRow);
+        expect(crud.addData.mock.calls[0][0]).toBe(rowsData);
+        expect(crud.addData.mock.calls[0][1]).toBe(false);
+
+        methods.addData(rowsData, true, 'amb-temp-8');
+        expect(crud.addData).toHaveBeenLastCalledWith(rowsData, true, temporaryRow);
+
+        methods.addData(rowsData, 'before', unresolvedLookup);
+        expect(crud.addData).toHaveBeenLastCalledWith(
+            rowsData,
+            'before',
+            unresolvedLookup
+        );
+        expect(crud.addData.mock.calls[2][2]).toBe(unresolvedLookup);
+
+        methods.addData(rowsData, undefined, 0);
+        expect(crud.findRowByKey).toHaveBeenLastCalledWith(0);
+        expect(crud.addData).toHaveBeenLastCalledWith(rowsData, undefined, zeroRow);
+
+        methods.addData(rowsData, false);
+        expect(crud.addData).toHaveBeenLastCalledWith(rowsData, false, undefined);
+        expect(crud.findRowByKey).toHaveBeenCalledTimes(4);
+
+        const unavailable = createDataMethods({
+            table: {},
+            crud: {
+                findRowByKey: vi.fn()
+            }
+        });
+
+        expect(unavailable.addData(rowsData, false, 15)).toBe(false);
+    });
 
     test('reads the runtime AJAX URL without loading data or building request parameters', () => {
         const crud = {

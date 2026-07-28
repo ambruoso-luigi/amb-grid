@@ -154,7 +154,13 @@ export class CrudHelper {
             const key = this._getRowKey(row);
             const state = data[this.options.stateField];
 
-            if (!key || state === ROW_STATE.NEW || this.originalRows.has(key)) return;
+            if (
+                this._isMissingId(key)
+                || state === ROW_STATE.NEW
+                || this.originalRows.has(key)
+            ) {
+                return;
+            }
 
             this.originalRows.set(key, this._cleanHelperFields(data));
 
@@ -373,18 +379,39 @@ export class CrudHelper {
         });
     }
 
+    _prepareNewRowsData(rowsData) {
+        const field = this._getRowNumberField();
+        let nextRowNumber = this._getMaxRowNumber() + 1;
+
+        return rowsData.map(data => {
+            const preparedData = this._prepareNewRowData(data);
+
+            if (
+                this._isRowNumberingEnabled()
+                && this.options.renumberOnAdd
+                && (data?.[field] === undefined || data?.[field] === null)
+            ) {
+                preparedData[field] = nextRowNumber;
+                nextRowNumber += 1;
+            }
+
+            return preparedData;
+        });
+    }
+
     _renumberRows() {
-        if (!this._isRowNumberingEnabled()) return;
+        if (!this._isRowNumberingEnabled()) return [];
 
         const field = this._getRowNumberField();
+        const operations = [];
 
         this._getManagedRows().forEach((row, index) => {
             const rowNumber = index + 1;
             const key = this._getRowKey(row);
 
-            this._patchRow(row, {
+            operations.push(this._patchRow(row, {
                 [field]: rowNumber
-            });
+            }));
 
             if (this.originalRows.has(key)) {
                 const originalData = this.originalRows.get(key);
@@ -395,6 +422,8 @@ export class CrudHelper {
                 });
             }
         });
+
+        return operations;
     }
 
     _renumberAfterPhysicalDelete(deleteResult) {
@@ -647,7 +676,7 @@ export class CrudHelper {
     }
 
     _resolveRowByKey(key) {
-        if (!key) return null;
+        if (this._isMissingId(key)) return null;
 
         const scopes = ['visible', 'active', undefined];
 
@@ -663,6 +692,14 @@ export class CrudHelper {
         }
 
         return null;
+    }
+
+    _waitForOperations(operations) {
+        const pending = operations.filter(operation => {
+            return operation && typeof operation.then === 'function';
+        });
+
+        return pending.length > 0 ? Promise.all(pending) : Promise.resolve();
     }
 
     _isActionColumnDefinition(definition = {}) {
@@ -1326,13 +1363,6 @@ export class CrudHelper {
         const rows = this._getManagedRows();
         const originalDataField = this.options.originalDataField;
         const stateField = this.options.stateField;
-        const waitForUpdates = operations => {
-            const pending = operations.filter(operation => {
-                return operation && typeof operation.then === 'function';
-            });
-
-            return pending.length > 0 ? Promise.all(pending) : Promise.resolve();
-        };
         const stateOperations = rows.map(row => {
             const data = row.getData();
             const rowElement = row.getElement && row.getElement();
@@ -1373,15 +1403,15 @@ export class CrudHelper {
             });
         });
 
-        await waitForUpdates(stateOperations);
+        await this._waitForOperations(stateOperations);
 
         this.originalRows.clear();
         this.modifiedCells.clear();
         this.cellErrors.clear();
         this.rowErrors.clear();
 
-        await waitForUpdates(this._assignMissingRowNumbers());
-        await waitForUpdates(this._assignMissingTempIds());
+        await this._waitForOperations(this._assignMissingRowNumbers());
+        await this._waitForOperations(this._assignMissingTempIds());
 
         this._captureInitialSnapshot();
     }
@@ -1766,6 +1796,68 @@ export class CrudHelper {
         }
 
         return finalize(result);
+    }
+
+    /**
+     * Adds multiple managed rows through the AMB Grid CRUD lifecycle.
+     *
+     * Every application object is copied before the AMB Grid controller marks
+     * it as a CRUD insertion and manages its temporary identifier, technical
+     * fields, and final runtime numbering. An optional position may be a
+     * managed row component resolved from an AMB identifier by the public
+     * controller API, or another lookup supported by the internal table
+     * engine.
+     *
+     * The operation delegates the prepared batch internally in one call and
+     * preserves the engine result, including the identity of its managed row
+     * component array. Rejections propagate unchanged and do not run
+     * completion work. No focus, scrolling, selection, pagination, or Data
+     * Tree expansion is performed.
+     *
+     * @param {object[]} rowsData - Application row objects copied into managed rows.
+     * @param {*} addToTop - Position flag forwarded without normalization.
+     * @param {*} [position] - Managed row component or internal position lookup.
+     * @returns {Promise<object[]>|false} Preserved internal result, or `false`.
+     */
+    addData(rowsData, addToTop, position) {
+        if (
+            this.isDestroyed
+            || !Array.isArray(rowsData)
+            || !this.table
+            || typeof this.table.addData !== 'function'
+            || (
+                position
+                && typeof position.getData === 'function'
+                && this._getBaseRowState(position) === ROW_STATE.DELETED
+            )
+        ) {
+            return false;
+        }
+
+        const preparedRowsData = this._prepareNewRowsData(rowsData);
+        const operation = this.table.addData(
+            preparedRowsData,
+            addToTop,
+            position
+        );
+        const complete = async rows => {
+            const managedRows = Array.isArray(rows) ? rows : [];
+            const stateOperations = managedRows.map(row => {
+                return this._applyRowState(row, ROW_STATE.NEW);
+            });
+
+            await this._waitForOperations(stateOperations);
+            await this._waitForOperations(this._renumberRows());
+            this._applyRowParity();
+
+            return rows;
+        };
+
+        if (operation && typeof operation.then === 'function') {
+            return operation.then(complete);
+        }
+
+        return complete(operation);
     }
 
     /**

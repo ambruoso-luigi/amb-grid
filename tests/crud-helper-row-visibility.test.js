@@ -71,6 +71,7 @@ const createTableMock = ({
     const updateResolvers = [];
     const tableColumns = columns.map(createColumnMock);
     const moveResult = { operation: 'moved' };
+    let lastAddedRows;
     const rerenderCurrentPage = () => {
         const start = (currentPage - 1) * pageSize;
         const end = start + pageSize;
@@ -91,6 +92,20 @@ const createTableMock = ({
             rows.push(row);
 
             return asyncAdd ? Promise.resolve(row) : row;
+        }),
+        addData: vi.fn((batch, addToTop, position) => {
+            const addedRows = batch.map(data => createRow(data));
+            const positionIndex = rows.indexOf(position);
+            const insertionIndex = positionIndex >= 0
+                ? positionIndex + (addToTop ? 0 : 1)
+                : addToTop
+                    ? 0
+                    : rows.length;
+
+            rows.splice(insertionIndex, 0, ...addedRows);
+            lastAddedRows = addedRows;
+
+            return Promise.resolve(addedRows);
         }),
         moveRow: vi.fn((row, targetRow, aboveTarget) => {
             const rowIndex = rows.indexOf(row);
@@ -121,6 +136,8 @@ const createTableMock = ({
             handlers.set(eventName, handler);
         }),
         scrollToRow: vi.fn(() => Promise.resolve()),
+        selectRow: vi.fn(),
+        deselectRow: vi.fn(),
         setPage: vi.fn(page => {
             currentPage = Number(page);
 
@@ -204,6 +221,7 @@ const createTableMock = ({
         rows,
         moveResult,
         updateResolvers,
+        getLastAddedRows: () => lastAddedRows,
         getCurrentPage: () => currentPage
     };
 };
@@ -314,7 +332,7 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         const { table, rows } = createTableMock({
             rowsData: [
                 {
-                    id: 1,
+                    id: 0,
                     name: 'Before edit',
                     _state: ROW_STATE.CLEAN,
                     _ambRowNumber: 1
@@ -343,9 +361,9 @@ describe('CrudHelper row reveal and pagination normalization', () => {
 
         crud.addCellValidator('name', 'Name is required', value => Boolean(value));
         crud.on('row-state-changed', subscription);
-        crud.updateRowFields(1, { name: 'Edited before replacement' });
-        crud.markCellError(1, 'name', 'Old cell error');
-        crud.markRowError(1, 'Old row error');
+        crud.updateRowFields(0, { name: 'Edited before replacement' });
+        crud.markCellError(0, 'name', 'Old cell error');
+        crud.markRowError(0, 'Old row error');
         subscription.mockClear();
 
         delete rows[1].getData()._ambTempId;
@@ -377,8 +395,8 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         expect(rebasedData.map(data => data._ambRowNumber)).toEqual([1, 2, 3]);
         expect(secondTempId).toMatch(/^amb-temp-\d+$/);
         expect(Number(secondTempId.replace('amb-temp-', ''))).toBeGreaterThan(12);
-        expect(crud.originalRows.get(1)).toEqual({
-            id: 1,
+        expect(crud.originalRows.get(0)).toEqual({
+            id: 0,
             name: 'Edited before replacement',
             _ambRowNumber: 1
         });
@@ -399,34 +417,138 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         expect(crud.cellValidators.get('name')).toHaveLength(1);
         expect(crud.eventHandlers.get('row-state-changed')).toContain(subscription);
         expect(subscription).not.toHaveBeenCalled();
-        expect(crud.validateRow(1)).toEqual({
-            id: 1,
+        expect(crud.validateRow(0)).toEqual({
+            id: 0,
             tempId: undefined,
             rowNumber: 1,
             isValid: true,
             errors: []
         });
 
-        crud.updateRowFields(1, { name: 'Edited after replacement' });
+        crud.updateRowFields(0, { name: 'Edited after replacement' });
 
         expect(crud.getChanges().updated).toEqual([
             {
-                id: 1,
+                id: 0,
                 tempId: undefined,
                 rowNumber: 1,
                 before: {
-                    id: 1,
+                    id: 0,
                     name: 'Edited before replacement',
                     _ambRowNumber: 1
                 },
                 after: {
-                    id: 1,
+                    id: 0,
                     name: 'Edited after replacement',
                     _ambRowNumber: 1
                 },
                 changedFields: ['name']
             }
         ]);
+    });
+
+    test('addData prepares one managed batch and completes only after successful insertion', async () => {
+        const {
+            table,
+            rows,
+            getCurrentPage,
+            getLastAddedRows
+        } = createTableMock({
+            rowsData: [
+                { id: 0, name: 'Existing first' },
+                { id: 2, name: 'Existing second' }
+            ],
+            pagination: true,
+            currentPage: 1
+        });
+        const crud = new CrudHelper(table);
+        const rowsData = [
+            { id: null, name: 'Inserted first', application: { value: 1 } },
+            { name: 'Inserted second', application: { value: 2 } }
+        ];
+        const originalRowsData = structuredClone(rowsData);
+        const position = rows[0];
+
+        const result = await crud.addData(rowsData, false, position);
+        const addedRows = getLastAddedRows();
+        const addedData = addedRows.map(row => row.getData());
+
+        expect(result).toBe(addedRows);
+        expect(table.addData).toHaveBeenCalledOnce();
+        expect(table.addData.mock.calls[0][0]).not.toBe(rowsData);
+        expect(table.addData.mock.calls[0][1]).toBe(false);
+        expect(table.addData.mock.calls[0][2]).toBe(position);
+        expect(rowsData).toEqual(originalRowsData);
+        expect(table.addData.mock.calls[0][0][0]).not.toBe(rowsData[0]);
+        expect(table.addData.mock.calls[0][0][1]).not.toBe(rowsData[1]);
+        expect(addedData.map(data => data._state)).toEqual([
+            ROW_STATE.NEW,
+            ROW_STATE.NEW
+        ]);
+        expect(addedData[0]._ambTempId).toMatch(/^amb-temp-\d+$/);
+        expect(addedData[1]._ambTempId).toMatch(/^amb-temp-\d+$/);
+        expect(addedData[0]._ambTempId).not.toBe(addedData[1]._ambTempId);
+        expect(rows.map(row => row.getData().name)).toEqual([
+            'Existing first',
+            'Inserted first',
+            'Inserted second',
+            'Existing second'
+        ]);
+        expect(rows.map(row => row.getData()._ambRowNumber)).toEqual([1, 2, 3, 4]);
+        expect(rows[0].getData()._state).toBe(ROW_STATE.CLEAN);
+        expect(rows[3].getData()._state).toBe(ROW_STATE.CLEAN);
+        expect(crud.getSavePayload().changes).toEqual({
+            inserted: addedData.map(data => {
+                const { _state, ...payloadData } = data;
+
+                return payloadData;
+            }),
+            updated: [],
+            deleted: []
+        });
+        expect(getCurrentPage()).toBe(1);
+        expect(table.setPage).not.toHaveBeenCalled();
+        expect(table.scrollToRow).not.toHaveBeenCalled();
+        expect(table.selectRow).not.toHaveBeenCalled();
+        expect(table.deselectRow).not.toHaveBeenCalled();
+        rows.forEach(row => {
+            expect(row.scrollTo).not.toHaveBeenCalled();
+            row.getCells().forEach(cell => {
+                expect(cell.edit).not.toHaveBeenCalled();
+            });
+        });
+
+        const rejection = new Error('bulk insertion failed');
+
+        rows.forEach(row => row.update.mockClear());
+        table.addData.mockRejectedValueOnce(rejection);
+
+        await expect(crud.addData(
+            [{ id: null, name: 'Rejected' }],
+            true,
+            position
+        )).rejects.toBe(rejection);
+        rows.forEach(row => {
+            expect(row.update).not.toHaveBeenCalled();
+        });
+        expect(table.setPage).not.toHaveBeenCalled();
+        expect(table.scrollToRow).not.toHaveBeenCalled();
+        expect(table.selectRow).not.toHaveBeenCalled();
+        expect(table.deselectRow).not.toHaveBeenCalled();
+
+        position.getData()._state = ROW_STATE.DELETED;
+        expect(crud.addData([], false, position)).toBe(false);
+        expect(crud.addData({}, false)).toBe(false);
+
+        crud.destroy();
+        expect(crud.addData([], false)).toBe(false);
+
+        const unavailable = new CrudHelper({
+            getRows: () => [],
+            on: vi.fn()
+        });
+
+        expect(unavailable.addData([], false)).toBe(false);
     });
 
     test('addRow without pagination appends, scrolls, and focuses the first editable cell', async () => {

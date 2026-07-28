@@ -148,6 +148,42 @@ export const createDataMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Adds multiple managed rows through the AMB Grid controller.
+     *
+     * Every supplied object remains unchanged while the public controller API
+     * prepares a CRUD insertion with AMB-managed temporary identifiers and
+     * technical fields. A position identifier is resolved to a managed row
+     * component when possible, then the operation delegates internally in one
+     * batch while preserving the internal table engine result.
+     *
+     * Rejections propagate unchanged. The operation does not focus, scroll,
+     * select, change pages, or expand managed rows.
+     *
+     * @param {object[]} rowsData - Application row objects to add as managed rows.
+     * @param {*} addToTop - Position flag forwarded without normalization.
+     * @param {*} [positionIdentifier] - AMB identifier or internal position lookup.
+     * @returns {Promise<object[]>|false} Preserved internal result, or `false`.
+     */
+    addData(rowsData, addToTop, positionIdentifier) {
+        if (!crud || typeof crud.addData !== 'function') {
+            return false;
+        }
+
+        let position = positionIdentifier;
+
+        if (positionIdentifier !== undefined) {
+            position = crud.findRowByKey(positionIdentifier)
+                || positionIdentifier;
+        }
+
+        return crud.addData(
+            rowsData,
+            addToTop,
+            position
+        );
+    },
+
+    /**
      * Returns row data matching a filter definition.
      *
      * This is a one-off query and does not modify the current programmatic

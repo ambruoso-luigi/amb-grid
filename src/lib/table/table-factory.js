@@ -728,6 +728,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} setData - Replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
  * @property {Function} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {Function} addData - Add multiple managed rows through the AMB Grid CRUD lifecycle.
  * @property {Function} searchData - Return row data matching a filter definition.
  * @property {Function} getSheetDefinitions - Return the current spreadsheet sheet definitions.
  * @property {Function} getSheets - Return the current spreadsheet Sheet Components.

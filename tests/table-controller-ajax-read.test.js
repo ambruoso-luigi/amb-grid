@@ -347,10 +347,10 @@ describe('AMB table controller AJAX URL read API', () => {
             expect(controller.ajaxMethods).toBeUndefined();
             expect(controller.dataMethods).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
-            expect(controller.setData).toBeUndefined();
-            expect(controller.replaceData).toBeUndefined();
+            expect(typeof controller.setData).toBe('function');
+            expect(typeof controller.replaceData).toBe('function');
             expect(controller.updateData).toBeUndefined();
-            expect(controller.addData).toBeUndefined();
+            expect(typeof controller.addData).toBe('function');
             expect(controller.clearData).toBeUndefined();
 
             expect(controller.setSearchQuery('Ada')).toBe(true);

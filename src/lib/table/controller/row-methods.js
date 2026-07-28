@@ -745,7 +745,7 @@ export const createRowMethods = ({ table, crud }) => ({
     /**
      * Moves one managed row component relative to another in a flat grid.
      *
-     * The AMB Grid controller public controller API resolves both rows from
+     * The AMB Grid public controller API resolves both rows from
      * backend ids, `_ambTempId` values or other supported lookups. The move
      * changes runtime order only: `true` places the source above the target and
      * `false` places it below. AMB Grid delegates the operation internally to
