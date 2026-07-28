@@ -2196,6 +2196,96 @@ export class CrudHelper {
         return row;
     }
 
+    async _updateManagedRowAndTrack(row, patch) {
+        const operation = this._patchRow(row, patch);
+
+        if (operation && typeof operation.then === 'function') {
+            await operation;
+        }
+
+        this._markRowModified(row);
+
+        Object.keys(patch).forEach(field => {
+            this._validateField(row, field);
+        });
+
+        return row;
+    }
+
+    async _updateManagedRows(rowsData) {
+        const idField = this.options.idField;
+        const tempIdField = this._getTempIdField();
+        const technicalFields = new Set([
+            idField,
+            tempIdField,
+            this.options.stateField,
+            this.options.originalDataField,
+            this._getRowNumberField()
+        ]);
+
+        for (const rowData of rowsData) {
+            if (
+                !rowData
+                || typeof rowData !== 'object'
+                || Array.isArray(rowData)
+            ) {
+                continue;
+            }
+
+            const id = rowData[idField];
+            const tempId = rowData[tempIdField];
+            const identifier = this._isMissingId(id) ? tempId : id;
+
+            if (this._isMissingId(identifier)) continue;
+
+            const row = this.findRowByKey(identifier);
+
+            if (
+                !row
+                || this._getBaseRowState(row) === ROW_STATE.DELETED
+            ) {
+                continue;
+            }
+
+            const patch = { ...rowData };
+
+            technicalFields.forEach(field => {
+                delete patch[field];
+            });
+
+            if (Object.keys(patch).length === 0) continue;
+
+            await this._updateManagedRowAndTrack(row, patch);
+        }
+    }
+
+    /**
+     * Partially updates multiple existing managed rows through the AMB Grid
+     * CRUD lifecycle.
+     *
+     * Each object is an application-data patch located by its configured
+     * backend id or temporary id. Missing, unknown, and deleted managed rows
+     * are ignored, while technical identifier, state, baseline, and numbering
+     * fields cannot be overwritten. AMB Grid delegates row updates internally
+     * through managed row components, then refreshes CRUD state, the CRUD
+     * baseline comparison, field validation, and error markers. No rows are
+     * added; direct bulk mutation remains advanced engine access.
+     *
+     * Patches run sequentially and non-atomically. A rejection is propagated
+     * unchanged, keeps earlier updates, skips all later items, and performs no
+     * automatic rollback.
+     *
+     * @param {object[]} rowsData - Partial application-data patches for existing rows.
+     * @returns {Promise<void>|false} Completion Promise, or `false` for invalid input.
+     */
+    updateData(rowsData) {
+        if (this.isDestroyed || !Array.isArray(rowsData)) {
+            return false;
+        }
+
+        return this._updateManagedRows(rowsData);
+    }
+
     /**
      * Mark an existing row as deleted, or remove it when it has not been saved yet.
      *

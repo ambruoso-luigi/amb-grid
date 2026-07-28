@@ -184,6 +184,32 @@ export const createDataMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Partially updates multiple existing rows through the AMB Grid controller.
+     *
+     * Each object is a partial application-data patch located by backend id or
+     * temporary id. Unknown rows, missing identifiers, deleted managed rows,
+     * and patches without application fields are ignored. Technical fields
+     * cannot be overwritten; AMB Grid manages CRUD state, CRUD baseline
+     * comparison, validation, and error markers. No new rows are added.
+     *
+     * Processing is sequential and non-atomic. A rejected managed row update
+     * stops later patches, preserves earlier updates, and propagates the same
+     * error without rollback. The public controller API delegates row updates
+     * internally through the CRUD lifecycle; direct bulk mutation remains
+     * advanced engine access.
+     *
+     * @param {object[]} rowsData - Partial patches for existing managed rows.
+     * @returns {Promise<void>|false} Completion Promise, or `false` when unavailable.
+     */
+    updateData(rowsData) {
+        if (!crud || typeof crud.updateData !== 'function') {
+            return false;
+        }
+
+        return crud.updateData(rowsData);
+    },
+
+    /**
      * Returns row data matching a filter definition.
      *
      * This is a one-off query and does not modify the current programmatic

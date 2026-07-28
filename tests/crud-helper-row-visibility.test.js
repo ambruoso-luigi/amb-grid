@@ -551,6 +551,192 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         expect(unavailable.addData([], false)).toBe(false);
     });
 
+    test('updateData applies sanitized managed patches sequentially and stops on rejection', async () => {
+        const { table, rows } = createTableMock({
+            rowsData: [
+                {
+                    id: 0,
+                    name: 'Persisted original',
+                    untouched: 'persisted value',
+                    _ambRowNumber: 1
+                },
+                {
+                    id: null,
+                    name: 'New original',
+                    untouched: 'new value',
+                    _ambTempId: 'amb-temp-new',
+                    _ambRowNumber: 2,
+                    _state: ROW_STATE.NEW
+                },
+                {
+                    id: 3,
+                    name: 'Deleted original',
+                    untouched: 'deleted value',
+                    _ambRowNumber: 3,
+                    _state: ROW_STATE.DELETED
+                }
+            ],
+            columns: [
+                { field: 'name', editor: 'input' },
+                { field: 'untouched', editor: 'input' }
+            ]
+        });
+        const crud = new CrudHelper(table);
+        const validator = vi.fn(() => true);
+        const rowsData = [
+            {
+                id: 0,
+                name: 'Persisted first patch',
+                _ambTempId: 'forged-temp-id',
+                _state: ROW_STATE.NEW,
+                _originalData: { forged: true },
+                _ambRowNumber: 999
+            },
+            {
+                id: null,
+                _ambTempId: 'amb-temp-new',
+                name: 'New updated',
+                _state: ROW_STATE.CLEAN,
+                _originalData: { forged: true },
+                _ambRowNumber: 998
+            },
+            {
+                id: 3,
+                name: 'Deleted changed'
+            },
+            {
+                id: 404,
+                name: 'Unknown'
+            },
+            {
+                name: 'Missing identifier'
+            },
+            {
+                id: 0,
+                name: 'Persisted final patch'
+            },
+            {
+                id: 0,
+                _state: ROW_STATE.CLEAN
+            }
+        ];
+        const originalRowsData = structuredClone(rowsData);
+
+        crud.addCellValidator('name', 'Name is required', validator);
+
+        await expect(crud.updateData(rowsData)).resolves.toBeUndefined();
+
+        expect(rowsData).toEqual(originalRowsData);
+        expect(rows).toHaveLength(3);
+        expect(rows[0].getData()).toMatchObject({
+            id: 0,
+            name: 'Persisted final patch',
+            untouched: 'persisted value',
+            _ambRowNumber: 1,
+            _state: ROW_STATE.MODIFIED
+        });
+        expect(rows[0].getData()._ambTempId).toBeUndefined();
+        expect(rows[0].getData()._originalData).toBeUndefined();
+        expect(rows[1].getData()).toMatchObject({
+            id: null,
+            name: 'New updated',
+            untouched: 'new value',
+            _ambTempId: 'amb-temp-new',
+            _ambRowNumber: 2,
+            _state: ROW_STATE.NEW
+        });
+        expect(rows[1].getData()._originalData).toBeUndefined();
+        expect(rows[2].getData()).toMatchObject({
+            id: 3,
+            name: 'Deleted original',
+            untouched: 'deleted value',
+            _ambRowNumber: 3,
+            _state: ROW_STATE.DELETED
+        });
+        expect(validator.mock.calls.map(([value]) => value)).toEqual([
+            'Persisted first patch',
+            'New updated',
+            'Persisted final patch'
+        ]);
+
+        const changes = crud.getChanges();
+
+        expect(changes.inserted).toEqual([
+            {
+                id: null,
+                name: 'New updated',
+                untouched: 'new value',
+                _ambTempId: 'amb-temp-new',
+                _ambRowNumber: 2
+            }
+        ]);
+        expect(changes.updated).toEqual([
+            {
+                id: 0,
+                tempId: undefined,
+                rowNumber: 1,
+                before: {
+                    id: 0,
+                    name: 'Persisted original',
+                    untouched: 'persisted value',
+                    _ambRowNumber: 1
+                },
+                after: {
+                    id: 0,
+                    name: 'Persisted final patch',
+                    untouched: 'persisted value',
+                    _ambRowNumber: 1
+                },
+                changedFields: ['name']
+            }
+        ]);
+        expect(changes.deleted).toEqual([
+            {
+                id: 3,
+                tempId: undefined,
+                rowNumber: 3,
+                originalData: {
+                    id: 3,
+                    name: 'Deleted original',
+                    untouched: 'deleted value',
+                    _ambRowNumber: 3
+                }
+            }
+        ]);
+        expect(crud.getSavePayload().changes).toEqual(changes);
+        expect(table.updateData).toBeUndefined();
+        expect(crud.updateData({ id: 0, name: 'Invalid container' })).toBe(false);
+
+        const rejection = new Error('managed row update failed');
+
+        validator.mockClear();
+        rows.forEach(row => row.update.mockClear());
+        rows[0].update.mockRejectedValueOnce(rejection);
+
+        await expect(crud.updateData([
+            {
+                _ambTempId: 'amb-temp-new',
+                name: 'Applied before rejection'
+            },
+            {
+                id: 0,
+                name: 'Rejected patch'
+            },
+            {
+                _ambTempId: 'amb-temp-new',
+                name: 'Must not run'
+            }
+        ])).rejects.toBe(rejection);
+
+        expect(rows[1].getData().name).toBe('Applied before rejection');
+        expect(rows[0].getData().name).toBe('Persisted final patch');
+        expect(rows[0].update).toHaveBeenCalledOnce();
+        expect(validator.mock.calls.map(([value]) => value)).toEqual([
+            'Applied before rejection'
+        ]);
+        expect(rows).toHaveLength(3);
+    });
+
     test('addRow without pagination appends, scrolls, and focuses the first editable cell', async () => {
         const { table, rows } = createTableMock({
             rowsData: createRowsData(2),

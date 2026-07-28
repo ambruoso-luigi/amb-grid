@@ -16,7 +16,8 @@ describe('AMB table controller data method group', () => {
             'getDataCount',
             'replaceData',
             'searchData',
-            'setData'
+            'setData',
+            'updateData'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -143,6 +144,34 @@ describe('AMB table controller data method group', () => {
         });
 
         expect(unavailable.addData(rowsData, false, 15)).toBe(false);
+    });
+
+    test('updateData delegates the original patch array only through the CRUD helper', () => {
+        const rowsData = [
+            { id: 0, name: 'Updated' }
+        ];
+        const result = Promise.resolve();
+        const table = {
+            updateData: vi.fn()
+        };
+        const crud = {
+            updateData: vi.fn(() => result)
+        };
+        const methods = createDataMethods({ table, crud });
+
+        expect(methods.updateData(rowsData)).toBe(result);
+        expect(crud.updateData).toHaveBeenCalledOnce();
+        expect(crud.updateData).toHaveBeenCalledWith(rowsData);
+        expect(crud.updateData.mock.calls[0][0]).toBe(rowsData);
+        expect(table.updateData).not.toHaveBeenCalled();
+
+        const unavailable = createDataMethods({
+            table,
+            crud: {}
+        });
+
+        expect(unavailable.updateData(rowsData)).toBe(false);
+        expect(table.updateData).not.toHaveBeenCalled();
     });
 
     test('reads the runtime AJAX URL without loading data or building request parameters', () => {
