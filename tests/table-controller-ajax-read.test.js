@@ -350,6 +350,7 @@ describe('AMB table controller AJAX URL read API', () => {
             expect(typeof controller.setData).toBe('function');
             expect(typeof controller.replaceData).toBe('function');
             expect(typeof controller.updateData).toBe('function');
+            expect(typeof controller.updateOrAddData).toBe('function');
             expect(typeof controller.addData).toBe('function');
             expect(typeof controller.clearData).toBe('function');
 

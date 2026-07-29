@@ -110,6 +110,7 @@ const createTableMock = ({
         clearData: vi.fn(() => {
             rows.splice(0, rows.length);
         }),
+        updateOrAddData: vi.fn(),
         moveRow: vi.fn((row, targetRow, aboveTarget) => {
             const rowIndex = rows.indexOf(row);
 
@@ -843,6 +844,304 @@ describe('CrudHelper row reveal and pagination normalization', () => {
             'Applied before rejection'
         ]);
         expect(rows).toHaveLength(3);
+    });
+
+    test('updateOrAddData preserves managed row identity and ordered mixed CRUD changes', async () => {
+        const {
+            table,
+            rows
+        } = createTableMock({
+            rowsData: [
+                {
+                    id: 0,
+                    name: 'Zero original',
+                    preserved: 'zero value',
+                    _ambRowNumber: 1
+                },
+                {
+                    id: 2,
+                    name: 'Normal original',
+                    preserved: 'normal value',
+                    _ambRowNumber: 2
+                },
+                {
+                    id: null,
+                    name: 'Existing new',
+                    preserved: 'new value',
+                    _ambTempId: 'amb-temp-existing',
+                    _ambRowNumber: 3,
+                    _state: ROW_STATE.NEW
+                },
+                {
+                    id: 4,
+                    name: 'Deleted original',
+                    preserved: 'deleted value',
+                    _ambRowNumber: 4,
+                    _state: ROW_STATE.DELETED
+                }
+            ],
+            columns: [
+                { field: 'name', editor: 'input' },
+                { field: 'preserved', editor: 'input' }
+            ]
+        });
+        const crud = new CrudHelper(table);
+        const validator = vi.fn(() => true);
+        const rowsData = [
+            null,
+            [],
+            {
+                id: 0,
+                name: 'Zero first patch',
+                _ambTempId: 'forged-temp',
+                _state: ROW_STATE.DELETED,
+                _originalData: { forged: true },
+                _ambRowNumber: 999
+            },
+            {
+                id: 3,
+                name: 'Backend inserted',
+                preserved: 'backend value'
+            },
+            {
+                id: 2,
+                name: 'Normal updated'
+            },
+            {
+                _ambTempId: 'amb-temp-existing',
+                name: 'Existing new updated'
+            },
+            {
+                name: 'Identifierless inserted',
+                preserved: 'identifierless value'
+            },
+            {
+                id: 4,
+                name: 'Deleted must stay unchanged'
+            },
+            {
+                id: 0,
+                name: 'Zero final patch'
+            },
+            {
+                id: 2,
+                _state: ROW_STATE.NEW,
+                _ambRowNumber: 500
+            }
+        ];
+        const originalRowsData = structuredClone(rowsData);
+        const zeroRow = rows[0];
+        const normalRow = rows[1];
+        const existingNewRow = rows[2];
+        const deletedRow = rows[3];
+
+        crud.addCellValidator('name', 'Name is required', validator);
+
+        const result = await crud.updateOrAddData(rowsData);
+        const backendInsertedRow = crud.findRowByKey(3);
+        const identifierlessRow = rows.find(row => {
+            return row.getData().name === 'Identifierless inserted';
+        });
+
+        expect(result).toEqual([
+            zeroRow,
+            backendInsertedRow,
+            normalRow,
+            existingNewRow,
+            identifierlessRow,
+            zeroRow,
+            normalRow
+        ]);
+        expect(result[0]).toBe(zeroRow);
+        expect(result[1]).toBe(backendInsertedRow);
+        expect(result[2]).toBe(normalRow);
+        expect(result[3]).toBe(existingNewRow);
+        expect(result[4]).toBe(identifierlessRow);
+        expect(result[5]).toBe(zeroRow);
+        expect(result[6]).toBe(normalRow);
+        expect(rowsData).toEqual(originalRowsData);
+        expect(rows).toHaveLength(6);
+        expect(zeroRow.getData()).toMatchObject({
+            id: 0,
+            name: 'Zero final patch',
+            preserved: 'zero value',
+            _ambRowNumber: 1,
+            _state: ROW_STATE.MODIFIED
+        });
+        expect(zeroRow.getData()._ambTempId).toBeUndefined();
+        expect(zeroRow.getData()._originalData).toBeUndefined();
+        expect(normalRow.getData()).toMatchObject({
+            id: 2,
+            name: 'Normal updated',
+            preserved: 'normal value',
+            _ambRowNumber: 2,
+            _state: ROW_STATE.MODIFIED
+        });
+        expect(existingNewRow.getData()).toMatchObject({
+            id: null,
+            name: 'Existing new updated',
+            preserved: 'new value',
+            _ambTempId: 'amb-temp-existing',
+            _ambRowNumber: 3,
+            _state: ROW_STATE.NEW
+        });
+        expect(deletedRow.getData()).toMatchObject({
+            id: 4,
+            name: 'Deleted original',
+            preserved: 'deleted value',
+            _ambRowNumber: 4,
+            _state: ROW_STATE.DELETED
+        });
+        expect(backendInsertedRow.getData()).toMatchObject({
+            id: 3,
+            name: 'Backend inserted',
+            preserved: 'backend value',
+            _ambRowNumber: 5,
+            _state: ROW_STATE.NEW
+        });
+        expect(backendInsertedRow.getData()._ambTempId).toBeUndefined();
+        expect(identifierlessRow.getData()).toMatchObject({
+            name: 'Identifierless inserted',
+            preserved: 'identifierless value',
+            _ambRowNumber: 6,
+            _state: ROW_STATE.NEW
+        });
+        expect(identifierlessRow.getData()._ambTempId).toMatch(/^amb-temp-\d+$/);
+        expect(validator.mock.calls.map(([value]) => value)).toEqual([
+            'Zero first patch',
+            'Normal updated',
+            'Existing new updated',
+            'Zero final patch'
+        ]);
+
+        const changes = crud.getChanges();
+
+        expect(changes.inserted).toEqual([
+            expect.objectContaining({
+                _ambTempId: 'amb-temp-existing',
+                name: 'Existing new updated',
+                _ambRowNumber: 3
+            }),
+            expect.objectContaining({
+                id: 3,
+                name: 'Backend inserted',
+                _ambRowNumber: 5
+            }),
+            expect.objectContaining({
+                name: 'Identifierless inserted',
+                _ambRowNumber: 6
+            })
+        ]);
+        expect(changes.updated).toEqual([
+            expect.objectContaining({
+                id: 0,
+                changedFields: ['name'],
+                after: expect.objectContaining({
+                    name: 'Zero final patch'
+                })
+            }),
+            expect.objectContaining({
+                id: 2,
+                changedFields: ['name'],
+                after: expect.objectContaining({
+                    name: 'Normal updated'
+                })
+            })
+        ]);
+        expect(changes.deleted).toEqual([
+            expect.objectContaining({
+                id: 4,
+                originalData: expect.objectContaining({
+                    name: 'Deleted original'
+                })
+            })
+        ]);
+        expect(crud.getSavePayload().changes).toEqual(changes);
+        expect(table.updateOrAddData).not.toHaveBeenCalled();
+    });
+
+    test('updateOrAddData is non-atomic and stops after the original rejection', async () => {
+        const { table, rows } = createTableMock({
+            rowsData: [
+                {
+                    id: 0,
+                    name: 'First original',
+                    _ambRowNumber: 1
+                },
+                {
+                    id: 2,
+                    name: 'Reject original',
+                    _ambRowNumber: 2
+                }
+            ],
+            columns: [
+                { field: 'name', editor: 'input' }
+            ]
+        });
+        const crud = new CrudHelper(table);
+        const rejection = new Error('upsert update failed');
+        const normalUpdate = rows[1].update.getMockImplementation();
+
+        rows[1].update.mockImplementation(patch => {
+            return patch.name === 'Rejected patch'
+                ? Promise.reject(rejection)
+                : normalUpdate(patch);
+        });
+
+        expect(crud.updateOrAddData({ id: 0 })).toBe(false);
+        await expect(crud.updateOrAddData([])).resolves.toEqual([]);
+
+        await expect(crud.updateOrAddData([
+            {
+                id: 0,
+                name: 'Updated before rejection'
+            },
+            {
+                id: 3,
+                name: 'Inserted before rejection'
+            },
+            {
+                id: 2,
+                name: 'Rejected patch'
+            },
+            {
+                id: 5,
+                name: 'Must not be inserted'
+            }
+        ])).rejects.toBe(rejection);
+
+        expect(rows[0].getData()).toMatchObject({
+            id: 0,
+            name: 'Updated before rejection',
+            _state: ROW_STATE.MODIFIED
+        });
+        expect(crud.findRowByKey(3).getData()).toMatchObject({
+            id: 3,
+            name: 'Inserted before rejection',
+            _state: ROW_STATE.NEW
+        });
+        expect(rows[1].getData().name).toBe('Reject original');
+        expect(crud.findRowByKey(5)).toBeNull();
+        expect(rows).toHaveLength(3);
+        expect(table.addData).toHaveBeenCalledOnce();
+        expect(table.updateOrAddData).not.toHaveBeenCalled();
+
+        const changes = crud.getChanges();
+
+        expect(changes.updated).toEqual([
+            expect.objectContaining({
+                id: 0,
+                after: expect.objectContaining({
+                    name: 'Updated before rejection'
+                })
+            })
+        ]);
+        expect(changes.inserted).toEqual([
+            expect.objectContaining({
+                id: 3,
+                name: 'Inserted before rejection'
+            })
+        ]);
     });
 
     test('addRow without pagination appends, scrolls, and focuses the first editable cell', async () => {

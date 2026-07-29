@@ -2286,6 +2286,99 @@ export class CrudHelper {
         return this._updateManagedRows(rowsData);
     }
 
+    async _updateOrAddManagedRows(rowsData) {
+        const idField = this.options.idField;
+        const tempIdField = this._getTempIdField();
+        const managedRows = [];
+
+        for (const rowData of rowsData) {
+            if (
+                !rowData
+                || typeof rowData !== 'object'
+                || Array.isArray(rowData)
+            ) {
+                continue;
+            }
+
+            const id = rowData[idField];
+            const tempId = rowData[tempIdField];
+            const identifier = this._isMissingId(id) ? tempId : id;
+            const row = this._isMissingId(identifier)
+                ? null
+                : this.findRowByKey(identifier);
+
+            if (row) {
+                if (this._getBaseRowState(row) === ROW_STATE.DELETED) {
+                    continue;
+                }
+
+                const updateOperation = this.updateData([rowData]);
+
+                if (updateOperation === false) {
+                    throw new Error('AMB Grid update operation became unavailable during updateOrAddData');
+                }
+
+                await updateOperation;
+                managedRows.push(row);
+                continue;
+            }
+
+            const addOperation = this.addData([rowData]);
+
+            if (addOperation === false) {
+                throw new Error('AMB Grid add operation became unavailable during updateOrAddData');
+            }
+
+            const addedRows = await addOperation;
+            const addedRow = Array.isArray(addedRows) ? addedRows[0] : null;
+
+            if (!addedRow) {
+                throw new Error('AMB Grid add operation returned no managed row during updateOrAddData');
+            }
+
+            managedRows.push(addedRow);
+        }
+
+        return managedRows;
+    }
+
+    /**
+     * Updates existing managed rows or adds missing rows through the AMB Grid
+     * CRUD lifecycle.
+     *
+     * Each valid object is processed sequentially and resolved by configured
+     * backend id or temporary id. Existing rows use normal AMB tracking,
+     * technical-field protection, and validation; missing rows are added as
+     * `new` with normal temporary identifiers and numbering. Deleted rows stay
+     * unchanged and are omitted. Duplicate identifiers observe earlier
+     * operations and may place the same managed row component in the result
+     * more than once.
+     *
+     * The returned coordination array preserves the identity and completion
+     * order of updated and added Row Components. Processing is non-atomic: a
+     * rejection propagates unchanged, keeps completed work, skips later items,
+     * and performs no automatic rollback. Direct mutation through `grid.table`
+     * remains advanced engine access and can bypass the AMB CRUD lifecycle.
+     *
+     * @param {object[]} rowsData - Mixed application objects to update or add.
+     * @returns {Promise<object[]>|false} Managed Row Components, or `false` when unavailable.
+     */
+    updateOrAddData(rowsData) {
+        if (
+            this.isDestroyed
+            || !Array.isArray(rowsData)
+            || typeof this.updateData !== 'function'
+            || typeof this.addData !== 'function'
+            || typeof this.findRowByKey !== 'function'
+            || !this.table
+            || typeof this.table.addData !== 'function'
+        ) {
+            return false;
+        }
+
+        return this._updateOrAddManagedRows(rowsData);
+    }
+
     /**
      * Mark an existing row as deleted, or remove it when it has not been saved yet.
      *

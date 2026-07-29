@@ -33,7 +33,7 @@ export const TABLE_API_COVERAGE = [
     { method: 'searchData', domain: 'data', status: 'exposed', classification: 'safe-pass-through', controller: 'data-methods' },
     { method: 'setData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
     { method: 'updateData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
-    { method: 'updateOrAddData', domain: 'data', status: 'missing', classification: 'AMB-aware', reason: 'Mixed insert and update batches need an explicit AMB CRUD contract.' },
+    { method: 'updateOrAddData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
 
     // Editing and validation
     { method: 'clearCellEdited', domain: 'editing', status: 'exposed', classification: 'safe-pass-through', controller: 'cell-state-methods' },

@@ -234,6 +234,32 @@ export const createDataMethods = ({ table, crud }) => ({
     },
 
     /**
+     * Updates existing managed rows or adds missing rows through AMB Grid.
+     *
+     * Mixed application objects are processed sequentially and resolved by
+     * backend id or temporary id. Existing rows retain AMB tracking and
+     * validation; missing rows become `new` with normal technical identifiers
+     * and numbering. Deleted rows remain unchanged. Duplicate identifiers see
+     * earlier operations, and the result preserves the identity and completion
+     * order of every updated or added Row Component.
+     *
+     * The operation is non-atomic. Rejections propagate unchanged, completed
+     * work remains applied, later items are skipped, and no automatic rollback
+     * occurs. Direct upsert access through `grid.table` remains advanced engine
+     * access and can bypass the AMB CRUD lifecycle.
+     *
+     * @param {object[]} rowsData - Mixed application objects to update or add.
+     * @returns {Promise<object[]>|false} Managed Row Components, or `false`.
+     */
+    updateOrAddData(rowsData) {
+        if (!crud || typeof crud.updateOrAddData !== 'function') {
+            return false;
+        }
+
+        return crud.updateOrAddData(rowsData);
+    },
+
+    /**
      * Returns row data matching a filter definition.
      *
      * This is a one-off query and does not modify the current programmatic

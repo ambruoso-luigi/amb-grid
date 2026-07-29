@@ -18,7 +18,8 @@ describe('AMB table controller data method group', () => {
             'replaceData',
             'searchData',
             'setData',
-            'updateData'
+            'updateData',
+            'updateOrAddData'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -209,6 +210,41 @@ describe('AMB table controller data method group', () => {
 
         expect(unavailable.updateData(rowsData)).toBe(false);
         expect(table.updateData).not.toHaveBeenCalled();
+    });
+
+    test('updateOrAddData delegates the original mixed array only through the CRUD helper', () => {
+        const rowsData = [
+            { id: 0, name: 'Updated' },
+            { name: 'Inserted' }
+        ];
+        const result = Promise.resolve([{ component: 'managed' }]);
+        const table = {
+            updateOrAddData: vi.fn(),
+            updateData: vi.fn(),
+            addData: vi.fn()
+        };
+        const crud = {
+            updateOrAddData: vi.fn(() => result)
+        };
+        const methods = createDataMethods({ table, crud });
+
+        expect(methods.updateOrAddData(rowsData)).toBe(result);
+        expect(crud.updateOrAddData).toHaveBeenCalledOnce();
+        expect(crud.updateOrAddData).toHaveBeenCalledWith(rowsData);
+        expect(crud.updateOrAddData.mock.calls[0][0]).toBe(rowsData);
+        expect(table.updateOrAddData).not.toHaveBeenCalled();
+        expect(table.updateData).not.toHaveBeenCalled();
+        expect(table.addData).not.toHaveBeenCalled();
+
+        const unavailable = createDataMethods({
+            table,
+            crud: {}
+        });
+
+        expect(unavailable.updateOrAddData(rowsData)).toBe(false);
+        expect(table.updateOrAddData).not.toHaveBeenCalled();
+        expect(table.updateData).not.toHaveBeenCalled();
+        expect(table.addData).not.toHaveBeenCalled();
     });
 
     test('reads the runtime AJAX URL without loading data or building request parameters', () => {

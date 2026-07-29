@@ -730,6 +730,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
  * @property {Function} addData - Add multiple managed rows through the AMB Grid CRUD lifecycle.
  * @property {Function} updateData - Partially update multiple managed rows through the AMB Grid CRUD lifecycle.
+ * @property {Function} updateOrAddData - Update existing managed rows or add missing rows through the AMB Grid CRUD lifecycle.
  * @property {Function} clearData - Remove every runtime row and register an empty AMB Grid CRUD baseline.
  * @property {Function} searchData - Return row data matching a filter definition.
  * @property {Function} getSheetDefinitions - Return the current spreadsheet sheet definitions.
