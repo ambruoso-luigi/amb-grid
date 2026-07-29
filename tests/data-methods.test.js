@@ -11,6 +11,7 @@ describe('AMB table controller data method group', () => {
 
         expect(Object.keys(methods).sort()).toEqual([
             'addData',
+            'clearData',
             'getAjaxUrl',
             'getData',
             'getDataCount',
@@ -22,27 +23,48 @@ describe('AMB table controller data method group', () => {
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
 
-    test.each(['setData', 'replaceData'])(
-        '%s delegates by identity and rebases only after a successful replacement',
-        async methodName => {
-            const args = [
+    test.each([
+        {
+            methodName: 'setData',
+            args: [
                 [{ id: 1, name: 'Ada' }],
                 { source: 'runtime' },
                 undefined
-            ];
+            ]
+        },
+        {
+            methodName: 'replaceData',
+            args: [
+                [{ id: 1, name: 'Ada' }],
+                { source: 'runtime' },
+                undefined
+            ]
+        },
+        {
+            methodName: 'clearData',
+            args: []
+        }
+    ])(
+        '$methodName delegates by identity and rebases only after a successful data operation',
+        async ({ methodName, args }) => {
             const resolvedValue = { loaded: true };
             const rejection = new Error(`${methodName} failed`);
+            const synchronousError = new Error(`${methodName} threw`);
+            const rebaseError = new Error(`${methodName} rebase failed`);
             let resolveOperation;
             const operation = new Promise(resolve => {
                 resolveOperation = resolve;
             });
             const table = {
                 setData: vi.fn(),
-                replaceData: vi.fn()
+                replaceData: vi.fn(),
+                clearData: vi.fn()
             };
-            const otherMethodName = methodName === 'setData'
-                ? 'replaceData'
-                : 'setData';
+            const otherMethodNames = [
+                'setData',
+                'replaceData',
+                'clearData'
+            ].filter(name => name !== methodName);
             const crud = {
                 rebaseCurrentData: vi.fn(() => Promise.resolve())
             };
@@ -54,10 +76,12 @@ describe('AMB table controller data method group', () => {
 
             expect(table[methodName]).toHaveBeenCalledOnce();
             expect(table[methodName]).toHaveBeenCalledWith(...args);
-            expect(table[methodName].mock.calls[0][0]).toBe(args[0]);
-            expect(table[methodName].mock.calls[0][1]).toBe(args[1]);
-            expect(table[methodName].mock.calls[0][2]).toBe(args[2]);
-            expect(table[otherMethodName]).not.toHaveBeenCalled();
+            args.forEach((arg, index) => {
+                expect(table[methodName].mock.calls[0][index]).toBe(arg);
+            });
+            otherMethodNames.forEach(name => {
+                expect(table[name]).not.toHaveBeenCalled();
+            });
             expect(crud.rebaseCurrentData).not.toHaveBeenCalled();
 
             resolveOperation(resolvedValue);
@@ -69,6 +93,19 @@ describe('AMB table controller data method group', () => {
 
             await expect(methods[methodName](...args)).rejects.toBe(rejection);
             expect(crud.rebaseCurrentData).toHaveBeenCalledOnce();
+
+            table[methodName].mockImplementationOnce(() => {
+                throw synchronousError;
+            });
+
+            expect(() => methods[methodName](...args)).toThrow(synchronousError);
+            expect(crud.rebaseCurrentData).toHaveBeenCalledOnce();
+
+            table[methodName].mockReturnValueOnce(resolvedValue);
+            crud.rebaseCurrentData.mockRejectedValueOnce(rebaseError);
+
+            await expect(methods[methodName](...args)).rejects.toBe(rebaseError);
+            expect(crud.rebaseCurrentData).toHaveBeenCalledTimes(2);
 
             const unavailableTableMethod = createDataMethods({
                 table: {},

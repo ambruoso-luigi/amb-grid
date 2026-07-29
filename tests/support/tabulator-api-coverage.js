@@ -24,15 +24,15 @@ export const TABLE_API_COVERAGE = [
     { method: 'updateColumnDefinition', domain: 'columns', status: 'missing', classification: 'delicate', reason: 'Definition replacement needs AMB editor, validator, and helper reconfiguration.' },
 
     // Data
-    { method: 'addData', domain: 'data', status: 'narrower-contract', classification: 'overridden', controller: 'data-methods', reason: 'AMB accepts an object array rather than every native data input form.' },
-    { method: 'clearData', domain: 'data', status: 'missing', classification: 'AMB-aware', reason: 'Clearing rows must reconcile CRUD state, snapshots, errors, and numbering.' },
+    { method: 'addData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
+    { method: 'clearData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
     { method: 'getAjaxUrl', domain: 'data', status: 'exposed', classification: 'safe-pass-through', controller: 'data-methods' },
     { method: 'getData', domain: 'data', status: 'exposed', classification: 'safe-pass-through', controller: 'data-methods' },
     { method: 'getDataCount', domain: 'data', status: 'exposed', classification: 'safe-pass-through', controller: 'data-methods' },
     { method: 'replaceData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
     { method: 'searchData', domain: 'data', status: 'exposed', classification: 'safe-pass-through', controller: 'data-methods' },
     { method: 'setData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
-    { method: 'updateData', domain: 'data', status: 'narrower-contract', classification: 'overridden', controller: 'data-methods', reason: 'AMB accepts sequential object patches and intentionally omits native string input.' },
+    { method: 'updateData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },
     { method: 'updateOrAddData', domain: 'data', status: 'missing', classification: 'AMB-aware', reason: 'Mixed insert and update batches need an explicit AMB CRUD contract.' },
 
     // Editing and validation

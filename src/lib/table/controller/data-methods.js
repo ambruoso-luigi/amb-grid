@@ -1,16 +1,16 @@
 /**
- * Delegates a full dataset replacement to the internal table engine and then
- * registers the loaded managed rows as a new CRUD baseline.
+ * Delegates a dataset operation to the internal table engine and then
+ * registers the resulting managed rows as a new CRUD baseline.
  *
  * @param {object} table - Internal table engine.
  * @param {object} crud - AMB Grid CRUD helper.
- * @param {string} methodName - Internal replacement method name.
+ * @param {string} methodName - Internal data operation method name.
  * @param {Array.<*>} args - Arguments forwarded without transformation.
  * @returns {*|false} Delegated result, a Promise preserving its resolved value, or `false`.
  * @private
  * @internal
  */
-const replaceDataAndRebase = (table, crud, methodName, args) => {
+const dataOperationAndRebase = (table, crud, methodName, args) => {
     if (
         !table
         || typeof table[methodName] !== 'function'
@@ -123,7 +123,7 @@ export const createDataMethods = ({ table, crud }) => ({
      * @returns {Promise<*>|*|false} Replacement result, or `false` when unavailable.
      */
     setData(...args) {
-        return replaceDataAndRebase(table, crud, 'setData', args);
+        return dataOperationAndRebase(table, crud, 'setData', args);
     },
 
     /**
@@ -144,7 +144,31 @@ export const createDataMethods = ({ table, crud }) => ({
      * @returns {Promise<*>|*|false} Replacement result, or `false` when unavailable.
      */
     replaceData(...args) {
-        return replaceDataAndRebase(table, crud, 'replaceData', args);
+        return dataOperationAndRebase(table, crud, 'replaceData', args);
+    },
+
+    /**
+     * Removes every runtime row through the AMB Grid controller.
+     *
+     * Pending changes from the previous dataset are intentionally discarded.
+     * After the internal table engine succeeds, AMB Grid removes associated
+     * snapshots and application errors and waits until an empty CRUD baseline
+     * is coherent. Validators, CRUD subscriptions, configuration, temporary
+     * identifier progression, and the active lifecycle remain available.
+     *
+     * Internal and rebase rejections propagate unchanged without automatic
+     * rollback. Direct `grid.table.clearData()` calls remain advanced engine
+     * access and can bypass CRUD synchronization.
+     *
+     * @returns {Promise<*>|false} Preserved internal result after rebase, or `false`.
+     */
+    clearData() {
+        return dataOperationAndRebase(
+            table,
+            crud,
+            'clearData',
+            []
+        );
     },
 
     /**

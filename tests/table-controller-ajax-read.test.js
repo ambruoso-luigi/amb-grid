@@ -351,7 +351,7 @@ describe('AMB table controller AJAX URL read API', () => {
             expect(typeof controller.replaceData).toBe('function');
             expect(typeof controller.updateData).toBe('function');
             expect(typeof controller.addData).toBe('function');
-            expect(controller.clearData).toBeUndefined();
+            expect(typeof controller.clearData).toBe('function');
 
             expect(controller.setSearchQuery('Ada')).toBe(true);
             const searchState = controller.getSearchState();

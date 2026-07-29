@@ -107,6 +107,9 @@ const createTableMock = ({
 
             return Promise.resolve(addedRows);
         }),
+        clearData: vi.fn(() => {
+            rows.splice(0, rows.length);
+        }),
         moveRow: vi.fn((row, targetRow, aboveTarget) => {
             const rowIndex = rows.indexOf(row);
 
@@ -445,6 +448,111 @@ describe('CrudHelper row reveal and pagination normalization', () => {
                 changedFields: ['name']
             }
         ]);
+    });
+
+    test('rebaseCurrentData registers an empty baseline without resetting CRUD infrastructure', async () => {
+        const {
+            table,
+            rows,
+            getLastAddedRows
+        } = createTableMock({
+            rowsData: [
+                {
+                    id: 0,
+                    name: 'Clean row',
+                    _ambRowNumber: 1
+                },
+                {
+                    id: 2,
+                    name: 'Row to modify',
+                    _ambRowNumber: 2
+                },
+                {
+                    id: null,
+                    name: 'New row',
+                    _ambTempId: 'amb-temp-12',
+                    _ambRowNumber: 3,
+                    _state: ROW_STATE.NEW
+                },
+                {
+                    id: 4,
+                    name: 'Deleted row',
+                    _ambRowNumber: 4,
+                    _state: ROW_STATE.DELETED
+                }
+            ]
+        });
+        const crud = new CrudHelper(table);
+        const validator = vi.fn(value => Boolean(value));
+        const subscription = vi.fn();
+        const options = crud.options;
+
+        crud.addCellValidator('name', 'Name is required', validator);
+        crud.on('row-state-changed', subscription);
+        crud.updateRowFields(2, { name: 'Modified row' });
+        crud.markCellError(0, 'name', 'Old cell error');
+        crud.markRowError(0, 'Old row error');
+
+        expect(rows.map(row => row.getData()._state)).toEqual([
+            ROW_STATE.CLEAN,
+            ROW_STATE.MODIFIED,
+            ROW_STATE.NEW,
+            ROW_STATE.DELETED
+        ]);
+        expect(crud.getChanges().inserted).toHaveLength(1);
+        expect(crud.getChanges().updated).toHaveLength(1);
+        expect(crud.getChanges().deleted).toHaveLength(1);
+        expect(crud.getErrors().hasErrors).toBe(true);
+
+        const nextTempIdNumber = crud.nextTempIdNumber;
+
+        expect(table.clearData()).toBeUndefined();
+        expect(table.clearData).toHaveBeenCalledOnce();
+        expect(rows).toHaveLength(0);
+
+        await crud.rebaseCurrentData();
+
+        const emptyChanges = {
+            inserted: [],
+            updated: [],
+            deleted: []
+        };
+
+        expect(rows).toHaveLength(0);
+        expect(crud.originalRows.size).toBe(0);
+        expect(crud.modifiedCells.size).toBe(0);
+        expect(crud.cellErrors.size).toBe(0);
+        expect(crud.rowErrors.size).toBe(0);
+        expect(crud.getChanges()).toEqual(emptyChanges);
+        expect(crud.getSavePayload().changes).toEqual(emptyChanges);
+        expect(crud.getErrors()).toEqual({
+            hasErrors: false,
+            rows: [],
+            cells: []
+        });
+        expect(crud.cellValidators.get('name')).toEqual([
+            expect.objectContaining({
+                validateFn: validator
+            })
+        ]);
+        expect(crud.eventHandlers.get('row-state-changed')).toContain(subscription);
+        expect(crud.options).toBe(options);
+        expect(crud.isDestroyed).toBe(false);
+        expect(crud.nextTempIdNumber).toBe(nextTempIdNumber);
+
+        const result = await crud.addData([
+            {
+                id: null,
+                name: 'After clear'
+            }
+        ], false);
+        const addedRows = getLastAddedRows();
+        const addedTempId = addedRows[0].getData()._ambTempId;
+
+        expect(result).toBe(addedRows);
+        expect(addedTempId).toBe(`amb-temp-${nextTempIdNumber}`);
+        expect(addedTempId).not.toBe('amb-temp-12');
+        expect(crud.getChanges().inserted).toHaveLength(1);
     });
 
     test('addData prepares one managed batch and completes only after successful insertion', async () => {
