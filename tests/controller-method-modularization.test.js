@@ -428,6 +428,15 @@ describe('AMB table controller method modularization', () => {
         const getAjaxUrlImplementation = dataImplementationSource.match(/getAjaxUrl\(\) \{([\s\S]*?)\n    \},/);
         const controllerModules = readdirSync(controllerDir);
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
+        const crudCreationIndex = source.indexOf(
+            'crud = new CrudHelper(table, { errorStyle });'
+        );
+        const validatorRegistrationIndex = source.indexOf(
+            'columnPipeline.validators.forEach(validator => {'
+        );
+        const dataMethodsCreationIndex = source.indexOf(
+            'const dataMethods = createDataMethods({'
+        );
         const inlineDataDefinitions = [
             /^\s*getAjaxUrl\(\) \{/m,
             /^\s*getData\(\.\.\.args\) \{/m,
@@ -436,7 +445,10 @@ describe('AMB table controller method modularization', () => {
         ];
 
         expect(source).toContain("import { createDataMethods } from './controller/data-methods.js';");
-        expect(source).toMatch(/crud = new CrudHelper\(table, \{ errorStyle \}\);\s*const dataMethods = createDataMethods\(\{\s*table,\s*crud\s*\}\);/);
+        expect(crudCreationIndex).toBeGreaterThan(-1);
+        expect(validatorRegistrationIndex).toBeGreaterThan(crudCreationIndex);
+        expect(dataMethodsCreationIndex).toBeGreaterThan(validatorRegistrationIndex);
+        expect(source).toMatch(/const dataMethods = createDataMethods\(\{\s*table,\s*crud\s*\}\);/);
         expect(composition).not.toBeNull();
         expect(composition[1]).toContain('columnMethods');
         expect(composition[1]).toContain('dataMethods');
