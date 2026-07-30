@@ -5,7 +5,8 @@ import { describe, expect, test } from 'vitest';
 
 import {
     TABLE_API_COVERAGE,
-    TABULATOR_API_VERSION
+    TABULATOR_API_VERSION,
+    TABULATOR_TABLE_API_METHODS
 } from './support/tabulator-api-coverage.js';
 
 const allowedStatuses = new Set([
@@ -69,6 +70,13 @@ describe('stable Tabulator Table API coverage manifest', () => {
         expect(TABULATOR_API_VERSION).toBe('6.4.0');
         expect(installedTabulatorPackage.version).toBe(TABULATOR_API_VERSION);
         expect(new Set(methods).size).toBe(methods.length);
+        expect(new Set(TABULATOR_TABLE_API_METHODS).size)
+            .toBe(TABULATOR_TABLE_API_METHODS.length);
+        expect(
+            [...TABLE_API_COVERAGE.map(entry => entry.method)].sort()
+        ).toEqual(
+            [...TABULATOR_TABLE_API_METHODS].sort()
+        );
 
         TABLE_API_COVERAGE.forEach(entry => {
             expect(allowedStatuses.has(entry.status)).toBe(true);

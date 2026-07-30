@@ -1,5 +1,56 @@
 export const TABULATOR_API_VERSION = '6.4.0';
 
+export const TABULATOR_TABLE_API_METHODS = [
+    // Alerts
+    'alert clearAlert',
+    // Calculation
+    'getCalcResults recalc',
+    // Columns
+    'addColumn deleteColumn getColumn getColumnDefinitions getColumns hideColumn moveColumn scrollToColumn setColumns showColumn toggleColumn updateColumnDefinition',
+    // Data
+    'addData clearData getAjaxUrl getData getDataCount replaceData searchData setData updateData updateOrAddData',
+    // Editing and validation
+    'clearCellEdited clearCellValidation getEditedCells getInvalidCells validate',
+    // Events
+    'off on',
+    // Export
+    'copyToClipboard download downloadToTab getHtml print',
+    // Filters
+    'addFilter clearFilter clearHeaderFilter getFilters getHeaderFilters getHeaderFilterValue refreshFilter removeFilter searchRows setFilter setHeaderFilterFocus setHeaderFilterValue',
+    // Grouping
+    'getGroupedData getGroups setGroupBy setGroupHeader setGroupStartOpen setGroupValues',
+    // History
+    'clearHistory getHistoryRedoSize getHistoryUndoSize redo undo',
+    // Import
+    'import',
+    // Internal extension surface
+    'dispatchEvent initGuard initializeCoreSystems initializeElement modExists module tableComms',
+    // Layout
+    'setHeight setMaxHeight setMinHeight',
+    // Lifecycle
+    'destroy',
+    // Localization
+    'getLang getLocale setLocale',
+    // Navigation
+    'navigateDown navigateLeft navigateNext navigatePrev navigateRight navigateUp',
+    // Pagination
+    'getPage getPageMax getPageSize nextPage previousPage setMaxPage setPage setPageSize setPageToRow',
+    // Persistence
+    'getColumnLayout setColumnLayout',
+    // Range
+    'addRange getRanges getRangesData',
+    // Redraw
+    'blockRedraw redraw restoreRedraw',
+    // Rows
+    'addRow deleteRow getRow getRowFromPosition getRowPosition getRows moveRow scrollToRow updateOrAddRow updateRow',
+    // Selection
+    'deselectRow getSelectedData getSelectedRows selectRow toggleSelectRow',
+    // Sorting
+    'clearSort getSorters setSort',
+    // Spreadsheet
+    'activeSheet addSheet clearSheet getSheet getSheetData getSheetDefinitions getSheets removeSheet setSheetData setSheets'
+].join(' ').split(/\s+/);
+
 export const TABLE_API_COVERAGE = [
     // Alerts
     { method: 'alert', domain: 'alerts', status: 'exposed', classification: 'safe-pass-through', controller: 'alert-methods' },
@@ -87,8 +138,12 @@ export const TABLE_API_COVERAGE = [
 
     // Internal extension surface
     { method: 'dispatchEvent', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'Internal event dispatch is not normal application controller access.' },
+    { method: 'initGuard', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'Initialization-state guarding is an internal warning mechanism used by core and registered table functions.' },
+    { method: 'initializeCoreSystems', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'Core manager and module setup is a constructor-only lifecycle operation, not normal application controller access.' },
+    { method: 'initializeElement', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'Table element resolution and validation is a constructor-only lifecycle operation, not normal application controller access.' },
     { method: 'modExists', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'Module introspection remains available through advanced engine access.' },
     { method: 'module', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'Module instances remain available through advanced engine access.' },
+    { method: 'tableComms', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'The Comms module registers this receiving endpoint for internal inter-table module messages.' },
 
     // Layout
     { method: 'setHeight', domain: 'layout', status: 'exposed', classification: 'safe-pass-through', controller: 'layout-methods' },
