@@ -145,7 +145,7 @@ export const TABLE_API_COVERAGE = [
     { method: 'getRows', domain: 'rows', status: 'exposed', classification: 'safe-pass-through', controller: 'row-methods' },
     { method: 'moveRow', domain: 'rows', status: 'narrower-contract', classification: 'AMB-aware', controller: 'row-methods', reason: 'AMB rejects grouped and Data Tree moves and realigns technical numbering.' },
     { method: 'scrollToRow', domain: 'rows', status: 'exposed', classification: 'AMB-aware', controller: 'row-methods' },
-    { method: 'updateOrAddRow', domain: 'rows', status: 'missing', classification: 'AMB-aware', reason: 'Conditional insert or update needs an explicit managed-row CRUD contract.' },
+    { method: 'updateOrAddRow', domain: 'rows', status: 'narrower-contract', classification: 'overridden', controller: 'crud-methods', reason: 'AMB accepts backend or temporary identifiers, protects managed CRUD state, and does not revive deleted rows.' },
     { method: 'updateRow', domain: 'rows', status: 'narrower-contract', classification: 'overridden', controller: 'crud-methods', reason: 'AMB returns a synchronous row result and protects managed CRUD semantics.' },
 
     // Selection

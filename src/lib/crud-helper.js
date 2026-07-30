@@ -2286,6 +2286,106 @@ export class CrudHelper {
         return this._updateManagedRows(rowsData);
     }
 
+    async _updateOrAddManagedRow(identifier, rowData) {
+        const idField = this.options.idField;
+        const tempIdField = this._getTempIdField();
+        const row = this.findRowByKey(identifier);
+
+        if (row) {
+            if (this._getBaseRowState(row) === ROW_STATE.DELETED) {
+                return null;
+            }
+
+            const preparedPatch = { ...rowData };
+            const rowId = this._getRowId(row);
+
+            if (this._isMissingId(rowId)) {
+                delete preparedPatch[idField];
+                preparedPatch[tempIdField] = this._getRowTempId(row);
+            } else {
+                preparedPatch[idField] = rowId;
+            }
+
+            const updateOperation = this.updateData([preparedPatch]);
+
+            if (updateOperation === false) {
+                throw new Error('AMB Grid update operation became unavailable during updateOrAddRow');
+            }
+
+            await updateOperation;
+            return row;
+        }
+
+        const preparedData = { ...rowData };
+        const dataId = preparedData[idField];
+        const dataTempId = preparedData[tempIdField];
+        const dataIdentifier = this._isMissingId(dataId)
+            ? dataTempId
+            : dataId;
+
+        if (this._isMissingId(dataIdentifier)) {
+            preparedData[idField] = identifier;
+        } else if (dataIdentifier !== identifier) {
+            return null;
+        }
+
+        const addOperation = this.addData([preparedData]);
+
+        if (addOperation === false) {
+            throw new Error('AMB Grid add operation became unavailable during updateOrAddRow');
+        }
+
+        const addedRows = await addOperation;
+        const addedRow = Array.isArray(addedRows) ? addedRows[0] : null;
+
+        if (!addedRow) {
+            throw new Error('AMB Grid add operation returned no managed row during updateOrAddRow');
+        }
+
+        return addedRow;
+    }
+
+    /**
+     * Updates one managed row or adds it through the AMB Grid CRUD lifecycle.
+     *
+     * The backend id or `_ambTempId` resolves an existing row. Its application
+     * fields are updated through normal tracking and validation while
+     * technical fields remain protected. A missing row is added as `new`;
+     * when its data has no identifier, the supplied identifier becomes its
+     * backend id. Conflicting application identifiers are intentionally
+     * ignored, and a `deleted` row is never restored or duplicated.
+     *
+     * The returned Promise preserves the actual Row Component, or resolves to
+     * `null` for an intentionally ignored operation. No focus, scrolling,
+     * selection, page change, or automatic rollback occurs. Internal
+     * rejections propagate unchanged. Invalid input or unavailable
+     * dependencies return `false`. Direct
+     * `grid.table.updateOrAddRow(...)` remains advanced engine access and can
+     * bypass the AMB CRUD lifecycle.
+     *
+     * @param {*} identifier - Backend id or AMB temporary row id.
+     * @param {object} rowData - Complete or partial application row data.
+     * @returns {Promise<object|null>|false} Managed Row Component, `null`, or `false`.
+     */
+    updateOrAddRow(identifier, rowData) {
+        if (
+            this.isDestroyed
+            || this._isMissingId(identifier)
+            || !rowData
+            || typeof rowData !== 'object'
+            || Array.isArray(rowData)
+            || typeof this.findRowByKey !== 'function'
+            || typeof this.updateData !== 'function'
+            || typeof this.addData !== 'function'
+            || !this.table
+            || typeof this.table.addData !== 'function'
+        ) {
+            return false;
+        }
+
+        return this._updateOrAddManagedRow(identifier, rowData);
+    }
+
     async _updateOrAddManagedRows(rowsData) {
         const idField = this.options.idField;
         const tempIdField = this._getTempIdField();

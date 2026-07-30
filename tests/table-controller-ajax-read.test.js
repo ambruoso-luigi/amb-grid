@@ -115,6 +115,7 @@ vi.mock('../src/lib/crud-helper.js', () => ({
             this.validateAll = vi.fn();
             this.updateRowFields = vi.fn();
             this.addRow = vi.fn();
+            this.updateOrAddRow = vi.fn();
             this.deleteRow = vi.fn();
             this.rollbackRow = vi.fn();
             this.destroy = vi.fn();
@@ -256,6 +257,7 @@ const clearCrudSetupCalls = crud => {
     crud.validateAll.mockClear();
     crud.updateRowFields.mockClear();
     crud.addRow.mockClear();
+    crud.updateOrAddRow.mockClear();
     crud.deleteRow.mockClear();
     crud.rollbackRow.mockClear();
     crud.destroy.mockClear();
@@ -301,6 +303,7 @@ const expectNoAjaxReadSideEffects = (table, crud) => {
     expect(crud.validateAll).not.toHaveBeenCalled();
     expect(crud.updateRowFields).not.toHaveBeenCalled();
     expect(crud.addRow).not.toHaveBeenCalled();
+    expect(crud.updateOrAddRow).not.toHaveBeenCalled();
     expect(crud.deleteRow).not.toHaveBeenCalled();
     expect(crud.rollbackRow).not.toHaveBeenCalled();
     expect(crud.destroy).not.toHaveBeenCalled();
@@ -353,6 +356,7 @@ describe('AMB table controller AJAX URL read API', () => {
             expect(typeof controller.updateOrAddData).toBe('function');
             expect(typeof controller.addData).toBe('function');
             expect(typeof controller.clearData).toBe('function');
+            expect(typeof controller.updateOrAddRow).toBe('function');
 
             expect(controller.setSearchQuery('Ada')).toBe(true);
             const searchState = controller.getSearchState();

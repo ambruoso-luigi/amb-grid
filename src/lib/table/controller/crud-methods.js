@@ -99,6 +99,37 @@ export const createCrudMethods = ({ crud }) => ({
     },
 
     /**
+     * Updates one managed row or adds a missing row through AMB Grid.
+     *
+     * A backend id or `_ambTempId` identifies the operation. Existing rows are
+     * updated through normal tracking and validation with technical fields
+     * protected. Missing rows are added as `new`, using the supplied
+     * identifier as backend id when their application data has none.
+     * Conflicting identifiers and `deleted` rows resolve to `null`.
+     *
+     * The operation performs no focus, scrolling, selection, page change, or
+     * automatic rollback. Its Promise preserves the actual Row Component or
+     * `null`, internal rejections propagate unchanged, and invalid input or
+     * dependencies return `false`. Direct
+     * `grid.table.updateOrAddRow(...)` remains advanced engine access and can
+     * bypass the AMB CRUD lifecycle.
+     *
+     * @param {*} identifier - Backend id or AMB temporary row id.
+     * @param {object} rowData - Complete or partial application row data.
+     * @returns {Promise<object|null>|false} Managed Row Component, `null`, or `false`.
+     */
+    updateOrAddRow(identifier, rowData) {
+        if (!crud || typeof crud.updateOrAddRow !== 'function') {
+            return false;
+        }
+
+        return crud.updateOrAddRow(
+            identifier,
+            rowData
+        );
+    },
+
+    /**
      * Applies a partial patch through the AMB CRUD lifecycle.
      *
      * The identifier can be a backend id or `_ambTempId`. `CrudHelper` updates

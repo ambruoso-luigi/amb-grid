@@ -36,6 +36,7 @@ describe('AMB table CRUD facade methods', () => {
             getStateReport: { rows: [], changes: {} },
             getSavePayload: { canSave: true, changes: {} },
             addRow: rowComponent,
+            updateOrAddRow: Promise.resolve(rowComponent),
             updateRowFields: rowComponent,
             deleteRow: false,
             rollbackRow: true,
@@ -73,6 +74,7 @@ describe('AMB table CRUD facade methods', () => {
             getStateReport: vi.fn(() => results.getStateReport),
             getSavePayload: vi.fn(() => results.getSavePayload),
             addRow: vi.fn(() => results.addRow),
+            updateOrAddRow: vi.fn(() => results.updateOrAddRow),
             updateRowFields: vi.fn(() => results.updateRowFields),
             updateRow: vi.fn(),
             deleteRow: vi.fn(() => results.deleteRow),
@@ -102,6 +104,10 @@ describe('AMB table CRUD facade methods', () => {
             {
                 methodName: 'addRow',
                 args: [rowData]
+            },
+            {
+                methodName: 'updateOrAddRow',
+                args: [identifier, rowData]
             },
             {
                 methodName: 'updateRow',
@@ -185,6 +191,7 @@ describe('AMB table CRUD facade methods', () => {
             'getStateReport',
             'getSavePayload',
             'addRow',
+            'updateOrAddRow',
             'updateRow',
             'deleteRow',
             'rollbackRow',
@@ -244,5 +251,11 @@ describe('AMB table CRUD facade methods', () => {
             .forEach(([, mock]) => {
                 expect(mock).not.toHaveBeenCalled();
             });
+
+        const unavailableMethods = createCrudMethods({
+            crud: {}
+        });
+
+        expect(unavailableMethods.updateOrAddRow(identifier, rowData)).toBe(false);
     });
 });

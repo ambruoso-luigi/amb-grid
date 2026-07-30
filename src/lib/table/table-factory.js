@@ -761,6 +761,7 @@ const wrapEditableForDeletedRows = (columns, getCrud) => {
  * @property {Function} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
  * @property {Function} getSavePayload - Generate the AMB save payload using the supported payload options.
  * @property {Function} addRow - Add a row through the AMB lifecycle rather than directly through the engine.
+ * @property {Function} updateOrAddRow - Update one existing managed row or add a missing row through the AMB Grid CRUD lifecycle.
  * @property {Function} updateRow - Patch a row through AMB tracking and validation rather than directly through the engine.
  * @property {Function} deleteRow - Delete or mark one row deleted according to the AMB lifecycle.
  * @property {Function} rollbackRow - Restore or remove one row according to its AMB lifecycle state.
