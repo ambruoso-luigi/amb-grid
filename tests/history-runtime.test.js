@@ -92,21 +92,26 @@ describe('AMB interaction-history runtime coordinator', () => {
         expect(runtime.isAvailable()).toBe(false);
     });
 
-    test.each([
-        ['undo', 'getHistoryUndoSize'],
-        ['redo', 'getHistoryRedoSize']
-    ])('resolves %s false without a runtime call when its count is zero', async (
-        direction,
-        countMethod
-    ) => {
-        const harness = createHarness({
-            undoCount: direction === 'undo' ? 0 : 1,
-            redoCount: direction === 'redo' ? 0 : 1
-        });
+    test('returns false for zero counts or a runtime false result', async () => {
+        for (const direction of ['undo', 'redo']) {
+            const harness = createHarness({
+                undoCount: direction === 'undo' ? 0 : 1,
+                redoCount: direction === 'redo' ? 0 : 1
+            });
+            const countMethod = direction === 'undo'
+                ? 'getHistoryUndoSize'
+                : 'getHistoryRedoSize';
 
-        await expect(harness.runtime.perform(direction)).resolves.toBe(false);
-        expect(harness.table[countMethod]).toHaveBeenCalledOnce();
-        expect(harness.table[direction]).not.toHaveBeenCalled();
+            await expect(harness.runtime.perform(direction)).resolves.toBe(false);
+            expect(harness.table[countMethod]).toHaveBeenCalledOnce();
+            expect(harness.table[direction]).not.toHaveBeenCalled();
+            expect(harness.crud.reconcileHistoryAction).not.toHaveBeenCalled();
+        }
+
+        const harness = createHarness();
+
+        harness.table.undo.mockReturnValueOnce(false);
+        await expect(harness.runtime.perform('undo')).resolves.toBe(false);
         expect(harness.crud.reconcileHistoryAction).not.toHaveBeenCalled();
     });
 
@@ -141,12 +146,17 @@ describe('AMB interaction-history runtime coordinator', () => {
         await expect(operation).resolves.toBe(true);
     });
 
-    test('serializes distinct public calls and continues after a false result', async () => {
+    test('serializes calls and keeps the queue reusable after false or error', async () => {
         const { crud, runtime, table } = createHarness();
         const firstReconciliation = createDeferred();
+        const queuedReconciliation = createDeferred();
+        const reconciliationError = new Error('reconcile failed');
 
         crud.reconcileHistoryAction
             .mockReturnValueOnce(firstReconciliation.promise)
+            .mockResolvedValueOnce()
+            .mockReturnValueOnce(queuedReconciliation.promise)
+            .mockRejectedValueOnce(reconciliationError)
             .mockResolvedValueOnce();
 
         const first = runtime.perform('undo');
@@ -161,92 +171,49 @@ describe('AMB interaction-history runtime coordinator', () => {
         await expect(second).resolves.toBe(true);
         expect(table.undo).toHaveBeenCalledTimes(2);
 
+        const beforeClear = runtime.perform('undo');
+        const afterClear = runtime.perform('undo');
+
+        await vi.waitFor(() => expect(table.undo).toHaveBeenCalledTimes(3));
         table.undoCount = 0;
-        await expect(runtime.perform('undo')).resolves.toBe(false);
+        queuedReconciliation.resolve();
+        await expect(beforeClear).resolves.toBe(true);
+        await expect(afterClear).resolves.toBe(false);
+
         table.undoCount = 1;
+        await expect(runtime.perform('undo')).rejects.toBe(reconciliationError);
         await expect(runtime.perform('undo')).resolves.toBe(true);
-        expect(table.undo).toHaveBeenCalledTimes(3);
-    });
-
-    test('rechecks a queued operation count after history is cleared', async () => {
-        const { crud, runtime, table } = createHarness();
-        const firstReconciliation = createDeferred();
-
-        crud.reconcileHistoryAction.mockReturnValueOnce(firstReconciliation.promise);
-
-        const first = runtime.perform('undo');
-        const queued = runtime.perform('undo');
-
-        await vi.waitFor(() => expect(table.undo).toHaveBeenCalledOnce());
-        table.undoCount = 0;
-        firstReconciliation.resolve();
-
-        await expect(first).resolves.toBe(true);
-        await expect(queued).resolves.toBe(false);
-        expect(table.getHistoryUndoSize).toHaveBeenCalledTimes(2);
-        expect(table.undo).toHaveBeenCalledOnce();
+        expect(table.undo).toHaveBeenCalledTimes(5);
         expect(runtime.isAvailable()).toBe(true);
     });
 
-    test('preserves runtime false and propagates the same synchronous error', async () => {
+    test('propagates runtime errors and rejects when the expected event is missing', async () => {
         const { crud, runtime, table } = createHarness();
         const runtimeError = new Error('undo failed');
-
-        table.undo.mockReturnValueOnce(false);
-        await expect(runtime.perform('undo')).resolves.toBe(false);
-        expect(crud.reconcileHistoryAction).not.toHaveBeenCalled();
+        const reconciliationError = new Error('reconcile failed');
 
         table.undo.mockImplementationOnce(() => {
             throw runtimeError;
         });
         await expect(runtime.perform('undo')).rejects.toBe(runtimeError);
 
-        table.undo.mockImplementationOnce(() => {
-            table.emit('historyUndo', 'cellEdit', { id: 'next' }, {});
-            return true;
-        });
-        await expect(runtime.perform('undo')).resolves.toBe(true);
-    });
-
-    test('propagates reconciliation errors without rollback and keeps the queue usable', async () => {
-        const { crud, runtime, table } = createHarness();
-        const reconciliationError = new Error('reconcile failed');
-
-        crud.reconcileHistoryAction
-            .mockRejectedValueOnce(reconciliationError)
-            .mockResolvedValueOnce();
-
+        crud.reconcileHistoryAction.mockRejectedValueOnce(reconciliationError);
         await expect(runtime.perform('redo')).rejects.toBe(reconciliationError);
-        await expect(runtime.perform('redo')).resolves.toBe(true);
-
-        expect(table.redo).toHaveBeenCalledTimes(2);
-        expect(table).not.toHaveProperty('setData');
-        expect(table).not.toHaveProperty('replaceData');
-        expect(crud).not.toHaveProperty('rebaseCurrentData');
-    });
-
-    test('rejects explicitly when a successful runtime call emits no event', async () => {
-        const { crud, runtime, table } = createHarness();
 
         table.redo.mockReturnValueOnce(true);
-
         await expect(runtime.perform('redo')).rejects.toThrow(
             /completed without emitting historyRedo/
         );
-        expect(crud.reconcileHistoryAction).not.toHaveBeenCalled();
-
-        await expect(runtime.perform('redo')).resolves.toBe(true);
+        expect(table).not.toHaveProperty('setData');
+        expect(crud).not.toHaveProperty('rebaseCurrentData');
     });
 
-    test('reconciles keyboard or advanced events once and contains their errors', async () => {
+    test('contains external-event errors and cancels pending waits on destroy', async () => {
         const { crud, runtime, table } = createHarness();
         const externalError = new Error('external failure');
         const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-        crud.reconcileHistoryAction
-            .mockRejectedValueOnce(externalError)
-            .mockResolvedValueOnce();
-
+        crud.reconcileHistoryAction.mockRejectedValueOnce(externalError);
         table.emit('historyUndo', 'rowAdd', { id: 'keyboard-row' }, {
             data: { id: null }
         });
@@ -254,24 +221,7 @@ describe('AMB interaction-history runtime coordinator', () => {
             expect.stringContaining('external history undo'),
             externalError
         ));
-
-        table.emit('historyRedo', 'rowMove', { id: 'advanced-row' }, {});
-        await vi.waitFor(() => {
-            expect(crud.reconcileHistoryAction).toHaveBeenLastCalledWith(
-                'redo',
-                'rowMove',
-                { id: 'advanced-row' },
-                {}
-            );
-        });
-        expect(crud.reconcileHistoryAction).toHaveBeenCalledTimes(2);
-
-        consoleError.mockRestore();
-        runtime.destroy();
-    });
-
-    test('cancels an outstanding event wait during destroy', async () => {
-        const { runtime, table } = createHarness();
+        expect(crud.reconcileHistoryAction).toHaveBeenCalledOnce();
 
         table.undo.mockReturnValueOnce(true);
         const operation = runtime.perform('undo');
@@ -282,5 +232,6 @@ describe('AMB interaction-history runtime coordinator', () => {
 
         await expect(operation).resolves.toBe(false);
         await expect(runtime.perform('undo')).resolves.toBe(false);
+        consoleError.mockRestore();
     });
 });

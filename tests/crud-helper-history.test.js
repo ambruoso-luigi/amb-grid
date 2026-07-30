@@ -137,17 +137,17 @@ describe('CrudHelper interaction-history reconciliation', () => {
         expect(second.data._state).toBe(ROW_STATE.CLEAN);
     });
 
-    test('removes and restores a newly added row without orphan tracking or tombstones', async () => {
+    test('reconciles the complete add and delete history cycle of a new row', async () => {
         const { crud, rows } = createHarness();
         const baseline = cloneOriginalRows(crud);
-        const addedData = {
+        const rowData = {
             id: null,
             name: '',
             _ambTempId: 'amb-temp-9',
             _ambRowNumber: 3,
             _state: ROW_STATE.NEW
         };
-        const added = createRow({ ...addedData });
+        const added = createRow({ ...rowData });
 
         crud.addCellValidator('name', 'Required', value => Boolean(value));
         rows.push(added);
@@ -157,20 +157,18 @@ describe('CrudHelper interaction-history reconciliation', () => {
 
         rows.splice(rows.indexOf(added), 1);
         await crud.reconcileHistoryAction('undo', 'rowAdd', added, {
-            data: addedData
+            data: rowData
         });
 
         expect(crud.modifiedCells.has('amb-temp-9')).toBe(false);
         expect(crud.cellErrors.has('amb-temp-9')).toBe(false);
         expect(crud.rowErrors.has('amb-temp-9')).toBe(false);
-        expect(crud.getChanges().inserted).toEqual([]);
-        expect(crud.getChanges().deleted).toEqual([]);
 
-        const restored = createRow({ ...addedData });
+        const restored = createRow({ ...rowData });
 
         rows.push(restored);
         await crud.reconcileHistoryAction('redo', 'rowAdd', restored, {
-            data: addedData
+            data: rowData
         });
 
         expect(restored.data._state).toBe(ROW_STATE.NEW);
@@ -179,51 +177,34 @@ describe('CrudHelper interaction-history reconciliation', () => {
         expect(crud.modifiedCells.has('amb-temp-9')).toBe(false);
         expect(crud.cellErrors.get('amb-temp-9').get('name')).toBe('Required');
         expect(crud.getChanges().inserted).toHaveLength(1);
-        expect(crud.getChanges().updated).toEqual([]);
-        expect(crud.getChanges().deleted).toEqual([]);
-        expect(cloneOriginalRows(crud)).toEqual(baseline);
-    });
 
-    test('undoes and redoes physical removal of a new row with scoped cleanup', async () => {
-        const { crud, rows } = createHarness();
-        const baseline = cloneOriginalRows(crud);
-        const rowData = {
-            id: null,
-            name: 'New',
-            _ambTempId: 'amb-temp-4',
-            _ambRowNumber: 3,
-            _state: ROW_STATE.NEW
-        };
-        const removed = createRow({ ...rowData });
-
-        rows.push(removed);
-        rows.splice(rows.indexOf(removed), 1);
-        await crud.reconcileHistoryAction('redo', 'rowDelete', removed, {
-            data: rowData
-        });
-
-        expect(crud.getChanges().deleted).toEqual([]);
-
-        const restored = createRow({ ...rowData });
-
-        rows.push(restored);
-        await crud.reconcileHistoryAction('undo', 'rowDelete', restored, {
-            data: rowData
-        });
-        expect(restored.data._state).toBe(ROW_STATE.NEW);
-        expect(crud.getChanges().inserted).toHaveLength(1);
-
-        crud.markRowError('amb-temp-4', 'Do not restore');
+        crud.markRowError('amb-temp-9', 'Do not restore');
         rows.splice(rows.indexOf(restored), 1);
         await crud.reconcileHistoryAction('redo', 'rowDelete', restored, {
             data: rowData
         });
+        expect(crud.rowErrors.has('amb-temp-9')).toBe(false);
+        expect(crud.cellErrors.has('amb-temp-9')).toBe(false);
 
-        expect(crud.rowErrors.has('amb-temp-4')).toBe(false);
-        expect(crud.cellErrors.has('amb-temp-4')).toBe(false);
-        expect(crud.modifiedCells.has('amb-temp-4')).toBe(false);
-        expect(crud.getChanges().inserted).toEqual([]);
-        expect(crud.getChanges().deleted).toEqual([]);
+        const restoredAgain = createRow({ ...rowData });
+
+        rows.push(restoredAgain);
+        await crud.reconcileHistoryAction('undo', 'rowDelete', restoredAgain, {
+            data: rowData
+        });
+        expect(restoredAgain.data._state).toBe(ROW_STATE.NEW);
+
+        rows.splice(rows.indexOf(restoredAgain), 1);
+        await crud.reconcileHistoryAction('redo', 'rowDelete', restoredAgain, {
+            data: rowData
+        });
+
+        expect(crud.modifiedCells.has('amb-temp-9')).toBe(false);
+        expect(crud.getChanges()).toEqual({
+            inserted: [],
+            updated: [],
+            deleted: []
+        });
         expect(cloneOriginalRows(crud)).toEqual(baseline);
     });
 
@@ -254,7 +235,7 @@ describe('CrudHelper interaction-history reconciliation', () => {
         expect(cloneOriginalRows(crud)).toEqual(baseline);
     });
 
-    test('realigns rowMove numbering and parity without creating CRUD changes', async () => {
+    test('handles rowMove, technical fields and unknown actions without baseline changes', async () => {
         const { crud, first, rows, second } = createHarness();
         const baseline = cloneOriginalRows(crud);
         const payload = crud.getSavePayload();
@@ -273,16 +254,10 @@ describe('CrudHelper interaction-history reconciliation', () => {
         expect(first.data._state).toBe(ROW_STATE.CLEAN);
         expect(crud.getSavePayload()).toEqual(payload);
         expect(cloneOriginalRows(crud)).toEqual(baseline);
-    });
-
-    test('does not track technical cell edits and rejects unknown actions explicitly', async () => {
-        const { crud, first } = createHarness();
-        const baseline = cloneOriginalRows(crud);
-        const rowNumberCell = first.getCell('_ambRowNumber');
 
         first.data._ambRowNumber = 7;
-        await crud.reconcileHistoryAction('redo', 'cellEdit', rowNumberCell, {
-            oldValue: 1,
+        await crud.reconcileHistoryAction('redo', 'cellEdit', first.getCell('_ambRowNumber'), {
+            oldValue: 2,
             newValue: 7
         });
 

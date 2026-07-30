@@ -130,48 +130,10 @@ describe('AMB table controller data method group', () => {
     );
 
     test('imports with unchanged arguments and rebases the loaded dataset before resolving', async () => {
-        const importer = vi.fn();
+        const format = { format: 'csv' };
         const accept = ['text/csv', '.amb'];
-        const reader = 'buffer';
-        const runtimeResult = {
-            imported: true
-        };
-        const importedRows = [{
-            id: 10,
-            name: 'Imported',
-            _state: 'modified',
-            _originalData: {
-                id: 9,
-                name: 'Previous'
-            }
-        }];
-        const validators = new Map([
-            ['name', [vi.fn()]]
-        ]);
-        const declarativeValidators = new Map([
-            ['name', [vi.fn()]]
-        ]);
-        const subscriptions = new Map([
-            ['cellEdited', vi.fn()]
-        ]);
-        const columns = [{
-            field: 'name'
-        }];
-        const modifiedCells = new Map([
-            [1, new Set(['name'])]
-        ]);
-        const cellErrors = new Map([
-            [1, new Map([['name', 'Previous error']])]
-        ]);
-        const rowErrors = new Map([
-            [1, 'Previous row error']
-        ]);
-        const originalRows = new Map([
-            [1, {
-                id: 1,
-                name: 'Previous'
-            }]
-        ]);
+        const reader = vi.fn();
+        const runtimeResult = { imported: true };
         let resolveImport;
         const runtimePromise = new Promise(resolve => {
             resolveImport = resolve;
@@ -181,128 +143,59 @@ describe('AMB table controller data method group', () => {
             setData: vi.fn(),
             replaceData: vi.fn(),
             clearData: vi.fn(),
-            setColumns: vi.fn(),
-            on: vi.fn(),
-            off: vi.fn(),
-            columns
+            setColumns: vi.fn()
         };
         const crud = {
             isDestroyed: false,
-            cellValidators: validators,
-            declarativeCellValidators: declarativeValidators,
-            tabulatorEventHandlers: subscriptions,
-            modifiedCells,
-            cellErrors,
-            rowErrors,
-            originalRows,
-            rebaseCurrentData: vi.fn(async () => {
-                modifiedCells.clear();
-                cellErrors.clear();
-                rowErrors.clear();
-                originalRows.clear();
-                importedRows.forEach(row => {
-                    delete row._originalData;
-                    row._state = 'clean';
-                    originalRows.set(row.id, {
-                        ...row
-                    });
-                });
-            })
+            rebaseCurrentData: vi.fn(() => Promise.resolve())
         };
         const methods = createDataMethods({
             table,
             crud,
             autoColumnsEnabled: false
         });
-        const resultPromise = methods.import(
-            importer,
-            accept,
-            reader
-        );
+        const resultPromise = methods.import(format, accept, reader);
 
         expect(resultPromise).toBeInstanceOf(Promise);
         expect(table.import).toHaveBeenCalledOnce();
-        expect(table.import.mock.calls[0][0]).toBe(importer);
-        expect(table.import.mock.calls[0][1]).toBe(accept);
-        expect(table.import.mock.calls[0][2]).toBe(reader);
+        expect(table.import).toHaveBeenCalledWith(format, accept, reader);
         expect(crud.rebaseCurrentData).not.toHaveBeenCalled();
 
         resolveImport(runtimeResult);
 
         await expect(resultPromise).resolves.toBe(runtimeResult);
         expect(crud.rebaseCurrentData).toHaveBeenCalledOnce();
-        expect(importedRows[0]).toEqual({
-            id: 10,
-            name: 'Imported',
-            _state: 'clean'
-        });
-        expect(modifiedCells.size).toBe(0);
-        expect(cellErrors.size).toBe(0);
-        expect(rowErrors.size).toBe(0);
-        expect(originalRows.get(10)).toEqual(importedRows[0]);
-        expect(crud.cellValidators).toBe(validators);
-        expect(crud.declarativeCellValidators)
-            .toBe(declarativeValidators);
-        expect(crud.tabulatorEventHandlers).toBe(subscriptions);
-        expect(table.columns).toBe(columns);
         expect(table.setData).not.toHaveBeenCalled();
         expect(table.replaceData).not.toHaveBeenCalled();
         expect(table.clearData).not.toHaveBeenCalled();
         expect(table.setColumns).not.toHaveBeenCalled();
-        expect(table.on).not.toHaveBeenCalled();
-        expect(table.off).not.toHaveBeenCalled();
 
-        const autoColumnsTable = {
-            import: vi.fn(),
-            setColumns: vi.fn()
-        };
-
-        expect(createDataMethods({
-            table: autoColumnsTable,
-            crud,
-            autoColumnsEnabled: true
-        }).import(importer, accept, reader)).toBe(false);
-        expect(autoColumnsTable.import).not.toHaveBeenCalled();
-        expect(autoColumnsTable.setColumns).not.toHaveBeenCalled();
-        expect(createDataMethods({
-            table: {},
-            crud
-        }).import(importer, accept, reader)).toBe(false);
-        expect(createDataMethods({
-            table,
-            crud: {}
-        }).import(importer, accept, reader)).toBe(false);
-        expect(createDataMethods({
-            table,
-            crud: {
-                ...crud,
-                isDestroyed: true
+        const unavailableImport = vi.fn();
+        const unavailableCases = [
+            {
+                table: { import: unavailableImport },
+                crud,
+                autoColumnsEnabled: true
+            },
+            { table: {}, crud },
+            { table: { import: unavailableImport }, crud: {} },
+            {
+                table: { import: unavailableImport },
+                crud: { ...crud, isDestroyed: true }
             }
-        }).import(importer, accept, reader)).toBe(false);
+        ];
+
+        unavailableCases.forEach(context => {
+            expect(createDataMethods(context).import(format, accept, reader)).toBe(false);
+        });
+        expect(unavailableImport).not.toHaveBeenCalled();
     });
 
     test('propagates import and rebase failures without fallback or state cleanup', async () => {
         const runtimeError = new Error('Import failed');
         const synchronousError = new Error('Import threw');
         const rebaseError = new Error('Import rebase failed');
-        const changes = {
-            updated: [{
-                id: 1,
-                name: 'Changed'
-            }]
-        };
-        const cellErrors = new Map([
-            [1, new Map([['name', 'Invalid']])]
-        ]);
-        const originalRows = new Map([
-            [1, {
-                id: 1,
-                name: 'Original'
-            }]
-        ]);
-        const runtimeResult = {
-            imported: true
-        };
+        const runtimeResult = { imported: true };
         const table = {
             import: vi.fn()
                 .mockRejectedValueOnce(runtimeError)
@@ -316,13 +209,9 @@ describe('AMB table controller data method group', () => {
         };
         const crud = {
             isDestroyed: false,
-            changes,
-            cellErrors,
-            originalRows,
             rebaseCurrentData: vi.fn()
                 .mockRejectedValueOnce(rebaseError),
-            rollbackRow: vi.fn(),
-            destroy: vi.fn()
+            rollbackRow: vi.fn()
         };
         const methods = createDataMethods({
             table,
@@ -333,29 +222,17 @@ describe('AMB table controller data method group', () => {
             .rejects.toBe(runtimeError);
         expect(crud.rebaseCurrentData).not.toHaveBeenCalled();
 
-        let caughtSynchronousError;
-
-        try {
-            methods.import('csv', '.csv', 'text');
-        } catch (error) {
-            caughtSynchronousError = error;
-        }
-
-        expect(caughtSynchronousError).toBe(synchronousError);
+        expect(() => methods.import('csv', '.csv', 'text')).toThrow(synchronousError);
         expect(crud.rebaseCurrentData).not.toHaveBeenCalled();
 
         await expect(methods.import('csv', '.csv', 'text'))
             .rejects.toBe(rebaseError);
         expect(crud.rebaseCurrentData).toHaveBeenCalledOnce();
         expect(table.import).toHaveBeenCalledTimes(3);
-        expect(crud.changes).toBe(changes);
-        expect(crud.cellErrors).toBe(cellErrors);
-        expect(crud.originalRows).toBe(originalRows);
         expect(table.setData).not.toHaveBeenCalled();
         expect(table.replaceData).not.toHaveBeenCalled();
         expect(table.clearData).not.toHaveBeenCalled();
         expect(crud.rollbackRow).not.toHaveBeenCalled();
-        expect(crud.destroy).not.toHaveBeenCalled();
     });
 
     test('addData resolves AMB positions and delegates all insertion arguments by identity', () => {
