@@ -11,11 +11,12 @@ const readColumn = (table, columnLookup, methodName) => {
  *
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
+ * @param {object|null} context.columnRuntime - Managed application column coordinator.
  * @returns {object} Column methods for the flat controller API.
  * @private
  * @internal
  */
-export const createColumnMethods = ({ table }) => ({
+export const createColumnMethods = ({ table, columnRuntime = null }) => ({
     /**
      * Returns the current grid column definitions.
      *
@@ -58,6 +59,38 @@ export const createColumnMethods = ({ table }) => ({
      */
     getColumn(columnLookup) {
         return table.getColumn(columnLookup);
+    },
+
+    /**
+     * Updates one application data column through the AMB Grid preparation
+     * pipeline while preserving properties not present in the shallow patch.
+     *
+     * Field changes and AMB-managed selection or action columns are rejected.
+     * Declarative validators, lookup metadata initialization and global-search
+     * columns are synchronized without changing row data or CRUD state. The
+     * internal engine replaces the Column Component, so references to the
+     * previous component become obsolete.
+     *
+     * The returned Promise resolves with the new Column Component. Runtime
+     * rejection is propagated without automatic rollback. Direct structural
+     * changes through `grid.table` can bypass this AMB synchronization.
+     *
+     * @param {*} columnLookup - Supported lookup for an application data column.
+     * @param {object} definitionPatch - Shallow application definition patch.
+     * @returns {Promise<object>|false} New Column Component Promise, or `false`.
+     */
+    updateColumnDefinition(columnLookup, definitionPatch) {
+        if (
+            !columnRuntime
+            || typeof columnRuntime.updateColumnDefinition !== 'function'
+        ) {
+            return false;
+        }
+
+        return columnRuntime.updateColumnDefinition(
+            columnLookup,
+            definitionPatch
+        );
     },
 
     /**

@@ -470,6 +470,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             hozAlign: 'center',
             headerSort: false,
             _ambInteractive: true,
+            _ambManagedColumn: 'delete',
             _ambFocusSelector: ACTION_BUTTON_SELECTOR,
             editor: createActionEditor,
             formatter: cell => {

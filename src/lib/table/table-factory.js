@@ -14,6 +14,7 @@ import {
     bindLookupMetadataInitialization,
     prepareColumnPipeline
 } from './column-pipeline.js';
+import { createColumnRuntime } from './column-runtime.js';
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
 import { createAlertMethods } from './controller/alert-methods.js';
 import { createCalculationMethods } from './controller/calculation-methods.js';
@@ -60,6 +61,39 @@ const DEFAULT_FLOATING_MESSAGE_OPTIONS = {
     validationErrors: true,
     largeTextPreviews: true,
     searchFilterStatus: true
+};
+
+const registerDeclarativeValidators = (crud, validators = []) => {
+    if (typeof crud.replaceDeclarativeCellValidators !== 'function') {
+        validators.forEach(validator => {
+            if (typeof validator.validate !== 'function') return;
+
+            crud.addCellValidator(
+                validator.field,
+                validator.message,
+                validator.validate
+            );
+        });
+        return;
+    }
+
+    const validatorsByField = new Map();
+
+    validators.forEach(validator => {
+        if (typeof validator.validate !== 'function') return;
+
+        const fieldValidators = validatorsByField.get(validator.field) || [];
+
+        fieldValidators.push({
+            message: validator.message,
+            validateFn: validator.validate
+        });
+        validatorsByField.set(validator.field, fieldValidators);
+    });
+
+    validatorsByField.forEach((fieldValidators, field) => {
+        crud.replaceDeclarativeCellValidators(field, fieldValidators);
+    });
 };
 
 const isPaginationConfig = pagination => {
@@ -168,6 +202,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getColumnDefinitions - Return the current grid column definitions.
  * @property {Function} getColumns - Return current column components.
  * @property {Function} getColumn - Return one column component using a supported lookup.
+ * @property {Function} updateColumnDefinition - Update one application data column and synchronize its AMB Grid runtime configuration.
  * @property {Function} getColumnDefinition - Return the runtime definition for one column.
  * @property {Function} getColumnElement - Return the runtime DOM element for one column.
  * @property {Function} getColumnField - Return the runtime field for one column.
@@ -566,8 +601,7 @@ export function createTable(options = {}) {
     const deleteColumnController = deleteColumn && deleteColumn.enabled
         ? createDeleteColumn(deleteColumn, () => crud, confirmDialog)
         : null;
-    const columnPipeline = prepareColumnPipeline({
-        columns,
+    const columnPipelineOptions = {
         messages: normalizedMessages,
         lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
         getCrud: () => crud,
@@ -577,6 +611,10 @@ export function createTable(options = {}) {
         deleteColumn: deleteColumnController
             ? deleteColumnController.column
             : null
+    };
+    const columnPipeline = prepareColumnPipeline({
+        ...columnPipelineOptions,
+        columns
     });
     const lifecycleResources = {
         toolbarController: null,
@@ -600,7 +638,6 @@ export function createTable(options = {}) {
     const table = new Tabulator(selector, normalizedOptions);
     const alertMethods = createAlertMethods({ table });
     const calculationMethods = createCalculationMethods({ table });
-    const columnMethods = createColumnMethods({ table });
     const eventMethods = createEventMethods({ table });
     const exportMethods = createExportMethods({ table });
     const groupingMethods = createGroupingMethods({ table });
@@ -613,15 +650,18 @@ export function createTable(options = {}) {
     const navigationMethods = createNavigationMethods({ table });
     const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
-
-    columnPipeline.validators.forEach(validator => {
-        if (typeof validator.validate !== 'function') return;
-
-        crud.addCellValidator(
-            validator.field,
-            validator.message,
-            validator.validate
-        );
+    registerDeclarativeValidators(crud, columnPipeline.validators);
+    const columnRuntime = createColumnRuntime({
+        table,
+        crud,
+        initialPipeline: columnPipeline,
+        pipelineOptions: columnPipelineOptions,
+        lifecycleResources,
+        getSearchController: () => lifecycleResources.searchController
+    });
+    const columnMethods = createColumnMethods({
+        table,
+        columnRuntime
     });
 
     const dataMethods = createDataMethods({

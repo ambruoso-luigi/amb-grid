@@ -404,4 +404,59 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.cellErrors.has(2)).toBe(false);
         expect(crud.findRowById(2).getData()._state).toBe(ROW_STATE.DELETED);
     });
+
+    test('replaces declarative validators while preserving runtime ownership', () => {
+        const { table } = createTableMock([
+            { id: 1, name: 'Atlas' }
+        ]);
+        const crud = new CrudHelper(table);
+        const initialDeclarative = vi.fn(() => true);
+        const nextDeclarative = vi.fn(() => true);
+        const runtimeValidator = vi.fn(() => true);
+
+        crud.replaceDeclarativeCellValidators('name', [{
+            message: 'Initial declarative rule',
+            validateFn: initialDeclarative
+        }]);
+        crud.addCellValidator(
+            'name',
+            'Runtime rule',
+            runtimeValidator
+        );
+        crud.replaceDeclarativeCellValidators('name', [{
+            message: 'Updated declarative rule',
+            validateFn: nextDeclarative
+        }]);
+
+        expect(crud.cellValidators.get('name')).toEqual([
+            {
+                message: 'Updated declarative rule',
+                validateFn: nextDeclarative
+            },
+            {
+                message: 'Runtime rule',
+                validateFn: runtimeValidator
+            }
+        ]);
+        expect(crud.cellValidators.get('name'))
+            .not.toEqual(expect.arrayContaining([
+                expect.objectContaining({
+                    validateFn: initialDeclarative
+                })
+            ]));
+
+        crud.replaceDeclarativeCellValidators('name', []);
+
+        expect(crud.cellValidators.get('name')).toEqual([
+            {
+                message: 'Runtime rule',
+                validateFn: runtimeValidator
+            }
+        ]);
+
+        crud.removeCellValidator('name');
+
+        expect(crud.cellValidators.has('name')).toBe(false);
+        expect(crud.declarativeCellValidators.has('name')).toBe(false);
+    });
 });

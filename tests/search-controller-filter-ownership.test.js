@@ -281,6 +281,49 @@ describe('search controller filter ownership', () => {
         }
     });
 
+    test('replaces searchable columns while preserving active search state', () => {
+        const { controller, floatingMessage, harness, table } = createController();
+
+        try {
+            controller.setSearchFields(['name']);
+            controller.setSearchOptions({
+                caseSensitive: true,
+                wholeWord: true
+            });
+            controller.setSearchQuery('Atlas');
+            const searchState = controller.getSearchState();
+            const activeFilter = table.addFilter.mock.calls.at(-1)[0];
+
+            clearTableFilterMocks(table);
+            controller.replaceColumns([
+                { title: 'Customer name', field: 'name' },
+                { title: 'Country', field: 'country' }
+            ]);
+
+            expect(controller.getSearchState()).toEqual(searchState);
+            expect(table.removeFilter).toHaveBeenCalledOnce();
+            expect(table.removeFilter).toHaveBeenCalledWith(activeFilter);
+            expect(table.addFilter).toHaveBeenCalledOnce();
+            expect(table.addFilter).toHaveBeenCalledWith(activeFilter);
+
+            const filtersButton = harness.mount.parentNode.children
+                .find(child => child.className.includes('amb-search-toolbar'))
+                .children
+                .find(child => child.className.includes('filters-button'));
+
+            filtersButton.listeners.mouseover();
+
+            expect(floatingMessage.scheduleShow).toHaveBeenCalledWith(
+                filtersButton,
+                expect.objectContaining({
+                    message: expect.stringContaining('- Customer name')
+                })
+            );
+        } finally {
+            harness.restore();
+        }
+    });
+
     test('keeps the existing search controller API available', () => {
         const { controller, harness, table } = createController();
 
@@ -294,6 +337,7 @@ describe('search controller filter ownership', () => {
             expect(typeof controller.isSearchFilter).toBe('function');
             expect(typeof controller.excludeSearchFilter).toBe('function');
             expect(typeof controller.reapplySearchFilter).toBe('function');
+            expect(typeof controller.replaceColumns).toBe('function');
 
             controller.setSearchQuery('Mario');
             expect(controller.getSearchState().query).toBe('Mario');

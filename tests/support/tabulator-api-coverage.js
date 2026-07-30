@@ -21,7 +21,7 @@ export const TABLE_API_COVERAGE = [
     { method: 'setColumns', domain: 'columns', status: 'missing', classification: 'delicate', reason: 'Full column replacement needs AMB editor, validator, and helper reconfiguration.' },
     { method: 'showColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'toggleColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
-    { method: 'updateColumnDefinition', domain: 'columns', status: 'missing', classification: 'delicate', reason: 'Definition replacement needs AMB editor, validator, and helper reconfiguration.' },
+    { method: 'updateColumnDefinition', domain: 'columns', status: 'narrower-contract', classification: 'overridden', controller: 'column-methods', reason: 'AMB updates application data columns through the managed preparation pipeline, rejects field changes and protects AMB-managed columns.' },
 
     // Data
     { method: 'addData', domain: 'data', status: 'exposed', classification: 'overridden', controller: 'data-methods' },

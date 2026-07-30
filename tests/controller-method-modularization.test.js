@@ -53,7 +53,7 @@ describe('AMB table controller method modularization', () => {
             /const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/
         );
         const columnCreationIndex = source.indexOf(
-            'const columnMethods = createColumnMethods({ table });'
+            'const columnMethods = createColumnMethods({'
         );
         const rowCreationIndex = source.indexOf(
             'const rowMethods = createRowMethods({ table, crud });'
@@ -404,7 +404,7 @@ describe('AMB table controller method modularization', () => {
         const inlineColumnContext = [/^\s*getColumnDefinition\(columnLookup\) \{/m, /^\s*getColumnElement\(columnLookup\) \{/m, /^\s*getColumnField\(columnLookup\) \{/m, /^\s*getColumnCells\(columnLookup\) \{/m, /^\s*isColumnVisible\(columnLookup\) \{/m, /^\s*getColumnWidth\(columnLookup\) \{/m, /^\s*getColumnSubColumns\(columnLookup\) \{/m, /^\s*getColumnParent\(columnLookup\) \{/m, /^\s*getNextColumn\(columnLookup\) \{/m, /^\s*getPrevColumn\(columnLookup\) \{/m, /^\s*getColumnDownloadTitle\(columnLookup\) \{/m];
 
         expect(source).toContain("import { createColumnMethods } from './controller/column-methods.js';");
-        expect(source).toContain('const columnMethods = createColumnMethods({ table });');
+        expect(source).toMatch(/const columnMethods = createColumnMethods\(\{\s*table,\s*columnRuntime\s*\}\);/);
 
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
 
@@ -432,7 +432,7 @@ describe('AMB table controller method modularization', () => {
             'crud = new CrudHelper(table, { errorStyle });'
         );
         const validatorRegistrationIndex = source.indexOf(
-            'columnPipeline.validators.forEach(validator => {'
+            'registerDeclarativeValidators(crud, columnPipeline.validators);'
         );
         const dataMethodsCreationIndex = source.indexOf(
             'const dataMethods = createDataMethods({'

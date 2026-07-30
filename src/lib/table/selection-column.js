@@ -203,6 +203,7 @@ export const createSelectionColumn = (selectionColumn = {}) => {
             headerSort: false,
             cssClass: 'amb-selection-column',
             _ambInteractive: true,
+            _ambManagedColumn: 'selection',
             _ambFocusSelector: SELECTION_INPUT_SELECTOR,
             editor: createSelectionEditor(isMultiple),
             titleFormatter: isMultiple ? 'rowSelection' : () => '',

@@ -31,9 +31,55 @@ describe('AMB table controller column method group', () => {
             'setColumnWidth',
             'showColumn',
             'toggleColumn',
+            'updateColumnDefinition',
             'validateColumnCells'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
+    });
+
+    test('delegates managed definition updates unchanged and rejects a missing coordinator', () => {
+        const columnLookup = { field: 'name' };
+        const definitionPatch = {
+            title: 'Customer name'
+        };
+        const result = Promise.resolve({
+            field: 'name'
+        });
+        const columnRuntime = {
+            updateColumnDefinition: vi.fn(() => result)
+        };
+        const table = {
+            getColumn: vi.fn(),
+            setColumns: vi.fn()
+        };
+        const methods = createColumnMethods({
+            table,
+            columnRuntime
+        });
+
+        expect(
+            methods.updateColumnDefinition(columnLookup, definitionPatch)
+        ).toBe(result);
+        expect(columnRuntime.updateColumnDefinition).toHaveBeenCalledOnce();
+        expect(columnRuntime.updateColumnDefinition.mock.calls[0][0])
+            .toBe(columnLookup);
+        expect(columnRuntime.updateColumnDefinition.mock.calls[0][1])
+            .toBe(definitionPatch);
+        expect(table.getColumn).not.toHaveBeenCalled();
+        expect(table.setColumns).not.toHaveBeenCalled();
+
+        expect(
+            createColumnMethods({ table }).updateColumnDefinition(
+                columnLookup,
+                definitionPatch
+            )
+        ).toBe(false);
+        expect(
+            createColumnMethods({
+                table,
+                columnRuntime: {}
+            }).updateColumnDefinition(columnLookup, definitionPatch)
+        ).toBe(false);
     });
 
     test('reads contextual column component state through one private resolver', () => {

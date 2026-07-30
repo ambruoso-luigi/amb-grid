@@ -25,6 +25,21 @@ export const getLookupMetadata = (rowData, field) => {
     return rowData[LOOKUP_METADATA_FIELD][field] || null;
 };
 
+export const removeLookupMetadata = (rowData, field) => {
+    const allMetadata = rowData && rowData[LOOKUP_METADATA_FIELD];
+
+    if (!allMetadata || !field) return false;
+    if (!Object.prototype.hasOwnProperty.call(allMetadata, field)) return false;
+
+    delete allMetadata[field];
+
+    if (Object.keys(allMetadata).length === 0) {
+        delete rowData[LOOKUP_METADATA_FIELD];
+    }
+
+    return true;
+};
+
 export const setLookupMetadata = (rowData, field, value, description, options = {}) => {
     const metadata = ensureLookupMetadata(rowData, field);
     const entry = {

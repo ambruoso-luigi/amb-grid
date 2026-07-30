@@ -87,6 +87,7 @@ export class CrudHelper {
         this.modifiedCells = new Map();
         this.cellErrors = new Map();
         this.cellValidators = new Map();
+        this.declarativeCellValidators = new Map();
         this.rowErrors = new Map();
         this.eventHandlers = new Map();
         this.tabulatorEventHandlers = new Map();
@@ -1181,12 +1182,59 @@ export class CrudHelper {
     }
 
     /**
+     * Replaces the declarative validators owned by one application column.
+     *
+     * Runtime validators registered through the public AMB Grid API remain
+     * attached to the field. This method updates only the internal ownership
+     * segment populated from application column definitions.
+     *
+     * @param {string} field - Application field whose declarative rules change.
+     * @param {object[]} [validators=[]] - Declarative message and callback pairs.
+     * @returns {void}
+     * @private
+     * @internal
+     */
+    replaceDeclarativeCellValidators(field, validators = []) {
+        const previousDeclarative = new Set(
+            this.declarativeCellValidators.get(field) || []
+        );
+        const runtimeValidators = (this.cellValidators.get(field) || [])
+            .filter(validator => !previousDeclarative.has(validator));
+        const nextDeclarative = (validators || [])
+            .filter(validator => {
+                return validator
+                    && typeof validator.validateFn === 'function';
+            })
+            .map(validator => ({
+                message: validator.message,
+                validateFn: validator.validateFn
+            }));
+        const nextValidators = [
+            ...nextDeclarative,
+            ...runtimeValidators
+        ];
+
+        if (nextDeclarative.length) {
+            this.declarativeCellValidators.set(field, nextDeclarative);
+        } else {
+            this.declarativeCellValidators.delete(field);
+        }
+
+        if (nextValidators.length) {
+            this.cellValidators.set(field, nextValidators);
+        } else {
+            this.cellValidators.delete(field);
+        }
+    }
+
+    /**
      * Remove the automatic validator registered for a field.
      *
      * @param {string} field - Cell field name.
      */
     removeCellValidator(field) {
         this.cellValidators.delete(field);
+        this.declarativeCellValidators.delete(field);
     }
 
     /**
@@ -1451,6 +1499,7 @@ export class CrudHelper {
         this.modifiedCells.clear();
         this.cellErrors.clear();
         this.cellValidators.clear();
+        this.declarativeCellValidators.clear();
         this.rowErrors.clear();
         this.eventHandlers.clear();
     }

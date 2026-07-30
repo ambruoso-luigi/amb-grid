@@ -178,10 +178,10 @@ export const createSearchController = ({
         return null;
     }
 
-    const availableColumns = collectSearchColumns(columns);
+    let availableColumns = collectSearchColumns(columns);
     const toolbar = createSearchToolbar(selector, searchOptions, mountElement);
     const dialog = new SearchFiltersDialog();
-    const allFields = availableColumns.map(column => column.field);
+    let allFields = availableColumns.map(column => column.field);
     const searchState = {
         query: '',
         selectedFields: [...allFields],
@@ -285,6 +285,39 @@ export const createSearchController = ({
      */
     const reapplySearchFilter = () => {
         applySearch();
+    };
+
+    /**
+     * Replaces the application columns used by the AMB Grid global search.
+     *
+     * Existing query and matching options are preserved. Selected fields that
+     * still exist remain selected, while a prior all-fields selection expands
+     * to any newly available fields. An active technical search filter is
+     * replaced once so it reads the updated field and title configuration.
+     *
+     * @param {object[]} [nextColumns=[]] - Prepared application data columns.
+     * @returns {void}
+     * @private
+     * @internal
+     */
+    const replaceColumns = (nextColumns = []) => {
+        const previousFields = new Set(allFields);
+        const previousSelectedFields = new Set(searchState.selectedFields);
+        const previouslySelectedAll = previousFields.size === previousSelectedFields.size
+            && [...previousFields].every(field => previousSelectedFields.has(field));
+
+        availableColumns = collectSearchColumns(nextColumns);
+        allFields = availableColumns.map(column => column.field);
+
+        searchState.selectedFields = previouslySelectedAll
+            ? [...allFields]
+            : allFields.filter(field => previousSelectedFields.has(field));
+
+        updateFiltersButton();
+
+        if (searchState.query.trim() !== '') {
+            applySearch();
+        }
     };
 
     const setSearchQuery = query => {
@@ -418,6 +451,7 @@ export const createSearchController = ({
         },
         setSearchFields,
         setSearchOptions,
+        replaceColumns,
         isSearchFilter,
         excludeSearchFilter,
         reapplySearchFilter,
