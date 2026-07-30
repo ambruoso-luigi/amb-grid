@@ -25,10 +25,11 @@ export const createLifecycleMethods = ({
     /**
      * Releases the complete AMB Grid controller.
      *
-     * Lifecycle cleanup destroys owned AMB Grid resources first: toolbar,
-     * column and binder subscriptions, search, feedback, cell messages,
-     * floating messages and dialogs. CRUD event bindings are disconnected
-     * before the internal table engine is destroyed as the final phase.
+     * Lifecycle cleanup destroys owned AMB Grid resources first: history
+     * coordination, toolbar, column and binder subscriptions, search,
+     * feedback, cell messages, floating messages and dialogs. History
+     * listeners and pending waits are released before CRUD event bindings are
+     * disconnected, and the internal table engine is destroyed last.
      *
      * The controller should not normally be reused after destruction.
      *
@@ -36,6 +37,11 @@ export const createLifecycleMethods = ({
      */
     destroy() {
         const controller = getController();
+
+        if (resources.historyRuntime) {
+            resources.historyRuntime.destroy();
+            resources.historyRuntime = null;
+        }
 
         if (resources.toolbarController) {
             resources.toolbarController.destroy();

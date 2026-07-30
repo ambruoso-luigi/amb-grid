@@ -22,6 +22,24 @@ vi.mock('tabulator-tables', () => ({
             this.setGroupHeader = vi.fn();
             this.historyUndoSize = 0;
             this.historyRedoSize = 0;
+            this.listeners = new Map();
+            this.on = vi.fn((eventName, callback) => {
+                const callbacks = this.listeners.get(eventName) || [];
+
+                callbacks.push(callback);
+                this.listeners.set(eventName, callbacks);
+            });
+            this.off = vi.fn((eventName, callback) => {
+                const callbacks = this.listeners.get(eventName) || [];
+                const index = callbacks.indexOf(callback);
+
+                if (index !== -1) callbacks.splice(index, 1);
+            });
+            this.emit = (eventName, ...args) => {
+                (this.listeners.get(eventName) || []).slice().forEach(callback => {
+                    callback(...args);
+                });
+            };
             this.getHistoryUndoSize = vi.fn(() => this.historyUndoSize);
             this.getHistoryRedoSize = vi.fn(() => this.historyRedoSize);
             this.undo = vi.fn();
@@ -118,6 +136,7 @@ vi.mock('../src/lib/crud-helper.js', () => ({
             this.addRow = vi.fn();
             this.deleteRow = vi.fn();
             this.rollbackRow = vi.fn();
+            this.reconcileHistoryAction = vi.fn(() => Promise.resolve());
             this.destroy = vi.fn();
             crudMock.instances.push(this);
         }
@@ -251,7 +270,7 @@ const clearCrudSetupCalls = crud => {
 };
 
 describe('AMB table controller history API', () => {
-    test('exposes flat history count and cleanup methods without exposing undo or redo', () => {
+    test('exposes flat history methods and keeps disabled actions inert', () => {
         const harness = createDocumentHarness();
 
         try {
@@ -288,10 +307,15 @@ describe('AMB table controller history API', () => {
             expect(typeof controller.getHistoryRedoSize).toBe('function');
             expect(controller.history).toBeUndefined();
             expect(controller.historyMethods).toBeUndefined();
+            expect(controller.historyRuntime).toBeUndefined();
             expect(controller.controllerMethods).toBeUndefined();
-            expect(controller.undo).toBeUndefined();
-            expect(controller.redo).toBeUndefined();
+            expect(typeof controller.undo).toBe('function');
+            expect(typeof controller.redo).toBe('function');
             expect(typeof controller.clearHistory).toBe('function');
+            expect(controller.undo()).toBe(false);
+            expect(controller.redo()).toBe(false);
+            expect(table.undo).not.toHaveBeenCalled();
+            expect(table.redo).not.toHaveBeenCalled();
 
             expect(controller.setSearchQuery('department')).toBe(true);
             const searchState = controller.getSearchState();
@@ -383,6 +407,86 @@ describe('AMB table controller history API', () => {
             expect(crud.deleteRow).not.toHaveBeenCalled();
             expect(crud.rollbackRow).not.toHaveBeenCalled();
             expect(crud.destroy).not.toHaveBeenCalled();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('coordinates enabled undo and redo while preserving internal event listeners', async () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const controller = createTable({
+                selector: harness.mount,
+                columns: [
+                    { title: 'Name', field: 'name' }
+                ],
+                history: true,
+                toolbar: false
+            });
+            const table = tabulatorMock.instances[0];
+            const crud = crudMock.instances[0];
+            const cell = { id: 'cell-1' };
+            const row = { id: 'row-1' };
+
+            table.historyUndoSize = 1;
+            table.undo.mockImplementationOnce(() => {
+                table.historyUndoSize = 0;
+                table.historyRedoSize = 1;
+                table.emit('historyUndo', 'cellEdit', cell, {
+                    oldValue: 'Ada',
+                    newValue: 'Augusta'
+                });
+                return true;
+            });
+
+            await expect(controller.undo()).resolves.toBe(true);
+            expect(table.undo).toHaveBeenCalledOnce();
+            expect(crud.reconcileHistoryAction).toHaveBeenCalledWith(
+                'undo',
+                'cellEdit',
+                cell,
+                {
+                    oldValue: 'Ada',
+                    newValue: 'Augusta'
+                }
+            );
+
+            table.redo.mockImplementationOnce(() => {
+                table.historyUndoSize = 1;
+                table.historyRedoSize = 0;
+                table.emit('historyRedo', 'rowMove', row, {
+                    posFrom: 1,
+                    posTo: 2
+                });
+                return true;
+            });
+
+            await expect(controller.redo()).resolves.toBe(true);
+            expect(table.redo).toHaveBeenCalledOnce();
+            expect(crud.reconcileHistoryAction).toHaveBeenLastCalledWith(
+                'redo',
+                'rowMove',
+                row,
+                {
+                    posFrom: 1,
+                    posTo: 2
+                }
+            );
+
+            const undoListeners = table.listeners.get('historyUndo').slice();
+            const redoListeners = table.listeners.get('historyRedo').slice();
+
+            controller.off('historyUndo');
+            controller.off('historyRedo');
+            expect(table.listeners.get('historyUndo')).toEqual(undoListeners);
+            expect(table.listeners.get('historyRedo')).toEqual(redoListeners);
+
+            controller.destroy();
+            expect(controller.undo()).toBe(false);
+            expect(controller.redo()).toBe(false);
+            expect(table.listeners.get('historyUndo')).toEqual([]);
+            expect(table.listeners.get('historyRedo')).toEqual([]);
         } finally {
             harness.restore();
         }

@@ -15,6 +15,7 @@ import {
     prepareColumnPipeline
 } from './column-pipeline.js';
 import { createColumnRuntime } from './column-runtime.js';
+import { createHistoryRuntime } from './history-runtime.js';
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
 import { createAlertMethods } from './controller/alert-methods.js';
 import { createCalculationMethods } from './controller/calculation-methods.js';
@@ -422,6 +423,8 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getHistoryUndoSize - Return the number of actions available for undo.
  * @property {Function} getHistoryRedoSize - Return the number of actions available for redo.
  * @property {Function} clearHistory - Clear the native interaction history without changing AMB Grid CRUD state.
+ * @property {Function} undo - Undo one interaction-history action and reconcile the affected AMB Grid CRUD state.
+ * @property {Function} redo - Redo one interaction-history action and reconcile the affected AMB Grid CRUD state.
  * @property {Function} getPage - Return the current page number.
  * @property {Function} getPageMax - Return the maximum available page number.
  * @property {Function} getPageSize - Return the number of rows allowed per page.
@@ -627,6 +630,7 @@ export function createTable(options = {}) {
         unsubscribeLookupDescriptions: null,
         unsubscribeLookupMetadata: null,
         unsubscribeLargeText: null,
+        historyRuntime: null,
         searchController: null,
         feedback: null
     };
@@ -645,7 +649,6 @@ export function createTable(options = {}) {
     const eventMethods = createEventMethods({ table });
     const exportMethods = createExportMethods({ table });
     const groupingMethods = createGroupingMethods({ table });
-    const historyMethods = createHistoryMethods({ table });
     const layoutMethods = createLayoutMethods({ table });
     const localizationMethods = createLocalizationMethods({ table });
     const persistenceMethods = createPersistenceMethods({ table });
@@ -655,6 +658,17 @@ export function createTable(options = {}) {
     const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
     registerDeclarativeValidators(crud, columnPipeline.validators);
+    lifecycleResources.historyRuntime = createHistoryRuntime({
+        table,
+        crud,
+        historyEnabled: normalizedOptions.history === true
+    });
+    const historyMethods = createHistoryMethods({
+        table,
+        crud,
+        historyRuntime: lifecycleResources.historyRuntime,
+        historyEnabled: normalizedOptions.history === true
+    });
     const columnRuntime = createColumnRuntime({
         table,
         crud,

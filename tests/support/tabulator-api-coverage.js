@@ -79,8 +79,8 @@ export const TABLE_API_COVERAGE = [
     { method: 'clearHistory', domain: 'history', status: 'exposed', classification: 'safe-pass-through', controller: 'history-methods' },
     { method: 'getHistoryRedoSize', domain: 'history', status: 'exposed', classification: 'safe-pass-through', controller: 'history-methods' },
     { method: 'getHistoryUndoSize', domain: 'history', status: 'exposed', classification: 'safe-pass-through', controller: 'history-methods' },
-    { method: 'redo', domain: 'history', status: 'deferred', classification: 'delicate', reason: 'Redo needs coordination with AMB snapshots, validation, and CRUD state.' },
-    { method: 'undo', domain: 'history', status: 'deferred', classification: 'delicate', reason: 'Undo needs coordination with AMB snapshots, validation, and CRUD state.' },
+    { method: 'redo', domain: 'history', status: 'narrower-contract', classification: 'overridden', controller: 'history-methods', reason: 'AMB redoes one interaction-history action and reconciles the affected validation and CRUD state without replacing the baseline.' },
+    { method: 'undo', domain: 'history', status: 'narrower-contract', classification: 'overridden', controller: 'history-methods', reason: 'AMB undoes one interaction-history action and reconciles the affected validation and CRUD state without replacing the baseline.' },
 
     // Import
     { method: 'import', domain: 'import', status: 'narrower-contract', classification: 'overridden', controller: 'data-methods', reason: 'AMB imports local file data as a complete managed replacement, rebases CRUD state, and excludes automatic runtime column generation.' },

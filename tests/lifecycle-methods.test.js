@@ -10,6 +10,7 @@ describe('AMB table controller lifecycle methods', () => {
         });
         const unsubscribe = name => vi.fn(() => order.push(name));
         const resources = {
+            historyRuntime: destroyResource('history-runtime'),
             toolbarController: destroyResource('toolbar'),
             unsubscribeDeleteColumn: unsubscribe('delete-column'),
             unsubscribeSelectionColumn: unsubscribe('selection-column'),
@@ -41,6 +42,7 @@ describe('AMB table controller lifecycle methods', () => {
         methods.destroy();
 
         expect(order).toEqual([
+            'history-runtime',
             'toolbar',
             'delete-column',
             'selection-column',

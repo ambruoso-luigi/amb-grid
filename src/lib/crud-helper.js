@@ -1011,6 +1011,250 @@ export class CrudHelper {
         });
     }
 
+    _getHistoryTechnicalFields() {
+        return new Set([
+            this.options.stateField,
+            this.options.originalDataField,
+            this._getTempIdField(),
+            this._getRowNumberField(),
+            LOOKUP_METADATA_FIELD
+        ]);
+    }
+
+    _syncHistoryRowCellStates(row) {
+        if (!row || typeof row.getCells !== 'function') return;
+
+        const technicalFields = this._getHistoryTechnicalFields();
+
+        row.getCells().forEach(cell => {
+            if (technicalFields.has(cell.getField())) {
+                this._clearCellState(cell);
+                return;
+            }
+
+            this._syncCellState(cell);
+        });
+    }
+
+    _getHistoryRowData(component, data) {
+        if (data && data.data && typeof data.data === 'object') {
+            return data.data;
+        }
+
+        if (component && typeof component.getData === 'function') {
+            return component.getData();
+        }
+
+        return null;
+    }
+
+    _getHistoryRowKeyFromData(data) {
+        if (!data || typeof data !== 'object') return undefined;
+
+        const id = data[this.options.idField];
+
+        if (!this._isMissingId(id)) return id;
+
+        return data[this._getTempIdField()];
+    }
+
+    _resolveHistoryRow(component, data) {
+        const rows = this._getManagedRows();
+
+        if (rows.includes(component)) return component;
+
+        const key = this._getHistoryRowKeyFromData(
+            this._getHistoryRowData(component, data)
+        );
+
+        if (this._isMissingId(key)) return null;
+
+        return rows.find(row => this._getRowKey(row) === key) || null;
+    }
+
+    _clearHistoryRowTracking(key) {
+        if (this._isMissingId(key)) return;
+
+        this.modifiedCells.delete(key);
+        this.cellErrors.delete(key);
+        this.rowErrors.delete(key);
+    }
+
+    async _ensureHistoryRowTechnicalFields(row) {
+        if (!row) return;
+
+        const data = row.getData();
+        const patch = {};
+        const id = data[this.options.idField];
+        const tempIdField = this._getTempIdField();
+        const rowNumberField = this._getRowNumberField();
+
+        if (this._isMissingId(id) && !data[tempIdField]) {
+            this._syncNextTempIdNumber();
+            patch[tempIdField] = this._createTempId();
+        }
+
+        if (
+            this._isRowNumberingEnabled()
+            && (data[rowNumberField] === undefined || data[rowNumberField] === null)
+        ) {
+            patch[rowNumberField] = this._getMaxRowNumber() + 1;
+        }
+
+        if (Object.keys(patch).length > 0) {
+            await this._patchRow(row, patch);
+        }
+    }
+
+    async _renumberHistoryRows() {
+        if (!this._isRowNumberingEnabled()) return;
+
+        const field = this._getRowNumberField();
+        const operations = this._getManagedRows().map((row, index) => {
+            return this._patchRow(row, {
+                [field]: index + 1
+            });
+        });
+
+        await this._waitForOperations(operations);
+    }
+
+    async _reconcileHistoryCellEdit(component) {
+        if (!component || typeof component.getRow !== 'function') {
+            throw new Error(
+                'AMB Grid cannot reconcile history cellEdit without a current Cell Component; '
+                + 'the runtime action may already have been applied'
+            );
+        }
+
+        const row = component.getRow();
+        const field = component.getField();
+        const state = this._getBaseRowState(row);
+
+        if (this._getHistoryTechnicalFields().has(field)) {
+            this._clearCellState(component);
+            await this._applyConsistentRowState(row);
+            this._validateCell(component);
+            return;
+        }
+
+        if (state === ROW_STATE.NEW || state === ROW_STATE.DELETED) {
+            this._clearCellState(component);
+            this._validateCell(component);
+            return;
+        }
+
+        this._syncCellState(component);
+        await this._applyConsistentRowState(row);
+        this._validateCell(component);
+    }
+
+    async _reconcileHistoryPresentRow(component, data) {
+        const row = this._resolveHistoryRow(component, data);
+
+        if (!row) {
+            throw new Error(
+                'AMB Grid cannot resolve the row restored by interaction history; '
+                + 'the runtime action may already have been applied'
+            );
+        }
+
+        await this._ensureHistoryRowTechnicalFields(row);
+
+        const key = this._getRowKey(row);
+        const baseline = this._getOriginalDataForRow(row);
+
+        if (!baseline) {
+            this._clearRowCellStates(row);
+            await this._applyRowState(row, ROW_STATE.NEW);
+        } else {
+            await this._applyRowState(row, ROW_STATE.CLEAN);
+            this._syncHistoryRowCellStates(row);
+            await this._applyConsistentRowState(row);
+        }
+
+        this.validateRow(key);
+        await this._renumberHistoryRows();
+        this._applyRowParity();
+    }
+
+    async _reconcileHistoryMissingRow(component, data) {
+        const rowData = this._getHistoryRowData(component, data);
+        const key = this._getHistoryRowKeyFromData(rowData);
+
+        this._clearHistoryRowTracking(key);
+        await this._renumberHistoryRows();
+        this._applyRowParity();
+    }
+
+    /**
+     * Reconcile one runtime interaction-history action with affected CRUD state.
+     *
+     * The runtime has already applied the data or position change. This method
+     * updates only the involved cell or row, plus technical numbering and
+     * visual parity when required. It never replaces the CRUD baseline and
+     * never reconstructs manual row errors as historical state.
+     *
+     * Physical deletion of a persisted row through advanced direct engine
+     * access cannot be converted into a normal AMB Grid deletion. Persisted
+     * deletions should use `grid.deleteRow(...)`.
+     *
+     * @param {'undo'|'redo'} direction - Applied history direction.
+     * @param {'cellEdit'|'rowAdd'|'rowDelete'|'rowMove'} action - Runtime action type.
+     * @param {object} component - Runtime Cell or Row Component.
+     * @param {object} data - Runtime history action data.
+     * @returns {Promise<void>} Promise fulfilled after affected CRUD state is coherent.
+     * @throws {Error} When the action is unknown or cannot be reconciled.
+     * @private
+     * @internal
+     */
+    async reconcileHistoryAction(direction, action, component, data) {
+        if (this.isDestroyed) {
+            throw new Error(
+                `Cannot reconcile history ${direction} on a destroyed CrudHelper; `
+                + 'the runtime action may already have been applied'
+            );
+        }
+
+        if (action === 'cellEdit') {
+            await this._reconcileHistoryCellEdit(component);
+            return;
+        }
+
+        if (action === 'rowMove') {
+            await this._renumberHistoryRows();
+            this._applyRowParity();
+            return;
+        }
+
+        if (action === 'rowAdd') {
+            const row = this._resolveHistoryRow(component, data);
+
+            if (row) {
+                await this._reconcileHistoryPresentRow(row, data);
+            } else {
+                await this._reconcileHistoryMissingRow(component, data);
+            }
+            return;
+        }
+
+        if (action === 'rowDelete') {
+            const row = this._resolveHistoryRow(component, data);
+
+            if (row) {
+                await this._reconcileHistoryPresentRow(row, data);
+            } else {
+                await this._reconcileHistoryMissingRow(component, data);
+            }
+            return;
+        }
+
+        throw new Error(
+            `AMB Grid cannot reconcile unknown history action "${action}"; `
+            + 'the runtime action may already have been applied'
+        );
+    }
+
     /**
      * Return or create the internal field -> message Map for one row.
      *

@@ -52,7 +52,9 @@ describe('AMB table controller interaction-history method group', () => {
         expect(Object.keys(methods).sort()).toEqual([
             'clearHistory',
             'getHistoryRedoSize',
-            'getHistoryUndoSize'
+            'getHistoryUndoSize',
+            'redo',
+            'undo'
         ]);
         expect(Object.values(methods).every(method => typeof method === 'function')).toBe(true);
     });
@@ -146,4 +148,119 @@ describe('AMB table controller interaction-history method group', () => {
         expect(table).not.toHaveProperty('modules');
         expectForbiddenMethodsNotCalled(table);
     });
+
+    test.each(['undo', 'redo'])(
+        'returns false immediately when %s coordination is unavailable',
+        direction => {
+            const table = {
+                [direction]: vi.fn(),
+                getHistoryUndoSize: vi.fn(() => 1),
+                getHistoryRedoSize: vi.fn(() => 1)
+            };
+            const crud = {
+                isDestroyed: false
+            };
+            const historyRuntime = {
+                isAvailable: vi.fn(() => true),
+                perform: vi.fn(() => Promise.resolve(true))
+            };
+
+            expect(createHistoryMethods({
+                table,
+                crud,
+                historyRuntime,
+                historyEnabled: false
+            })[direction]()).toBe(false);
+
+            crud.isDestroyed = true;
+            expect(createHistoryMethods({
+                table,
+                crud,
+                historyRuntime,
+                historyEnabled: true
+            })[direction]()).toBe(false);
+
+            crud.isDestroyed = false;
+            historyRuntime.isAvailable.mockReturnValue(false);
+            expect(createHistoryMethods({
+                table,
+                crud,
+                historyRuntime,
+                historyEnabled: true
+            })[direction]()).toBe(false);
+
+            expect(table[direction]).not.toHaveBeenCalled();
+            expect(historyRuntime.perform).not.toHaveBeenCalled();
+        }
+    );
+
+    test.each(['undo', 'redo'])(
+        'returns false immediately when %s runtime methods are missing',
+        direction => {
+            const countMethod = direction === 'undo'
+                ? 'getHistoryUndoSize'
+                : 'getHistoryRedoSize';
+            const crud = {
+                isDestroyed: false
+            };
+            const historyRuntime = {
+                isAvailable: vi.fn(() => true),
+                perform: vi.fn()
+            };
+            const missingAction = {
+                [countMethod]: vi.fn(() => 1)
+            };
+            const missingCount = {
+                [direction]: vi.fn()
+            };
+
+            expect(createHistoryMethods({
+                table: missingAction,
+                crud,
+                historyRuntime,
+                historyEnabled: true
+            })[direction]()).toBe(false);
+            expect(createHistoryMethods({
+                table: missingCount,
+                crud,
+                historyRuntime,
+                historyEnabled: true
+            })[direction]()).toBe(false);
+            expect(historyRuntime.perform).not.toHaveBeenCalled();
+        }
+    );
+
+    test.each(['undo', 'redo'])(
+        'returns the distinct coordinator Promise for %s',
+        direction => {
+            const firstPromise = Promise.resolve(true);
+            const secondPromise = Promise.resolve(false);
+            const table = {
+                [direction]: vi.fn(),
+                getHistoryUndoSize: vi.fn(() => 1),
+                getHistoryRedoSize: vi.fn(() => 1)
+            };
+            const crud = {
+                isDestroyed: false
+            };
+            const historyRuntime = {
+                isAvailable: vi.fn(() => true),
+                perform: vi.fn()
+                    .mockReturnValueOnce(firstPromise)
+                    .mockReturnValueOnce(secondPromise)
+            };
+            const methods = createHistoryMethods({
+                table,
+                crud,
+                historyRuntime,
+                historyEnabled: true
+            });
+
+            expect(methods[direction]()).toBe(firstPromise);
+            expect(methods[direction]()).toBe(secondPromise);
+            expect(historyRuntime.perform).toHaveBeenNthCalledWith(1, direction);
+            expect(historyRuntime.perform).toHaveBeenNthCalledWith(2, direction);
+            expect(table[direction]).not.toHaveBeenCalled();
+        }
+    );
 });
