@@ -1238,6 +1238,33 @@ export class CrudHelper {
     }
 
     /**
+     * Retire all validation ownership and cell errors for a removed column.
+     *
+     * Row-level errors and lifecycle tracking remain unchanged. Cell-error
+     * row markers are recalculated from the errors that still belong to
+     * active application fields.
+     *
+     * @param {string} field - Removed application column field.
+     * @returns {void}
+     * @private
+     * @internal
+     */
+    retireColumnField(field) {
+        this.cellValidators.delete(field);
+        this.declarativeCellValidators.delete(field);
+
+        this.cellErrors.forEach((errors, key) => {
+            if (!errors || !errors.delete(field)) return;
+
+            if (errors.size === 0) {
+                this.cellErrors.delete(key);
+            }
+
+            this._syncRowErrorAttribute(this._resolveRowByKey(key));
+        });
+    }
+
+    /**
      * Validate every registered cell validator for one row without changing row state.
      *
      * @param {*} id - Row identifier.

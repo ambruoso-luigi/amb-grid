@@ -459,4 +459,71 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.cellValidators.has('name')).toBe(false);
         expect(crud.declarativeCellValidators.has('name')).toBe(false);
     });
+
+    test('retires one removed column field without changing row errors or tracking', () => {
+        const { table, rows } = createTableMock([{
+            id: 1,
+            name: 'Atlas',
+            region: 'EU'
+        }, {
+            id: 2,
+            name: 'Beacon',
+            region: 'US'
+        }]);
+        const crud = new CrudHelper(table, {
+            errorStyle: {
+                highlightRowOnCellError: true
+            }
+        });
+        const declarativeValidator = vi.fn(() => false);
+        const runtimeValidator = vi.fn(() => false);
+        const otherValidator = vi.fn(() => true);
+
+        crud.replaceDeclarativeCellValidators('region', [{
+            message: 'Declarative region rule',
+            validateFn: declarativeValidator
+        }]);
+        crud.addCellValidator(
+            'region',
+            'Runtime region rule',
+            runtimeValidator
+        );
+        crud.addCellValidator('name', 'Name rule', otherValidator);
+        crud.markCellError(1, 'region', 'Invalid region');
+        crud.markCellError(1, 'name', 'Invalid name');
+        crud.markCellError(2, 'region', 'Invalid region');
+        crud.markRowError(1, 'Row error');
+        crud.modifiedCells.set(1, new Set(['region']));
+
+        const modifiedCells = crud.modifiedCells;
+        const originalRows = crud.originalRows;
+
+        expect(crud.retireColumnField('region')).toBeUndefined();
+
+        expect(crud.cellValidators.has('region')).toBe(false);
+        expect(crud.declarativeCellValidators.has('region')).toBe(false);
+        expect(crud.cellValidators.get('name')).toEqual([{
+            message: 'Name rule',
+            validateFn: otherValidator
+        }]);
+        expect(crud.cellErrors.get(1)).toEqual(new Map([
+            ['name', 'Invalid name']
+        ]));
+        expect(crud.cellErrors.has(2)).toBe(false);
+        expect(crud.rowErrors.get(1)).toBe('Row error');
+        expect(rows[0].getElement().dataset).toEqual(expect.objectContaining({
+            hasCellError: 'true',
+            rowError: 'true'
+        }));
+        expect(rows[1].getElement().dataset.hasCellError).toBeUndefined();
+        expect(crud.modifiedCells).toBe(modifiedCells);
+        expect(crud.modifiedCells.get(1)).toEqual(new Set(['region']));
+        expect(crud.originalRows).toBe(originalRows);
+
+        crud.validateAll();
+
+        expect(declarativeValidator).not.toHaveBeenCalled();
+        expect(runtimeValidator).not.toHaveBeenCalled();
+        expect(otherValidator).toHaveBeenCalled();
+    });
 });

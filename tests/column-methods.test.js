@@ -10,6 +10,7 @@ describe('AMB table controller column method group', () => {
 
         expect(Object.keys(methods).sort()).toEqual([
             'addColumn',
+            'deleteColumn',
             'getColumn',
             'getColumnCells',
             'getColumnDefinition',
@@ -131,6 +132,41 @@ describe('AMB table controller column method group', () => {
                 table,
                 columnRuntime: {}
             }).addColumn(columnDefinition, true, position)
+        ).toBe(false);
+    });
+
+    test('delegates managed removals unchanged and rejects a missing coordinator', () => {
+        const columnLookup = {
+            field: 'region'
+        };
+        const result = Promise.resolve(undefined);
+        const columnRuntime = {
+            deleteColumn: vi.fn(() => result)
+        };
+        const table = {
+            deleteColumn: vi.fn(),
+            setColumns: vi.fn()
+        };
+        const methods = createColumnMethods({
+            table,
+            columnRuntime
+        });
+
+        expect(methods.deleteColumn(columnLookup)).toBe(result);
+        expect(columnRuntime.deleteColumn).toHaveBeenCalledOnce();
+        expect(columnRuntime.deleteColumn.mock.calls[0][0])
+            .toBe(columnLookup);
+        expect(table.deleteColumn).not.toHaveBeenCalled();
+        expect(table.setColumns).not.toHaveBeenCalled();
+
+        expect(
+            createColumnMethods({ table }).deleteColumn(columnLookup)
+        ).toBe(false);
+        expect(
+            createColumnMethods({
+                table,
+                columnRuntime: {}
+            }).deleteColumn(columnLookup)
         ).toBe(false);
     });
 

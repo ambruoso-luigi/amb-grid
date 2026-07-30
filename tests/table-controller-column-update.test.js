@@ -499,6 +499,409 @@ const createAddHarness = () => {
     };
 };
 
+const createDeleteHarness = () => {
+    const regionLookup = createLookupEditor({
+        description: 'Europe'
+    });
+    const countryLookup = createLookupEditor({
+        description: 'United States'
+    });
+    const regionValidator = vi.fn(value => value !== 'blocked');
+    const runtimeRegionValidator = vi.fn(() => true);
+    const nameValidator = vi.fn(() => true);
+    const applicationColumns = [{
+        title: 'Name',
+        field: 'name'
+    }, {
+        title: 'Details',
+        columns: [{
+            title: 'Nested code',
+            field: 'nestedCode'
+        }]
+    }, {
+        title: 'Region',
+        field: 'region',
+        editor: regionLookup.editor,
+        required: true,
+        requiredMessage: 'Region is required',
+        validator: {
+            message: 'Region is blocked',
+            validate: regionValidator
+        }
+    }, {
+        title: 'Country',
+        field: 'country',
+        editor: countryLookup.editor
+    }];
+    const selectionColumn = {
+        _ambManagedColumn: 'selection'
+    };
+    const deleteColumn = {
+        _ambManagedColumn: 'delete'
+    };
+    const cellValidators = new Map();
+    const declarativeCellValidators = new Map();
+    const cellErrors = new Map([
+        [1, new Map([
+            ['region', 'Invalid region'],
+            ['name', 'Invalid name']
+        ])]
+    ]);
+    const rowErrors = new Map([
+        [1, 'Row error']
+    ]);
+    const modifiedCells = new Map([
+        [1, new Set(['region'])]
+    ]);
+    const changes = {
+        inserted: [],
+        updated: [{
+            id: 1,
+            region: 'EU'
+        }],
+        deleted: []
+    };
+    const crud = {
+        options: {
+            idField: 'id',
+            tempIdField: '_ambTempId',
+            stateField: '_state'
+        },
+        cellValidators,
+        declarativeCellValidators,
+        cellErrors,
+        rowErrors,
+        modifiedCells,
+        changes,
+        originalRows: new Map([
+            [1, {
+                id: 1,
+                region: 'NA'
+            }]
+        ]),
+        replaceDeclarativeCellValidators: vi.fn(),
+        retireColumnField: vi.fn(function retire(field) {
+            this.cellValidators.delete(field);
+            this.declarativeCellValidators.delete(field);
+            this.cellErrors.forEach((errors, key) => {
+                errors.delete(field);
+
+                if (errors.size === 0) {
+                    this.cellErrors.delete(key);
+                }
+            });
+        }),
+        rebaseCurrentData: vi.fn(),
+        rollbackRow: vi.fn(),
+        updateData: vi.fn(),
+        updateRowFields: vi.fn()
+    };
+    const pipelineOptions = {
+        messages: {
+            required: 'Required'
+        },
+        lookupDescriptions: true,
+        getCrud: () => crud,
+        selectionColumn,
+        deleteColumn
+    };
+    const initialPipeline = prepareColumnPipeline({
+        ...pipelineOptions,
+        columns: applicationColumns
+    });
+    const declarativeRegionValidators = initialPipeline.validators
+        .filter(validator => validator.field === 'region')
+        .map(validator => ({
+            message: validator.message,
+            validateFn: validator.validate
+        }));
+
+    declarativeCellValidators.set(
+        'region',
+        declarativeRegionValidators
+    );
+    cellValidators.set('region', [
+        ...declarativeRegionValidators,
+        {
+            message: 'Runtime region rule',
+            validateFn: runtimeRegionValidator
+        }
+    ]);
+    cellValidators.set('name', [{
+        message: 'Name rule',
+        validateFn: nameValidator
+    }]);
+
+    const rowData = {
+        id: 1,
+        name: 'Changed name',
+        nestedCode: 'N1',
+        region: 'EU',
+        country: 'US',
+        _state: 'modified',
+        _ambTempId: 'tmp-existing',
+        _originalData: {
+            id: 1,
+            name: 'Initial name',
+            nestedCode: 'N1',
+            region: 'NA',
+            country: 'US'
+        },
+        _ambLookup: {
+            region: {
+                initial: {
+                    value: 'NA',
+                    description: 'North America'
+                },
+                current: {
+                    value: 'EU',
+                    description: 'Europe'
+                }
+            },
+            country: {
+                initial: {
+                    value: 'US',
+                    description: 'United States'
+                },
+                current: {
+                    value: 'US',
+                    description: 'United States'
+                }
+            }
+        }
+    };
+    const row = {
+        getData: () => rowData
+    };
+    const selectionComponent = createRuntimeComponent(selectionColumn);
+    const deleteComponent = createRuntimeComponent(deleteColumn);
+    const nameComponent = createRuntimeComponent(applicationColumns[0]);
+    const nestedComponent = createRuntimeComponent(
+        applicationColumns[1].columns[0]
+    );
+    const groupComponent = createRuntimeComponent(
+        applicationColumns[1],
+        [nestedComponent]
+    );
+    const regionComponent = createRuntimeComponent(applicationColumns[2]);
+    const countryComponent = createRuntimeComponent(applicationColumns[3]);
+    const fieldlessComponent = createRuntimeComponent({
+        title: 'Fieldless'
+    });
+    const ghostComponent = createRuntimeComponent({
+        title: 'Ghost',
+        field: 'ghost'
+    });
+    const technicalComponent = createRuntimeComponent({
+        title: 'Technical',
+        field: '_technical'
+    });
+    const otherManagedComponent = createRuntimeComponent({
+        _ambManagedColumn: 'custom'
+    });
+
+    regionComponent.delete = vi.fn();
+
+    const topLevelComponents = [
+        selectionComponent,
+        deleteComponent,
+        nameComponent,
+        groupComponent,
+        regionComponent,
+        countryComponent
+    ];
+    const table = {
+        getRows: vi.fn(() => [row]),
+        getColumns: vi.fn(() => [...topLevelComponents]),
+        getColumn: vi.fn(lookup => {
+            if (
+                topLevelComponents.includes(lookup)
+                || lookup === nestedComponent
+                || lookup === fieldlessComponent
+                || lookup === ghostComponent
+                || lookup === technicalComponent
+                || lookup === otherManagedComponent
+            ) {
+                return lookup;
+            }
+            if (lookup === 'selection') return selectionComponent;
+            if (lookup === 'delete') return deleteComponent;
+            if (lookup === 'name') return nameComponent;
+            if (lookup === 'group') return groupComponent;
+            if (lookup === 'nestedCode') return nestedComponent;
+            if (lookup === 'region') return regionComponent;
+            if (lookup === 'country') return countryComponent;
+            if (lookup === 'fieldless') return fieldlessComponent;
+            if (lookup === 'ghost') return ghostComponent;
+            if (lookup === '_technical') return technicalComponent;
+            if (lookup === 'managed') return otherManagedComponent;
+
+            return false;
+        }),
+        deleteColumn: vi.fn(component => {
+            const index = topLevelComponents.indexOf(component);
+
+            if (index >= 0) {
+                topLevelComponents.splice(index, 1);
+            }
+
+            return Promise.resolve(undefined);
+        }),
+        setColumns: vi.fn(),
+        updateColumnDefinition: vi.fn(),
+        on: vi.fn(),
+        off: vi.fn()
+    };
+    const previousLookupUnsubscribe = vi.fn();
+    const lifecycleResources = {
+        unsubscribeLookupMetadata: previousLookupUnsubscribe
+    };
+    const searchState = {
+        query: 'e',
+        selectedFields: ['name', 'nestedCode', 'region'],
+        caseSensitive: true,
+        wholeWord: true
+    };
+    let availableSearchFields = collectFields(
+        initialPipeline.searchColumns
+    );
+    const searchController = {
+        replaceColumns: vi.fn(columns => {
+            const previousFields = new Set(availableSearchFields);
+            const previousSelection = new Set(searchState.selectedFields);
+            const previouslySelectedAll =
+                previousFields.size === previousSelection.size
+                && [...previousFields].every(field => {
+                    return previousSelection.has(field);
+                });
+
+            availableSearchFields = collectFields(columns);
+            searchState.selectedFields = previouslySelectedAll
+                ? [...availableSearchFields]
+                : availableSearchFields.filter(field => {
+                    return previousSelection.has(field);
+                });
+        }),
+        getSearchState: vi.fn(() => ({
+            ...searchState,
+            selectedFields: [...searchState.selectedFields]
+        }))
+    };
+    const columnRuntime = createColumnRuntime({
+        table,
+        crud,
+        initialPipeline,
+        pipelineOptions,
+        lifecycleResources,
+        getSearchController: () => searchController
+    });
+
+    return {
+        applicationColumns,
+        cellErrors,
+        cellValidators,
+        columnRuntime,
+        countryComponent,
+        countryLookup,
+        crud,
+        deleteComponent,
+        fieldlessComponent,
+        ghostComponent,
+        groupComponent,
+        initialPipeline,
+        lifecycleResources,
+        nameComponent,
+        nestedComponent,
+        otherManagedComponent,
+        pipelineOptions,
+        previousLookupUnsubscribe,
+        regionComponent,
+        regionLookup,
+        rowData,
+        rowErrors,
+        searchController,
+        searchState,
+        selectionComponent,
+        table,
+        technicalComponent,
+        topLevelComponents
+    };
+};
+
+const createLastDeleteHarness = () => {
+    const applicationColumns = [{
+        title: 'Only application column',
+        field: 'only'
+    }];
+    const selectionColumn = {
+        _ambManagedColumn: 'selection'
+    };
+    const deleteColumn = {
+        _ambManagedColumn: 'delete'
+    };
+    const crud = {
+        replaceDeclarativeCellValidators: vi.fn(),
+        retireColumnField: vi.fn()
+    };
+    const pipelineOptions = {
+        getCrud: () => crud,
+        selectionColumn,
+        deleteColumn
+    };
+    const initialPipeline = prepareColumnPipeline({
+        ...pipelineOptions,
+        columns: applicationColumns
+    });
+    const selectionComponent = createRuntimeComponent(selectionColumn);
+    const deleteComponent = createRuntimeComponent(deleteColumn);
+    const onlyComponent = createRuntimeComponent(applicationColumns[0]);
+    const topLevelComponents = [
+        selectionComponent,
+        deleteComponent,
+        onlyComponent
+    ];
+    const runtimeResult = {
+        removed: true
+    };
+    const table = {
+        getRows: vi.fn(() => []),
+        getColumns: vi.fn(() => [...topLevelComponents]),
+        getColumn: vi.fn(() => onlyComponent),
+        deleteColumn: vi.fn(component => {
+            topLevelComponents.splice(
+                topLevelComponents.indexOf(component),
+                1
+            );
+
+            return Promise.resolve(runtimeResult);
+        }),
+        on: vi.fn(),
+        off: vi.fn()
+    };
+    const lifecycleResources = {
+        unsubscribeLookupMetadata: vi.fn()
+    };
+    const columnRuntime = createColumnRuntime({
+        table,
+        crud,
+        initialPipeline,
+        pipelineOptions,
+        lifecycleResources,
+        getSearchController: () => null
+    });
+
+    return {
+        columnRuntime,
+        crud,
+        deleteComponent,
+        onlyComponent,
+        runtimeResult,
+        selectionComponent,
+        table,
+        topLevelComponents
+    };
+};
+
 describe('AMB Grid managed column definition updates', () => {
     test('commits one prepared nested application column and synchronizes owned resources', async () => {
         const harness = createHarness();
@@ -1019,5 +1422,242 @@ describe('AMB Grid managed column definition updates', () => {
         expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
         expect(harness.table.setColumns).not.toHaveBeenCalled();
         expect(harness.table.addColumn).toHaveBeenCalledTimes(1);
+    });
+
+    test('removes one top-level field while preserving row data and CRUD ownership', async () => {
+        const harness = createDeleteHarness();
+        const canonicalBefore =
+            harness.columnRuntime.getApplicationColumns();
+        const canonicalObjectsBefore = [...canonicalBefore];
+        const groupChildrenBefore = canonicalBefore[1].columns;
+        const nestedColumnBefore = canonicalBefore[1].columns[0];
+        const changesBefore = harness.crud.changes;
+        const modifiedCellsBefore = harness.crud.modifiedCells;
+        const originalRowsBefore = harness.crud.originalRows;
+        const originalDataBefore = harness.rowData._originalData;
+        const countryMetadataBefore = structuredClone(
+            harness.rowData._ambLookup.country
+        );
+        const applicationValuesBefore = {
+            id: harness.rowData.id,
+            name: harness.rowData.name,
+            nestedCode: harness.rowData.nestedCode,
+            region: harness.rowData.region,
+            country: harness.rowData.country,
+            state: harness.rowData._state,
+            tempId: harness.rowData._ambTempId
+        };
+        const searchBefore = harness.searchController.getSearchState();
+        const result = harness.columnRuntime.deleteColumn(
+            harness.regionComponent
+        );
+
+        await expect(result).resolves.toBeUndefined();
+
+        expect(harness.table.deleteColumn).toHaveBeenCalledOnce();
+        expect(harness.table.deleteColumn.mock.calls[0][0])
+            .toBe(harness.regionComponent);
+        expect(harness.regionComponent.delete).not.toHaveBeenCalled();
+        expect(harness.table.setColumns).not.toHaveBeenCalled();
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+
+        const canonicalAfter =
+            harness.columnRuntime.getApplicationColumns();
+
+        expect(canonicalAfter).not.toBe(canonicalBefore);
+        expect(canonicalAfter).toEqual([
+            canonicalObjectsBefore[0],
+            canonicalObjectsBefore[1],
+            canonicalObjectsBefore[3]
+        ]);
+        expect(canonicalAfter[0]).toBe(canonicalObjectsBefore[0]);
+        expect(canonicalAfter[1]).toBe(canonicalObjectsBefore[1]);
+        expect(canonicalAfter[2]).toBe(canonicalObjectsBefore[3]);
+        expect(canonicalAfter[1].columns).toBe(groupChildrenBefore);
+        expect(canonicalAfter[1].columns[0]).toBe(nestedColumnBefore);
+        expect(canonicalBefore).toEqual(canonicalObjectsBefore);
+        expect(harness.topLevelComponents).toEqual([
+            harness.selectionComponent,
+            harness.deleteComponent,
+            harness.nameComponent,
+            harness.groupComponent,
+            harness.countryComponent
+        ]);
+
+        expect(harness.crud.retireColumnField)
+            .toHaveBeenCalledOnce();
+        expect(harness.crud.retireColumnField)
+            .toHaveBeenCalledWith('region');
+        expect(harness.crud.cellValidators.has('region')).toBe(false);
+        expect(harness.crud.declarativeCellValidators.has('region'))
+            .toBe(false);
+        expect(harness.crud.cellValidators.has('name')).toBe(true);
+        expect(harness.crud.cellErrors.get(1)).toEqual(new Map([
+            ['name', 'Invalid name']
+        ]));
+        expect(harness.crud.rowErrors.get(1)).toBe('Row error');
+
+        expect(harness.rowData._ambLookup.region).toBeUndefined();
+        expect(harness.rowData._ambLookup.country)
+            .toEqual(countryMetadataBefore);
+        expect(harness.previousLookupUnsubscribe)
+            .toHaveBeenCalledOnce();
+        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.table.on.mock.calls.map(call => call[0]))
+            .toEqual(['tableBuilt', 'dataLoaded']);
+        expect(harness.lifecycleResources.unsubscribeLookupMetadata)
+            .not.toBe(harness.previousLookupUnsubscribe);
+        expect(harness.regionLookup.lookupInstance.load)
+            .not.toHaveBeenCalled();
+        expect(harness.countryLookup.lookupInstance.load)
+            .not.toHaveBeenCalled();
+
+        expect(harness.searchController.replaceColumns)
+            .toHaveBeenCalledOnce();
+        expect(harness.searchController.getSearchState()).toEqual({
+            ...searchBefore,
+            selectedFields: ['name', 'nestedCode']
+        });
+
+        expect({
+            id: harness.rowData.id,
+            name: harness.rowData.name,
+            nestedCode: harness.rowData.nestedCode,
+            region: harness.rowData.region,
+            country: harness.rowData.country,
+            state: harness.rowData._state,
+            tempId: harness.rowData._ambTempId
+        }).toEqual(applicationValuesBefore);
+        expect(harness.rowData._originalData).toBe(originalDataBefore);
+        expect(harness.crud.changes).toBe(changesBefore);
+        expect(harness.crud.changes.updated[0].region).toBe('EU');
+        expect(harness.crud.modifiedCells).toBe(modifiedCellsBefore);
+        expect(harness.crud.modifiedCells.get(1))
+            .toEqual(new Set(['region']));
+        expect(harness.crud.originalRows).toBe(originalRowsBefore);
+        expect(harness.crud.rebaseCurrentData).not.toHaveBeenCalled();
+        expect(harness.crud.rollbackRow).not.toHaveBeenCalled();
+        expect(harness.crud.updateData).not.toHaveBeenCalled();
+        expect(harness.crud.updateRowFields).not.toHaveBeenCalled();
+
+        const lastHarness = createLastDeleteHarness();
+        const lastResult = lastHarness.columnRuntime.deleteColumn('only');
+
+        await expect(lastResult).resolves.toBe(
+            lastHarness.runtimeResult
+        );
+        expect(lastHarness.columnRuntime.getApplicationColumns())
+            .toEqual([]);
+        expect(lastHarness.topLevelComponents).toEqual([
+            lastHarness.selectionComponent,
+            lastHarness.deleteComponent
+        ]);
+        expect(lastHarness.table.deleteColumn)
+            .toHaveBeenCalledOnce();
+        expect(lastHarness.table.deleteColumn)
+            .toHaveBeenCalledWith(lastHarness.onlyComponent);
+        expect(lastHarness.crud.retireColumnField)
+            .toHaveBeenCalledWith('only');
+    });
+
+    test('rejects unsupported removals and preserves state on runtime rejection', async () => {
+        const harness = createDeleteHarness();
+        const canonicalBefore =
+            harness.columnRuntime.getApplicationColumns();
+        const validatorsBefore = new Map(
+            [...harness.crud.cellValidators].map(([field, validators]) => {
+                return [field, [...validators]];
+            })
+        );
+        const declarativeBefore = new Map(
+            [...harness.crud.declarativeCellValidators]
+                .map(([field, validators]) => {
+                    return [field, [...validators]];
+                })
+        );
+        const cellErrorsBefore = new Map(
+            [...harness.crud.cellErrors].map(([key, errors]) => {
+                return [key, new Map(errors)];
+            })
+        );
+        const rowErrorsBefore = new Map(harness.crud.rowErrors);
+        const rowDataBefore = structuredClone(harness.rowData);
+        const changesBefore = harness.crud.changes;
+        const modifiedCellsBefore = harness.crud.modifiedCells;
+
+        expect(harness.columnRuntime.deleteColumn('missing')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('selection')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('delete')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('managed')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('group')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('nestedCode')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('fieldless')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('ghost')).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('_technical')).toBe(false);
+
+        const {
+            retireColumnField,
+            ...crudWithoutRetirement
+        } = harness.crud;
+        const runtimeWithoutDependency = createColumnRuntime({
+            table: harness.table,
+            crud: crudWithoutRetirement,
+            initialPipeline: harness.initialPipeline,
+            pipelineOptions: harness.pipelineOptions,
+            lifecycleResources: {
+                unsubscribeLookupMetadata: vi.fn()
+            },
+            getSearchController: () => harness.searchController
+        });
+
+        expect(runtimeWithoutDependency.deleteColumn('region')).toBe(false);
+
+        harness.table.getColumns.mockReturnValueOnce([
+            harness.selectionComponent,
+            harness.deleteComponent,
+            harness.groupComponent,
+            harness.nameComponent,
+            harness.regionComponent,
+            harness.countryComponent
+        ]);
+        expect(harness.columnRuntime.deleteColumn('region')).toBe(false);
+        expect(harness.table.deleteColumn).not.toHaveBeenCalled();
+
+        const runtimeError = new Error('Runtime column removal failed');
+
+        harness.table.deleteColumn.mockRejectedValueOnce(runtimeError);
+
+        const rejectedResult = harness.columnRuntime.deleteColumn(
+            harness.regionComponent
+        );
+
+        await expect(rejectedResult).rejects.toBe(runtimeError);
+        expect(harness.table.deleteColumn).toHaveBeenCalledOnce();
+        expect(harness.table.deleteColumn.mock.calls[0][0])
+            .toBe(harness.regionComponent);
+        expect(harness.columnRuntime.getApplicationColumns())
+            .toBe(canonicalBefore);
+        expect(harness.crud.cellValidators).toEqual(validatorsBefore);
+        expect(harness.crud.declarativeCellValidators)
+            .toEqual(declarativeBefore);
+        expect(harness.crud.cellErrors).toEqual(cellErrorsBefore);
+        expect(harness.crud.rowErrors).toEqual(rowErrorsBefore);
+        expect(harness.crud.retireColumnField).not.toHaveBeenCalled();
+        expect(harness.rowData).toEqual(rowDataBefore);
+        expect(harness.crud.changes).toBe(changesBefore);
+        expect(harness.crud.modifiedCells).toBe(modifiedCellsBefore);
+        expect(harness.previousLookupUnsubscribe)
+            .not.toHaveBeenCalled();
+        expect(harness.table.on).not.toHaveBeenCalled();
+        expect(harness.table.off).not.toHaveBeenCalled();
+        expect(harness.searchController.replaceColumns)
+            .not.toHaveBeenCalled();
+        expect(harness.crud.rebaseCurrentData).not.toHaveBeenCalled();
+        expect(harness.crud.rollbackRow).not.toHaveBeenCalled();
+        expect(harness.crud.updateData).not.toHaveBeenCalled();
+        expect(harness.table.setColumns).not.toHaveBeenCalled();
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+        expect(harness.regionComponent.delete).not.toHaveBeenCalled();
+        expect(harness.table.deleteColumn).toHaveBeenCalledTimes(1);
     });
 });

@@ -130,6 +130,35 @@ export const createColumnMethods = ({ table, columnRuntime = null }) => ({
     },
 
     /**
+     * Removes one top-level application data column through the managed AMB
+     * Grid pipeline. Column groups, nested columns and AMB-managed selection
+     * or action columns are protected by this contract.
+     *
+     * The field value remains in row data, and existing changes and CRUD
+     * payloads remain intact. Validators, cell errors and technical lookup
+     * metadata owned by the removed field are retired, while global search is
+     * updated without recreating its controller.
+     *
+     * The returned Promise preserves the runtime removal result. Rejections
+     * are propagated without rollback. Direct structural changes through
+     * `grid.table` can make runtime and canonical columns inconsistent, in
+     * which case the operation is rejected.
+     *
+     * @param {*} columnLookup - Supported top-level application column lookup.
+     * @returns {Promise<*>|false} Runtime removal Promise, or `false`.
+     */
+    deleteColumn(columnLookup) {
+        if (
+            !columnRuntime
+            || typeof columnRuntime.deleteColumn !== 'function'
+        ) {
+            return false;
+        }
+
+        return columnRuntime.deleteColumn(columnLookup);
+    },
+
+    /**
      * Returns the runtime definition for one managed column component.
      *
      * The `columnLookup` value is forwarded to the underlying table engine's

@@ -11,7 +11,7 @@ export const TABLE_API_COVERAGE = [
 
     // Columns
     { method: 'addColumn', domain: 'columns', status: 'narrower-contract', classification: 'overridden', controller: 'column-methods', reason: 'AMB adds unique top-level field columns through the managed pipeline and preserves AMB-managed column placement.' },
-    { method: 'deleteColumn', domain: 'columns', status: 'missing', classification: 'delicate', reason: 'Runtime column removal needs AMB configuration and lifecycle design.' },
+    { method: 'deleteColumn', domain: 'columns', status: 'narrower-contract', classification: 'overridden', controller: 'column-methods', reason: 'AMB removes top-level application field columns through the managed pipeline while preserving row data and CRUD tracking.' },
     { method: 'getColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'getColumnDefinitions', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'getColumns', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },

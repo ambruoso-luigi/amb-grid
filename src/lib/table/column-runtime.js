@@ -202,6 +202,20 @@ const hasSameLookupConfiguration = (previousColumn, nextColumn) => {
     });
 };
 
+const removeLookupMetadataForRows = (table, field) => {
+    const rows = typeof table.getRows === 'function'
+        ? table.getRows()
+        : [];
+
+    (rows || []).forEach(row => {
+        const rowData = row && typeof row.getData === 'function'
+            ? row.getData()
+            : row;
+
+        removeLookupMetadata(rowData, field);
+    });
+};
+
 const clearInvalidLookupMetadata = (
     table,
     field,
@@ -214,17 +228,7 @@ const clearInvalidLookupMetadata = (
 
     if (!lookupIntroduced && !lookupChanged) return;
 
-    const rows = typeof table.getRows === 'function'
-        ? table.getRows()
-        : [];
-
-    (rows || []).forEach(row => {
-        const rowData = row && typeof row.getData === 'function'
-            ? row.getData()
-            : row;
-
-        removeLookupMetadata(rowData, field);
-    });
+    removeLookupMetadataForRows(table, field);
 };
 
 const toCrudValidators = (validators, field) => {
@@ -293,28 +297,39 @@ export const createColumnRuntime = ({
     const commitPipeline = (
         previousPipeline,
         candidatePipeline,
-        affectedFields
+        {
+            changedFields = [],
+            removedFields = []
+        } = {}
     ) => {
         currentPipeline = candidatePipeline;
 
-        affectedFields.forEach(field => {
+        changedFields.forEach(field => {
             crud.replaceDeclarativeCellValidators(
                 field,
                 toCrudValidators(candidatePipeline.validators, field)
             );
         });
 
+        removedFields.forEach(field => {
+            crud.retireColumnField(field);
+        });
+
         if (lifecycleResources.unsubscribeLookupMetadata) {
             lifecycleResources.unsubscribeLookupMetadata();
         }
 
-        affectedFields.forEach(field => {
+        changedFields.forEach(field => {
             clearInvalidLookupMetadata(
                 table,
                 field,
                 getLookupColumn(previousPipeline.lookupColumns, field),
                 getLookupColumn(candidatePipeline.lookupColumns, field)
             );
+        });
+
+        removedFields.forEach(field => {
+            removeLookupMetadataForRows(table, field);
         });
 
         lifecycleResources.unsubscribeLookupMetadata =
@@ -399,7 +414,9 @@ export const createColumnRuntime = ({
                 commitPipeline(
                     previousPipeline,
                     candidatePipeline,
-                    [field]
+                    {
+                        changedFields: [field]
+                    }
                 );
 
                 return newColumn;
@@ -542,10 +559,95 @@ export const createColumnRuntime = ({
                 commitPipeline(
                     previousPipeline,
                     candidatePipeline,
-                    [field]
+                    {
+                        changedFields: [field]
+                    }
                 );
 
                 return newColumn;
+            });
+        },
+
+        /**
+         * Removes one top-level application data column and synchronizes the
+         * centralized AMB Grid preparation and resource lifecycle.
+         *
+         * @param {*} columnLookup - Supported runtime application column lookup.
+         * @returns {Promise<*>|false} Runtime removal result, or `false`.
+         * @private
+         * @internal
+         */
+        deleteColumn(columnLookup) {
+            if (
+                !commonDependenciesAvailable()
+                || typeof crud.retireColumnField !== 'function'
+                || typeof table.getColumn !== 'function'
+                || typeof table.getColumns !== 'function'
+                || typeof table.deleteColumn !== 'function'
+            ) {
+                return false;
+            }
+
+            const resolvedColumn = table.getColumn(columnLookup);
+
+            if (!resolvedColumn || isManagedColumn(resolvedColumn)) return false;
+
+            const field = getColumnField(resolvedColumn);
+
+            if (!field || isTechnicalField(field)) return false;
+
+            const applicationComponents = getCoherentRuntimeColumns(
+                table,
+                currentPipeline.applicationColumns,
+                [
+                    pipelineOptions.selectionColumn,
+                    pipelineOptions.deleteColumn
+                ]
+            );
+
+            if (!applicationComponents) return false;
+
+            const columnIndex = applicationComponents.indexOf(resolvedColumn);
+
+            if (columnIndex < 0) return false;
+
+            const canonicalColumn =
+                currentPipeline.applicationColumns[columnIndex];
+
+            if (
+                !canonicalColumn
+                || Array.isArray(canonicalColumn.columns)
+                || canonicalColumn.field !== field
+            ) {
+                return false;
+            }
+
+            const candidateColumns = [
+                ...currentPipeline.applicationColumns
+            ];
+
+            candidateColumns.splice(columnIndex, 1);
+
+            const candidatePipeline = prepareColumnPipeline({
+                ...pipelineOptions,
+                columns: candidateColumns
+            });
+
+            candidatePipeline.applicationColumns = candidateColumns;
+
+            const previousPipeline = currentPipeline;
+            const runtimeResult = table.deleteColumn(resolvedColumn);
+
+            return Promise.resolve(runtimeResult).then(result => {
+                commitPipeline(
+                    previousPipeline,
+                    candidatePipeline,
+                    {
+                        removedFields: [field]
+                    }
+                );
+
+                return result;
             });
         },
 
