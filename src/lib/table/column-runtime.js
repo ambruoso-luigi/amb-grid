@@ -1,4 +1,7 @@
-import { removeLookupMetadata } from '../lookup-metadata.js';
+import {
+    LOOKUP_METADATA_FIELD,
+    removeLookupMetadata
+} from '../lookup-metadata.js';
 import {
     bindLookupMetadataInitialization,
     prepareColumnPipeline
@@ -19,6 +22,84 @@ const hasValidField = column => {
 
 const isTechnicalField = field => {
     return typeof field === 'string' && field.startsWith('_');
+};
+
+const FIELDLESS_DATA_PROPERTIES = [
+    'required',
+    'requiredMessage',
+    'validation',
+    'validator'
+];
+
+const requiresFieldOwnership = column => {
+    if (FIELDLESS_DATA_PROPERTIES.some(property => property in column)) {
+        return true;
+    }
+
+    const editorType = column
+        && column.editor
+        && column.editor._ambEditorType;
+
+    return editorType === 'lookup' || editorType === 'checkbox';
+};
+
+const validateApplicationColumnTree = (columns, crud) => {
+    if (!Array.isArray(columns)) return null;
+
+    const fields = [];
+    const seenFields = new Set();
+    const reservedFields = new Set([
+        crud.options && crud.options.stateField,
+        crud.options && crud.options.originalDataField,
+        crud.options && crud.options.rowNumberField,
+        crud.options && crud.options.tempIdField,
+        LOOKUP_METADATA_FIELD
+    ].filter(field => typeof field === 'string' && field !== ''));
+
+    const validateColumns = definitions => {
+        for (const column of definitions) {
+            if (!isObjectPatch(column)) return false;
+            if ('_ambManagedColumn' in column) return false;
+
+            if ('columns' in column) {
+                if (
+                    !Array.isArray(column.columns)
+                    || column.columns.length === 0
+                    || 'field' in column
+                    || !validateColumns(column.columns)
+                ) {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if (!('field' in column)) {
+                if (requiresFieldOwnership(column)) return false;
+
+                continue;
+            }
+
+            const field = column.field;
+
+            if (
+                typeof field !== 'string'
+                || field.trim() === ''
+                || isTechnicalField(field)
+                || reservedFields.has(field)
+                || seenFields.has(field)
+            ) {
+                return false;
+            }
+
+            seenFields.add(field);
+            fields.push(field);
+        }
+
+        return true;
+    };
+
+    return validateColumns(columns) ? fields : null;
 };
 
 const getColumnField = column => {
@@ -649,6 +730,84 @@ export const createColumnRuntime = ({
 
                 return result;
             });
+        },
+
+        /**
+         * Replaces the complete application column tree through the
+         * centralized AMB Grid preparation and synchronization lifecycle.
+         *
+         * @param {object[]} columnDefinitions - Complete application column tree.
+         * @returns {*|false} Original synchronous result, resolved thenable result, or `false`.
+         * @private
+         * @internal
+         */
+        setColumns(columnDefinitions) {
+            if (
+                !commonDependenciesAvailable()
+                || typeof crud.retireColumnField !== 'function'
+                || typeof table.setColumns !== 'function'
+            ) {
+                return false;
+            }
+
+            const candidateFields = validateApplicationColumnTree(
+                columnDefinitions,
+                crud
+            );
+
+            if (!candidateFields) return false;
+
+            const previousFields = collectColumnFields(
+                currentPipeline.applicationColumns
+            );
+            const previousFieldSet = new Set(previousFields);
+            const candidateFieldSet = new Set(candidateFields);
+            const retainedFields = candidateFields.filter(field => {
+                return previousFieldSet.has(field);
+            });
+            const addedFields = candidateFields.filter(field => {
+                return !previousFieldSet.has(field);
+            });
+            const removedFields = previousFields.filter(field => {
+                return !candidateFieldSet.has(field);
+            });
+            const changedFields = candidateFields.filter(field => {
+                return retainedFields.includes(field)
+                    || addedFields.includes(field);
+            });
+            const candidatePipeline = prepareColumnPipeline({
+                ...pipelineOptions,
+                columns: columnDefinitions
+            });
+            const previousPipeline = currentPipeline;
+            const commitCandidate = () => {
+                commitPipeline(
+                    previousPipeline,
+                    candidatePipeline,
+                    {
+                        changedFields,
+                        removedFields
+                    }
+                );
+            };
+            const runtimeResult = table.setColumns(
+                candidatePipeline.runtimeColumns
+            );
+
+            if (
+                runtimeResult
+                && typeof runtimeResult.then === 'function'
+            ) {
+                return Promise.resolve(runtimeResult).then(result => {
+                    commitCandidate();
+
+                    return result;
+                });
+            }
+
+            commitCandidate();
+
+            return runtimeResult;
         },
 
         /**

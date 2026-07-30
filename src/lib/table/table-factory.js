@@ -205,6 +205,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} updateColumnDefinition - Update one application data column and synchronize its AMB Grid runtime configuration.
  * @property {Function} addColumn - Add one top-level application data column through the managed AMB Grid column pipeline.
  * @property {Function} deleteColumn - Remove one top-level application data column while preserving AMB Grid row data and CRUD tracking.
+ * @property {Function} setColumns - Replace the complete application column tree through the managed AMB Grid column pipeline.
  * @property {Function} getColumnDefinition - Return the runtime definition for one column.
  * @property {Function} getColumnElement - Return the runtime DOM element for one column.
  * @property {Function} getColumnField - Return the runtime field for one column.

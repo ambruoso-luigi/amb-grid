@@ -1305,7 +1305,8 @@ describe('AMB table controller method modularization', () => {
         expect(source).not.toContain('column-navigation-methods.js');
         expect(source).not.toContain('column-move-methods.js');
         expect(source).not.toMatch(/(?:showColumn|hideColumn|toggleColumn|scrollToColumn|moveColumn)[\s\S]*?table\.getColumn\(columnLookup\)/);
-        expect(source).not.toContain('setColumns(');
+        expect(source).toMatch(/setColumns\(columnDefinitions\) \{[\s\S]*?return columnRuntime\.setColumns\(columnDefinitions\);/);
+        expect(source).not.toContain('table.setColumns(');
         expect(source).not.toContain('.move(');
         expect(source).not.toContain('.show()');
         expect(source).not.toContain('.hide()');

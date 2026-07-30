@@ -18,7 +18,7 @@ export const TABLE_API_COVERAGE = [
     { method: 'hideColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'moveColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'scrollToColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
-    { method: 'setColumns', domain: 'columns', status: 'missing', classification: 'delicate', reason: 'Full column replacement needs AMB editor, validator, and helper reconfiguration.' },
+    { method: 'setColumns', domain: 'columns', status: 'narrower-contract', classification: 'overridden', controller: 'column-methods', reason: 'AMB replaces the complete application column tree through the managed pipeline while preserving managed columns, row data and CRUD tracking.' },
     { method: 'showColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'toggleColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'updateColumnDefinition', domain: 'columns', status: 'narrower-contract', classification: 'overridden', controller: 'column-methods', reason: 'AMB updates application data columns through the managed preparation pipeline, rejects field changes and protects AMB-managed columns.' },

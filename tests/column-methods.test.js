@@ -31,6 +31,7 @@ describe('AMB table controller column method group', () => {
             'scrollToColumn',
             'setColumnTitle',
             'setColumnWidth',
+            'setColumns',
             'showColumn',
             'toggleColumn',
             'updateColumnDefinition',
@@ -167,6 +168,41 @@ describe('AMB table controller column method group', () => {
                 table,
                 columnRuntime: {}
             }).deleteColumn(columnLookup)
+        ).toBe(false);
+    });
+
+    test('delegates managed replacements unchanged and rejects a missing coordinator', () => {
+        const columnDefinitions = [{
+            title: 'Region',
+            field: 'region'
+        }];
+        const result = {
+            replaced: true
+        };
+        const columnRuntime = {
+            setColumns: vi.fn(() => result)
+        };
+        const table = {
+            setColumns: vi.fn()
+        };
+        const methods = createColumnMethods({
+            table,
+            columnRuntime
+        });
+
+        expect(methods.setColumns(columnDefinitions)).toBe(result);
+        expect(columnRuntime.setColumns).toHaveBeenCalledOnce();
+        expect(columnRuntime.setColumns.mock.calls[0][0])
+            .toBe(columnDefinitions);
+        expect(table.setColumns).not.toHaveBeenCalled();
+        expect(
+            createColumnMethods({ table }).setColumns(columnDefinitions)
+        ).toBe(false);
+        expect(
+            createColumnMethods({
+                table,
+                columnRuntime: {}
+            }).setColumns(columnDefinitions)
         ).toBe(false);
     });
 

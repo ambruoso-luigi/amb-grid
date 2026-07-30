@@ -159,6 +159,36 @@ export const createColumnMethods = ({ table, columnRuntime = null }) => ({
     },
 
     /**
+     * Replaces the complete application column tree through the managed AMB
+     * Grid pipeline. Top-level columns, nested groups, compatible fieldless
+     * presentation columns and an empty application tree are supported.
+     *
+     * AMB-managed columns are recomposed automatically. Validators, field
+     * errors, lookup metadata and global search are synchronized while row
+     * data, changes and CRUD payloads remain intact. Renaming a field is a
+     * removal plus an addition and does not rename or copy row properties.
+     *
+     * Runtime order, groups and definitions are replaced, making previous
+     * Column Component references obsolete. Runtime-only width, visibility
+     * and position are not retained unless present in the new definitions.
+     * This operation can realign columns after direct structural changes
+     * through `grid.table`; errors are propagated without rollback.
+     *
+     * @param {object[]} columnDefinitions - Complete application column tree.
+     * @returns {*|false} Runtime result, resolved thenable result, or `false`.
+     */
+    setColumns(columnDefinitions) {
+        if (
+            !columnRuntime
+            || typeof columnRuntime.setColumns !== 'function'
+        ) {
+            return false;
+        }
+
+        return columnRuntime.setColumns(columnDefinitions);
+    },
+
+    /**
      * Returns the runtime definition for one managed column component.
      *
      * The `columnLookup` value is forwarded to the underlying table engine's

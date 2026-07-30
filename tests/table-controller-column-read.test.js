@@ -218,7 +218,7 @@ describe('AMB table controller column API', () => {
             expect(typeof controller.getColumnDefinitions).toBe('function');
             expect(typeof controller.getColumns).toBe('function');
             expect(typeof controller.getColumn).toBe('function');
-            expect(controller.setColumns).toBeUndefined();
+            expect(typeof controller.setColumns).toBe('function');
             expect(typeof controller.updateColumnDefinition).toBe('function');
             expect(typeof controller.addColumn).toBe('function');
             expect(typeof controller.deleteColumn).toBe('function');

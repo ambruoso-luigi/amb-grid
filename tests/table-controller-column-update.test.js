@@ -579,7 +579,40 @@ const createDeleteHarness = () => {
                 region: 'NA'
             }]
         ]),
-        replaceDeclarativeCellValidators: vi.fn(),
+        replaceDeclarativeCellValidators: vi.fn(function replace(
+            field,
+            validators
+        ) {
+            const previousDeclarative = new Set(
+                this.declarativeCellValidators.get(field) || []
+            );
+            const runtimeValidators = (
+                this.cellValidators.get(field) || []
+            ).filter(validator => !previousDeclarative.has(validator));
+            const nextDeclarative = validators.map(validator => ({
+                ...validator
+            }));
+
+            if (nextDeclarative.length) {
+                this.declarativeCellValidators.set(
+                    field,
+                    nextDeclarative
+                );
+            } else {
+                this.declarativeCellValidators.delete(field);
+            }
+
+            const nextValidators = [
+                ...nextDeclarative,
+                ...runtimeValidators
+            ];
+
+            if (nextValidators.length) {
+                this.cellValidators.set(field, nextValidators);
+            } else {
+                this.cellValidators.delete(field);
+            }
+        }),
         retireColumnField: vi.fn(function retire(field) {
             this.cellValidators.delete(field);
             this.declarativeCellValidators.delete(field);
@@ -747,6 +780,7 @@ const createDeleteHarness = () => {
 
             return Promise.resolve(undefined);
         }),
+        addColumn: vi.fn(),
         setColumns: vi.fn(),
         updateColumnDefinition: vi.fn(),
         on: vi.fn(),
@@ -1659,5 +1693,378 @@ describe('AMB Grid managed column definition updates', () => {
         expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
         expect(harness.regionComponent.delete).not.toHaveBeenCalled();
         expect(harness.table.deleteColumn).toHaveBeenCalledTimes(1);
+    });
+
+    test('replaces the complete application tree through one prepared runtime call', async () => {
+        const harness = createDeleteHarness();
+        const changedRegionLookup = createLookupEditor({
+            description: 'Updated Europe'
+        });
+        const nextRegionValidator = vi.fn(value => value !== 'XX');
+        const priorityRuntimeValidator = vi.fn(() => true);
+        const presentationFormatter = vi.fn(() => 'Presentation');
+        const nestedColumns = [{
+            title: 'Nested code',
+            field: 'nestedCode'
+        }];
+        const innerGroup = {
+            title: 'Inner details',
+            columns: nestedColumns
+        };
+        const outerColumns = [innerGroup];
+        const outerGroup = {
+            title: 'Details',
+            columns: outerColumns
+        };
+        const fieldlessColumn = {
+            title: 'Presentation',
+            formatter: presentationFormatter
+        };
+        const candidateColumns = [
+            outerGroup,
+            {
+                title: 'Updated region',
+                field: 'region',
+                editor: changedRegionLookup.editor,
+                validator: {
+                    message: 'Updated region rule',
+                    validate: nextRegionValidator
+                }
+            },
+            fieldlessColumn,
+            {
+                title: 'Priority',
+                field: 'priority',
+                required: true
+            },
+            {
+                title: 'Country',
+                field: 'country',
+                editor: harness.countryLookup.editor
+            }
+        ];
+        const priorityRuntimeRule = {
+            message: 'Runtime priority rule',
+            validateFn: priorityRuntimeValidator
+        };
+        const runtimeResult = {
+            replaced: true
+        };
+        const canonicalBefore =
+            harness.columnRuntime.getApplicationColumns();
+        const changesBefore = harness.crud.changes;
+        const modifiedCellsBefore = harness.crud.modifiedCells;
+        const originalRowsBefore = harness.crud.originalRows;
+        const originalDataBefore = harness.rowData._originalData;
+        const countryMetadataBefore = structuredClone(
+            harness.rowData._ambLookup.country
+        );
+        const applicationValuesBefore = {
+            id: harness.rowData.id,
+            name: harness.rowData.name,
+            nestedCode: harness.rowData.nestedCode,
+            region: harness.rowData.region,
+            country: harness.rowData.country,
+            state: harness.rowData._state,
+            tempId: harness.rowData._ambTempId
+        };
+        const searchBefore = harness.searchController.getSearchState();
+
+        harness.crud.changes.updated[0] = {
+            id: 1,
+            name: 'Changed name'
+        };
+        harness.crud.cellValidators.set('priority', [
+            priorityRuntimeRule
+        ]);
+        harness.table.setColumns.mockReturnValueOnce(runtimeResult);
+
+        expect(harness.columnRuntime.setColumns(candidateColumns))
+            .toBe(runtimeResult);
+
+        await vi.waitFor(() => {
+            expect(changedRegionLookup.lookupInstance.load)
+                .toHaveBeenCalledOnce();
+        });
+
+        expect(harness.table.setColumns).toHaveBeenCalledOnce();
+        const runtimeColumns = harness.table.setColumns.mock.calls[0][0];
+
+        expect(runtimeColumns.slice(0, 2)).toEqual([
+            harness.pipelineOptions.selectionColumn,
+            harness.pipelineOptions.deleteColumn
+        ]);
+        expect(runtimeColumns).toHaveLength(7);
+        expect(collectFields(runtimeColumns)).toEqual([
+            'nestedCode',
+            'region',
+            'priority',
+            'country'
+        ]);
+        const runtimeRegion = findColumn(runtimeColumns, 'region');
+        const runtimePriority = findColumn(runtimeColumns, 'priority');
+
+        expect(runtimeRegion).not.toHaveProperty('validator');
+        expect(runtimePriority).not.toHaveProperty('required');
+        expect(runtimeColumns[4].field).toBeUndefined();
+        expect(runtimeColumns[4].formatter)
+            .toBe(presentationFormatter);
+
+        const canonicalAfter =
+            harness.columnRuntime.getApplicationColumns();
+
+        expect(canonicalAfter).not.toBe(candidateColumns);
+        expect(canonicalAfter[0]).not.toBe(outerGroup);
+        expect(canonicalAfter[0].columns).not.toBe(outerColumns);
+        expect(canonicalAfter[0].columns[0]).not.toBe(innerGroup);
+        expect(canonicalAfter[0].columns[0].columns)
+            .not.toBe(nestedColumns);
+        expect(canonicalAfter[1].editor)
+            .toBe(changedRegionLookup.editor);
+        expect(canonicalAfter[1].validator.validate)
+            .toBe(nextRegionValidator);
+        expect(canonicalAfter[2].formatter)
+            .toBe(presentationFormatter);
+        expect(candidateColumns[0]).toBe(outerGroup);
+        expect(outerGroup.columns).toBe(outerColumns);
+        expect(innerGroup.columns).toBe(nestedColumns);
+        expect(candidateColumns[1].validator.validate)
+            .toBe(nextRegionValidator);
+        expect(candidateColumns[3].required).toBe(true);
+        expect(canonicalBefore.map(column => column.field || 'group'))
+            .toEqual(['name', 'group', 'region', 'country']);
+
+        expect(harness.crud.replaceDeclarativeCellValidators)
+            .toHaveBeenCalledTimes(4);
+        expect(harness.crud.replaceDeclarativeCellValidators.mock.calls
+            .map(call => call[0])).toEqual([
+            'nestedCode',
+            'region',
+            'priority',
+            'country'
+        ]);
+        expect(harness.crud.retireColumnField)
+            .toHaveBeenCalledOnce();
+        expect(harness.crud.retireColumnField)
+            .toHaveBeenCalledWith('name');
+        expect(harness.crud.cellValidators.has('name')).toBe(false);
+        expect(harness.crud.cellValidators.get('region'))
+            .toEqual(expect.arrayContaining([
+                expect.objectContaining({
+                    validateFn: nextRegionValidator
+                }),
+                expect.objectContaining({
+                    message: 'Runtime region rule'
+                })
+            ]));
+        expect(harness.crud.cellValidators.get('priority'))
+            .toEqual(expect.arrayContaining([
+                expect.objectContaining({
+                    message: 'Required'
+                }),
+                priorityRuntimeRule
+            ]));
+        expect(harness.crud.cellErrors.get(1)).toEqual(new Map([
+            ['region', 'Invalid region']
+        ]));
+        expect(harness.crud.rowErrors.get(1)).toBe('Row error');
+
+        expect(harness.rowData._ambLookup.country)
+            .toEqual(countryMetadataBefore);
+        expect(harness.rowData._ambLookup.region.current).toEqual({
+            value: 'EU',
+            description: 'Updated Europe'
+        });
+        expect(harness.previousLookupUnsubscribe)
+            .toHaveBeenCalledOnce();
+        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.searchController.replaceColumns)
+            .toHaveBeenCalledOnce();
+        expect(harness.searchController.getSearchState()).toEqual({
+            ...searchBefore,
+            selectedFields: ['nestedCode', 'region']
+        });
+
+        expect({
+            id: harness.rowData.id,
+            name: harness.rowData.name,
+            nestedCode: harness.rowData.nestedCode,
+            region: harness.rowData.region,
+            country: harness.rowData.country,
+            state: harness.rowData._state,
+            tempId: harness.rowData._ambTempId
+        }).toEqual(applicationValuesBefore);
+        expect(harness.rowData._originalData).toBe(originalDataBefore);
+        expect(harness.crud.changes).toBe(changesBefore);
+        expect(harness.crud.changes.updated[0].name)
+            .toBe('Changed name');
+        expect(harness.crud.modifiedCells).toBe(modifiedCellsBefore);
+        expect(harness.crud.originalRows).toBe(originalRowsBefore);
+        expect(harness.crud.rebaseCurrentData).not.toHaveBeenCalled();
+        expect(harness.crud.rollbackRow).not.toHaveBeenCalled();
+        expect(harness.crud.updateData).not.toHaveBeenCalled();
+        expect(harness.table.addColumn).not.toHaveBeenCalled();
+        expect(harness.table.deleteColumn).not.toHaveBeenCalled();
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+    });
+
+    test('accepts an empty application tree and preserves the synchronous runtime result', () => {
+        const harness = createDeleteHarness();
+        const runtimeResult = {
+            empty: true
+        };
+        const changesBefore = harness.crud.changes;
+        const rowValuesBefore = {
+            name: harness.rowData.name,
+            nestedCode: harness.rowData.nestedCode,
+            region: harness.rowData.region,
+            country: harness.rowData.country,
+            state: harness.rowData._state
+        };
+
+        harness.table.setColumns.mockReturnValueOnce(runtimeResult);
+
+        expect(harness.columnRuntime.setColumns([])).toBe(runtimeResult);
+        expect(harness.table.setColumns).toHaveBeenCalledOnce();
+        expect(harness.table.setColumns).toHaveBeenCalledWith([
+            harness.pipelineOptions.selectionColumn,
+            harness.pipelineOptions.deleteColumn
+        ]);
+        expect(harness.columnRuntime.getApplicationColumns())
+            .toEqual([]);
+        expect(harness.crud.retireColumnField.mock.calls.map(call => {
+            return call[0];
+        })).toEqual(['name', 'nestedCode', 'region', 'country']);
+        expect(harness.crud.replaceDeclarativeCellValidators)
+            .not.toHaveBeenCalled();
+        expect(harness.rowData._ambLookup).toBeUndefined();
+        expect(harness.searchController.replaceColumns)
+            .toHaveBeenCalledOnce();
+        expect(harness.searchController.getSearchState().selectedFields)
+            .toEqual([]);
+        expect({
+            name: harness.rowData.name,
+            nestedCode: harness.rowData.nestedCode,
+            region: harness.rowData.region,
+            country: harness.rowData.country,
+            state: harness.rowData._state
+        }).toEqual(rowValuesBefore);
+        expect(harness.crud.changes).toBe(changesBefore);
+        expect(harness.table.addColumn).not.toHaveBeenCalled();
+        expect(harness.table.deleteColumn).not.toHaveBeenCalled();
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+    });
+
+    test('rejects invalid replacement trees and commits neither synchronous nor thenable failures', async () => {
+        const harness = createDeleteHarness();
+        const invalidLookup = createLookupEditor({
+            description: 'Invalid'
+        });
+        const invalidCheckbox = vi.fn();
+        const canonicalBefore =
+            harness.columnRuntime.getApplicationColumns();
+        const validatorsBefore = new Map(
+            [...harness.crud.cellValidators].map(([field, validators]) => {
+                return [field, [...validators]];
+            })
+        );
+        const errorsBefore = new Map(
+            [...harness.crud.cellErrors].map(([key, errors]) => {
+                return [key, new Map(errors)];
+            })
+        );
+        const rowDataBefore = structuredClone(harness.rowData);
+        const changesBefore = harness.crud.changes;
+
+        invalidCheckbox._ambEditorType = 'checkbox';
+
+        [
+            null,
+            {},
+            [null],
+            ['invalid'],
+            [{ title: 'Bad group', columns: 'invalid' }],
+            [{ title: 'Empty group', columns: [] }],
+            [{ title: 'Field group', field: 'group', columns: [{ field: 'a' }] }],
+            [{ field: 'duplicate' }, {
+                title: 'Group',
+                columns: [{ field: 'duplicate' }]
+            }],
+            [{
+                title: 'Group',
+                columns: [{ _ambManagedColumn: 'selection' }]
+            }],
+            [{ field: '_state' }],
+            [{ field: '_ambLookup' }],
+            [{ title: 'Fieldless', required: true }],
+            [{ title: 'Fieldless', validator: vi.fn() }],
+            [{ title: 'Fieldless', editor: invalidLookup.editor }],
+            [{ title: 'Fieldless', editor: invalidCheckbox }]
+        ].forEach(definitions => {
+            expect(harness.columnRuntime.setColumns(definitions))
+                .toBe(false);
+        });
+
+        expect(harness.table.setColumns).not.toHaveBeenCalled();
+
+        const {
+            retireColumnField,
+            ...crudWithoutRetirement
+        } = harness.crud;
+        const runtimeWithoutDependency = createColumnRuntime({
+            table: harness.table,
+            crud: crudWithoutRetirement,
+            initialPipeline: harness.initialPipeline,
+            pipelineOptions: harness.pipelineOptions,
+            lifecycleResources: {
+                unsubscribeLookupMetadata: vi.fn()
+            },
+            getSearchController: () => harness.searchController
+        });
+
+        expect(runtimeWithoutDependency.setColumns([{ field: 'valid' }]))
+            .toBe(false);
+
+        const synchronousError = new Error('Synchronous replacement failed');
+        let caughtSynchronousError;
+
+        harness.table.setColumns.mockImplementationOnce(() => {
+            throw synchronousError;
+        });
+
+        try {
+            harness.columnRuntime.setColumns([{ field: 'valid' }]);
+        } catch (error) {
+            caughtSynchronousError = error;
+        }
+
+        expect(caughtSynchronousError).toBe(synchronousError);
+
+        const rejectionError = new Error('Thenable replacement failed');
+
+        harness.table.setColumns.mockRejectedValueOnce(rejectionError);
+
+        await expect(
+            harness.columnRuntime.setColumns([{ field: 'valid' }])
+        ).rejects.toBe(rejectionError);
+
+        expect(harness.table.setColumns).toHaveBeenCalledTimes(2);
+        expect(harness.columnRuntime.getApplicationColumns())
+            .toBe(canonicalBefore);
+        expect(harness.crud.cellValidators).toEqual(validatorsBefore);
+        expect(harness.crud.cellErrors).toEqual(errorsBefore);
+        expect(harness.crud.retireColumnField).not.toHaveBeenCalled();
+        expect(harness.crud.replaceDeclarativeCellValidators)
+            .not.toHaveBeenCalled();
+        expect(harness.rowData).toEqual(rowDataBefore);
+        expect(harness.crud.changes).toBe(changesBefore);
+        expect(harness.previousLookupUnsubscribe)
+            .not.toHaveBeenCalled();
+        expect(harness.table.on).not.toHaveBeenCalled();
+        expect(harness.searchController.replaceColumns)
+            .not.toHaveBeenCalled();
+        expect(harness.table.addColumn).not.toHaveBeenCalled();
+        expect(harness.table.deleteColumn).not.toHaveBeenCalled();
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
     });
 });
