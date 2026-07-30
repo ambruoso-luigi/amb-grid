@@ -280,6 +280,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getDataCount - Return the number of rows in the requested range.
  * @property {Function} setData - Replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
  * @property {Function} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {Function} import - Import a local file and register the loaded rows as a new clean AMB Grid CRUD baseline.
  * @property {Function} addData - Add multiple managed rows through the AMB Grid CRUD lifecycle.
  * @property {Function} updateData - Partially update multiple managed rows through the AMB Grid CRUD lifecycle.
  * @property {Function} updateOrAddData - Update existing managed rows or add missing rows through the AMB Grid CRUD lifecycle.
@@ -669,7 +670,8 @@ export function createTable(options = {}) {
 
     const dataMethods = createDataMethods({
         table,
-        crud
+        crud,
+        autoColumnsEnabled: normalizedOptions.autoColumns === true
     });
     const crudMethods = createCrudMethods({ crud });
     const rowMethods = createRowMethods({ table, crud });

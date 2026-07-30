@@ -448,7 +448,7 @@ describe('AMB table controller method modularization', () => {
         expect(crudCreationIndex).toBeGreaterThan(-1);
         expect(validatorRegistrationIndex).toBeGreaterThan(crudCreationIndex);
         expect(dataMethodsCreationIndex).toBeGreaterThan(validatorRegistrationIndex);
-        expect(source).toMatch(/const dataMethods = createDataMethods\(\{\s*table,\s*crud\s*\}\);/);
+        expect(source).toMatch(/const dataMethods = createDataMethods\(\{\s*table,\s*crud,\s*autoColumnsEnabled: normalizedOptions\.autoColumns === true\s*\}\);/);
         expect(composition).not.toBeNull();
         expect(composition[1]).toContain('columnMethods');
         expect(composition[1]).toContain('dataMethods');
@@ -465,7 +465,7 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('ajax-read-methods.js');
         expect(controllerModules).not.toContain('remote-data-methods.js');
         expect(controllerModules).not.toContain('data-loading-methods.js');
-        expect(dataSource).toMatch(/createDataMethods = \(\{ table, crud \}\) => \(\{/);
+        expect(dataSource).toMatch(/createDataMethods = \(\{\s*table,\s*crud,\s*autoColumnsEnabled = false\s*\}\) => \(\{/);
         expect(dataSource).toMatch(/getAjaxUrl\(\) \{\s*return table\.getAjaxUrl\(\);/);
         expect(dataSource).toMatch(/getData\(\.\.\.args\) \{\s*return table\.getData\(\.\.\.args\);/);
         expect(dataSource).toMatch(/getDataCount\(\.\.\.args\) \{\s*return table\.getDataCount\(\.\.\.args\);/);

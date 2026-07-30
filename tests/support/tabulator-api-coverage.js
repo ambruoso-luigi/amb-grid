@@ -83,7 +83,7 @@ export const TABLE_API_COVERAGE = [
     { method: 'undo', domain: 'history', status: 'deferred', classification: 'delicate', reason: 'Undo needs coordination with AMB snapshots, validation, and CRUD state.' },
 
     // Import
-    { method: 'import', domain: 'import', status: 'deferred', classification: 'delicate', reason: 'Imported data needs a defined AMB replacement or merge lifecycle.' },
+    { method: 'import', domain: 'import', status: 'narrower-contract', classification: 'overridden', controller: 'data-methods', reason: 'AMB imports local file data as a complete managed replacement, rebases CRUD state, and excludes automatic runtime column generation.' },
 
     // Internal extension surface
     { method: 'dispatchEvent', domain: 'internal', status: 'intentionally-excluded', classification: 'not-applicable', reason: 'Internal event dispatch is not normal application controller access.' },

@@ -49,11 +49,16 @@ const dataOperationAndRebase = (table, crud, methodName, args) => {
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
  * @param {object} context.crud - AMB Grid CRUD helper.
+ * @param {boolean} [context.autoColumnsEnabled=false] - Whether runtime automatic columns are enabled.
  * @returns {object} Data methods for the flat controller API.
  * @private
  * @internal
  */
-export const createDataMethods = ({ table, crud }) => ({
+export const createDataMethods = ({
+    table,
+    crud,
+    autoColumnsEnabled = false
+}) => ({
     /**
      * Returns the current AJAX data URL used by the grid.
      *
@@ -145,6 +150,47 @@ export const createDataMethods = ({ table, crud }) => ({
      */
     replaceData(...args) {
         return dataOperationAndRebase(table, crud, 'replaceData', args);
+    },
+
+    /**
+     * Opens the normal local-file import flow and replaces the current dataset.
+     *
+     * Importers, accepted file types and readers are forwarded unchanged. After
+     * the runtime import succeeds, all imported rows become a new clean AMB
+     * Grid CRUD baseline: pending changes, snapshots and errors belonging to
+     * the previous dataset are discarded. Applications should request any
+     * desired confirmation before starting an import.
+     *
+     * Columns, validators, lookup bindings, search configuration and lifecycle
+     * resources remain active. Automatic runtime column generation is excluded
+     * because it can bypass the managed AMB Grid column pipeline. Runtime and
+     * rebase rejections propagate without rollback; after a rebase error the
+     * runtime dataset may already contain the imported rows.
+     *
+     * @param {*} format - Supported importer name or custom importer.
+     * @param {*} accept - Supported file-picker accept value.
+     * @param {*} reader - Supported file reader mode.
+     * @returns {Promise<*>|false} Resolved runtime import result, or `false`.
+     */
+    import(format, accept, reader) {
+        if (
+            !crud
+            || crud.isDestroyed === true
+            || autoColumnsEnabled === true
+        ) {
+            return false;
+        }
+
+        const result = dataOperationAndRebase(
+            table,
+            crud,
+            'import',
+            [format, accept, reader]
+        );
+
+        return result === false
+            ? false
+            : Promise.resolve(result);
     },
 
     /**

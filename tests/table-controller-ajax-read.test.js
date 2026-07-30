@@ -356,6 +356,7 @@ describe('AMB table controller AJAX URL read API', () => {
             expect(typeof controller.updateOrAddData).toBe('function');
             expect(typeof controller.addData).toBe('function');
             expect(typeof controller.clearData).toBe('function');
+            expect(typeof controller.import).toBe('function');
             expect(typeof controller.updateOrAddRow).toBe('function');
 
             expect(controller.setSearchQuery('Ada')).toBe(true);
