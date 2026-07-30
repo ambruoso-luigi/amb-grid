@@ -10,7 +10,7 @@ export const TABLE_API_COVERAGE = [
     { method: 'recalc', domain: 'calculation', status: 'exposed', classification: 'safe-pass-through', controller: 'calculation-methods' },
 
     // Columns
-    { method: 'addColumn', domain: 'columns', status: 'missing', classification: 'delicate', reason: 'Runtime column insertion needs AMB configuration and lifecycle design.' },
+    { method: 'addColumn', domain: 'columns', status: 'narrower-contract', classification: 'overridden', controller: 'column-methods', reason: 'AMB adds unique top-level field columns through the managed pipeline and preserves AMB-managed column placement.' },
     { method: 'deleteColumn', domain: 'columns', status: 'missing', classification: 'delicate', reason: 'Runtime column removal needs AMB configuration and lifecycle design.' },
     { method: 'getColumn', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },
     { method: 'getColumnDefinitions', domain: 'columns', status: 'exposed', classification: 'safe-pass-through', controller: 'column-methods' },

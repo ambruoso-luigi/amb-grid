@@ -98,9 +98,10 @@ const createCrudHarness = (initialValidators, runtimeValidator) => {
 };
 
 const createHarness = () => {
-    const initialLookup = createLookupEditor({
-        description: 'Initial description'
-    });
+    const initialEditor = vi.fn();
+
+    initialEditor._ambEditorType = 'text';
+
     const originalFormatter = vi.fn(cell => String(cell.getValue()));
     const initialValidator = {
         message: 'Initial declarative rule',
@@ -111,7 +112,7 @@ const createHarness = () => {
         columns: [{
             title: 'Status',
             field: 'status',
-            editor: initialLookup.editor,
+            editor: initialEditor,
             formatter: originalFormatter,
             editable: vi.fn(() => true),
             required: true,
@@ -247,7 +248,7 @@ const createHarness = () => {
         columnRuntime,
         crud,
         deleteColumn,
-        initialLookup,
+        initialEditor,
         initialPipeline,
         lifecycleResources,
         newComponents,
@@ -261,6 +262,240 @@ const createHarness = () => {
         selectionColumn,
         statusComponent,
         table
+    };
+};
+
+const collectFields = columns => {
+    return (columns || []).flatMap(column => {
+        return [
+            ...(column.field ? [column.field] : []),
+            ...collectFields(column.columns)
+        ];
+    });
+};
+
+const createRuntimeComponent = (definition, subColumns = []) => {
+    return {
+        getDefinition: () => definition,
+        getField: () => definition.field || false,
+        getSubColumns: () => subColumns
+    };
+};
+
+const createAddHarness = () => {
+    const applicationColumns = [{
+        title: 'Name',
+        field: 'name'
+    }, {
+        title: 'Details',
+        columns: [{
+            title: 'Nested code',
+            field: 'nestedCode'
+        }]
+    }, {
+        title: 'Age',
+        field: 'age'
+    }];
+    const selectionColumn = {
+        _ambManagedColumn: 'selection'
+    };
+    const deleteColumn = {
+        _ambManagedColumn: 'delete'
+    };
+    const runtimeValidator = vi.fn(() => true);
+    const declarativeByField = new Map();
+    const runtimeByField = new Map([
+        ['region', [{
+            message: 'Existing runtime region rule',
+            validateFn: runtimeValidator
+        }]]
+    ]);
+    const crud = {
+        options: {
+            idField: 'id',
+            tempIdField: '_ambTempId',
+            stateField: '_state'
+        },
+        changes: {
+            updated: [{
+                id: 1,
+                name: 'Changed'
+            }]
+        },
+        errors: [{
+            id: 1,
+            field: 'name',
+            message: 'Unrelated error'
+        }],
+        markCellError: vi.fn(),
+        clearCellError: vi.fn(),
+        updateRowFields: vi.fn(),
+        replaceDeclarativeCellValidators: vi.fn((field, validators) => {
+            if (validators.length) {
+                declarativeByField.set(field, [...validators]);
+            } else {
+                declarativeByField.delete(field);
+            }
+        })
+    };
+    const pipelineOptions = {
+        messages: {
+            required: 'Required'
+        },
+        lookupDescriptions: true,
+        getCrud: () => crud,
+        selectionColumn,
+        deleteColumn
+    };
+    const initialPipeline = prepareColumnPipeline({
+        ...pipelineOptions,
+        columns: applicationColumns
+    });
+    const rowData = {
+        id: 1,
+        name: 'Changed',
+        nestedCode: 'N1',
+        age: 42,
+        region: 'EU',
+        _state: 'modified',
+        _ambTempId: 'tmp-existing',
+        _ambLookup: {
+            region: {
+                initial: {
+                    value: 'EU',
+                    description: 'Untrusted description'
+                },
+                current: {
+                    value: 'EU',
+                    description: 'Untrusted description'
+                }
+            }
+        }
+    };
+    const row = {
+        getData: () => rowData
+    };
+    const selectionComponent = createRuntimeComponent(selectionColumn);
+    const deleteComponent = createRuntimeComponent(deleteColumn);
+    const nameComponent = createRuntimeComponent(applicationColumns[0]);
+    const nestedComponent = createRuntimeComponent(
+        applicationColumns[1].columns[0]
+    );
+    const groupComponent = createRuntimeComponent(
+        applicationColumns[1],
+        [nestedComponent]
+    );
+    const ageComponent = createRuntimeComponent(applicationColumns[2]);
+    const topLevelComponents = [
+        selectionComponent,
+        deleteComponent,
+        nameComponent,
+        groupComponent,
+        ageComponent
+    ];
+    const addedComponents = [];
+    const table = {
+        getRows: vi.fn(() => [row]),
+        getColumns: vi.fn(() => [...topLevelComponents]),
+        getColumn: vi.fn(position => {
+            if (
+                topLevelComponents.includes(position)
+                || position === nestedComponent
+            ) {
+                return position;
+            }
+            if (position === 'selection') return selectionComponent;
+            if (position === 'delete') return deleteComponent;
+            if (position === 'name') return nameComponent;
+            if (position === 'nestedCode') return nestedComponent;
+            if (position === 'age') return ageComponent;
+
+            return topLevelComponents.find(component => {
+                return component.getField() === position;
+            }) || false;
+        }),
+        addColumn: vi.fn((definition, before, position) => {
+            const component = createRuntimeComponent(definition);
+            const positionIndex = position
+                ? topLevelComponents.indexOf(position)
+                : -1;
+            const insertionIndex = positionIndex >= 0
+                ? positionIndex + (before === true ? 0 : 1)
+                : topLevelComponents.length;
+
+            topLevelComponents.splice(insertionIndex, 0, component);
+            addedComponents.push(component);
+
+            return Promise.resolve(component);
+        }),
+        updateColumnDefinition: vi.fn(),
+        setColumns: vi.fn(),
+        on: vi.fn(),
+        off: vi.fn()
+    };
+    const previousLookupUnsubscribe = vi.fn();
+    const lifecycleResources = {
+        unsubscribeLookupMetadata: previousLookupUnsubscribe
+    };
+    const searchState = {
+        query: 'e',
+        selectedFields: ['name', 'nestedCode', 'age'],
+        caseSensitive: true,
+        wholeWord: true
+    };
+    let availableSearchFields = [...searchState.selectedFields];
+    const searchController = {
+        replaceColumns: vi.fn(columns => {
+            const previouslySelectedAll =
+                searchState.selectedFields.length === availableSearchFields.length
+                && availableSearchFields.every(field => {
+                    return searchState.selectedFields.includes(field);
+                });
+
+            availableSearchFields = collectFields(columns);
+            searchState.selectedFields = previouslySelectedAll
+                ? [...availableSearchFields]
+                : searchState.selectedFields.filter(field => {
+                    return availableSearchFields.includes(field);
+                });
+        }),
+        getSearchState: vi.fn(() => ({
+            ...searchState,
+            selectedFields: [...searchState.selectedFields]
+        }))
+    };
+    const columnRuntime = createColumnRuntime({
+        table,
+        crud,
+        initialPipeline,
+        pipelineOptions,
+        lifecycleResources,
+        getSearchController: () => searchController
+    });
+
+    return {
+        addedComponents,
+        ageComponent,
+        applicationColumns,
+        columnRuntime,
+        crud,
+        declarativeByField,
+        deleteComponent,
+        groupComponent,
+        initialPipeline,
+        lifecycleResources,
+        nameComponent,
+        nestedComponent,
+        pipelineOptions,
+        previousLookupUnsubscribe,
+        rowData,
+        runtimeByField,
+        runtimeValidator,
+        searchController,
+        searchState,
+        selectionComponent,
+        table,
+        topLevelComponents
     };
 };
 
@@ -512,5 +747,277 @@ describe('AMB Grid managed column definition updates', () => {
         expect(harness.table.off).not.toHaveBeenCalled();
         expect(harness.searchController.replaceColumns)
             .not.toHaveBeenCalled();
+    });
+
+    test('adds prepared top-level columns while preserving managed placement and owned state', async () => {
+        const harness = createAddHarness();
+        const lookup = createLookupEditor({
+            description: 'European region'
+        });
+        const declarativeValidator = vi.fn(value => value !== 'blocked');
+        const regionDefinition = {
+            title: 'Region',
+            field: 'region',
+            editor: lookup.editor,
+            required: true,
+            requiredMessage: 'Region is required',
+            validator: {
+                message: 'Region is blocked',
+                validate: declarativeValidator
+            }
+        };
+        const priorityDefinition = {
+            title: 'Priority',
+            field: 'priority'
+        };
+        const regionSnapshot = {
+            ...regionDefinition,
+            validator: regionDefinition.validator
+        };
+        const prioritySnapshot = {
+            ...priorityDefinition
+        };
+        const canonicalBefore = harness.columnRuntime.getApplicationColumns();
+        const changesBefore = harness.crud.changes;
+        const errorsBefore = harness.crud.errors;
+        const searchBefore = harness.searchController.getSearchState();
+
+        lookup.setHandlers.mockClear();
+
+        const appendedResult = harness.columnRuntime.addColumn(
+            regionDefinition,
+            'truthy'
+        );
+
+        expect(appendedResult).toBeInstanceOf(Promise);
+        await expect(appendedResult).resolves.toBe(
+            harness.addedComponents[0]
+        );
+
+        expect(harness.table.addColumn).toHaveBeenCalledOnce();
+        expect(harness.table.addColumn.mock.calls[0]).toHaveLength(2);
+        expect(harness.table.addColumn.mock.calls[0][1]).toBe(false);
+        const preparedRegion = harness.table.addColumn.mock.calls[0][0];
+
+        expect(preparedRegion).toEqual(expect.objectContaining({
+            title: 'Region',
+            field: 'region',
+            editor: lookup.editor
+        }));
+        expect(preparedRegion).not.toHaveProperty('required');
+        expect(preparedRegion).not.toHaveProperty('requiredMessage');
+        expect(preparedRegion).not.toHaveProperty('validator');
+        expect(typeof preparedRegion.editable).toBe('function');
+        expect(typeof preparedRegion.formatter).toBe('function');
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+        expect(harness.table.setColumns).not.toHaveBeenCalled();
+        expect(harness.topLevelComponents.slice(0, 2)).toEqual([
+            harness.selectionComponent,
+            harness.deleteComponent
+        ]);
+
+        const canonicalAfterAppend =
+            harness.columnRuntime.getApplicationColumns();
+
+        expect(canonicalAfterAppend.map(column => {
+            return column.field || 'group';
+        })).toEqual(['name', 'group', 'age', 'region']);
+        expect(canonicalAfterAppend[0]).toBe(canonicalBefore[0]);
+        expect(canonicalAfterAppend[1]).toBe(canonicalBefore[1]);
+        expect(canonicalAfterAppend[2]).toBe(canonicalBefore[2]);
+        expect(canonicalAfterAppend[3]).not.toBe(regionDefinition);
+        expect(canonicalAfterAppend[3].editor).toBe(lookup.editor);
+        expect(regionDefinition).toEqual(regionSnapshot);
+        expect(regionDefinition.validator).toBe(regionSnapshot.validator);
+
+        const regionDeclarative =
+            harness.declarativeByField.get('region');
+
+        expect(regionDeclarative).toHaveLength(2);
+        expect(regionDeclarative.map(validator => validator.validateFn))
+            .toEqual(expect.arrayContaining([
+                declarativeValidator,
+                expect.any(Function)
+            ]));
+        expect(harness.runtimeByField.get('region')).toEqual([{
+            message: 'Existing runtime region rule',
+            validateFn: harness.runtimeValidator
+        }]);
+        expect(harness.crud.replaceDeclarativeCellValidators)
+            .toHaveBeenCalledTimes(1);
+
+        expect(harness.previousLookupUnsubscribe).toHaveBeenCalledOnce();
+        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(harness.rowData.region).toBe('EU');
+        expect(getLookupMetadata(harness.rowData, 'region').current).toEqual({
+            value: 'EU',
+            description: 'European region'
+        });
+        expect(lookup.lookupInstance.load).toHaveBeenCalledOnce();
+        expect(lookup.setHandlers).toHaveBeenCalledOnce();
+
+        expect(harness.searchController.replaceColumns).toHaveBeenCalledOnce();
+        expect(harness.searchController.getSearchState()).toEqual({
+            ...searchBefore,
+            selectedFields: [
+                ...searchBefore.selectedFields,
+                'region'
+            ]
+        });
+        expect(harness.crud.changes).toBe(changesBefore);
+        expect(harness.crud.errors).toBe(errorsBefore);
+        expect(harness.rowData._state).toBe('modified');
+        expect(harness.rowData._ambTempId).toBe('tmp-existing');
+
+        harness.table.on.mockClear();
+        harness.table.off.mockClear();
+        harness.crud.replaceDeclarativeCellValidators.mockClear();
+        harness.searchController.replaceColumns.mockClear();
+        lookup.setHandlers.mockClear();
+
+        const positionedResult = harness.columnRuntime.addColumn(
+            priorityDefinition,
+            true,
+            harness.ageComponent
+        );
+
+        await expect(positionedResult).resolves.toBe(
+            harness.addedComponents[1]
+        );
+        expect(harness.table.addColumn).toHaveBeenCalledTimes(2);
+        expect(harness.table.addColumn.mock.calls[1][1]).toBe(true);
+        expect(harness.table.addColumn.mock.calls[1][2])
+            .toBe(harness.ageComponent);
+        expect(harness.table.addColumn.mock.calls[1][0]).toEqual(
+            expect.objectContaining(priorityDefinition)
+        );
+        expect(harness.columnRuntime.getApplicationColumns().map(column => {
+            return column.field || 'group';
+        })).toEqual([
+            'name',
+            'group',
+            'priority',
+            'age',
+            'region'
+        ]);
+        expect(harness.topLevelComponents.slice(0, 2)).toEqual([
+            harness.selectionComponent,
+            harness.deleteComponent
+        ]);
+        expect(priorityDefinition).toEqual(prioritySnapshot);
+        expect(harness.declarativeByField.has('priority')).toBe(false);
+        expect(harness.crud.replaceDeclarativeCellValidators)
+            .toHaveBeenCalledOnce();
+        expect(harness.crud.replaceDeclarativeCellValidators)
+            .toHaveBeenCalledWith('priority', []);
+        expect(harness.table.off).toHaveBeenCalledTimes(2);
+        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.searchController.replaceColumns).toHaveBeenCalledOnce();
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+        expect(harness.table.setColumns).not.toHaveBeenCalled();
+        expect(harness.crud.changes).toBe(changesBefore);
+        expect(harness.crud.errors).toBe(errorsBefore);
+
+        const leadingDefinition = {
+            title: 'Leading',
+            field: 'leading'
+        };
+        const leadingResult = harness.columnRuntime.addColumn(
+            leadingDefinition,
+            true
+        );
+
+        await expect(leadingResult).resolves.toBe(
+            harness.addedComponents[2]
+        );
+        expect(harness.table.addColumn).toHaveBeenCalledTimes(3);
+        expect(harness.table.addColumn.mock.calls[2][1]).toBe(true);
+        expect(harness.table.addColumn.mock.calls[2][2])
+            .toBe(harness.nameComponent);
+        expect(harness.columnRuntime.getApplicationColumns()[0])
+            .toEqual(expect.objectContaining(leadingDefinition));
+        expect(harness.topLevelComponents.slice(0, 2)).toEqual([
+            harness.selectionComponent,
+            harness.deleteComponent
+        ]);
+    });
+
+    test('rejects unsupported additions and preserves canonical state on runtime rejection', async () => {
+        const harness = createAddHarness();
+        const originalCanonical = harness.columnRuntime.getApplicationColumns();
+
+        [
+            null,
+            [],
+            'invalid',
+            42,
+            {},
+            { field: '' },
+            { field: 'group', columns: [] },
+            { field: 'name' },
+            { field: 'nestedCode' },
+            { field: 'managed', _ambManagedColumn: 'custom' },
+            { field: '_technical' }
+        ].forEach(definition => {
+            expect(harness.columnRuntime.addColumn(definition)).toBe(false);
+        });
+
+        expect(harness.columnRuntime.addColumn(
+            { field: 'missingPosition' },
+            false,
+            'missing'
+        )).toBe(false);
+        expect(harness.columnRuntime.addColumn(
+            { field: 'selectionPosition' },
+            false,
+            'selection'
+        )).toBe(false);
+        expect(harness.columnRuntime.addColumn(
+            { field: 'deletePosition' },
+            true,
+            'delete'
+        )).toBe(false);
+        expect(harness.columnRuntime.addColumn(
+            { field: 'nestedPosition' },
+            true,
+            'nestedCode'
+        )).toBe(false);
+        expect(harness.table.addColumn).not.toHaveBeenCalled();
+
+        harness.table.getColumns.mockReturnValueOnce([
+            harness.selectionComponent,
+            harness.deleteComponent,
+            harness.nameComponent,
+            harness.ageComponent
+        ]);
+        expect(harness.columnRuntime.addColumn({
+            field: 'misaligned'
+        })).toBe(false);
+        expect(harness.table.addColumn).not.toHaveBeenCalled();
+
+        const runtimeError = new Error('Runtime column addition failed');
+
+        harness.table.addColumn.mockRejectedValueOnce(runtimeError);
+
+        const rejectedResult = harness.columnRuntime.addColumn({
+            title: 'Rejected',
+            field: 'rejected'
+        });
+
+        await expect(rejectedResult).rejects.toBe(runtimeError);
+        expect(harness.table.addColumn).toHaveBeenCalledOnce();
+        expect(harness.columnRuntime.getApplicationColumns())
+            .toBe(originalCanonical);
+        expect(harness.crud.replaceDeclarativeCellValidators)
+            .not.toHaveBeenCalled();
+        expect(harness.previousLookupUnsubscribe).not.toHaveBeenCalled();
+        expect(harness.table.on).not.toHaveBeenCalled();
+        expect(harness.table.off).not.toHaveBeenCalled();
+        expect(harness.searchController.replaceColumns)
+            .not.toHaveBeenCalled();
+        expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+        expect(harness.table.setColumns).not.toHaveBeenCalled();
+        expect(harness.table.addColumn).toHaveBeenCalledTimes(1);
     });
 });

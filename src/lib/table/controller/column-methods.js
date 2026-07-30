@@ -94,6 +94,42 @@ export const createColumnMethods = ({ table, columnRuntime = null }) => ({
     },
 
     /**
+     * Adds one top-level application data column through the managed AMB Grid
+     * pipeline. The definition must have a unique, non-technical field; column
+     * groups and fieldless definitions are not supported by this contract.
+     *
+     * AMB-managed selection and action columns remain at the start. With no
+     * position, `before: true` means before the first application column,
+     * never before AMB-managed columns. Declarative validators, lookup
+     * metadata and global search are synchronized while runtime validators,
+     * row data and CRUD state remain unchanged.
+     *
+     * The returned Promise resolves with the new Column Component. Runtime
+     * errors are propagated without rollback. Direct structural changes
+     * through `grid.table` can make runtime and canonical columns inconsistent,
+     * in which case the operation is rejected.
+     *
+     * @param {object} columnDefinition - New top-level application column.
+     * @param {*} [before=false] - Insert before only when strictly `true`.
+     * @param {*} [position] - Optional top-level application column lookup.
+     * @returns {Promise<object>|false} New Column Component Promise, or `false`.
+     */
+    addColumn(columnDefinition, before = false, position) {
+        if (
+            !columnRuntime
+            || typeof columnRuntime.addColumn !== 'function'
+        ) {
+            return false;
+        }
+
+        return columnRuntime.addColumn(
+            columnDefinition,
+            before,
+            position
+        );
+    },
+
+    /**
      * Returns the runtime definition for one managed column component.
      *
      * The `columnLookup` value is forwarded to the underlying table engine's

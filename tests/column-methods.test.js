@@ -9,6 +9,7 @@ describe('AMB table controller column method group', () => {
         });
 
         expect(Object.keys(methods).sort()).toEqual([
+            'addColumn',
             'getColumn',
             'getColumnCells',
             'getColumnDefinition',
@@ -79,6 +80,57 @@ describe('AMB table controller column method group', () => {
                 table,
                 columnRuntime: {}
             }).updateColumnDefinition(columnLookup, definitionPatch)
+        ).toBe(false);
+    });
+
+    test('delegates managed additions unchanged and rejects a missing coordinator', () => {
+        const columnDefinition = {
+            title: 'Region',
+            field: 'region'
+        };
+        const position = {
+            field: 'name'
+        };
+        const result = Promise.resolve({
+            field: 'region'
+        });
+        const columnRuntime = {
+            addColumn: vi.fn(() => result)
+        };
+        const table = {
+            addColumn: vi.fn(),
+            setColumns: vi.fn()
+        };
+        const methods = createColumnMethods({
+            table,
+            columnRuntime
+        });
+
+        expect(
+            methods.addColumn(columnDefinition, 'truthy', position)
+        ).toBe(result);
+        expect(columnRuntime.addColumn).toHaveBeenCalledOnce();
+        expect(columnRuntime.addColumn.mock.calls[0][0])
+            .toBe(columnDefinition);
+        expect(columnRuntime.addColumn.mock.calls[0][1])
+            .toBe('truthy');
+        expect(columnRuntime.addColumn.mock.calls[0][2])
+            .toBe(position);
+        expect(table.addColumn).not.toHaveBeenCalled();
+        expect(table.setColumns).not.toHaveBeenCalled();
+
+        expect(
+            createColumnMethods({ table }).addColumn(
+                columnDefinition,
+                true,
+                position
+            )
+        ).toBe(false);
+        expect(
+            createColumnMethods({
+                table,
+                columnRuntime: {}
+            }).addColumn(columnDefinition, true, position)
         ).toBe(false);
     });
 
