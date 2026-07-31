@@ -1,6 +1,6 @@
 {
   "name": "amb-grid",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A framework-agnostic CRUD grid system for editable business data, powered by Tabulator.",
   "author": "Luigi Ambruoso",
   "license": "Apache-2.0",
