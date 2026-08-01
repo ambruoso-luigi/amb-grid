@@ -232,7 +232,6 @@ describe('AMB table controller cell-range reading method group', () => {
         };
         const cases = [
             ['setRangeBounds', 'setBounds', [start, end]],
-            ['setRangeStartBound', 'setStartBound', [start]],
             ['setRangeEndBound', 'setEndBound', [end]],
             ['removeRange', 'remove', []]
         ];
@@ -254,6 +253,76 @@ describe('AMB table controller cell-range reading method group', () => {
             });
             expect(methods[ambMethodName]()).toBe(false);
             expect(methods[ambMethodName]({})).toBe(false);
+        });
+    });
+
+    test('updates the range start bound while preserving the current end bound', () => {
+        const previousStart = {
+            type: 'previous-start-cell'
+        };
+        const newStart = {
+            type: 'new-start-cell'
+        };
+        const currentEnd = {
+            type: 'current-end-cell'
+        };
+        const range = {
+            getBounds: vi.fn(() => ({
+                start: previousStart,
+                end: currentEnd
+            })),
+            setBounds: vi.fn(),
+            setStartBound: vi.fn()
+        };
+        const methods = createRangeMethods({
+            table: {}
+        });
+
+        expect(methods.setRangeStartBound(range, newStart)).toBe(true);
+        expect(range.getBounds).toHaveBeenCalledOnce();
+        expect(range.getBounds).toHaveBeenCalledWith();
+        expect(range.setBounds).toHaveBeenCalledOnce();
+        expect(range.setBounds).toHaveBeenCalledWith(newStart, currentEnd);
+        expect(range.setBounds.mock.calls[0][0]).toBe(newStart);
+        expect(range.setBounds.mock.calls[0][1]).toBe(currentEnd);
+        expect(range.setStartBound).not.toHaveBeenCalled();
+    });
+
+    test('does not update the range start bound when required state is unavailable', () => {
+        const methods = createRangeMethods({
+            table: {}
+        });
+        const setBoundsWithoutGetter = vi.fn();
+        const getBoundsWithoutSetter = vi.fn(() => ({
+            end: {}
+        }));
+
+        expect(methods.setRangeStartBound()).toBe(false);
+        expect(methods.setRangeStartBound({
+            setBounds: setBoundsWithoutGetter
+        })).toBe(false);
+        expect(setBoundsWithoutGetter).not.toHaveBeenCalled();
+        expect(methods.setRangeStartBound({
+            getBounds: getBoundsWithoutSetter
+        })).toBe(false);
+        expect(getBoundsWithoutSetter).not.toHaveBeenCalled();
+
+        [
+            undefined,
+            null,
+            {},
+            { end: null }
+        ].forEach(bounds => {
+            const range = {
+                getBounds: vi.fn(() => bounds),
+                setBounds: vi.fn(),
+                setStartBound: vi.fn()
+            };
+
+            expect(methods.setRangeStartBound(range, {})).toBe(false);
+            expect(range.getBounds).toHaveBeenCalledOnce();
+            expect(range.setBounds).not.toHaveBeenCalled();
+            expect(range.setStartBound).not.toHaveBeenCalled();
         });
     });
 
