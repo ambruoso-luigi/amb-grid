@@ -256,20 +256,32 @@ describe('AMB table controller cell-range reading method group', () => {
         });
     });
 
-    test('updates the range start bound while preserving the current end bound', () => {
-        const previousStart = {
-            type: 'previous-start-cell'
+    test('updates the range start bound with the final public Cell Component', () => {
+        const firstCell = {
+            type: 'first-cell-component'
+        };
+        const secondCell = {
+            type: 'second-cell-component'
+        };
+        const thirdCell = {
+            type: 'third-cell-component'
         };
         const newStart = {
-            type: 'new-start-cell'
+            type: 'new-start-cell-component'
         };
         const currentEnd = {
-            type: 'current-end-cell'
+            type: 'current-end-cell-component'
+        };
+        const internalEndCell = {
+            type: 'internal-end-cell'
         };
         const range = {
+            getStructuredCells: vi.fn(() => [
+                [firstCell, secondCell],
+                [thirdCell, currentEnd]
+            ]),
             getBounds: vi.fn(() => ({
-                start: previousStart,
-                end: currentEnd
+                end: internalEndCell
             })),
             setBounds: vi.fn(),
             setStartBound: vi.fn()
@@ -279,23 +291,22 @@ describe('AMB table controller cell-range reading method group', () => {
         });
 
         expect(methods.setRangeStartBound(range, newStart)).toBe(true);
-        expect(range.getBounds).toHaveBeenCalledOnce();
-        expect(range.getBounds).toHaveBeenCalledWith();
+        expect(range.getStructuredCells).toHaveBeenCalledOnce();
+        expect(range.getStructuredCells).toHaveBeenCalledWith();
         expect(range.setBounds).toHaveBeenCalledOnce();
         expect(range.setBounds).toHaveBeenCalledWith(newStart, currentEnd);
         expect(range.setBounds.mock.calls[0][0]).toBe(newStart);
         expect(range.setBounds.mock.calls[0][1]).toBe(currentEnd);
+        expect(range.getBounds).not.toHaveBeenCalled();
         expect(range.setStartBound).not.toHaveBeenCalled();
     });
 
-    test('does not update the range start bound when required state is unavailable', () => {
+    test('handles unavailable or empty structured range cells', () => {
         const methods = createRangeMethods({
             table: {}
         });
         const setBoundsWithoutGetter = vi.fn();
-        const getBoundsWithoutSetter = vi.fn(() => ({
-            end: {}
-        }));
+        const getStructuredCellsWithoutSetter = vi.fn(() => [[{}]]);
 
         expect(methods.setRangeStartBound()).toBe(false);
         expect(methods.setRangeStartBound({
@@ -303,27 +314,58 @@ describe('AMB table controller cell-range reading method group', () => {
         })).toBe(false);
         expect(setBoundsWithoutGetter).not.toHaveBeenCalled();
         expect(methods.setRangeStartBound({
-            getBounds: getBoundsWithoutSetter
+            getStructuredCells: getStructuredCellsWithoutSetter
         })).toBe(false);
-        expect(getBoundsWithoutSetter).not.toHaveBeenCalled();
+        expect(getStructuredCellsWithoutSetter).not.toHaveBeenCalled();
 
         [
             undefined,
             null,
             {},
-            { end: null }
-        ].forEach(bounds => {
+            [],
+            [[], []]
+        ].forEach(structuredCells => {
             const range = {
-                getBounds: vi.fn(() => bounds),
+                getStructuredCells: vi.fn(() => structuredCells),
                 setBounds: vi.fn(),
                 setStartBound: vi.fn()
             };
 
             expect(methods.setRangeStartBound(range, {})).toBe(false);
-            expect(range.getBounds).toHaveBeenCalledOnce();
+            expect(range.getStructuredCells).toHaveBeenCalledOnce();
             expect(range.setBounds).not.toHaveBeenCalled();
             expect(range.setStartBound).not.toHaveBeenCalled();
         });
+    });
+
+    test('uses the last cell from the last non-empty structured row', () => {
+        const newStart = {
+            type: 'new-start-cell-component'
+        };
+        const currentEnd = {
+            type: 'current-end-cell-component'
+        };
+        const range = {
+            getStructuredCells: vi.fn(() => [
+                [{ type: 'first-cell-component' }, currentEnd],
+                [],
+                []
+            ]),
+            getBounds: vi.fn(),
+            setBounds: vi.fn(),
+            setStartBound: vi.fn()
+        };
+        const methods = createRangeMethods({
+            table: {}
+        });
+
+        expect(methods.setRangeStartBound(range, newStart)).toBe(true);
+        expect(range.getStructuredCells).toHaveBeenCalledOnce();
+        expect(range.setBounds).toHaveBeenCalledOnce();
+        expect(range.setBounds).toHaveBeenCalledWith(newStart, currentEnd);
+        expect(range.setBounds.mock.calls[0][1]).toBe(currentEnd);
+        expect(range.getBounds).not.toHaveBeenCalled();
+        expect(range.setStartBound).not.toHaveBeenCalled();
     });
 
     test('addRange forwards cell components transparently and returns the table range component', () => {

@@ -66,6 +66,33 @@ const runRangeAction = (range, methodName, args = []) => {
     return true;
 };
 
+const getStructuredRangeEndCell = range => {
+    if (
+        !range
+        || typeof range.getStructuredCells !== 'function'
+    ) {
+        return false;
+    }
+
+    const rows = range.getStructuredCells();
+
+    if (!Array.isArray(rows)) return false;
+
+    for (
+        let rowIndex = rows.length - 1;
+        rowIndex >= 0;
+        rowIndex -= 1
+    ) {
+        const cells = rows[rowIndex];
+
+        if (Array.isArray(cells) && cells.length > 0) {
+            return cells[cells.length - 1];
+        }
+    }
+
+    return false;
+};
+
 /**
  * Creates the cell-range methods exposed by the AMB Grid controller.
  *
@@ -398,10 +425,10 @@ export const createRangeMethods = ({
      * Updates the runtime start bound of one selected range.
      *
      * `range` must be a Range Component obtained through AMB Grid. AMB Grid
-     * reads the current bounds, preserves the current end bound and replaces
-     * the start bound through the supported operation that updates both bounds.
-     * This operation modifies only the runtime range selection; row data and
-     * AMB Grid CRUD state are not modified.
+     * reads the public structured cells, identifies and preserves the current
+     * final Cell Component, and replaces the start bound through the supported
+     * operation that updates both bounds. This operation modifies only the
+     * runtime range selection; row data and AMB Grid CRUD state are not modified.
      *
      * @param {object} range - Range Component obtained through AMB Grid.
      * @param {*} start - Runtime start bound supported by the internal engine.
@@ -410,17 +437,18 @@ export const createRangeMethods = ({
     setRangeStartBound(range, start) {
         if (
             !range
-            || typeof range.getBounds !== 'function'
             || typeof range.setBounds !== 'function'
         ) {
             return false;
         }
 
-        const bounds = range.getBounds();
+        const currentEnd = getStructuredRangeEndCell(
+            range
+        );
 
-        if (!bounds || !bounds.end) return false;
+        if (!currentEnd) return false;
 
-        range.setBounds(start, bounds.end);
+        range.setBounds(start, currentEnd);
         return true;
     },
 
