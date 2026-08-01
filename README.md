@@ -1,8 +1,9 @@
 # AMB Grid
 
-AMB Grid is a framework-agnostic CRUD grid system for editable business data, powered by [Tabulator](https://tabulator.info/).
+AMB Grid is a framework-agnostic CRUD grid system for editable business data.
 
-It is not just a Tabulator helper, plugin, or wrapper. Tabulator is the table engine; AMB Grid is the CRUD application layer around it, handling row state, validation, rollback, lookup behavior, save payloads, and lifecycle cleanup.
+It provides an AMB-owned row lifecycle, editing, validation, lookup behavior,
+rollback, save payloads, search, toolbar coordination, and lifecycle cleanup.
 
 The core is framework-agnostic and suitable for both legacy/server-rendered pages and modern frontend applications that need to mount and dispose editable data grids.
 
@@ -14,39 +15,67 @@ AMB Grid is currently under active development.
 
 The API is not yet considered stable and breaking changes may occur before version 1.0.
 
-This repository is being published early to collect feedback and validate design decisions while development continues.
+This repository is available early to collect feedback and validate design decisions while development continues.
 
-## Quick Start
+## Installation
 
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the development server:
+Install AMB Grid in your application:
 
 ```bash
-npm run dev
+npm install amb-grid
 ```
 
-Run tests:
+Import the public JavaScript API and the complete AMB Grid stylesheet:
 
-```bash
-npm test
+```js
+import { AMB } from 'amb-grid';
+import 'amb-grid/style.css';
 ```
 
-Build the project:
+The public stylesheet already includes the styles required by AMB Grid's
+internal table engine, suggestion widget, and calendar picker.
 
-```bash
-npm run build
+## Minimal example
+
+Add a container to the page:
+
+```html
+<div id="people-grid"></div>
 ```
 
-Generate documentation:
+Create the grid through `AMB.table(...)` and keep the returned controller:
 
-```bash
-npm run docs
+```js
+import { AMB } from 'amb-grid';
+import 'amb-grid/style.css';
+
+const grid = AMB.table({
+  selector: '#people-grid',
+  data: [
+    { id: 1, name: 'Ada Lovelace', email: 'ada@example.com' }
+  ],
+  columns: [
+    {
+      title: 'Name',
+      field: 'name',
+      editor: AMB.editors.text()
+    },
+    {
+      title: 'Email',
+      field: 'email',
+      editor: AMB.editors.text(),
+      validator: AMB.validators.email()
+    }
+  ]
+});
+
+const validation = grid.validateChanges();
+const payload = grid.getSavePayload();
 ```
+
+Validation and payload generation are local operations; AMB Grid does not send
+the payload automatically. When the owning view is disposed, call
+`grid.destroy()`.
 
 ## Third-party components
 
@@ -56,7 +85,9 @@ AMB Grid is framework-agnostic and uses a small set of focused frontend librarie
 * [Awesomplete](https://leaverou.github.io/awesomplete/): lightweight text suggestions for autocomplete editors.
 * [vanillajs-datepicker](https://mymth.github.io/vanillajs-datepicker/): calendar picker for date editors.
 
-These components provide focused UI behavior. AMB Grid owns CRUD state, validation, payload generation, editor commit rules, and lifecycle cleanup.
+These are focused internal dependencies. AMB Grid owns the public contract,
+CRUD lifecycle, validation, payload generation, editor commit rules, and
+lifecycle cleanup.
 
 ## Features
 
@@ -107,7 +138,7 @@ const grid = AMB.table({
       }
     ],
     onAdd: ({ grid }) => {
-      return grid.crud.addRow({ id: null, name: '' });
+      return grid.addRow({ id: null, name: '' });
     },
     onSave: async ({ grid, payload }) => {
       console.log(payload);
@@ -117,7 +148,7 @@ const grid = AMB.table({
       // Reload or replace data using your application's data source.
     },
     onValidate: ({ grid }) => {
-      console.log(grid.crud.validateAll());
+      console.log(grid.validate());
     },
     onPayload: ({ grid, payload }) => {
       console.log(payload);
@@ -127,16 +158,16 @@ const grid = AMB.table({
 ```
 
 All callbacks receive `{ grid, event }`. Return the Promise from asynchronous
-grid operations such as `grid.crud.addRow(...)` so the toolbar can keep the
+grid operations such as `grid.addRow(...)` so the toolbar can keep the
 button busy until row reveal and focus complete. Save and Payload also receive
-`payload: grid.crud.getSavePayload()`. A custom button is a small object with
+`payload: grid.getSavePayload()`. A custom button is a small object with
 `id`, `label`, optional inline `icon`, and `onClick`; set
 `includePayload: true` when a custom action also needs the save payload.
 Buttons without a configured callback are rendered disabled.
 
 When both `toolbar` and `search.enabled` are configured, AMB Grid mounts the
 search input and optional Filters button inside the same grid header. The
-toolbar and Tabulator table are styled as one connected component. If search
+toolbar and grid are styled as one connected component. If search
 is enabled without the CRUD toolbar, the existing standalone search bar is
 kept for backward compatibility.
 
@@ -202,7 +233,10 @@ Validator combinators:
 
 Format-specific validators are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.
 
-For CRUD save flows, `crud.validateChanges()` validates only new and modified rows while still allowing cross-row validators such as `unique` to compare against clean rows. `crud.validateAll()` remains available as a full-table audit of active rows, with `crud.validateAll({ includeDeleted: true })` for technical audits that also inspect deleted rows.
+For CRUD save flows, `grid.validateChanges()` validates only new and modified
+rows while still allowing cross-row validators such as `unique` to compare
+against clean rows. Use `grid.validate()` for a full-grid validation. The
+validation result is returned to the application; no backend request is made.
 
 ### Editors
 
@@ -224,10 +258,10 @@ AMB Grid keeps keyboard behavior aligned across editable data cells,
 popup/action cells, and non-data interactive columns:
 
 * `Tab` moves to the next editable or interactive AMB Grid cell.
-* `Shift+Tab` (Rtab) moves to the previous editable or interactive AMB Grid
+* `Shift+Tab` moves to the previous editable or interactive AMB Grid
   cell.
 * The standard selection column participates in cell navigation. `Enter` and
-  `Space` toggle row selection through the Tabulator row API.
+  `Space` toggle row selection through the Row Component API.
 * The standard delete/undo/remove-new column participates in cell navigation
   as an interactive action cell, not as a data column. `Enter` and `Space`
   activate the row action. Delete confirmation traps `Tab`/`Shift+Tab` inside
@@ -240,9 +274,9 @@ popup/action cells, and non-data interactive columns:
   While the dialog is open, `Tab`/`Shift+Tab` stay inside it, arrow keys move
   lookup selection, `Enter` selects, and `Escape` cancels. Record-based
   lookups can update multiple row fields through `mapToRow`.
-* Date editors with a picker use `Enter` to open the datepicker. While the
+* Date editors with a picker use `Enter` to open the calendar picker. While the
   picker is open, `Tab`/`Shift+Tab` remain inside the popup, arrow keys stay
-  with the datepicker, `Enter` selects when supported by the picker, and
+  with the calendar picker, `Enter` selects when supported by the picker, and
   `Escape` closes the popup. Manual picker editors keep the calendar button
   available after the popup closes so it can be reopened.
 * Large text editors cancel with `Escape` and save with `Ctrl+Enter`.
@@ -296,11 +330,11 @@ Do not use integer parsers for codes with leading zeroes. Codes should be treate
 
 Date parsers accept separated dates with one or two digit day/month values, such as `20/7/2026` or `2026-06-5`, and normalize output with leading zeroes. Compact `yyyymmdd` input remains strict and does not accept ambiguous shorter values such as `2026720`.
 
-Date editors keep invalid typed values visible by default with `invalidBehavior: 'commitRaw'`, so validators can report the error. Use `invalidBehavior: 'cancel'` for the older cancel-on-invalid behavior. Automatic separators are applied only for linear digit typing at the end of the field; manual separators, deletion, and middle edits are left as natural as possible. `minDate` and `maxDate` are supported by date editors and validators; the datepicker helps selection but does not replace validation.
+Date editors keep invalid typed values visible by default with `invalidBehavior: 'commitRaw'`, so validators can report the error. Use `invalidBehavior: 'cancel'` for the older cancel-on-invalid behavior. Automatic separators are applied only for linear digit typing at the end of the field; manual separators, deletion, and middle edits are left as natural as possible. `minDate` and `maxDate` are supported by date editors and validators; the calendar picker helps selection but does not replace validation.
 
 Date validators can distinguish syntax errors, impossible calendar dates, values before `minDate`, values after `maxDate`, and required empty values. Existing boolean validators remain supported; validators may also return `{ isValid, message, code }` for dynamic messages.
 
-With `picker: true`, the datepicker limits calendar selection but does not block or clean manual input. Manual invalid or out-of-range values are committed with `commitRaw` and then reported by validators; use `invalidBehavior: 'cancel'` for restrictive editing.
+With `picker: true`, the calendar picker limits calendar selection but does not block or clean manual input. Manual invalid or out-of-range values are committed with `commitRaw` and then reported by validators; use `invalidBehavior: 'cancel'` for restrictive editing.
 
 Use `AMB.date.createConfig(...)` to define date format, range, payload format, editor mode and messages once, then pass the returned pieces to formatter, editor, validator and parser configuration. `mode: 'manualWithPickerButton'` is the recommended mode: it provides manual input plus a calendar button and never auto-opens the picker. `picker: true` maps to this stable mode. `mode: 'manual'` disables the picker. `mode: 'pickerOnly'` shows no manual input or side button and opens the calendar immediately when the cell enters edit mode. Selected dates use the column format.
 
@@ -435,7 +469,7 @@ AMB.editors.lookup(statusLookup, {
 ```
 
 At table level, `floatingMessages` controls every hover message rendered with
-the shared `teh-floating-message` component:
+the shared floating-message component:
 
 ```js
 AMB.table({
@@ -481,7 +515,10 @@ overlay and are not an official ISTAT field.
 
 ### Autocomplete
 
-`AMB.editors.autocomplete(values, options)` is a native text input with suggestions from a simple string list, powered by Awesomplete. Awesomplete is only the lightweight suggestion engine: the selected or typed text is stored directly, the dropdown never owns the value, and there is no hidden associated data.
+`AMB.editors.autocomplete(values, options)` is an AMB Grid text editor with
+suggestions from a simple string list. The selected or typed text is stored
+directly; the suggestion dropdown never owns the value, and there is no hidden
+associated data.
 
 `maxOptions` defaults to `10` and limits the number of matching suggestions shown. It can be overridden, for example with `AMB.editors.autocomplete(values, { maxOptions: 15 })`.
 
@@ -505,7 +542,12 @@ unless the user selects or highlights a suggestion.
 
 The list supplies suggestions, the editor manages user input, and validators decide whether the stored value is acceptable. With `allowCustomValue: true`, custom typed values are accepted. In strict columns, `allowCustomValue: false` with `invalidBehavior: 'commitRaw'` keeps unknown text visible so `AMB.validators.allowedValues(...)` can report it. Use `invalidBehavior: 'cancel'` for restrictive editing.
 
-Selected and typed values are trimmed only on commit by default with `trimInput: true`; set `trimInput: false` to preserve surrounding whitespace. Backspace and Delete retain native input behavior. Arrow keys navigate suggestions, Enter commits, Escape cancels, and Tab commits without blocking Tabulator navigation. At commit, `allowEmpty` and `invalidBehavior` determine whether an empty string is saved or the edit is cancelled.
+Selected and typed values are trimmed only on commit by default with
+`trimInput: true`; set `trimInput: false` to preserve surrounding whitespace.
+Backspace and Delete retain native input behavior. Arrow keys navigate
+suggestions, Enter commits, Escape cancels, and Tab commits without blocking
+grid navigation. At commit, `allowEmpty` and `invalidBehavior` determine
+whether an empty string is saved or the edit is cancelled.
 
 `allowedValues` is synchronous and intended for static lists. Async validation is not included at this stage.
 
@@ -541,6 +583,21 @@ Support for:
 * Save payload generation
 * Identifier synchronization after save
 
+## Development
+
+After cloning the repository, install its development dependencies and use the
+project commands:
+
+```bash
+npm install
+npm run dev
+npm test
+npm run build
+npm run build:lib
+npm run pack:check
+npm run docs
+```
+
 ## Documentation
 
 Generated API documentation is available in the `docs` folder.
@@ -555,9 +612,9 @@ variables without copying the library styles. Demo and site styling remains
 separate from the reusable component stylesheet.
 Clean-row zebra striping is controlled only by AMB Grid through
 `--amb-row-clean-bg` and `--amb-row-clean-alt-bg`. Override only these
-variables to customize the base and alternate clean-row colors; Tabulator row
-parity classes are not part of the styling contract, and CRUD state styles
-take precedence over zebra striping.
+variables to customize the base and alternate clean-row colors; internal
+engine row-parity classes are not part of the styling contract, and CRUD state
+styles take precedence over zebra striping.
 
 ## Security
 
@@ -569,12 +626,10 @@ See [Security notes](docs/security.md).
 
 ## Lifecycle and cleanup
 
-AMB Grid exposes two cleanup levels:
-
-* `grid.destroy()` releases the complete AMB-managed grid returned by `AMB.table(...)`. It detaches AMB bindings, lookup and large-text hover helpers, search helpers, messages, dialogs, the CRUD helper, and then destroys the Tabulator table when Tabulator exposes `table.destroy()`.
-* `grid.crud.destroy()` releases only the CRUD layer. It removes the Tabulator event handlers registered by `CrudHelper`, clears internal tracking maps, validators, errors and custom subscriptions, and does not destroy the Tabulator table.
-
-Use `grid.destroy()` when a page section, modal, tab, or view owns the whole grid:
+`grid.destroy()` releases the complete AMB-managed grid returned by
+`AMB.table(...)`. It detaches AMB bindings, lookup and large-text hover helpers,
+search helpers, messages, dialogs, CRUD state, and the underlying table engine.
+Use it when a page section, modal, tab, or view owns the whole grid:
 
 ```js
 const grid = AMB.table({ selector: '#people', data, columns });
@@ -583,14 +638,10 @@ const grid = AMB.table({ selector: '#people', data, columns });
 grid.destroy();
 ```
 
-Use `grid.crud.destroy()` only when you created or manage the Tabulator table separately and want to detach the CRUD layer without disposing the table:
-
-```js
-const crud = new CrudHelper(table);
-
-// later, detach only the CRUD layer
-crud.destroy();
-```
+The controller returned by `AMB.table(...)` is the primary public API. Use
+`grid.table` only for advanced engine access not yet covered by AMB Grid.
+Direct engine calls can bypass AMB Grid lifecycle, validation, state tracking,
+events, or UI coordination.
 
 ## Roadmap
 
