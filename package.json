@@ -1,16 +1,33 @@
 {
   "name": "amb-grid",
   "version": "0.3.0",
-  "description": "A framework-agnostic CRUD grid system for editable business data, powered by Tabulator.",
+  "description": "A framework-agnostic CRUD grid system for editable business data.",
   "author": "Luigi Ambruoso",
   "license": "Apache-2.0",
   "type": "module",
+  "main": "./dist-lib/amb-grid.js",
+  "module": "./dist-lib/amb-grid.js",
+  "style": "./dist-lib/amb-grid.css",
+  "exports": {
+    ".": {
+      "import": "./dist-lib/amb-grid.js",
+      "default": "./dist-lib/amb-grid.js"
+    },
+    "./style.css": "./dist-lib/amb-grid.css"
+  },
+  "files": [
+    "dist-lib"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "keywords": [
     "amb-grid",
-    "tabulator",
+    "data-grid",
     "editable-grid",
     "crud",
-    "data-grid",
+    "business-applications",
+    "framework-agnostic",
     "validators",
     "formatters",
     "editors",
@@ -20,6 +37,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:lib": "vite build --config vite.lib.config.js",
+    "pack:check": "npm run build:lib && node scripts/verify-package.mjs",
+    "prepack": "npm run pack:check",
     "test": "vitest run",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:watch": "vitest",
