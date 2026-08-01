@@ -1,11 +1,11 @@
 import { describe, expect, test, vi } from 'vitest';
 import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
 import {
+    createAutocompleteWidgetOptions,
     findAutocompleteMatch,
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
     getAutocompleteSuggestionValues,
-    getAwesompleteOptions,
     normalizeAutocompleteComparableValue,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
@@ -1432,7 +1432,7 @@ describe('autocomplete editor lifecycle', () => {
 });
 
 describe('autocomplete suggestions', () => {
-    test('passes a simple list of text suggestions to Awesomplete', () => {
+    test('normalizes a simple list of text suggestions', () => {
         expect(getAutocompleteSuggestionValues([
             'Human Resources',
             'Finance'
@@ -1442,9 +1442,17 @@ describe('autocomplete suggestions', () => {
         ]);
     });
 
-    test('maps maxOptions to Awesomplete maxItems', () => {
-        expect(getAwesompleteOptions(['Low', 'Medium'], {}).maxItems).toBe(10);
-        expect(getAwesompleteOptions(['Low', 'Medium'], {
+    test('builds the internal autocomplete widget options', () => {
+        expect(createAutocompleteWidgetOptions(['Low', 'Medium'], {})).toEqual({
+            list: ['Low', 'Medium'],
+            minChars: 0,
+            maxItems: 10,
+            autoFirst: false,
+            sort: false,
+            tabSelect: false,
+            filter: expect.any(Function)
+        });
+        expect(createAutocompleteWidgetOptions(['Low', 'Medium'], {
             maxOptions: 1
         }).maxItems).toBe(1);
     });
@@ -1491,8 +1499,8 @@ describe('autocomplete suggestions', () => {
     });
 
     test('filters Awesomplete suggestions with the configured case sensitivity', () => {
-        const insensitiveOptions = getAwesompleteOptions(['Finance'], {});
-        const sensitiveOptions = getAwesompleteOptions(['Finance'], {
+        const insensitiveOptions = createAutocompleteWidgetOptions(['Finance'], {});
+        const sensitiveOptions = createAutocompleteWidgetOptions(['Finance'], {
             caseSensitive: true
         });
 

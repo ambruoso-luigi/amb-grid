@@ -107,13 +107,15 @@ export const findAutocompleteMatch = (values, typedValue, options = {}) => {
 };
 
 /**
- * Build Awesomplete options for AMB autocomplete.
+ * Builds the configuration used by the internal autocomplete suggestion widget.
  *
+ * @private
+ * @internal
  * @param {Array<string>} values - Suggested values.
  * @param {object} [options] - Autocomplete options.
- * @returns {object} Awesomplete configuration.
+ * @returns {object} Internal suggestion-widget configuration.
  */
-export const getAwesompleteOptions = (values, options = {}) => {
+export const createAutocompleteWidgetOptions = (values, options = {}) => {
     const normalizedOptions = normalizeAutocompleteOptions(options);
 
     return {

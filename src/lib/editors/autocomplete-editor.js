@@ -1,13 +1,13 @@
 import Awesomplete from 'awesomplete';
 import 'awesomplete/awesomplete.css';
 import {
+    createAutocompleteWidgetOptions,
+    findAutocompleteMatch,
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
     getAutocompleteSuggestionValues,
-    getAwesompleteOptions,
-    findAutocompleteMatch,
-    normalizeAutocompleteOptions,
     normalizeAutocompleteInput,
+    normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
 import { getInitialValue, navigateEditableCellAfterClose } from './shared.js';
@@ -180,12 +180,13 @@ const createFloatingAutocomplete = ({
 };
 
 /**
- * Native text editor with suggestions from a simple string list.
+ * AMB Grid text editor with suggestions from a string list.
  *
- * Awesomplete provides lightweight suggestion display and keyboard navigation.
- * AMB Grid owns the text value, commit rules, validation, CRUD state, and
- * lifecycle cleanup. Suggestions have no separate hidden associated data, and
- * this editor does not perform remote lookup or asynchronous validation.
+ * AMB Grid owns the input value, matching and commit rules, validation
+ * integration, CRUD state, floating positioning and lifecycle cleanup. The
+ * internal suggestion widget handles suggestion rendering and keyboard
+ * selection. Suggestions have no separate hidden associated data, and this
+ * editor does not perform remote lookup or asynchronous validation.
  * The suggestion list is rendered as a floating overlay under `document.body`
  * and positioned from the active input, so it is not clipped by the internal
  * table engine scroll area and does not change grid layout.
@@ -196,7 +197,7 @@ const createFloatingAutocomplete = ({
  * @param {boolean} [options.allowCustomValue=false] - Allow values not present in the suggestions.
  * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a selected suggestion.
  * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit.
- * @param {number} [options.maxOptions=10] - Maximum matching suggestions shown through Awesomplete `maxItems`.
+ * @param {number} [options.maxOptions=10] - Maximum number of matching suggestions displayed.
  * @param {number} [options.dropdownWidth=420] - Preferred floating suggestion width in pixels. The dropdown is always at least as wide as the input.
  * @param {boolean} [options.caseSensitive=false] - Match suggestions with case sensitivity. The default ignores case.
  * @param {boolean} [options.commitMatchedValue=true] - Commit the canonical list value when typed text exactly or partially matches a suggestion.
@@ -450,7 +451,7 @@ export function autocomplete(values, options = {}) {
         onRendered(() => {
             awesomplete = new Awesomplete(
                 input,
-                getAwesompleteOptions(suggestionValues, normalizedOptions)
+                createAutocompleteWidgetOptions(suggestionValues, normalizedOptions)
             );
             input.addEventListener('input', handleInput);
             floatingAutocomplete = createFloatingAutocomplete({
