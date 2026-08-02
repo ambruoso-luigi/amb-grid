@@ -30,7 +30,7 @@ const expectEqual = (actual, expected, field) => {
 };
 
 expectEqual(packageJson.name, 'amb-grid', 'name');
-expectEqual(packageJson.version, '0.3.0', 'version');
+expectEqual(packageJson.version, '0.3.1', 'version');
 expectEqual(packageJson.license, 'Apache-2.0', 'license');
 expectEqual(packageJson.type, 'module', 'type');
 expectEqual(packageJson.main, './dist-lib/amb-grid.js', 'main');

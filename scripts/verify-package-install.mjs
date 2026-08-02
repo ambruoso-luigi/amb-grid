@@ -228,7 +228,7 @@ document.querySelector('#app').dataset.ambGridPackage = 'resolved';
         const installed = JSON.parse(readFileSync(installedPackagePath, 'utf8'));
 
         assert(installed.name === 'amb-grid', 'Installed package name is not amb-grid.');
-        assert(installed.version === '0.3.0', 'Installed package version is not 0.3.0.');
+        assert(installed.version === '0.3.1', 'Installed package version is not 0.3.1.');
         assert(installed.type === 'module', 'Installed package type is not module.');
 
         [
