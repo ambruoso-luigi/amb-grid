@@ -919,55 +919,57 @@ const createColumnCalculationsGrid = () => {
         layout: 'fitColumns',
         pagination: false,
         columns: [
-            { title: 'ID — top count', field: 'id', width: 120, topCalc: 'count' },
+            { title: 'ID', field: 'id', width: 70, topCalc: 'count' },
             {
-                title: 'Code — bottom concat',
+                title: 'Codice',
                 field: 'code',
-                width: 170,
+                width: 105,
                 editor: AMB.editors.text({ trim: true, uppercase: true }),
                 bottomCalc: 'concat'
             },
             {
-                title: 'Product',
+                title: 'Prodotto',
                 field: 'product',
-                minWidth: 130,
+                minWidth: 120,
+                widthGrow: 1,
                 editor: AMB.editors.text({ trim: true })
             },
             {
-                title: 'Category — top unique',
+                title: 'Categoria',
                 field: 'category',
-                minWidth: 165,
+                minWidth: 120,
+                widthGrow: 1,
                 editor: AMB.editors.text({ trim: true }),
                 topCalc: 'unique'
             },
             {
-                title: 'Quantity — bottom sum',
+                title: 'Quantità',
                 field: 'quantity',
-                width: 175,
+                width: 105,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 bottomCalc: 'sum'
             },
             {
-                title: 'Unit price — top avg',
+                title: 'Prezzo unitario',
                 field: 'unitPrice',
-                width: 175,
+                width: 125,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
                 topCalc: 'avg',
                 topCalcParams: { precision: 2 }
             },
             {
-                title: 'Delivery days — bottom min',
+                title: 'Giorni consegna',
                 field: 'deliveryDays',
-                width: 190,
+                width: 130,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 bottomCalc: 'min'
             },
             {
-                title: 'Score — top max / bottom range',
+                title: 'Punteggio',
                 field: 'score',
-                minWidth: 220,
+                width: 105,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'max',

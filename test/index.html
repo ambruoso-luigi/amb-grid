@@ -36,6 +36,86 @@
           Tabella tecnica per verificare i calcoli avg, max, min, sum,
           concat, count, unique e un calcolo personalizzato.
         </p>
+        <h3>Come leggere i risultati</h3>
+        <p>
+          La riga dei calcoli superiori si trova subito sotto le intestazioni e prima
+          delle dieci righe di dati. La riga dei calcoli inferiori si trova sotto le
+          righe di dati e, nella struttura della tabella, dopo la barra di scorrimento
+          orizzontale.
+        </p>
+        <p>
+          I valori indicati nella legenda sono quelli iniziali attesi. Modificando le
+          celle editabili, i risultati della tabella vengono ricalcolati automaticamente.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Funzione</th>
+              <th scope="col">Cosa verifica</th>
+              <th scope="col">Colonna</th>
+              <th scope="col">Dove appare</th>
+              <th scope="col">Valore iniziale atteso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>count</code></td>
+              <td>Conta i valori presenti nella colonna ID</td>
+              <td>ID</td>
+              <td>Riga superiore</td>
+              <td><code>10</code></td>
+            </tr>
+            <tr>
+              <td><code>concat</code></td>
+              <td>Concatena in sequenza tutti i codici delle righe</td>
+              <td>Codice</td>
+              <td>Riga inferiore</td>
+              <td><code>A01A02A03A04A05A06A07A08A09A10</code></td>
+            </tr>
+            <tr>
+              <td><code>unique</code></td>
+              <td>Conta le categorie distinte</td>
+              <td>Categoria</td>
+              <td>Riga superiore</td>
+              <td><code>4</code></td>
+            </tr>
+            <tr>
+              <td><code>sum</code></td>
+              <td>Somma tutte le quantità</td>
+              <td>Quantità</td>
+              <td>Riga inferiore</td>
+              <td><code>105</code></td>
+            </tr>
+            <tr>
+              <td><code>avg</code></td>
+              <td>Calcola la media dei prezzi unitari</td>
+              <td>Prezzo unitario</td>
+              <td>Riga superiore</td>
+              <td><code>83,81</code></td>
+            </tr>
+            <tr>
+              <td><code>min</code></td>
+              <td>Trova il numero minimo di giorni di consegna</td>
+              <td>Giorni consegna</td>
+              <td>Riga inferiore</td>
+              <td><code>1</code></td>
+            </tr>
+            <tr>
+              <td><code>max</code></td>
+              <td>Trova il punteggio massimo</td>
+              <td>Punteggio</td>
+              <td>Riga superiore</td>
+              <td><code>95</code></td>
+            </tr>
+            <tr>
+              <td>funzione personalizzata</td>
+              <td>Calcola la differenza tra il punteggio massimo e il punteggio minimo</td>
+              <td>Punteggio</td>
+              <td>Riga inferiore</td>
+              <td><code>29 = 95 − 66</code></td>
+            </tr>
+          </tbody>
+        </table>
         <div id="column-calculations-test-table"></div>
       </section>
       <section aria-labelledby="test-output-title">
