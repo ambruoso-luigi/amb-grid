@@ -307,7 +307,6 @@ export const parsers = {
      * @param {string} [options.thousandSeparator='.'] - Visual thousands separator.
      * @param {boolean} [options.allowThousands=true] - Allow grouped thousands.
      * @param {boolean} [options.allowNegative=true] - Allow negative values.
-     * @param {string} [options.outputFormat='yyyy-mm-dd'] - Returned payload date format.
      * @param {boolean} [options.allowEmpty=true] - Allow empty values.
      * @param {''|null} [options.emptyAs=''] - Returned value for empty input.
      * @param {boolean} [options.strictThousands=true] - Require coherent thousands grouping.

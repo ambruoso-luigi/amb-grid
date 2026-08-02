@@ -257,7 +257,7 @@ export const validators = {
      * not perform checksum, bank, account, official, or existence validation.
      *
      * @param {string} [message='Invalid IBAN'] - Validation message.
-     * @returns {{message: string, validate: Function}} Validator object. Date validation may return `{ isValid, message, code }`.
+     * @returns {{message: string, validate: Function}} Validator object.
      */
     iban(message = 'Invalid IBAN') {
         return {
