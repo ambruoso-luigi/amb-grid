@@ -38,6 +38,7 @@
     "build": "vite build",
     "build:lib": "vite build --config vite.lib.config.js",
     "pack:check": "npm run build:lib && node scripts/verify-package.mjs",
+    "package:smoke": "npm run pack:check && node scripts/verify-package-install.mjs",
     "prepack": "npm run pack:check",
     "test": "vitest run",
     "test:e2e": "node scripts/run-e2e.mjs",
