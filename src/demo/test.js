@@ -12,6 +12,7 @@ const selectionModeControl = document.querySelector('#selection-mode');
 let currentGrid = null;
 let currentMultifieldLookupGrid = null;
 let currentAutocompleteGrid = null;
+let currentColumnCalculationsGrid = null;
 
 const testLookupAutoCompleteOptions = {
     autoComplete: true,
@@ -200,6 +201,31 @@ const createAutocompleteData = () => [
     { id: 3, task: 'Check monthly close', department: 'Finance', requiredDepartment: 'Accounting', tag: 'urgent', city: 'London' },
     { id: 4, task: 'Update support workflow', department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' }
 ];
+
+const createColumnCalculationsData = () => [
+    { id: 1, code: 'A01', product: 'Router', category: 'Hardware', quantity: 5, unitPrice: 120.50, deliveryDays: 3, score: 78 },
+    { id: 2, code: 'A02', product: 'CRM', category: 'Software', quantity: 12, unitPrice: 49.90, deliveryDays: 5, score: 92 },
+    { id: 3, code: 'A03', product: 'Audit', category: 'Services', quantity: 7, unitPrice: 85, deliveryDays: 2, score: 85 },
+    { id: 4, code: 'A04', product: 'Switch', category: 'Hardware', quantity: 20, unitPrice: 65.25, deliveryDays: 7, score: 66 },
+    { id: 5, code: 'A05', product: 'ERP', category: 'Software', quantity: 9, unitPrice: 99.99, deliveryDays: 4, score: 88 },
+    { id: 6, code: 'A06', product: 'Support', category: 'Services', quantity: 15, unitPrice: 35, deliveryDays: 6, score: 95 },
+    { id: 7, code: 'A07', product: 'Keyboard', category: 'Accessories', quantity: 4, unitPrice: 42, deliveryDays: 1, score: 73 },
+    { id: 8, code: 'A08', product: 'Monitor', category: 'Hardware', quantity: 11, unitPrice: 210, deliveryDays: 3, score: 81 },
+    { id: 9, code: 'A09', product: 'Backup', category: 'Software', quantity: 8, unitPrice: 75.50, deliveryDays: 5, score: 90 },
+    { id: 10, code: 'A10', product: 'Training', category: 'Services', quantity: 14, unitPrice: 55, deliveryDays: 2, score: 69 }
+];
+
+const calculateScoreRange = values => {
+    const numericValues = values
+        .map(value => Number(value))
+        .filter(value => Number.isFinite(value));
+
+    if (numericValues.length === 0) {
+        return 0;
+    }
+
+    return Math.max(...numericValues) - Math.min(...numericValues);
+};
 
 const createEmptyAutocompleteRow = () => ({
     id: null,
@@ -885,6 +911,72 @@ const createAutocompleteGrid = () => {
     return grid;
 };
 
+const createColumnCalculationsGrid = () => {
+    return AMB.table({
+        selector: '#column-calculations-test-table',
+        toolbar: false,
+        data: createColumnCalculationsData(),
+        layout: 'fitColumns',
+        pagination: false,
+        columns: [
+            { title: 'ID — top count', field: 'id', width: 120, topCalc: 'count' },
+            {
+                title: 'Code — bottom concat',
+                field: 'code',
+                width: 170,
+                editor: AMB.editors.text({ trim: true, uppercase: true }),
+                bottomCalc: 'concat'
+            },
+            {
+                title: 'Product',
+                field: 'product',
+                minWidth: 130,
+                editor: AMB.editors.text({ trim: true })
+            },
+            {
+                title: 'Category — top unique',
+                field: 'category',
+                minWidth: 165,
+                editor: AMB.editors.text({ trim: true }),
+                topCalc: 'unique'
+            },
+            {
+                title: 'Quantity — bottom sum',
+                field: 'quantity',
+                width: 175,
+                editor: AMB.editors.integer({ allowEmpty: false }),
+                formatter: AMB.formatters.integer(),
+                bottomCalc: 'sum'
+            },
+            {
+                title: 'Unit price — top avg',
+                field: 'unitPrice',
+                width: 175,
+                editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
+                topCalc: 'avg',
+                topCalcParams: { precision: 2 }
+            },
+            {
+                title: 'Delivery days — bottom min',
+                field: 'deliveryDays',
+                width: 190,
+                editor: AMB.editors.integer({ allowEmpty: false }),
+                formatter: AMB.formatters.integer(),
+                bottomCalc: 'min'
+            },
+            {
+                title: 'Score — top max / bottom range',
+                field: 'score',
+                minWidth: 220,
+                editor: AMB.editors.integer({ allowEmpty: false }),
+                formatter: AMB.formatters.integer(),
+                topCalc: 'max',
+                bottomCalc: calculateScoreRange
+            }
+        ]
+    });
+};
+
 const mountGrid = async () => {
     if (currentGrid && typeof currentGrid.destroy === 'function') {
         currentGrid.destroy();
@@ -916,6 +1008,18 @@ const mountAutocompleteGrid = () => {
     currentAutocompleteGrid = createAutocompleteGrid();
 };
 
+const mountColumnCalculationsGrid = () => {
+    if (
+        currentColumnCalculationsGrid
+        && typeof currentColumnCalculationsGrid.destroy === 'function'
+    ) {
+        currentColumnCalculationsGrid.destroy();
+        currentColumnCalculationsGrid = null;
+    }
+
+    currentColumnCalculationsGrid = createColumnCalculationsGrid();
+};
+
 selectionModeControl?.addEventListener('change', () => {
     mountGrid().catch(error => {
         console.error(error);
@@ -930,6 +1034,7 @@ const mountTestPage = async () => {
     await mountGrid();
     await mountMultifieldLookupGrid();
     mountAutocompleteGrid();
+    mountColumnCalculationsGrid();
 };
 
 mountTestPage().catch(error => {
