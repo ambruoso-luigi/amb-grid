@@ -119,11 +119,24 @@ describe('technical test page', () => {
     });
 
     test('shows all column calculations in one labeled top calculation row', () => {
+        const columnCalculationsGridSource = testSource.match(
+            /const createColumnCalculationsGrid = \(\) => \{[\s\S]*?\n\};/
+        )[0];
+
         expect(testHtml).toContain('Tutti gli otto risultati sono mostrati in un\'unica riga di calcolo');
         expect(testHtml.match(/Riga superiore/g)).toHaveLength(8);
         expect(testHtml).not.toContain('Riga inferiore');
         expect(testSource).toContain('const calculateScoreRange = (_values, data) => {');
-        expect(testSource).toContain('.map(row => Number(row.score))');
+        expect(testSource).toContain('.map(row => row && row.score)');
+        expect(testSource).toContain("typeof value === 'string' && value.trim() === ''");
+        expect(testSource).toContain('const createEmptyColumnCalculationsRow = () => ({');
+        expect(columnCalculationsGridSource).toContain("buttons: ['add']");
+        expect(columnCalculationsGridSource).toContain('return grid.addRow(createEmptyColumnCalculationsRow());');
+        expect(columnCalculationsGridSource).not.toContain('grid.crud');
+        expect(columnCalculationsGridSource).not.toContain('grid.table');
+        expect(columnCalculationsGridSource).toContain('deleteColumn: {');
+        expect(columnCalculationsGridSource).toContain("confirmDeleteMessage: 'Eliminare questa riga?'");
+        expect(columnCalculationsGridSource).toContain('formatter: AMB.formatters.decimal(2)');
         expect(testSource).toContain("topCalc: calculateScoreRange");
         expect(testSource).toContain("topCalc: 'concat'");
         expect(testSource).toContain('width: 300');

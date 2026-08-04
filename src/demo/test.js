@@ -215,9 +215,26 @@ const createColumnCalculationsData = () => [
     { id: 10, code: 'A10', product: 'Training', category: 'Services', quantity: 14, unitPrice: 55, deliveryDays: 2, score: 69 }
 ];
 
+const createEmptyColumnCalculationsRow = () => ({
+    id: null,
+    code: '',
+    product: '',
+    category: '',
+    quantity: '',
+    unitPrice: '',
+    deliveryDays: '',
+    score: ''
+});
+
 const calculateScoreRange = (_values, data) => {
     const numericValues = (Array.isArray(data) ? data : [])
-        .map(row => Number(row.score))
+        .map(row => row && row.score)
+        .filter(value => {
+            return value !== null
+                && value !== undefined
+                && !(typeof value === 'string' && value.trim() === '');
+        })
+        .map(value => Number(value))
         .filter(value => Number.isFinite(value));
 
     if (numericValues.length === 0) {
@@ -940,7 +957,23 @@ const createAutocompleteGrid = () => {
 const createColumnCalculationsGrid = () => {
     return AMB.table({
         selector: '#column-calculations-test-table',
-        toolbar: false,
+        toolbar: {
+            buttons: ['add'],
+            onAdd: ({ grid }) => {
+                return grid.addRow(createEmptyColumnCalculationsRow());
+            }
+        },
+        deleteColumn: {
+            enabled: true,
+            confirmDeleteMessage: 'Eliminare questa riga?',
+            confirmRollbackMessage: 'Ripristinare questa riga?',
+            confirmRemoveNewMessage: 'Rimuovere questa nuova riga?',
+            labels: {
+                delete: 'Elimina riga',
+                rollback: 'Ripristina riga',
+                removeNew: 'Rimuovi nuova riga'
+            }
+        },
         data: createColumnCalculationsData(),
         layout: 'fitColumns',
         pagination: false,
@@ -992,6 +1025,7 @@ const createColumnCalculationsGrid = () => {
                 field: 'unitPrice',
                 width: 125,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
+                formatter: AMB.formatters.decimal(2),
                 topCalc: 'avg',
                 topCalcParams: { precision: false },
                 topCalcFormatter: createColumnCalculationFormatter('avg', formatItalianDecimal)
