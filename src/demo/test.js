@@ -215,9 +215,9 @@ const createColumnCalculationsData = () => [
     { id: 10, code: 'A10', product: 'Training', category: 'Services', quantity: 14, unitPrice: 55, deliveryDays: 2, score: 69 }
 ];
 
-const calculateScoreRange = values => {
-    const numericValues = values
-        .map(value => Number(value))
+const calculateScoreRange = (_values, data) => {
+    const numericValues = (Array.isArray(data) ? data : [])
+        .map(row => Number(row.score))
         .filter(value => Number.isFinite(value));
 
     if (numericValues.length === 0) {
@@ -225,6 +225,32 @@ const calculateScoreRange = values => {
     }
 
     return Math.max(...numericValues) - Math.min(...numericValues);
+};
+
+const createColumnCalculationFormatter = (
+    label,
+    formatValue = value => String(value ?? '')
+) => cell => {
+    const text = `${label}: ${formatValue(cell.getValue())}`;
+    const element = document.createElement('span');
+
+    element.textContent = text;
+    element.title = text;
+
+    return element;
+};
+
+const formatItalianDecimal = value => {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return String(value ?? '');
+    }
+
+    return numericValue.toLocaleString('it-IT', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 };
 
 const createEmptyAutocompleteRow = () => ({
@@ -919,20 +945,29 @@ const createColumnCalculationsGrid = () => {
         layout: 'fitColumns',
         pagination: false,
         columns: [
-            { title: 'ID', field: 'id', width: 70, topCalc: 'count' },
+            {
+                title: 'ID',
+                field: 'id',
+                width: 70,
+                topCalc: 'count',
+                topCalcFormatter: createColumnCalculationFormatter('count')
+            },
             {
                 title: 'Codice',
                 field: 'code',
-                width: 105,
+                width: 300,
                 editor: AMB.editors.text({ trim: true, uppercase: true }),
-                bottomCalc: 'concat'
+                topCalc: 'concat',
+                topCalcFormatter: createColumnCalculationFormatter('concat')
             },
             {
                 title: 'Prodotto',
                 field: 'product',
                 minWidth: 120,
                 widthGrow: 1,
-                editor: AMB.editors.text({ trim: true })
+                editor: AMB.editors.text({ trim: true }),
+                topCalc: calculateScoreRange,
+                topCalcFormatter: createColumnCalculationFormatter('range')
             },
             {
                 title: 'Categoria',
@@ -940,7 +975,8 @@ const createColumnCalculationsGrid = () => {
                 minWidth: 120,
                 widthGrow: 1,
                 editor: AMB.editors.text({ trim: true }),
-                topCalc: 'unique'
+                topCalc: 'unique',
+                topCalcFormatter: createColumnCalculationFormatter('unique')
             },
             {
                 title: 'Quantità',
@@ -948,7 +984,8 @@ const createColumnCalculationsGrid = () => {
                 width: 105,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
-                bottomCalc: 'sum'
+                topCalc: 'sum',
+                topCalcFormatter: createColumnCalculationFormatter('sum')
             },
             {
                 title: 'Prezzo unitario',
@@ -956,7 +993,8 @@ const createColumnCalculationsGrid = () => {
                 width: 125,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
                 topCalc: 'avg',
-                topCalcParams: { precision: 2 }
+                topCalcParams: { precision: false },
+                topCalcFormatter: createColumnCalculationFormatter('avg', formatItalianDecimal)
             },
             {
                 title: 'Giorni consegna',
@@ -964,7 +1002,8 @@ const createColumnCalculationsGrid = () => {
                 width: 130,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
-                bottomCalc: 'min'
+                topCalc: 'min',
+                topCalcFormatter: createColumnCalculationFormatter('min')
             },
             {
                 title: 'Punteggio',
@@ -973,7 +1012,7 @@ const createColumnCalculationsGrid = () => {
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'max',
-                bottomCalc: calculateScoreRange
+                topCalcFormatter: createColumnCalculationFormatter('max')
             }
         ]
     });

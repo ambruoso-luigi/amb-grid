@@ -117,4 +117,20 @@ describe('technical test page', () => {
         expect(testSource).not.toContain('create-autocomplete-anomalies');
         expect(testSource).not.toContain('reset-autocomplete');
     });
+
+    test('shows all column calculations in one labeled top calculation row', () => {
+        expect(testHtml).toContain('Tutti gli otto risultati sono mostrati in un\'unica riga di calcolo');
+        expect(testHtml.match(/Riga superiore/g)).toHaveLength(8);
+        expect(testHtml).not.toContain('Riga inferiore');
+        expect(testSource).toContain('const calculateScoreRange = (_values, data) => {');
+        expect(testSource).toContain('.map(row => Number(row.score))');
+        expect(testSource).toContain("topCalc: calculateScoreRange");
+        expect(testSource).toContain("topCalc: 'concat'");
+        expect(testSource).toContain('width: 300');
+        expect(testSource.match(/topCalc:/g)).toHaveLength(8);
+        expect(testSource.match(/topCalcFormatter:/g)).toHaveLength(8);
+        expect(testSource).not.toContain('bottomCalc');
+        expect(testSource).toContain('topCalcParams: { precision: false }');
+        expect(testSource).toContain("createColumnCalculationFormatter('avg', formatItalianDecimal)");
+    });
 });
