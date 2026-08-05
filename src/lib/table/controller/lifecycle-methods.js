@@ -54,6 +54,11 @@ export const createLifecycleMethods = ({
             resources.unsubscribeDeleteColumn = null;
         }
 
+        if (resources.unsubscribeCalculationRecalc) {
+            resources.unsubscribeCalculationRecalc();
+            resources.unsubscribeCalculationRecalc = null;
+        }
+
         if (resources.unsubscribeSelectionColumn) {
             resources.unsubscribeSelectionColumn();
             resources.unsubscribeSelectionColumn = null;

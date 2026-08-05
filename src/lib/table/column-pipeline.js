@@ -1,11 +1,12 @@
 import { ROW_STATE } from '../crud-helper.js';
-import { escapeHtmlText } from '../formatters.js';
+import { escapeHtmlText, formatters } from '../formatters.js';
 import { getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
 import {
     DEFAULT_MESSAGES,
     extractColumnValidators
 } from './validation-extraction.js';
+import { prepareColumnCalculations } from './column-calculation-runtime.js';
 
 const NUMERIC_EDITOR_TYPES = new Set(['integer', 'decimal']);
 const NUMERIC_FORMATTER_TYPES = new Set([
@@ -39,6 +40,43 @@ const getAmbEditorType = column => {
 
 const getAmbFormatterType = column => {
     return column && column.formatter && column.formatter._ambFormatterType;
+};
+
+/**
+ * Applies editor-derived formatters only where the application omitted one.
+ *
+ * @param {object[]} columns - Prepared application column definitions.
+ * @returns {object[]} Independently prepared definitions with default formatters.
+ * @private
+ * @internal
+ */
+export const applyDefaultEditorFormatters = (columns = []) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) {
+            nextColumn.columns = applyDefaultEditorFormatters(
+                nextColumn.columns
+            );
+        }
+
+        if (
+            nextColumn.formatter === undefined
+            && getAmbEditorType(nextColumn) === 'decimal'
+        ) {
+            const config = nextColumn.editor._ambDecimalConfig || {};
+            const decimals = config.decimalDigits === undefined
+                ? 2
+                : config.decimalDigits;
+            const locale = config.decimalSeparator === '.'
+                ? 'en-US'
+                : 'it-IT';
+
+            nextColumn.formatter = formatters.decimal(decimals, { locale });
+        }
+
+        return nextColumn;
+    });
 };
 
 const getDefaultHozAlign = column => {
@@ -613,6 +651,7 @@ const composeRuntimeColumns = (
  * @param {object} [options.messages] - Declarative validator messages.
  * @param {boolean} [options.lookupDescriptions=true] - Enable lookup markers.
  * @param {Function} [options.getCrud] - Return the current CRUD helper.
+ * @param {Function} [options.getTable] - Return the current internal table.
  * @param {object|null} [options.selectionColumn] - AMB-managed selection definition.
  * @param {object|null} [options.deleteColumn] - AMB-managed action definition.
  * @returns {{
@@ -631,13 +670,22 @@ export const prepareColumnPipeline = ({
     messages = DEFAULT_MESSAGES,
     lookupDescriptions = true,
     getCrud = () => null,
+    getTable = () => null,
     selectionColumn = null,
     deleteColumn = null
 } = {}) => {
     const applicationColumns = cloneApplicationColumns(columns);
     const extracted = extractColumnValidators(applicationColumns, messages);
-    const editableColumns = wrapEditableForDeletedRows(
+    const calculationColumns = prepareColumnCalculations(
         extracted.columns,
+        getCrud,
+        getTable
+    );
+    const formattedColumns = applyDefaultEditorFormatters(
+        calculationColumns
+    );
+    const editableColumns = wrapEditableForDeletedRows(
+        formattedColumns,
         getCrud
     );
     const preparedLookupColumns = prepareLookupColumns(

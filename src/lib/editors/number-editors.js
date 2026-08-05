@@ -76,6 +76,22 @@ export const parseDecimalValue = (value, decimalSeparator) => {
     return Number(String(value).replace(decimalSeparator, '.'));
 };
 
+const getDecimalInitialValue = (cell, options) => {
+    const value = cell.getValue();
+    const decimalDigits = Number(options.decimalDigits);
+
+    if (
+        typeof value === 'number'
+        && Number.isFinite(value)
+        && Number.isInteger(decimalDigits)
+        && decimalDigits >= 0
+    ) {
+        return value.toFixed(decimalDigits);
+    }
+
+    return getInitialValue(cell);
+};
+
     /**
      * Integer editor. Saves a number, or an empty string when allowed.
      *
@@ -209,14 +225,18 @@ export function decimal(options = {}) {
 
         const editor = (cell, onRendered, success, cancel) => {
             const input = document.createElement('input');
+            const initialValue = getDecimalInitialValue(
+                cell,
+                normalizedOptions
+            );
 
             input.type = 'text';
             input.className = 'amb-cell-editor amb-cell-editor--number';
             input.inputMode = 'decimal';
             input.value = normalizeDecimalInput(
                 normalizedOptions.decimalSeparator === ','
-                    ? getInitialValue(cell).replace('.', ',')
-                    : getInitialValue(cell),
+                    ? initialValue.replace('.', ',')
+                    : initialValue,
                 normalizedOptions
             );
 
@@ -295,6 +315,10 @@ export function decimal(options = {}) {
         };
 
         editor._ambEditorType = 'decimal';
+        editor._ambDecimalConfig = {
+            decimalDigits: normalizedOptions.decimalDigits,
+            decimalSeparator: normalizedOptions.decimalSeparator
+        };
 
         return editor;
 }

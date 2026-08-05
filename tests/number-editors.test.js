@@ -212,6 +212,25 @@ describe('numeric editors emptyValue option', () => {
         expect(decimalHarness.success).toHaveBeenCalledWith(12.5);
     });
 
+    test('decimal editing shows configured trailing digits for numeric values', () => {
+        const commaHarness = createHarness({
+            editorFactory: createDecimalEditor,
+            initialValue: 120.5,
+            options: { decimalDigits: 2 }
+        });
+        const dotHarness = createHarness({
+            editorFactory: createDecimalEditor,
+            initialValue: 120.5,
+            options: {
+                decimalDigits: 3,
+                decimalSeparator: '.'
+            }
+        });
+
+        expect(commaHarness.input.value).toBe('120,50');
+        expect(dotHarness.input.value).toBe('120.500');
+    });
+
     test('invalid values continue to cancel as before', () => {
         const integerHarness = createHarness({
             editorFactory: createIntegerEditor,

@@ -15,6 +15,7 @@ import {
     prepareColumnPipeline
 } from './column-pipeline.js';
 import { createColumnRuntime } from './column-runtime.js';
+import { bindDeletedRowCalculationRecalc } from './column-calculation-runtime.js';
 import { createHistoryRuntime } from './history-runtime.js';
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
 import { createAlertMethods } from './controller/alert-methods.js';
@@ -603,6 +604,7 @@ export function createTable(options = {}) {
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     let crud = null;
     let controller = null;
+    let table = null;
     const confirmDialog = new ConfirmDialog();
     const selectionColumnController = createSelectionColumn(selectionColumn);
     const deleteColumnController = deleteColumn && deleteColumn.enabled
@@ -612,6 +614,7 @@ export function createTable(options = {}) {
         messages: normalizedMessages,
         lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
         getCrud: () => crud,
+        getTable: () => table,
         selectionColumn: selectionColumnController
             ? selectionColumnController.column
             : null,
@@ -630,6 +633,7 @@ export function createTable(options = {}) {
         unsubscribeLookupDescriptions: null,
         unsubscribeLookupMetadata: null,
         unsubscribeLargeText: null,
+        unsubscribeCalculationRecalc: null,
         historyRuntime: null,
         searchController: null,
         feedback: null
@@ -643,7 +647,7 @@ export function createTable(options = {}) {
         normalizedOptions.columns = columnPipeline.runtimeColumns;
     }
 
-    const table = new Tabulator(selector, normalizedOptions);
+    table = new Tabulator(selector, normalizedOptions);
     const alertMethods = createAlertMethods({ table });
     const calculationMethods = createCalculationMethods({ table });
     const eventMethods = createEventMethods({ table });
@@ -657,6 +661,8 @@ export function createTable(options = {}) {
     const navigationMethods = createNavigationMethods({ table });
     const spreadsheetMethods = createSpreadsheetMethods({ table });
     crud = new CrudHelper(table, { errorStyle });
+    lifecycleResources.unsubscribeCalculationRecalc =
+        bindDeletedRowCalculationRecalc(table, crud);
     registerDeclarativeValidators(crud, columnPipeline.validators);
     lifecycleResources.historyRuntime = createHistoryRuntime({
         table,

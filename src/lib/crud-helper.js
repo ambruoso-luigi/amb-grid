@@ -851,8 +851,7 @@ export class CrudHelper {
 
         this._patchRow(row, {
             ...resetData,
-            ...restoredData,
-            [this.options.stateField]: ROW_STATE.CLEAN
+            ...restoredData
         });
     }
 

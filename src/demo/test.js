@@ -1025,7 +1025,6 @@ const createColumnCalculationsGrid = () => {
                 field: 'unitPrice',
                 width: 125,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
-                formatter: AMB.formatters.decimal(2),
                 topCalc: 'avg',
                 topCalcParams: { precision: false },
                 topCalcFormatter: createColumnCalculationFormatter('avg', formatItalianDecimal)

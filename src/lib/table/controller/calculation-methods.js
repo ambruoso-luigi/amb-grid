@@ -25,7 +25,9 @@ export const createCalculationMethods = ({ table }) => ({
      * group values.
      *
      * The result reflects the current runtime calculation configuration and
-     * should be treated as read-only. It is not an AMB Grid save payload or
+     * dataset, excluding rows currently marked as CRUD `deleted`. Such rows
+     * remain available to CRUD reports, save payloads and rollback. The result
+     * should be treated as read-only and is not an AMB Grid save payload or
      * CRUD state report.
      *
      * @returns {object} Current column calculation results.
@@ -99,8 +101,9 @@ export const createCalculationMethods = ({ table }) => ({
      * Recalculates the configured column calculations.
      *
      * The grid resolves the rows, groups, calculation functions and parameters
-     * according to its current runtime configuration. The operation does not
-     * directly modify row data or AMB Grid CRUD state.
+     * according to its current runtime configuration, excluding rows currently
+     * marked as CRUD `deleted`. The operation does not directly modify row data
+     * or AMB Grid CRUD state.
      *
      * Use `getCalcResults()` separately when the updated result object is
      * needed.

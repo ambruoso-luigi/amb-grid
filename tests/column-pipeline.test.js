@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
 import { prepareColumnPipeline } from '../src/lib/table/column-pipeline.js';
+import { decimal as createDecimalEditor } from '../src/lib/editors/number-editors.js';
 
 const createEditor = (type, metadata = {}) => {
     const editor = vi.fn();
@@ -77,6 +78,64 @@ const findPreparedColumn = (pipeline, field) => {
 };
 
 describe('AMB Grid column preparation pipeline', () => {
+    test('adds a decimal formatter from editor metadata while preserving explicit formatters', () => {
+        const explicitFormatter = vi.fn(() => 'explicit');
+        const commaOptions = { decimalDigits: 2 };
+        const dotOptions = {
+            decimalDigits: 3,
+            decimalSeparator: '.'
+        };
+        const applicationColumns = [{
+            title: 'Decimals',
+            columns: [{
+                field: 'comma',
+                editor: createDecimalEditor(commaOptions)
+            },
+            {
+                field: 'dot',
+                editor: createDecimalEditor(dotOptions)
+            },
+            {
+                field: 'explicit',
+                editor: createDecimalEditor({ decimalDigits: 4 }),
+                formatter: explicitFormatter
+            },
+            {
+                field: 'named',
+                editor: createDecimalEditor(),
+                formatter: 'plaintext'
+            }]
+        }];
+        const pipeline = prepareColumnPipeline({
+            columns: applicationColumns
+        });
+        const comma = findPreparedColumn(pipeline, 'comma');
+        const dot = findPreparedColumn(pipeline, 'dot');
+        const explicit = findPreparedColumn(pipeline, 'explicit');
+        const named = findPreparedColumn(pipeline, 'named');
+        const cell = value => ({ getValue: () => value });
+
+        expect(comma.formatter(cell(120.5))).toBe('120,50');
+        expect(dot.formatter(cell(120.5))).toBe('120.500');
+        expect(explicit.formatter).toBe(explicitFormatter);
+        expect(named.formatter).toBe('plaintext');
+        expect(comma.hozAlign).toBe('right');
+        expect(dot.hozAlign).toBe('right');
+        expect(commaOptions).toEqual({ decimalDigits: 2 });
+        expect(dotOptions).toEqual({
+            decimalDigits: 3,
+            decimalSeparator: '.'
+        });
+        expect(applicationColumns[0].columns[0]).not.toHaveProperty('formatter');
+
+        const repeated = prepareColumnPipeline({ columns: applicationColumns });
+
+        expect(findPreparedColumn(repeated, 'comma').formatter(cell(120.5)))
+            .toBe('120,50');
+        expect(findPreparedColumn(repeated, 'explicit').formatter)
+            .toBe(explicitFormatter);
+    });
+
     test('prepares nested data and managed runtime columns through one complete sequence', () => {
         const editable = vi.fn(() => true);
         const customValidator = vi.fn(() => true);
