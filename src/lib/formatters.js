@@ -249,6 +249,51 @@ export const formatters = {
     },
 
     /**
+     * Formatter for AMB Grid calculation cells with safe textual markup.
+     *
+     * @param {object} [options] - Calculation presentation options.
+     * @param {*} [options.label=''] - Optional text displayed before the value.
+     * @param {*} [options.className=''] - Optional application CSS classes for the content wrapper.
+     * @param {Function} [options.formatValue] - Optional function receiving the raw calculation value and returning display text.
+     * @returns {Function} AMB Grid formatter for use with `topCalcFormatter` and `bottomCalcFormatter`.
+     * @example
+     * topCalc: 'avg',
+     * topCalcFormatter: AMB.formatters.calculation({
+     *     label: 'AVG:',
+     *     className: 'my-average',
+     *     formatValue: value => Number(value).toFixed(2)
+     * })
+     */
+    calculation(options = {}) {
+        const {
+            label = '',
+            className = '',
+            formatValue
+        } = options;
+        const labelText = stringifyValue(label);
+        const normalizedClassName = stringifyValue(className).trim().replace(/\s+/g, ' ');
+        const contentClassName = normalizedClassName
+            ? `amb-calc-content ${normalizedClassName}`
+            : 'amb-calc-content';
+
+        const formatter = cell => {
+            const rawValue = getCellValue(cell);
+            const displayValue = typeof formatValue === 'function'
+                ? formatValue(rawValue)
+                : rawValue;
+            const labelMarkup = labelText
+                ? `<span class="amb-calc-label">${escapeHtmlText(labelText)}</span>`
+                : '';
+
+            return `<span class="${escapeHtmlText(contentClassName)}">${labelMarkup}<span class="amb-calc-value">${escapeHtmlText(displayValue)}</span></span>`;
+        };
+
+        formatter._ambFormatterType = 'calculation';
+
+        return formatter;
+    },
+
+    /**
      * Placeholder formatter for empty values.
      *
      * @param {string} [placeholder='-'] - Text used for null, undefined, or empty string.

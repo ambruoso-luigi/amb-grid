@@ -128,3 +128,56 @@ describe('safe textual formatters', () => {
         expect(cell.element.dataset.largeTextField).toBe('notes');
     });
 });
+
+describe('calculation formatter', () => {
+    test('renders a label, formatted value, and normalized application classes', () => {
+        const formatter = formatters.calculation({
+            label: 'AVG:',
+            className: '  my-average   highlighted  ',
+            formatValue: value => Number(value).toFixed(2)
+        });
+
+        expect(formatter(createCell(83.812)))
+            .toBe('<span class="amb-calc-content my-average highlighted"><span class="amb-calc-label">AVG:</span><span class="amb-calc-value">83.81</span></span>');
+        expect(formatter._ambFormatterType).toBe('calculation');
+    });
+
+    test('escapes label, raw and formatted values, and className', () => {
+        expect(formatters.calculation({
+            label: '<img src=x onerror=alert(1)>',
+            className: 'safe" onclick="alert(1)'
+        })(createCell('<b>value</b>')))
+            .toBe('<span class="amb-calc-content safe&quot; onclick=&quot;alert(1)"><span class="amb-calc-label">&lt;img src=x onerror=alert(1)&gt;</span><span class="amb-calc-value">&lt;b&gt;value&lt;/b&gt;</span></span>');
+
+        expect(formatters.calculation({
+            formatValue: () => '<script>alert(1)</script>'
+        })(createCell('ignored')))
+            .toBe('<span class="amb-calc-content"><span class="amb-calc-value">&lt;script&gt;alert(1)&lt;/script&gt;</span></span>');
+    });
+
+    test('preserves false and zero while rendering nullish values as empty text', () => {
+        const formatter = formatters.calculation();
+
+        expect(formatter(createCell(0))).toContain('<span class="amb-calc-value">0</span>');
+        expect(formatter(createCell(false))).toContain('<span class="amb-calc-value">false</span>');
+        expect(formatter(createCell(''))).toContain('<span class="amb-calc-value"></span>');
+        expect(formatter(createCell(null))).toContain('<span class="amb-calc-value"></span>');
+        expect(formatter(createCell(undefined))).toContain('<span class="amb-calc-value"></span>');
+        expect(formatter(createCell(null))).not.toContain('amb-calc-label');
+    });
+
+    test('does not mutate options and propagates formatValue errors', () => {
+        const options = {
+            label: 'SUM:',
+            className: 'total',
+            formatValue: () => {
+                throw new Error('format failed');
+            }
+        };
+        const originalOptions = { ...options };
+        const formatter = formatters.calculation(options);
+
+        expect(options).toEqual(originalOptions);
+        expect(() => formatter(createCell(10))).toThrow('format failed');
+    });
+});
