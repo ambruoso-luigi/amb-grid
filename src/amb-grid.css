@@ -70,6 +70,39 @@
     --amb-row-error-bg: #fff2f2;
     --amb-cell-modified-bg: #fff0bd;
     --amb-cell-error-bg: #fbdcdc;
+    --amb-calc-row-bg: var(--amb-color-surface-muted);
+    --amb-calc-row-color: var(--amb-color-text);
+    --amb-calc-row-border-color: var(--amb-color-border);
+    --amb-calc-label-color: var(--amb-color-text-muted);
+    --amb-calc-value-color: var(--amb-color-text);
+    --amb-calc-row-font-weight: 600;
+}
+
+.amb-calc-row {
+    background: var(--amb-calc-row-bg);
+    color: var(--amb-calc-row-color);
+    font-weight: var(--amb-calc-row-font-weight);
+}
+
+.amb-calc-cell {
+    background: inherit;
+    border-color: var(--amb-calc-row-border-color);
+    color: inherit;
+}
+
+.amb-calc-content {
+    align-items: baseline;
+    display: inline-flex;
+    gap: var(--amb-space-xs);
+    max-width: 100%;
+}
+
+.amb-calc-label {
+    color: var(--amb-calc-label-color);
+}
+
+.amb-calc-value {
+    color: var(--amb-calc-value-color);
 }
 
 .amb-toolbar {

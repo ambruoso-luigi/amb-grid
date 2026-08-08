@@ -16,6 +16,7 @@ import {
 } from './column-pipeline.js';
 import { createColumnRuntime } from './column-runtime.js';
 import { bindDeletedRowCalculationRecalc } from './column-calculation-runtime.js';
+import { createCalculationPresentationRuntime } from './calculation-presentation-runtime.js';
 import { createHistoryRuntime } from './history-runtime.js';
 import { composeControllerMethods } from './controller/compose-controller-methods.js';
 import { createAlertMethods } from './controller/alert-methods.js';
@@ -634,6 +635,7 @@ export function createTable(options = {}) {
         unsubscribeLookupMetadata: null,
         unsubscribeLargeText: null,
         unsubscribeCalculationRecalc: null,
+        calculationPresentationRuntime: null,
         historyRuntime: null,
         searchController: null,
         feedback: null
@@ -648,6 +650,11 @@ export function createTable(options = {}) {
     }
 
     table = new Tabulator(selector, normalizedOptions);
+    const tableElement = typeof selector === 'string'
+        ? document.querySelector(selector)
+        : selector;
+    lifecycleResources.calculationPresentationRuntime =
+        createCalculationPresentationRuntime(tableElement);
     const alertMethods = createAlertMethods({ table });
     const calculationMethods = createCalculationMethods({ table });
     const eventMethods = createEventMethods({ table });
@@ -741,10 +748,6 @@ export function createTable(options = {}) {
             lifecycleResources.toolbarController ? 'amb-feedback-region--connected' : ''
         ].filter(Boolean).join(' ')
     });
-    const tableElement = typeof selector === 'string'
-        ? document.querySelector(selector)
-        : selector;
-
     if (tableElement && tableElement.parentNode) {
         tableElement.parentNode.insertBefore(lifecycleResources.feedback.element, tableElement);
     }

@@ -8,6 +8,16 @@ const calcCell = (page, field) => {
     );
 };
 
+const expectTopCalculationClasses = async page => {
+    const row = page.locator(
+        `${TABLE} .amb-calc-row.amb-calc-row--top`
+    );
+
+    await expect(row).toHaveCount(1);
+    await expect(row.locator('.tabulator-cell:not(.amb-calc-cell)'))
+        .toHaveCount(0);
+};
+
 const dataRow = (page, code) => {
     return page.locator(`${TABLE} .tabulator-row:not(.tabulator-calcs)`).filter({
         has: page.locator(`.tabulator-cell[tabulator-field="code"]`, {
@@ -61,6 +71,7 @@ test('technical calculation grid follows CRUD state and decimal defaults', async
     };
 
     await expectCalculations(page, initial);
+    await expectTopCalculationClasses(page);
 
     const deletedRow = dataRow(page, 'A07');
 
@@ -79,11 +90,13 @@ test('technical calculation grid follows CRUD state and decimal defaults', async
         deliveryDays: 'min: 2',
         score: 'max: 95'
     });
+    await expectTopCalculationClasses(page);
 
     await deletedRow.locator('.amb-row-action-button--rollback').click();
     await confirmDialog(page);
     await expect(deletedRow).toHaveAttribute('data-state', 'clean');
     await expectCalculations(page, initial);
+    await expectTopCalculationClasses(page);
 
     const firstRow = dataRow(page, 'A01');
     const quantityCell = firstRow.locator(

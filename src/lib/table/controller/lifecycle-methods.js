@@ -38,6 +38,11 @@ export const createLifecycleMethods = ({
     destroy() {
         const controller = getController();
 
+        if (resources.calculationPresentationRuntime) {
+            resources.calculationPresentationRuntime.destroy();
+            resources.calculationPresentationRuntime = null;
+        }
+
         if (resources.historyRuntime) {
             resources.historyRuntime.destroy();
             resources.historyRuntime = null;
