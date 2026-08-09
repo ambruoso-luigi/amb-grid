@@ -11645,7 +11645,7 @@ candidates for automatic focus.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line585">line 585</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line587">line 587</a>
     </li></ul></dd>
     
 
@@ -12794,7 +12794,7 @@ Keyboard behavior:
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line200">line 200</a>
+        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line216">line 216</a>
     </li></ul></dd>
     
 
@@ -14600,7 +14600,7 @@ when the component operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line94">line 94</a>
+        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line96">line 96</a>
     </li></ul></dd>
     
 
@@ -14766,7 +14766,7 @@ including an empty array.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line78">line 78</a>
+        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line80">line 80</a>
     </li></ul></dd>
     
 
@@ -14957,7 +14957,7 @@ results and is not an AMB Grid CRUD payload or snapshot.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line50">line 50</a>
+        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -15123,7 +15123,7 @@ advanced integration technique that can bypass normal AMB Grid behavior.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line64">line 64</a>
+        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line66">line 66</a>
     </li></ul></dd>
     
 
@@ -15199,7 +15199,9 @@ calculation objects. Grouped grids can return a nested object keyed by
 group values.
 
 The result reflects the current runtime calculation configuration and
-should be treated as read-only. It is not an AMB Grid save payload or
+dataset, excluding rows currently marked as CRUD `deleted`. Such rows
+remain available to CRUD reports, save payloads and rollback. The result
+should be treated as read-only and is not an AMB Grid save payload or
 CRUD state report.
 </div>
 
@@ -15244,7 +15246,7 @@ CRUD state report.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line33">line 33</a>
+        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -31309,7 +31311,7 @@ runtime dataset may already contain the imported rows.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line92">line 92</a>
+        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line108">line 108</a>
     </li></ul></dd>
     
 
@@ -38769,8 +38771,9 @@ operation does not directly modify row data or AMB Grid CRUD state.
     Recalculates the configured column calculations.
 
 The grid resolves the rows, groups, calculation functions and parameters
-according to its current runtime configuration. The operation does not
-directly modify row data or AMB Grid CRUD state.
+according to its current runtime configuration, excluding rows currently
+marked as CRUD `deleted`. The operation does not directly modify row data
+or AMB Grid CRUD state.
 
 Use `getCalcResults()` separately when the updated result object is
 needed.
@@ -38817,7 +38820,7 @@ needed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line110">line 110</a>
+        <a href="lib_table_controller_calculation-methods.js.html">lib/table/controller/calculation-methods.js</a>, <a href="lib_table_controller_calculation-methods.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -59843,7 +59846,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line184">line 184</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line186">line 186</a>
     </li></ul></dd>
     
 
@@ -59879,7 +59882,7 @@ dialogs, the CRUD layer and the internally managed table engine.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Aug 01 2026 11:31:31 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Aug 09 2026 11:44:05 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

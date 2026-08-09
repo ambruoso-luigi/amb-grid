@@ -298,6 +298,250 @@ percentage precision from the stored ratio precision and hides trailing zeros
 by default. `AMB.formatters.percent(decimals)` remains available when fixed
 display precision is required.
 
+### Column calculations
+
+AMB Grid supports top and bottom column calculations directly in column
+definitions through `topCalc` and `bottomCalc`. The grid runtime keeps their
+results synchronized when the active data changes. The built-in calculations
+supported and certified by AMB Grid are `avg`, `sum`, `min`, `max`, `count`,
+`unique`, and `concat`.
+
+The following example displays a sum, an average, and a distinct-value count
+in the top calculation row:
+
+```js
+const grid = AMB.table({
+    selector: '#products-grid',
+    data: [
+        { product: 'Router', quantity: 5, unitPrice: 120.5, category: 'Hardware' },
+        { product: 'CRM', quantity: 12, unitPrice: 49.9, category: 'Software' }
+    ],
+    columns: [
+        { title: 'Product', field: 'product' },
+        {
+            title: 'Quantity',
+            field: 'quantity',
+            topCalc: 'sum',
+            topCalcFormatter: AMB.formatters.calculation({ label: 'TOTAL:' })
+        },
+        {
+            title: 'Unit price',
+            field: 'unitPrice',
+            topCalc: 'avg',
+            topCalcParams: { precision: false },
+            topCalcFormatter: AMB.formatters.calculation({
+                label: 'AVG:',
+                formatValue: value => Number(value).toFixed(2)
+            })
+        },
+        {
+            title: 'Category',
+            field: 'category',
+            topCalc: 'unique',
+            topCalcFormatter: AMB.formatters.calculation({ label: 'UNIQUE:' })
+        }
+    ]
+});
+```
+
+#### Calculation presentation
+
+`AMB.formatters.calculation(options)` provides safe, consistent textual markup
+for `topCalcFormatter` and `bottomCalcFormatter`. Its options are:
+
+* `label`: optional text shown before the result.
+* `className`: one or more application CSS classes added to the calculation
+  content wrapper.
+* `formatValue`: an optional function that converts the raw result into display
+  text.
+
+For example:
+
+```js
+topCalcFormatter: AMB.formatters.calculation({
+    label: 'AVG:',
+    className: 'average-highlight',
+    formatValue: value => Number(value).toLocaleString('it-IT', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })
+})
+```
+
+`formatValue` changes only the displayed representation; it does not replace
+the raw calculation result. Labels, values, formatted results, and application
+class names are handled as safe text. A normal application formatter can still
+be supplied when completely custom presentation is required.
+
+The calculation presentation can also be changed at runtime through the
+existing column API:
+
+```js
+await grid.updateColumnDefinition('unitPrice', {
+    topCalcFormatter: AMB.formatters.calculation({
+        label: 'MEDIA:',
+        className: 'average-highlight',
+        formatValue: value => Number(value).toFixed(2)
+    })
+});
+```
+
+#### Custom calculations and parameters
+
+A function can be assigned directly to `topCalc` or `bottomCalc`. It receives
+the runtime calculation inputs and can define application-specific semantics:
+
+```js
+const calculateRange = values => {
+    const numbers = values.map(Number).filter(Number.isFinite);
+
+    if (!numbers.length) return 0;
+
+    return Math.max(...numbers) - Math.min(...numbers);
+};
+
+const columns = [{
+    title: 'Score range',
+    field: 'score',
+    topCalc: calculateRange,
+    topCalcFormatter: AMB.formatters.calculation({ label: 'RANGE:' })
+}];
+```
+
+Rows in CRUD `deleted` state are excluded from custom calculations as well as
+from built-ins. The seven AMB Grid built-ins also ignore `null`, `undefined`,
+and the empty string (`''`). Custom functions receive empty values from active
+rows and may assign their own meaning to them. Strings containing spaces are
+not implicitly treated as empty.
+
+`topCalcParams` and `bottomCalcParams` can be static configuration objects or
+functions that resolve parameters from the current calculation inputs. For
+example, the supported average configuration can preserve full runtime
+precision:
+
+```js
+{
+    field: 'unitPrice',
+    topCalc: 'avg',
+    topCalcParams: { precision: false }
+}
+```
+
+Dynamic parameter functions receive inputs normalized consistently with their
+associated calculation: built-ins exclude empty values, while custom
+calculations preserve them.
+
+#### CRUD lifecycle and calculation results
+
+Calculation participation follows the AMB Grid CRUD lifecycle:
+
+* `clean` and `saved` rows participate.
+* `new` rows participate with their current runtime values.
+* `modified` rows participate with their updated runtime values.
+* `deleted` rows do not participate.
+
+A deleted row remains visible, remains available for rollback, and remains in
+the appropriate CRUD reports and payloads. After rollback it participates
+again with its restored data.
+
+Read the current configured results with:
+
+```js
+const results = grid.getCalcResults();
+```
+
+For an ungrouped grid, the result normally contains `top` and `bottom`
+sections. A grouped grid can return a runtime group structure with nested
+results. Treat the returned object as read-only.
+
+Force calculation refresh separately when needed:
+
+```js
+grid.recalc();
+const results = grid.getCalcResults();
+```
+
+`grid.recalc()` uses the current runtime data, filters, groups, functions, and
+parameters, while excluding deleted rows. It does not directly modify data,
+CRUD states, or save payloads.
+
+> **Calculation results and CRUD payloads are different concepts.**
+> Calculations describe the active runtime dataset. CRUD payloads describe
+> changes to send to the backend. `grid.getCalcResults()` is not a replacement
+> for `grid.getSavePayload()`.
+
+#### Stable calculation CSS
+
+AMB Grid exposes stable presentation classes without requiring application
+selectors tied to internal markup:
+
+* `.amb-calc-row`, `.amb-calc-row--top`, `.amb-calc-row--bottom`, and
+  `.amb-calc-cell` are structural classes applied by the AMB Grid runtime.
+* `.amb-calc-content`, `.amb-calc-label`, and `.amb-calc-value` are emitted by
+  `AMB.formatters.calculation(...)`.
+
+An application class can highlight one result:
+
+```css
+.average-highlight {
+    background: #fff4c2;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+```
+
+The public calculation variables customize the shared calculation row and its
+content:
+
+* `--amb-calc-row-bg`
+* `--amb-calc-row-color`
+* `--amb-calc-row-border-color`
+* `--amb-calc-label-color`
+* `--amb-calc-value-color`
+* `--amb-calc-row-font-weight`
+
+```css
+:root {
+    --amb-calc-row-bg: #f6f8fb;
+    --amb-calc-row-font-weight: 600;
+    --amb-calc-label-color: #475569;
+}
+```
+
+#### Pagination, filtering, and ordering
+
+With local pagination, calculations represent the entire active and filtered
+dataset available locally, rather than only the visible page:
+
+```js
+pagination: {
+    enabled: true,
+    mode: 'local',
+    pageSize: 10
+}
+```
+
+Changing the page or page size does not change calculation results. Applying a
+filter changes the active dataset and therefore its results; removing the
+filter restores results for the complete local dataset. Editing a row on
+another page still updates calculations, and delete/rollback follows the same
+CRUD lifecycle regardless of the current page.
+
+Order-independent calculations such as `sum`, `avg`, `min`, `max`, `count`,
+and `unique` keep the same result after sorting. `concat` is order-sensitive,
+so its sequence may change when active rows are reordered; this is expected.
+
+With remote pagination, the browser does not necessarily hold the full remote
+dataset. Client calculations can use only data currently available to the
+runtime and must not automatically be interpreted as global archive totals.
+Global totals for unloaded data must be calculated by the backend, or the
+application must make the complete required dataset available. AMB Grid does
+not estimate or reconstruct rows that the backend did not provide.
+
+Calculations can also be used with grouping. `grid.getCalcResults()` may return
+nested results for runtime groups, and AMB Grid presentation classes are also
+applied to calculation rows created inside groups.
+
 ### Parsers
 
 AMB Grid keeps display, editing, validation, and payload normalization separate:
