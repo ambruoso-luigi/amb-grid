@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMB Grid legacy smoke</title>
+    <link rel="stylesheet" href="../../dist-lib/amb-grid.css">
+</head>
+<body>
+    <div id="grid"></div>
+    <script src="../../dist-lib/amb-grid.umd.js"></script>
+    <script>
+        window.legacyGrid = AMB.table({
+            selector: '#grid',
+            data: [{ id: 1, name: 'Legacy test' }],
+            columns: [
+                { title: 'ID', field: 'id' },
+                { title: 'Name', field: 'name' }
+            ]
+        });
+    </script>
+</body>
+</html>

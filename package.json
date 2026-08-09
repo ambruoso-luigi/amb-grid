@@ -37,6 +37,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:lib": "vite build --config vite.lib.config.js",
+    "build:legacy": "vite build --config vite.legacy.config.js",
+    "legacy:smoke": "node scripts/verify-legacy-bundle.mjs",
     "pack:check": "npm run build:lib && node scripts/verify-package.mjs",
     "package:smoke": "npm run pack:check && node scripts/verify-package-install.mjs",
     "prepack": "npm run pack:check",
