@@ -35,6 +35,31 @@ import 'amb-grid/style.css';
 The public stylesheet already includes the styles required by AMB Grid's
 internal table engine, suggestion widget, and calendar picker.
 
+### Standalone browser usage
+
+For legacy or server-rendered pages, AMB Grid can be loaded without npm, a
+bundler, or JavaScript imports:
+
+```html
+<link rel="stylesheet" href="./vendor/amb-grid/amb-grid.css">
+
+<div id="inventory-table"></div>
+
+<script src="./vendor/amb-grid/amb-grid.umd.js"></script>
+<script>
+  const grid = AMB.table({
+    selector: '#inventory-table',
+    data: [],
+    columns: []
+  });
+</script>
+```
+
+The UMD bundle incorporates the internal JavaScript runtime dependencies, and
+`amb-grid.css` contains the required library styles. The public browser global
+is directly `AMB`; do not load Tabulator, Awesomplete, or vanilla-datepicker
+separately in this scenario.
+
 ## Minimal example
 
 Add a container to the page:

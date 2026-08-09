@@ -4,6 +4,14 @@
   "description": "A framework-agnostic CRUD grid system for editable business data.",
   "author": "Luigi Ambruoso",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ambruoso-luigi/amb-grid.git"
+  },
+  "homepage": "https://github.com/ambruoso-luigi/amb-grid#readme",
+  "bugs": {
+    "url": "https://github.com/ambruoso-luigi/amb-grid/issues"
+  },
   "type": "module",
   "main": "./dist-lib/amb-grid.js",
   "module": "./dist-lib/amb-grid.js",
@@ -38,8 +46,9 @@
     "build": "vite build",
     "build:lib": "vite build --config vite.lib.config.js",
     "build:legacy": "vite build --config vite.legacy.config.js",
+    "build:dist": "npm run build:lib && npm run build:legacy",
     "legacy:smoke": "node scripts/verify-legacy-bundle.mjs",
-    "pack:check": "npm run build:lib && node scripts/verify-package.mjs",
+    "pack:check": "npm run build:dist && node scripts/verify-package.mjs",
     "package:smoke": "npm run pack:check && node scripts/verify-package-install.mjs",
     "prepack": "npm run pack:check",
     "test": "vitest run",

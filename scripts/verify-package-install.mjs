@@ -18,6 +18,7 @@ import {
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const sourcePackage = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'));
 const packageDirectory = resolve(projectRoot, 'dist-lib');
 const viteBin = resolve(projectRoot, 'node_modules', 'vite', 'bin', 'vite.js');
 const npmCommand = process.platform === 'win32'
@@ -101,6 +102,7 @@ try {
     runPhase('package build verification', () => {
         [
             join(packageDirectory, 'amb-grid.js'),
+            join(packageDirectory, 'amb-grid.umd.js'),
             join(packageDirectory, 'amb-grid.css'),
             viteBin
         ].forEach(path => {
@@ -228,11 +230,15 @@ document.querySelector('#app').dataset.ambGridPackage = 'resolved';
         const installed = JSON.parse(readFileSync(installedPackagePath, 'utf8'));
 
         assert(installed.name === 'amb-grid', 'Installed package name is not amb-grid.');
-        assert(installed.version === '0.3.1', 'Installed package version is not 0.3.1.');
+        assert(
+            installed.version === sourcePackage.version,
+            `Installed package version ${installed.version} does not match source version ${sourcePackage.version}.`
+        );
         assert(installed.type === 'module', 'Installed package type is not module.');
 
         [
             'dist-lib/amb-grid.js',
+            'dist-lib/amb-grid.umd.js',
             'dist-lib/amb-grid.css',
             'README.md',
             'LICENSE'

@@ -43,6 +43,22 @@ expectEqual(packageJson.type, 'module', 'type');
 expectEqual(packageJson.main, './dist-lib/amb-grid.js', 'main');
 expectEqual(packageJson.module, './dist-lib/amb-grid.js', 'module');
 expectEqual(packageJson.style, './dist-lib/amb-grid.css', 'style');
+expectEqual(packageJson.repository && packageJson.repository.type, 'git', 'repository.type');
+expectEqual(
+    packageJson.repository && packageJson.repository.url,
+    'git+https://github.com/ambruoso-luigi/amb-grid.git',
+    'repository.url'
+);
+expectEqual(
+    packageJson.homepage,
+    'https://github.com/ambruoso-luigi/amb-grid#readme',
+    'homepage'
+);
+expectEqual(
+    packageJson.bugs && packageJson.bugs.url,
+    'https://github.com/ambruoso-luigi/amb-grid/issues',
+    'bugs.url'
+);
 
 if (
     !Array.isArray(packageJson.files)
@@ -209,6 +225,7 @@ const requiredFiles = [
     'README.md',
     'LICENSE',
     'dist-lib/amb-grid.js',
+    'dist-lib/amb-grid.umd.js',
     'dist-lib/amb-grid.css'
 ];
 
@@ -257,8 +274,10 @@ if (tarballPaths.has('dist-lib/index.html')) {
 }
 
 const javascriptPath = 'dist-lib/amb-grid.js';
+const legacyJavascriptPath = 'dist-lib/amb-grid.umd.js';
 const stylesheetPath = 'dist-lib/amb-grid.css';
 const javascriptAbsolutePath = resolve(projectRoot, javascriptPath);
+const legacyJavascriptAbsolutePath = resolve(projectRoot, legacyJavascriptPath);
 const stylesheetAbsolutePath = resolve(projectRoot, stylesheetPath);
 
 if (existsSync(javascriptAbsolutePath)) {
@@ -290,6 +309,14 @@ if (existsSync(javascriptAbsolutePath)) {
             addError('Missing external runtime reference', `${javascriptPath}: ${dependency}`);
         }
     });
+}
+
+if (existsSync(legacyJavascriptAbsolutePath)) {
+    const legacyJavascript = readFileSync(legacyJavascriptAbsolutePath, 'utf8');
+
+    if (!legacyJavascript.trim()) {
+        addError('Empty legacy JavaScript bundle', legacyJavascriptPath);
+    }
 }
 
 if (existsSync(stylesheetAbsolutePath)) {
@@ -329,5 +356,6 @@ if (errors.length > 0) {
     console.log(`Files: ${report.entryCount ?? tarballPaths.size}`);
     console.log(`Unpacked size: ${report.unpackedSize ?? 'unknown'} bytes`);
     console.log(`JavaScript: ${javascriptPath}`);
+    console.log(`Legacy JavaScript: ${legacyJavascriptPath}`);
     console.log(`Stylesheet: ${stylesheetPath}`);
 }
