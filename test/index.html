@@ -33,17 +33,18 @@
       <section aria-labelledby="column-calculations-test-title">
         <h2 id="column-calculations-test-title">Column calculations</h2>
         <p>
-          Tabella tecnica per verificare i calcoli avg, max, min, sum,
-          concat, count, unique e un calcolo personalizzato.
+          Dataset di 30 righe per verificare avg, max, min, sum, concat, count,
+          unique, un calcolo personalizzato e le API pubbliche dei calcoli.
         </p>
         <h3>Come leggere i risultati</h3>
         <p>
-          Tutti gli otto risultati sono mostrati in un'unica riga di calcolo, situata
-          subito sotto le intestazioni e sopra le dieci righe di dati.
+          La pagina mostra inizialmente 10 righe alla volta. Con la paginazione locale,
+          gli otto risultati rappresentano l'intero dataset attivo e filtrato: cambiare
+          pagina non deve modificarli.
         </p>
         <p>
-          I valori indicati nella legenda sono quelli iniziali attesi. Modificando le
-          celle editabili, i risultati della tabella vengono ricalcolati automaticamente.
+          Filtro e modifiche ai dati ricalcolano i risultati. Il pulsante Risultati
+          permette di confrontare la visualizzazione con <code>grid.getCalcResults()</code>.
         </p>
         <table>
           <thead>
@@ -61,35 +62,35 @@
               <td>Conta i valori presenti nella colonna ID</td>
               <td>ID</td>
               <td>Riga superiore</td>
-              <td><code>10</code></td>
+              <td><code>30</code></td>
             </tr>
             <tr>
               <td><code>concat</code></td>
               <td>Concatena in sequenza tutti i codici delle righe</td>
               <td>Codice</td>
               <td>Riga superiore</td>
-              <td><code>A01A02A03A04A05A06A07A08A09A10</code></td>
+              <td><code>A01A02A03A04A05A06A07A08A09A10A11A12A13A14A15A16A17A18A19A20A21A22A23A24A25A26A27A28A29A30</code></td>
             </tr>
             <tr>
               <td><code>unique</code></td>
               <td>Conta le categorie distinte</td>
               <td>Categoria</td>
               <td>Riga superiore</td>
-              <td><code>4</code></td>
+              <td><code>7</code></td>
             </tr>
             <tr>
               <td><code>sum</code></td>
               <td>Somma tutte le quantità</td>
               <td>Quantità</td>
               <td>Riga superiore</td>
-              <td><code>105</code></td>
+              <td><code>339</code></td>
             </tr>
             <tr>
               <td><code>avg</code></td>
               <td>Calcola la media dei prezzi unitari</td>
               <td>Prezzo unitario</td>
               <td>Riga superiore</td>
-              <td><code>83,81</code></td>
+              <td><code>152,86</code></td>
             </tr>
             <tr>
               <td><code>min</code></td>
@@ -103,14 +104,14 @@
               <td>Trova il punteggio massimo</td>
               <td>Punteggio</td>
               <td>Riga superiore</td>
-              <td><code>95</code></td>
+              <td><code>100</code></td>
             </tr>
             <tr>
               <td>funzione personalizzata</td>
               <td>Calcola la differenza tra il punteggio massimo e il punteggio minimo</td>
               <td>Prodotto</td>
               <td>Riga superiore</td>
-              <td><code>29 = 95 − 66</code></td>
+              <td><code>34 = 100 − 66</code></td>
             </tr>
           </tbody>
         </table>

@@ -1,6 +1,15 @@
 import { ROW_STATE } from '../crud-helper.js';
 
 const CALCULATION_POSITIONS = ['top', 'bottom'];
+const EMPTY_IGNORING_BUILT_IN_CALCULATIONS = new Set([
+    'count',
+    'concat',
+    'unique',
+    'sum',
+    'avg',
+    'min',
+    'max'
+]);
 const CALCULATION_WRAPPER = Symbol('ambCalculationWrapper');
 const PARAMS_WRAPPER = Symbol('ambCalculationParamsWrapper');
 
@@ -53,6 +62,41 @@ export const filterDeletedCalculationRows = (
     };
 };
 
+const isEmptyCalculationValue = value => {
+    return value === null || value === undefined || value === '';
+};
+
+const filterEmptyCalculationValues = (values, data) => {
+    if (!Array.isArray(values) || !Array.isArray(data)) {
+        return { values, data };
+    }
+
+    const filteredValues = [];
+    const filteredData = [];
+
+    values.forEach((value, index) => {
+        if (isEmptyCalculationValue(value)) return;
+
+        filteredValues.push(value);
+        filteredData.push(data[index]);
+    });
+
+    return { values: filteredValues, data: filteredData };
+};
+
+const normalizeCalculationInputs = (values, data, getCrud, calculation) => {
+    const activeInputs = filterDeletedCalculationRows(values, data, getCrud);
+
+    if (!EMPTY_IGNORING_BUILT_IN_CALCULATIONS.has(calculation)) {
+        return activeInputs;
+    }
+
+    return filterEmptyCalculationValues(
+        activeInputs.values,
+        activeInputs.data
+    );
+};
+
 const resolveRegisteredCalculation = (getTable, name) => {
     const table = typeof getTable === 'function' ? getTable() : null;
     const columnCalcs = table
@@ -66,13 +110,18 @@ const resolveRegisteredCalculation = (getTable, name) => {
     return typeof calculation === 'function' ? calculation : null;
 };
 
-const wrapCalculationParams = (params, getCrud) => {
+const wrapCalculationParams = (params, getCrud, calculation) => {
     if (typeof params !== 'function' || params[PARAMS_WRAPPER]) {
         return params;
     }
 
     const wrappedParams = function (values, data) {
-        const filtered = filterDeletedCalculationRows(values, data, getCrud);
+        const filtered = normalizeCalculationInputs(
+            values,
+            data,
+            getCrud,
+            calculation
+        );
 
         return params.call(this, filtered.values, filtered.data);
     };
@@ -91,7 +140,12 @@ const wrapCalculation = (calculation, getCrud, getTable) => {
     }
 
     const wrappedCalculation = function (values, data, params) {
-        const filtered = filterDeletedCalculationRows(values, data, getCrud);
+        const filtered = normalizeCalculationInputs(
+            values,
+            data,
+            getCrud,
+            calculation
+        );
         const implementation = typeof calculation === 'string'
             ? resolveRegisteredCalculation(getTable, calculation)
             : calculation;
@@ -114,7 +168,11 @@ const wrapCalculation = (calculation, getCrud, getTable) => {
 };
 
 /**
- * Prepares table and group calculations to ignore rows in CRUD deleted state.
+ * Prepares table and group calculations for the AMB Grid runtime.
+ *
+ * Values and data for rows in CRUD deleted state are excluded together. AMB
+ * Grid built-in calculations also receive paired inputs without null, undefined,
+ * or empty-string values, while custom calculations preserve those values.
  *
  * @param {object[]} columns - Application column definitions.
  * @param {Function} getCrud - Return the current CRUD helper.
@@ -142,10 +200,11 @@ export const prepareColumnCalculations = (
         CALCULATION_POSITIONS.forEach(position => {
             const calculationKey = `${position}Calc`;
             const paramsKey = `${calculationKey}Params`;
+            const calculation = nextColumn[calculationKey];
 
-            if (nextColumn[calculationKey] !== undefined) {
+            if (calculation !== undefined) {
                 nextColumn[calculationKey] = wrapCalculation(
-                    nextColumn[calculationKey],
+                    calculation,
                     getCrud,
                     getTable
                 );
@@ -154,7 +213,8 @@ export const prepareColumnCalculations = (
             if (nextColumn[paramsKey] !== undefined) {
                 nextColumn[paramsKey] = wrapCalculationParams(
                     nextColumn[paramsKey],
-                    getCrud
+                    getCrud,
+                    calculation
                 );
             }
         });

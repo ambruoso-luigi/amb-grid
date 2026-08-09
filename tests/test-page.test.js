@@ -123,14 +123,14 @@ describe('technical test page', () => {
             /const createColumnCalculationsGrid = \(\) => \{[\s\S]*?\n\};/
         )[0];
 
-        expect(testHtml).toContain('Tutti gli otto risultati sono mostrati in un\'unica riga di calcolo');
+        expect(testHtml).toContain('Dataset di 30 righe');
         expect(testHtml.match(/Riga superiore/g)).toHaveLength(8);
         expect(testHtml).not.toContain('Riga inferiore');
         expect(testSource).toContain('const calculateScoreRange = (_values, data) => {');
         expect(testSource).toContain('.map(row => row && row.score)');
         expect(testSource).toContain("typeof value === 'string' && value.trim() === ''");
         expect(testSource).toContain('const createEmptyColumnCalculationsRow = () => ({');
-        expect(columnCalculationsGridSource).toContain("buttons: ['add']");
+        expect(columnCalculationsGridSource).toContain("'add'");
         expect(columnCalculationsGridSource).toContain('return grid.addRow(createEmptyColumnCalculationsRow());');
         expect(columnCalculationsGridSource).not.toContain('grid.crud');
         expect(columnCalculationsGridSource).not.toContain('grid.table');
@@ -144,6 +144,9 @@ describe('technical test page', () => {
         expect(testSource.match(/topCalcFormatter:/g)).toHaveLength(8);
         expect(testSource).not.toContain('bottomCalc');
         expect(testSource).toContain('topCalcParams: { precision: false }');
-        expect(testSource).toContain("createColumnCalculationFormatter('avg', formatItalianDecimal)");
+        expect(testSource).not.toContain('createColumnCalculationFormatter');
+        expect(
+            columnCalculationsGridSource.match(/AMB\.formatters\.calculation\(/g)
+        ).toHaveLength(8);
     });
 });

@@ -1,6 +1,16 @@
 import { expect, test } from '@playwright/test';
 
 const TABLE = '#column-calculations-test-table';
+const INITIAL_CALCULATIONS = {
+    id: ['COUNT:', '30'],
+    code: ['CONCAT:', 'A01A02A03A04A05A06A07A08A09A10A11A12A13A14A15A16A17A18A19A20A21A22A23A24A25A26A27A28A29A30'],
+    product: ['RANGE:', '34'],
+    category: ['UNIQUE:', '7'],
+    quantity: ['SUM:', '339'],
+    unitPrice: ['AVG:', '152,86'],
+    deliveryDays: ['MIN:', '1'],
+    score: ['MAX:', '100']
+};
 
 const calcCell = (page, field) => {
     return page.locator(
@@ -9,13 +19,20 @@ const calcCell = (page, field) => {
 };
 
 const expectTopCalculationClasses = async page => {
-    const row = page.locator(
-        `${TABLE} .amb-calc-row.amb-calc-row--top`
-    );
+    const row = page.locator(`${TABLE} .amb-calc-row.amb-calc-row--top`);
 
     await expect(row).toHaveCount(1);
     await expect(row.locator('.tabulator-cell:not(.amb-calc-cell)'))
         .toHaveCount(0);
+};
+
+const expectAverageFormatterClasses = async page => {
+    const average = calcCell(page, 'unitPrice');
+
+    await expect(average.locator('.amb-calc-content.test-calc-highlight'))
+        .toHaveCount(1);
+    await expect(average.locator('.amb-calc-label')).toHaveText('AVG:');
+    await expect(average.locator('.amb-calc-value')).toHaveText('152,86');
 };
 
 const dataRow = (page, code) => {
@@ -27,9 +44,15 @@ const dataRow = (page, code) => {
 };
 
 const expectCalculations = async (page, expected) => {
-    await Promise.all(Object.entries(expected).map(([field, value]) => {
-        return expect(calcCell(page, field)).toHaveText(value);
+    await Promise.all(Object.entries(expected).map(([field, [label, value]]) => {
+        return expect(calcCell(page, field)).toHaveText(`${label}${value}`);
     }));
+};
+
+const expectOrderIndependentCalculations = async page => {
+    const { code: _code, ...orderIndependent } = INITIAL_CALCULATIONS;
+
+    await expectCalculations(page, orderIndependent);
 };
 
 const confirmDialog = async page => {
@@ -40,9 +63,7 @@ const confirmDialog = async page => {
 };
 
 const editCell = async (row, field, value) => {
-    const cell = row.locator(
-        `.tabulator-cell[tabulator-field="${field}"]`
-    );
+    const cell = row.locator(`.tabulator-cell[tabulator-field="${field}"]`);
     let input = cell.locator('input');
 
     if (await input.count() === 0) {
@@ -55,105 +76,148 @@ const editCell = async (row, field, value) => {
     await input.press('Enter');
 };
 
-test('technical calculation grid follows CRUD state and decimal defaults', async ({ page }) => {
+const openCalculationsPage = async page => {
     await page.goto('/test/');
     await expect(page.locator(`${TABLE}.tabulator`)).toBeVisible();
+    await expectCalculations(page, INITIAL_CALCULATIONS);
+};
 
-    const initial = {
-        id: 'count: 10',
-        code: 'concat: A01A02A03A04A05A06A07A08A09A10',
-        product: 'range: 29',
-        category: 'unique: 4',
-        quantity: 'sum: 105',
-        unitPrice: 'avg: 83,81',
-        deliveryDays: 'min: 1',
-        score: 'max: 95'
-    };
-
-    await expectCalculations(page, initial);
+test('calculation pagination, filtering, sorting and public APIs stay coherent', async ({ page }) => {
+    await openCalculationsPage(page);
     await expectTopCalculationClasses(page);
+    await expectAverageFormatterClasses(page);
+    await expect(page.locator(`${TABLE} .tabulator-row:not(.tabulator-calcs)`))
+        .toHaveCount(10);
 
-    const deletedRow = dataRow(page, 'A07');
+    for (const pageNumber of [2, 3]) {
+        await page.locator(TABLE).getByRole('button', {
+            name: `Show Page ${pageNumber}`
+        }).click();
+        await expectCalculations(page, INITIAL_CALCULATIONS);
+        await expectTopCalculationClasses(page);
+    }
 
-    await deletedRow.locator('.amb-row-action-button--delete').click();
-    await confirmDialog(page);
-    await expect(deletedRow).toHaveAttribute('data-state', 'deleted');
-    await expect(deletedRow.locator('.amb-row-action-button--rollback'))
-        .toBeVisible();
+    const pageSize = page.locator(TABLE).getByRole('combobox', {
+        name: 'Page Size'
+    });
+
+    for (const size of ['20', '50', '10']) {
+        await pageSize.selectOption(size);
+        await expectCalculations(page, INITIAL_CALCULATIONS);
+    }
+
+    const search = page.getByPlaceholder('Filtra calcoli...');
+
+    await search.fill('Security');
     await expectCalculations(page, {
-        id: 'count: 9',
-        code: 'concat: A01A02A03A04A05A06A08A09A10',
-        product: 'range: 29',
-        category: 'unique: 3',
-        quantity: 'sum: 101',
-        unitPrice: 'avg: 88,46',
-        deliveryDays: 'min: 2',
-        score: 'max: 95'
+        id: ['COUNT:', '3'],
+        code: ['CONCAT:', 'A12A13A22'],
+        product: ['RANGE:', '5'],
+        category: ['UNIQUE:', '1'],
+        quantity: ['SUM:', '35'],
+        unitPrice: ['AVG:', '202,83'],
+        deliveryDays: ['MIN:', '2'],
+        score: ['MAX:', '96']
     });
     await expectTopCalculationClasses(page);
 
-    await deletedRow.locator('.amb-row-action-button--rollback').click();
+    await search.clear();
+    await expectCalculations(page, INITIAL_CALCULATIONS);
+
+    await page.locator(TABLE).getByRole('columnheader', {
+        name: 'Punteggio'
+    }).click();
+    await expectOrderIndependentCalculations(page);
+
+    await page.getByRole('button', {
+        name: 'Mostra risultati calcoli',
+        exact: true
+    }).click();
+    const outputText = await page.locator('#test-output').textContent();
+    const calculationResults = JSON.parse(outputText.split('\n\n')[1]);
+
+    expect(calculationResults.top.id).toBe(30);
+    expect(Number(calculationResults.top.unitPrice)).toBeCloseTo(152.8643, 4);
+
+    await page.getByRole('button', {
+        name: 'Ricalcola risultati',
+        exact: true
+    }).click();
+    await expect(page.locator('#test-output')).toContainText('Risultati ricalcolati');
+    await expectOrderIndependentCalculations(page);
+    await expectTopCalculationClasses(page);
+    await expectAverageFormatterClasses(page);
+});
+
+test('delete and rollback on page three update the complete calculation dataset', async ({ page }) => {
+    await openCalculationsPage(page);
+    await page.locator(TABLE).getByRole('button', { name: 'Show Page 3' }).click();
+    const cloudBackupRow = dataRow(page, 'A27');
+
+    await cloudBackupRow.locator('.amb-row-action-button--delete').click();
     await confirmDialog(page);
-    await expect(deletedRow).toHaveAttribute('data-state', 'clean');
-    await expectCalculations(page, initial);
+    await expect(cloudBackupRow).toHaveAttribute('data-state', 'deleted');
+    await expect(cloudBackupRow.locator('.amb-row-action-button--rollback'))
+        .toBeVisible();
+    await expectCalculations(page, {
+        id: ['COUNT:', '29'],
+        code: ['CONCAT:', 'A01A02A03A04A05A06A07A08A09A10A11A12A13A14A15A16A17A18A19A20A21A22A23A24A25A26A28A29A30'],
+        product: ['RANGE:', '34'],
+        category: ['UNIQUE:', '6'],
+        quantity: ['SUM:', '327'],
+        unitPrice: ['AVG:', '155,72'],
+        deliveryDays: ['MIN:', '1'],
+        score: ['MAX:', '100']
+    });
     await expectTopCalculationClasses(page);
 
-    const firstRow = dataRow(page, 'A01');
-    const quantityCell = firstRow.locator(
-        '.tabulator-cell[tabulator-field="quantity"]'
-    );
-    const priceCell = firstRow.locator(
-        '.tabulator-cell[tabulator-field="unitPrice"]'
-    );
+    await cloudBackupRow.locator('.amb-row-action-button--rollback').click();
+    await confirmDialog(page);
+    await expect(cloudBackupRow).toHaveAttribute('data-state', 'clean');
+    await expectCalculations(page, INITIAL_CALCULATIONS);
+});
 
-    await expect(priceCell).toHaveText('120,50');
-    await priceCell.dblclick();
-    const priceEditor = priceCell.locator('input');
+test('editing another page and adding a row update calculations', async ({ page }) => {
+    await openCalculationsPage(page);
+    await page.locator(TABLE).getByRole('button', { name: 'Show Page 2' }).click();
+    await editCell(dataRow(page, 'A15'), 'quantity', '35');
+    await expect(calcCell(page, 'quantity')).toHaveText('SUM:349');
 
-    await expect(priceEditor).toHaveValue('120,50');
-    await priceEditor.fill('130,50');
-    await priceEditor.press('Enter');
-    await expect(priceCell).toHaveText('130,50');
+    await page.locator(TABLE).getByRole('button', { name: 'Show Page 1' }).click();
+    await expect(calcCell(page, 'quantity')).toHaveText('SUM:349');
 
-    await quantityCell.dblclick();
-    await quantityCell.locator('input').fill('15');
-    await quantityCell.locator('input').press('Enter');
-    await expect(calcCell(page, 'quantity')).toHaveText('sum: 115');
-
+    await openCalculationsPage(page);
     await page.locator('.amb-toolbar__button--add').last().click();
-    await expect(calcCell(page, 'product')).toHaveText('range: 29');
-
+    await expectCalculations(page, INITIAL_CALCULATIONS);
     const newRow = page.locator(
         `${TABLE} .tabulator-row:not(.tabulator-calcs)[data-state="new"]`
     );
 
     await expect(newRow).toBeVisible();
-    await editCell(newRow, 'code', 'A11');
-    await editCell(newRow, 'product', 'Dock');
-    await editCell(newRow, 'category', 'Peripherals');
+    await editCell(newRow, 'code', 'A31');
+    await editCell(newRow, 'product', 'Integration');
+    await editCell(newRow, 'category', 'Integration');
     await editCell(newRow, 'quantity', '5');
-    await editCell(newRow, 'unitPrice', '50,00');
-    await editCell(newRow, 'deliveryDays', '9');
-    await editCell(newRow, 'score', '100');
+    await editCell(newRow, 'unitPrice', '80,00');
+    await editCell(newRow, 'deliveryDays', '10');
+    await editCell(newRow, 'score', '105');
+    await expect(newRow.locator('.tabulator-cell[tabulator-field="unitPrice"]'))
+        .toHaveText('80,00');
     await expectCalculations(page, {
-        id: 'count: 10',
-        code: 'concat: A01A02A03A04A05A06A07A08A09A10A11',
-        product: 'range: 34',
-        category: 'unique: 5',
-        quantity: 'sum: 120',
-        unitPrice: 'avg: 81,65',
-        deliveryDays: 'min: 1',
-        score: 'max: 100'
+        id: ['COUNT:', '30'],
+        code: ['CONCAT:', 'A01A02A03A04A05A06A07A08A09A10A11A12A13A14A15A16A17A18A19A20A21A22A23A24A25A26A27A28A29A30A31'],
+        product: ['RANGE:', '39'],
+        category: ['UNIQUE:', '8'],
+        quantity: ['SUM:', '344'],
+        unitPrice: ['AVG:', '150,51'],
+        deliveryDays: ['MIN:', '1'],
+        score: ['MAX:', '105']
     });
 
     await newRow.locator('.amb-row-action-button--remove-new').click();
     await confirmDialog(page);
     await expect(newRow).toHaveCount(0);
-    await expectCalculations(page, {
-        ...initial,
-        quantity: 'sum: 115',
-        unitPrice: 'avg: 84,81'
-    });
+    await expectCalculations(page, INITIAL_CALCULATIONS);
 });
 
 test('technical mounts do not separate toolbar or feedback from their tables', async ({ page }) => {

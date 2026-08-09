@@ -49,19 +49,23 @@ describe('CRUD-aware column calculation runtime', () => {
         'sum',
         'avg',
         'min',
-        'max',
-        'registeredExtension'
+        'max'
     ])(
-        'delegates named %s calculations to the registered engine function with filtered inputs',
+        'delegates built-in %s with deleted rows and empty values filtered in pairs',
         name => {
             const registered = vi.fn(() => `${name}-result`);
             const table = createRuntime({ [name]: registered });
             const staticParams = { precision: false };
             const rows = [
                 { id: 1, amount: 0, _state: 'clean' },
-                { id: 2, amount: 20, _state: 'deleted' },
-                { id: 3, amount: 5, _state: 'saved' }
+                { id: 2, amount: '', _state: 'clean' },
+                { id: 3, amount: null, _state: 'modified' },
+                { id: 4, amount: undefined, _state: 'new' },
+                { id: 5, amount: false, _state: 'saved' },
+                { id: 6, amount: 5, _state: 'clean' },
+                { id: 7, amount: 20, _state: 'deleted' }
             ];
+            const values = rows.map(row => row.amount);
             const [column] = prepareColumnCalculations(
                 [{ field: 'amount', topCalc: name, topCalcParams: staticParams }],
                 () => ({ options: { stateField: '_state' } }),
@@ -69,15 +73,77 @@ describe('CRUD-aware column calculation runtime', () => {
             );
 
             expect(column.topCalcParams).toBe(staticParams);
-            expect(column.topCalc([0, 20, 5], rows, staticParams))
+            expect(column.topCalc(values, rows, staticParams))
                 .toBe(`${name}-result`);
             expect(registered).toHaveBeenCalledWith(
-                [0, 5],
-                [rows[0], rows[2]],
+                [0, false, 5],
+                [rows[0], rows[4], rows[5]],
                 staticParams
             );
+            expect(registered.mock.calls[0][1][0]).toBe(rows[0]);
+            expect(registered.mock.calls[0][1][1]).toBe(rows[4]);
+            expect(registered.mock.calls[0][1][2]).toBe(rows[5]);
+            expect(values).toEqual([0, '', null, undefined, false, 5, 20]);
+            expect(rows).toHaveLength(7);
         }
     );
+
+    test('preserves empty values for registered non-built-in calculations', () => {
+        const registeredExtension = vi.fn();
+        const table = createRuntime({ registeredExtension });
+        const rows = [
+            { id: 1, _state: 'clean' },
+            { id: 2, _state: 'clean' },
+            { id: 3, _state: 'modified' },
+            { id: 4, _state: 'new' },
+            { id: 5, _state: 'saved' },
+            { id: 6, _state: 'clean' },
+            { id: 7, _state: 'deleted' }
+        ];
+        const values = [0, '', null, undefined, false, 5, 20];
+        const [column] = prepareColumnCalculations(
+            [{ topCalc: 'registeredExtension' }],
+            () => null,
+            () => table
+        );
+
+        column.topCalc(values, rows);
+
+        expect(registeredExtension).toHaveBeenCalledWith(
+            [0, '', null, undefined, false, 5],
+            rows.slice(0, 6),
+            undefined
+        );
+        expect(values).toEqual([0, '', null, undefined, false, 5, 20]);
+        expect(rows).toHaveLength(7);
+    });
+
+    test('preserves empty values for custom calculations', () => {
+        const customCalculation = vi.fn();
+        const rows = [
+            { id: 1, _state: 'clean' },
+            { id: 2, _state: 'clean' },
+            { id: 3, _state: 'modified' },
+            { id: 4, _state: 'new' },
+            { id: 5, _state: 'saved' },
+            { id: 6, _state: 'clean' },
+            { id: 7, _state: 'deleted' }
+        ];
+        const values = [0, '', null, undefined, false, 5, 20];
+        const [column] = prepareColumnCalculations([{
+            topCalc: customCalculation
+        }]);
+
+        column.topCalc(values, rows);
+
+        expect(customCalculation).toHaveBeenCalledWith(
+            [0, '', null, undefined, false, 5],
+            rows.slice(0, 6),
+            undefined
+        );
+        expect(values).toEqual([0, '', null, undefined, false, 5, 20]);
+        expect(rows).toHaveLength(7);
+    });
 
     test('filters custom top and bottom calculations and dynamic params, including nested columns', () => {
         const params = vi.fn((values, data) => ({ values, data }));
@@ -117,6 +183,42 @@ describe('CRUD-aware column calculation runtime', () => {
             [95, 80],
             [rows[0], rows[2]],
             undefined
+        );
+    });
+
+    test('dynamic params use the same empty-value contract as their calculation', () => {
+        const builtInParams = vi.fn();
+        const extensionParams = vi.fn();
+        const customParams = vi.fn();
+        const customCalculation = vi.fn();
+        const rows = [
+            { id: 1, _state: 'clean' },
+            { id: 2, _state: 'clean' },
+            { id: 3, _state: 'deleted' },
+            { id: 4, _state: 'saved' }
+        ];
+        const values = [0, '', 20, false];
+        const columns = prepareColumnCalculations([
+            { topCalc: 'sum', topCalcParams: builtInParams },
+            { topCalc: 'registeredExtension', topCalcParams: extensionParams },
+            { topCalc: customCalculation, topCalcParams: customParams }
+        ]);
+
+        columns[0].topCalcParams(values, rows);
+        columns[1].topCalcParams(values, rows);
+        columns[2].topCalcParams(values, rows);
+
+        expect(builtInParams).toHaveBeenCalledWith(
+            [0, false],
+            [rows[0], rows[3]]
+        );
+        expect(extensionParams).toHaveBeenCalledWith(
+            [0, '', false],
+            [rows[0], rows[1], rows[3]]
+        );
+        expect(customParams).toHaveBeenCalledWith(
+            [0, '', false],
+            [rows[0], rows[1], rows[3]]
         );
     });
 

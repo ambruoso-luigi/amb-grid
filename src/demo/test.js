@@ -212,7 +212,27 @@ const createColumnCalculationsData = () => [
     { id: 7, code: 'A07', product: 'Keyboard', category: 'Accessories', quantity: 4, unitPrice: 42, deliveryDays: 1, score: 73 },
     { id: 8, code: 'A08', product: 'Monitor', category: 'Hardware', quantity: 11, unitPrice: 210, deliveryDays: 3, score: 81 },
     { id: 9, code: 'A09', product: 'Backup', category: 'Software', quantity: 8, unitPrice: 75.50, deliveryDays: 5, score: 90 },
-    { id: 10, code: 'A10', product: 'Training', category: 'Services', quantity: 14, unitPrice: 55, deliveryDays: 2, score: 69 }
+    { id: 10, code: 'A10', product: 'Training', category: 'Services', quantity: 14, unitPrice: 55, deliveryDays: 2, score: 69 },
+    { id: 11, code: 'A11', product: 'Dock', category: 'Accessories', quantity: 6, unitPrice: 89.50, deliveryDays: 4, score: 87 },
+    { id: 12, code: 'A12', product: 'Firewall', category: 'Security', quantity: 3, unitPrice: 450, deliveryDays: 6, score: 96 },
+    { id: 13, code: 'A13', product: 'VPN', category: 'Security', quantity: 10, unitPrice: 120, deliveryDays: 2, score: 91 },
+    { id: 14, code: 'A14', product: 'NAS', category: 'Hardware', quantity: 5, unitPrice: 320, deliveryDays: 5, score: 84 },
+    { id: 15, code: 'A15', product: 'Licenses', category: 'Software', quantity: 25, unitPrice: 29.90, deliveryDays: 3, score: 76 },
+    { id: 16, code: 'A16', product: 'Consulting', category: 'Services', quantity: 8, unitPrice: 110, deliveryDays: 8, score: 89 },
+    { id: 17, code: 'A17', product: 'Headset', category: 'Accessories', quantity: 13, unitPrice: 59.99, deliveryDays: 4, score: 82 },
+    { id: 18, code: 'A18', product: 'Gateway', category: 'Networking', quantity: 7, unitPrice: 175, deliveryDays: 2, score: 98 },
+    { id: 19, code: 'A19', product: 'Storage', category: 'Hardware', quantity: 9, unitPrice: 240, deliveryDays: 7, score: 79 },
+    { id: 20, code: 'A20', product: 'Helpdesk', category: 'Services', quantity: 18, unitPrice: 45, deliveryDays: 5, score: 94 },
+    { id: 21, code: 'A21', product: 'WiFi AP', category: 'Networking', quantity: 16, unitPrice: 130, deliveryDays: 3, score: 86 },
+    { id: 22, code: 'A22', product: 'Antivirus', category: 'Security', quantity: 22, unitPrice: 38.50, deliveryDays: 4, score: 93 },
+    { id: 23, code: 'A23', product: 'Laptop', category: 'Hardware', quantity: 6, unitPrice: 850, deliveryDays: 6, score: 97 },
+    { id: 24, code: 'A24', product: 'BI Suite', category: 'Software', quantity: 11, unitPrice: 150, deliveryDays: 5, score: 88 },
+    { id: 25, code: 'A25', product: 'Migration', category: 'Services', quantity: 4, unitPrice: 260, deliveryDays: 9, score: 72 },
+    { id: 26, code: 'A26', product: 'Mouse', category: 'Accessories', quantity: 30, unitPrice: 24.90, deliveryDays: 2, score: 68 },
+    { id: 27, code: 'A27', product: 'Cloud Backup', category: 'Cloud', quantity: 12, unitPrice: 70, deliveryDays: 4, score: 90 },
+    { id: 28, code: 'A28', product: 'Switch Pro', category: 'Networking', quantity: 14, unitPrice: 195, deliveryDays: 3, score: 99 },
+    { id: 29, code: 'A29', product: 'Compliance', category: 'Services', quantity: 5, unitPrice: 180, deliveryDays: 7, score: 83 },
+    { id: 30, code: 'A30', product: 'Database', category: 'Software', quantity: 10, unitPrice: 210, deliveryDays: 5, score: 100 }
 ];
 
 const createEmptyColumnCalculationsRow = () => ({
@@ -242,19 +262,6 @@ const calculateScoreRange = (_values, data) => {
     }
 
     return Math.max(...numericValues) - Math.min(...numericValues);
-};
-
-const createColumnCalculationFormatter = (
-    label,
-    formatValue = value => String(value ?? '')
-) => cell => {
-    const text = `${label}: ${formatValue(cell.getValue())}`;
-    const element = document.createElement('span');
-
-    element.textContent = text;
-    element.title = text;
-
-    return element;
 };
 
 const formatItalianDecimal = value => {
@@ -958,7 +965,26 @@ const createColumnCalculationsGrid = () => {
     return AMB.table({
         selector: '#column-calculations-test-table',
         toolbar: {
-            buttons: ['add'],
+            buttons: [
+                'add',
+                {
+                    id: 'calculation-results',
+                    label: 'Risultati',
+                    title: 'Mostra risultati calcoli',
+                    onClick: ({ grid }) => {
+                        showTestOutput('Risultati calcoli', grid.getCalcResults());
+                    }
+                },
+                {
+                    id: 'calculation-recalculate',
+                    label: 'Ricalcola',
+                    title: 'Ricalcola risultati',
+                    onClick: ({ grid }) => {
+                        grid.recalc();
+                        showTestOutput('Risultati ricalcolati', grid.getCalcResults());
+                    }
+                }
+            ],
             onAdd: ({ grid }) => {
                 return grid.addRow(createEmptyColumnCalculationsRow());
             }
@@ -976,14 +1002,26 @@ const createColumnCalculationsGrid = () => {
         },
         data: createColumnCalculationsData(),
         layout: 'fitColumns',
-        pagination: false,
+        pagination: {
+            enabled: true,
+            mode: 'local',
+            pageSize: 10,
+            pageSizeSelector: [10, 20, 50]
+        },
+        search: {
+            enabled: true,
+            placeholder: 'Filtra calcoli...',
+            filters: {
+                enabled: true
+            }
+        },
         columns: [
             {
                 title: 'ID',
                 field: 'id',
                 width: 70,
                 topCalc: 'count',
-                topCalcFormatter: createColumnCalculationFormatter('count')
+                topCalcFormatter: AMB.formatters.calculation({ label: 'COUNT:' })
             },
             {
                 title: 'Codice',
@@ -991,7 +1029,7 @@ const createColumnCalculationsGrid = () => {
                 width: 300,
                 editor: AMB.editors.text({ trim: true, uppercase: true }),
                 topCalc: 'concat',
-                topCalcFormatter: createColumnCalculationFormatter('concat')
+                topCalcFormatter: AMB.formatters.calculation({ label: 'CONCAT:' })
             },
             {
                 title: 'Prodotto',
@@ -1000,7 +1038,7 @@ const createColumnCalculationsGrid = () => {
                 widthGrow: 1,
                 editor: AMB.editors.text({ trim: true }),
                 topCalc: calculateScoreRange,
-                topCalcFormatter: createColumnCalculationFormatter('range')
+                topCalcFormatter: AMB.formatters.calculation({ label: 'RANGE:' })
             },
             {
                 title: 'Categoria',
@@ -1009,7 +1047,7 @@ const createColumnCalculationsGrid = () => {
                 widthGrow: 1,
                 editor: AMB.editors.text({ trim: true }),
                 topCalc: 'unique',
-                topCalcFormatter: createColumnCalculationFormatter('unique')
+                topCalcFormatter: AMB.formatters.calculation({ label: 'UNIQUE:' })
             },
             {
                 title: 'Quantità',
@@ -1018,7 +1056,7 @@ const createColumnCalculationsGrid = () => {
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'sum',
-                topCalcFormatter: createColumnCalculationFormatter('sum')
+                topCalcFormatter: AMB.formatters.calculation({ label: 'SUM:' })
             },
             {
                 title: 'Prezzo unitario',
@@ -1027,7 +1065,11 @@ const createColumnCalculationsGrid = () => {
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
                 topCalc: 'avg',
                 topCalcParams: { precision: false },
-                topCalcFormatter: createColumnCalculationFormatter('avg', formatItalianDecimal)
+                topCalcFormatter: AMB.formatters.calculation({
+                    label: 'AVG:',
+                    className: 'test-calc-highlight',
+                    formatValue: formatItalianDecimal
+                })
             },
             {
                 title: 'Giorni consegna',
@@ -1036,7 +1078,7 @@ const createColumnCalculationsGrid = () => {
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'min',
-                topCalcFormatter: createColumnCalculationFormatter('min')
+                topCalcFormatter: AMB.formatters.calculation({ label: 'MIN:' })
             },
             {
                 title: 'Punteggio',
@@ -1045,7 +1087,7 @@ const createColumnCalculationsGrid = () => {
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'max',
-                topCalcFormatter: createColumnCalculationFormatter('max')
+                topCalcFormatter: AMB.formatters.calculation({ label: 'MAX:' })
             }
         ]
     });
