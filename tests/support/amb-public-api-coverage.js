@@ -136,6 +136,7 @@ export const SUPPORT_NAMESPACE_MEMBERS = {
         'date',
         'percent',
         'percentFromRatio',
+        'calculation',
         'emptyPlaceholder',
         'checkbox',
         'largeTextPreview'
