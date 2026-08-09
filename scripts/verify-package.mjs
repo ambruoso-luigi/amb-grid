@@ -9,7 +9,9 @@ import { fileURLToPath } from 'node:url';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const packageJsonPath = resolve(projectRoot, 'package.json');
+const packageLockPath = resolve(projectRoot, 'package-lock.json');
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+const packageLock = JSON.parse(readFileSync(packageLockPath, 'utf8'));
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const npmPackArguments = ['pack', '--dry-run', '--json', '--ignore-scripts'];
 const errors = [];
@@ -30,7 +32,12 @@ const expectEqual = (actual, expected, field) => {
 };
 
 expectEqual(packageJson.name, 'amb-grid', 'name');
-expectEqual(packageJson.version, '0.3.1', 'version');
+expectEqual(packageLock.version, packageJson.version, 'package-lock version');
+expectEqual(
+    packageLock.packages && packageLock.packages[''] && packageLock.packages[''].version,
+    packageJson.version,
+    'package-lock root package version'
+);
 expectEqual(packageJson.license, 'Apache-2.0', 'license');
 expectEqual(packageJson.type, 'module', 'type');
 expectEqual(packageJson.main, './dist-lib/amb-grid.js', 'main');
