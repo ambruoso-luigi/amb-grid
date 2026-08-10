@@ -515,8 +515,8 @@ export const validators = {
     /**
      * Validate non-empty numeric values between optional bounds.
      *
-     * @param {number} [min] - Inclusive minimum value.
-     * @param {number} [max] - Inclusive maximum value.
+     * @param {number|undefined} min - Inclusive minimum value, or `undefined` for no lower bound.
+     * @param {number|undefined} max - Inclusive maximum value, or `undefined` for no upper bound.
      * @param {string} message - Validation message.
      * @returns {{message: string, validate: Function}} Validator object.
      */

@@ -16,8 +16,10 @@
   "main": "./dist-lib/amb-grid.js",
   "module": "./dist-lib/amb-grid.js",
   "style": "./dist-lib/amb-grid.css",
+  "types": "./dist-lib/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist-lib/index.d.ts",
       "import": "./dist-lib/amb-grid.js",
       "default": "./dist-lib/amb-grid.js"
     },
@@ -46,7 +48,8 @@
     "build": "vite build",
     "build:lib": "vite build --config vite.lib.config.js",
     "build:legacy": "vite build --config vite.legacy.config.js",
-    "build:dist": "npm run build:lib && npm run build:legacy",
+    "build:types": "tsc -p tsconfig.types.json && node scripts/prepare-type-declarations.mjs",
+    "build:dist": "npm run build:lib && npm run build:legacy && npm run build:types",
     "legacy:smoke": "node scripts/verify-legacy-bundle.mjs",
     "pack:check": "npm run build:dist && node scripts/verify-package.mjs",
     "package:smoke": "npm run pack:check && node scripts/verify-package-install.mjs",
@@ -67,6 +70,7 @@
     "lucide": "^1.23.0",
     "motion": "^12.42.2",
     "tailwindcss": "^4.3.2",
+    "typescript": "^7.0.2",
     "vite": "^8.0.12",
     "vitest": "^4.1.9"
   },

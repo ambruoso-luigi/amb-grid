@@ -21,6 +21,7 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePackage = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'));
 const packageDirectory = resolve(projectRoot, 'dist-lib');
 const viteBin = resolve(projectRoot, 'node_modules', 'vite', 'bin', 'vite.js');
+const typescriptBin = resolve(projectRoot, 'node_modules', 'typescript', 'bin', 'tsc');
 const npmCommand = process.platform === 'win32'
     ? 'npm.cmd'
     : 'npm';
@@ -104,6 +105,8 @@ try {
             join(packageDirectory, 'amb-grid.js'),
             join(packageDirectory, 'amb-grid.umd.js'),
             join(packageDirectory, 'amb-grid.css'),
+            join(packageDirectory, 'index.d.ts'),
+            typescriptBin,
             viteBin
         ].forEach(path => {
             assert(existsSync(path), `Required file is missing: ${path}`);
@@ -202,6 +205,70 @@ document.querySelector('#app').dataset.ambGridPackage = 'resolved';
 `,
             'utf8'
         );
+        writeFileSync(
+            join(consumerSourceRoot, 'typecheck.ts'),
+            `import {
+    AMB,
+    CrudHelper,
+    ROW_STATE,
+    editors,
+    formatters,
+    validators,
+    parsers,
+    date,
+    createLookup,
+    createMultifieldLookup,
+    multifieldLookup,
+    ConfirmDialog,
+    LookupDialog,
+    SearchFiltersDialog,
+    FeedbackRegion
+} from 'amb-grid';
+
+const grid = AMB.table({
+    selector: '#grid',
+    data: [{ id: 1, name: 'Test' }],
+    columns: [
+        { title: 'ID', field: 'id' },
+        { title: 'Name', field: 'name' }
+    ]
+});
+
+void grid;
+void [
+    CrudHelper,
+    ROW_STATE,
+    editors,
+    formatters,
+    validators,
+    parsers,
+    date,
+    createLookup,
+    createMultifieldLookup,
+    multifieldLookup,
+    ConfirmDialog,
+    LookupDialog,
+    SearchFiltersDialog,
+    FeedbackRegion
+];
+`,
+            'utf8'
+        );
+        writeFileSync(
+            join(consumerRoot, 'tsconfig.json'),
+            `${JSON.stringify({
+                compilerOptions: {
+                    noEmit: true,
+                    strict: true,
+                    target: 'ES2022',
+                    module: 'ESNext',
+                    moduleResolution: 'Bundler',
+                    lib: ['ES2022', 'DOM']
+                },
+                files: ['src/typecheck.ts']
+            }, null, 2)}\n`,
+            'utf8'
+        );
     });
 
     runPhase('consumer installation', () => {
@@ -240,6 +307,7 @@ document.querySelector('#app').dataset.ambGridPackage = 'resolved';
             'dist-lib/amb-grid.js',
             'dist-lib/amb-grid.umd.js',
             'dist-lib/amb-grid.css',
+            'dist-lib/index.d.ts',
             'README.md',
             'LICENSE'
         ].forEach(path => {
@@ -288,6 +356,14 @@ document.querySelector('#app').dataset.ambGridPackage = 'resolved';
         runCommand(
             process.execPath,
             [viteBin, 'build'],
+            consumerRoot
+        );
+    });
+
+    runPhase('consumer TypeScript check', () => {
+        runCommand(
+            process.execPath,
+            [typescriptBin, '--noEmit', '-p', join(consumerRoot, 'tsconfig.json')],
             consumerRoot
         );
     });
@@ -356,6 +432,7 @@ document.querySelector('#app').dataset.ambGridPackage = 'resolved';
         tarball: report.filename,
         javascriptAssets: assets.javascript,
         cssAssets: assets.css,
+        typescript: true,
         runtimeDependencies: 3
     };
 } catch (error) {
@@ -385,6 +462,7 @@ if (failure) {
     console.log(`Tarball: ${summary.tarball}`);
     console.log(`Consumer JavaScript assets: ${summary.javascriptAssets}`);
     console.log(`Consumer CSS assets: ${summary.cssAssets}`);
+    console.log(`Consumer TypeScript check: ${summary.typescript ? 'passed' : 'failed'}`);
     console.log(`Installed runtime dependencies: ${summary.runtimeDependencies}`);
     console.log(`Temporary files removed: ${temporaryFilesRemoved ? 'yes' : 'no'}`);
 }

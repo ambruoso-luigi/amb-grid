@@ -35,6 +35,20 @@ import 'amb-grid/style.css';
 The public stylesheet already includes the styles required by AMB Grid's
 internal table engine, suggestion widget, and calendar picker.
 
+The package includes TypeScript declarations, so no separate `@types` package
+is required:
+
+```ts
+import { AMB } from 'amb-grid';
+import 'amb-grid/style.css';
+
+const grid = AMB.table({
+  selector: '#grid',
+  data: [],
+  columns: []
+});
+```
+
 ### Standalone browser usage
 
 For legacy or server-rendered pages, AMB Grid can be loaded without npm, a

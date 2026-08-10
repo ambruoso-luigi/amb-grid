@@ -43,6 +43,7 @@ expectEqual(packageJson.type, 'module', 'type');
 expectEqual(packageJson.main, './dist-lib/amb-grid.js', 'main');
 expectEqual(packageJson.module, './dist-lib/amb-grid.js', 'module');
 expectEqual(packageJson.style, './dist-lib/amb-grid.css', 'style');
+expectEqual(packageJson.types, './dist-lib/index.d.ts', 'types');
 expectEqual(packageJson.repository && packageJson.repository.type, 'git', 'repository.type');
 expectEqual(
     packageJson.repository && packageJson.repository.url,
@@ -100,6 +101,11 @@ const exportsMap = packageJson.exports;
 if (!exportsMap || typeof exportsMap !== 'object' || Array.isArray(exportsMap)) {
     addError('Invalid exports map', 'exports must be an object');
 } else {
+    expectEqual(
+        exportsMap['.'] && exportsMap['.'].types,
+        './dist-lib/index.d.ts',
+        'exports["."].types'
+    );
     expectEqual(
         exportsMap['.'] && exportsMap['.'].import,
         './dist-lib/amb-grid.js',
@@ -226,7 +232,8 @@ const requiredFiles = [
     'LICENSE',
     'dist-lib/amb-grid.js',
     'dist-lib/amb-grid.umd.js',
-    'dist-lib/amb-grid.css'
+    'dist-lib/amb-grid.css',
+    'dist-lib/index.d.ts'
 ];
 
 requiredFiles.forEach(path => {
@@ -263,7 +270,7 @@ tarballPaths.forEach(path => {
 
     if (
         path.startsWith('dist-lib/')
-        && !['.js', '.css', '.map'].some(extension => path.endsWith(extension))
+        && !['.js', '.css', '.map', '.d.ts'].some(extension => path.endsWith(extension))
     ) {
         addError('Unsupported dist-lib file type', path);
     }
@@ -276,9 +283,11 @@ if (tarballPaths.has('dist-lib/index.html')) {
 const javascriptPath = 'dist-lib/amb-grid.js';
 const legacyJavascriptPath = 'dist-lib/amb-grid.umd.js';
 const stylesheetPath = 'dist-lib/amb-grid.css';
+const declarationPath = 'dist-lib/index.d.ts';
 const javascriptAbsolutePath = resolve(projectRoot, javascriptPath);
 const legacyJavascriptAbsolutePath = resolve(projectRoot, legacyJavascriptPath);
 const stylesheetAbsolutePath = resolve(projectRoot, stylesheetPath);
+const declarationAbsolutePath = resolve(projectRoot, declarationPath);
 
 if (existsSync(javascriptAbsolutePath)) {
     const javascript = readFileSync(javascriptAbsolutePath, 'utf8');
@@ -316,6 +325,14 @@ if (existsSync(legacyJavascriptAbsolutePath)) {
 
     if (!legacyJavascript.trim()) {
         addError('Empty legacy JavaScript bundle', legacyJavascriptPath);
+    }
+}
+
+if (existsSync(declarationAbsolutePath)) {
+    const declaration = readFileSync(declarationAbsolutePath, 'utf8');
+
+    if (!declaration.trim()) {
+        addError('Empty TypeScript declaration', declarationPath);
     }
 }
 
@@ -358,4 +375,5 @@ if (errors.length > 0) {
     console.log(`JavaScript: ${javascriptPath}`);
     console.log(`Legacy JavaScript: ${legacyJavascriptPath}`);
     console.log(`Stylesheet: ${stylesheetPath}`);
+    console.log(`TypeScript: ${declarationPath}`);
 }
