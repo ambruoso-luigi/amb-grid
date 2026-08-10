@@ -74,6 +74,12 @@ The UMD bundle incorporates the internal JavaScript runtime dependencies, and
 is directly `AMB`; do not load Tabulator, Awesomplete, or vanilla-datepicker
 separately in this scenario.
 
+Releases may also provide a standalone `amb-grid-legacy-<version>.zip` archive
+containing `amb-grid.umd.js`, `amb-grid.css`, the README, and the license.
+Extract its `amb-grid` folder into your application's `vendor` directory or an
+equivalent static-assets location. The archive is a reproducible release
+artifact and is not a CDN dependency.
+
 ## Framework integrations
 
 AMB Grid remains framework-agnostic and needs no framework-specific wrapper.

@@ -51,6 +51,8 @@
     "build:types": "tsc -p tsconfig.types.json && node scripts/prepare-type-declarations.mjs",
     "build:dist": "npm run build:lib && npm run build:legacy && npm run build:types",
     "legacy:smoke": "node scripts/verify-legacy-bundle.mjs",
+    "legacy:package": "npm run build:legacy && node scripts/package-legacy.mjs",
+    "legacy:package:check": "npm run legacy:package && node scripts/verify-legacy-package.mjs",
     "pack:check": "npm run build:dist && node scripts/verify-package.mjs",
     "package:smoke": "npm run pack:check && node scripts/verify-package-install.mjs",
     "prepack": "npm run pack:check",
