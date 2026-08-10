@@ -74,6 +74,16 @@ The UMD bundle incorporates the internal JavaScript runtime dependencies, and
 is directly `AMB`; do not load Tabulator, Awesomplete, or vanilla-datepicker
 separately in this scenario.
 
+## Framework integrations
+
+AMB Grid remains framework-agnostic and needs no framework-specific wrapper.
+Mount it after the framework creates a DOM container, retain the returned
+controller, and call `destroy()` during component cleanup:
+
+- [React](examples/frameworks/react.md)
+- [Vue](examples/frameworks/vue.md)
+- [Angular](examples/frameworks/angular.md)
+
 ## Minimal example
 
 Add a container to the page:
