@@ -2,6 +2,9 @@
 
 AMB Grid releases use an annotated Git tag as the release trigger.
 
+Before creating a new release tag, update the corresponding section in
+`CHANGELOG.md`.
+
 1. Update the version in `package.json` and `package-lock.json`.
 2. Complete the release checks, commit the version change, and push the commit.
 3. Create an annotated `vX.Y.Z` tag on that verified commit.

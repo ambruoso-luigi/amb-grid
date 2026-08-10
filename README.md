@@ -17,6 +17,8 @@ The API is not yet considered stable and breaking changes may occur before versi
 
 This repository is available early to collect feedback and validate design decisions while development continues.
 
+[Changelog](CHANGELOG.md)
+
 ## Installation
 
 Install AMB Grid in your application:
