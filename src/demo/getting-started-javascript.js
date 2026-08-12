@@ -38,17 +38,39 @@ export default function gettingStartedJavaScript(app) {
                         >IT</button>
                     </div>
                 </nav>
-                <a class="demo-back-link" href="#top" data-i18n="guide.back">Torna alla home demo</a>
-                <div class="demo-guide-hero__content">
-                    <p class="demo-kicker" data-i18n="guide.badge">JavaScript</p>
-                    <h1 data-i18n="guide.title">AMB Grid con JavaScript</h1>
-                    <p class="demo-hero__text" data-i18n="guide.description">Demo tabellare e guida essenziale per usare AMB Grid in una pagina JavaScript classica, senza framework obbligatori.</p>
+                <div class="demo-guide-hero__layout">
+                    <div class="demo-guide-hero__copy">
+                        <a class="demo-back-link" href="#top" data-i18n="guide.back">Torna alla home demo</a>
+                        <div class="demo-guide-hero__content">
+                            <p class="demo-kicker" data-i18n="guide.badge">JavaScript</p>
+                            <h1 data-i18n="guide.title">AMB Grid con JavaScript</h1>
+                            <p class="demo-hero__text" data-i18n="guide.description">Demo tabellare e guida essenziale per usare AMB Grid con JavaScript moderno o direttamente nel browser, senza framework obbligatori.</p>
+                        </div>
+                    </div>
+                    <a
+                        class="demo-guide-video"
+                        href="https://youtu.be/4m0EZ4vPmT0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-i18n-title="guide.videoOpen"
+                        aria-label="Apri il video demo placeholder su YouTube"
+                    >
+                        <img
+                            class="demo-guide-video__image"
+                            src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg"
+                            alt=""
+                            loading="eager"
+                        >
+                        <span class="demo-guide-video__overlay" aria-hidden="true"></span>
+                        <span class="demo-guide-video__play" aria-hidden="true">${demoIcon('video', { size: 30 })}</span>
+                        <span class="demo-guide-video__label" data-i18n="guide.videoLabel">Video demo — placeholder</span>
+                    </a>
                 </div>
             </header>
 
             <section class="demo-panel demo-panel--main demo-panel--javascript" id="javascript-demo"></section>
 
-            <section class="demo-section demo-guide-start" id="javascript-getting-started">
+            <section class="demo-guide-section demo-guide-start" id="javascript-getting-started">
                 <div class="demo-section-heading">
                     <p class="demo-kicker" data-i18n="guide.badge">JavaScript</p>
                     <h2 data-i18n="guide.startTitle">Inizia con AMB Grid in JavaScript</h2>
@@ -61,7 +83,7 @@ export default function gettingStartedJavaScript(app) {
                         <div>
                             <h3 data-i18n="guide.step1.title">Prepara il container</h3>
                             <p class="demo-note" data-i18n="guide.step1.text">Crea nel markup un punto di mount dedicato alla griglia.</p>
-                            <pre class="demo-code-block"><code>&lt;div id="grid"&gt;&lt;/div&gt;</code></pre>
+                            <pre class="demo-code-block"><code>&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;</code></pre>
                         </div>
                     </article>
 
@@ -70,10 +92,10 @@ export default function gettingStartedJavaScript(app) {
                         <div>
                             <h3 data-i18n="guide.step2.title">Importa AMB Grid</h3>
                             <p class="demo-note" data-i18n="guide.step2.text">Installa il package e importa l'API pubblica insieme allo stylesheet completo.</p>
-                            <pre class="demo-code-block"><code>npm install amb-grid
+                            <pre class="demo-code-block"><code><span class="syntax-command">npm install</span> <span class="syntax-string">amb-grid</span>
 
-import { AMB } from 'amb-grid';
-import 'amb-grid/style.css';</code></pre>
+<span class="syntax-keyword">import</span> { <span class="syntax-api">AMB</span> } <span class="syntax-keyword">from</span> <span class="syntax-string">'amb-grid'</span>;
+<span class="syntax-keyword">import</span> <span class="syntax-string">'amb-grid/style.css'</span>;</code></pre>
                         </div>
                     </article>
 
@@ -82,20 +104,20 @@ import 'amb-grid/style.css';</code></pre>
                         <div>
                             <h3 data-i18n="guide.step3.title">Definisci dati e colonne</h3>
                             <p class="demo-note" data-i18n="guide.step3.text">Parti da un dataset piccolo e da colonne esplicite. I validator possono essere aggiunti dove servono regole applicative.</p>
-                            <pre class="demo-code-block"><code>const rows = [
-  { id: 1, sku: 'SKU-1001', productName: 'Steel shelving unit', stockQuantity: 42 },
-  { id: 2, sku: 'SKU-1002', productName: 'Barcode scanner', stockQuantity: 8 }
+                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> rows = [
+  { <span class="syntax-property">id</span>: <span class="syntax-number">1</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">'SKU-1001'</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">'Steel shelving unit'</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">42</span> },
+  { <span class="syntax-property">id</span>: <span class="syntax-number">2</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">'SKU-1002'</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">'Barcode scanner'</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">8</span> }
 ];
 
-const columns = [
-  { title: 'SKU', field: 'sku', editor: AMB.editors.text({ uppercase: true }) },
-  { title: 'Product name', field: 'productName', editor: AMB.editors.text({ trim: true }) },
+<span class="syntax-keyword">const</span> columns = [
+  { <span class="syntax-property">title</span>: <span class="syntax-string">'SKU'</span>, <span class="syntax-property">field</span>: <span class="syntax-string">'sku'</span>, <span class="syntax-property">editor</span>: <span class="syntax-api">AMB.editors</span>.<span class="syntax-function">text</span>({ <span class="syntax-property">uppercase</span>: <span class="syntax-keyword">true</span> }) },
+  { <span class="syntax-property">title</span>: <span class="syntax-string">'Product name'</span>, <span class="syntax-property">field</span>: <span class="syntax-string">'productName'</span>, <span class="syntax-property">editor</span>: <span class="syntax-api">AMB.editors</span>.<span class="syntax-function">text</span>({ <span class="syntax-property">trim</span>: <span class="syntax-keyword">true</span> }) },
   {
-    title: 'Stock quantity',
-    field: 'stockQuantity',
-    editor: AMB.editors.integer({ allowEmpty: false }),
-    formatter: AMB.formatters.integer(),
-    validation: { integer: true, min: { value: 0 } }
+    <span class="syntax-property">title</span>: <span class="syntax-string">'Stock quantity'</span>,
+    <span class="syntax-property">field</span>: <span class="syntax-string">'stockQuantity'</span>,
+    <span class="syntax-property">editor</span>: <span class="syntax-api">AMB.editors</span>.<span class="syntax-function">integer</span>({ <span class="syntax-property">allowEmpty</span>: <span class="syntax-keyword">false</span> }),
+    <span class="syntax-property">formatter</span>: <span class="syntax-api">AMB.formatters</span>.<span class="syntax-function">integer</span>(),
+    <span class="syntax-property">validation</span>: { <span class="syntax-property">integer</span>: <span class="syntax-keyword">true</span>, <span class="syntax-property">min</span>: { <span class="syntax-property">value</span>: <span class="syntax-number">0</span> } }
   }
 ];</code></pre>
                         </div>
@@ -106,18 +128,18 @@ const columns = [
                         <div>
                             <h3 data-i18n="guide.step4.title">Crea la griglia CRUD</h3>
                             <p class="demo-note" data-i18n="guide.step4.text">AMB.table monta Tabulator e aggiunge lo strato CRUD di AMB Grid per stati riga, validazione e payload.</p>
-                            <pre class="demo-code-block"><code>const grid = AMB.table({
-  selector: '#grid',
-  data: rows,
-  columns,
-  layout: 'fitColumns',
-  deleteColumn: { enabled: true },
-  toolbar: {
-    buttons: ['add', 'reload', 'save', 'payload', 'validate'],
-    onAdd: () => {
-      return grid.crud.addRow({ id: null, sku: '', productName: '', stockQuantity: 0 });
+                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
+  <span class="syntax-property">selector</span>: <span class="syntax-string">'#grid'</span>,
+  <span class="syntax-property">data</span>: rows,
+  <span class="syntax-property">columns</span>,
+  <span class="syntax-property">layout</span>: <span class="syntax-string">'fitColumns'</span>,
+  <span class="syntax-property">deleteColumn</span>: { <span class="syntax-property">enabled</span>: <span class="syntax-keyword">true</span> },
+  <span class="syntax-property">toolbar</span>: {
+    <span class="syntax-property">buttons</span>: [<span class="syntax-string">'add'</span>, <span class="syntax-string">'reload'</span>, <span class="syntax-string">'save'</span>, <span class="syntax-string">'payload'</span>, <span class="syntax-string">'validate'</span>],
+    <span class="syntax-function">onAdd</span>: () => {
+      <span class="syntax-keyword">return</span> grid.crud.<span class="syntax-function">addRow</span>({ <span class="syntax-property">id</span>: <span class="syntax-keyword">null</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">''</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">''</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">0</span> });
     },
-    onPayload: ({ payload }) => console.log(payload)
+    <span class="syntax-function">onPayload</span>: ({ payload }) => console.<span class="syntax-function">log</span>(payload)
   }
 });</code></pre>
                         </div>
@@ -128,10 +150,10 @@ const columns = [
                         <div>
                             <h3 data-i18n="guide.step5.title">Leggi il payload</h3>
                             <p class="demo-note" data-i18n="guide.step5.text">Quando l'applicazione deve salvare, leggi il payload CRUD generato da AMB Grid e invialo al tuo backend.</p>
-                            <pre class="demo-code-block"><code>const payload = grid.crud.getSavePayload();
+                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> payload = grid.crud.<span class="syntax-function">getSavePayload</span>();
 
-if (payload.canSave) {
-  await saveRows(payload.changes);
+<span class="syntax-keyword">if</span> (payload.canSave) {
+  <span class="syntax-keyword">await</span> <span class="syntax-function">saveRows</span>(payload.changes);
 }</code></pre>
                         </div>
                     </article>
@@ -150,7 +172,7 @@ if (payload.canSave) {
                 </div>
             </section>
 
-            <section class="demo-section demo-guide-start demo-guide-integration" id="javascript-integration">
+            <section class="demo-guide-section demo-guide-start demo-guide-integration" id="javascript-integration">
                 <div class="demo-section-heading">
                     <p class="demo-kicker" data-i18n="guide.integration.kicker">Due modalità, una sola API</p>
                     <h2 data-i18n="guide.integration.title">Usare AMB Grid con JavaScript</h2>
@@ -167,10 +189,10 @@ if (payload.canSave) {
                             <h3 data-i18n="guide.integration.modernTitle">Modern JavaScript / npm</h3>
                             <p class="demo-note" data-i18n="guide.integration.modernText">La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con dipendenze gestite da npm.</p>
                             <span class="demo-guide-code-label" data-i18n="guide.integration.installLabel">Installazione</span>
-                            <pre class="demo-code-block demo-code-block--compact"><code>npm install amb-grid</code></pre>
+                            <pre class="demo-code-block demo-code-block--compact"><code><span class="syntax-command">npm install</span> <span class="syntax-string">amb-grid</span></code></pre>
                             <span class="demo-guide-code-label" data-i18n="guide.integration.importLabel">Import</span>
-                            <pre class="demo-code-block demo-code-block--compact"><code>import { AMB } from 'amb-grid';
-import 'amb-grid/style.css';</code></pre>
+                            <pre class="demo-code-block demo-code-block--compact"><code><span class="syntax-keyword">import</span> { <span class="syntax-api">AMB</span> } <span class="syntax-keyword">from</span> <span class="syntax-string">'amb-grid'</span>;
+<span class="syntax-keyword">import</span> <span class="syntax-string">'amb-grid/style.css'</span>;</code></pre>
                         </div>
                     </article>
 
@@ -180,13 +202,13 @@ import 'amb-grid/style.css';</code></pre>
                             <span class="demo-guide-badge demo-guide-badge--legacy" data-i18n="guide.integration.browserBadge">Standalone</span>
                         </div>
                         <div class="demo-guide-mode-card__body">
-                            <h3 data-i18n="guide.integration.browserTitle">Browser / legacy-friendly</h3>
+                            <h3 data-i18n="guide.integration.browserTitle">Browser / standalone</h3>
                             <p class="demo-note" data-i18n="guide.integration.browserText">Per pagine browser, server-rendered e applicazioni esistenti che non richiedono npm, bundler o framework.</p>
                             <span class="demo-guide-code-label" data-i18n="guide.integration.assetsLabel">Caricamento asset</span>
-                            <pre class="demo-code-block demo-code-block--compact"><code>&lt;link rel="stylesheet" href="./vendor/amb-grid/amb-grid.css"&gt;
-&lt;script src="./vendor/amb-grid/amb-grid.umd.js"&gt;&lt;/script&gt;</code></pre>
+                            <pre class="demo-code-block demo-code-block--compact"><code>&lt;<span class="syntax-tag">link</span> <span class="syntax-attr">rel</span>=<span class="syntax-string">"stylesheet"</span> <span class="syntax-attr">href</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.css"</span>&gt;
+&lt;<span class="syntax-tag">script</span> <span class="syntax-attr">src</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.umd.js"</span>&gt;&lt;/<span class="syntax-tag">script</span>&gt;</code></pre>
                             <span class="demo-guide-code-label" data-i18n="guide.integration.globalLabel">Global pubblico</span>
-                            <pre class="demo-code-block demo-code-block--compact"><code>const grid = AMB.table({ ... });</code></pre>
+                            <pre class="demo-code-block demo-code-block--compact"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({ ... });</code></pre>
                             <p class="demo-guide-mode-note" data-i18n="guide.integration.bundleText">Il bundle UMD incorpora le dipendenze JavaScript interne: non caricare separatamente Tabulator, Awesomplete o vanilla-datepicker.</p>
                         </div>
                     </article>
@@ -196,9 +218,9 @@ import 'amb-grid/style.css';</code></pre>
                             <span class="demo-guide-badge demo-guide-badge--setup">${demoIcon('code', { size: 15 })}<span data-i18n="guide.integration.setupBadge">Setup essenziale</span></span>
                             <h3 data-i18n="guide.integration.containerTitle">1. Prepara il container</h3>
                             <p class="demo-note" data-i18n="guide.integration.containerText">La pagina prepara soltanto un punto di mount dedicato; AMB Grid gestisce il DOM interno della tabella.</p>
-                            <pre class="demo-code-block"><code>&lt;main class="inventory-page"&gt;
-  &lt;div id="inventory-table"&gt;&lt;/div&gt;
-&lt;/main&gt;</code></pre>
+                            <pre class="demo-code-block"><code>&lt;<span class="syntax-tag">main</span> <span class="syntax-attr">class</span>=<span class="syntax-string">"inventory-page"</span>&gt;
+  &lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"inventory-table"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;
+&lt;/<span class="syntax-tag">main</span>&gt;</code></pre>
                         </div>
                     </article>
 
@@ -206,20 +228,20 @@ import 'amb-grid/style.css';</code></pre>
                         <div class="demo-guide-code-heading">
                             <h3 data-i18n="guide.integration.jsTitle">2. Dati, colonne e griglia</h3>
                             <p class="demo-note" data-i18n="guide.integration.jsText">La stessa API pubblica funziona con l'import ESM o con il global AMB del bundle browser.</p>
-                            <pre class="demo-code-block"><code>const rows = [
-  { code: 'SKU-1001', description: 'Steel shelving unit' },
-  { code: 'SKU-1002', description: 'Barcode scanner' }
+                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> rows = [
+  { <span class="syntax-property">code</span>: <span class="syntax-string">'SKU-1001'</span>, <span class="syntax-property">description</span>: <span class="syntax-string">'Steel shelving unit'</span> },
+  { <span class="syntax-property">code</span>: <span class="syntax-string">'SKU-1002'</span>, <span class="syntax-property">description</span>: <span class="syntax-string">'Barcode scanner'</span> }
 ];
 
-const columns = [
-  { title: 'Code', field: 'code', editor: AMB.editors.text({ uppercase: true }) },
-  { title: 'Description', field: 'description', editor: AMB.editors.text() }
+<span class="syntax-keyword">const</span> columns = [
+  { <span class="syntax-property">title</span>: <span class="syntax-string">'Code'</span>, <span class="syntax-property">field</span>: <span class="syntax-string">'code'</span>, <span class="syntax-property">editor</span>: <span class="syntax-api">AMB.editors</span>.<span class="syntax-function">text</span>({ <span class="syntax-property">uppercase</span>: <span class="syntax-keyword">true</span> }) },
+  { <span class="syntax-property">title</span>: <span class="syntax-string">'Description'</span>, <span class="syntax-property">field</span>: <span class="syntax-string">'description'</span>, <span class="syntax-property">editor</span>: <span class="syntax-api">AMB.editors</span>.<span class="syntax-function">text</span>() }
 ];
 
-const grid = AMB.table({
-  selector: '#inventory-table',
-  data: rows,
-  columns
+<span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
+  <span class="syntax-property">selector</span>: <span class="syntax-string">'#inventory-table'</span>,
+  <span class="syntax-property">data</span>: rows,
+  <span class="syntax-property">columns</span>
 });</code></pre>
                         </div>
                     </article>
@@ -228,26 +250,18 @@ const grid = AMB.table({
                         <div class="demo-guide-code-heading">
                             <h3 data-i18n="guide.integration.cssTitle">3. CSS applicativo</h3>
                             <p class="demo-note" data-i18n="guide.integration.cssText">Lo stile della pagina resta piccolo e separato dallo stylesheet completo di AMB Grid.</p>
-                            <pre class="demo-code-block"><code>.inventory-page {
-  padding: 24px;
+                            <pre class="demo-code-block"><code><span class="syntax-selector">.inventory-page</span> {
+  <span class="syntax-property">padding</span>: <span class="syntax-number">24px</span>;
 }
 
-#inventory-table {
-  margin-top: 16px;
+<span class="syntax-selector">#inventory-table</span> {
+  <span class="syntax-property">margin-top</span>: <span class="syntax-number">16px</span>;
 }</code></pre>
                         </div>
                     </article>
                 </div>
             </section>
 
-            <section class="demo-section demo-video-card">
-                <div>
-                    <p class="demo-kicker" data-i18n="guide.videoKicker">Video guida</p>
-                    <h2 data-i18n="guide.videoTitle">Installazione e uso in JavaScript</h2>
-                    <p class="demo-note" data-i18n="guide.videoText">Qui verrà collegato il video introduttivo su installazione e uso di AMB Grid in JavaScript.</p>
-                </div>
-                <button class="demo-button demo-button--disabled" type="button" disabled>${demoIcon('video')}<span data-i18n="guide.videoCta">Video in arrivo</span></button>
-            </section>
         </main>
     `;
 

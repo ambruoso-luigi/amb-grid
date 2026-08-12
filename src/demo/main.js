@@ -109,7 +109,7 @@ const translations = {
         'guide.back': 'Torna alla home demo',
         'guide.badge': 'JavaScript',
         'guide.title': 'AMB Grid con JavaScript',
-        'guide.description': 'Demo tabellare e guida essenziale per usare AMB Grid 0.5.0 con JavaScript moderno o direttamente nel browser, senza framework obbligatori.',
+        'guide.description': 'Demo tabellare e guida essenziale per usare AMB Grid con JavaScript moderno o direttamente nel browser, senza framework obbligatori.',
         'guide.startTitle': 'Inizia con AMB Grid in JavaScript',
         'guide.startText': 'Dopo la demo completa, questi step mostrano il minimo necessario per preparare container, dati, colonne e payload in una pagina JavaScript.',
         'guide.step1.title': 'Prepara il container',
@@ -133,7 +133,7 @@ const translations = {
         'guide.integration.installLabel': 'Installazione',
         'guide.integration.importLabel': 'Import',
         'guide.integration.browserBadge': 'Standalone',
-        'guide.integration.browserTitle': 'Browser / legacy-friendly',
+        'guide.integration.browserTitle': 'Browser / standalone',
         'guide.integration.browserText': 'Per pagine browser, server-rendered e applicazioni esistenti che non richiedono npm, bundler o framework.',
         'guide.integration.assetsLabel': 'Caricamento asset',
         'guide.integration.globalLabel': 'Global pubblico',
@@ -147,10 +147,8 @@ const translations = {
         'guide.integration.cssText': 'Lo stile della pagina resta piccolo e separato dallo stylesheet completo di AMB Grid.',
         'guide.openMainDemo': 'Torna alla demo',
         'guide.openExamples': 'Vedi esempi funzionali',
-        'guide.videoKicker': 'Video guida',
-        'guide.videoTitle': 'Installazione e uso in JavaScript',
-        'guide.videoText': 'Qui verrà collegato il video introduttivo su installazione e uso di AMB Grid in JavaScript.',
-        'guide.videoCta': 'Video in arrivo'
+        'guide.videoLabel': 'Video demo — placeholder',
+        'guide.videoOpen': 'Apri il video demo placeholder su YouTube'
     },
     en: {
         'page.title': 'AMB Grid',
@@ -227,7 +225,7 @@ const translations = {
         'guide.back': 'Back to demo home',
         'guide.badge': 'JavaScript',
         'guide.title': 'AMB Grid with JavaScript',
-        'guide.description': 'A tabular demo and essential guide for using AMB Grid 0.5.0 with modern JavaScript or directly in the browser, with no required framework.',
+        'guide.description': 'A tabular demo and essential guide for using AMB Grid with modern JavaScript or directly in the browser, with no required framework.',
         'guide.startTitle': 'Getting started with AMB Grid in JavaScript',
         'guide.startText': 'After the complete demo, these steps show the minimum needed to prepare the container, data, columns, and payload in a JavaScript page.',
         'guide.step1.title': 'Prepare the container',
@@ -251,7 +249,7 @@ const translations = {
         'guide.integration.installLabel': 'Install',
         'guide.integration.importLabel': 'Import',
         'guide.integration.browserBadge': 'Standalone',
-        'guide.integration.browserTitle': 'Browser / legacy-friendly',
+        'guide.integration.browserTitle': 'Browser / standalone',
         'guide.integration.browserText': 'For browser pages, server-rendered applications, and existing systems that do not need npm, a bundler, or a framework.',
         'guide.integration.assetsLabel': 'Load assets',
         'guide.integration.globalLabel': 'Public global',
@@ -265,10 +263,8 @@ const translations = {
         'guide.integration.cssText': 'Page styling stays small and separate from the complete AMB Grid stylesheet.',
         'guide.openMainDemo': 'Back to demo',
         'guide.openExamples': 'View feature examples',
-        'guide.videoKicker': 'Video guide',
-        'guide.videoTitle': 'Installation and JavaScript usage',
-        'guide.videoText': 'An introductory video about installing and using AMB Grid with JavaScript will be linked here.',
-        'guide.videoCta': 'Coming soon'
+        'guide.videoLabel': 'Demo video — placeholder',
+        'guide.videoOpen': 'Open the placeholder demo video on YouTube'
     }
 };
 
