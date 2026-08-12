@@ -4,11 +4,9 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 
 const messages = {
     it: {
-        loaded: 'Dati magazzino caricati.',
         reloaded: 'Dati ricaricati.',
         noChanges: 'Non ci sono modifiche da salvare.',
         invalid: 'Correggi gli errori evidenziati prima di salvare.',
-        saving: 'Salvataggio simulato in corso...',
         saved: 'Modifiche salvate e stati riallineati.',
         saveError: 'Il backend fake ha restituito errori di validazione.',
         payloadTitle: 'Payload di salvataggio',
@@ -28,11 +26,9 @@ const messages = {
         generatedIds: 'ID backend generati'
     },
     en: {
-        loaded: 'Warehouse data loaded.',
         reloaded: 'Data reloaded.',
         noChanges: 'There are no changes to save.',
         invalid: 'Fix highlighted errors before saving.',
-        saving: 'Simulated save in progress...',
         saved: 'Changes saved and row states aligned.',
         saveError: 'The fake backend returned validation errors.',
         payloadTitle: 'Save payload',
@@ -378,7 +374,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Item code',
                 field: 'itemCode',
-                width: 130,
+                minWidth: 110,
+                widthGrow: 0.8,
                 editor: AMB.editors.text({ uppercase: true, trim: true }),
                 required: true,
                 validation: {
@@ -395,8 +392,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Product name',
                 field: 'productName',
-                width: 180,
-                widthGrow: 1.2,
+                minWidth: 170,
+                widthGrow: 1.8,
                 editor: AMB.editors.text({ trim: true }),
                 required: true,
                 validation: {
@@ -409,7 +406,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Warehouse',
                 field: 'warehouse',
-                width: 128,
+                minWidth: 150,
+                widthGrow: 1.2,
                 required: true,
                 editor: AMB.editors.autocomplete(warehouseOptions, {
                     maxOptions: 8,
@@ -425,7 +423,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Stock quantity',
                 field: 'stockQuantity',
-                width: 120,
+                minWidth: 115,
+                widthGrow: 0.65,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 required: true,
@@ -440,7 +439,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Unit price',
                 field: 'unitPrice',
-                width: 118,
+                minWidth: 110,
+                widthGrow: 0.65,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
                 formatter: AMB.formatters.currency(),
                 required: true,
@@ -456,7 +456,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Last check date',
                 field: 'lastCheckDate',
-                width: 132,
+                minWidth: 125,
+                widthGrow: 0.7,
                 editor: AMB.editors.date({
                     format: 'dd/mm/yyyy',
                     allowEmpty: false,
@@ -475,7 +476,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Status',
                 field: 'status',
-                width: 118,
+                minWidth: 105,
+                widthGrow: 0.7,
                 required: true,
                 editor: AMB.editors.lookup(statusLookup, {
                     uppercase: true,
@@ -500,7 +502,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Requires inspection',
                 field: 'requiresInspection',
-                width: 150,
+                minWidth: 145,
+                widthGrow: 0.65,
                 hozAlign: 'center',
                 formatter: formatInspectionCheckbox,
                 editor: AMB.editors.checkbox({
@@ -511,8 +514,8 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Notes',
                 field: 'notes',
-                width: 210,
-                widthGrow: 1.4,
+                minWidth: 180,
+                widthGrow: 1.7,
                 formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }),
                 editor: AMB.editors.largeText({
                     title: 'Edit inventory notes',
@@ -534,11 +537,6 @@ export default async function fullDemo(app, options = {}) {
         updateDemoRowActionButton(row, crud);
     });
     const originalDestroy = demo.destroy.bind(demo);
-
-    demo.feedback.show({
-        type: 'info',
-        message: t('loaded')
-    });
 
     demo.destroy = () => {
         if (typeof unsubscribeDemoRowActions === 'function') {
@@ -661,11 +659,6 @@ export default async function fullDemo(app, options = {}) {
             });
             return;
         }
-
-        demo.feedback.show({
-            type: 'info',
-            message: t('saving')
-        });
 
         const result = await fakeApi.saveProductChanges(payload);
 

@@ -1,5 +1,4 @@
 import database from './database.json' with { type: 'json' };
-import { delay } from './fake-delay.js';
 
 const clone = value => structuredClone(value);
 
@@ -105,33 +104,36 @@ const createItemCode = index => {
     return `PRD-${prefix}${numeric}`;
 };
 
-const createDemoProducts = (count, warehouses, statuses) => {
+const createDemoProduct = (index, warehouses, statuses) => {
     const startDate = new Date(Date.UTC(2026, 5, 1));
+    const warehouse = warehouses[index % warehouses.length];
+    const status = statuses[(index * 7) % statuses.length];
+    const checkDate = new Date(startDate);
 
+    checkDate.setUTCDate(startDate.getUTCDate() + (index % 28));
+
+    return {
+        id: index + 1,
+        itemCode: createItemCode(index),
+        productName: `${productNames[index % productNames.length]} ${String(index + 1).padStart(2, '0')}`,
+        warehouse: warehouse || '',
+        status: status ? status.id : '',
+        stockQuantity: (index * 17) % 240,
+        unitPrice: Number((7.5 + ((index * 13) % 900) / 3).toFixed(2)),
+        lastCheckDate: checkDate.toLocaleDateString('it-IT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            timeZone: 'UTC'
+        }),
+        requiresInspection: index % 4 === 0 || index % 9 === 0,
+        notes: `${productNotes[index % productNotes.length]} Batch ${String(index + 1).padStart(3, '0')}.`
+    };
+};
+
+const createDemoProducts = (count, warehouses, statuses) => {
     return Array.from({ length: count }, (_, index) => {
-        const warehouse = warehouses[index % warehouses.length];
-        const status = statuses[(index * 7) % statuses.length];
-        const checkDate = new Date(startDate);
-
-        checkDate.setUTCDate(startDate.getUTCDate() + (index % 28));
-
-        return {
-            id: index + 1,
-            itemCode: createItemCode(index),
-            productName: `${productNames[index % productNames.length]} ${String(index + 1).padStart(2, '0')}`,
-            warehouse: warehouse || '',
-            status: status ? status.id : '',
-            stockQuantity: (index * 17) % 240,
-            unitPrice: Number((7.5 + ((index * 13) % 900) / 3).toFixed(2)),
-            lastCheckDate: checkDate.toLocaleDateString('it-IT', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                timeZone: 'UTC'
-            }),
-            requiresInspection: index % 4 === 0 || index % 9 === 0,
-            notes: `${productNotes[index % productNotes.length]} Batch ${String(index + 1).padStart(3, '0')}.`
-        };
+        return createDemoProduct(index, warehouses, statuses);
     });
 };
 
@@ -142,6 +144,7 @@ const state = {
 };
 
 state.products = createDemoProducts(100, state.warehouses, state.statuses);
+state.products.push(createDemoProduct(state.products.length, state.warehouses, state.statuses));
 
 const normalizeCode = value => {
     return String(value || '').trim().toUpperCase();
@@ -228,32 +231,22 @@ const searchRecords = (records, query, fields) => {
 
 export const fakeApi = {
     async getStatuses() {
-        await delay();
-
         return clone(state.statuses);
     },
 
     async searchStatuses(query) {
-        await delay();
-
         return searchRecords(state.statuses, query, ['id', 'description']);
     },
 
     async getWarehouses() {
-        await delay();
-
         return clone(state.warehouses);
     },
 
     async getProducts() {
-        await delay();
-
         return clone(state.products);
     },
 
     async saveProductChanges(payload) {
-        await delay(700);
-
         const changes = payload.changes || {};
         const missingDelete = (changes.deleted || []).find(change => {
             return !state.products.some(item => getChangeId(item) === getChangeId(change));
