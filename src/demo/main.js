@@ -36,15 +36,15 @@ const featureExamples = [
 const translations = {
     it: {
         'page.title': 'AMB Grid',
-        'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili, powered by Tabulator.',
+        'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili nelle applicazioni business.',
         'language.itTitle': 'Italiano',
         'language.enTitle': 'English',
         'language.switchToIt': 'Cambia lingua in italiano',
         'language.switchToEn': 'Cambia lingua in inglese',
         'hero.badge': 'AMB Grid',
-        'hero.badgeDetail': 'Layer CRUD per Tabulator',
+        'hero.badgeDetail': 'Griglie CRUD per applicazioni business',
         'hero.title': 'Griglie CRUD per applicazioni business',
-        'hero.description': 'AMB Grid aggiunge a Tabulator uno strato CRUD framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.',
+        'hero.description': 'AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
         'hero.primary': 'Apri demo JavaScript',
         'hero.secondary': 'Vedi esempi funzionali',
         'hero.statState': 'Stati riga',
@@ -119,7 +119,7 @@ const translations = {
         'guide.step3.title': 'Definisci dati e colonne',
         'guide.step3.text': 'Parti da un dataset piccolo e da colonne esplicite. I validator possono essere aggiunti dove servono regole applicative.',
         'guide.step4.title': 'Crea la griglia CRUD',
-        'guide.step4.text': 'AMB.table monta Tabulator e aggiunge lo strato CRUD di AMB Grid per stati riga, validazione e payload.',
+        'guide.step4.text': 'AMB.table monta la griglia e coordina stati riga, validazione e payload attraverso l’API pubblica di AMB Grid.',
         'guide.step5.title': 'Leggi il payload',
         'guide.step5.text': 'Quando l’applicazione deve salvare, leggi il payload CRUD generato da AMB Grid e invialo al tuo backend.',
         'guide.step6.title': 'Prossimi passi',
@@ -129,7 +129,7 @@ const translations = {
         'guide.integration.text': 'AMB Grid si integra direttamente in JavaScript ed è framework-agnostic: usa il package npm in un progetto moderno oppure il bundle UMD in una pagina browser o server-rendered.',
         'guide.integration.modernBadge': 'npm + ESM',
         'guide.integration.modernTitle': 'Modern JavaScript / npm',
-        'guide.integration.modernText': 'La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con dipendenze gestite da npm.',
+        'guide.integration.modernText': 'La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con installazione e aggiornamenti gestiti da npm.',
         'guide.integration.installLabel': 'Installazione',
         'guide.integration.importLabel': 'Import',
         'guide.integration.browserBadge': 'Standalone',
@@ -137,7 +137,7 @@ const translations = {
         'guide.integration.browserText': 'Per pagine browser, server-rendered e applicazioni esistenti che non richiedono npm, bundler o framework.',
         'guide.integration.assetsLabel': 'Caricamento asset',
         'guide.integration.globalLabel': 'Global pubblico',
-        'guide.integration.bundleText': 'Il bundle UMD incorpora le dipendenze JavaScript interne: non caricare separatamente Tabulator, Awesomplete o vanilla-datepicker.',
+        'guide.integration.bundleText': 'Il bundle UMD è pronto per l’uso standalone: carica soltanto gli asset AMB Grid indicati qui sopra.',
         'guide.integration.setupBadge': 'Setup essenziale',
         'guide.integration.containerTitle': '1. Prepara il container',
         'guide.integration.containerText': 'La pagina prepara soltanto un punto di mount dedicato; AMB Grid gestisce il DOM interno della tabella.',
@@ -152,15 +152,15 @@ const translations = {
     },
     en: {
         'page.title': 'AMB Grid',
-        'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular business data, powered by Tabulator.',
+        'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular data in business applications.',
         'language.itTitle': 'Italiano',
         'language.enTitle': 'English',
         'language.switchToIt': 'Switch language to Italian',
         'language.switchToEn': 'Switch language to English',
         'hero.badge': 'AMB Grid',
-        'hero.badgeDetail': 'CRUD layer for Tabulator',
+        'hero.badgeDetail': 'CRUD grids for business applications',
         'hero.title': 'CRUD data grids for business applications',
-        'hero.description': 'AMB Grid adds a framework-agnostic CRUD layer on top of Tabulator for row states, validation, lookup, rollback, saving, and backend-ready payloads.',
+        'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
         'hero.primary': 'Open JavaScript demo',
         'hero.secondary': 'View feature examples',
         'hero.statState': 'Row states',
@@ -235,7 +235,7 @@ const translations = {
         'guide.step3.title': 'Define data and columns',
         'guide.step3.text': 'Start with a small dataset and explicit columns. Validators can be added wherever application rules are needed.',
         'guide.step4.title': 'Create the CRUD grid',
-        'guide.step4.text': 'AMB.table mounts Tabulator and adds the AMB Grid CRUD layer for row states, validation, and payloads.',
+        'guide.step4.text': 'AMB.table mounts the grid and coordinates row states, validation, and payloads through the public AMB Grid API.',
         'guide.step5.title': 'Read the payload',
         'guide.step5.text': 'When the application needs to save, read the CRUD payload generated by AMB Grid and send it to your backend.',
         'guide.step6.title': 'Next steps',
@@ -245,7 +245,7 @@ const translations = {
         'guide.integration.text': 'AMB Grid integrates directly with JavaScript and remains framework-agnostic: use the npm package in a modern project or the UMD bundle in a browser or server-rendered page.',
         'guide.integration.modernBadge': 'npm + ESM',
         'guide.integration.modernTitle': 'Modern JavaScript / npm',
-        'guide.integration.modernText': 'The natural choice for Vite, bundlers, and modern JavaScript applications, with dependencies managed by npm.',
+        'guide.integration.modernText': 'The natural choice for Vite, bundlers, and modern JavaScript applications, with installation and updates managed by npm.',
         'guide.integration.installLabel': 'Install',
         'guide.integration.importLabel': 'Import',
         'guide.integration.browserBadge': 'Standalone',
@@ -253,7 +253,7 @@ const translations = {
         'guide.integration.browserText': 'For browser pages, server-rendered applications, and existing systems that do not need npm, a bundler, or a framework.',
         'guide.integration.assetsLabel': 'Load assets',
         'guide.integration.globalLabel': 'Public global',
-        'guide.integration.bundleText': 'The UMD bundle includes its internal JavaScript dependencies: do not load Tabulator, Awesomplete, or vanilla-datepicker separately.',
+        'guide.integration.bundleText': 'The UMD bundle is ready for standalone use: load only the AMB Grid assets shown above.',
         'guide.integration.setupBadge': 'Essential setup',
         'guide.integration.containerTitle': '1. Prepare the container',
         'guide.integration.containerText': 'The page provides only a dedicated mount point; AMB Grid manages the table DOM inside it.',
@@ -404,10 +404,10 @@ const renderShell = selectedId => {
                         <p class="demo-hero-badge">
                             ${demoIcon('crud', { className: 'demo-hero-badge-icon', size: 16, strokeWidth: 2.2 })}
                             <span data-i18n="hero.badge">AMB Grid</span>
-                            <strong data-i18n="hero.badgeDetail">Layer CRUD per Tabulator</strong>
+                            <strong data-i18n="hero.badgeDetail">Griglie CRUD per applicazioni business</strong>
                         </p>
                         <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
-                        <p class="demo-hero__text" data-i18n="hero.description">AMB Grid aggiunge a Tabulator uno strato CRUD framework-agnostic per stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend.</p>
+                        <p class="demo-hero__text" data-i18n="hero.description">AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.</p>
                         <div class="demo-hero__actions">
                             <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="hero.primary">Apri demo JavaScript</span></a>
                             <a class="demo-button" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
@@ -650,6 +650,7 @@ const scrollToHashTarget = () => {
 const renderGuide = () => {
     if (currentView === 'guide') {
         applyI18n();
+        window.requestAnimationFrame(scrollToHashTarget);
         return;
     }
 
@@ -683,7 +684,7 @@ const renderHome = () => {
 };
 
 const renderRoute = () => {
-    if (window.location.hash === '#getting-started-javascript') {
+    if (['#getting-started-javascript', '#javascript-demo'].includes(window.location.hash)) {
         renderGuide();
         return;
     }

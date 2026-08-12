@@ -127,7 +127,7 @@ export default function gettingStartedJavaScript(app) {
                         <span class="demo-guide-step__number">4</span>
                         <div>
                             <h3 data-i18n="guide.step4.title">Crea la griglia CRUD</h3>
-                            <p class="demo-note" data-i18n="guide.step4.text">AMB.table monta Tabulator e aggiunge lo strato CRUD di AMB Grid per stati riga, validazione e payload.</p>
+                            <p class="demo-note" data-i18n="guide.step4.text">AMB.table monta la griglia e coordina stati riga, validazione e payload attraverso l’API pubblica di AMB Grid.</p>
                             <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
   <span class="syntax-property">selector</span>: <span class="syntax-string">'#grid'</span>,
   <span class="syntax-property">data</span>: rows,
@@ -164,7 +164,7 @@ export default function gettingStartedJavaScript(app) {
                             <h3 data-i18n="guide.step6.title">Prossimi passi</h3>
                             <p class="demo-note" data-i18n="guide.step6.text">Rivedi la demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.</p>
                             <div class="demo-guide-actions">
-                                <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="guide.openMainDemo">Torna alla demo</span></a>
+                                <a class="demo-button demo-button--primary" href="#javascript-demo">${demoIcon('arrowRight')}<span data-i18n="guide.openMainDemo">Torna alla demo</span></a>
                                 <a class="demo-button" href="#feature-examples">${demoIcon('selected')}<span data-i18n="guide.openExamples">Vedi esempi funzionali</span></a>
                             </div>
                         </div>
@@ -187,7 +187,7 @@ export default function gettingStartedJavaScript(app) {
                         </div>
                         <div class="demo-guide-mode-card__body">
                             <h3 data-i18n="guide.integration.modernTitle">Modern JavaScript / npm</h3>
-                            <p class="demo-note" data-i18n="guide.integration.modernText">La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con dipendenze gestite da npm.</p>
+                            <p class="demo-note" data-i18n="guide.integration.modernText">La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con installazione e aggiornamenti gestiti da npm.</p>
                             <span class="demo-guide-code-label" data-i18n="guide.integration.installLabel">Installazione</span>
                             <pre class="demo-code-block demo-code-block--compact"><code><span class="syntax-command">npm install</span> <span class="syntax-string">amb-grid</span></code></pre>
                             <span class="demo-guide-code-label" data-i18n="guide.integration.importLabel">Import</span>
@@ -209,7 +209,7 @@ export default function gettingStartedJavaScript(app) {
 &lt;<span class="syntax-tag">script</span> <span class="syntax-attr">src</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.umd.js"</span>&gt;&lt;/<span class="syntax-tag">script</span>&gt;</code></pre>
                             <span class="demo-guide-code-label" data-i18n="guide.integration.globalLabel">Global pubblico</span>
                             <pre class="demo-code-block demo-code-block--compact"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({ ... });</code></pre>
-                            <p class="demo-guide-mode-note" data-i18n="guide.integration.bundleText">Il bundle UMD incorpora le dipendenze JavaScript interne: non caricare separatamente Tabulator, Awesomplete o vanilla-datepicker.</p>
+                            <p class="demo-guide-mode-note" data-i18n="guide.integration.bundleText">Il bundle UMD è pronto per l’uso standalone: carica soltanto gli asset AMB Grid indicati qui sopra.</p>
                         </div>
                     </article>
 
