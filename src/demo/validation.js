@@ -232,12 +232,13 @@ export default function validation(app) {
                 </ul>
             </div>
         </details>
-        <div id="validation-table" class="demo-example-grid-frame"></div>
+        <div class="demo-table-workbench">
+            <div id="validation-table" class="demo-business-grid"></div>
+        </div>
     `;
 
     const demo = AMB.table({
         selector: '#validation-table',
-        height: '420px',
         deleteColumn: {
             enabled: true,
             actions: {

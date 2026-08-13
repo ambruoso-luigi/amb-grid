@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 
 const messages = {
     it: {
@@ -55,12 +56,7 @@ const getLanguage = () => {
 
 const t = key => messages[getLanguage()][key] || messages.it[key] || key;
 
-const formatInspectionCheckbox = cell => {
-    const checked = cell.getValue() === true;
-    const stateClass = checked ? ' is-checked' : '';
-
-    return `<span class="demo-inspection-visual${stateClass}" aria-hidden="true"></span>`;
-};
+const formatInspectionCheckbox = createDemoCheckboxFormatter();
 
 const demoRowActionMessages = {
     delete: 'Delete this product?',
@@ -304,7 +300,7 @@ export default async function fullDemo(app, options = {}) {
                     </div>
                 </div>
                 <div class="demo-table-workbench">
-                    <div id="inventory-table" class="amb-demo-inventory-grid"></div>
+                    <div id="inventory-table" class="amb-demo-inventory-grid demo-business-grid"></div>
                 </div>
             </div>
         </div>
@@ -505,6 +501,7 @@ export default async function fullDemo(app, options = {}) {
                 minWidth: 145,
                 widthGrow: 0.65,
                 hozAlign: 'center',
+                cssClass: 'demo-business-checkbox-cell',
                 formatter: formatInspectionCheckbox,
                 editor: AMB.editors.checkbox({
                     checkedLabel: '',

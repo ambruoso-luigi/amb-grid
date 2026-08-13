@@ -81,12 +81,13 @@ export default function rowStates(app) {
                 </ul>
             </div>
         </details>
-        <div id="row-states-table" class="demo-example-grid-frame"></div>
+        <div class="demo-table-workbench">
+            <div id="row-states-table" class="demo-business-grid"></div>
+        </div>
     `;
 
     const demo = AMB.table({
         selector: '#row-states-table',
-        height: '320px',
         deleteColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this sample?',

@@ -1521,13 +1521,15 @@ a {
     margin: 0 0 8px;
 }
 
-.amb-demo-inventory-grid {
+.demo-business-grid {
     min-width: 0;
     position: relative;
 }
 
 .demo-table-workbench {
+    max-width: 100%;
     min-width: 0;
+    width: 100%;
 }
 
 .demo-main-demo-active .amb-lookup-dialog {
@@ -2425,28 +2427,6 @@ a {
     color: var(--demo-text);
 }
 
-.demo-example-grid-frame {
-    border: 1px solid #aebfd0;
-    border-radius: var(--amb-site-radius-sm);
-    box-shadow: 0 6px 16px rgb(16 35 63 / 5%);
-    max-width: 100%;
-    overflow: hidden;
-    width: 100%;
-}
-
-.demo-example-grid-frame > .amb-toolbar {
-    border: 0;
-    border-bottom: 1px solid #b8cada;
-    border-radius: 0;
-}
-
-.demo-example-grid-frame > .tabulator,
-.demo-example-grid-frame .tabulator {
-    border: 0;
-    border-radius: 0;
-    max-width: 100%;
-}
-
 .tabulator {
     border-color: var(--demo-border);
 }
@@ -2915,7 +2895,7 @@ a {
     width: 15px;
 }
 
-.demo-panel .amb-demo-inventory-grid {
+.demo-panel .demo-business-grid {
     --demo-checkbox-border: #8fa4b5;
     --demo-checkbox-border-soft: #b9c8d3;
     --demo-checkbox-border-hover: #6f879a;
@@ -2929,24 +2909,24 @@ a {
     --demo-checkbox-size: 18px;
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"] {
+.demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell {
     color: var(--demo-checkbox-fill-checked-deep);
     cursor: pointer;
     text-align: center;
     transition: background 150ms ease, color 150ms ease;
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]:hover {
+.demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell:hover {
     background: #f5f9fc;
     color: var(--demo-checkbox-fill-checked-hover);
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]:focus-visible {
+.demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell:focus-visible {
     box-shadow: inset 0 0 0 2px rgb(93 127 152 / 24%);
     outline: none;
 }
 
-.demo-panel .amb-demo-inventory-grid .demo-inspection-visual {
+.demo-panel .demo-business-grid .demo-inspection-visual {
     background-color: var(--demo-checkbox-fill);
     background-image: linear-gradient(180deg, #ffffff 0%, var(--demo-checkbox-fill-soft) 100%);
     border: 1px solid var(--demo-checkbox-border);
@@ -2965,7 +2945,7 @@ a {
     width: var(--demo-checkbox-size);
 }
 
-.demo-panel .amb-demo-inventory-grid .demo-inspection-visual::before {
+.demo-panel .demo-business-grid .demo-inspection-visual::before {
     background: rgb(93 127 152 / 18%);
     border-radius: 2px;
     content: "";
@@ -2979,7 +2959,7 @@ a {
     width: 4px;
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]:hover .demo-inspection-visual {
+.demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell:hover .demo-inspection-visual {
     background-image: linear-gradient(180deg, #ffffff 0%, #e7eff4 100%);
     border-color: var(--demo-checkbox-border-hover);
     box-shadow:
@@ -2988,19 +2968,19 @@ a {
         inset 0 -1px 0 rgb(93 127 152 / 12%);
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]:hover .demo-inspection-visual::before {
+.demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell:hover .demo-inspection-visual::before {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]:focus-visible .demo-inspection-visual {
+.demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell:focus-visible .demo-inspection-visual {
     border-color: var(--demo-checkbox-fill-checked-deep);
     box-shadow:
         0 0 0 3px var(--demo-checkbox-highlight),
         inset 0 1px 0 rgb(255 255 255 / 98%);
 }
 
-.demo-panel .amb-demo-inventory-grid .demo-inspection-visual.is-checked {
+.demo-panel .demo-business-grid .demo-inspection-visual.is-checked {
     background: linear-gradient(180deg, var(--demo-checkbox-fill-checked) 0%, var(--demo-checkbox-fill-checked-deep) 100%);
     border-color: var(--demo-checkbox-fill-checked-deep);
     box-shadow:
@@ -3008,11 +2988,11 @@ a {
         inset 0 1px 0 rgb(255 255 255 / 24%);
 }
 
-.demo-panel .amb-demo-inventory-grid .demo-inspection-visual.is-checked::before {
+.demo-panel .demo-business-grid .demo-inspection-visual.is-checked::before {
     opacity: 0;
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-cell[tabulator-field="requiresInspection"]:hover .demo-inspection-visual.is-checked {
+.demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell:hover .demo-inspection-visual.is-checked {
     background: linear-gradient(180deg, #85aabd 0%, var(--demo-checkbox-fill-checked-hover) 100%);
     border-color: var(--demo-checkbox-fill-checked-hover);
     box-shadow:
@@ -3020,7 +3000,7 @@ a {
         0 2px 7px rgb(93 127 152 / 18%);
 }
 
-.demo-panel .amb-demo-inventory-grid .demo-inspection-visual.is-checked::after {
+.demo-panel .demo-business-grid .demo-inspection-visual.is-checked::after {
     border: solid var(--demo-checkbox-check);
     border-width: 0 1.8px 1.8px 0;
     content: "";
@@ -3032,7 +3012,7 @@ a {
     width: 5.5px;
 }
 
-.demo-panel .amb-demo-inventory-grid .amb-checkbox-editor__input {
+.demo-panel .demo-business-grid .amb-checkbox-editor__input {
     accent-color: var(--demo-checkbox-fill-checked-deep);
     cursor: pointer;
     filter: saturate(0.74) brightness(1.04);
@@ -3043,11 +3023,11 @@ a {
     width: var(--demo-checkbox-size);
 }
 
-.demo-panel .amb-demo-inventory-grid .amb-checkbox-editor__input:checked {
+.demo-panel .demo-business-grid .amb-checkbox-editor__input:checked {
     filter: saturate(0.78) brightness(1.03);
 }
 
-.demo-panel .amb-demo-inventory-grid .amb-checkbox-editor__input:focus-visible {
+.demo-panel .demo-business-grid .amb-checkbox-editor__input:focus-visible {
     box-shadow:
         0 0 0 3px var(--demo-checkbox-highlight),
         0 1px 4px rgb(16 35 63 / 10%);
@@ -3055,7 +3035,7 @@ a {
     outline-offset: 2px;
 }
 
-.demo-panel .amb-demo-inventory-grid .amb-checkbox-editor__input:hover:not(:disabled) {
+.demo-panel .demo-business-grid .amb-checkbox-editor__input:hover:not(:disabled) {
     filter: saturate(0.88) brightness(1.06);
 }
 

@@ -132,12 +132,13 @@ export default function autocomplete(app) {
                 </ul>
             </div>
         </details>
-        <div id="autocomplete-table" class="demo-example-grid-frame"></div>
+        <div class="demo-table-workbench">
+            <div id="autocomplete-table" class="demo-business-grid"></div>
+        </div>
     `;
 
     const demo = AMB.table({
         selector: '#autocomplete-table',
-        height: '340px',
         toolbar: {
             buttons: [
                 {

@@ -269,15 +269,19 @@ describe('demo site navigation', () => {
         expect(main).not.toContain('roadmap.kicker');
         expect(main).not.toContain('roadmap.title');
         expect(css).not.toContain('.demo-roadmap-list');
-        expect(css).toContain('.demo-example-grid-frame');
+        expect(css).toContain('.demo-table-workbench');
+        expect(css).toContain('.demo-business-grid');
 
         exampleFiles.forEach(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 
-            expect(source).toContain('class="demo-example-grid-frame"');
+            expect(source).toContain('class="demo-table-workbench"');
+            expect(source).toContain('class="demo-business-grid"');
             expect(source).toContain("layout: 'fitColumns'");
             expect(source).toContain('minWidth:');
             expect(source).toContain('widthGrow:');
+            expect(source).not.toMatch(/\bheight:\s*['"]\d+px['"]/);
+            expect(source).not.toMatch(/\bwidth:\s*\d+/);
         });
     });
 
@@ -289,6 +293,8 @@ describe('demo site navigation', () => {
         expect(basicCrud).toContain("checkedLabel: ''");
         expect(basicCrud).toContain("uncheckedLabel: ''");
         expect(basicCrud).toContain("hozAlign: 'center'");
+        expect(basicCrud).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
+        expect(basicCrud).toContain("cssClass: 'demo-business-checkbox-cell'");
         expect(basicCrud).not.toContain("checkedLabel: 'Yes'");
         expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
     });

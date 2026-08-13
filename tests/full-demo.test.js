@@ -13,6 +13,10 @@ const demoCss = fs.readFileSync(
     new URL('../src/demo/demo.css', import.meta.url),
     'utf8'
 );
+const checkboxFormatterSource = fs.readFileSync(
+    new URL('../src/demo/utils/demo-checkbox.js', import.meta.url),
+    'utf8'
+);
 const fakeApiSource = fs.readFileSync(
     new URL('../demo/fake-backend/fake-api.js', import.meta.url),
     'utf8'
@@ -206,7 +210,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('.demo-panel .amb-toolbar {');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);');
         expect(demoCss).toContain('.demo-panel .amb-toolbar__search {');
-        expect(source).toContain('class="amb-demo-inventory-grid"');
+        expect(source).toContain('class="amb-demo-inventory-grid demo-business-grid"');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-tableholder,');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-placeholder');
         expect(demoCss).toContain('--amb-demo-row-height: 36px;');
@@ -278,9 +282,11 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('renders Requires inspection with passive demo visual and AMB checkbox editor', () => {
-        expect(source).toContain('const formatInspectionCheckbox = cell =>');
-        expect(source).toContain('class="demo-inspection-visual${stateClass}"');
-        expect(source).toContain('aria-hidden="true"');
+        expect(source).toContain('const formatInspectionCheckbox = createDemoCheckboxFormatter();');
+        expect(source).toContain("cssClass: 'demo-business-checkbox-cell'");
+        expect(basicCrudSource).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
+        expect(checkboxFormatterSource).toContain('class="demo-inspection-visual${stateClass}"');
+        expect(checkboxFormatterSource).toContain('aria-hidden="true"');
         expect(source).toContain('formatter: formatInspectionCheckbox');
         expect(source).toContain('editor: AMB.editors.checkbox({');
         expect(source).toContain("checkedLabel: ''");
@@ -315,8 +321,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).not.toContain('.demo-checkbox-input');
         expect(demoCss).not.toContain('.demo-panel .amb-demo-inventory-grid .demo-inspection-checkbox');
         expect(demoCss).not.toContain('@keyframes demo-checkbox-pop');
-        expect(demoCss).toContain('.demo-panel .amb-demo-inventory-grid .demo-inspection-visual');
-        expect(demoCss).toContain('.demo-panel .amb-demo-inventory-grid .demo-inspection-visual.is-checked');
+        expect(demoCss).toContain('.demo-panel .demo-business-grid .demo-inspection-visual');
+        expect(demoCss).toContain('.demo-panel .demo-business-grid .demo-inspection-visual.is-checked');
         expect(demoCss).toContain('.demo-panel .tabulator-cell .amb-checkbox-editor');
         expect(demoCss).toContain('justify-content: center;');
     });

@@ -118,7 +118,9 @@ export default async function multifieldLookup(app) {
             </div>
         </details>
         <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
-        <div id="municipality-table" class="demo-example-grid-frame"></div>
+        <div class="demo-table-workbench">
+            <div id="municipality-table" class="demo-business-grid"></div>
+        </div>
     `;
 
     const tableMount = app.querySelector('#municipality-table');

@@ -25,12 +25,13 @@ export default function columnCalculations(app) {
                 </ul>
             </div>
         </details>
-        <div id="column-calculations-table" class="demo-example-grid-frame"></div>
+        <div class="demo-table-workbench">
+            <div id="column-calculations-table" class="demo-business-grid"></div>
+        </div>
     `;
 
     const grid = AMB.table({
         selector: '#column-calculations-table',
-        height: '320px',
         toolbar: false,
         data: [
             { id: 1001, product: 'Barcode scanner', category: 'Hardware', quantity: 8, unitPrice: 84.5, deliveryDays: 3, score: 88 },

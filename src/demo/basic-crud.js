@@ -1,5 +1,8 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
+
+const formatArchivedCheckbox = createDemoCheckboxFormatter({ checkedValue: 'Y' });
 
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
@@ -54,12 +57,13 @@ export default function basicCrud(app) {
                 </ul>
             </div>
         </details>
-        <div id="basic-table" class="demo-example-grid-frame"></div>
+        <div class="demo-table-workbench">
+            <div id="basic-table" class="demo-business-grid"></div>
+        </div>
     `;
 
     const demo = AMB.table({
         selector: '#basic-table',
-        height: '260px',
         deleteColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this note?',
@@ -146,12 +150,8 @@ export default function basicCrud(app) {
                 minWidth: 92,
                 widthGrow: 0.55,
                 hozAlign: 'center',
-                formatter: AMB.formatters.checkbox({
-                    checkedValue: 'Y',
-                    uncheckedValue: 'N',
-                    checkedLabel: '',
-                    uncheckedLabel: ''
-                }),
+                cssClass: 'demo-business-checkbox-cell',
+                formatter: formatArchivedCheckbox,
                 editor: AMB.editors.checkbox({
                     checkedValue: 'Y',
                     uncheckedValue: 'N',
