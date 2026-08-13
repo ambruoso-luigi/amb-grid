@@ -8,7 +8,7 @@ describe('demo site navigation', () => {
         const main = read('src/demo/main.js');
 
         expect(main).toContain('href="#getting-started-javascript"');
-        expect(main).toContain("window.location.hash === '#getting-started-javascript'");
+        expect(main).toContain("['#getting-started-javascript', '#javascript-demo'].includes(window.location.hash)");
         expect(main).toContain("'frameworks.title': 'Integrabile dove lavori gi\u00e0'");
         expect(main).toContain("'frameworks.title': 'Use AMB Grid where you already work'");
         expect(main).toContain("'frameworks.javascript.badge': 'Classic integration'");
@@ -66,38 +66,35 @@ describe('demo site navigation', () => {
         expect(main).toContain("variant: 'showcase'");
     });
 
-    test('documents classic HTML JS CSS integration as a planned browser bundle path', () => {
+    test('documents the current npm and standalone JavaScript integrations', () => {
         const guide = read('src/demo/getting-started-javascript.js');
         const main = read('src/demo/main.js');
 
-        expect(guide).toContain('id="classic-html-js-css-integration"');
-        expect(main).toContain("'guide.classic.title': 'Integrazione classica HTML + JS + CSS'");
-        expect(main).toContain("'guide.classic.title': 'Classic HTML + JS + CSS integration'");
+        expect(guide).toContain('id="javascript-integration"');
+        expect(main).toContain("'guide.integration.title': 'Usare AMB Grid con JavaScript'");
+        expect(main).toContain("'guide.integration.title': 'Use AMB Grid with JavaScript'");
+        expect(main).toContain("'guide.integration.modernTitle': 'Modern JavaScript / npm'");
+        expect(main).toContain("'guide.integration.browserTitle': 'Browser / standalone'");
         expect(guide).toContain('class="demo-guide-mode-card');
         expect(guide).toContain('class="demo-guide-badge');
-        expect(guide).toContain('class="demo-guide-file-structure"');
         expect(guide).toContain('class="demo-guide-code-section');
-        expect(main).toContain("'guide.classic.plannedBadge': 'Futura build browser'");
-        expect(main).toContain("'guide.classic.plannedBadge': 'Planned browser bundle'");
-        expect(main).toContain("'guide.classic.filesTitle': 'Struttura file'");
-        expect(main).toContain("'guide.classic.filesTitle': 'File structure'");
-        expect(guide).toContain('inventory-page.html');
-        expect(guide).toContain('inventory-page.js');
-        expect(guide).toContain('inventory-page.css');
-        expect(guide).toContain('https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css');
+        expect(guide).toContain("<span class=\"syntax-api\">AMB</span> } <span class=\"syntax-keyword\">from</span> <span class=\"syntax-string\">'amb-grid'</span>");
+        expect(guide).toContain("<span class=\"syntax-keyword\">import</span> <span class=\"syntax-string\">'amb-grid/style.css'</span>");
         expect(guide).toContain('./vendor/amb-grid/amb-grid.css');
         expect(guide).toContain('./vendor/amb-grid/amb-grid.umd.js');
-        expect(main).toContain('AMB Grid non produce ancora un file amb-grid.umd.js o amb-grid.iife.js');
-        expect(main).toContain('This snippet is the planned browser bundle integration shape');
-        expect(guide).toContain('return grid.crud.addRow({');
-        expect(guide).not.toContain('onAdd() {\n      grid.crud.addRow');
+        expect(guide).toContain('<span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({ ... });');
+        expect(guide).not.toContain('classic-html-js-css-integration');
+        expect(main).not.toContain('Futura build browser');
+        expect(main).not.toContain('Planned browser bundle');
     });
 
     test('keeps the JavaScript guide add-row snippets promise-aware', () => {
         const guide = read('src/demo/getting-started-javascript.js');
 
-        expect(guide).toContain('onAdd: () => {\n      return grid.crud.addRow');
-        expect(guide).toContain('onAdd() {\n      return grid.crud.addRow');
+        expect(guide).toContain('<span class="syntax-function">onAdd</span>: () => {\n      <span class="syntax-keyword">return</span> grid.crud.<span class="syntax-function">addRow</span>');
+        expect(guide).not.toContain('<span class="syntax-function">onAdd</span>: () => {\n      grid.crud.<span class="syntax-function">addRow</span>');
+        expect(guide).toContain('href="#javascript-demo"');
+        expect(guide).toContain('id="javascript-demo"');
     });
 
     test('keeps the complete warehouse demo out of the home shell', () => {
@@ -107,7 +104,9 @@ describe('demo site navigation', () => {
         expect(main).not.toContain('id="main-demo"');
         expect(main).not.toContain('mountMainDemo();');
         expect(main).toContain('href="#getting-started-javascript">${demoIcon(\'arrowRight\')}<span data-i18n="hero.primary"');
-        expect(main).toContain("'hero.description': 'AMB Grid adds a framework-agnostic CRUD layer on top of Tabulator");
+        expect(main).toContain("'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.'");
+        expect(main).not.toContain("'hero.description': 'AMB Grid adds a framework-agnostic CRUD layer on top of Tabulator");
+        expect(read('src/demo/getting-started-javascript.js')).not.toMatch(/Tabulator|Awesomplete|vanilla-datepicker/);
         expect(main).not.toContain('class="demo-hero-visual"');
         expect(main).not.toContain('data-i18n="hero.visualTitle"');
         expect(main).not.toContain('data-i18n="hero.visualPayload"');
@@ -140,6 +139,8 @@ describe('demo site navigation', () => {
         const main = read('src/demo/main.js');
         const guide = read('src/demo/getting-started-javascript.js');
         const css = read('src/demo/demo.css');
+        const englishFlag = statSync(new URL('../src/demo/assets/lang-en.svg', import.meta.url));
+        const italianFlag = statSync(new URL('../src/demo/assets/lang-it.svg', import.meta.url));
         const combined = `${main}\n${guide}`;
 
         expect(combined).toContain('class="language-switch');
@@ -154,11 +155,10 @@ describe('demo site navigation', () => {
         expect(combined).not.toContain('data-language="en"');
         expect(css).toContain('.language-switch__flag--en');
         expect(css).toContain('.language-switch__flag--it');
-        expect(css).toContain('data:image/svg+xml');
-        expect(css).toContain('%23012169');
-        expect(css).toContain('%23c8102e');
-        expect(css).toContain('#008c45');
-        expect(css).toContain('#cd212a');
+        expect(css).toContain("url('./assets/lang-en.svg')");
+        expect(css).toContain("url('./assets/lang-it.svg')");
+        expect(englishFlag.size).toBeGreaterThan(0);
+        expect(italianFlag.size).toBeGreaterThan(0);
     });
 
     test('shows feature examples as cards without removing demos', () => {
