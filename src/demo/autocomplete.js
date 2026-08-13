@@ -123,14 +123,16 @@ export default function autocomplete(app) {
         <details class="demo-disclosure">
             <summary class="demo-disclosure__summary" data-i18n="examples.autocomplete.detailsTitle">Autocomplete behavior</summary>
             <div class="demo-disclosure__content">
-                <ul class="demo-rules-list">
-                    <li data-i18n="examples.autocomplete.detail1">Strict mode requires a suggested value; free mode accepts custom values.</li>
-                    <li data-i18n="examples.autocomplete.detail2">Suggestions are filtered while typing and can be selected with the keyboard.</li>
-                    <li data-i18n="examples.autocomplete.detail3">Unknown strict values remain visible and are reported by validation.</li>
+                <ul class="demo-explanation-list">
+                    <li><strong data-i18n="examples.autocomplete.point1Title">Suggestions</strong><span data-i18n="examples.autocomplete.detail1">Matching options appear and narrow while you type.</span></li>
+                    <li><strong data-i18n="examples.autocomplete.point2Title">Strict values</strong><span data-i18n="examples.autocomplete.detail2">Department fields require a value from the supplied list.</span></li>
+                    <li><strong data-i18n="examples.autocomplete.point3Title">Free values</strong><span data-i18n="examples.autocomplete.detail3">Tag and city also accept custom values that are not in the suggestions.</span></li>
+                    <li><strong data-i18n="examples.autocomplete.point4Title">Keyboard</strong><span data-i18n="examples.autocomplete.detail4">Use the arrow keys to navigate suggestions and confirm without leaving the keyboard.</span></li>
+                    <li><strong data-i18n="examples.autocomplete.point5Title">Committed value</strong><span data-i18n="examples.autocomplete.detail5">The confirmed option becomes the cell value used by validation and the CRUD payload.</span></li>
                 </ul>
             </div>
         </details>
-        <div id="autocomplete-table"></div>
+        <div id="autocomplete-table" class="demo-example-grid-frame"></div>
     `;
 
     const demo = AMB.table({
@@ -161,15 +163,19 @@ export default function autocomplete(app) {
         data: createAutocompleteData(),
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', width: 70 },
+            { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.4 },
             {
                 title: 'Task',
                 field: 'task',
+                minWidth: 155,
+                widthGrow: 1.45,
                 editor: AMB.editors.text({ trim: true, maxLength: 80 })
             },
             {
                 title: 'Department strict',
                 field: 'department',
+                minWidth: 145,
+                widthGrow: 1.15,
                 editor: AMB.editors.autocomplete(departments, {
                     allowEmpty: true,
                     allowCustomValue: false,
@@ -188,6 +194,8 @@ export default function autocomplete(app) {
             {
                 title: 'Department required',
                 field: 'requiredDepartment',
+                minWidth: 150,
+                widthGrow: 1.2,
                 editor: AMB.editors.autocomplete(departments, {
                     allowEmpty: false,
                     allowCustomValue: false,
@@ -209,6 +217,8 @@ export default function autocomplete(app) {
             {
                 title: 'Free autocomplete',
                 field: 'tag',
+                minWidth: 125,
+                widthGrow: 0.9,
                 editor: AMB.editors.autocomplete(tags, {
                     allowEmpty: true,
                     allowCustomValue: true,
@@ -218,6 +228,8 @@ export default function autocomplete(app) {
             {
                 title: 'Long list (max 5)',
                 field: 'city',
+                minWidth: 135,
+                widthGrow: 1,
                 editor: AMB.editors.autocomplete(cities, {
                     allowEmpty: true,
                     allowCustomValue: true,

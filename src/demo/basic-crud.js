@@ -45,14 +45,16 @@ export default function basicCrud(app) {
         <details class="demo-disclosure">
             <summary class="demo-disclosure__summary" data-i18n="examples.basicCrud.detailsTitle">Basic CRUD behavior</summary>
             <div class="demo-disclosure__content">
-                <ul class="demo-rules-list">
-                    <li data-i18n="examples.basicCrud.detail1">Add Row creates a client-side row, while editing a cell marks its row as modified.</li>
-                    <li data-i18n="examples.basicCrud.detail2">Delete marks existing rows for deletion and removes unsaved new rows.</li>
-                    <li data-i18n="examples.basicCrud.detail3">Save validates changes, builds the payload, and simulates backend confirmation.</li>
+                <ul class="demo-explanation-list">
+                    <li><strong data-i18n="examples.basicCrud.point1Title">Add and edit</strong><span data-i18n="examples.basicCrud.detail1">Add Row creates a local row. Editing an existing row marks it as modified.</span></li>
+                    <li><strong data-i18n="examples.basicCrud.point2Title">Row states</strong><span data-i18n="examples.basicCrud.detail2">The State column shows which records are new, modified, deleted, or saved.</span></li>
+                    <li><strong data-i18n="examples.basicCrud.point3Title">Delete and rollback</strong><span data-i18n="examples.basicCrud.detail3">Existing rows are marked for deletion; unsaved new rows can be removed directly.</span></li>
+                    <li><strong data-i18n="examples.basicCrud.point4Title">Payload</strong><span data-i18n="examples.basicCrud.detail4">Show payload separates inserted, updated, and deleted records.</span></li>
+                    <li><strong data-i18n="examples.basicCrud.point5Title">Validate and save</strong><span data-i18n="examples.basicCrud.detail5">Save validates current changes and realigns valid row states after application confirmation.</span></li>
                 </ul>
             </div>
         </details>
-        <div id="basic-table"></div>
+        <div id="basic-table" class="demo-example-grid-frame"></div>
     `;
 
     const demo = AMB.table({
@@ -100,13 +102,15 @@ export default function basicCrud(app) {
         data: initialData.map(row => ({ ...row })),
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', width: 80 },
-            { title: 'Temp ID', field: '_ambTempId', width: 130 },
-            { title: 'Row No.', field: '_ambRowNumber', width: 90 },
-            { title: 'State', field: '_state', width: 100 },
+            { title: 'ID', field: 'id', minWidth: 75, widthGrow: 0.55 },
+            { title: 'Temp ID', field: '_ambTempId', minWidth: 105, widthGrow: 0.75 },
+            { title: 'Row No.', field: '_ambRowNumber', minWidth: 78, widthGrow: 0.55 },
+            { title: 'State', field: '_state', minWidth: 88, widthGrow: 0.65 },
             {
                 title: 'Title',
                 field: 'title',
+                minWidth: 140,
+                widthGrow: 1.8,
                 editor: AMB.editors.text({ trim: true }),
                 required: true,
                 requiredMessage: 'Title is required',
@@ -120,6 +124,8 @@ export default function basicCrud(app) {
             {
                 title: 'Tag',
                 field: 'tag',
+                minWidth: 100,
+                widthGrow: 1,
                 editor: AMB.editors.text({ lowercase: true, trim: true }),
                 required: true,
                 requiredMessage: 'Tag is required',
@@ -137,18 +143,20 @@ export default function basicCrud(app) {
             {
                 title: 'Archived',
                 field: 'archived',
-                width: 130,
+                minWidth: 92,
+                widthGrow: 0.55,
+                hozAlign: 'center',
                 formatter: AMB.formatters.checkbox({
                     checkedValue: 'Y',
                     uncheckedValue: 'N',
-                    checkedLabel: 'Yes',
-                    uncheckedLabel: 'No'
+                    checkedLabel: '',
+                    uncheckedLabel: ''
                 }),
                 editor: AMB.editors.checkbox({
                     checkedValue: 'Y',
                     uncheckedValue: 'N',
-                    checkedLabel: 'Yes',
-                    uncheckedLabel: 'No'
+                    checkedLabel: '',
+                    uncheckedLabel: ''
                 })
             }
         ]

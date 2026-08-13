@@ -39,7 +39,7 @@ const buildStateReport = report => [
     'Use Add row to create a new row.',
     'Edit Item, Category, Owner, or Note to create a modified row.',
     'Use the delete column to mark an existing row as deleted.',
-    'Use Save to simulate backend confirmation and mark valid changes as saved.',
+    'Use Save to confirm valid changes and mark them as saved.',
     'Use Create error to modify two rows and attach demo errors.'
 ];
 
@@ -72,15 +72,16 @@ export default function rowStates(app) {
         <details class="demo-disclosure">
             <summary class="demo-disclosure__summary" data-i18n="examples.rowStates.detailsTitle">Row states behavior</summary>
             <div class="demo-disclosure__content">
-                <ul class="demo-rules-list">
-                    <li data-i18n="examples.rowStates.detail1">clean, new, modified, deleted, and saved are lifecycle states.</li>
-                    <li data-i18n="examples.rowStates.detail2">Errors are separate indicators and are not lifecycle states.</li>
-                    <li data-i18n="examples.rowStates.detail3">Save acts only on valid new, modified, or deleted rows; Reload restores the initial data and states.</li>
-                    <li data-i18n="examples.rowStates.detail4">_ambTempId, _ambRowNumber, and _state are exposed for demonstration only.</li>
+                <ul class="demo-explanation-list">
+                    <li><strong data-i18n="examples.rowStates.point1Title">Lifecycle</strong><span data-i18n="examples.rowStates.detail1">clean is unchanged, new was added locally, and modified differs from its original data.</span></li>
+                    <li><strong data-i18n="examples.rowStates.point2Title">Delete</strong><span data-i18n="examples.rowStates.detail2">deleted marks an existing row for removal; a new unsaved row is removed directly.</span></li>
+                    <li><strong data-i18n="examples.rowStates.point3Title">Save</strong><span data-i18n="examples.rowStates.detail3">Save processes valid changes and exposes saved after application confirmation.</span></li>
+                    <li><strong data-i18n="examples.rowStates.point4Title">Rollback</strong><span data-i18n="examples.rowStates.detail4">Rollback restores original values and returns an edited row to clean.</span></li>
+                    <li><strong data-i18n="examples.rowStates.point5Title">Report</strong><span data-i18n="examples.rowStates.detail5">Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.</span></li>
                 </ul>
             </div>
         </details>
-        <div id="row-states-table"></div>
+        <div id="row-states-table" class="demo-example-grid-frame"></div>
     `;
 
     const demo = AMB.table({
@@ -126,38 +127,43 @@ export default function rowStates(app) {
             {
                 title: 'ID',
                 field: 'id',
-                width: 80,
+                minWidth: 68,
+                widthGrow: 0.4,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: 'Temp ID',
                 field: '_ambTempId',
-                width: 130,
+                minWidth: 105,
+                widthGrow: 0.65,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: '#',
                 field: '_ambRowNumber',
-                width: 70,
+                minWidth: 58,
+                widthGrow: 0.35,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: 'Lifecycle',
                 field: '_state',
-                width: 110,
+                minWidth: 92,
+                widthGrow: 0.6,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: 'Errors',
                 field: '_ambErrorCount',
-                width: 90,
+                minWidth: 75,
+                widthGrow: 0.45,
                 formatter: formatErrorCount,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
-            { title: 'Item', field: 'item', editor: AMB.editors.text({ trim: true }) },
-            { title: 'Category', field: 'category', editor: AMB.editors.text({ trim: true }) },
-            { title: 'Owner', field: 'owner', editor: AMB.editors.text({ trim: true }) },
-            { title: 'Note', field: 'note', editor: AMB.editors.text({ trim: true }) }
+            { title: 'Item', field: 'item', minWidth: 125, widthGrow: 1.35, editor: AMB.editors.text({ trim: true }) },
+            { title: 'Category', field: 'category', minWidth: 105, widthGrow: 0.9, editor: AMB.editors.text({ trim: true }) },
+            { title: 'Owner', field: 'owner', minWidth: 90, widthGrow: 0.75, editor: AMB.editors.text({ trim: true }) },
+            { title: 'Note', field: 'note', minWidth: 140, widthGrow: 1.6, editor: AMB.editors.text({ trim: true }) }
         ]
     });
 

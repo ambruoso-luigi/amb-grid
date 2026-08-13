@@ -108,15 +108,17 @@ export default async function multifieldLookup(app) {
         <details class="demo-disclosure">
             <summary class="demo-disclosure__summary" data-i18n="examples.multifieldLookup.detailsTitle">Multifield lookup behavior</summary>
             <div class="demo-disclosure__content">
-                <ul class="demo-rules-list">
-                    <li data-i18n="examples.multifieldLookup.detail1">The Municipality cell opens the lookup and selection fills every connected field.</li>
-                    <li data-i18n="examples.multifieldLookup.detail2">Derived cells are readonly and are not edited directly.</li>
-                    <li data-i18n="examples.multifieldLookup.detail3">The payload includes CRUD data ready for backend integration.</li>
+                <ul class="demo-explanation-list">
+                    <li><strong data-i18n="examples.multifieldLookup.point1Title">Select a record</strong><span data-i18n="examples.multifieldLookup.detail1">Click Municipality and choose one complete record from the lookup.</span></li>
+                    <li><strong data-i18n="examples.multifieldLookup.point2Title">Master field</strong><span data-i18n="examples.multifieldLookup.detail2">Municipality is the actionable master field; dependent fields remain readonly.</span></li>
+                    <li><strong data-i18n="examples.multifieldLookup.point3Title">Dependent fields</strong><span data-i18n="examples.multifieldLookup.detail3">Province, Region, Postal Code, ISTAT Code, and Cadastral Code update together.</span></li>
+                    <li><strong data-i18n="examples.multifieldLookup.point4Title">Search</strong><span data-i18n="examples.multifieldLookup.detail4">Search the lookup dataset to narrow the available municipalities before selection.</span></li>
+                    <li><strong data-i18n="examples.multifieldLookup.point5Title">Consistent data</strong><span data-i18n="examples.multifieldLookup.detail5">Selecting one record prevents combinations of dependent values that do not belong together.</span></li>
                 </ul>
             </div>
         </details>
         <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
-        <div id="municipality-table"></div>
+        <div id="municipality-table" class="demo-example-grid-frame"></div>
     `;
 
     const tableMount = app.querySelector('#municipality-table');
@@ -247,7 +249,8 @@ export default async function multifieldLookup(app) {
             {
                 title: 'Municipality',
                 field: 'municipality',
-                width: 220,
+                minWidth: 165,
+                widthGrow: 1.7,
                 required: true,
                 editable: false,
                 cssClass: 'amb-cell--readonly-actionable amb-cell--actionable',
@@ -264,35 +267,40 @@ export default async function multifieldLookup(app) {
                 title: 'Province',
                 field: 'province',
                 required: true,
-                width: 100,
+                minWidth: 88,
+                widthGrow: 0.65,
                 editable: false,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: 'Region',
                 field: 'region',
-                width: 130,
+                minWidth: 105,
+                widthGrow: 1,
                 editable: false,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: 'Postal Code',
                 field: 'postalCode',
-                width: 125,
+                minWidth: 105,
+                widthGrow: 0.8,
                 editable: false,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: 'ISTAT Code',
                 field: 'istatCode',
-                width: 120,
+                minWidth: 105,
+                widthGrow: 0.8,
                 editable: false,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             },
             {
                 title: 'Cadastral Code',
                 field: 'cadastralCode',
-                width: 155,
+                minWidth: 125,
+                widthGrow: 0.95,
                 editable: false,
                 cssClass: 'amb-cell--readonly-passive amb-cell--derived'
             }

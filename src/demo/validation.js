@@ -223,14 +223,16 @@ export default function validation(app) {
         <details class="demo-disclosure">
             <summary class="demo-disclosure__summary" data-i18n="examples.validation.detailsTitle">Validation rules and limits</summary>
             <div class="demo-disclosure__content">
-                <ul class="demo-rules-list">
-                    <li data-i18n="examples.validation.detail1">Alias and email demonstrate required, unique, length, and format rules.</li>
-                    <li data-i18n="examples.validation.detail2">Fiscal code, VAT number, IBAN, and document fields use demonstrative syntax checks.</li>
-                    <li data-i18n="examples.validation.detail3">Frontend checks do not replace backend validation, authorization, or business rules.</li>
+                <ul class="demo-explanation-list">
+                    <li><strong data-i18n="examples.validation.point1Title">Field rules</strong><span data-i18n="examples.validation.detail1">Fields demonstrate required, unique, length, pattern, and format rules.</span></li>
+                    <li><strong data-i18n="examples.validation.point2Title">Visible errors</strong><span data-i18n="examples.validation.detail2">Leaving an invalid edited cell associates feedback with that cell and row.</span></li>
+                    <li><strong data-i18n="examples.validation.point3Title">Valid and invalid data</strong><span data-i18n="examples.validation.detail3">Create anomalies makes the contrast visible; the report lists the rules that failed.</span></li>
+                    <li><strong data-i18n="examples.validation.point4Title">Payload and save</strong><span data-i18n="examples.validation.detail4">Invalid changed rows cannot enter the save-ready portion of the payload.</span></li>
+                    <li><strong data-i18n="examples.validation.point5Title">Correct and retry</strong><span data-i18n="examples.validation.detail5">Correct a highlighted value and validate again to clear its error.</span></li>
                 </ul>
             </div>
         </details>
-        <div id="validation-table"></div>
+        <div id="validation-table" class="demo-example-grid-frame"></div>
     `;
 
     const demo = AMB.table({
@@ -272,10 +274,12 @@ export default function validation(app) {
         data: validationData,
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', width: 70 },
+            { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.45 },
             {
                 title: 'Alias',
                 field: 'alias',
+                minWidth: 95,
+                widthGrow: 0.8,
                 editor: AMB.editors.text({ trim: true, maxLength: 20 }),
                 required: true,
                 requiredMessage: 'Alias is required',
@@ -297,6 +301,8 @@ export default function validation(app) {
             {
                 title: 'Email',
                 field: 'email',
+                minWidth: 145,
+                widthGrow: 1.35,
                 editor: AMB.editors.text({ trim: true, maxLength: 80 }),
                 validation: {
                     email: {
@@ -307,6 +313,8 @@ export default function validation(app) {
             {
                 title: 'Access Code',
                 field: 'accessCode',
+                minWidth: 105,
+                widthGrow: 0.8,
                 editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 6 }),
                 validation: {
                     pattern: {
@@ -318,6 +326,8 @@ export default function validation(app) {
             {
                 title: 'Codice Fiscale',
                 field: 'fiscalCode',
+                minWidth: 135,
+                widthGrow: 1.05,
                 editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 16 }),
                 validation: {
                     codiceFiscale: {
@@ -328,6 +338,8 @@ export default function validation(app) {
             {
                 title: 'Partita IVA',
                 field: 'vatNumber',
+                minWidth: 110,
+                widthGrow: 0.85,
                 editor: AMB.editors.text({ trim: true, maxLength: 11 }),
                 validation: {
                     pattern: {
@@ -339,6 +351,8 @@ export default function validation(app) {
             {
                 title: 'CF or P.IVA',
                 field: 'fiscalIdOrVat',
+                minWidth: 130,
+                widthGrow: 1,
                 editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 16 }),
                 validation: {
                     anyOf: {
@@ -360,6 +374,8 @@ export default function validation(app) {
             {
                 title: 'Italian IBAN',
                 field: 'iban',
+                minWidth: 155,
+                widthGrow: 1.25,
                 editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 27 }),
                 validation: {
                     italianIban: {
@@ -370,6 +386,8 @@ export default function validation(app) {
             {
                 title: 'Passport/Document',
                 field: 'documentNumber',
+                minWidth: 135,
+                widthGrow: 1,
                 editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 20 }),
                 validation: {
                     pattern: {

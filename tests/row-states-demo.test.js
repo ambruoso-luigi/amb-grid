@@ -50,8 +50,8 @@ describe('Row states demo', () => {
             'data-i18n="examples.rowStates.detailsTitle">Row states behavior</summary>'
         );
         expect(source).not.toContain('<details class="demo-disclosure" open>');
-        expect(source).toContain('clean, new, modified, deleted, and saved are lifecycle states.');
-        expect(source).toContain('Errors are separate indicators and are not lifecycle states.');
+        expect(source).toContain('clean is unchanged, new was added locally, and modified differs from its original data.');
+        expect(source).toContain('deleted marks an existing row for removal; a new unsaved row is removed directly.');
         expect(source).toContain("title: 'Lifecycle'");
         expect(source).toContain("title: 'Errors'");
         expect(source).toContain("field: '_ambErrorCount'");
@@ -67,7 +67,7 @@ describe('Row states demo', () => {
         expect(source).toContain('Cell errors: ${report.errors.cells.length}');
         expect(source).toContain('Row errors: ${report.errors.rows.length}');
         expect(source).toContain('buildErrorDetails(report)');
-        expect(source).toContain('_ambTempId, _ambRowNumber, and _state are exposed for demonstration only.');
+        expect(source).toContain('Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.');
         expect(
             source.match(/cssClass: 'amb-cell--readonly-passive amb-cell--derived'/g)
         ).toHaveLength(5);

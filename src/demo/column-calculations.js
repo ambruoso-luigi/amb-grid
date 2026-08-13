@@ -10,6 +10,11 @@ export default function columnCalculations(app) {
             <summary class="demo-disclosure__summary" data-i18n="examples.columnCalculations.detailsTitle">How column calculations work</summary>
             <div class="demo-disclosure__content">
                 <p data-i18n="examples.columnCalculations.detailsText">AMB Grid displays aggregate values in the calculation row. Each result uses its own column values and updates when the data changes.</p>
+                <ul class="demo-explanation-list demo-explanation-list--compact">
+                    <li><strong data-i18n="examples.columnCalculations.point1Title">Own column</strong><span data-i18n="examples.columnCalculations.detail1">Every calculation receives only the values from the column where it is displayed.</span></li>
+                    <li><strong data-i18n="examples.columnCalculations.point2Title">Live updates</strong><span data-i18n="examples.columnCalculations.detail2">Edit a business value and the corresponding aggregate updates with the grid data.</span></li>
+                    <li><strong data-i18n="examples.columnCalculations.point3Title">Built-in row</strong><span data-i18n="examples.columnCalculations.detail3">The calculation row keeps aggregates in the grid without external manual summaries.</span></li>
+                </ul>
                 <ul class="demo-calculation-map" aria-label="Column calculation mapping">
                     <li><strong>COUNT</strong><span>ID</span></li>
                     <li><strong>UNIQUE</strong><span data-i18n="examples.columnCalculations.category">Category</span></li>
@@ -20,7 +25,7 @@ export default function columnCalculations(app) {
                 </ul>
             </div>
         </details>
-        <div id="column-calculations-table"></div>
+        <div id="column-calculations-table" class="demo-example-grid-frame"></div>
     `;
 
     const grid = AMB.table({
@@ -39,7 +44,7 @@ export default function columnCalculations(app) {
         layout: 'fitColumns',
         columns: [
             {
-                title: 'ID', field: 'id', minWidth: 75,
+                title: 'ID', field: 'id', minWidth: 70, widthGrow: 0.45,
                 topCalc: 'count',
                 topCalcFormatter: AMB.formatters.calculation({ label: 'COUNT:' })
             },
@@ -51,14 +56,14 @@ export default function columnCalculations(app) {
                 topCalcFormatter: AMB.formatters.calculation({ label: 'UNIQUE:' })
             },
             {
-                title: 'Quantity', field: 'quantity', minWidth: 105,
+                title: 'Quantity', field: 'quantity', minWidth: 100, widthGrow: 0.75,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'sum',
                 topCalcFormatter: AMB.formatters.calculation({ label: 'SUM:' })
             },
             {
-                title: 'Unit price', field: 'unitPrice', minWidth: 120,
+                title: 'Unit price', field: 'unitPrice', minWidth: 110, widthGrow: 0.85,
                 editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }),
                 formatter: AMB.formatters.decimal(2),
                 topCalc: 'avg',
@@ -66,14 +71,14 @@ export default function columnCalculations(app) {
                 topCalcFormatter: AMB.formatters.calculation({ label: 'AVG:', formatValue: formatAveragePrice })
             },
             {
-                title: 'Delivery days', field: 'deliveryDays', minWidth: 125,
+                title: 'Delivery days', field: 'deliveryDays', minWidth: 115, widthGrow: 0.8,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'min',
                 topCalcFormatter: AMB.formatters.calculation({ label: 'MIN:' })
             },
             {
-                title: 'Score', field: 'score', minWidth: 95,
+                title: 'Score', field: 'score', minWidth: 88, widthGrow: 0.6,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
                 topCalc: 'max',

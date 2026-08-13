@@ -2320,6 +2320,47 @@ a {
     margin-top: 5px;
 }
 
+.demo-explanation-list {
+    display: grid;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.demo-explanation-list li {
+    display: grid;
+    gap: 4px;
+    padding: 11px 0;
+}
+
+.demo-explanation-list li:first-child {
+    padding-top: 0;
+}
+
+.demo-explanation-list li:last-child {
+    padding-bottom: 0;
+}
+
+.demo-explanation-list li + li {
+    border-top: 1px solid rgb(199 214 230 / 72%);
+}
+
+.demo-explanation-list strong {
+    color: var(--amb-site-navy);
+    font-size: 12px;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.demo-explanation-list span {
+    line-height: 1.55;
+}
+
+.demo-explanation-list--compact {
+    margin-top: 12px;
+}
+
 .demo-calculation-map {
     display: grid;
     gap: 8px;
@@ -2384,12 +2425,26 @@ a {
     color: var(--demo-text);
 }
 
-.demo-roadmap-list {
-    color: var(--demo-muted);
-    display: grid;
-    gap: 10px;
-    margin: 0;
-    padding-left: 20px;
+.demo-example-grid-frame {
+    border: 1px solid #aebfd0;
+    border-radius: var(--amb-site-radius-sm);
+    box-shadow: 0 6px 16px rgb(16 35 63 / 5%);
+    max-width: 100%;
+    overflow: hidden;
+    width: 100%;
+}
+
+.demo-example-grid-frame > .amb-toolbar {
+    border: 0;
+    border-bottom: 1px solid #b8cada;
+    border-radius: 0;
+}
+
+.demo-example-grid-frame > .tabulator,
+.demo-example-grid-frame .tabulator {
+    border: 0;
+    border-radius: 0;
+    max-width: 100%;
 }
 
 .tabulator {

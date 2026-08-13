@@ -83,11 +83,6 @@ const translations = {
         'examples.title': 'Esempi funzionali',
         'examples.description': 'Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.',
         'examples.open': 'Apri esempio',
-        'roadmap.kicker': 'Prossimi passi',
-        'roadmap.title': 'Roadmap essenziale',
-        'roadmap.demo': 'Raffinare la demo magazzino con fake API più completa, rollback guidato e salvataggio simulato più realistico.',
-        'roadmap.site': 'Preparare una futura versione bilingue completa e una pubblicazione GitHub Pages dedicata alla demo.',
-        'roadmap.package': 'Definire in seguito build libreria, `files` npm o `.npmignore`, tipi e artifact pubblicabile senza demo.',
         'guide.back': 'Torna alla home demo',
         'guide.badge': 'JavaScript',
         'guide.title': 'AMB Grid con JavaScript',
@@ -186,11 +181,6 @@ const translations = {
         'examples.title': 'Feature examples',
         'examples.description': 'The existing demos remain available as focused examples for individual AMB Grid capabilities.',
         'examples.open': 'Open example',
-        'roadmap.kicker': 'Next steps',
-        'roadmap.title': 'Essential roadmap',
-        'roadmap.demo': 'Refine the warehouse demo with a fuller fake API, guided rollback, and a more realistic simulated save.',
-        'roadmap.site': 'Prepare a future complete bilingual version and a GitHub Pages publication dedicated to the demo.',
-        'roadmap.package': 'Later define a library build, npm `files` or `.npmignore`, types, and a publishable artifact without demos.',
         'guide.back': 'Back to demo home',
         'guide.badge': 'JavaScript',
         'guide.title': 'AMB Grid with JavaScript',
@@ -526,17 +516,6 @@ const renderShell = selectedId => {
                 <section id="feature-example" class="demo-example demo-panel"></section>
             </section>
 
-            <section class="demo-section demo-roadmap">
-                <div class="demo-section-heading">
-                    <p class="demo-kicker" data-i18n="roadmap.kicker">Prossimi passi</p>
-                    <h2 data-i18n="roadmap.title">Roadmap essenziale</h2>
-                </div>
-                <ul class="demo-roadmap-list">
-                    <li data-i18n="roadmap.demo">Raffinare la demo magazzino con fake API più completa, rollback guidato e salvataggio simulato più realistico.</li>
-                    <li data-i18n="roadmap.site">Preparare una futura versione bilingue completa e una pubblicazione GitHub Pages dedicata alla demo.</li>
-                    <li data-i18n="roadmap.package">Definire in seguito build libreria, files npm o .npmignore, tipi e artifact pubblicabile senza demo.</li>
-                </ul>
-            </section>
         </main>
     `;
 

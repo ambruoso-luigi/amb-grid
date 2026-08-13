@@ -195,7 +195,7 @@ describe('demo site navigation', () => {
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Come funzionano i calcoli di colonna'");
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'How column calculations work'");
         expect(copy).toContain("'examples.rowStates.detailsTitle': 'Come funzionano gli stati riga'");
-        expect(copy).toContain("'examples.rowStates.detailsTitle': 'Row states behavior'");
+        expect(copy).toContain("'examples.rowStates.detailsTitle': 'How row states work'");
         expect(main).not.toContain('multiple-tables');
         expect(main).toContain('applyI18n();\n    initDemoMotion(container);');
     });
@@ -251,6 +251,46 @@ describe('demo site navigation', () => {
             expect(source).toContain(`data-i18n="examples.${key}.detailsTitle"`);
             expect(copy.match(new RegExp(`'examples\\.${key}\\.detailsTitle'`, 'g'))).toHaveLength(2);
         });
+    });
+
+    test('ends the home after responsive, framed feature grids without a roadmap', () => {
+        const main = read('src/demo/main.js');
+        const css = read('src/demo/demo.css');
+        const exampleFiles = [
+            'basic-crud',
+            'validation',
+            'autocomplete',
+            'multifield-lookup',
+            'row-states',
+            'column-calculations'
+        ];
+
+        expect(main).not.toContain('demo-roadmap');
+        expect(main).not.toContain('roadmap.kicker');
+        expect(main).not.toContain('roadmap.title');
+        expect(css).not.toContain('.demo-roadmap-list');
+        expect(css).toContain('.demo-example-grid-frame');
+
+        exampleFiles.forEach(fileName => {
+            const source = read(`src/demo/${fileName}.js`);
+
+            expect(source).toContain('class="demo-example-grid-frame"');
+            expect(source).toContain("layout: 'fitColumns'");
+            expect(source).toContain('minWidth:');
+            expect(source).toContain('widthGrow:');
+        });
+    });
+
+    test('uses a centered label-free checkbox in Basic CRUD', () => {
+        const basicCrud = read('src/demo/basic-crud.js');
+
+        expect(basicCrud).toContain("checkedValue: 'Y'");
+        expect(basicCrud).toContain("uncheckedValue: 'N'");
+        expect(basicCrud).toContain("checkedLabel: ''");
+        expect(basicCrud).toContain("uncheckedLabel: ''");
+        expect(basicCrud).toContain("hozAlign: 'center'");
+        expect(basicCrud).not.toContain("checkedLabel: 'Yes'");
+        expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
     });
 
     test('keeps the home wide and highlights keyboard-first editing', () => {
