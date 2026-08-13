@@ -218,22 +218,16 @@ const anomalyPatches = [
 
 export default function validation(app) {
     app.innerHTML = `
-        <h2>Validation</h2>
-        <p class="demo-note">Most validations run when you leave an edited cell. Use the toolbar to create intentional validation errors, inspect the report, or reset the demo data.</p>
+        <h2 data-i18n="examples.validation.title">Validation</h2>
+        <p class="demo-note" data-i18n="examples.validation.intro">Most validations run when you leave an edited cell. The toolbar can create intentional errors, open the report, or reset the data.</p>
         <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary">Validation rules and limits</summary>
+            <summary class="demo-disclosure__summary" data-i18n="examples.validation.detailsTitle">Validation rules and limits</summary>
             <div class="demo-disclosure__content">
                 <ul class="demo-rules-list">
-                    <li>Alias: required, unique, 3-20 characters</li>
-                    <li>Email: valid email syntax</li>
-                    <li>Access Code: modular example: the editor uppercases input, then a pattern validator checks 3 letters + 3 digits, e.g. ABC001</li>
-                    <li>Codice Fiscale: syntactic Italian fiscal code format, e.g. RSSMRA80A01H501U</li>
-                    <li>Partita IVA: syntactic 11-digit format, e.g. 12345678901</li>
-                    <li>Codice Fiscale / Partita IVA: accepts either a syntactic Codice Fiscale or an 11-digit Partita IVA using AMB.validators.anyOf</li>
-                    <li>Italian IBAN: syntactic Italian IBAN format, spaces ignored by the validator; no checksum, bank, account, official, fiscal, or existence check is performed</li>
-                    <li>Passport/Document: 6-20 alphanumeric characters; custom rule rejects TMP prefixes</li>
+                    <li data-i18n="examples.validation.detail1">Alias and email demonstrate required, unique, length, and format rules.</li>
+                    <li data-i18n="examples.validation.detail2">Fiscal code, VAT number, IBAN, and document fields use demonstrative syntax checks.</li>
+                    <li data-i18n="examples.validation.detail3">Frontend checks do not replace backend validation, authorization, or business rules.</li>
                 </ul>
-                <p>Format-specific validators in this demo are syntactic checks only. They do not replace backend validation, official verification, checksum validation where not implemented, authorization, or business rules.</p>
             </div>
         </details>
         <div id="validation-table"></div>

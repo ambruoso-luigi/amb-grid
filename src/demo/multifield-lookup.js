@@ -103,26 +103,19 @@ const loadMunicipalities = async () => {
 
 export default async function multifieldLookup(app) {
     app.innerHTML = `
-        <h2>Italian municipality multifield lookup</h2>
-        <p class="demo-note">
-            Click the Municipality cell to open the lookup. The municipality
-            cannot be typed manually in this demo: selecting a valid record
-            keeps Municipality, Province, Region, Postal Code, ISTAT Code and
-            Cadastral Code synchronized.
-        </p>
+        <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
+        <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Open the lookup from the Municipality cell: selection keeps Municipality, Province, Region, Postal Code, ISTAT Code, and Cadastral Code synchronized.</p>
         <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary">Multifield lookup behavior</summary>
+            <summary class="demo-disclosure__summary" data-i18n="examples.multifieldLookup.detailsTitle">Multifield lookup behavior</summary>
             <div class="demo-disclosure__content">
                 <ul class="demo-rules-list">
-                    <li>The Municipality cell opens the lookup.</li>
-                    <li>Selecting a municipality fills province, region, postal code, ISTAT code, and cadastral code.</li>
-                    <li>Derived cells are intentionally not edited directly.</li>
-                    <li>Actionable readonly cells look different from passive derived cells.</li>
-                    <li>The payload shows the CRUD data ready for backend integration.</li>
+                    <li data-i18n="examples.multifieldLookup.detail1">The Municipality cell opens the lookup and selection fills every connected field.</li>
+                    <li data-i18n="examples.multifieldLookup.detail2">Derived cells are readonly and are not edited directly.</li>
+                    <li data-i18n="examples.multifieldLookup.detail3">The payload includes CRUD data ready for backend integration.</li>
                 </ul>
             </div>
         </details>
-        <p class="demo-warning"><strong>Demo data warning:</strong> ${DATASET_WARNING}</p>
+        <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
         <div id="municipality-table"></div>
     `;
 

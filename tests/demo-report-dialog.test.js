@@ -61,7 +61,7 @@ describe('demo report dialog integration', () => {
             "import { createDemoReportDialog } from './utils/demo-report-dialog.js'"
         );
         expect(source).toContain(
-            '<summary class="demo-disclosure__summary">Autocomplete behavior</summary>'
+            'data-i18n="examples.autocomplete.detailsTitle">Autocomplete behavior</summary>'
         );
         expect(source).toContain("label: 'Validate autocomplete'");
         expect(source).toContain("label: 'Create anomalies'");
@@ -113,13 +113,13 @@ describe('demo report dialog integration', () => {
         const demoCss = readSource('../src/demo/demo.css');
 
         expect(validationSource).toContain(
-            'Use the toolbar to create intentional validation errors, inspect the report, or reset the demo data.'
+            'The toolbar can create intentional errors, open the report, or reset the data.'
         );
         expect(validationSource).toContain(
-            '<summary class="demo-disclosure__summary">Validation rules and limits</summary>'
+            'data-i18n="examples.validation.detailsTitle">Validation rules and limits</summary>'
         );
         expect(basicCrudSource).toContain(
-            '<summary class="demo-disclosure__summary">Basic CRUD behavior</summary>'
+            'data-i18n="examples.basicCrud.detailsTitle">Basic CRUD behavior</summary>'
         );
         expect(validationSource).not.toContain('<details class="demo-disclosure" open>');
         expect(basicCrudSource).not.toContain('<details class="demo-disclosure" open>');

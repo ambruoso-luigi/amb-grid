@@ -4,8 +4,22 @@ const formatAveragePrice = value => Number(value).toFixed(2);
 
 export default function columnCalculations(app) {
     app.innerHTML = `
-        <h2>Column calculations</h2>
-        <p class="demo-note">Edit the business values and see each aggregate update in its own column.</p>
+        <h2 data-i18n="examples.columnCalculations.title">Column calculations</h2>
+        <p class="demo-note" data-i18n="examples.columnCalculations.intro">Edit the business values and see each aggregate update in its own column.</p>
+        <details class="demo-disclosure">
+            <summary class="demo-disclosure__summary" data-i18n="examples.columnCalculations.detailsTitle">How column calculations work</summary>
+            <div class="demo-disclosure__content">
+                <p data-i18n="examples.columnCalculations.detailsText">AMB Grid displays aggregate values in the calculation row. Each result uses its own column values and updates when the data changes.</p>
+                <ul class="demo-calculation-map" aria-label="Column calculation mapping">
+                    <li><strong>COUNT</strong><span>ID</span></li>
+                    <li><strong>UNIQUE</strong><span data-i18n="examples.columnCalculations.category">Category</span></li>
+                    <li><strong>SUM</strong><span data-i18n="examples.columnCalculations.quantity">Quantity</span></li>
+                    <li><strong>AVG</strong><span data-i18n="examples.columnCalculations.unitPrice">Unit price</span></li>
+                    <li><strong>MIN</strong><span data-i18n="examples.columnCalculations.deliveryDays">Delivery days</span></li>
+                    <li><strong>MAX</strong><span data-i18n="examples.columnCalculations.score">Score</span></li>
+                </ul>
+            </div>
+        </details>
         <div id="column-calculations-table"></div>
     `;
 

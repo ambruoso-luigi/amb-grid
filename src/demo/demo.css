@@ -2077,8 +2077,8 @@ a {
 .demo-feature-grid {
     display: grid;
     gap: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    margin-bottom: 20px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 28px;
 }
 
 .demo-feature-card {
@@ -2091,6 +2091,7 @@ a {
     cursor: pointer;
     display: grid;
     gap: 8px;
+    grid-template-rows: auto 1fr auto;
     min-height: 150px;
     padding: 16px;
     position: relative;
@@ -2152,7 +2153,7 @@ a {
     color: var(--amb-site-blue-strong);
     font-size: 13px;
     font-weight: 800;
-    margin-top: 4px;
+    margin-top: auto;
     transition: transform 160ms ease;
 }
 
@@ -2166,14 +2167,27 @@ a {
 }
 
 .demo-example.demo-panel {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    border: 1px solid #bfd1e2;
-    box-shadow: 0 12px 28px rgb(16 35 63 / 8%);
-    padding: clamp(14px, 2vw, 20px);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    border-top: 1px solid var(--amb-site-border);
+    box-shadow: none;
+    padding: clamp(24px, 3vw, 36px) 0 0;
 }
 
 .demo-example > h2 {
-    font-size: 26px;
+    color: var(--amb-site-navy);
+    font-size: clamp(26px, 2.4vw, 34px);
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin-bottom: 8px;
+}
+
+.demo-example > .demo-note {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    max-width: 880px;
 }
 
 .toolbar {
@@ -2238,27 +2252,59 @@ a {
 }
 
 .demo-disclosure {
-    background: linear-gradient(180deg, #ffffff 0%, var(--demo-surface-muted) 100%);
+    background: var(--amb-site-surface-soft);
     border: 1px solid var(--demo-border);
-    border-radius: 6px;
-    color: #34443c;
-    margin: 10px 0 14px;
+    border-radius: var(--amb-site-radius-sm);
+    color: var(--amb-site-slate);
+    margin: 0 0 20px;
     overflow: hidden;
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+.demo-disclosure[open] {
+    background: #ffffff;
+    border-color: var(--amb-site-border-strong);
 }
 
 .demo-disclosure__summary {
+    align-items: center;
+    color: var(--amb-site-navy);
     cursor: pointer;
+    display: flex;
     font-weight: 700;
-    padding: 10px 12px;
+    justify-content: space-between;
+    list-style: none;
+    padding: 12px 14px;
+    transition: background 160ms ease, color 160ms ease;
+}
+
+.demo-disclosure__summary::-webkit-details-marker {
+    display: none;
+}
+
+.demo-disclosure__summary::after {
+    border-bottom: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    content: "";
+    height: 7px;
+    margin-left: 16px;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 180ms ease-out;
+    width: 7px;
+}
+
+.demo-disclosure[open] .demo-disclosure__summary::after {
+    transform: rotate(225deg) translate(-2px, -2px);
 }
 
 .demo-disclosure__summary:hover {
     background: #eef6fd;
+    color: var(--amb-site-blue-strong);
 }
 
 .demo-disclosure__content {
     border-top: 1px solid var(--demo-border);
-    padding: 10px 14px 12px;
+    padding: 14px 16px 16px;
 }
 
 .demo-disclosure__content p {
@@ -2272,6 +2318,36 @@ a {
 
 .demo-rules-list li + li {
     margin-top: 5px;
+}
+
+.demo-calculation-map {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+}
+
+.demo-calculation-map li {
+    align-items: center;
+    background: var(--amb-site-blue-soft);
+    border: 1px solid #c7dced;
+    border-radius: 6px;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    padding: 8px 10px;
+}
+
+.demo-calculation-map strong {
+    color: var(--amb-site-blue-strong);
+    font-size: 12px;
+}
+
+.demo-calculation-map span {
+    color: var(--amb-site-slate);
+    font-size: 13px;
 }
 
 .demo-table-wrap {
@@ -3224,6 +3300,10 @@ a {
     .demo-flow-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    .demo-feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 820px) {
@@ -3357,6 +3437,11 @@ a {
     }
 
     .demo-flow-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .demo-feature-grid,
+    .demo-calculation-map {
         grid-template-columns: 1fr;
     }
 

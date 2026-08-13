@@ -118,19 +118,15 @@ const createAutocompleteData = () => [
 
 export default function autocomplete(app) {
     app.innerHTML = `
-        <h2>Autocomplete</h2>
-        <p class="demo-note">Autocomplete helps users choose suggested values while keeping AMB Grid in control of commit rules, validation, and row state.</p>
+        <h2 data-i18n="examples.autocomplete.title">Autocomplete</h2>
+        <p class="demo-note" data-i18n="examples.autocomplete.intro">Autocomplete helps users choose suggested values while AMB Grid controls commit, validation, and row state.</p>
         <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary">Autocomplete behavior</summary>
+            <summary class="demo-disclosure__summary" data-i18n="examples.autocomplete.detailsTitle">Autocomplete behavior</summary>
             <div class="demo-disclosure__content">
                 <ul class="demo-rules-list">
-                    <li>Strict autocomplete requires one of the suggested values.</li>
-                    <li>Free autocomplete accepts custom values.</li>
-                    <li>Suggestions are filtered while typing and can be selected with the keyboard.</li>
-                    <li>Unknown strict values remain visible and are reported by validation.</li>
-                    <li>Custom values in the free tag and city columns are accepted.</li>
-                    <li>City shows at most five matching suggestions.</li>
-                    <li>AMB Grid owns commit behavior, validation, CRUD state, and payload generation.</li>
+                    <li data-i18n="examples.autocomplete.detail1">Strict mode requires a suggested value; free mode accepts custom values.</li>
+                    <li data-i18n="examples.autocomplete.detail2">Suggestions are filtered while typing and can be selected with the keyboard.</li>
+                    <li data-i18n="examples.autocomplete.detail3">Unknown strict values remain visible and are reported by validation.</li>
                 </ul>
             </div>
         </details>

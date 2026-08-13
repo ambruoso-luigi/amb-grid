@@ -5,11 +5,8 @@ import './demo.css';
 import { AMB } from '../index.js';
 import basicCrud from './basic-crud.js';
 import validation from './validation.js';
-import numeric from './numeric.js';
-import dates from './dates.js';
 import autocomplete from './autocomplete.js';
 import multifieldLookup from './multifield-lookup.js';
-import parsers from './parsers.js';
 import rowStates from './row-states.js';
 import columnCalculations from './column-calculations.js';
 import fullDemo from './full-demo.js';
@@ -17,24 +14,23 @@ import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon, frameworkIcon } from './demo-icons.js';
 import { initDemoMotion } from './demo-motion.js';
+import { publicExampleTranslations } from './example-copy.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
 
 const featureExamples = [
-    { id: 'basic-crud', label: 'Basic CRUD', descriptionKey: 'examples.basicCrud.description', mount: basicCrud },
-    { id: 'validation', label: 'Validation', descriptionKey: 'examples.validation.description', mount: validation },
-    { id: 'numeric', label: 'Numeric fields', descriptionKey: 'examples.numeric.description', mount: numeric },
-    { id: 'dates', label: 'Dates', descriptionKey: 'examples.dates.description', mount: dates },
-    { id: 'autocomplete', label: 'Autocomplete', descriptionKey: 'examples.autocomplete.description', mount: autocomplete },
-    { id: 'multifield-lookup', label: 'Multifield lookup', descriptionKey: 'examples.multifieldLookup.description', mount: multifieldLookup },
-    { id: 'parsers', label: 'Parsers', descriptionKey: 'examples.parsers.description', mount: parsers },
-    { id: 'row-states', label: 'Row states', descriptionKey: 'examples.rowStates.description', mount: rowStates },
-    { id: 'column-calculations', label: 'Column calculations', descriptionKey: 'examples.columnCalculations.description', mount: columnCalculations }
+    { id: 'basic-crud', titleKey: 'examples.basicCrud.title', descriptionKey: 'examples.basicCrud.description', mount: basicCrud },
+    { id: 'validation', titleKey: 'examples.validation.title', descriptionKey: 'examples.validation.description', mount: validation },
+    { id: 'autocomplete', titleKey: 'examples.autocomplete.title', descriptionKey: 'examples.autocomplete.description', mount: autocomplete },
+    { id: 'multifield-lookup', titleKey: 'examples.multifieldLookup.title', descriptionKey: 'examples.multifieldLookup.description', mount: multifieldLookup },
+    { id: 'row-states', titleKey: 'examples.rowStates.title', descriptionKey: 'examples.rowStates.description', mount: rowStates },
+    { id: 'column-calculations', titleKey: 'examples.columnCalculations.title', descriptionKey: 'examples.columnCalculations.description', mount: columnCalculations }
 ];
 
 const translations = {
     it: {
+        ...publicExampleTranslations.it,
         'page.title': 'AMB Grid',
         'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili nelle applicazioni business.',
         'language.itTitle': 'Italiano',
@@ -87,15 +83,6 @@ const translations = {
         'examples.title': 'Esempi funzionali',
         'examples.description': 'Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.',
         'examples.open': 'Apri esempio',
-        'examples.basicCrud.description': 'CRUD minimo con toolbar e payload applicativo.',
-        'examples.validation.description': 'Regole campo, errori riga e report di validazione.',
-        'examples.numeric.description': 'Integer, decimal e percentuali con parser coerenti.',
-        'examples.dates.description': 'Editor data, picker e normalizzazione payload.',
-        'examples.autocomplete.description': 'Suggerimenti controllati per campi testuali business.',
-        'examples.multifieldLookup.description': 'Lookup che aggiorna più campi da un record scelto.',
-        'examples.parsers.description': 'Parser dedicati per trasformare i valori verso API.',
-        'examples.rowStates.description': 'Stati riga, rollback, delete e report tecnici.',
-        'examples.columnCalculations.description': 'Calcoli aggregati direttamente sulle colonne: conteggio, valori unici, somma, media, minimo e massimo.',
         'roadmap.kicker': 'Prossimi passi',
         'roadmap.title': 'Roadmap essenziale',
         'roadmap.demo': 'Raffinare la demo magazzino con fake API più completa, rollback guidato e salvataggio simulato più realistico.',
@@ -146,6 +133,7 @@ const translations = {
         'guide.videoOpen': 'Apri il video demo placeholder su YouTube'
     },
     en: {
+        ...publicExampleTranslations.en,
         'page.title': 'AMB Grid',
         'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular data in business applications.',
         'language.itTitle': 'Italiano',
@@ -198,15 +186,6 @@ const translations = {
         'examples.title': 'Feature examples',
         'examples.description': 'The existing demos remain available as focused examples for individual AMB Grid capabilities.',
         'examples.open': 'Open example',
-        'examples.basicCrud.description': 'Minimal CRUD with toolbar and application payload.',
-        'examples.validation.description': 'Field rules, row errors, and validation reports.',
-        'examples.numeric.description': 'Integer, decimal, and percentage fields with coherent parsers.',
-        'examples.dates.description': 'Date editor, picker, and payload normalization.',
-        'examples.autocomplete.description': 'Controlled suggestions for business text fields.',
-        'examples.multifieldLookup.description': 'Lookup that updates several fields from one selected record.',
-        'examples.parsers.description': 'Dedicated parsers for transforming values toward APIs.',
-        'examples.rowStates.description': 'Row states, rollback, delete, and technical reports.',
-        'examples.columnCalculations.description': 'Aggregate column calculations for count, unique values, sum, average, minimum and maximum.',
         'roadmap.kicker': 'Next steps',
         'roadmap.title': 'Essential roadmap',
         'roadmap.demo': 'Refine the warehouse demo with a fuller fake API, guided rollback, and a more realistic simulated save.',
@@ -538,7 +517,7 @@ const renderShell = selectedId => {
                             class="demo-feature-card${example.id === selectedId ? ' is-active' : ''}"
                             data-example="${example.id}"
                         >
-                            <span class="demo-feature-card__title">${example.label}</span>
+                            <span class="demo-feature-card__title" data-i18n="${example.titleKey}">${getText(example.titleKey)}</span>
                             <span class="demo-feature-card__description" data-i18n="${example.descriptionKey}">${getText(example.descriptionKey)}</span>
                             <span class="demo-feature-card__action" data-i18n="examples.open">Apri esempio</span>
                         </button>
@@ -608,6 +587,7 @@ const loadFeatureExample = async id => {
     }
 
     currentFeatureExample = mountedExample || null;
+    applyI18n();
     initDemoMotion(container);
 };
 

@@ -173,16 +173,31 @@ describe('demo site navigation', () => {
 
     test('shows column calculations instead of multiple tables', () => {
         const main = read('src/demo/main.js');
+        const copy = read('src/demo/example-copy.js');
+        const featureConfig = main.slice(
+            main.indexOf('const featureExamples = ['),
+            main.indexOf('const translations = {')
+        );
 
         expect(main).toContain('class="demo-feature-grid"');
         expect(main).toContain('class="demo-feature-card');
-        expect(main).toContain("'examples.multifieldLookup.description'");
+        expect(featureConfig.match(/id: '/g)).toHaveLength(6);
+        expect(featureConfig).toContain("id: 'basic-crud'");
+        expect(featureConfig).toContain("id: 'validation'");
+        expect(featureConfig).toContain("id: 'autocomplete'");
+        expect(featureConfig).toContain("id: 'multifield-lookup'");
+        expect(featureConfig).toContain("id: 'row-states'");
         expect(main).toContain("import columnCalculations from './column-calculations.js'");
-        expect(main).toContain("id: 'column-calculations'");
-        expect(main).toContain("label: 'Column calculations'");
-        expect(main).toContain("'examples.columnCalculations.description'");
+        expect(featureConfig).toContain("id: 'column-calculations'");
+        expect(featureConfig).not.toContain("id: 'numeric'");
+        expect(featureConfig).not.toContain("id: 'dates'");
+        expect(featureConfig).not.toContain("id: 'parsers'");
+        expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Come funzionano i calcoli di colonna'");
+        expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'How column calculations work'");
+        expect(copy).toContain("'examples.rowStates.detailsTitle': 'Come funzionano gli stati riga'");
+        expect(copy).toContain("'examples.rowStates.detailsTitle': 'Row states behavior'");
         expect(main).not.toContain('multiple-tables');
-        expect(main).not.toContain('examples.multipleTables.description');
+        expect(main).toContain('applyI18n();\n    initDemoMotion(container);');
     });
 
     test('keeps each public column calculation on its own field', () => {
@@ -211,6 +226,31 @@ describe('demo site navigation', () => {
         expect(calculations).not.toContain("label: 'RANGE:'");
         expect(calculations).toContain("layout: 'fitColumns'");
         expect(calculations).toContain('formatValue: formatAveragePrice');
+        expect(calculations).toContain('<details class="demo-disclosure">');
+        expect(calculations).toContain('data-i18n="examples.columnCalculations.detailsTitle"');
+        expect(calculations).toContain('class="demo-calculation-map"');
+    });
+
+    test('keeps all six public example introductions and disclosures bilingual', () => {
+        const copy = read('src/demo/example-copy.js');
+        const examples = [
+            ['basic-crud', 'basicCrud'],
+            ['validation', 'validation'],
+            ['autocomplete', 'autocomplete'],
+            ['multifield-lookup', 'multifieldLookup'],
+            ['row-states', 'rowStates'],
+            ['column-calculations', 'columnCalculations']
+        ];
+
+        examples.forEach(([fileName, key]) => {
+            const source = read(`src/demo/${fileName}.js`);
+
+            expect(source).toContain(`data-i18n="examples.${key}.title"`);
+            expect(source).toContain(`data-i18n="examples.${key}.intro"`);
+            expect(source).toContain('<details class="demo-disclosure">');
+            expect(source).toContain(`data-i18n="examples.${key}.detailsTitle"`);
+            expect(copy.match(new RegExp(`'examples\\.${key}\\.detailsTitle'`, 'g'))).toHaveLength(2);
+        });
     });
 
     test('keeps the home wide and highlights keyboard-first editing', () => {

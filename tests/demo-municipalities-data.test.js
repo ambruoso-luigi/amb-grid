@@ -62,7 +62,7 @@ describe('Italian municipalities demo dataset', () => {
 
     test('keeps the public demo reachable and free of hardcoded row rollback', () => {
         expect(demoMenuSource).toContain("import multifieldLookup from './multifield-lookup.js'");
-        expect(demoMenuSource).toContain("label: 'Multifield lookup'");
+        expect(demoMenuSource).toContain("titleKey: 'examples.multifieldLookup.title'");
         expect(demoSource).not.toContain('Rollback first row');
         expect(demoSource).not.toContain('rollbackRow(1)');
         expect(demoSource).not.toContain('AMB.editors.lookup(');

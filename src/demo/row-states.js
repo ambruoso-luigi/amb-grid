@@ -67,26 +67,16 @@ export default function rowStates(app) {
     ];
 
     app.innerHTML = `
-        <h2>Row states</h2>
-        <p class="demo-note">Use the standard CRUD toolbar and delete column to explore how AMB Grid tracks each row through its lifecycle.</p>
+        <h2 data-i18n="examples.rowStates.title">Row states</h2>
+        <p class="demo-note" data-i18n="examples.rowStates.intro">Use the CRUD toolbar and delete column to explore how AMB Grid tracks each row through its lifecycle.</p>
         <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary">Row states behavior</summary>
+            <summary class="demo-disclosure__summary" data-i18n="examples.rowStates.detailsTitle">Row states behavior</summary>
             <div class="demo-disclosure__content">
                 <ul class="demo-rules-list">
-                    <li><code>clean</code>, <code>new</code>, <code>modified</code>, <code>deleted</code>, and <code>saved</code> are lifecycle states.</li>
-                    <li><code>clean</code>: an existing row has not been changed.</li>
-                    <li><code>new</code>: Add row created an unsaved client-side row.</li>
-                    <li><code>modified</code>: an editable value differs from its original value.</li>
-                    <li><code>deleted</code>: the standard delete column marked an existing row for deletion.</li>
-                    <li><code>saved</code>: valid new or modified data was confirmed through the normal Save callback.</li>
-                    <li>An error is not a lifecycle state. The Errors column counts active row and cell error markers separately.</li>
-                    <li>Create error intentionally modifies rows 1 and 4 before adding errors, so both rows enter the <code>modified</code> lifecycle state.</li>
-                    <li>Row 1 receives one cell error; non-consecutive row 4 receives two cell errors. The report shows their detailed counts.</li>
-                    <li>Save acts only on valid <code>new</code>, <code>modified</code>, or <code>deleted</code> rows. With no changed rows, Save leaves lifecycle states unchanged.</li>
-                    <li>Reload restores the six initial rows, clears all errors, resets lifecycle states to <code>clean</code>, and resets Errors to zero.</li>
-                    <li><code>_ambTempId</code>: temporary identifier assigned to new rows before backend confirmation.</li>
-                    <li><code>_ambRowNumber</code>: stable row number used by reports and validation feedback.</li>
-                    <li><code>_state</code>: internal lifecycle state exposed here only for demonstration.</li>
+                    <li data-i18n="examples.rowStates.detail1">clean, new, modified, deleted, and saved are lifecycle states.</li>
+                    <li data-i18n="examples.rowStates.detail2">Errors are separate indicators and are not lifecycle states.</li>
+                    <li data-i18n="examples.rowStates.detail3">Save acts only on valid new, modified, or deleted rows; Reload restores the initial data and states.</li>
+                    <li data-i18n="examples.rowStates.detail4">_ambTempId, _ambRowNumber, and _state are exposed for demonstration only.</li>
                 </ul>
             </div>
         </details>
