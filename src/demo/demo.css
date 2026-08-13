@@ -568,65 +568,10 @@ a {
     color: #fff;
 }
 
-.demo-hero__metrics {
+.demo-hero__video {
     align-self: center;
-    display: grid;
-    gap: 12px;
-    grid-template-columns: 1fr;
-}
-
-.demo-hero__metrics div {
-    align-items: start;
-    background:
-        linear-gradient(180deg, rgb(255 255 255 / 92%) 0%, rgb(248 251 255 / 88%) 100%);
-    border: 1px solid rgb(145 168 191 / 48%);
-    border-radius: var(--amb-site-radius-sm);
-    box-shadow:
-        0 1px 0 rgb(255 255 255 / 78%) inset,
-        0 14px 30px rgb(16 35 63 / 7%);
-    display: grid;
-    gap: 10px;
-    grid-template-columns: auto minmax(0, 1fr);
     min-width: 0;
-    padding: 17px;
-    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-}
-
-.demo-hero__metrics div:hover {
-    border-color: var(--amb-site-border-strong);
-    box-shadow:
-        0 1px 0 rgb(255 255 255 / 82%) inset,
-        0 18px 36px rgb(16 35 63 / 11%);
-    transform: translateY(-2px);
-}
-
-.demo-hero-metric-icon {
-    background: linear-gradient(180deg, #ffffff 0%, var(--amb-site-blue-soft) 100%);
-    border: 1px solid #b8d0e8;
-    border-radius: 6px;
-    color: var(--amb-site-blue-strong);
-    height: 32px;
-    padding: 6px;
-    width: 32px;
-}
-
-.demo-hero-metric__body {
-    display: block;
-    min-width: 0;
-}
-
-.demo-hero__metrics strong {
-    color: var(--amb-site-navy);
-    display: block;
-    font-size: 15px;
-    margin-bottom: 6px;
-}
-
-.demo-hero__metrics span {
-    color: var(--amb-site-muted);
-    display: block;
-    font-size: 14px;
-    margin: 0;
+    width: 100%;
 }
 
 .demo-panel,
@@ -3272,10 +3217,6 @@ a {
         grid-template-columns: 1fr;
     }
 
-    .demo-hero__metrics {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
     .demo-framework-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -3296,10 +3237,6 @@ a {
 
     .demo-hero__content {
         padding-top: 18px;
-    }
-
-    .demo-hero__metrics {
-        grid-template-columns: 1fr;
     }
 
     .demo-flow-grid {
@@ -3337,6 +3274,10 @@ a {
     .demo-guide-video {
         max-width: 640px;
         width: 100%;
+    }
+
+    .demo-hero__video {
+        max-width: none;
     }
 
     .demo-guide-hero {

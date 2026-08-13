@@ -11,7 +11,7 @@ import autocomplete from './autocomplete.js';
 import multifieldLookup from './multifield-lookup.js';
 import parsers from './parsers.js';
 import rowStates from './row-states.js';
-import multipleTables from './multiple-tables.js';
+import columnCalculations from './column-calculations.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
@@ -30,7 +30,7 @@ const featureExamples = [
     { id: 'multifield-lookup', label: 'Multifield lookup', descriptionKey: 'examples.multifieldLookup.description', mount: multifieldLookup },
     { id: 'parsers', label: 'Parsers', descriptionKey: 'examples.parsers.description', mount: parsers },
     { id: 'row-states', label: 'Row states', descriptionKey: 'examples.rowStates.description', mount: rowStates },
-    { id: 'multiple-tables', label: 'Multiple tables', descriptionKey: 'examples.multipleTables.description', mount: multipleTables }
+    { id: 'column-calculations', label: 'Column calculations', descriptionKey: 'examples.columnCalculations.description', mount: columnCalculations }
 ];
 
 const translations = {
@@ -45,14 +45,9 @@ const translations = {
         'hero.badgeDetail': 'Griglie CRUD per applicazioni business',
         'hero.title': 'Griglie CRUD per applicazioni business',
         'hero.description': 'AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
-        'hero.primary': 'Apri demo JavaScript',
         'hero.secondary': 'Vedi esempi funzionali',
-        'hero.statState': 'Stati riga',
-        'hero.statStateText': 'clean, new, modified, deleted, saved',
-        'hero.statPayload': 'Payload CRUD',
-        'hero.statPayloadText': 'inserted, updated, deleted, backend-ready',
-        'hero.statIntegration': 'Framework-agnostic',
-        'hero.statIntegrationText': 'JavaScript classico, stack moderni e sistemi legacy-friendly',
+        'hero.videoLabel': 'Anteprima video',
+        'hero.videoOpen': 'Apri l’anteprima video su YouTube',
         'frameworks.title': 'Integrabile dove lavori già',
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
         'frameworks.javascript.badge': 'Classic integration',
@@ -100,7 +95,7 @@ const translations = {
         'examples.multifieldLookup.description': 'Lookup che aggiorna più campi da un record scelto.',
         'examples.parsers.description': 'Parser dedicati per trasformare i valori verso API.',
         'examples.rowStates.description': 'Stati riga, rollback, delete e report tecnici.',
-        'examples.multipleTables.description': 'Più griglie indipendenti nella stessa pagina.',
+        'examples.columnCalculations.description': 'Calcoli aggregati direttamente sulle colonne: conteggio, valori unici, somma, media, minimo e massimo.',
         'roadmap.kicker': 'Prossimi passi',
         'roadmap.title': 'Roadmap essenziale',
         'roadmap.demo': 'Raffinare la demo magazzino con fake API più completa, rollback guidato e salvataggio simulato più realistico.',
@@ -161,14 +156,9 @@ const translations = {
         'hero.badgeDetail': 'CRUD grids for business applications',
         'hero.title': 'CRUD data grids for business applications',
         'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
-        'hero.primary': 'Open JavaScript demo',
         'hero.secondary': 'View feature examples',
-        'hero.statState': 'Row states',
-        'hero.statStateText': 'clean, new, modified, deleted, saved',
-        'hero.statPayload': 'CRUD payload',
-        'hero.statPayloadText': 'inserted, updated, deleted, backend-ready',
-        'hero.statIntegration': 'Framework-agnostic',
-        'hero.statIntegrationText': 'Classic JavaScript, modern stacks, and legacy-friendly systems',
+        'hero.videoLabel': 'Video preview',
+        'hero.videoOpen': 'Open the video preview on YouTube',
         'frameworks.title': 'Use AMB Grid where you already work',
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
         'frameworks.javascript.badge': 'Classic integration',
@@ -216,7 +206,7 @@ const translations = {
         'examples.multifieldLookup.description': 'Lookup that updates several fields from one selected record.',
         'examples.parsers.description': 'Dedicated parsers for transforming values toward APIs.',
         'examples.rowStates.description': 'Row states, rollback, delete, and technical reports.',
-        'examples.multipleTables.description': 'Multiple independent grids on the same page.',
+        'examples.columnCalculations.description': 'Aggregate column calculations for count, unique values, sum, average, minimum and maximum.',
         'roadmap.kicker': 'Next steps',
         'roadmap.title': 'Essential roadmap',
         'roadmap.demo': 'Refine the warehouse demo with a fuller fake API, guided rollback, and a more realistic simulated save.',
@@ -409,33 +399,22 @@ const renderShell = selectedId => {
                         <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
                         <p class="demo-hero__text" data-i18n="hero.description">AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.</p>
                         <div class="demo-hero__actions">
-                            <a class="demo-button demo-button--primary" href="#getting-started-javascript">${demoIcon('arrowRight')}<span data-i18n="hero.primary">Apri demo JavaScript</span></a>
-                            <a class="demo-button" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
+                            <a class="demo-button demo-button--primary" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
                         </div>
                     </div>
-                    <div class="demo-hero__metrics" aria-label="AMB Grid capabilities">
-                        <div>
-                            ${demoIcon('rowStates', { className: 'demo-hero-metric-icon', size: 18 })}
-                            <span class="demo-hero-metric__body">
-                                <strong data-i18n="hero.statState">Stati riga</strong>
-                                <span data-i18n="hero.statStateText">clean, new, modified, deleted, saved</span>
-                            </span>
-                        </div>
-                        <div>
-                            ${demoIcon('payload', { className: 'demo-hero-metric-icon', size: 18 })}
-                            <span class="demo-hero-metric__body">
-                                <strong data-i18n="hero.statPayload">Payload CRUD</strong>
-                                <span data-i18n="hero.statPayloadText">inserted, updated, deleted, backend-ready</span>
-                            </span>
-                        </div>
-                        <div>
-                            ${demoIcon('framework', { className: 'demo-hero-metric-icon', size: 18 })}
-                            <span class="demo-hero-metric__body">
-                                <strong data-i18n="hero.statIntegration">Framework-agnostic</strong>
-                                <span data-i18n="hero.statIntegrationText">JavaScript classico, stack moderni e sistemi legacy-friendly</span>
-                            </span>
-                        </div>
-                    </div>
+                    <a
+                        class="demo-guide-video demo-hero__video"
+                        href="https://youtu.be/4m0EZ4vPmT0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-i18n-title="hero.videoOpen"
+                        aria-label="Apri l’anteprima video su YouTube"
+                    >
+                        <img class="demo-guide-video__image" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" alt="" loading="eager">
+                        <span class="demo-guide-video__overlay" aria-hidden="true"></span>
+                        <span class="demo-guide-video__play" aria-hidden="true">${demoIcon('video', { size: 30 })}</span>
+                        <span class="demo-guide-video__label" data-i18n="hero.videoLabel">Anteprima video</span>
+                    </a>
                 </div>
             </header>
 

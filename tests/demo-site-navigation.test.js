@@ -97,13 +97,23 @@ describe('demo site navigation', () => {
         expect(guide).toContain('id="javascript-demo"');
     });
 
-    test('keeps the complete warehouse demo out of the home shell', () => {
+    test('uses a video preview and one feature-examples CTA in the home hero', () => {
         const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');
 
         expect(main).not.toContain('id="main-demo"');
         expect(main).not.toContain('mountMainDemo();');
-        expect(main).toContain('href="#getting-started-javascript">${demoIcon(\'arrowRight\')}<span data-i18n="hero.primary"');
+        expect(main).toContain('class="demo-guide-video demo-hero__video"');
+        expect(main).toContain('href="https://youtu.be/4m0EZ4vPmT0"');
+        expect(main).toContain('src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg"');
+        expect(main).toContain('data-i18n="hero.videoLabel">Anteprima video</span>');
+        expect(main.match(/href="#feature-examples"/g)).toHaveLength(4);
+        expect(main).toContain('class="demo-button demo-button--primary" href="#feature-examples"');
+        expect(main).not.toContain('data-i18n="hero.primary"');
+        expect(main).not.toContain('demo-hero__metrics');
+        expect(main).not.toContain("'hero.statState'");
+        expect(main).not.toContain("'hero.statPayload'");
+        expect(main).not.toContain("'hero.statIntegration'");
         expect(main).toContain("'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.'");
         expect(main).not.toContain("'hero.description': 'AMB Grid adds a framework-agnostic CRUD layer on top of Tabulator");
         expect(read('src/demo/getting-started-javascript.js')).not.toMatch(/Tabulator|Awesomplete|vanilla-datepicker/);
@@ -113,8 +123,8 @@ describe('demo site navigation', () => {
         expect(main).not.toContain('amb-grid.js');
         expect(main).not.toContain('Tabulator engine');
         expect(main).not.toContain('AMB Grid layer');
-        expect(main).toContain("'hero.statIntegration': 'Framework-agnostic'");
         expect(css).toContain('.demo-hero__body');
+        expect(css).toContain('.demo-hero__video');
         expect(css).not.toContain('.demo-hero-visual');
         expect(css).not.toContain('.demo-hero-visual__flow');
     });
@@ -161,13 +171,46 @@ describe('demo site navigation', () => {
         expect(italianFlag.size).toBeGreaterThan(0);
     });
 
-    test('shows feature examples as cards without removing demos', () => {
+    test('shows column calculations instead of multiple tables', () => {
         const main = read('src/demo/main.js');
 
         expect(main).toContain('class="demo-feature-grid"');
         expect(main).toContain('class="demo-feature-card');
         expect(main).toContain("'examples.multifieldLookup.description'");
-        expect(main).toContain("id: 'multiple-tables'");
+        expect(main).toContain("import columnCalculations from './column-calculations.js'");
+        expect(main).toContain("id: 'column-calculations'");
+        expect(main).toContain("label: 'Column calculations'");
+        expect(main).toContain("'examples.columnCalculations.description'");
+        expect(main).not.toContain('multiple-tables');
+        expect(main).not.toContain('examples.multipleTables.description');
+    });
+
+    test('keeps each public column calculation on its own field', () => {
+        const calculations = read('src/demo/column-calculations.js');
+        const expectedCalculations = [
+            ["field: 'id'", "topCalc: 'count'"],
+            ["field: 'category'", "topCalc: 'unique'"],
+            ["field: 'quantity'", "topCalc: 'sum'"],
+            ["field: 'unitPrice'", "topCalc: 'avg'"],
+            ["field: 'deliveryDays'", "topCalc: 'min'"],
+            ["field: 'score'", "topCalc: 'max'"]
+        ];
+
+        expectedCalculations.forEach(([field, calculation]) => {
+            const fieldIndex = calculations.indexOf(field);
+            const nextFieldIndex = calculations.indexOf("field: '", fieldIndex + field.length);
+            const columnSource = calculations.slice(fieldIndex, nextFieldIndex === -1 ? undefined : nextFieldIndex);
+
+            expect(fieldIndex).toBeGreaterThan(-1);
+            expect(columnSource).toContain(calculation);
+        });
+
+        expect(calculations.match(/topCalc: '(count|unique|sum|avg|min|max)'/g)).toHaveLength(6);
+        expect(calculations).not.toContain("topCalc: 'concat'");
+        expect(calculations).not.toContain('calculateScoreRange');
+        expect(calculations).not.toContain("label: 'RANGE:'");
+        expect(calculations).toContain("layout: 'fitColumns'");
+        expect(calculations).toContain('formatValue: formatAveragePrice');
     });
 
     test('keeps the home wide and highlights keyboard-first editing', () => {
