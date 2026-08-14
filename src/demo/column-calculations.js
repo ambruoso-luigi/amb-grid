@@ -26,7 +26,7 @@ export default function columnCalculations(app) {
             </div>
         </details>
         <div class="demo-table-workbench">
-            <div id="column-calculations-table" class="demo-business-grid"></div>
+            <div id="column-calculations-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
@@ -40,7 +40,10 @@ export default function columnCalculations(app) {
             { id: 1004, product: 'Storage bin', category: 'Warehouse', quantity: 24, unitPrice: 18.2, deliveryDays: 4, score: 85 },
             { id: 1005, product: 'Packing tape', category: 'Supplies', quantity: 36, unitPrice: 4.8, deliveryDays: 1, score: 79 },
             { id: 1006, product: 'Safety gloves', category: 'Safety', quantity: 18, unitPrice: 9.6, deliveryDays: 3, score: 95 },
-            { id: 1007, product: 'Steel shelving', category: 'Warehouse', quantity: 6, unitPrice: 148, deliveryDays: 7, score: 90 }
+            { id: 1007, product: 'Steel shelving', category: 'Warehouse', quantity: 6, unitPrice: 148, deliveryDays: 7, score: 90 },
+            { id: 1008, product: 'Mobile terminal', category: 'Hardware', quantity: 10, unitPrice: 300, deliveryDays: 4, score: 93 },
+            { id: 1009, product: 'Bubble wrap', category: 'Supplies', quantity: 50, unitPrice: 20, deliveryDays: 2, score: 84 },
+            { id: 1010, product: 'Loading ramp', category: 'Warehouse', quantity: 3, unitPrice: 432.25, deliveryDays: 6, score: 91 }
         ],
         layout: 'fitColumns',
         columns: [

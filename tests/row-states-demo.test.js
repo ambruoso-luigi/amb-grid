@@ -23,8 +23,8 @@ describe('Row states demo', () => {
     test('uses the standard delete column and an expanded sample dataset', () => {
         expect(source).toContain('deleteColumn: {');
         expect(source).toContain('enabled: true');
-        expect(source.match(/\{ id: \d, item:/g)).toHaveLength(6);
-        expect(source.match(/_state: 'clean'/g)).toHaveLength(6);
+        expect(source.match(/\{ id: \d+, item:/g)).toHaveLength(10);
+        expect(source.match(/_state: 'clean'/g)).toHaveLength(10);
         expect(source).toContain("return crud.addRow({");
         expect(source).toContain("item: 'New sample'");
         expect(source).toContain('crud.applyBackendIds(generatedIds)');
@@ -110,7 +110,7 @@ describe('Row states demo', () => {
         expect(source).toContain('reportDialog.close()');
         expect(source).toContain('crud.rollbackRow(row.key)');
         expect(source).toContain('errorCounts.clear()');
-        expect(source).toContain('nextId = 7');
+        expect(source).toContain('nextId = 11');
         expect(source).toContain(
             'await demo.table.setData(initialData.map(row => ({ ...row })))'
         );

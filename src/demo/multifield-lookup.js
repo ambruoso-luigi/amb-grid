@@ -47,6 +47,60 @@ const createInitialData = () => [
         province: 'PA',
         region: 'SICILIA',
         postalCode: '90121'
+    },
+    {
+        id: 5,
+        istatCode: '058091',
+        cadastralCode: 'H501',
+        municipality: 'Roma',
+        province: 'RM',
+        region: 'LAZIO',
+        postalCode: '00118'
+    },
+    {
+        id: 6,
+        istatCode: '001272',
+        cadastralCode: 'L219',
+        municipality: 'Torino',
+        province: 'TO',
+        region: 'PIEMONTE',
+        postalCode: '10121'
+    },
+    {
+        id: 7,
+        istatCode: '037006',
+        cadastralCode: 'A944',
+        municipality: 'Bologna',
+        province: 'BO',
+        region: 'EMILIA-ROMAGNA',
+        postalCode: '40121'
+    },
+    {
+        id: 8,
+        istatCode: '063049',
+        cadastralCode: 'F839',
+        municipality: 'Napoli',
+        province: 'NA',
+        region: 'CAMPANIA',
+        postalCode: '80121'
+    },
+    {
+        id: 9,
+        istatCode: '010025',
+        cadastralCode: 'D969',
+        municipality: 'Genova',
+        province: 'GE',
+        region: 'LIGURIA',
+        postalCode: '16121'
+    },
+    {
+        id: 10,
+        istatCode: '027042',
+        cadastralCode: 'L736',
+        municipality: 'Venezia',
+        province: 'VE',
+        region: 'VENETO',
+        postalCode: '30121'
     }
 ];
 
@@ -119,7 +173,7 @@ export default async function multifieldLookup(app) {
         </details>
         <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
         <div class="demo-table-workbench">
-            <div id="municipality-table" class="demo-business-grid"></div>
+            <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 

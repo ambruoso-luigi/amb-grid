@@ -299,18 +299,79 @@ describe('demo site navigation', () => {
         expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
     });
 
-    test('keeps Basic CRUD vertically bounded and preserves manual column fitting', () => {
-        const basicCrud = read('src/demo/basic-crud.js');
+    test('shares the ten-row viewport and JavaScript-demo resize configuration', () => {
+        const fullDemo = read('src/demo/full-demo.js');
         const css = read('src/demo/demo.css');
+        const exampleFiles = [
+            'basic-crud',
+            'validation',
+            'autocomplete',
+            'multifield-lookup',
+            'row-states',
+            'column-calculations'
+        ];
 
-        expect(basicCrud).toContain('class="demo-business-grid demo-business-grid--basic"');
-        expect(basicCrud).toContain("layout: 'fitColumns'");
-        expect(basicCrud).toContain('resizableColumnFit: true');
-        expect(basicCrud).not.toMatch(/\bheight:\s*['"]\d+px['"]/);
-        expect(basicCrud).not.toMatch(/\bwidth:\s*\d+/);
-        expect(css).toContain('.demo-panel .demo-business-grid--basic .tabulator-tableholder');
-        expect(css).toContain('--amb-demo-visible-rows: 6;');
-        expect(css).toContain('height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 6) + 22px);');
+        expect(fullDemo).toContain('class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"');
+        expect(fullDemo).not.toContain('resizableColumnFit:');
+        expect(css).toContain('.demo-panel .demo-business-grid--viewport .tabulator-tableholder');
+        expect(css).toContain('--amb-demo-visible-rows: 10;');
+        expect(css).toContain('max-height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 10) + 22px);');
+
+        exampleFiles.forEach(fileName => {
+            const source = read(`src/demo/${fileName}.js`);
+
+            expect(source).toContain('class="demo-business-grid demo-business-grid--viewport"');
+            expect(source).toContain("layout: 'fitColumns'");
+            expect(source).not.toContain('resizableColumnFit:');
+            expect(source).not.toMatch(/\bheight:\s*['"]\d+px['"]/);
+            expect(source).not.toMatch(/\bwidth:\s*\d+/);
+        });
+    });
+
+    test('starts every public feature grid with at least ten coherent rows', () => {
+        const slices = {
+            basic: read('src/demo/basic-crud.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
+            validation: read('src/demo/validation.js').match(/const validationData = \[([\s\S]*?)\n\];/)[1],
+            autocomplete: read('src/demo/autocomplete.js').match(/const createAutocompleteData = \(\) => \[([\s\S]*?)\n\];/)[1],
+            multifield: read('src/demo/multifield-lookup.js').match(/const createInitialData = \(\) => \[([\s\S]*?)\n\];/)[1],
+            rowStates: read('src/demo/row-states.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
+            calculations: read('src/demo/column-calculations.js').match(/data: \[([\s\S]*?)\n        \],/)[1]
+        };
+        const counts = Object.fromEntries(Object.entries(slices).map(([key, source]) => [
+            key,
+            (source.match(/\bid:\s*(?:'[^']+'|\d+)/g) || []).length
+        ]));
+
+        expect(counts).toEqual({
+            basic: 10,
+            validation: 11,
+            autocomplete: 10,
+            multifield: 10,
+            rowStates: 10,
+            calculations: 10
+        });
+        expect(slices.basic).toContain("id: 'NT-010'");
+        expect(read('src/demo/basic-crud.js')).toContain('let nextNoteNumber = 11;');
+    });
+
+    test('updates the ten-row public column calculation results', () => {
+        const calculations = read('src/demo/column-calculations.js');
+        const dataSource = calculations.match(/data: \[([\s\S]*?)\n        \],/)[1];
+        const rows = [...dataSource.matchAll(/\{ id: \d+, product: '[^']+', category: '([^']+)', quantity: (\d+), unitPrice: ([\d.]+), deliveryDays: (\d+), score: (\d+) \}/g)]
+            .map(([, category, quantity, unitPrice, deliveryDays, score]) => ({
+                category,
+                quantity: Number(quantity),
+                unitPrice: Number(unitPrice),
+                deliveryDays: Number(deliveryDays),
+                score: Number(score)
+            }));
+
+        expect(rows).toHaveLength(10);
+        expect(new Set(rows.map(row => row.category)).size).toBe(4);
+        expect(rows.reduce((sum, row) => sum + row.quantity, 0)).toBe(200);
+        expect((rows.reduce((sum, row) => sum + row.unitPrice, 0) / rows.length).toFixed(2)).toBe('125.00');
+        expect(Math.min(...rows.map(row => row.deliveryDays))).toBe(1);
+        expect(Math.max(...rows.map(row => row.score))).toBe(95);
     });
 
     test('keeps the home wide and highlights keyboard-first editing', () => {

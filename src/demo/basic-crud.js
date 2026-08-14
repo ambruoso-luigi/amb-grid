@@ -28,11 +28,18 @@ const buildStateReport = report => [
 ];
 
 export default function basicCrud(app) {
-    let nextNoteNumber = 4;
+    let nextNoteNumber = 11;
     const initialData = [
         { id: 'NT-001', title: 'Welcome note', tag: 'intro', archived: 'N' },
         { id: 'NT-002', title: 'Shortcut idea', tag: 'idea', archived: 'N' },
-        { id: 'NT-003', title: 'Release checklist', tag: 'todo', archived: 'Y' }
+        { id: 'NT-003', title: 'Release checklist', tag: 'todo', archived: 'Y' },
+        { id: 'NT-004', title: 'Documentation update', tag: 'docs', archived: 'N' },
+        { id: 'NT-005', title: 'Meeting reminder', tag: 'reminder', archived: 'N' },
+        { id: 'NT-006', title: 'Deployment notes', tag: 'release', archived: 'Y' },
+        { id: 'NT-007', title: 'Support handoff', tag: 'support', archived: 'N' },
+        { id: 'NT-008', title: 'Review summary', tag: 'review', archived: 'N' },
+        { id: 'NT-009', title: 'Archive policy', tag: 'archive', archived: 'Y' },
+        { id: 'NT-010', title: 'Planning checklist', tag: 'planning', archived: 'N' }
     ];
 
     const getNextNoteId = () => {
@@ -58,7 +65,7 @@ export default function basicCrud(app) {
             </div>
         </details>
         <div class="demo-table-workbench">
-            <div id="basic-table" class="demo-business-grid demo-business-grid--basic"></div>
+            <div id="basic-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
@@ -105,7 +112,6 @@ export default function basicCrud(app) {
         },
         data: initialData.map(row => ({ ...row })),
         layout: 'fitColumns',
-        resizableColumnFit: true,
         columns: [
             { title: 'ID', field: 'id', minWidth: 75, widthGrow: 0.55 },
             { title: 'Temp ID', field: '_ambTempId', minWidth: 105, widthGrow: 0.75 },
@@ -201,7 +207,7 @@ export default function basicCrud(app) {
     }
 
     async function handleReload() {
-        nextNoteNumber = 4;
+        nextNoteNumber = 11;
         await demo.table.setData(initialData.map(row => ({ ...row })));
         demo.feedback.show({
             type: 'success',

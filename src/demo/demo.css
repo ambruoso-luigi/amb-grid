@@ -2823,20 +2823,11 @@ a {
     border-radius: 999px;
 }
 
-.demo-panel .amb-demo-inventory-grid .tabulator-tableholder,
-.demo-panel .demo-business-grid--basic .tabulator-tableholder {
+.demo-panel .demo-business-grid--viewport .tabulator-tableholder {
     background: #fff;
     max-height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 10) + 22px);
     overflow-x: auto;
     overflow-y: auto;
-}
-
-.demo-panel .demo-business-grid--basic {
-    --amb-demo-visible-rows: 6;
-}
-
-.demo-panel .demo-business-grid--basic .tabulator-tableholder {
-    height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 6) + 22px);
 }
 
 .demo-panel .tabulator .tabulator-header {

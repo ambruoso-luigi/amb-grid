@@ -233,7 +233,7 @@ export default function validation(app) {
             </div>
         </details>
         <div class="demo-table-workbench">
-            <div id="validation-table" class="demo-business-grid"></div>
+            <div id="validation-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 

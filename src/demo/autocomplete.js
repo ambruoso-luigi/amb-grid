@@ -113,7 +113,13 @@ const createAutocompleteData = () => [
     { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', requiredDepartment: 'Administration', tag: 'internal', city: 'Milan' },
     { id: 2, task: 'Review access controls', department: 'Information Technology', requiredDepartment: 'Security', tag: 'review', city: 'Berlin' },
     { id: 3, task: 'Check monthly close', department: 'Finance', requiredDepartment: 'Accounting', tag: 'urgent', city: 'London' },
-    { id: 4, task: 'Update support workflow', department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' }
+    { id: 4, task: 'Update support workflow', department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' },
+    { id: 5, task: 'Draft campaign brief', department: 'Marketing', requiredDepartment: 'Design', tag: 'priority', city: 'Paris' },
+    { id: 6, task: 'Plan delivery route', department: 'Logistics', requiredDepartment: 'Purchasing', tag: 'support', city: 'Bologna' },
+    { id: 7, task: 'Review supplier terms', department: 'Legal', requiredDepartment: 'Purchasing', tag: 'approved', city: 'Madrid' },
+    { id: 8, task: 'Prepare product research', department: 'Product', requiredDepartment: 'Research and Development', tag: 'important', city: 'Amsterdam' },
+    { id: 9, task: 'Schedule quality audit', department: 'Quality Assurance', requiredDepartment: 'Engineering', tag: 'pending', city: 'Vienna' },
+    { id: 10, task: 'Update sales forecast', department: 'Sales', requiredDepartment: 'Business Development', tag: 'business', city: 'Boston' }
 ];
 
 export default function autocomplete(app) {
@@ -133,7 +139,7 @@ export default function autocomplete(app) {
             </div>
         </details>
         <div class="demo-table-workbench">
-            <div id="autocomplete-table" class="demo-business-grid"></div>
+            <div id="autocomplete-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 

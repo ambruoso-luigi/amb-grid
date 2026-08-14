@@ -54,7 +54,7 @@ const buildRowNumbersReport = report => [
 ];
 
 export default function rowStates(app) {
-    let nextId = 7;
+    let nextId = 11;
     let crud = null;
     const errorCounts = new Map();
     const initialData = [
@@ -63,7 +63,11 @@ export default function rowStates(app) {
         { id: 3, item: 'Review sample', category: 'Backoffice', owner: 'Admin', note: 'Pending', _state: 'clean' },
         { id: 4, item: 'Reference sample', category: 'System', owner: 'System', note: 'Reference data', _state: 'clean' },
         { id: 5, item: 'Audit sample', category: 'Compliance', owner: 'Audit', note: 'Needs review', _state: 'clean' },
-        { id: 6, item: 'Stable sample', category: 'Operations', owner: 'Ops', note: 'Stable', _state: 'clean' }
+        { id: 6, item: 'Stable sample', category: 'Operations', owner: 'Ops', note: 'Stable', _state: 'clean' },
+        { id: 7, item: 'Planning sample', category: 'Scheduling', owner: 'PMO', note: 'Planned', _state: 'clean' },
+        { id: 8, item: 'Shipping sample', category: 'Logistics', owner: 'Dispatch', note: 'Queued', _state: 'clean' },
+        { id: 9, item: 'Billing sample', category: 'Finance', owner: 'Billing', note: 'Verified', _state: 'clean' },
+        { id: 10, item: 'Support sample', category: 'Service', owner: 'Support', note: 'Assigned', _state: 'clean' }
     ];
 
     app.innerHTML = `
@@ -82,7 +86,7 @@ export default function rowStates(app) {
             </div>
         </details>
         <div class="demo-table-workbench">
-            <div id="row-states-table" class="demo-business-grid"></div>
+            <div id="row-states-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
@@ -307,7 +311,7 @@ export default function rowStates(app) {
         });
 
         errorCounts.clear();
-        nextId = 7;
+        nextId = 11;
         await demo.table.setData(initialData.map(row => ({ ...row })));
         refreshErrorCounts();
         demo.feedback.show({
