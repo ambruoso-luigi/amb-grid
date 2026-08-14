@@ -13,6 +13,8 @@ describe('Public demo column guides', () => {
         'multifield-lookup',
         'row-states',
         'column-calculations',
+        'dates',
+        'parsers',
         'full-demo'
     ];
 
@@ -40,7 +42,7 @@ describe('Public demo column guides', () => {
         expect(markup).toContain('class="demo-column-guide__description"');
     });
 
-    test('is used by all six mini-examples and the JavaScript demo', () => {
+    test('is used by all eight mini-examples and the JavaScript demo', () => {
         demos.forEach(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 
@@ -60,6 +62,8 @@ describe('Public demo column guides', () => {
             'guides.autocomplete.strict.description',
             'guides.multifield.municipality.description',
             'guides.rowStates.lifecycle.description',
+            'guides.dates.pickerOnly.description',
+            'guides.parsers.output.description',
             'mainDemo.guide.summary',
             'mainDemo.guide.actions.description',
             'guides.main.itemCode.description',
@@ -88,13 +92,22 @@ describe('Public demo column guides', () => {
 
     test('documents the real validation, lookup, and JavaScript demo behavior', () => {
         const validation = read('src/demo/validation.js');
+        const validationGuide = validation.slice(
+            validation.indexOf('createDemoColumnGuide({'),
+            validation.indexOf('<div class="demo-table-workbench">')
+        );
         const multifield = read('src/demo/multifield-lookup.js');
+        const multifieldConfig = read('src/demo/multifield-lookup-config.js');
         const fullDemo = read('src/demo/full-demo.js');
 
         expect(validation).toContain('Required, unique ignoring case, and between 3 and 20 characters.');
         expect(validation).toContain('rejects the reserved TMP prefix.');
+        expect(validationGuide).toContain("className: 'demo-column-guide--validation'");
+        expect(validationGuide.match(/badge: '/g)).toHaveLength(8);
         expect(multifield).toContain("badge: 'MASTER'");
         expect(multifield).toContain('Actionable master field: click it to open the municipality lookup.');
+        expect(multifield).toContain('Derived field, hidden in the lookup and filled after selection.');
+        expect(multifieldConfig).toContain("{ field: 'cadastralCode', title: 'Cadastral Code', visible: false }");
         expect(fullDemo).toContain('matching PRD-A001 format and unique ignoring case.');
         expect(fullDemo).toContain('Required integer with a minimum value of zero.');
         expect(fullDemo).toContain('Required status selected from a searchable lookup dialog.');
@@ -107,6 +120,8 @@ describe('Public demo column guides', () => {
         expect(css).toContain('.demo-column-guide {');
         expect(css).toContain('.demo-column-guide__item {');
         expect(css).toContain('grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));');
+        expect(css).toContain('.demo-column-guide--validation {');
+        expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
         expect(css).not.toContain('.basic-column-card');
         expect(css).not.toContain('.validation-column-card');
     });

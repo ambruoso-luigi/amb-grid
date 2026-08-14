@@ -171,7 +171,7 @@ describe('demo site navigation', () => {
         expect(italianFlag.size).toBeGreaterThan(0);
     });
 
-    test('shows column calculations instead of multiple tables', () => {
+    test('shows eight focused public feature examples', () => {
         const main = read('src/demo/main.js');
         const copy = read('src/demo/example-copy.js');
         const featureConfig = main.slice(
@@ -181,7 +181,7 @@ describe('demo site navigation', () => {
 
         expect(main).toContain('class="demo-feature-grid"');
         expect(main).toContain('class="demo-feature-card');
-        expect(featureConfig.match(/id: '/g)).toHaveLength(6);
+        expect(featureConfig.match(/id: '/g)).toHaveLength(8);
         expect(featureConfig).toContain("id: 'basic-crud'");
         expect(featureConfig).toContain("id: 'validation'");
         expect(featureConfig).toContain("id: 'autocomplete'");
@@ -189,9 +189,11 @@ describe('demo site navigation', () => {
         expect(featureConfig).toContain("id: 'row-states'");
         expect(main).toContain("import columnCalculations from './column-calculations.js'");
         expect(featureConfig).toContain("id: 'column-calculations'");
+        expect(main).toContain("import dates from './dates.js'");
+        expect(main).toContain("import parsers from './parsers.js'");
+        expect(featureConfig).toContain("id: 'dates'");
+        expect(featureConfig).toContain("id: 'parsers'");
         expect(featureConfig).not.toContain("id: 'numeric'");
-        expect(featureConfig).not.toContain("id: 'dates'");
-        expect(featureConfig).not.toContain("id: 'parsers'");
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Come funzionano i calcoli di colonna'");
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'How column calculations work'");
         expect(copy).toContain("'examples.rowStates.detailsTitle': 'Come funzionano gli stati riga'");
@@ -259,7 +261,7 @@ describe('demo site navigation', () => {
         });
     });
 
-    test('keeps all six public example introductions and disclosures bilingual', () => {
+    test('keeps all eight public example introductions and disclosures bilingual', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
             ['basic-crud', 'basicCrud'],
@@ -267,7 +269,9 @@ describe('demo site navigation', () => {
             ['autocomplete', 'autocomplete'],
             ['multifield-lookup', 'multifieldLookup'],
             ['row-states', 'rowStates'],
-            ['column-calculations', 'columnCalculations']
+            ['column-calculations', 'columnCalculations'],
+            ['dates', 'dates'],
+            ['parsers', 'parsers']
         ];
 
         examples.forEach(([fileName, key]) => {
@@ -290,7 +294,9 @@ describe('demo site navigation', () => {
             'autocomplete',
             'multifield-lookup',
             'row-states',
-            'column-calculations'
+            'column-calculations',
+            'dates',
+            'parsers'
         ];
 
         expect(main).not.toContain('demo-roadmap');
@@ -336,7 +342,9 @@ describe('demo site navigation', () => {
             'autocomplete',
             'multifield-lookup',
             'row-states',
-            'column-calculations'
+            'column-calculations',
+            'dates',
+            'parsers'
         ];
 
         expect(fullDemo).toContain('class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"');
@@ -363,7 +371,9 @@ describe('demo site navigation', () => {
             autocomplete: read('src/demo/autocomplete.js').match(/const createAutocompleteData = \(\) => \[([\s\S]*?)\n\];/)[1],
             multifield: read('src/demo/multifield-lookup.js').match(/const createInitialData = \(\) => \[([\s\S]*?)\n\];/)[1],
             rowStates: read('src/demo/row-states.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
-            calculations: read('src/demo/column-calculations.js').match(/data: \[([\s\S]*?)\n        \],/)[1]
+            calculations: read('src/demo/column-calculations.js').match(/data: \[([\s\S]*?)\n        \],/)[1],
+            dates: read('src/demo/dates.js').match(/const dateData = \[([\s\S]*?)\n\];/)[1],
+            parsers: read('src/demo/parsers.js').match(/const parserExamples = \[([\s\S]*?)\n\];/)[1]
         };
         const counts = Object.fromEntries(Object.entries(slices).map(([key, source]) => [
             key,
@@ -376,7 +386,9 @@ describe('demo site navigation', () => {
             autocomplete: 10,
             multifield: 10,
             rowStates: 10,
-            calculations: 10
+            calculations: 10,
+            dates: 10,
+            parsers: 10
         });
         expect(slices.basic).toContain("id: 'NT-010'");
         expect(read('src/demo/basic-crud.js')).toContain('let nextNoteNumber = 11;');

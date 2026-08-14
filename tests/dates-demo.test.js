@@ -6,25 +6,51 @@ const source = readFileSync(
     'utf8'
 );
 
-describe('Dates demo integration', () => {
-    test('uses a closed disclosure and a custom validation toolbar action', () => {
-        expect(source).toContain(
-            '<summary class="demo-disclosure__summary">Supported behavior</summary>'
-        );
-        expect(source).not.toContain('<details class="demo-disclosure" open>');
-        expect(source).toContain("id: 'validate-dates'");
-        expect(source).toContain("label: 'Validate dates'");
-        expect(source).not.toContain('id="action-validate-dates"');
+describe('Public Dates demo integration', () => {
+    test('uses the shared public-demo structure and standard Validate toolbar action', () => {
+        expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
+        expect(source).toContain("summaryKey: 'examples.dates.detailsTitle'");
+        expect(source).toContain('class="demo-table-workbench"');
+        expect(source).toContain('class="demo-business-grid demo-business-grid--viewport"');
+        expect(source).toContain("buttons: ['validate']");
+        expect(source).toContain('onValidate: handleValidateDates');
+        expect(source).toContain("validateLabel.dataset.i18n = 'examples.dates.validate'");
+        expect(source).not.toContain("id: 'validate-dates'");
+        expect(source).not.toContain("height: '320px'");
     });
 
-    test('opens the shared report dialog instead of writing fixed output', () => {
+    test('keeps five real date configurations, including both datepicker modes', () => {
+        expect(source.match(/AMB\.date\.createConfig\(/g)).toHaveLength(5);
+        expect(source).toContain("format: 'dd/mm/yyyy'");
+        expect(source).toContain("format: 'iso'");
+        expect(source).toContain("format: 'legacy'");
+        expect(source).toContain("format: 'dd-mm-yyyy'");
+        expect(source).toContain("mode: 'manualWithPickerButton'");
+        expect(source).toContain("mode: 'pickerOnly'");
+        expect(source.match(/AMB\.editors\.date\(/g)).toHaveLength(5);
+        expect(source.match(/AMB\.formatters\.date\(/g)).toHaveLength(5);
+        expect(source).toContain("const minDate = '2025-01-01'");
+        expect(source).toContain("const maxDate = '2027-12-31'");
+    });
+
+    test('starts with ten valid populated rows', () => {
+        const data = source.match(/const dateData = \[([\s\S]*?)\n\];/)[1];
+
+        expect(data.match(/\{ id: \d+/g)).toHaveLength(10);
+        expect(data).not.toContain("manualDate: ''");
+        expect(data).not.toContain("pickerDate: ''");
+        expect(data).not.toContain("isoDate: ''");
+        expect(data).not.toContain("compactDate: ''");
+        expect(data).not.toContain("pickerOnlyDate: ''");
+    });
+
+    test('opens the shared bilingual report dialog instead of fixed output', () => {
         expect(source).toContain(
             "import { createDemoReportDialog } from './utils/demo-report-dialog.js'"
         );
-        expect(source).toContain("title: 'Date validation report'");
+        expect(source).toContain("title: reportCopy[getLanguage()].title");
         expect(source).toContain('reportText: buildDateReport(result)');
         expect(source).toContain('jsonData: result');
         expect(source).not.toContain('id="dates-output"');
-        expect(source).not.toContain('output.textContent');
     });
 });

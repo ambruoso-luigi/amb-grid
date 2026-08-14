@@ -176,7 +176,7 @@ export default async function multifieldLookup(app) {
                 { title: 'Region', titleKey: 'guides.multifield.region.title', badge: 'DERIVED', description: 'Readonly region synchronized with the master selection.', descriptionKey: 'guides.multifield.region.description' },
                 { title: 'Postal Code', titleKey: 'guides.multifield.postalCode.title', badge: 'DERIVED', description: 'Readonly postal code supplied by the selected record.', descriptionKey: 'guides.multifield.postalCode.description' },
                 { title: 'ISTAT Code', titleKey: 'guides.multifield.istatCode.title', badge: 'DERIVED', description: 'Readonly ISTAT identifier supplied by the selected record.', descriptionKey: 'guides.multifield.istatCode.description' },
-                { title: 'Cadastral Code', titleKey: 'guides.multifield.cadastralCode.title', badge: 'DERIVED', description: 'Readonly cadastral identifier supplied by the selected record.', descriptionKey: 'guides.multifield.cadastralCode.description' }
+                { title: 'Cadastral Code', titleKey: 'guides.multifield.cadastralCode.title', badge: 'DERIVED', description: 'Derived field, hidden in the lookup and filled after selection.', descriptionKey: 'guides.multifield.cadastralCode.description' }
             ]
         })}
         <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>

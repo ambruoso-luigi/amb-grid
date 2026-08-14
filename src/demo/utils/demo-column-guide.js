@@ -24,8 +24,8 @@ const renderPoints = points => {
         </ul>`;
 };
 
-const renderColumns = columns => `
-    <ul class="demo-column-guide">
+const renderColumns = (columns, className = '') => `
+    <ul class="demo-column-guide${className ? ` ${escapeHtml(className)}` : ''}">
         ${columns.map(column => `<li class="demo-column-guide__item">
             ${renderTranslatedText({
                 tag: 'strong',
@@ -54,7 +54,8 @@ export const createDemoColumnGuide = ({
     intro = '',
     introKey = '',
     points = [],
-    columns = []
+    columns = [],
+    className = ''
 }) => `
     <details class="demo-disclosure">
         ${renderTranslatedText({
@@ -66,6 +67,6 @@ export const createDemoColumnGuide = ({
         <div class="demo-disclosure__content">
             ${intro ? renderTranslatedText({ tag: 'p', key: introKey, text: intro }) : ''}
             ${renderPoints(points)}
-            ${renderColumns(columns)}
+            ${renderColumns(columns, className)}
         </div>
     </details>`;

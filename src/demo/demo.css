@@ -2083,7 +2083,7 @@ a {
 .demo-feature-grid {
     display: grid;
     gap: 14px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-bottom: 28px;
 }
 
@@ -2390,6 +2390,8 @@ a {
 .demo-column-guide__title {
     color: var(--amb-site-navy-2);
     font-size: 13px;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .demo-column-guide__badge {
@@ -2408,6 +2410,42 @@ a {
     font-size: 12px;
     grid-column: 1 / -1;
     line-height: 1.35;
+}
+
+.demo-column-guide--validation {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.demo-parser-output {
+    color: var(--amb-site-navy);
+    font-family: var(--amb-font-mono, "SFMono-Regular", Consolas, monospace);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.demo-parser-output--null {
+    color: var(--amb-site-muted);
+    font-style: italic;
+}
+
+.demo-parser-type {
+    display: grid;
+    gap: 2px;
+    line-height: 1.15;
+    min-width: 0;
+}
+
+.demo-parser-type strong {
+    color: var(--amb-site-navy);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.demo-parser-type code {
+    color: var(--amb-site-muted);
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .demo-column-calculations-grid .tabulator-header .tabulator-calcs-holder,
@@ -3556,7 +3594,8 @@ a {
     }
 
     .demo-feature-grid,
-    .demo-column-guide {
+    .demo-column-guide,
+    .demo-column-guide--validation {
         grid-template-columns: 1fr;
     }
 

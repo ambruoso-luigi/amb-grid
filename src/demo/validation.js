@@ -224,6 +224,7 @@ export default function validation(app) {
         ${createDemoColumnGuide({
             summary: 'Validation rules and limits',
             summaryKey: 'examples.validation.detailsTitle',
+            className: 'demo-column-guide--validation',
             points: [
                 { title: 'Field rules', titleKey: 'examples.validation.point1Title', description: 'Fields demonstrate required, unique, length, pattern, and format rules.', descriptionKey: 'examples.validation.detail1' },
                 { title: 'Visible errors', titleKey: 'examples.validation.point2Title', description: 'Leaving an invalid edited cell associates feedback with that cell and row.', descriptionKey: 'examples.validation.detail2' },
@@ -232,7 +233,6 @@ export default function validation(app) {
                 { title: 'Correct and retry', titleKey: 'examples.validation.point5Title', description: 'Correct a highlighted value and validate again to clear its error.', descriptionKey: 'examples.validation.detail5' }
             ],
             columns: [
-                { title: 'ID', titleKey: 'guides.validation.id.title', badge: 'READONLY', description: 'Persistent row identifier used as validation context.', descriptionKey: 'guides.validation.id.description' },
                 { title: 'Alias', titleKey: 'guides.validation.alias.title', badge: 'REQUIRED', description: 'Required, unique ignoring case, and between 3 and 20 characters.', descriptionKey: 'guides.validation.alias.description' },
                 { title: 'Email', titleKey: 'guides.validation.email.title', badge: 'EMAIL', description: 'Checks the value against a valid email-address format.', descriptionKey: 'guides.validation.email.description' },
                 { title: 'Access Code', titleKey: 'guides.validation.accessCode.title', badge: 'PATTERN', description: 'Uppercase code with exactly 3 letters followed by 3 digits.', descriptionKey: 'guides.validation.accessCode.description' },
