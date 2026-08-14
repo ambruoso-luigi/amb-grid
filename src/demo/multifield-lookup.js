@@ -6,7 +6,7 @@ import {
 } from './multifield-lookup-config.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 
-const DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
+const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.meta.url);
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
     + 'It may be incomplete, outdated, or inaccurate. '
     + 'Do not use it as an official source for production systems.';

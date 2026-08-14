@@ -202,8 +202,11 @@ describe('demo site navigation', () => {
 
     test('keeps each public column calculation on its own field', () => {
         const calculations = read('src/demo/column-calculations.js');
+        const calculationUtilities = read('src/demo/utils/demo-calculations.js');
+        const copy = read('src/demo/example-copy.js');
         const expectedCalculations = [
             ["field: 'id'", "topCalc: 'count'"],
+            ["field: 'product'", 'topCalc: countPrintProducts'],
             ["field: 'category'", "topCalc: 'unique'"],
             ["field: 'quantity'", "topCalc: 'sum'"],
             ["field: 'unitPrice'", "topCalc: 'avg'"],
@@ -229,6 +232,31 @@ describe('demo site navigation', () => {
         expect(calculations).toContain('<details class="demo-disclosure">');
         expect(calculations).toContain('data-i18n="examples.columnCalculations.detailsTitle"');
         expect(calculations).toContain('class="demo-calculation-map"');
+        expect(calculations.match(/class="demo-calculation-map__badge"/g)).toHaveLength(7);
+        expect(calculations).toContain("label: 'PRINT:'");
+
+        const customCalculation = calculationUtilities.match(
+            /export const countPrintProducts = values => \{[\s\S]*?\n\};/
+        )[0];
+
+        expect(calculations).toContain("import { countPrintProducts } from './utils/demo-calculations.js'");
+        expect(customCalculation).toContain("String(value || '').toLowerCase().includes('print')");
+        expect(customCalculation).not.toContain('quantity');
+        expect(customCalculation).not.toContain('category');
+        expect(customCalculation).not.toContain('score');
+
+        [
+            'idCalc',
+            'productCalc',
+            'categoryCalc',
+            'quantityCalc',
+            'unitPriceCalc',
+            'deliveryDaysCalc',
+            'scoreCalc'
+        ].forEach(key => {
+            expect(copy.match(new RegExp(`'examples\\.columnCalculations\\.${key}'`, 'g'))).toHaveLength(2);
+            expect(calculations).toContain(`data-i18n="examples.columnCalculations.${key}"`);
+        });
     });
 
     test('keeps all six public example introductions and disclosures bilingual', () => {
@@ -367,6 +395,7 @@ describe('demo site navigation', () => {
             }));
 
         expect(rows).toHaveLength(10);
+        expect((dataSource.match(/product: '[^']*print[^']*'/gi) || [])).toHaveLength(4);
         expect(new Set(rows.map(row => row.category)).size).toBe(4);
         expect(rows.reduce((sum, row) => sum + row.quantity, 0)).toBe(200);
         expect((rows.reduce((sum, row) => sum + row.unitPrice, 0) / rows.length).toFixed(2)).toBe('125.00');

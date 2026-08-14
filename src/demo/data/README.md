@@ -1,8 +1,9 @@
 # Italian municipalities demo dataset
 
 `italian-municipalities.demo.json` is used only by the AMB Grid multifield
-lookup demo. It is served as a separate static asset and is not imported by
-the library core or included in the AMB Grid runtime bundle.
+lookup demo. Vite emits it as a separate hashed asset through
+`new URL('./data/italian-municipalities.demo.json', import.meta.url)`; it is
+not imported by the library core or included in the AMB Grid runtime bundle.
 
 Municipality names, ISTAT codes, cadastral codes, province abbreviations, and
 regions are generated from the official ISTAT workbook:
@@ -28,6 +29,6 @@ Regenerate the JSON after downloading the ISTAT workbook:
 ```bash
 npm run demo:data:municipalities -- \
   path/to/Elenco-comuni-italiani.xlsx \
-  public/demo/data/italian-municipalities.demo.json \
+  src/demo/data/italian-municipalities.demo.json \
   path/to/comuni.json
 ```

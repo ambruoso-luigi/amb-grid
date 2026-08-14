@@ -6,7 +6,7 @@ import {
 } from '../src/demo/multifield-lookup-config.js';
 
 const datasetPath = new URL(
-    '../public/demo/data/italian-municipalities.demo.json',
+    '../src/demo/data/italian-municipalities.demo.json',
     import.meta.url
 );
 const municipalities = JSON.parse(fs.readFileSync(datasetPath, 'utf8'));
@@ -95,6 +95,15 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).toContain("cssClass: 'amb-cell--readonly-actionable amb-cell--actionable'");
         expect(demoSource).toContain("cssClass: 'amb-cell--readonly-passive amb-cell--derived'");
         expect(demoSource).toContain('This dataset is provided for demonstration purposes only.');
+    });
+
+    test('loads the tracked demo dataset through a Vite-managed module URL', () => {
+        expect(demoSource).toContain(
+            "new URL('./data/italian-municipalities.demo.json', import.meta.url)"
+        );
+        expect(demoSource).toContain('const response = await fetch(DATASET_URL)');
+        expect(demoSource).not.toContain('import.meta.env.BASE_URL');
+        expect(municipalities.length).toBeGreaterThan(7000);
     });
 
     test('keeps readonly visual utilities zebra-safe by default', () => {

@@ -83,11 +83,20 @@ export const publicExampleTranslations = {
         'examples.columnCalculations.detail2': 'Modificando un valore business, l’aggregato corrispondente segue i dati della grid.',
         'examples.columnCalculations.point3Title': 'Riga integrata',
         'examples.columnCalculations.detail3': 'La calculation row mantiene gli aggregati nella grid senza riepiloghi manuali esterni.',
+        'examples.columnCalculations.id': 'ID',
+        'examples.columnCalculations.idCalc': 'COUNT conta il numero di righe.',
+        'examples.columnCalculations.product': 'Prodotto',
+        'examples.columnCalculations.productCalc': 'Il calcolo personalizzato conta i nomi prodotto che contengono "print".',
         'examples.columnCalculations.category': 'Categoria',
+        'examples.columnCalculations.categoryCalc': 'UNIQUE conta le categorie distinte.',
         'examples.columnCalculations.quantity': 'Quantità',
+        'examples.columnCalculations.quantityCalc': 'SUM somma le quantità di tutte le righe.',
         'examples.columnCalculations.unitPrice': 'Prezzo unitario',
+        'examples.columnCalculations.unitPriceCalc': 'AVG calcola il prezzo unitario medio.',
         'examples.columnCalculations.deliveryDays': 'Giorni consegna',
-        'examples.columnCalculations.score': 'Punteggio'
+        'examples.columnCalculations.deliveryDaysCalc': 'MIN mostra il minor numero di giorni di consegna.',
+        'examples.columnCalculations.score': 'Punteggio',
+        'examples.columnCalculations.scoreCalc': 'MAX mostra il punteggio più alto.'
     },
     en: {
         'examples.basicCrud.title': 'Basic CRUD',
@@ -173,10 +182,19 @@ export const publicExampleTranslations = {
         'examples.columnCalculations.detail2': 'Edit a business value and the corresponding aggregate follows the grid data.',
         'examples.columnCalculations.point3Title': 'Built-in row',
         'examples.columnCalculations.detail3': 'The calculation row keeps aggregates in the grid without external manual summaries.',
+        'examples.columnCalculations.id': 'ID',
+        'examples.columnCalculations.idCalc': 'COUNT returns the number of rows.',
+        'examples.columnCalculations.product': 'Product',
+        'examples.columnCalculations.productCalc': 'The custom calculation counts product names containing "print".',
         'examples.columnCalculations.category': 'Category',
+        'examples.columnCalculations.categoryCalc': 'UNIQUE counts the distinct categories.',
         'examples.columnCalculations.quantity': 'Quantity',
+        'examples.columnCalculations.quantityCalc': 'SUM adds all quantities.',
         'examples.columnCalculations.unitPrice': 'Unit price',
+        'examples.columnCalculations.unitPriceCalc': 'AVG calculates the average unit price.',
         'examples.columnCalculations.deliveryDays': 'Delivery days',
-        'examples.columnCalculations.score': 'Score'
+        'examples.columnCalculations.deliveryDaysCalc': 'MIN returns the shortest delivery time.',
+        'examples.columnCalculations.score': 'Score',
+        'examples.columnCalculations.scoreCalc': 'MAX returns the highest score.'
     }
 };
