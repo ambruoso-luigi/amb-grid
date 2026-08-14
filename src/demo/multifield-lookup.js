@@ -5,6 +5,7 @@ import {
     MUNICIPALITY_MAP_TO_ROW
 } from './multifield-lookup-config.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 
 const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.meta.url);
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
@@ -159,18 +160,25 @@ export default async function multifieldLookup(app) {
     app.innerHTML = `
         <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
         <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Open the lookup from the Municipality cell: selection keeps Municipality, Province, Region, Postal Code, ISTAT Code, and Cadastral Code synchronized.</p>
-        <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary" data-i18n="examples.multifieldLookup.detailsTitle">Multifield lookup behavior</summary>
-            <div class="demo-disclosure__content">
-                <ul class="demo-explanation-list">
-                    <li><strong data-i18n="examples.multifieldLookup.point1Title">Select a record</strong><span data-i18n="examples.multifieldLookup.detail1">Click Municipality and choose one complete record from the lookup.</span></li>
-                    <li><strong data-i18n="examples.multifieldLookup.point2Title">Master field</strong><span data-i18n="examples.multifieldLookup.detail2">Municipality is the actionable master field; dependent fields remain readonly.</span></li>
-                    <li><strong data-i18n="examples.multifieldLookup.point3Title">Dependent fields</strong><span data-i18n="examples.multifieldLookup.detail3">Province, Region, Postal Code, ISTAT Code, and Cadastral Code update together.</span></li>
-                    <li><strong data-i18n="examples.multifieldLookup.point4Title">Search</strong><span data-i18n="examples.multifieldLookup.detail4">Search the lookup dataset to narrow the available municipalities before selection.</span></li>
-                    <li><strong data-i18n="examples.multifieldLookup.point5Title">Consistent data</strong><span data-i18n="examples.multifieldLookup.detail5">Selecting one record prevents combinations of dependent values that do not belong together.</span></li>
-                </ul>
-            </div>
-        </details>
+        ${createDemoColumnGuide({
+            summary: 'Multifield lookup behavior',
+            summaryKey: 'examples.multifieldLookup.detailsTitle',
+            points: [
+                { title: 'Select a record', titleKey: 'examples.multifieldLookup.point1Title', description: 'Click Municipality and choose one complete record from the lookup.', descriptionKey: 'examples.multifieldLookup.detail1' },
+                { title: 'Master field', titleKey: 'examples.multifieldLookup.point2Title', description: 'Municipality is the actionable master field; dependent fields remain readonly.', descriptionKey: 'examples.multifieldLookup.detail2' },
+                { title: 'Dependent fields', titleKey: 'examples.multifieldLookup.point3Title', description: 'Province, Region, Postal Code, ISTAT Code, and Cadastral Code update together.', descriptionKey: 'examples.multifieldLookup.detail3' },
+                { title: 'Search', titleKey: 'examples.multifieldLookup.point4Title', description: 'Search the lookup dataset to narrow the available municipalities before selection.', descriptionKey: 'examples.multifieldLookup.detail4' },
+                { title: 'Consistent data', titleKey: 'examples.multifieldLookup.point5Title', description: 'Selecting one record prevents combinations of dependent values that do not belong together.', descriptionKey: 'examples.multifieldLookup.detail5' }
+            ],
+            columns: [
+                { title: 'Municipality', titleKey: 'guides.multifield.municipality.title', badge: 'MASTER', description: 'Actionable master field: click it to open the municipality lookup.', descriptionKey: 'guides.multifield.municipality.description' },
+                { title: 'Province', titleKey: 'guides.multifield.province.title', badge: 'DERIVED', description: 'Readonly value filled automatically from the selected municipality.', descriptionKey: 'guides.multifield.province.description' },
+                { title: 'Region', titleKey: 'guides.multifield.region.title', badge: 'DERIVED', description: 'Readonly region synchronized with the master selection.', descriptionKey: 'guides.multifield.region.description' },
+                { title: 'Postal Code', titleKey: 'guides.multifield.postalCode.title', badge: 'DERIVED', description: 'Readonly postal code supplied by the selected record.', descriptionKey: 'guides.multifield.postalCode.description' },
+                { title: 'ISTAT Code', titleKey: 'guides.multifield.istatCode.title', badge: 'DERIVED', description: 'Readonly ISTAT identifier supplied by the selected record.', descriptionKey: 'guides.multifield.istatCode.description' },
+                { title: 'Cadastral Code', titleKey: 'guides.multifield.cadastralCode.title', badge: 'DERIVED', description: 'Readonly cadastral identifier supplied by the selected record.', descriptionKey: 'guides.multifield.cadastralCode.description' }
+            ]
+        })}
         <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
         <div class="demo-table-workbench">
             <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>

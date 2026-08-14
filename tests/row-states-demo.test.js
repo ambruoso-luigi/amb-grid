@@ -47,7 +47,7 @@ describe('Row states demo', () => {
 
     test('uses a numeric derived Errors column without adding an error state', () => {
         expect(source).toContain(
-            'data-i18n="examples.rowStates.detailsTitle">Row states behavior</summary>'
+            "summaryKey: 'examples.rowStates.detailsTitle'"
         );
         expect(source).not.toContain('<details class="demo-disclosure" open>');
         expect(source).toContain('clean is unchanged, new was added locally, and modified differs from its original data.');

@@ -1,5 +1,6 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 
 const departments = [
     'Administration',
@@ -126,18 +127,25 @@ export default function autocomplete(app) {
     app.innerHTML = `
         <h2 data-i18n="examples.autocomplete.title">Autocomplete</h2>
         <p class="demo-note" data-i18n="examples.autocomplete.intro">Autocomplete helps users choose suggested values while AMB Grid controls commit, validation, and row state.</p>
-        <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary" data-i18n="examples.autocomplete.detailsTitle">Autocomplete behavior</summary>
-            <div class="demo-disclosure__content">
-                <ul class="demo-explanation-list">
-                    <li><strong data-i18n="examples.autocomplete.point1Title">Suggestions</strong><span data-i18n="examples.autocomplete.detail1">Matching options appear and narrow while you type.</span></li>
-                    <li><strong data-i18n="examples.autocomplete.point2Title">Strict values</strong><span data-i18n="examples.autocomplete.detail2">Department fields require a value from the supplied list.</span></li>
-                    <li><strong data-i18n="examples.autocomplete.point3Title">Free values</strong><span data-i18n="examples.autocomplete.detail3">Tag and city also accept custom values that are not in the suggestions.</span></li>
-                    <li><strong data-i18n="examples.autocomplete.point4Title">Keyboard</strong><span data-i18n="examples.autocomplete.detail4">Use the arrow keys to navigate suggestions and confirm without leaving the keyboard.</span></li>
-                    <li><strong data-i18n="examples.autocomplete.point5Title">Committed value</strong><span data-i18n="examples.autocomplete.detail5">The confirmed option becomes the cell value used by validation and the CRUD payload.</span></li>
-                </ul>
-            </div>
-        </details>
+        ${createDemoColumnGuide({
+            summary: 'Autocomplete behavior',
+            summaryKey: 'examples.autocomplete.detailsTitle',
+            points: [
+                { title: 'Suggestions', titleKey: 'examples.autocomplete.point1Title', description: 'Matching options appear and narrow while you type.', descriptionKey: 'examples.autocomplete.detail1' },
+                { title: 'Strict values', titleKey: 'examples.autocomplete.point2Title', description: 'Department fields require a value from the supplied list.', descriptionKey: 'examples.autocomplete.detail2' },
+                { title: 'Free values', titleKey: 'examples.autocomplete.point3Title', description: 'Tag and city also accept custom values that are not in the suggestions.', descriptionKey: 'examples.autocomplete.detail3' },
+                { title: 'Keyboard', titleKey: 'examples.autocomplete.point4Title', description: 'Use the arrow keys to navigate suggestions and confirm without leaving the keyboard.', descriptionKey: 'examples.autocomplete.detail4' },
+                { title: 'Committed value', titleKey: 'examples.autocomplete.point5Title', description: 'The confirmed option becomes the cell value used by validation and the CRUD payload.', descriptionKey: 'examples.autocomplete.detail5' }
+            ],
+            columns: [
+                { title: 'ID', titleKey: 'guides.autocomplete.id.title', badge: 'READONLY', description: 'Persistent identifier for the example row.', descriptionKey: 'guides.autocomplete.id.description' },
+                { title: 'Task', titleKey: 'guides.autocomplete.task.title', badge: 'TEXT', description: 'Trimmed free text with an 80-character editor limit.', descriptionKey: 'guides.autocomplete.task.description' },
+                { title: 'Department strict', titleKey: 'guides.autocomplete.strict.title', badge: 'STRICT', description: 'Optional value, but when entered it must match the department list.', descriptionKey: 'guides.autocomplete.strict.description' },
+                { title: 'Department required', titleKey: 'guides.autocomplete.required.title', badge: 'REQUIRED', description: 'Must contain a department selected from the supplied list.', descriptionKey: 'guides.autocomplete.required.description' },
+                { title: 'Free autocomplete', titleKey: 'guides.autocomplete.free.title', badge: 'FREE', description: 'Suggests known tags while also accepting a custom value.', descriptionKey: 'guides.autocomplete.free.description' },
+                { title: 'Long list (max 5)', titleKey: 'guides.autocomplete.city.title', badge: 'MAX 5', description: 'Suggests at most five matching cities and accepts custom text.', descriptionKey: 'guides.autocomplete.city.description' }
+            ]
+        })}
         <div class="demo-table-workbench">
             <div id="autocomplete-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>

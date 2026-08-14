@@ -1,5 +1,6 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
@@ -73,18 +74,28 @@ export default function rowStates(app) {
     app.innerHTML = `
         <h2 data-i18n="examples.rowStates.title">Row states</h2>
         <p class="demo-note" data-i18n="examples.rowStates.intro">Use the CRUD toolbar and delete column to explore how AMB Grid tracks each row through its lifecycle.</p>
-        <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary" data-i18n="examples.rowStates.detailsTitle">Row states behavior</summary>
-            <div class="demo-disclosure__content">
-                <ul class="demo-explanation-list">
-                    <li><strong data-i18n="examples.rowStates.point1Title">Lifecycle</strong><span data-i18n="examples.rowStates.detail1">clean is unchanged, new was added locally, and modified differs from its original data.</span></li>
-                    <li><strong data-i18n="examples.rowStates.point2Title">Delete</strong><span data-i18n="examples.rowStates.detail2">deleted marks an existing row for removal; a new unsaved row is removed directly.</span></li>
-                    <li><strong data-i18n="examples.rowStates.point3Title">Save</strong><span data-i18n="examples.rowStates.detail3">Save processes valid changes and exposes saved after application confirmation.</span></li>
-                    <li><strong data-i18n="examples.rowStates.point4Title">Rollback</strong><span data-i18n="examples.rowStates.detail4">Rollback restores original values and returns an edited row to clean.</span></li>
-                    <li><strong data-i18n="examples.rowStates.point5Title">Report</strong><span data-i18n="examples.rowStates.detail5">Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.</span></li>
-                </ul>
-            </div>
-        </details>
+        ${createDemoColumnGuide({
+            summary: 'Row states behavior',
+            summaryKey: 'examples.rowStates.detailsTitle',
+            points: [
+                { title: 'Lifecycle', titleKey: 'examples.rowStates.point1Title', description: 'clean is unchanged, new was added locally, and modified differs from its original data.', descriptionKey: 'examples.rowStates.detail1' },
+                { title: 'Delete', titleKey: 'examples.rowStates.point2Title', description: 'deleted marks an existing row for removal; a new unsaved row is removed directly.', descriptionKey: 'examples.rowStates.detail2' },
+                { title: 'Save', titleKey: 'examples.rowStates.point3Title', description: 'Save processes valid changes and exposes saved after application confirmation.', descriptionKey: 'examples.rowStates.detail3' },
+                { title: 'Rollback', titleKey: 'examples.rowStates.point4Title', description: 'Rollback restores original values and returns an edited row to clean.', descriptionKey: 'examples.rowStates.detail4' },
+                { title: 'Report', titleKey: 'examples.rowStates.point5Title', description: 'Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.', descriptionKey: 'examples.rowStates.detail5' }
+            ],
+            columns: [
+                { title: 'ID', titleKey: 'guides.rowStates.id.title', badge: 'PERSISTENT', description: 'Readonly identifier for a row already known by the backend.', descriptionKey: 'guides.rowStates.id.description' },
+                { title: 'Temp ID', titleKey: 'guides.rowStates.tempId.title', badge: 'TEMP', description: 'Readonly client identifier assigned to a new unsaved row.', descriptionKey: 'guides.rowStates.tempId.description' },
+                { title: '#', titleKey: 'guides.rowStates.rowNumber.title', badge: 'ROW NO.', description: 'Derived row number used by reports and validation feedback.', descriptionKey: 'guides.rowStates.rowNumber.description' },
+                { title: 'Lifecycle', titleKey: 'guides.rowStates.lifecycle.title', badge: 'STATE', description: 'Shows clean, new, modified, deleted, or saved state.', descriptionKey: 'guides.rowStates.lifecycle.description' },
+                { title: 'Errors', titleKey: 'guides.rowStates.errors.title', badge: 'DERIVED', description: 'Readonly count of cell and row errors currently attached to the record.', descriptionKey: 'guides.rowStates.errors.description' },
+                { title: 'Item', titleKey: 'guides.rowStates.item.title', badge: 'TEXT', description: 'Trimmed editable item name; editing it makes the row modified.', descriptionKey: 'guides.rowStates.item.description' },
+                { title: 'Category', titleKey: 'guides.rowStates.category.title', badge: 'TEXT', description: 'Trimmed editable business category.', descriptionKey: 'guides.rowStates.category.description' },
+                { title: 'Owner', titleKey: 'guides.rowStates.owner.title', badge: 'TEXT', description: 'Trimmed editable owner responsible for the item.', descriptionKey: 'guides.rowStates.owner.description' },
+                { title: 'Note', titleKey: 'guides.rowStates.note.title', badge: 'TEXT', description: 'Trimmed editable note used by the error and lifecycle scenarios.', descriptionKey: 'guides.rowStates.note.description' }
+            ]
+        })}
         <div class="demo-table-workbench">
             <div id="row-states-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>

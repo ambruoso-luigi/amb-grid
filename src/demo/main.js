@@ -15,6 +15,7 @@ import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon, frameworkIcon } from './demo-icons.js';
 import { initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
+import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -31,6 +32,7 @@ const featureExamples = [
 const translations = {
     it: {
         ...publicExampleTranslations.it,
+        ...demoColumnGuideTranslations.it,
         'page.title': 'AMB Grid',
         'page.subtitle': 'Libreria CRUD framework-agnostic per dati tabellari editabili nelle applicazioni business.',
         'language.itTitle': 'Italiano',
@@ -129,6 +131,7 @@ const translations = {
     },
     en: {
         ...publicExampleTranslations.en,
+        ...demoColumnGuideTranslations.en,
         'page.title': 'AMB Grid',
         'page.subtitle': 'A framework-agnostic CRUD grid library for editable tabular data in business applications.',
         'language.itTitle': 'Italiano',

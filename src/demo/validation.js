@@ -1,5 +1,6 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 
 const hasReservedDocumentPrefix = value => {
     if (value === null || value === undefined || String(value).trim() === '') return true;
@@ -220,18 +221,28 @@ export default function validation(app) {
     app.innerHTML = `
         <h2 data-i18n="examples.validation.title">Validation</h2>
         <p class="demo-note" data-i18n="examples.validation.intro">Most validations run when you leave an edited cell. The toolbar can create intentional errors, open the report, or reset the data.</p>
-        <details class="demo-disclosure">
-            <summary class="demo-disclosure__summary" data-i18n="examples.validation.detailsTitle">Validation rules and limits</summary>
-            <div class="demo-disclosure__content">
-                <ul class="demo-explanation-list">
-                    <li><strong data-i18n="examples.validation.point1Title">Field rules</strong><span data-i18n="examples.validation.detail1">Fields demonstrate required, unique, length, pattern, and format rules.</span></li>
-                    <li><strong data-i18n="examples.validation.point2Title">Visible errors</strong><span data-i18n="examples.validation.detail2">Leaving an invalid edited cell associates feedback with that cell and row.</span></li>
-                    <li><strong data-i18n="examples.validation.point3Title">Valid and invalid data</strong><span data-i18n="examples.validation.detail3">Create anomalies makes the contrast visible; the report lists the rules that failed.</span></li>
-                    <li><strong data-i18n="examples.validation.point4Title">Payload and save</strong><span data-i18n="examples.validation.detail4">Invalid changed rows cannot enter the save-ready portion of the payload.</span></li>
-                    <li><strong data-i18n="examples.validation.point5Title">Correct and retry</strong><span data-i18n="examples.validation.detail5">Correct a highlighted value and validate again to clear its error.</span></li>
-                </ul>
-            </div>
-        </details>
+        ${createDemoColumnGuide({
+            summary: 'Validation rules and limits',
+            summaryKey: 'examples.validation.detailsTitle',
+            points: [
+                { title: 'Field rules', titleKey: 'examples.validation.point1Title', description: 'Fields demonstrate required, unique, length, pattern, and format rules.', descriptionKey: 'examples.validation.detail1' },
+                { title: 'Visible errors', titleKey: 'examples.validation.point2Title', description: 'Leaving an invalid edited cell associates feedback with that cell and row.', descriptionKey: 'examples.validation.detail2' },
+                { title: 'Valid and invalid data', titleKey: 'examples.validation.point3Title', description: 'Create anomalies makes the contrast visible; the report lists the rules that failed.', descriptionKey: 'examples.validation.detail3' },
+                { title: 'Payload and save', titleKey: 'examples.validation.point4Title', description: 'Invalid changed rows cannot enter the save-ready portion of the payload.', descriptionKey: 'examples.validation.detail4' },
+                { title: 'Correct and retry', titleKey: 'examples.validation.point5Title', description: 'Correct a highlighted value and validate again to clear its error.', descriptionKey: 'examples.validation.detail5' }
+            ],
+            columns: [
+                { title: 'ID', titleKey: 'guides.validation.id.title', badge: 'READONLY', description: 'Persistent row identifier used as validation context.', descriptionKey: 'guides.validation.id.description' },
+                { title: 'Alias', titleKey: 'guides.validation.alias.title', badge: 'REQUIRED', description: 'Required, unique ignoring case, and between 3 and 20 characters.', descriptionKey: 'guides.validation.alias.description' },
+                { title: 'Email', titleKey: 'guides.validation.email.title', badge: 'EMAIL', description: 'Checks the value against a valid email-address format.', descriptionKey: 'guides.validation.email.description' },
+                { title: 'Access Code', titleKey: 'guides.validation.accessCode.title', badge: 'PATTERN', description: 'Uppercase code with exactly 3 letters followed by 3 digits.', descriptionKey: 'guides.validation.accessCode.description' },
+                { title: 'Codice Fiscale', titleKey: 'guides.validation.fiscalCode.title', badge: 'FISCAL CODE', description: 'Uppercase value checked with the Italian fiscal-code validator.', descriptionKey: 'guides.validation.fiscalCode.description' },
+                { title: 'Partita IVA', titleKey: 'guides.validation.vat.title', badge: 'VAT', description: 'Accepts exactly 11 numeric digits.', descriptionKey: 'guides.validation.vat.description' },
+                { title: 'CF or P.IVA', titleKey: 'guides.validation.combined.title', badge: 'ANY OF', description: 'Accepts either a valid Codice Fiscale or an 11-digit VAT number.', descriptionKey: 'guides.validation.combined.description' },
+                { title: 'Italian IBAN', titleKey: 'guides.validation.iban.title', badge: 'IBAN', description: 'Uppercase Italian IBAN validated in its 27-character format.', descriptionKey: 'guides.validation.iban.description' },
+                { title: 'Passport/Document', titleKey: 'guides.validation.document.title', badge: 'CUSTOM', description: 'Requires 6–20 alphanumeric characters and rejects the reserved TMP prefix.', descriptionKey: 'guides.validation.document.description' }
+            ]
+        })}
         <div class="demo-table-workbench">
             <div id="validation-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>

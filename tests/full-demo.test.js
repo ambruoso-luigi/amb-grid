@@ -143,10 +143,11 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('keeps full demo row actions on native button tab behavior', () => {
-        const rowActionColumnIndex = source.indexOf('createDemoRowActionColumn({');
-        const itemCodeIndex = source.indexOf("title: 'Item code'");
-        const requiresInspectionIndex = source.indexOf("title: 'Requires inspection'");
-        const notesIndex = source.indexOf("title: 'Notes'");
+        const tableColumnsSource = source.slice(source.indexOf('const tableOptions = {'));
+        const rowActionColumnIndex = tableColumnsSource.indexOf('createDemoRowActionColumn({');
+        const itemCodeIndex = tableColumnsSource.indexOf("title: 'Item code'");
+        const requiresInspectionIndex = tableColumnsSource.indexOf("title: 'Requires inspection'");
+        const notesIndex = tableColumnsSource.indexOf("title: 'Notes'");
 
         expect(source).toContain('createDemoRowActionColumn({');
         expect(source).toContain("field: '_demoRowActions'");

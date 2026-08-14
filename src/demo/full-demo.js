@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
+import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 
 const messages = {
     it: {
@@ -299,6 +300,30 @@ export default async function fullDemo(app, options = {}) {
                         <p class="demo-note" data-i18n="mainDemo.panelText">Gestisci righe prodotto, stati CRUD, validazione e payload backend nello stesso flusso.</p>
                     </div>
                 </div>
+                ${createDemoColumnGuide({
+                    summary: 'How this table works',
+                    summaryKey: 'mainDemo.guide.summary',
+                    intro: 'Edit inventory data directly while AMB Grid coordinates CRUD state, validation, lookup, search, payload, and save actions.',
+                    introKey: 'mainDemo.guide.intro',
+                    points: [
+                        { title: 'Edit and add', titleKey: 'mainDemo.guide.edit.title', description: 'Edit cells directly or use Add Row to create a new local product.', descriptionKey: 'mainDemo.guide.edit.description' },
+                        { title: 'Row actions', titleKey: 'mainDemo.guide.actions.title', description: 'Clean and saved rows show Delete, modified or deleted rows show Rollback, and new rows show Remove new.', descriptionKey: 'mainDemo.guide.actions.description' },
+                        { title: 'Validation and lookup', titleKey: 'mainDemo.guide.validation.title', description: 'Field rules validate edits; autocomplete and lookup editors guide controlled selections.', descriptionKey: 'mainDemo.guide.validation.description' },
+                        { title: 'Payload and save', titleKey: 'mainDemo.guide.save.title', description: 'Payload separates inserted, updated, and deleted records; Save sends valid changes to the fake backend.', descriptionKey: 'mainDemo.guide.save.description' },
+                        { title: 'Search and filters', titleKey: 'mainDemo.guide.search.title', description: 'Search and filter controls narrow the visible inventory without changing the underlying data.', descriptionKey: 'mainDemo.guide.search.description' }
+                    ],
+                    columns: [
+                        { title: 'Item code', titleKey: 'guides.main.itemCode.title', badge: 'UNIQUE', description: 'Required uppercase trimmed code matching PRD-A001 format and unique ignoring case.', descriptionKey: 'guides.main.itemCode.description' },
+                        { title: 'Product name', titleKey: 'guides.main.productName.title', badge: 'REQUIRED', description: 'Required trimmed text with a minimum length of 3 characters.', descriptionKey: 'guides.main.productName.description' },
+                        { title: 'Warehouse', titleKey: 'guides.main.warehouse.title', badge: 'AUTOCOMPLETE', description: 'Required value selected from the known warehouse options.', descriptionKey: 'guides.main.warehouse.description' },
+                        { title: 'Stock quantity', titleKey: 'guides.main.stock.title', badge: 'INTEGER', description: 'Required integer with a minimum value of zero.', descriptionKey: 'guides.main.stock.description' },
+                        { title: 'Unit price', titleKey: 'guides.main.price.title', badge: 'DECIMAL', description: 'Required non-negative decimal with two decimal places and currency formatting.', descriptionKey: 'guides.main.price.description' },
+                        { title: 'Last check date', titleKey: 'guides.main.date.title', badge: 'DATE', description: 'Required real date edited and displayed in dd/mm/yyyy format.', descriptionKey: 'guides.main.date.description' },
+                        { title: 'Status', titleKey: 'guides.main.status.title', badge: 'LOOKUP', description: 'Required status selected from a searchable lookup dialog.', descriptionKey: 'guides.main.status.description' },
+                        { title: 'Requires inspection', titleKey: 'guides.main.inspection.title', badge: 'BOOLEAN', description: 'Editable checkbox that records whether the product needs inspection.', descriptionKey: 'guides.main.inspection.description' },
+                        { title: 'Notes', titleKey: 'guides.main.notes.title', badge: 'LONG TEXT', description: 'Free long text edited in a dialog and shown as a compact preview.', descriptionKey: 'guides.main.notes.description' }
+                    ]
+                })}
                 <div class="demo-table-workbench">
                     <div id="inventory-table" class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"></div>
                 </div>

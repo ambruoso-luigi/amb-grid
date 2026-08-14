@@ -229,11 +229,11 @@ describe('demo site navigation', () => {
         expect(calculations).not.toContain("label: 'RANGE:'");
         expect(calculations).toContain("layout: 'fitColumns'");
         expect(calculations).toContain('formatValue: formatAveragePrice');
-        expect(calculations).toContain('<details class="demo-disclosure">');
-        expect(calculations).toContain('data-i18n="examples.columnCalculations.detailsTitle"');
-        expect(calculations).toContain('class="demo-calculation-map"');
-        expect(calculations.match(/class="demo-calculation-map__badge"/g)).toHaveLength(7);
-        expect(calculations).toContain("label: 'PRINT:'");
+        expect(calculations).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
+        expect(calculations).toContain("summaryKey: 'examples.columnCalculations.detailsTitle'");
+        expect(calculations.match(/badge: '(COUNT|PRINT|UNIQUE|SUM|AVG|MIN|MAX)'/g)).toHaveLength(7);
+        expect(calculations).toContain("label: 'PRINT'");
+        expect(calculations).toContain("className: 'demo-calculation-summary demo-calculation-summary--print'");
 
         const customCalculation = calculationUtilities.match(
             /export const countPrintProducts = values => \{[\s\S]*?\n\};/
@@ -255,7 +255,7 @@ describe('demo site navigation', () => {
             'scoreCalc'
         ].forEach(key => {
             expect(copy.match(new RegExp(`'examples\\.columnCalculations\\.${key}'`, 'g'))).toHaveLength(2);
-            expect(calculations).toContain(`data-i18n="examples.columnCalculations.${key}"`);
+            expect(calculations).toContain(`descriptionKey: 'examples.columnCalculations.${key}'`);
         });
     });
 
@@ -275,8 +275,8 @@ describe('demo site navigation', () => {
 
             expect(source).toContain(`data-i18n="examples.${key}.title"`);
             expect(source).toContain(`data-i18n="examples.${key}.intro"`);
-            expect(source).toContain('<details class="demo-disclosure">');
-            expect(source).toContain(`data-i18n="examples.${key}.detailsTitle"`);
+            expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
+            expect(source).toContain(`summaryKey: 'examples.${key}.detailsTitle'`);
             expect(copy.match(new RegExp(`'examples\\.${key}\\.detailsTitle'`, 'g'))).toHaveLength(2);
         });
     });
@@ -348,7 +348,7 @@ describe('demo site navigation', () => {
         exampleFiles.forEach(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 
-            expect(source).toContain('class="demo-business-grid demo-business-grid--viewport"');
+            expect(source).toContain('demo-business-grid demo-business-grid--viewport');
             expect(source).toContain("layout: 'fitColumns'");
             expect(source).not.toContain('resizableColumnFit:');
             expect(source).not.toMatch(/\bheight:\s*['"]\d+px['"]/);
