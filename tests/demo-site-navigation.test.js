@@ -276,7 +276,7 @@ describe('demo site navigation', () => {
             const source = read(`src/demo/${fileName}.js`);
 
             expect(source).toContain('class="demo-table-workbench"');
-            expect(source).toContain('class="demo-business-grid"');
+            expect(source).toMatch(/class="demo-business-grid(?:\s|\")/);
             expect(source).toContain("layout: 'fitColumns'");
             expect(source).toContain('minWidth:');
             expect(source).toContain('widthGrow:');
@@ -297,6 +297,20 @@ describe('demo site navigation', () => {
         expect(basicCrud).toContain("cssClass: 'demo-business-checkbox-cell'");
         expect(basicCrud).not.toContain("checkedLabel: 'Yes'");
         expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
+    });
+
+    test('keeps Basic CRUD vertically bounded and preserves manual column fitting', () => {
+        const basicCrud = read('src/demo/basic-crud.js');
+        const css = read('src/demo/demo.css');
+
+        expect(basicCrud).toContain('class="demo-business-grid demo-business-grid--basic"');
+        expect(basicCrud).toContain("layout: 'fitColumns'");
+        expect(basicCrud).toContain('resizableColumnFit: true');
+        expect(basicCrud).not.toMatch(/\bheight:\s*['"]\d+px['"]/);
+        expect(basicCrud).not.toMatch(/\bwidth:\s*\d+/);
+        expect(css).toContain('.demo-panel .demo-business-grid--basic .tabulator-tableholder');
+        expect(css).toContain('--amb-demo-visible-rows: 6;');
+        expect(css).toContain('height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 6) + 22px);');
     });
 
     test('keeps the home wide and highlights keyboard-first editing', () => {

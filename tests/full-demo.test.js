@@ -215,7 +215,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-placeholder');
         expect(demoCss).toContain('--amb-demo-row-height: 36px;');
         expect(demoCss).toContain('--amb-demo-visible-rows: 10;');
-        expect(demoCss).toContain('.demo-panel .amb-demo-inventory-grid .tabulator-tableholder {');
+        expect(demoCss).toContain('.demo-panel .amb-demo-inventory-grid .tabulator-tableholder,');
         expect(demoCss).toContain('max-height: calc(var(--amb-demo-row-height, 36px) * var(--amb-demo-visible-rows, 10) + 22px);');
         expect(demoCss).toContain('overflow-y: auto;');
         expect(demoCss).toContain('background: #fff;');

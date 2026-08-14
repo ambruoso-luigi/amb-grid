@@ -58,7 +58,7 @@ export default function basicCrud(app) {
             </div>
         </details>
         <div class="demo-table-workbench">
-            <div id="basic-table" class="demo-business-grid"></div>
+            <div id="basic-table" class="demo-business-grid demo-business-grid--basic"></div>
         </div>
     `;
 
@@ -105,6 +105,7 @@ export default function basicCrud(app) {
         },
         data: initialData.map(row => ({ ...row })),
         layout: 'fitColumns',
+        resizableColumnFit: true,
         columns: [
             { title: 'ID', field: 'id', minWidth: 75, widthGrow: 0.55 },
             { title: 'Temp ID', field: '_ambTempId', minWidth: 105, widthGrow: 0.75 },
