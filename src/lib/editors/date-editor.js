@@ -78,11 +78,12 @@ const createPickerOptions = options => {
      * Date editor. Saves a date string in the configured format.
      *
      * Keyboard behavior:
-     * - `Tab` and `Shift+Tab` commit and navigate when the picker is closed.
+     * - `Tab` and `Shift+Tab` commit and navigate whether the picker is open or
+     *   closed.
      * - `Enter` opens the datepicker when a picker is configured.
-     * - while the picker is open, `Tab` and `Shift+Tab` stay inside it, arrow
-     *   keys do not propagate to the grid, `Enter` is left to the picker, and
-     *   `Escape` closes the popup.
+     * - while the picker is open, arrow keys do not propagate to the grid,
+     *   `Enter` is left to the picker when appropriate, and `Escape` preserves
+     *   the configured manual or picker-only close behavior.
      * - manual picker editors keep the calendar button mounted after picker
      *   close so the calendar can be reopened.
      *
@@ -255,7 +256,19 @@ export function date(options = {}) {
                         const cells = row && typeof row.getCells === 'function'
                             ? row.getCells()
                             : [];
-                        const currentIndex = cells.indexOf(cell);
+                        const currentElement = cell
+                            && typeof cell.getElement === 'function'
+                            && cell.getElement();
+                        const currentIndex = cells.findIndex(candidate => {
+                            if (candidate === cell) return true;
+
+                            return Boolean(
+                                currentElement
+                                && candidate
+                                && typeof candidate.getElement === 'function'
+                                && candidate.getElement() === currentElement
+                            );
+                        });
                         const step = direction === 'prev' ? -1 : 1;
 
                         if (currentIndex !== -1) {
@@ -368,7 +381,9 @@ export function date(options = {}) {
                     }
 
                     if (event.key === 'Tab') {
-                        ensurePickerFocusTrap().handleKeydown(event);
+                        event.preventDefault();
+                        event.stopPropagation();
+                        commitFromTab(event.shiftKey ? 'prev' : 'next');
                         return;
                     }
 

@@ -332,10 +332,11 @@ popup/action cells, and non-data interactive columns:
   lookup selection, `Enter` selects, and `Escape` cancels. Record-based
   lookups can update multiple row fields through `mapToRow`.
 * Date editors with a picker use `Enter` to open the calendar picker. While the
-  picker is open, `Tab`/`Shift+Tab` remain inside the popup, arrow keys stay
-  with the calendar picker, `Enter` selects when supported by the picker, and
-  `Escape` closes the popup. Manual picker editors keep the calendar button
-  available after the popup closes so it can be reopened.
+  picker is open, `Tab`/`Shift+Tab` commit and navigate to the next/previous
+  editable grid cell, arrow keys stay with the calendar picker, `Enter` selects
+  when supported by the picker, and `Escape` preserves the editor mode's close
+  behavior. Manual picker editors keep the calendar button available after the
+  popup closes so it can be reopened.
 * Large text editors cancel with `Escape` and save with `Ctrl+Enter`.
   With `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates forward
   and `Shift+Tab` saves and navigates backward.

@@ -11719,11 +11719,12 @@ candidates for automatic focus.
     Date editor. Saves a date string in the configured format.
 
 Keyboard behavior:
-- `Tab` and `Shift+Tab` commit and navigate when the picker is closed.
+- `Tab` and `Shift+Tab` commit and navigate whether the picker is open or
+  closed.
 - `Enter` opens the datepicker when a picker is configured.
-- while the picker is open, `Tab` and `Shift+Tab` stay inside it, arrow
-  keys do not propagate to the grid, `Enter` is left to the picker, and
-  `Escape` closes the popup.
+- while the picker is open, arrow keys do not propagate to the grid,
+  `Enter` is left to the picker when appropriate, and `Escape` preserves
+  the configured manual or picker-only close behavior.
 - manual picker editors keep the calendar button mounted after picker
   close so the calendar can be reopened.
 </div>
@@ -12211,7 +12212,7 @@ Keyboard behavior:
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_date-editor.js.html">lib/editors/date-editor.js</a>, <a href="lib_editors_date-editor.js.html#line100">line 100</a>
+        <a href="lib_editors_date-editor.js.html">lib/editors/date-editor.js</a>, <a href="lib_editors_date-editor.js.html#line101">line 101</a>
     </li></ul></dd>
     
 
