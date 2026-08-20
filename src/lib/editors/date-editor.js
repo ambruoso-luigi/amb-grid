@@ -235,6 +235,20 @@ export function date(options = {}) {
                     }
                 };
 
+                const restoreCellFocusWithoutEditing = () => {
+                    const internalCell = typeof cell._getSelf === 'function'
+                        ? cell._getSelf()
+                        : null;
+                    const editModule = internalCell?.table?.modules?.edit;
+
+                    if (
+                        internalCell
+                        && typeof editModule?.focusCellNoEvent === 'function'
+                    ) {
+                        editModule.focusCellNoEvent(internalCell);
+                    }
+                };
+
                 const closeWithSuccess = value => {
                     if (closed) return;
 
@@ -242,6 +256,10 @@ export function date(options = {}) {
                     closed = true;
                     destroyDatepicker();
                     success(value);
+
+                    if (normalizedOptions.mode === 'pickerOnly') {
+                        restoreCellFocusWithoutEditing();
+                    }
                 };
 
                 const closeWithCancel = () => {

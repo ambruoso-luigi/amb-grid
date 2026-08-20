@@ -813,6 +813,32 @@ describe('date editor picker keyboard navigation', () => {
         expect(documentListeners).toHaveLength(0);
     });
 
+    test('pickerOnly restores cell focus without reopening the editor after changeDate', async () => {
+        const internalCell = {};
+        const focusCellNoEvent = vi.fn();
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+
+        harness.cell._getSelf = () => internalCell;
+        internalCell.table = {
+            modules: {
+                edit: {
+                    focusCellNoEvent
+                }
+            }
+        };
+
+        await harness.pickerInput.dispatch('changeDate', {
+            detail: {
+                date: new Date(2026, 7, 9)
+            }
+        });
+
+        expect(focusCellNoEvent).toHaveBeenCalledWith(internalCell);
+    });
+
     test('pickerOnly hide cancels without navigation', async () => {
         const harness = createPickerHarness({
             mode: 'pickerOnly',
