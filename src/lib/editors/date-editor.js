@@ -105,6 +105,7 @@ export function date(options = {}) {
 
         const editor = (cell, onRendered, success, cancel) => {
             const input = document.createElement('input');
+            let closed = false;
             const wrapper = document.createElement('span');
             const initialValue = getInitialValue(cell);
             const initialParsedValue = parsers.date({
@@ -132,7 +133,10 @@ export function date(options = {}) {
                 let tabCommitInProgress = false;
                 let navigationScheduled = false;
                 let pickerKeyboardListenerAttached = false;
+                let pickerTabListenerAttached = false;
+                let pickerTabListenerReady = false;
                 let handlePickerDocumentKeydown = null;
+                let handlePickerTabKeydown = null;
                 let pickerFocusTrap = null;
 
                 input.className = 'amb-date-editor';
@@ -172,6 +176,18 @@ export function date(options = {}) {
                     pickerKeyboardListenerAttached = false;
                 };
 
+                const removePickerTabListener = () => {
+                    if (!pickerTabListenerAttached || !handlePickerTabKeydown) return;
+
+                    document.removeEventListener(
+                        'keydown',
+                        handlePickerTabKeydown,
+                        true
+                    );
+                    pickerTabListenerAttached = false;
+                    pickerTabListenerReady = false;
+                };
+
                 const focusManualInput = () => {
                     if (!editorBehavior.hasManualInput) return;
 
@@ -184,6 +200,7 @@ export function date(options = {}) {
 
                 const cleanupPickerSession = ({ restoreFocus = true } = {}) => {
                     removePickerKeyboardListener();
+                    removePickerTabListener();
                     pickerFocusTrap?.deactivate({ restore: restoreFocus });
                     pickerFocusTrap = null;
 
@@ -210,7 +227,7 @@ export function date(options = {}) {
                 };
 
                 const destroyDatepicker = () => {
-                    cleanupPickerSession();
+                    cleanupPickerSession({ restoreFocus: false });
 
                     if (datepicker) {
                         datepicker.destroy();
@@ -221,6 +238,7 @@ export function date(options = {}) {
                 const closeWithSuccess = value => {
                     if (closed) return;
 
+
                     closed = true;
                     destroyDatepicker();
                     success(value);
@@ -228,6 +246,7 @@ export function date(options = {}) {
 
                 const closeWithCancel = () => {
                     if (closed) return;
+
 
                     closed = true;
                     destroyDatepicker();
@@ -252,67 +271,35 @@ export function date(options = {}) {
 
                     navigationScheduled = true;
                     globalThis.setTimeout(() => {
-                        const row = cell && cell.getRow && cell.getRow();
-                        const cells = row && typeof row.getCells === 'function'
-                            ? row.getCells()
-                            : [];
-                        const currentElement = cell
-                            && typeof cell.getElement === 'function'
-                            && cell.getElement();
-                        const currentIndex = cells.findIndex(candidate => {
-                            if (candidate === cell) return true;
+                        if (!table || !cell) return;
 
-                            return Boolean(
-                                currentElement
-                                && candidate
-                                && typeof candidate.getElement === 'function'
-                                && candidate.getElement() === currentElement
-                            );
-                        });
-                        const step = direction === 'prev' ? -1 : 1;
+                        const sameRowMethod = direction === 'prev'
+                            ? 'navigateLeft'
+                            : 'navigateRight';
+                        const wrappingMethod = direction === 'prev'
+                            ? 'navigatePrev'
+                            : 'navigateNext';
+                        const navigationCell = typeof cell._getSelf === 'function'
+                            ? cell._getSelf()
+                            : cell;
 
-                        if (currentIndex !== -1) {
-                            for (
-                                let index = currentIndex + step;
-                                index >= 0 && index < cells.length;
-                                index += step
-                            ) {
-                                const candidate = cells[index];
-                                const column = candidate
-                                    && candidate.getColumn
-                                    && candidate.getColumn();
-                                const definition = column
-                                    && column.getDefinition
-                                    && column.getDefinition();
-                                const hasEditor = definition
-                                    && definition.visible !== false
-                                    && definition.editable !== false
-                                    && definition.editor !== undefined
-                                    && definition.editor !== null
-                                    && definition.editor !== false;
-                                if (!hasEditor || typeof candidate.edit !== 'function') continue;
+                        if (typeof cell[sameRowMethod] === 'function') {
+                            const moved = cell[sameRowMethod]();
+                            if (moved) return;
 
-                                if (candidate.edit() !== false) return;
+                            if (typeof cell[wrappingMethod] === 'function') {
+                                cell[wrappingMethod]();
+                                return;
                             }
                         }
 
-                        if (direction === 'prev' && cell && typeof cell.navigatePrev === 'function') {
-                            cell.navigatePrev();
+                        if (typeof table[sameRowMethod] === 'function'
+                            && table[sameRowMethod](navigationCell)) {
                             return;
                         }
 
-                        if (direction === 'next' && cell && typeof cell.navigateNext === 'function') {
-                            cell.navigateNext();
-                            return;
-                        }
-
-                        if (direction === 'prev' && table && typeof table.navigatePrev === 'function') {
-                            table.navigatePrev();
-                            return;
-                        }
-
-                        if (direction === 'next' && table && typeof table.navigateNext === 'function') {
-                            table.navigateNext();
+                        if (typeof table[wrappingMethod] === 'function') {
+                            table[wrappingMethod](navigationCell);
                         }
                     }, 0);
                 };
@@ -371,19 +358,28 @@ export function date(options = {}) {
                     event.stopPropagation();
                 };
 
+                handlePickerTabKeydown = event => {
+                    if (
+                        closed
+                        || !datepicker
+                        || !datepicker.active
+                        || !pickerTabListenerReady
+                        || event.key !== 'Tab'
+                    ) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    commitFromTab(event.shiftKey ? 'prev' : 'next');
+                };
+
                 handlePickerDocumentKeydown = event => {
                     if (
                         closed
                         || !datepicker
                         || !datepicker.active
                     ) {
-                        return;
-                    }
-
-                    if (event.key === 'Tab') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        commitFromTab(event.shiftKey ? 'prev' : 'next');
                         return;
                     }
 
@@ -399,15 +395,6 @@ export function date(options = {}) {
                         return;
                     }
 
-                    if (
-                        event.key === 'ArrowUp'
-                        || event.key === 'ArrowDown'
-                        || event.key === 'ArrowLeft'
-                        || event.key === 'ArrowRight'
-                        || event.key === 'Enter'
-                    ) {
-                        event.stopPropagation();
-                    }
                 };
 
                 const addPickerKeyboardListener = () => {
@@ -422,6 +409,14 @@ export function date(options = {}) {
                         handlePickerDocumentKeydown
                     );
                     pickerKeyboardListenerAttached = true;
+
+                    document.addEventListener(
+                        'keydown',
+                        handlePickerTabKeydown,
+                        true
+                    );
+                    pickerTabListenerAttached = true;
+                    pickerTabListenerReady = true;
                 };
 
                 const showPicker = () => {
@@ -484,6 +479,7 @@ export function date(options = {}) {
                 pickerInput.addEventListener('hide', () => {
                     if (closed) return;
 
+
                     if (editorBehavior.hasManualInput) {
                         cleanupPickerSession({ restoreFocus: false });
                         focusManualInput();
@@ -529,26 +525,6 @@ export function date(options = {}) {
                             closeWithCancel();
                         }
                     });
-                    input.addEventListener('blur', () => {
-                        if (tabCommitInProgress) return;
-
-                        blurTimeout = window.setTimeout(() => {
-                            if (closed) return;
-
-                            const activeElement = document.activeElement;
-                            const isPickerFocused = activeElement
-                                && activeElement.closest
-                                && activeElement.closest('.datepicker');
-                            const isInternalPickerControl = activeElement === pickerButton
-                                || activeElement === pickerInput;
-
-                            if (isInternalPickerControl || isPickerFocused || (datepicker && datepicker.active)) {
-                                return;
-                            }
-
-                            commit();
-                        }, 300);
-                    });
                 }
 
                 onRendered(() => {
@@ -586,14 +562,54 @@ export function date(options = {}) {
             };
 
             const commit = () => {
+                if (closed) return;
+
                 const result = parseDateEditorValue(input.value, normalizedOptions);
 
                 if (result.action === 'cancel') {
+                    closed = true;
                     cancel();
                     return;
                 }
 
+                closed = true;
                 success(result.value);
+            };
+
+            const navigateAfterClose = direction => {
+                globalThis.setTimeout(() => {
+                    const table = cell && cell.getTable && cell.getTable();
+                    if (!table) return;
+
+                    const sameRowMethod = direction === 'prev'
+                        ? 'navigateLeft'
+                        : 'navigateRight';
+                    const wrappingMethod = direction === 'prev'
+                        ? 'navigatePrev'
+                        : 'navigateNext';
+                    const navigationCell = typeof cell._getSelf === 'function'
+                        ? cell._getSelf()
+                        : cell;
+
+                    if (typeof cell[sameRowMethod] === 'function') {
+                        const moved = cell[sameRowMethod]();
+                        if (moved) return;
+
+                        if (typeof cell[wrappingMethod] === 'function') {
+                            cell[wrappingMethod]();
+                            return;
+                        }
+                    }
+
+                    if (typeof table[sameRowMethod] === 'function'
+                        && table[sameRowMethod](navigationCell)) {
+                        return;
+                    }
+
+                    if (typeof table[wrappingMethod] === 'function') {
+                        table[wrappingMethod](navigationCell);
+                    }
+                }, 0);
             };
 
             input.addEventListener('input', sanitizeInput);
@@ -603,16 +619,41 @@ export function date(options = {}) {
                     return;
                 }
 
+                if (event.key === 'Tab') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    commit();
+                    navigateAfterClose(event.shiftKey ? 'prev' : 'next');
+                    return;
+                }
+
                 if (event.key === 'Enter') {
                     commit();
                     return;
                 }
 
                 if (event.key === 'Escape') {
+                    closed = true;
                     cancel();
                 }
             });
-            input.addEventListener('blur', commit);
+            input.addEventListener('blur', () => {
+                const cellElement = cell
+                    && typeof cell.getElement === 'function'
+                    && cell.getElement();
+
+                if (
+                    closed
+                    || input.isConnected === false
+                    || !cellElement
+                    || !cellElement.classList.contains('tabulator-editing')
+                    || !cellElement.contains(input)
+                ) {
+                    return;
+                }
+
+                commit();
+            });
 
             focusInput(input, onRendered, {
                 selectOnFocus: normalizedOptions.selectOnFocus
