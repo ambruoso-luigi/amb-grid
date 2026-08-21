@@ -1,6 +1,16 @@
 import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 
+const priorityParser = AMB.parsers.custom(value => {
+    const priorities = {
+        High: 'H',
+        Medium: 'M',
+        Low: 'L'
+    };
+
+    return priorities[String(value ?? '').trim()] ?? null;
+});
+
 const parserFactories = {
     decimal: () => AMB.parsers.decimalToPayload(),
     integer: () => AMB.parsers.integerToPayload(),
@@ -9,7 +19,8 @@ const parserFactories = {
     dateTime: () => AMB.parsers.dateTimeToPayload(),
     time: () => AMB.parsers.timeToPayload(),
     boolean: () => AMB.parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' }),
-    emptyToNull: () => AMB.parsers.emptyToNull()
+    emptyToNull: () => AMB.parsers.emptyToNull(),
+    custom: () => priorityParser
 };
 
 const textParserEditor = AMB.editors.text({ maxLength: 80 });
@@ -35,7 +46,8 @@ const parserExamples = [
     { id: 5, type: 'DateTime', parserKey: 'dateTime', parserName: 'dateTimeToPayload()', input: '16/06/2026 14:30', description: 'Date and time normalized with seconds.' },
     { id: 6, type: 'Time', parserKey: 'time', parserName: 'timeToPayload()', input: '9:05', description: 'Time normalized to HH:MM:SS.' },
     { id: 7, type: 'Boolean', parserKey: 'boolean', parserName: 'booleanToPayload({ trueValue: \'Y\', falseValue: \'N\' })', input: true, description: 'Application boolean converted to a configured backend value.' },
-    { id: 8, type: 'Empty to null', parserKey: 'emptyToNull', parserName: 'emptyToNull()', input: '   ', description: 'Whitespace-only input becomes a real null value.', acceptsNull: true }
+    { id: 8, type: 'Empty to null', parserKey: 'emptyToNull', parserName: 'emptyToNull()', input: '   ', description: 'Whitespace-only input becomes a real null value.', acceptsNull: true },
+    { id: 9, type: 'Custom', parserKey: 'custom', parserName: 'custom(priority => ...)', input: 'High', description: 'Application-defined parser for a business-specific rule.' }
 ];
 
 const feedbackCopy = {
@@ -52,7 +64,8 @@ const parserRowCopy = {
         dateTime: ['Data e ora', 'Data e ora normalizzate includendo i secondi.'],
         time: ['Ora', 'Ora normalizzata nel formato HH:MM:SS.'],
         boolean: ['Booleano', 'Booleano applicativo convertito nel valore backend configurato.'],
-        emptyToNull: ['Vuoto a null', 'Un input di soli spazi diventa un vero valore null.']
+        emptyToNull: ['Vuoto a null', 'Un input di soli spazi diventa un vero valore null.'],
+        custom: ['Personalizzato', 'Parser applicativo personalizzato per una regola business.']
     },
     en: {
         decimal: ['Decimal', 'Visual decimal to payload decimal string.'],
@@ -62,7 +75,8 @@ const parserRowCopy = {
         dateTime: ['DateTime', 'Date and time normalized with seconds.'],
         time: ['Time', 'Time normalized to HH:MM:SS.'],
         boolean: ['Boolean', 'Application boolean converted to a configured backend value.'],
-        emptyToNull: ['Empty to null', 'Whitespace-only input becomes a real null value.']
+        emptyToNull: ['Empty to null', 'Whitespace-only input becomes a real null value.'],
+        custom: ['Custom', 'Application-defined parser for a business-specific rule.']
     }
 };
 

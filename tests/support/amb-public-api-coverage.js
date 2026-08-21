@@ -150,6 +150,7 @@ export const SUPPORT_NAMESPACE_MEMBERS = {
         'timeToPayload',
         'booleanToPayload',
         'emptyToNull',
+        'custom'
     ],
     date: [
         'createConfig'

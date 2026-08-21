@@ -388,7 +388,7 @@ describe('demo site navigation', () => {
             rowStates: 10,
             calculations: 10,
             dates: 10,
-            parsers: 8
+            parsers: 9
         });
         expect(slices.basic).toContain("id: 'NT-010'");
         expect(read('src/demo/basic-crud.js')).toContain('let nextNoteNumber = 11;');

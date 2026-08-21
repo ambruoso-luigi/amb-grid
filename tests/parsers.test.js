@@ -185,3 +185,35 @@ describe('parsers.booleanToPayload', () => {
         expect(parsers.emptyToNull().parse('value')).toBe('value');
     });
 });
+
+describe('parsers.custom', () => {
+    test('returns callback results without implicit conversions', () => {
+        const parser = parsers.custom(value => String(value).toUpperCase());
+
+        expect(parser.parse('abc')).toBe('ABC');
+        expect(parsers.custom(() => 'text').parse('value')).toBe('text');
+        expect(parsers.custom(() => 42).parse('value')).toBe(42);
+        expect(parsers.custom(() => true).parse('value')).toBe(true);
+        expect(parsers.custom(() => null).parse('value')).toBe(null);
+        expect(parsers.custom(() => ({ code: 'H' })).parse('value'))
+            .toEqual({ code: 'H' });
+    });
+
+    test('rejects non-function callbacks immediately', () => {
+        expect(() => parsers.custom()).toThrow(TypeError);
+        expect(() => parsers.custom(null)).toThrow(TypeError);
+        expect(() => parsers.custom('parse')).toThrow(TypeError);
+        expect(() => parsers.custom(null)).toThrow(
+            'AMB.parsers.custom expects parseFn to be a function'
+        );
+    });
+
+    test('does not hide callback errors', () => {
+        const error = new Error('application parser failed');
+        const parser = parsers.custom(() => {
+            throw error;
+        });
+
+        expect(() => parser.parse('value')).toThrow(error);
+    });
+});

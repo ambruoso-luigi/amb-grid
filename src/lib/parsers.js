@@ -546,6 +546,28 @@ export const parsers = {
     },
 
     /**
+     * Create an application-defined parser for a domain-specific payload rule.
+     *
+     * The callback result is returned unchanged and callback errors propagate
+     * to the caller.
+     *
+     * @param {Function} parseFn - Application callback receiving the input value.
+     * @returns {{parse: Function}} Parser object with a `parse(value)` method.
+     * @throws {TypeError} If `parseFn` is not a function.
+     */
+    custom(parseFn) {
+        if (typeof parseFn !== 'function') {
+            throw new TypeError('AMB.parsers.custom expects parseFn to be a function');
+        }
+
+        return {
+            parse(value) {
+                return parseFn(value);
+            }
+        };
+    },
+
+    /**
      * Convert empty or whitespace-only values to `null`.
      *
      * @returns {{parse: Function}} Parser object with a `parse(value)` method.

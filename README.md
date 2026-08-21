@@ -622,6 +622,22 @@ Payload-oriented parser helpers include:
 * Boolean normalization with configurable backend values
 * Empty-value normalization to `null`
 
+Built-in parsers cover recurring structural transformations. Use
+`AMB.parsers.custom(...)` for application-defined or domain-specific rules:
+
+```js
+const priorityParser = AMB.parsers.custom(value => ({
+  High: 'H',
+  Medium: 'M',
+  Low: 'L'
+}[value] ?? null));
+
+priorityParser.parse('High'); // 'H'
+```
+
+Parsers normalize values; validators remain responsible for deciding whether a
+value is acceptable.
+
 Parsers normalize values for payload/backend submission; validators check whether values are acceptable.
 
 Numeric payload parsers return normalized strings by default, not JavaScript numbers, to avoid precision surprises with decimal or monetary values.
