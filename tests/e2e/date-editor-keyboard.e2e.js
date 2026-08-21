@@ -23,7 +23,11 @@ const enterPickerOnlyFromCompact = async page => {
     const compact = cell(page, 'compactDate');
     const pickerOnly = cell(page, 'pickerOnlyDate');
 
-    await compact.click({ clickCount: 2 });
+    await compact.click();
+    await expect(compact).toBeFocused();
+
+    await page.keyboard.press('Enter');
+
     await expect(compact).toHaveClass(/tabulator-editing/);
     await expect(compact.locator('input')).toBeFocused();
 
@@ -96,7 +100,7 @@ test('picker-only arrows and Enter commit, then Shift+Tab returns to Compact dat
     await expect(compact.locator('input')).toBeAttached();
     await expect(compact.locator('input')).toBeFocused();
     await expect(pickerOnly).not.toHaveClass(/tabulator-editing/);
-    await expect(picker()).toHaveCount(0);
+    await expect(picker(page)).toHaveCount(0);
 });
 
 test('picker-only mouse selection commits and Tab advances to the next row', async ({ page }) => {
