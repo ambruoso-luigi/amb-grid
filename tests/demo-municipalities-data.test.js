@@ -14,6 +14,10 @@ const demoSource = fs.readFileSync(
     new URL('../src/demo/multifield-lookup.js', import.meta.url),
     'utf8'
 );
+const testPageSource = fs.readFileSync(
+    new URL('../src/demo/test.js', import.meta.url),
+    'utf8'
+);
 const demoMenuSource = fs.readFileSync(
     new URL('../src/demo/main.js', import.meta.url),
     'utf8'
@@ -104,6 +108,13 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).toContain('const response = await fetch(DATASET_URL)');
         expect(demoSource).not.toContain('import.meta.env.BASE_URL');
         expect(municipalities.length).toBeGreaterThan(7000);
+    });
+
+    test('loads the technical test page dataset through a Vite-managed module URL', () => {
+        expect(testPageSource).toMatch(
+            /new URL\(\s*['"]\.\/data\/italian-municipalities\.demo\.json['"]\s*,\s*import\.meta\.url\s*\)/
+        );
+        expect(testPageSource).not.toContain('import.meta.env.BASE_URL');
     });
 
     test('keeps readonly visual utilities zebra-safe by default', () => {

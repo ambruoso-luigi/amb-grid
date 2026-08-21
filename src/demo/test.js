@@ -97,7 +97,10 @@ const autocompleteCities = [
     'Vienna',
     'Warsaw'
 ];
-const MULTIFIELD_LOOKUP_DATASET_URL = `${import.meta.env.BASE_URL}demo/data/italian-municipalities.demo.json`;
+const MULTIFIELD_LOOKUP_DATASET_URL = new URL(
+    './data/italian-municipalities.demo.json',
+    import.meta.url
+);
 const createMunicipalityMultifieldLookup = municipalityLookup => AMB.multifieldLookup({
     id: 'municipality',
     lookup: municipalityLookup,
