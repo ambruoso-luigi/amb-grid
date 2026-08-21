@@ -128,6 +128,7 @@ export function lookup(lookupInstance, options = {}) {
             container.appendChild(button);
 
             const normalizedInitialValue = normalizeValue(initialValue);
+            const getLiveValue = () => String(input.value ?? '');
             const getValue = () => normalizeValue(input.value);
 
             const closeWithSuccess = value => {
@@ -308,7 +309,7 @@ export function lookup(lookupInstance, options = {}) {
 
                 if (typedValue.length < normalizedOptions.autoCompleteMinChars) return null;
 
-                const items = await loadLookup(typedValue);
+                const items = await loadLookup(normalizeValue(typedValue));
                 const comparableTypedValue = normalizeComparableValue(typedValue);
 
                 return items.find(item => {
@@ -327,7 +328,7 @@ export function lookup(lookupInstance, options = {}) {
             const applyManualAutoComplete = async () => {
                 if (!normalizedOptions.autoComplete || closed) return;
 
-                const typedValue = getValue();
+                const typedValue = getLiveValue();
                 const requestId = autoCompleteRequestId + 1;
 
                 autoCompleteRequestId = requestId;

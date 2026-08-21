@@ -844,6 +844,37 @@ describe('autocomplete editor lifecycle', () => {
         }
     });
 
+    test('preserves a live space while continuing a compound autocomplete value', () => {
+        const harness = createEditorHarness(
+            { trimInput: true },
+            '',
+            ['Human Resources', 'Human Relations']
+        );
+
+        try {
+            harness.input.value = 'Human';
+            harness.input.dispatch('input', { inputType: 'insertText' });
+            expect(harness.input.value).toBe('Human Resources');
+            expect(harness.input.setSelectionRange).toHaveBeenCalledWith(5, 15);
+
+            harness.input.value = 'Human ';
+            harness.input.setSelectionRange.mockClear();
+            harness.input.dispatch('input', { inputType: 'insertText' });
+
+            expect(harness.input.value).toBe('Human Resources');
+            expect(harness.input.setSelectionRange).toHaveBeenCalledWith(6, 15);
+
+            harness.input.value = 'Human R';
+            harness.input.setSelectionRange.mockClear();
+            harness.input.dispatch('input', { inputType: 'insertText' });
+
+            expect(harness.input.value).toBe('Human Resources');
+            expect(harness.input.setSelectionRange).toHaveBeenCalledWith(7, 15);
+        } finally {
+            harness.restore();
+        }
+    });
+
     test.each([
         ['B'],
         ['b']
@@ -1723,6 +1754,23 @@ describe('autocomplete commit behavior', () => {
             action: 'success',
             value: 'custom-note'
         });
+    });
+
+    test('editor commit trims whitespace after live compound typing', () => {
+        const harness = createEditorHarness(
+            { trimInput: true },
+            '',
+            ['Human Resources']
+        );
+
+        try {
+            harness.input.value = ' Human Resources ';
+            harness.input.dispatch('blur');
+
+            expect(harness.success).toHaveBeenCalledWith('Human Resources');
+        } finally {
+            harness.restore();
+        }
     });
 
     test('preserves whitespace when trimInput is false', () => {

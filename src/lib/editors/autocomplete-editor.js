@@ -6,7 +6,6 @@ import {
     getAutocompleteCursorPosition,
     getAutocompleteKeyAction,
     getAutocompleteSuggestionValues,
-    normalizeAutocompleteInput,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
@@ -396,10 +395,6 @@ export function autocomplete(values, options = {}) {
                 return;
             }
 
-            const normalizedTypedValue = normalizeAutocompleteInput(
-                typedValue,
-                normalizedOptions
-            );
             const matchedValue = findAutocompleteMatch(
                 suggestionValues,
                 typedValue,
@@ -411,7 +406,7 @@ export function autocomplete(values, options = {}) {
             applyingCompletion = true;
             input.value = matchedValue;
             input.setSelectionRange(
-                normalizedTypedValue.length,
+                typedValue.length,
                 matchedValue.length
             );
             applyingCompletion = false;

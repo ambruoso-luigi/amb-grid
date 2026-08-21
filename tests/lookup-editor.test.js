@@ -12,6 +12,10 @@ const milanoRecord = {
     municipalityName: 'Milano',
     province: 'MI'
 };
+const municipalityRecords = [
+    { municipalityName: 'Nocera Inferiore' },
+    { municipalityName: 'Nocera Superiore' }
+];
 
 const createElement = tagName => {
     const listeners = new Map();
@@ -886,6 +890,49 @@ describe('lookup editor blur commits', () => {
             searchPlaceholder: 'Search...'
         });
         expect(harness.success).toHaveBeenCalledWith('DOCKED');
+    });
+
+    test('preserves the live space before continuing an inline municipality completion', async () => {
+        const harness = createMunicipalityHarness({
+            load: ({ query }) => municipalityRecords.filter(record => {
+                return record.municipalityName.toLowerCase().includes(String(query).toLowerCase());
+            })
+        });
+
+        harness.input.value = 'Nocera';
+        await harness.input.dispatch('input', { inputType: 'insertText' });
+        await flushDeferred();
+
+        expect(harness.input.value).toBe('Nocera Inferiore');
+        expect(harness.input.selectionStart).toBe(6);
+
+        harness.input.value = 'Nocera ';
+        await harness.input.dispatch('input', { inputType: 'insertText' });
+        await flushDeferred();
+
+        expect(harness.input.value).toBe('Nocera Inferiore');
+        expect(harness.input.selectionStart).toBe(7);
+        expect(harness.input.selectionEnd).toBe('Nocera Inferiore'.length);
+
+        harness.input.value = 'Nocera S';
+        await harness.input.dispatch('input', { inputType: 'insertText' });
+        await flushDeferred();
+
+        expect(harness.input.value).toBe('Nocera Superiore');
+        expect(harness.input.selectionStart).toBe(8);
+    });
+
+    test('trims whitespace around a municipality when the edit is committed', async () => {
+        const harness = createMunicipalityHarness({
+            load: ({ query }) => municipalityRecords.filter(record => {
+                return record.municipalityName.toLowerCase().includes(String(query).trim().toLowerCase());
+            })
+        });
+
+        harness.input.value = ' Nocera Superiore ';
+        await harness.input.dispatch('blur');
+
+        expect(harness.success).toHaveBeenCalledWith('Nocera Superiore');
     });
 
     test.each([
