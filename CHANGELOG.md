@@ -2,6 +2,27 @@
 
 All notable changes to AMB Grid are documented in this file.
 
+## [0.6.0] - 2026-08-21
+
+### Added
+
+- Added `timeToPayload()` for canonical `HH:MM:SS` payload values.
+- Added `booleanToPayload()` with configurable backend values.
+- Added `custom(parseFn)` for application-defined and domain-specific payload normalization.
+
+### Changed
+
+- Refocused the parser API on meaningful structural and backend-oriented transformations.
+- Updated the Parsers demo to demonstrate numeric, date, time, boolean, null and custom payload normalization.
+
+### Removed
+
+- Removed the public `trim()`, `uppercase()`, `removeSpaces()`, `digitsOnly()`, `ibanToPayload()` and `fiscalCodeToPayload()` parsers.
+- Domain-specific transformations should now use `AMB.parsers.custom(...)`.
+
+The removal is intentionally breaking in the pre-1.0 phase and justifies the
+transition from 0.5.1 to 0.6.0.
+
 ## [0.5.1] - 2026-08-21
 
 ### Fixed

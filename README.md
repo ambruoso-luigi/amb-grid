@@ -635,10 +635,8 @@ const priorityParser = AMB.parsers.custom(value => ({
 priorityParser.parse('High'); // 'H'
 ```
 
-Parsers normalize values; validators remain responsible for deciding whether a
-value is acceptable.
-
-Parsers normalize values for payload/backend submission; validators check whether values are acceptable.
+Parsers normalize values for payload/backend submission; validators remain
+responsible for deciding whether those values are acceptable.
 
 Numeric payload parsers return normalized strings by default, not JavaScript numbers, to avoid precision surprises with decimal or monetary values.
 
