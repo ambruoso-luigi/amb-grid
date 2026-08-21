@@ -2,43 +2,40 @@ import { expect, test } from '@playwright/test';
 
 const TABLE = '#dates-table';
 
-const cell = (page, field, rowIndex = 0) => {
-    const row = rowIndex === 0
-        ? page.locator(`${TABLE} .tabulator-row:first-child`)
-        : page.locator(`${TABLE} .tabulator-row`).nth(rowIndex);
+const dataRow = (page, rowIndex = 0) => page.locator(`${TABLE} [role="row"]`).nth(rowIndex + 1);
 
-    return row.locator(`.tabulator-cell[tabulator-field="${field}"]`);
-};
+const tableCell = (page, columnIndex, rowIndex = 0) => dataRow(page, rowIndex)
+    .locator('[role="gridcell"]')
+    .nth(columnIndex);
 
-const picker = page => page.locator('.datepicker.active');
+const compactCell = page => tableCell(page, 5);
 
-const pickerAnchor = page => cell(page, 'pickerOnlyDate')
+const pickerOnlyCell = page => tableCell(page, 6);
+
+const nextRowEventCell = page => tableCell(page, 1, 1);
+
+const pickerAnchor = page => pickerOnlyCell(page)
     .locator('.amb-date-editor-picker-anchor');
 
-const pickerValue = page => cell(page, 'pickerOnlyDate')
-    .locator('.amb-date-editor-picker-anchor')
-    .inputValue();
+const activePicker = page => page.locator('.datepicker.active');
 
 const enterPickerOnlyFromCompact = async page => {
-    const compact = cell(page, 'compactDate');
-    const pickerOnly = cell(page, 'pickerOnlyDate');
+    const compact = compactCell(page);
+    const pickerOnly = pickerOnlyCell(page);
 
     await compact.click();
     await expect(compact).toBeFocused();
 
     await page.keyboard.press('Enter');
 
-    await expect(compact).toHaveClass(/tabulator-editing/);
+    await expect(compact.locator('input')).toBeVisible();
     await expect(compact.locator('input')).toBeFocused();
 
     await page.keyboard.press('Tab');
 
-    await expect(pickerOnly).toHaveClass(/tabulator-editing/);
-    await expect(pickerAnchor(page)).toBeAttached();
+    await expect(pickerOnly.locator('.amb-date-editor-picker-anchor')).toBeVisible();
     await expect(pickerAnchor(page)).toBeFocused();
-    await expect(picker(page)).toBeVisible();
-
-    return { compact, pickerOnly };
+    await expect(activePicker(page)).toBeVisible();
 };
 
 const openDatesDemo = async page => {
@@ -48,79 +45,89 @@ const openDatesDemo = async page => {
     }));
     await page.locator('[data-example="dates"]').click();
     await languageChanged;
-    await expect(page.locator(`${TABLE}.tabulator`)).toBeVisible();
+    await expect(page.locator(TABLE)).toBeVisible();
 };
 
 test.beforeEach(async ({ page }) => {
     await openDatesDemo(page);
 });
 
-test('click Compact date then Tab enters and stabilizes picker-only', async ({ page }) => {
-    const { pickerOnly } = await enterPickerOnlyFromCompact(page);
+test('keyboard navigation enters picker-only and remains stable', async ({ page }) => {
+    await enterPickerOnlyFromCompact(page);
 
-    await page.waitForTimeout(750);
+    await page.waitForTimeout(1000);
 
-    await expect(pickerOnly).toHaveClass(/tabulator-editing/);
-    await expect(pickerAnchor(page)).toBeAttached();
+    await expect(pickerAnchor(page)).toBeVisible();
     await expect(pickerAnchor(page)).toBeFocused();
-    await expect(picker(page)).toBeVisible();
+    await expect(activePicker(page)).toBeVisible();
 });
 
-test('picker-only arrows highlight without selection and Tab advances', async ({ page }) => {
-    const { pickerOnly } = await enterPickerOnlyFromCompact(page);
-    const originalValue = await pickerValue(page);
+test('highlighted date is not selected when leaving with Tab', async ({ page }) => {
+    const pickerOnly = pickerOnlyCell(page);
+    const originalValue = (await pickerOnly.textContent())?.trim();
+
+    await enterPickerOnlyFromCompact(page);
 
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Tab');
 
-    const nextEvent = cell(page, 'eventName', 1);
-    await expect(pickerOnly).not.toHaveClass(/tabulator-editing/);
-    await expect(picker(page)).toHaveCount(0);
-    await expect(nextEvent).toHaveClass(/tabulator-editing/);
-    await expect(nextEvent.locator('.amb-cell-editor')).toBeAttached();
-    await expect(nextEvent.locator('.amb-cell-editor')).toBeFocused();
-    await expect(pickerOnly).toContainText(originalValue);
+    await expect(activePicker(page)).toHaveCount(0);
+    await expect(pickerAnchor(page)).toHaveCount(0);
+    await expect(pickerOnly).toHaveText(originalValue);
+
+    const nextEditor = nextRowEventCell(page).locator('.amb-cell-editor');
+
+    await expect(nextEditor).toBeVisible();
+    await expect(nextEditor).toBeFocused();
 });
 
-test('picker-only arrows and Enter commit, then Shift+Tab returns to Compact date', async ({ page }) => {
-    const { compact, pickerOnly } = await enterPickerOnlyFromCompact(page);
-    const originalValue = await pickerValue(page);
+test('Enter selects the highlighted date and Shift+Tab returns backward', async ({ page }) => {
+    const compact = compactCell(page);
+    const pickerOnly = pickerOnlyCell(page);
+    const originalValue = (await pickerOnly.textContent())?.trim();
+
+    await enterPickerOnlyFromCompact(page);
 
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
 
-    await expect(picker(page)).toHaveCount(0);
-    await expect(pickerOnly).not.toHaveClass(/tabulator-editing/);
-    await expect(pickerOnly).not.toContainText(originalValue);
+    await expect(activePicker(page)).toHaveCount(0);
+    await expect(pickerAnchor(page)).toHaveCount(0);
+    await expect(pickerOnly).not.toHaveText(originalValue);
     await expect(pickerOnly).toBeFocused();
 
     await page.keyboard.press('Shift+Tab');
 
-    await expect(compact).toHaveClass(/tabulator-editing/);
-    await expect(compact.locator('input')).toBeAttached();
-    await expect(compact.locator('input')).toBeFocused();
-    await expect(pickerOnly).not.toHaveClass(/tabulator-editing/);
-    await expect(picker(page)).toHaveCount(0);
+    const compactEditor = compact.locator('input');
+
+    await expect(compactEditor).toBeVisible();
+    await expect(compactEditor).toBeFocused();
+    await expect(activePicker(page)).toHaveCount(0);
 });
 
-test('picker-only mouse selection commits and Tab advances to the next row', async ({ page }) => {
-    const { pickerOnly } = await enterPickerOnlyFromCompact(page);
-    const originalValue = await pickerValue(page);
-    const selectableDate = picker(page).locator('.datepicker-cell:not(.disabled)').first();
+test('mouse selection keeps keyboard navigation inside the grid flow', async ({ page }) => {
+    const pickerOnly = pickerOnlyCell(page);
+    const originalValue = (await pickerOnly.textContent())?.trim();
+
+    await enterPickerOnlyFromCompact(page);
+
+    const selectableDate = activePicker(page)
+        .locator('.datepicker-cell:not(.disabled):not(.selected)')
+        .first();
 
     await expect(selectableDate).toBeVisible();
     await selectableDate.click();
 
-    await expect(picker(page)).toHaveCount(0);
-    await expect(pickerOnly).not.toHaveClass(/tabulator-editing/);
+    await expect(activePicker(page)).toHaveCount(0);
+    await expect(pickerAnchor(page)).toHaveCount(0);
+    await expect(pickerOnly).not.toHaveText(originalValue);
     await expect(pickerOnly).toBeFocused();
-    await expect(pickerOnly).not.toContainText(originalValue);
 
     await page.keyboard.press('Tab');
 
-    const nextEvent = cell(page, 'eventName', 1);
-    await expect(nextEvent).toHaveClass(/tabulator-editing/);
-    await expect(nextEvent.locator('.amb-cell-editor')).toBeAttached();
-    await expect(nextEvent.locator('.amb-cell-editor')).toBeFocused();
-    await expect(picker(page)).toHaveCount(0);
+    const nextEditor = nextRowEventCell(page).locator('.amb-cell-editor');
+
+    await expect(nextEditor).toBeVisible();
+    await expect(nextEditor).toBeFocused();
+    await expect(activePicker(page)).toHaveCount(0);
 });
