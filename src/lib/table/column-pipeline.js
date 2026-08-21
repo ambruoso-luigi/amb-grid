@@ -536,10 +536,6 @@ const toggleCheckboxCellFromMouse = (event, cell, column, getCrud) => {
     suppressCheckboxCellClick(cell);
     cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
 
-    if (typeof cell.edit === 'function') {
-        cell.edit();
-    }
-
     return true;
 };
 

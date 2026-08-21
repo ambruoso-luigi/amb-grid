@@ -216,14 +216,38 @@ describe('checkbox editor keyboard behavior', () => {
         expect(harness.input.checked).toBe(true);
     });
 
-    test('Enter confirms the current value', () => {
+    test('Enter toggles an unchecked value and confirms it without navigation', () => {
+        const harness = createHarness({
+            initialValue: false,
+            withRowNavigation: true
+        });
+        const event = harness.input.dispatch('keydown', { key: 'Enter' });
+
+        expect(harness.success).toHaveBeenCalledWith(true);
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+
+        return flushDeferred().then(() => {
+            expect(harness.previousCell.edit).not.toHaveBeenCalled();
+            expect(harness.nextCell.edit).not.toHaveBeenCalled();
+            expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
+            expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+            expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+            expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        });
+    });
+
+    test('Enter toggles a checked value and confirms it without navigation', () => {
         const harness = createHarness({
             initialValue: true,
             withRowNavigation: true
         });
         const event = harness.input.dispatch('keydown', { key: 'Enter' });
 
-        expect(harness.success).toHaveBeenCalledWith(true);
+        expect(harness.success).toHaveBeenCalledWith(false);
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(event.preventDefault).toHaveBeenCalledOnce();
@@ -306,7 +330,7 @@ describe('checkbox editor keyboard behavior', () => {
         expect(harness.input.checked).toBe(true);
     });
 
-    test('custom checkedValue and uncheckedValue continue to be saved', () => {
+    test('Enter toggles custom checkedValue and uncheckedValue before saving', () => {
         const harness = createHarness({
             initialValue: 'N',
             options: {
@@ -315,7 +339,6 @@ describe('checkbox editor keyboard behavior', () => {
             }
         });
 
-        harness.input.dispatch('keydown', { key: 'y' });
         harness.input.dispatch('keydown', { key: 'Enter' });
 
         expect(harness.success).toHaveBeenCalledWith('Y');

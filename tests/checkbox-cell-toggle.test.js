@@ -47,8 +47,7 @@ const createCell = ({
     getValue: vi.fn(() => value),
     setValue: vi.fn(nextValue => {
         value = nextValue;
-    }),
-    edit: vi.fn()
+    })
 });
 
 describe('AMB checkbox column cell toggle', () => {
@@ -128,7 +127,7 @@ describe('AMB checkbox column cell toggle', () => {
         expect(cell.setValue).toHaveBeenNthCalledWith(2, 'N', true);
     });
 
-    test('opens the clicked checkbox cell editor and suppresses the follow-up click', () => {
+    test('suppresses the follow-up click on the same cbox cell to avoid double toggle', () => {
         const [column] = prepareCheckboxColumns([
             {
                 field: 'requiresInspection',
@@ -143,7 +142,6 @@ describe('AMB checkbox column cell toggle', () => {
         expect(mouseDownEvent.preventDefault).toHaveBeenCalledOnce();
         expect(mouseDownEvent.stopPropagation).toHaveBeenCalledOnce();
         expect(mouseDownEvent.stopImmediatePropagation).toHaveBeenCalledOnce();
-        expect(cell.edit).toHaveBeenCalledOnce();
         expect(globalThis.document.addEventListener).toHaveBeenCalledWith(
             'click',
             expect.any(Function),
@@ -162,24 +160,6 @@ describe('AMB checkbox column cell toggle', () => {
         expect(clickEvent.preventDefault).toHaveBeenCalledOnce();
         expect(clickEvent.stopPropagation).toHaveBeenCalledOnce();
         expect(clickEvent.stopImmediatePropagation).toHaveBeenCalledOnce();
-    });
-
-    test('opens the same cell after toggling it once', () => {
-        const [column] = prepareCheckboxColumns([
-            {
-                field: 'requiresInspection',
-                editor: createCheckboxEditor()
-            }
-        ]);
-        const previousCell = { id: 'previous' };
-        const checkboxCell = createCell();
-        const mouseDownEvent = createMouseEvent(createTarget());
-
-        column.cellMouseDown(mouseDownEvent, checkboxCell);
-
-        expect(checkboxCell.setValue).toHaveBeenCalledWith(true, true);
-        expect(checkboxCell.edit).toHaveBeenCalledOnce();
-        expect(previousCell).not.toBe(checkboxCell);
     });
 
     test('does not toggle while the real cbox editor target is handling the click', () => {

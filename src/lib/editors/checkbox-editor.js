@@ -122,6 +122,7 @@ export function checkbox(options = {}) {
                         event.stopImmediatePropagation();
                     }
 
+                    setChecked(!input.checked);
                     closeWithSuccess();
                     return;
                 }
