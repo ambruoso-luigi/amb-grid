@@ -35,9 +35,9 @@ No runtime or public API changes were made as part of this audit.
 | `tests/` | Unit and lifecycle tests plus a small number of demo guards | Mostly core-oriented |
 | `docs/` | Generated JSDoc plus hand-written notes | Usable, but generated and internal docs share one tree |
 
-Tabulator is consistently treated as the table engine. AMB Grid owns the CRUD
-application layer around it: state, validation, rollback, lookup behavior,
-payloads, and lifecycle.
+The internal table engine is consistently treated as an implementation detail.
+AMB Grid owns the CRUD application layer around it: state, validation, rollback,
+lookup behavior, payloads, and lifecycle.
 
 ## 2. Library entrypoint
 
@@ -107,12 +107,12 @@ The CSS split proposed by the original audit has now been implemented.
 `src/amb-grid.css` contains reusable library rules including:
 
 - `.amb-date-*`;
-- `.amb-autocomplete-*` and Awesomplete integration rules;
+- `.amb-autocomplete-*` and suggestion-runtime integration rules;
 - `.amb-toolbar*` and `.amb-search-toolbar*`;
 - `.amb-row-*` action rules;
 - `.amb-selection-*`;
 - `.amb-checkbox-*`;
-- Tabulator row/cell state selectors;
+- internal table-engine row/cell state selectors;
 - `.amb-lookup-*`;
 - `.amb-large-text-*`.
 
@@ -131,8 +131,8 @@ change and should be handled separately.
 `src/amb-grid.css` aggregates those component files. `src/style.css` imports
 both the library and demo styles for temporary compatibility. The future
 package should expose the built equivalent of `src/amb-grid.css` as its
-documented complete stylesheet. Tabulator and datepicker CSS ownership should
-remain an explicit consumer/documentation policy.
+documented complete stylesheet. Internal table-engine and datepicker CSS
+ownership should remain an explicit consumer/documentation policy.
 
 ## 5. Package readiness
 
@@ -151,9 +151,9 @@ Before npm publication, evaluate and add:
 - a `publishConfig` if package visibility or registry settings require it;
 - an engines policy aligned with supported tooling/runtime targets.
 
-Dependency policy also needs an explicit decision. Tabulator, Awesomplete, and
-the datepicker are currently runtime dependencies. For npm, Tabulator may be
-better as a peer dependency if applications are expected to control its
+Dependency policy also needs an explicit decision. The table engine, suggestion
+runtime, and datepicker are currently runtime dependencies. The table engine may
+be better as a peer dependency if applications are expected to control its
 version and avoid duplicate table engines. That decision should be tested
 before changing dependency categories.
 
@@ -188,9 +188,9 @@ entrypoint.
 
 ## 7. Documentation readiness
 
-The README uses the correct positioning: Tabulator is the table engine and AMB
-Grid is the CRUD application layer. It does not describe the project as a
-simple wrapper.
+The README uses the correct positioning: the internal table engine is an
+implementation detail and AMB Grid is the CRUD application layer. It does not
+describe the project as a simple wrapper.
 
 JSDoc includes `src` recursively and excludes paths matching `demo`, so demo
 modules are not part of generated API documentation. This is the correct

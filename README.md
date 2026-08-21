@@ -71,10 +71,9 @@ bundler, or JavaScript imports:
 </script>
 ```
 
-The UMD bundle incorporates the internal JavaScript runtime dependencies, and
-`amb-grid.css` contains the required library styles. The public browser global
-is directly `AMB`; do not load Tabulator, Awesomplete, or vanilla-datepicker
-separately in this scenario.
+The standalone bundle already incorporates its internal JavaScript runtime
+dependencies, and `amb-grid.css` contains the required library styles. The
+public browser global is directly `AMB`.
 
 Releases may also provide a standalone `amb-grid-legacy-<version>.zip` archive
 containing `amb-grid.umd.js`, `amb-grid.css`, the README, and the license.
@@ -134,17 +133,12 @@ Validation and payload generation are local operations; AMB Grid does not send
 the payload automatically. When the owning view is disposed, call
 `grid.destroy()`.
 
-## Third-party components
+## Internal runtime components
 
-AMB Grid is framework-agnostic and uses a small set of focused frontend libraries:
-
-* [Tabulator](https://tabulator.info/): table rendering engine.
-* [Awesomplete](https://leaverou.github.io/awesomplete/): lightweight text suggestions for autocomplete editors.
-* [vanillajs-datepicker](https://mymth.github.io/vanillajs-datepicker/): calendar picker for date editors.
-
-These are focused internal dependencies. AMB Grid owns the public contract,
-CRUD lifecycle, validation, payload generation, editor commit rules, and
-lifecycle cleanup.
+AMB Grid is framework-agnostic and uses focused internal runtime components for
+table rendering, suggestions, and calendar selection. AMB Grid owns the public
+contract, CRUD lifecycle, validation, payload generation, editor commit rules,
+and lifecycle cleanup.
 
 ## Features
 
@@ -331,12 +325,16 @@ popup/action cells, and non-data interactive columns:
   While the dialog is open, `Tab`/`Shift+Tab` stay inside it, arrow keys move
   lookup selection, `Enter` selects, and `Escape` cancels. Record-based
   lookups can update multiple row fields through `mapToRow`.
-* Date editors with a picker use `Enter` to open the calendar picker. While the
-  picker is open, `Tab`/`Shift+Tab` commit and navigate to the next/previous
-  editable grid cell, arrow keys stay with the calendar picker, `Enter` selects
-  when supported by the picker, and `Escape` preserves the editor mode's close
-  behavior. Manual picker editors keep the calendar button available after the
-  popup closes so it can be reopened.
+* Date editors use `Enter` to open the calendar when the editor supports it.
+  In `pickerOnly` mode, entering the editor opens the calendar immediately.
+  Arrow keys change only the highlighted day; `Enter` confirms that highlighted
+  day as the selection. `Tab`/`Shift+Tab` leave and navigate without turning a
+  merely highlighted day into a new selection. If a value was already selected,
+  leaving with `Tab` without confirmation preserves that value. After a real
+  mouse or keyboard selection, subsequent navigation remains in the grid flow.
+  `Escape` preserves the editor mode's close behavior. Manual picker editors
+  keep the calendar button available after the popup closes so it can be
+  reopened.
 * Large text editors cancel with `Escape` and save with `Ctrl+Enter`.
   With `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates forward
   and `Shift+Tab` saves and navigates backward.

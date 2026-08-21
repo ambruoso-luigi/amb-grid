@@ -2,6 +2,21 @@
 
 All notable changes to AMB Grid are documented in this file.
 
+## [0.5.1] - 2026-08-21
+
+### Fixed
+
+- Corrected keyboard lifecycle for date editors with calendar selection.
+- Kept highlighted calendar dates distinct from confirmed selections.
+- Preserved the existing date when leaving the calendar without confirming a newly highlighted day.
+- Restored predictable forward and backward keyboard navigation after picker-only selection.
+- Kept picker-only editing stable when reached through keyboard navigation.
+
+### Changed
+
+- Clarified the public keyboard contract for date editors.
+- Removed implementation-specific dependency names from public documentation and tests.
+
 ## [0.5.0] - 2026-08-10
 
 ### Added
@@ -58,8 +73,8 @@ The modern package resolves its runtime dependencies through npm.
 const grid = AMB.table({ ... });
 ```
 
-The standalone bundle incorporates its JavaScript runtime dependencies. Do not
-load Tabulator, Awesomplete, or vanilla-datepicker separately in this scenario.
+The standalone bundle already incorporates its internal JavaScript runtime
+dependencies. They do not need to be loaded separately in this scenario.
 
 ## [0.4.0]
 
