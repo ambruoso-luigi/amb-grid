@@ -217,12 +217,27 @@ describe('checkbox editor keyboard behavior', () => {
     });
 
     test('Enter confirms the current value', () => {
-        const harness = createHarness({ initialValue: true });
+        const harness = createHarness({
+            initialValue: true,
+            withRowNavigation: true
+        });
         const event = harness.input.dispatch('keydown', { key: 'Enter' });
 
         expect(harness.success).toHaveBeenCalledWith(true);
+        expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+
+        return flushDeferred().then(() => {
+            expect(harness.previousCell.edit).not.toHaveBeenCalled();
+            expect(harness.nextCell.edit).not.toHaveBeenCalled();
+            expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
+            expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+            expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+            expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        });
     });
 
     test('Escape cancels and restores the previous value', () => {

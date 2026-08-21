@@ -116,6 +116,12 @@ export function checkbox(options = {}) {
             input.addEventListener('keydown', event => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
                     closeWithSuccess();
                     return;
                 }
