@@ -57,7 +57,7 @@ describe('Public Parsers demo integration', () => {
             source.indexOf("title: 'Description', field: 'description'")
         );
 
-        expect(inputColumn).toContain('editor: AMB.editors.text');
+        expect(inputColumn).toContain('editor: parserInputEditor');
         expect(inputColumn).toContain('cellEdited: handleInputEdited');
         expect(parsedColumn).toContain('editable: false');
         expect(parsedColumn).toContain('formatter: formatParsedValue');
@@ -65,6 +65,20 @@ describe('Public Parsers demo integration', () => {
         expect(source).toContain("output.textContent = value === null ? 'null'");
         expect(source).toContain('parsedValue: parseExampleValue(example)');
         expect(source).not.toContain('parsedValue: String(');
+    });
+
+    test('edits Boolean rows with a strict boolean editor', () => {
+        expect(source).toContain("const booleanParserEditor = AMB.editors.checkbox({");
+        expect(source).toContain('checkedValue: true');
+        expect(source).toContain('uncheckedValue: false');
+        expect(source).toContain("rowData.parserKey === 'boolean'");
+        expect(source).toContain('input: true');
+        expect(source).not.toContain("input: 'true'");
+        expect(source).not.toContain("input: 'false'");
+        expect(parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' }).parse(true))
+            .toBe('Y');
+        expect(parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' }).parse(false))
+            .toBe('N');
     });
 
     test('uses the shared bilingual column guide and explains parser boundaries', () => {

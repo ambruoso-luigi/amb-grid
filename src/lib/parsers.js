@@ -362,8 +362,9 @@ export const parsers = {
     /**
      * Normalize a visual integer value to a payload-oriented integer string.
      *
-     * Do not use this parser for codes with leading zeroes. Codes are strings
-     * and should be normalized with string normalizers instead.
+     * Do not use this parser for codes with leading zeroes. Identifiers and
+     * codes should remain application strings instead of being normalized as
+     * numeric payload values.
      *
      * @param {object} [options] - Integer normalization options.
      * @param {string} [options.thousandSeparator='.'] - Visual thousands separator.

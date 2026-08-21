@@ -12,6 +12,21 @@ const parserFactories = {
     emptyToNull: () => AMB.parsers.emptyToNull()
 };
 
+const textParserEditor = AMB.editors.text({ maxLength: 80 });
+const booleanParserEditor = AMB.editors.checkbox({
+    checkedValue: true,
+    uncheckedValue: false
+});
+
+const parserInputEditor = (cell, onRendered, success, cancel) => {
+    const rowData = cell.getRow().getData();
+    const editor = rowData.parserKey === 'boolean'
+        ? booleanParserEditor
+        : textParserEditor;
+
+    return editor(cell, onRendered, success, cancel);
+};
+
 const parserExamples = [
     { id: 1, type: 'Decimal', parserKey: 'decimal', parserName: 'decimalToPayload()', input: '-123.123,01', description: 'Visual decimal to payload decimal string.' },
     { id: 2, type: 'Integer', parserKey: 'integer', parserName: 'integerToPayload()', input: '1.234', description: 'Grouped integer to payload integer string.' },
@@ -139,7 +154,7 @@ export default function parsers(app) {
             },
             {
                 title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.5,
-                editor: AMB.editors.text({ maxLength: 80 }),
+                editor: parserInputEditor,
                 cellEdited: handleInputEdited
             },
             {
