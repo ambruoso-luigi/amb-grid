@@ -25,13 +25,28 @@ const createTarget = ({
     };
 };
 
-const createMouseEvent = (target = createTarget()) => ({
-    button: 0,
-    target,
-    preventDefault: vi.fn(),
-    stopPropagation: vi.fn(),
-    stopImmediatePropagation: vi.fn()
-});
+const createMouseEvent = (
+    target = createTarget(),
+    { onDefaultAction } = {}
+) => {
+    let defaultPrevented = false;
+
+    return {
+        button: 0,
+        target,
+        preventDefault: vi.fn(() => {
+            defaultPrevented = true;
+        }),
+        stopPropagation: vi.fn(),
+        stopImmediatePropagation: vi.fn(),
+        isDefaultPrevented: () => defaultPrevented,
+        runDefaultAction: () => {
+            if (!defaultPrevented) {
+                onDefaultAction?.();
+            }
+        }
+    };
+};
 
 const createCell = ({
     field = 'requiresInspection',
@@ -127,7 +142,7 @@ describe('AMB checkbox column cell toggle', () => {
         expect(cell.setValue).toHaveBeenNthCalledWith(2, 'N', true);
     });
 
-    test('suppresses the follow-up click on the same cbox cell to avoid double toggle', () => {
+    test('preserves the cell mousedown lifecycle and suppresses only the follow-up click', () => {
         const [column] = prepareCheckboxColumns([
             {
                 field: 'requiresInspection',
@@ -139,9 +154,9 @@ describe('AMB checkbox column cell toggle', () => {
 
         column.cellMouseDown(mouseDownEvent, cell);
 
-        expect(mouseDownEvent.preventDefault).toHaveBeenCalledOnce();
-        expect(mouseDownEvent.stopPropagation).toHaveBeenCalledOnce();
-        expect(mouseDownEvent.stopImmediatePropagation).toHaveBeenCalledOnce();
+        expect(mouseDownEvent.preventDefault).not.toHaveBeenCalled();
+        expect(mouseDownEvent.stopPropagation).not.toHaveBeenCalled();
+        expect(mouseDownEvent.stopImmediatePropagation).not.toHaveBeenCalled();
         expect(globalThis.document.addEventListener).toHaveBeenCalledWith(
             'click',
             expect.any(Function),
@@ -160,6 +175,30 @@ describe('AMB checkbox column cell toggle', () => {
         expect(clickEvent.preventDefault).toHaveBeenCalledOnce();
         expect(clickEvent.stopPropagation).toHaveBeenCalledOnce();
         expect(clickEvent.stopImmediatePropagation).toHaveBeenCalledOnce();
+    });
+
+    test('allows the clicked checkbox cell to become the active focused cell', () => {
+        const [column] = prepareCheckboxColumns([
+            {
+                field: 'requiresInspection',
+                editor: createCheckboxEditor()
+            }
+        ]);
+        const previousCell = { id: 'previous' };
+        const checkboxCell = createCell();
+        let activeCell = previousCell;
+        const mouseDownEvent = createMouseEvent(createTarget(), {
+            onDefaultAction: () => {
+                activeCell = checkboxCell;
+            }
+        });
+
+        column.cellMouseDown(mouseDownEvent, checkboxCell);
+        mouseDownEvent.runDefaultAction();
+
+        expect(checkboxCell.setValue).toHaveBeenCalledWith(true, true);
+        expect(mouseDownEvent.isDefaultPrevented()).toBe(false);
+        expect(activeCell).toBe(checkboxCell);
     });
 
     test('does not toggle while the real cbox editor target is handling the click', () => {
