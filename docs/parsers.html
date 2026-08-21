@@ -19,7 +19,7 @@
 
     <h1 class="page-title">Namespace: parsers</h1>
 
-    
+
 
 
 
@@ -27,16 +27,16 @@
 <section>
 
 <header>
-    
+
         <h2>parsers</h2>
-        
-    
+
+
 </header>
 
 <article>
     <div class="container-overview">
-    
-        
+
+
             <div class="description">Parser factories used to normalize values before payload/backend submission.
 
 Formatters display values, editors let users modify values, validators check
@@ -44,83 +44,440 @@ whether values are acceptable, and parsers transform values into predictable
 backend-oriented shapes. Parsers may perform small syntactic checks to avoid
 incoherent transformations, but they do not replace validators, business
 rules, permissions, or backend validation.</div>
-        
 
-        
+
+
 
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line248">line 248</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line242">line 242</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
-        
-    
+
+
     </div>
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
         <h3 class="subsection-title">Methods</h3>
 
-        
-            
 
-    
 
-    
+
+
+
+
+    <h4 class="name" id=".booleanToPayload"><span class="type-signature">(static) </span>booleanToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+
+
+
+
+
+<div class="description">
+    Convert an application boolean to a configured payload value.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+        <th>Attributes</th>
+
+
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>options</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">object</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+
+            <td class="description last">Boolean payload normalization options.
+                <h6>Properties</h6>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+        <th>Attributes</th>
+
+
+
+        <th>Default</th>
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>trueValue</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+                <td class="default">
+
+                    true
+
+                </td>
+
+
+            <td class="description last">Payload value for `true`.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>falseValue</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+                <td class="default">
+
+                    false
+
+                </td>
+
+
+            <td class="description last">Payload value for `false`.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>allowEmpty</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">boolean</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+                <td class="default">
+
+                    true
+
+                </td>
+
+
+            <td class="description last">Allow empty values.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>emptyAs</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">*</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+                <td class="default">
+
+                    ''
+
+                </td>
+
+
+            <td class="description last">Returned value for empty input.</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line527">line 527</a>
+    </li></ul></dd>
+
+
+
+
+
+
+
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+
+<div class="param-desc">
+    Parser object with a `parse(value)` method.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
     <h4 class="name" id=".date"><span class="type-signature">(static) </span>date<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -141,94 +498,94 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 
 
     <h5>Parameters:</h5>
-    
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>options</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">object</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
 
             <td class="description last">Date parser options.
                 <h6>Properties</h6>
-                
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
         <th>Default</th>
-        
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>inputFormat</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">'dd/mm/yyyy'</span>
 |
 
@@ -268,42 +625,42 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 <span class="param-type">string</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     'dd/mm/yyyy'
-                
+
                 </td>
-            
+
 
             <td class="description last">Expected input format.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>outputFormat</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">'dd/mm/yyyy'</span>
 |
 
@@ -340,79 +697,79 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 <span class="param-type">'Date'</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     'yyyy-mm-dd'
-                
+
                 </td>
-            
+
 
             <td class="description last">Returned format.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowEmpty</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Whether empty values parse as an empty string.</td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
             </td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
@@ -423,42 +780,42 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line275">line 275</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line269">line 269</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -477,7 +834,7 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -489,29 +846,29 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
+
+
+
+
+
     <h4 class="name" id=".dateTimeToPayload"><span class="type-signature">(static) </span>dateTimeToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -531,210 +888,210 @@ this parser. Timestamp-oriented parsers may be added later.
 
 
     <h5>Parameters:</h5>
-    
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>options</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">object</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
 
             <td class="description last">DateTime payload normalization options.
                 <h6>Properties</h6>
-                
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
         <th>Default</th>
-        
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>inputFormats</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">Array.&lt;(string|Date)></span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                 </td>
-            
+
 
             <td class="description last">Accepted date input formats, in priority order.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowEmpty</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>emptyAs</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     ''
-                
+
                 </td>
-            
+
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
             </td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
@@ -745,42 +1102,42 @@ this parser. Timestamp-oriented parsers may be added later.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line456">line 456</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line450">line 450</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -799,7 +1156,7 @@ this parser. Timestamp-oriented parsers may be added later.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -811,29 +1168,29 @@ this parser. Timestamp-oriented parsers may be added later.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
+
+
+
+
+
     <h4 class="name" id=".dateToPayload"><span class="type-signature">(static) </span>dateToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -854,210 +1211,210 @@ when a data source can be ambiguous.
 
 
     <h5>Parameters:</h5>
-    
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>options</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">object</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
 
             <td class="description last">Date payload normalization options.
                 <h6>Properties</h6>
-                
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
         <th>Default</th>
-        
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>inputFormats</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">Array.&lt;(string|Date)></span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                 </td>
-            
+
 
             <td class="description last">Accepted input formats, in priority order.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowEmpty</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>emptyAs</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     ''
-                
+
                 </td>
-            
+
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
             </td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
@@ -1068,42 +1425,42 @@ when a data source can be ambiguous.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line422">line 422</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line416">line 416</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -1122,7 +1479,7 @@ when a data source can be ambiguous.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -1134,29 +1491,29 @@ when a data source can be ambiguous.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
+
+
+
+
+
     <h4 class="name" id=".decimalToPayload"><span class="type-signature">(static) </span>decimalToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -1178,407 +1535,407 @@ validation.
 
 
     <h5>Parameters:</h5>
-    
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>options</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">object</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
 
             <td class="description last">Decimal normalization options.
                 <h6>Properties</h6>
-                
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
         <th>Default</th>
-        
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>decimalSeparator</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">string</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     ','
-                
+
                 </td>
-            
+
 
             <td class="description last">Visual decimal separator.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>thousandSeparator</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">string</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     '.'
-                
+
                 </td>
-            
+
 
             <td class="description last">Visual thousands separator.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowThousands</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow grouped thousands.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowNegative</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow negative values.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowEmpty</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>emptyAs</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     ''
-                
+
                 </td>
-            
+
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>strictThousands</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Require coherent thousands grouping.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowNormalized</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Accept already normalized `123.45` values.</td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
             </td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
@@ -1589,42 +1946,42 @@ validation.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line316">line 316</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line310">line 310</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -1643,7 +2000,7 @@ validation.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -1655,139 +2012,29 @@ validation.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
-    <h4 class="name" id=".digitsOnly"><span class="type-signature">(static) </span>digitsOnly<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
 
 
 
-<div class="description">
-    Keep only decimal digit characters.
-</div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line546">line 546</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Parser object with a `parse(value)` method.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
     <h4 class="name" id=".emptyToNull"><span class="type-signature">(static) </span>emptyToNull<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -1809,42 +2056,42 @@ validation.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line507">line 507</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line552">line 552</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -1863,7 +2110,7 @@ validation.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -1875,249 +2122,29 @@ validation.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
-    <h4 class="name" id=".fiscalCodeToPayload"><span class="type-signature">(static) </span>fiscalCodeToPayload<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
 
 
 
-<div class="description">
-    Normalize Italian Codice Fiscale text for payload/backend submission.
-</div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line572">line 572</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Parser object with a `parse(value)` method.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".ibanToPayload"><span class="type-signature">(static) </span>ibanToPayload<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Normalize IBAN text for payload/backend submission.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line559">line 559</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Parser object with a `parse(value)` method.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
     <h4 class="name" id=".integerToPayload"><span class="type-signature">(static) </span>integerToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
+
+
 
 
 
@@ -2137,329 +2164,329 @@ and should be normalized with string normalizers instead.
 
 
     <h5>Parameters:</h5>
-    
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>options</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">object</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
 
             <td class="description last">Integer normalization options.
                 <h6>Properties</h6>
-                
+
 
 <table class="params">
     <thead>
     <tr>
-        
+
         <th>Name</th>
-        
+
 
         <th>Type</th>
 
-        
-        <th>Attributes</th>
-        
 
-        
+        <th>Attributes</th>
+
+
+
         <th>Default</th>
-        
+
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>thousandSeparator</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">string</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     '.'
-                
+
                 </td>
-            
+
 
             <td class="description last">Visual thousands separator.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowThousands</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow grouped thousands.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowNegative</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow negative values.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>allowEmpty</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>emptyAs</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     ''
-                
+
                 </td>
-            
+
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-    
+
 
         <tr>
-            
+
                 <td class="name"><code>strictThousands</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">boolean</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
                 <td class="default">
-                
+
                     true
-                
+
                 </td>
-            
+
 
             <td class="description last">Require coherent thousands grouping.</td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
             </td>
         </tr>
 
-    
+
     </tbody>
 </table>
 
@@ -2470,42 +2497,42 @@ and should be normalized with string normalizers instead.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line383">line 383</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line377">line 377</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -2524,7 +2551,7 @@ and should be normalized with string normalizers instead.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -2536,34 +2563,34 @@ and should be normalized with string normalizers instead.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
-    <h4 class="name" id=".removeSpaces"><span class="type-signature">(static) </span>removeSpaces<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
+
+
+
+
+    <h4 class="name" id=".timeToPayload"><span class="type-signature">(static) </span>timeToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+
+
 
 
 
 <div class="description">
-    Remove whitespace characters.
+    Normalize a visual time value to canonical payload `HH:MM:SS`.
 </div>
 
 
@@ -2572,6 +2599,178 @@ and should be normalized with string normalizers instead.
 
 
 
+
+
+    <h5>Parameters:</h5>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+        <th>Attributes</th>
+
+
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>options</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">object</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+
+            <td class="description last">Time payload normalization options.
+                <h6>Properties</h6>
+
+
+<table class="params">
+    <thead>
+    <tr>
+
+        <th>Name</th>
+
+
+        <th>Type</th>
+
+
+        <th>Attributes</th>
+
+
+
+        <th>Default</th>
+
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+
+        <tr>
+
+                <td class="name"><code>allowEmpty</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">boolean</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+                <td class="default">
+
+                    true
+
+                </td>
+
+
+            <td class="description last">Allow empty values.</td>
+        </tr>
+
+
+
+        <tr>
+
+                <td class="name"><code>emptyAs</code></td>
+
+
+            <td class="type">
+
+
+<span class="param-type">''</span>
+|
+
+<span class="param-type">null</span>
+
+
+
+            </td>
+
+
+                <td class="attributes">
+
+                    &lt;optional><br>
+
+
+
+
+
+                </td>
+
+
+
+                <td class="default">
+
+                    ''
+
+                </td>
+
+
+            <td class="description last">Returned value for empty input.</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+
+    </tbody>
+</table>
 
 
 
@@ -2580,42 +2779,42 @@ and should be normalized with string normalizers instead.
 
 <dl class="details">
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line533">line 533</a>
+        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line491">line 491</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
@@ -2634,7 +2833,7 @@ and should be normalized with string normalizers instead.
 
 <h5>Returns:</h5>
 
-        
+
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -2646,245 +2845,25 @@ and should be normalized with string normalizers instead.
         Type
     </dt>
     <dd>
-        
+
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
-    
 
 
 
 
 
-        
-            
 
-    
 
-    
-    <h4 class="name" id=".trim"><span class="type-signature">(static) </span>trim<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
 
-    
 
 
 
-<div class="description">
-    Trim leading and trailing whitespace.
-</div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line494">line 494</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Parser object with a `parse(value)` method.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".uppercase"><span class="type-signature">(static) </span>uppercase<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Convert text to uppercase.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line520">line 520</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    Parser object with a `parse(value)` method.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-    
-
-    
-
-    
 </article>
 
 </section>
@@ -2901,7 +2880,7 @@ and should be normalized with string normalizers instead.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Aug 09 2026 11:44:05 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Aug 21 2026 12:08:21 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

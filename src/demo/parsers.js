@@ -7,11 +7,9 @@ const parserFactories = {
     date: () => AMB.parsers.dateToPayload(),
     compactDate: () => AMB.parsers.dateToPayload(),
     dateTime: () => AMB.parsers.dateTimeToPayload(),
-    iban: () => AMB.parsers.ibanToPayload(),
-    fiscalCode: () => AMB.parsers.fiscalCodeToPayload(),
-    digitsOnly: () => AMB.parsers.digitsOnly(),
-    emptyToNull: () => AMB.parsers.emptyToNull(),
-    trim: () => AMB.parsers.trim()
+    time: () => AMB.parsers.timeToPayload(),
+    boolean: () => AMB.parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' }),
+    emptyToNull: () => AMB.parsers.emptyToNull()
 };
 
 const parserExamples = [
@@ -20,11 +18,9 @@ const parserExamples = [
     { id: 3, type: 'Date', parserKey: 'date', parserName: 'dateToPayload()', input: '16/06/2026', description: 'Date normalized to YYYY-MM-DD.' },
     { id: 4, type: 'Compact date', parserKey: 'compactDate', parserName: 'dateToPayload()', input: '20260616', description: 'Compact legacy date normalized to YYYY-MM-DD.' },
     { id: 5, type: 'DateTime', parserKey: 'dateTime', parserName: 'dateTimeToPayload()', input: '16/06/2026 14:30', description: 'Date and time normalized with seconds.' },
-    { id: 6, type: 'IBAN', parserKey: 'iban', parserName: 'ibanToPayload()', input: 'it60 x054 2811 1010 0000 0123 456', description: 'Spaces removed and letters uppercased.' },
-    { id: 7, type: 'Fiscal code', parserKey: 'fiscalCode', parserName: 'fiscalCodeToPayload()', input: 'rss mra 80a01 h501u', description: 'Spaces removed and letters uppercased.' },
-    { id: 8, type: 'Digits only', parserKey: 'digitsOnly', parserName: 'digitsOnly()', input: 'Tel. 071-123456', description: 'Keeps decimal digit characters only.' },
-    { id: 9, type: 'Empty to null', parserKey: 'emptyToNull', parserName: 'emptyToNull()', input: '   ', description: 'Whitespace-only input becomes a real null value.', acceptsNull: true },
-    { id: 10, type: 'Trim', parserKey: 'trim', parserName: 'trim()', input: '  payload note  ', description: 'Leading and trailing whitespace is removed.' }
+    { id: 6, type: 'Time', parserKey: 'time', parserName: 'timeToPayload()', input: '9:05', description: 'Time normalized to HH:MM:SS.' },
+    { id: 7, type: 'Boolean', parserKey: 'boolean', parserName: 'booleanToPayload({ trueValue: \'Y\', falseValue: \'N\' })', input: true, description: 'Application boolean converted to a configured backend value.' },
+    { id: 8, type: 'Empty to null', parserKey: 'emptyToNull', parserName: 'emptyToNull()', input: '   ', description: 'Whitespace-only input becomes a real null value.', acceptsNull: true }
 ];
 
 const feedbackCopy = {
@@ -39,11 +35,9 @@ const parserRowCopy = {
         date: ['Data', 'Data normalizzata nel formato YYYY-MM-DD.'],
         compactDate: ['Data compatta', 'Data legacy compatta normalizzata nel formato YYYY-MM-DD.'],
         dateTime: ['Data e ora', 'Data e ora normalizzate includendo i secondi.'],
-        iban: ['IBAN', 'Rimuove gli spazi e converte le lettere in maiuscolo.'],
-        fiscalCode: ['Codice fiscale', 'Rimuove gli spazi e converte le lettere in maiuscolo.'],
-        digitsOnly: ['Solo cifre', 'Mantiene soltanto i caratteri numerici decimali.'],
-        emptyToNull: ['Vuoto a null', 'Un input di soli spazi diventa un vero valore null.'],
-        trim: ['Trim', 'Rimuove gli spazi iniziali e finali.']
+        time: ['Ora', 'Ora normalizzata nel formato HH:MM:SS.'],
+        boolean: ['Booleano', 'Booleano applicativo convertito nel valore backend configurato.'],
+        emptyToNull: ['Vuoto a null', 'Un input di soli spazi diventa un vero valore null.']
     },
     en: {
         decimal: ['Decimal', 'Visual decimal to payload decimal string.'],
@@ -51,11 +45,9 @@ const parserRowCopy = {
         date: ['Date', 'Date normalized to YYYY-MM-DD.'],
         compactDate: ['Compact date', 'Compact legacy date normalized to YYYY-MM-DD.'],
         dateTime: ['DateTime', 'Date and time normalized with seconds.'],
-        iban: ['IBAN', 'Spaces removed and letters uppercased.'],
-        fiscalCode: ['Fiscal code', 'Spaces removed and letters uppercased.'],
-        digitsOnly: ['Digits only', 'Keeps decimal digit characters only.'],
-        emptyToNull: ['Empty to null', 'Whitespace-only input becomes a real null value.'],
-        trim: ['Trim', 'Leading and trailing whitespace is removed.']
+        time: ['Time', 'Time normalized to HH:MM:SS.'],
+        boolean: ['Boolean', 'Application boolean converted to a configured backend value.'],
+        emptyToNull: ['Empty to null', 'Whitespace-only input becomes a real null value.']
     }
 };
 

@@ -147,13 +147,9 @@ export const SUPPORT_NAMESPACE_MEMBERS = {
         'integerToPayload',
         'dateToPayload',
         'dateTimeToPayload',
-        'trim',
+        'timeToPayload',
+        'booleanToPayload',
         'emptyToNull',
-        'uppercase',
-        'removeSpaces',
-        'digitsOnly',
-        'ibanToPayload',
-        'fiscalCodeToPayload'
     ],
     date: [
         'createConfig'

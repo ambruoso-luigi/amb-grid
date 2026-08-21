@@ -8,7 +8,7 @@ const source = readFileSync(
 );
 
 describe('Public Parsers demo integration', () => {
-    test('is a real compact AMB Grid with ten transformation rows', () => {
+    test('is a real compact AMB Grid with eight transformation rows', () => {
         const data = source.match(/const parserExamples = \[([\s\S]*?)\n\];/)[1];
 
         expect(source).toContain('const demo = AMB.table({');
@@ -17,7 +17,7 @@ describe('Public Parsers demo integration', () => {
         expect(source).toContain("layout: 'fitColumns'");
         expect(source).toContain('class="demo-table-workbench"');
         expect(source).toContain('demo-business-grid--viewport');
-        expect(data.match(/\{ id: \d+/g)).toHaveLength(10);
+        expect(data.match(/\{ id: \d+/g)).toHaveLength(8);
         expect(data).not.toContain('12.34,56');
     });
 
@@ -27,13 +27,11 @@ describe('Public Parsers demo integration', () => {
             'integerToPayload',
             'dateToPayload',
             'dateTimeToPayload',
-            'ibanToPayload',
-            'fiscalCodeToPayload',
-            'digitsOnly',
-            'emptyToNull',
-            'trim'
+            'timeToPayload',
+            'booleanToPayload',
+            'emptyToNull'
         ].forEach(name => {
-            expect(source).toContain(`AMB.parsers.${name}()`);
+            expect(source).toContain(`AMB.parsers.${name}`);
         });
     });
 
@@ -43,13 +41,10 @@ describe('Public Parsers demo integration', () => {
         expect(parsers.dateToPayload().parse('16/06/2026')).toBe('2026-06-16');
         expect(parsers.dateToPayload().parse('20260616')).toBe('2026-06-16');
         expect(parsers.dateTimeToPayload().parse('16/06/2026 14:30')).toBe('2026-06-16 14:30:00');
-        expect(parsers.ibanToPayload().parse('it60 x054 2811 1010 0000 0123 456'))
-            .toBe('IT60X0542811101000000123456');
-        expect(parsers.fiscalCodeToPayload().parse('rss mra 80a01 h501u'))
-            .toBe('RSSMRA80A01H501U');
-        expect(parsers.digitsOnly().parse('Tel. 071-123456')).toBe('071123456');
+        expect(parsers.timeToPayload().parse('9:05')).toBe('09:05:00');
+        expect(parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' }).parse(true)).toBe('Y');
         expect(parsers.emptyToNull().parse('   ')).toBeNull();
-        expect(parsers.trim().parse('  payload note  ')).toBe('payload note');
+        expect(source).not.toMatch(/AMB\.parsers\.(trim|uppercase|removeSpaces|digitsOnly|ibanToPayload|fiscalCodeToPayload)/);
     });
 
     test('updates a readonly Parsed value from editable Input without stringifying null', () => {

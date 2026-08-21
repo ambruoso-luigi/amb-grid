@@ -131,14 +131,57 @@ describe('parsers.dateTimeToPayload', () => {
     });
 });
 
-describe('string normalizer parsers', () => {
-    test('normalizes text values', () => {
-        expect(parsers.trim().parse('  value  ')).toBe('value');
+describe('parsers.timeToPayload', () => {
+    test('normalizes supported time values to HH:MM:SS', () => {
+        const parser = parsers.timeToPayload();
+
+        expect(parser.parse('9:05')).toBe('09:05:00');
+        expect(parser.parse('09:05')).toBe('09:05:00');
+        expect(parser.parse('9:05:07')).toBe('09:05:07');
+        expect(parser.parse('23:59:59')).toBe('23:59:59');
+    });
+
+    test('rejects incoherent or non-time values', () => {
+        const parser = parsers.timeToPayload();
+
+        expect(parser.parse('24:00')).toBe(null);
+        expect(parser.parse('12:60')).toBe(null);
+        expect(parser.parse('12:30:60')).toBe(null);
+        expect(parser.parse('abc')).toBe(null);
+    });
+
+    test('handles empty values', () => {
+        expect(parsers.timeToPayload().parse('')).toBe('');
+        expect(parsers.timeToPayload({ emptyAs: null }).parse('   ')).toBe(null);
+        expect(parsers.timeToPayload({ allowEmpty: false }).parse('')).toBe(null);
+    });
+});
+
+describe('parsers.booleanToPayload', () => {
+    test('keeps strict boolean values by default', () => {
+        const parser = parsers.booleanToPayload();
+
+        expect(parser.parse(true)).toBe(true);
+        expect(parser.parse(false)).toBe(false);
+        expect(parser.parse('true')).toBe(null);
+        expect(parser.parse('yes')).toBe(null);
+    });
+
+    test('supports configured backend values', () => {
+        const parser = parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' });
+
+        expect(parser.parse(true)).toBe('Y');
+        expect(parser.parse(false)).toBe('N');
+    });
+
+    test('handles empty values', () => {
+        expect(parsers.booleanToPayload().parse(null)).toBe('');
+        expect(parsers.booleanToPayload({ emptyAs: null }).parse('')).toBe(null);
+        expect(parsers.booleanToPayload({ allowEmpty: false }).parse(undefined)).toBe(null);
+    });
+
+    test('keeps emptyToNull as the explicit empty-value parser', () => {
         expect(parsers.emptyToNull().parse('   ')).toBe(null);
-        expect(parsers.uppercase().parse('abc')).toBe('ABC');
-        expect(parsers.removeSpaces().parse(' IT 60 X ')).toBe('IT60X');
-        expect(parsers.digitsOnly().parse('A12-34 B')).toBe('1234');
-        expect(parsers.ibanToPayload().parse(' it60 x054 2811 1010 0000 0123 456 ')).toBe('IT60X0542811101000000123456');
-        expect(parsers.fiscalCodeToPayload().parse(' rss mra 80a01 h501u ')).toBe('RSSMRA80A01H501U');
+        expect(parsers.emptyToNull().parse('value')).toBe('value');
     });
 });

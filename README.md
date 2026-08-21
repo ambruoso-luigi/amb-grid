@@ -611,12 +611,16 @@ Parsers may perform small syntactic checks to avoid incoherent transformations, 
 
 Payload-oriented parser helpers include:
 
-* Parsers / payload normalizers for backend-oriented values: decimal strings, integer strings, canonical dates/datetimes, and common string normalizers
+* Parsers / payload normalizers for backend-oriented values: decimal strings,
+  integer strings, canonical dates/datetimes, canonical times, booleans, and
+  explicit empty-to-null conversion
 * Decimal normalization, for example `-123.123,01` to `"-123123.01"`
 * Integer normalization
 * Date normalization to `YYYY-MM-DD`
 * DateTime normalization to `YYYY-MM-DD HH:MM:SS`
-* String normalizers such as trim, uppercase, digits-only, IBAN, and fiscal-code normalization
+* Time normalization to `HH:MM:SS`
+* Boolean normalization with configurable backend values
+* Empty-value normalization to `null`
 
 Parsers normalize values for payload/backend submission; validators check whether values are acceptable.
 
@@ -626,7 +630,8 @@ Date payload parsers normalize supported AMB Grid date formats to `YYYY-MM-DD`. 
 
 If a date can be ambiguous, configure `inputFormats` explicitly or rely on the documented format order. Parsers do not guess user intent.
 
-Do not use integer parsers for codes with leading zeroes. Codes should be treated as strings and normalized with string normalizers.
+Do not use integer parsers for codes with leading zeroes. Codes should be
+treated as strings and normalized according to the application contract.
 
 Date parsers accept separated dates with one or two digit day/month values, such as `20/7/2026` or `2026-06-5`, and normalize output with leading zeroes. Compact `yyyymmdd` input remains strict and does not accept ambiguous shorter values such as `2026720`.
 
