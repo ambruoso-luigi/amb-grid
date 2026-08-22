@@ -41,6 +41,10 @@ class ElementMock {
 
         return dispatchedEvent;
     }
+
+    dispatchEvent(event) {
+        return this.dispatch(event.type, event);
+    }
 }
 
 const createHarness = ({
@@ -216,13 +220,16 @@ describe('checkbox editor keyboard behavior', () => {
         expect(harness.input.checked).toBe(true);
     });
 
-    test('Enter confirms the current value', () => {
+    test('Enter toggles without committing the current value', () => {
         const harness = createHarness({ initialValue: true });
         const event = harness.input.dispatch('keydown', { key: 'Enter' });
 
-        expect(harness.success).toHaveBeenCalledWith(true);
+        expect(harness.input.checked).toBe(false);
+        expect(harness.success).not.toHaveBeenCalled();
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
     });
 
     test('Escape cancels and restores the previous value', () => {
@@ -291,7 +298,7 @@ describe('checkbox editor keyboard behavior', () => {
         expect(harness.input.checked).toBe(true);
     });
 
-    test('custom checkedValue and uncheckedValue continue to be saved', () => {
+    test('custom checkedValue and uncheckedValue continue to be saved on Tab', () => {
         const harness = createHarness({
             initialValue: 'N',
             options: {
@@ -301,16 +308,26 @@ describe('checkbox editor keyboard behavior', () => {
         });
 
         harness.input.dispatch('keydown', { key: 'y' });
-        harness.input.dispatch('keydown', { key: 'Enter' });
+        harness.input.dispatch('keydown', { key: 'Tab' });
 
         expect(harness.success).toHaveBeenCalledWith('Y');
     });
 
-    test('change event still commits the current value for mouse interaction', () => {
+    test('change event updates the editor without committing', () => {
         const harness = createHarness();
 
         harness.input.checked = true;
         harness.input.dispatch('change');
+
+        expect(harness.input.checked).toBe(true);
+        expect(harness.success).not.toHaveBeenCalled();
+    });
+
+    test('blur commits the current value', () => {
+        const harness = createHarness();
+
+        harness.input.checked = true;
+        harness.input.dispatch('blur');
 
         expect(harness.success).toHaveBeenCalledWith(true);
     });

@@ -33,21 +33,45 @@ const createMouseEvent = (target = createTarget()) => ({
     stopImmediatePropagation: vi.fn()
 });
 
+const createKeyEvent = key => ({
+    key,
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    stopImmediatePropagation: vi.fn()
+});
+
 const createCell = ({
     field = 'requiresInspection',
     state = 'clean',
-    value = false
-} = {}) => ({
-    getField: () => field,
-    getRow: () => ({
-        getData: () => ({
-            _state: state
+    value = false,
+    editorInput = null
+} = {}) => {
+    const cellElement = {
+        querySelector: vi.fn(() => editorInput),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        focus: vi.fn()
+    };
+
+    return {
+        getField: () => field,
+        getRow: () => ({
+            getData: () => ({
+                _state: state
+            })
+        }),
+        getValue: vi.fn(() => value),
+        getElement: () => cellElement,
+        setValue: vi.fn(nextValue => {
+            value = nextValue;
         })
-    }),
-    getValue: vi.fn(() => value),
-    setValue: vi.fn(nextValue => {
-        value = nextValue;
-    })
+    };
+};
+
+const createEditorInput = ({ checked = false } = {}) => ({
+    checked,
+    dispatchEvent: vi.fn(),
+    focus: vi.fn()
 });
 
 describe('AMB checkbox column cell toggle', () => {
@@ -178,6 +202,51 @@ describe('AMB checkbox column cell toggle', () => {
 
         expect(cell.setValue).not.toHaveBeenCalled();
         expect(originalCellMouseDown).toHaveBeenCalledWith(event, cell);
+    });
+
+    test('editing mouse toggles the existing input without calling setValue', () => {
+        const input = createEditorInput();
+        const [column] = prepareCheckboxColumns([
+            {
+                field: 'requiresInspection',
+                editor: createCheckboxEditor()
+            }
+        ]);
+        const cell = createCell({ editorInput: input });
+
+        column.cellMouseDown(createMouseEvent(), cell);
+
+        expect(cell.setValue).not.toHaveBeenCalled();
+        expect(input.checked).toBe(true);
+        expect(input.dispatchEvent).toHaveBeenCalledOnce();
+        expect(input.dispatchEvent.mock.calls[0][0].type).toBe('change');
+        expect(input.focus).toHaveBeenCalledWith({ preventScroll: true });
+    });
+
+    test.each([' ', 'Enter'])('focused checkbox cell handles %s without opening an editor', key => {
+        const [column] = prepareCheckboxColumns([
+            {
+                field: 'requiresInspection',
+                editor: createCheckboxEditor()
+            }
+        ]);
+        const cell = createCell({ value: true });
+        const cellElement = cell.getElement();
+
+        column.cellMouseDown(createMouseEvent(), cell);
+        cell.setValue.mockClear();
+
+        const keydownHandler = cellElement.addEventListener.mock.calls
+            .find(([eventName]) => eventName === 'keydown')[1];
+        const event = createKeyEvent(key);
+
+        keydownHandler(event);
+
+        expect(cell.setValue).toHaveBeenCalledOnce();
+        expect(cell.setValue).toHaveBeenCalledWith(true, true);
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
     });
 
     test('does not toggle deleted rows', () => {

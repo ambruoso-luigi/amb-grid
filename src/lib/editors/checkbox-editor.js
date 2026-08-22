@@ -15,10 +15,10 @@ const keyMatches = (event, keys) => keys.includes(event.key);
     /**
      * Checkbox editor. Saves `checkedValue` or `uncheckedValue`.
      *
-     * Keyboard behavior: `Space` and configured toggle keys change the
-     * current checkbox state, configured checked/unchecked keys force a state,
-     * `Enter` confirms, `Escape` cancels, and `Tab`/`Shift+Tab` confirm and
-     * navigate without an extra toggle.
+     * Keyboard behavior: `Space`, `Enter`, and configured toggle keys change
+     * the current checkbox state, configured checked/unchecked keys force a
+     * state, `Escape` cancels, and `Tab`/`Shift+Tab` confirm and navigate
+     * without an extra toggle.
      *
      * @param {object} [options] - Checkbox editor options.
      * @param {*} [options.checkedValue=true] - Value saved for checked state.
@@ -111,12 +111,17 @@ export function checkbox(options = {}) {
 
             input.addEventListener('change', () => {
                 updateLabel();
-                closeWithSuccess();
             });
             input.addEventListener('keydown', event => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    closeWithSuccess();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
+                    setChecked(!input.checked);
                     return;
                 }
 
@@ -140,18 +145,36 @@ export function checkbox(options = {}) {
 
                 if (keyMatches(event, keyOptions.toggleKeys)) {
                     event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
                     setChecked(!input.checked);
                     return;
                 }
 
                 if (keyMatches(event, keyOptions.checkedKeys)) {
                     event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
                     setChecked(true);
                     return;
                 }
 
                 if (keyMatches(event, keyOptions.uncheckedKeys)) {
                     event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
                     setChecked(false);
                 }
             });

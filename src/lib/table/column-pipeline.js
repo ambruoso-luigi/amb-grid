@@ -463,6 +463,87 @@ const isCheckboxEditorTarget = target => {
     );
 };
 
+const isCheckboxEditorInputTarget = target => {
+    return Boolean(
+        target
+        && typeof target.closest === 'function'
+        && target.closest('.amb-checkbox-editor__input')
+    );
+};
+
+const checkboxKeyboardCells = new WeakSet();
+
+const getCellElement = cell => {
+    return cell && typeof cell.getElement === 'function'
+        ? cell.getElement()
+        : null;
+};
+
+const getCheckboxEditorInput = cell => {
+    const cellElement = getCellElement(cell);
+
+    if (!cellElement || typeof cellElement.querySelector !== 'function') return null;
+
+    return cellElement.querySelector('.amb-checkbox-editor__input');
+};
+
+const stopKeyEvent = event => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+    }
+};
+
+const focusCheckboxCell = cell => {
+    const cellElement = getCellElement(cell);
+
+    if (
+        !cellElement
+        || typeof cellElement.focus !== 'function'
+        || typeof cellElement.addEventListener !== 'function'
+    ) return;
+
+    const blockEditFocus = event => {
+        event.stopImmediatePropagation();
+    };
+
+    cellElement.addEventListener('focus', blockEditFocus, true);
+    cellElement.focus({ preventScroll: true });
+    cellElement.removeEventListener('focus', blockEditFocus, true);
+};
+
+const dispatchCheckboxChange = input => {
+    if (!input || typeof input.dispatchEvent !== 'function') return;
+
+    const changeEvent = typeof Event === 'function'
+        ? new Event('change', { bubbles: true })
+        : { type: 'change', bubbles: true };
+
+    input.dispatchEvent(changeEvent);
+};
+
+const prepareCheckboxCellKeyboard = (cell, column, getCrud) => {
+    const cellElement = getCellElement(cell);
+
+    if (!cellElement || typeof cellElement.addEventListener !== 'function') return;
+    if (checkboxKeyboardCells.has(cellElement)) return;
+
+    checkboxKeyboardCells.add(cellElement);
+    cellElement.addEventListener('keydown', event => {
+        if (isCheckboxEditorTarget(event.target)) return;
+        if (event.key !== ' ' && event.key !== 'Enter') return;
+        if (isDeletedRow(cell, getCrud)) return;
+
+        const config = getCheckboxConfig(column);
+        const checked = cell.getValue() === config.checkedValue;
+
+        stopKeyEvent(event);
+        cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
+    });
+};
+
 const stopCellPointerEvent = event => {
     if (!event) return;
 
@@ -520,7 +601,6 @@ const suppressCheckboxCellClick = cell => {
 const toggleCheckboxCellFromMouse = (event, cell, column, getCrud) => {
     if (
         !isPrimaryMouseEvent(event)
-        || isCheckboxEditorTarget(event && event.target)
         || isDeletedRow(cell, getCrud)
         || !cell
         || typeof cell.getValue !== 'function'
@@ -529,12 +609,35 @@ const toggleCheckboxCellFromMouse = (event, cell, column, getCrud) => {
         return false;
     }
 
+    if (isCheckboxEditorInputTarget(event && event.target)) {
+        return false;
+    }
+
+    const input = getCheckboxEditorInput(cell);
+
+    if (isCheckboxEditorTarget(event && event.target) && !input) {
+        return false;
+    }
+
+    prepareCheckboxCellKeyboard(cell, column, getCrud);
+
+    if (input) {
+        stopCellPointerEvent(event);
+        suppressCheckboxCellClick(cell);
+        input.checked = !input.checked;
+        dispatchCheckboxChange(input);
+        input.focus({ preventScroll: true });
+
+        return true;
+    }
+
     const config = getCheckboxConfig(column);
     const checked = cell.getValue() === config.checkedValue;
 
     stopCellPointerEvent(event);
     suppressCheckboxCellClick(cell);
     cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
+    focusCheckboxCell(cell);
 
     return true;
 };
