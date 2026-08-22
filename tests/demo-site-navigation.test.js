@@ -1,8 +1,7 @@
 import { readFileSync, statSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
-const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
-    .replace(/\r\n/g, '\n');
+const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
 describe('demo site navigation', () => {
     test('links the JavaScript framework card to the internal JavaScript page', () => {
