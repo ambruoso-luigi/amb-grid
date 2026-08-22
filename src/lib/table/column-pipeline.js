@@ -487,7 +487,7 @@ const getCheckboxEditorInput = cell => {
     return cellElement.querySelector('.amb-checkbox-editor__input');
 };
 
-const stopKeyEvent = event => {
+const stopEvent = event => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -539,25 +539,9 @@ const prepareCheckboxCellKeyboard = (cell, column, getCrud) => {
         const config = getCheckboxConfig(column);
         const checked = cell.getValue() === config.checkedValue;
 
-        stopKeyEvent(event);
+        stopEvent(event);
         cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
     });
-};
-
-const stopCellPointerEvent = event => {
-    if (!event) return;
-
-    if (typeof event.preventDefault === 'function') {
-        event.preventDefault();
-    }
-
-    if (typeof event.stopPropagation === 'function') {
-        event.stopPropagation();
-    }
-
-    if (typeof event.stopImmediatePropagation === 'function') {
-        event.stopImmediatePropagation();
-    }
 };
 
 const getTargetCell = target => {
@@ -592,7 +576,7 @@ const suppressCheckboxCellClick = cell => {
 
         if (field && targetField !== field) return;
 
-        stopCellPointerEvent(event);
+        stopEvent(event);
     };
 
     document.addEventListener('click', handleClick, true);
@@ -622,7 +606,7 @@ const toggleCheckboxCellFromMouse = (event, cell, column, getCrud) => {
     prepareCheckboxCellKeyboard(cell, column, getCrud);
 
     if (input) {
-        stopCellPointerEvent(event);
+        stopEvent(event);
         suppressCheckboxCellClick(cell);
         input.checked = !input.checked;
         dispatchCheckboxChange(input);
@@ -634,7 +618,7 @@ const toggleCheckboxCellFromMouse = (event, cell, column, getCrud) => {
     const config = getCheckboxConfig(column);
     const checked = cell.getValue() === config.checkedValue;
 
-    stopCellPointerEvent(event);
+    stopEvent(event);
     suppressCheckboxCellClick(cell);
     cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
     focusCheckboxCell(cell);

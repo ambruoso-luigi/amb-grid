@@ -13,21 +13,29 @@ const normalizeKeyList = (keys, fallback) => {
 const keyMatches = (event, keys) => keys.includes(event.key);
 
     /**
-     * Checkbox editor. Saves `checkedValue` or `uncheckedValue`.
+     * Create a checkbox editor that saves `checkedValue` or `uncheckedValue`.
      *
-     * Keyboard behavior: `Space`, `Enter`, and configured toggle keys change
-     * the current checkbox state, configured checked/unchecked keys force a
-     * state, `Escape` cancels, and `Tab`/`Shift+Tab` confirm and navigate
-     * without an extra toggle.
+     * Keyboard:
+     * - Space: toggles the state and keeps the checkbox active.
+     * - Enter: toggles the state and keeps the checkbox active.
+     * - 1, Y, y, S, s: sets the checked state.
+     * - 0, N, n: sets the unchecked state.
+     * - Tab: commits and moves to the next editable cell.
+     * - Shift+Tab: commits and moves to the previous editable cell.
+     * - Escape: cancels the edit.
+     *
+     * A normal blur commits the value without imposing navigation.
+     * The `toggleKeys`, `checkedKeys`, and `uncheckedKeys` options replace
+     * their respective default key lists when provided.
      *
      * @param {object} [options] - Checkbox editor options.
      * @param {*} [options.checkedValue=true] - Value saved for checked state.
      * @param {*} [options.uncheckedValue=false] - Value saved for unchecked state.
      * @param {string} [options.checkedLabel] - Optional label shown while checked.
      * @param {string} [options.uncheckedLabel] - Optional label shown while unchecked.
-     * @param {string[]} [options.toggleKeys=[' ']] - Keys that toggle the current checkbox state.
-     * @param {string[]} [options.checkedKeys=['1','y','Y','s','S']] - Keys that force checked state.
-     * @param {string[]} [options.uncheckedKeys=['0','n','N']] - Keys that force unchecked state.
+     * @param {string[]} [options.toggleKeys=[' ']] - Keys that toggle the current state.
+     * @param {string[]} [options.checkedKeys=['1','y','Y','s','S']] - Keys that set checked state.
+     * @param {string[]} [options.uncheckedKeys=['0','n','N']] - Keys that set unchecked state.
      * @returns {Function} Grid editor function compatible with the internal table engine.
      */
 export function checkbox(options = {}) {
