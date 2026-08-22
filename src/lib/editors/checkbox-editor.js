@@ -178,7 +178,9 @@ export function checkbox(options = {}) {
                     setChecked(false);
                 }
             });
-            input.addEventListener('blur', closeWithSuccess);
+            input.addEventListener('blur', () => {
+                closeWithSuccess();
+            });
 
             if (label) {
                 container.append(input, label);

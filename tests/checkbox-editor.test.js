@@ -332,6 +332,23 @@ describe('checkbox editor keyboard behavior', () => {
         expect(harness.success).toHaveBeenCalledWith(true);
     });
 
+    test('blur event commits without navigating to another cell', async () => {
+        const harness = createHarness({ withRowNavigation: true });
+
+        harness.input.checked = true;
+        harness.input.dispatch('blur', { type: 'blur' });
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith(true);
+        expect(harness.nextCell.edit).not.toHaveBeenCalled();
+        expect(harness.previousCell.edit).not.toHaveBeenCalled();
+        expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+        expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigatePrev).not.toHaveBeenCalled();
+    });
+
     test('exposes AMB checkbox metadata for table-level cbox behavior', () => {
         const editor = createCheckboxEditor({
             checkedValue: 'Y',

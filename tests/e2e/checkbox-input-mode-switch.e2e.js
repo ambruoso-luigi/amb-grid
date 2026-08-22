@@ -6,12 +6,16 @@ const openInventoryTestPage = async page => {
 };
 
 const firstInventoryRow = page => page.locator('#inventory-test-table .tabulator-row').first();
+const secondInventoryRow = page => page.locator('#inventory-test-table .tabulator-row').nth(1);
 const checkboxCell = page => firstInventoryRow(page).locator(
     '.tabulator-cell[tabulator-field="requiresInspection"]'
 );
 const checkboxInput = page => checkboxCell(page).locator('.amb-checkbox-editor__input');
 const notesCell = page => firstInventoryRow(page).locator('.tabulator-cell[tabulator-field="notes"]');
 const readCheckboxState = page => checkboxCell(page).evaluate(cell => cell.textContent.trim());
+const rowCheckboxCell = (row, field = 'requiresInspection') => row.locator(
+    `.tabulator-cell[tabulator-field="${field}"]`
+);
 
 const expectNoOtherEditor = async page => {
     await expect(notesCell(page)).not.toHaveClass(/tabulator-editing/);
@@ -141,4 +145,40 @@ test.describe('checkbox input mode switch regression', () => {
         await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);
         await expectNoOtherEditor(page);
     });
+
+    for (const key of ['Space', 'Enter']) {
+        test(`Tab -> ${key} -> mouse on checkbox B does not navigate past A`, async ({ page }) => {
+            await openInventoryTestPage(page);
+
+            await focusCheckboxViaTab(page);
+            const aInput = checkboxInput(page);
+            const aInitialChecked = await aInput.isChecked();
+
+            await page.keyboard.press(key);
+            await expect(aInput).toBeChecked({ checked: !aInitialChecked });
+            await expect(aInput).toBeFocused();
+
+            const bCell = rowCheckboxCell(secondInventoryRow(page));
+            const bInitialState = await bCell.textContent();
+
+            await bCell.click();
+
+            await expect.poll(() => bCell.textContent()).not.toBe(bInitialState);
+            await expect(bCell).toBeFocused();
+            await expect(checkboxInput(page)).toHaveCount(0);
+            await expect(page.locator('#inventory-test-table .tabulator-cell.tabulator-editing'))
+                .toHaveCount(0);
+            await expect(await page.evaluate(() => {
+                const activeCell = document.activeElement?.closest('.tabulator-cell');
+
+                return {
+                    field: activeCell?.getAttribute('tabulator-field') || null,
+                    row: activeCell?.closest('.tabulator-row')?.getAttribute('data-index') || null
+                };
+            })).toEqual({
+                field: 'requiresInspection',
+                row: await bCell.evaluate(cell => cell.closest('.tabulator-row')?.getAttribute('data-index') || null)
+            });
+        });
+    }
 });
