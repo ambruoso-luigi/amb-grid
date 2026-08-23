@@ -447,7 +447,10 @@ const getCheckboxConfig = column => {
         ? column.editor._ambCheckboxConfig
         : {
             checkedValue: true,
-            uncheckedValue: false
+            uncheckedValue: false,
+            toggleKeys: [' '],
+            checkedKeys: ['1', 'y', 'Y', 's', 'S'],
+            uncheckedKeys: ['0', 'n', 'N']
         };
 };
 
@@ -533,14 +536,24 @@ const prepareCheckboxCellKeyboard = (cell, column, getCrud) => {
     checkboxKeyboardCells.add(cellElement);
     cellElement.addEventListener('keydown', event => {
         if (isCheckboxEditorTarget(event.target)) return;
-        if (event.key !== ' ' && event.key !== 'Enter') return;
         if (isDeletedRow(cell, getCrud)) return;
 
         const config = getCheckboxConfig(column);
-        const checked = cell.getValue() === config.checkedValue;
+        let nextValue;
+
+        if (event.key === 'Enter' || config.toggleKeys.includes(event.key)) {
+            const checked = cell.getValue() === config.checkedValue;
+            nextValue = checked ? config.uncheckedValue : config.checkedValue;
+        } else if (config.checkedKeys.includes(event.key)) {
+            nextValue = config.checkedValue;
+        } else if (config.uncheckedKeys.includes(event.key)) {
+            nextValue = config.uncheckedValue;
+        } else {
+            return;
+        }
 
         stopEvent(event);
-        cell.setValue(checked ? config.uncheckedValue : config.checkedValue, true);
+        cell.setValue(nextValue, true);
     });
 };
 

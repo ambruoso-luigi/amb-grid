@@ -16,10 +16,10 @@ const keyMatches = (event, keys) => keys.includes(event.key);
      * Create a checkbox editor that saves `checkedValue` or `uncheckedValue`.
      *
      * Keyboard:
-     * - Space: toggles the state and keeps the checkbox active.
-     * - Enter: toggles the state and keeps the checkbox active.
-     * - 1, Y, y, S, s: sets the checked state.
-     * - 0, N, n: sets the unchecked state.
+     * - Enter: always toggles the state and keeps the checkbox active.
+     * - Space: toggles the state by default through `toggleKeys`.
+     * - 1, Y, y, S, s: set the checked state by default through `checkedKeys`.
+     * - 0, N, n: set the unchecked state by default through `uncheckedKeys`.
      * - Tab: commits and moves to the next editable cell.
      * - Shift+Tab: commits and moves to the previous editable cell.
      * - Escape: cancels the edit.
@@ -205,7 +205,10 @@ export function checkbox(options = {}) {
         editor._ambEditorType = 'checkbox';
         editor._ambCheckboxConfig = {
             checkedValue: normalizedOptions.checkedValue,
-            uncheckedValue: normalizedOptions.uncheckedValue
+            uncheckedValue: normalizedOptions.uncheckedValue,
+            toggleKeys: keyOptions.toggleKeys,
+            checkedKeys: keyOptions.checkedKeys,
+            uncheckedKeys: keyOptions.uncheckedKeys
         };
 
         return editor;

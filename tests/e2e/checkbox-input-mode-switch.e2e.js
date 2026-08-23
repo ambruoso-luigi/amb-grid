@@ -96,6 +96,37 @@ test.describe('checkbox input mode switch regression', () => {
         await expectNoOtherEditor(page);
     });
 
+    test('mouse -> checked and unchecked keys keep the same cell target', async ({ page }) => {
+        await openInventoryTestPage(page);
+
+        const cell = checkboxCell(page);
+
+        await cell.click();
+        await expect(cell).toBeFocused();
+
+        await page.keyboard.press('1');
+        const checkedState = await readCheckboxState(page);
+
+        await page.keyboard.press('0');
+        const uncheckedState = await readCheckboxState(page);
+
+        expect(checkedState).not.toBe(uncheckedState);
+
+        await page.keyboard.press('Y');
+        await expect.poll(() => readCheckboxState(page)).toBe(checkedState);
+        await page.keyboard.press('N');
+        await expect.poll(() => readCheckboxState(page)).toBe(uncheckedState);
+        await expect(cell).toBeFocused();
+        await expectNoOtherEditor(page);
+
+        await page.keyboard.press('Space');
+        await expect.poll(() => readCheckboxState(page)).toBe(checkedState);
+        await page.keyboard.press('Enter');
+        await expect.poll(() => readCheckboxState(page)).toBe(uncheckedState);
+        await expect(cell).toBeFocused();
+        await expectNoOtherEditor(page);
+    });
+
     test('Tab -> click input toggles and keeps the checkbox editor open', async ({ page }) => {
         await openInventoryTestPage(page);
 

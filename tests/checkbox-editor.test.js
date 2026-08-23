@@ -358,7 +358,10 @@ describe('checkbox editor keyboard behavior', () => {
         expect(editor._ambEditorType).toBe('checkbox');
         expect(editor._ambCheckboxConfig).toEqual({
             checkedValue: 'Y',
-            uncheckedValue: 'N'
+            uncheckedValue: 'N',
+            toggleKeys: [' '],
+            checkedKeys: ['1', 'y', 'Y', 's', 'S'],
+            uncheckedKeys: ['0', 'n', 'N']
         });
     });
 });

@@ -249,6 +249,85 @@ describe('AMB checkbox column cell toggle', () => {
         expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
     });
 
+    test.each(['1', 'y', 'Y', 's', 'S'])('focused checkbox cell handles checked key %s', key => {
+        const [column] = prepareCheckboxColumns([
+            {
+                field: 'requiresInspection',
+                editor: createCheckboxEditor()
+            }
+        ]);
+        const cell = createCell({ value: false });
+        const cellElement = cell.getElement();
+
+        column.cellMouseDown(createMouseEvent(), cell);
+        cell.setValue.mockClear();
+
+        const keydownHandler = cellElement.addEventListener.mock.calls
+            .find(([eventName]) => eventName === 'keydown')[1];
+        const event = createKeyEvent(key);
+
+        keydownHandler(event);
+
+        expect(cell.setValue).toHaveBeenCalledWith(true, true);
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+    });
+
+    test.each(['0', 'n', 'N'])('focused checkbox cell handles unchecked key %s', key => {
+        const [column] = prepareCheckboxColumns([
+            {
+                field: 'requiresInspection',
+                editor: createCheckboxEditor()
+            }
+        ]);
+        const cell = createCell({ value: true });
+        const cellElement = cell.getElement();
+
+        column.cellMouseDown(createMouseEvent(), cell);
+        cell.setValue.mockClear();
+
+        const keydownHandler = cellElement.addEventListener.mock.calls
+            .find(([eventName]) => eventName === 'keydown')[1];
+        const event = createKeyEvent(key);
+
+        keydownHandler(event);
+
+        expect(cell.setValue).toHaveBeenCalledWith(false, true);
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+    });
+
+    test('focused checkbox cell honors custom key lists', () => {
+        const [column] = prepareCheckboxColumns([
+            {
+                field: 'requiresInspection',
+                editor: createCheckboxEditor({
+                    checkedKeys: ['+'],
+                    uncheckedKeys: ['-'],
+                    toggleKeys: ['x']
+                })
+            }
+        ]);
+        const cell = createCell({ value: false });
+        const cellElement = cell.getElement();
+
+        column.cellMouseDown(createMouseEvent(), cell);
+        cell.setValue.mockClear();
+
+        const keydownHandler = cellElement.addEventListener.mock.calls
+            .find(([eventName]) => eventName === 'keydown')[1];
+
+        keydownHandler(createKeyEvent('+'));
+        keydownHandler(createKeyEvent('-'));
+        keydownHandler(createKeyEvent('x'));
+
+        expect(cell.setValue).toHaveBeenNthCalledWith(1, true, true);
+        expect(cell.setValue).toHaveBeenNthCalledWith(2, false, true);
+        expect(cell.setValue).toHaveBeenNthCalledWith(3, true, true);
+    });
+
     test('does not toggle deleted rows', () => {
         const [column] = prepareCheckboxColumns(
             [
