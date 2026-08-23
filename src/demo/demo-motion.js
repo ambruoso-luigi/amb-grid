@@ -116,4 +116,18 @@ export const initDemoMotion = (root = document) => {
         duration: 0.32,
         offset: 6
     });
+
+    revealWhenVisible(root, '.demo-next-step', '.demo-next-step__content, .demo-next-step__actions', {
+        amount: 0.2,
+        delay: stagger(0.05),
+        duration: 0.3,
+        offset: 9
+    });
+
+    revealWhenVisible(root, '.demo-footer', '.demo-footer__brand, .demo-footer__links, .demo-footer__meta', {
+        amount: 0.2,
+        delay: stagger(0.035),
+        duration: 0.3,
+        offset: 6
+    });
 };

@@ -1,5 +1,6 @@
 import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon } from './demo-icons.js';
+import { renderDemoFooter } from './demo-footer.js';
 
 export default function gettingStartedJavaScript(app) {
     app.innerHTML = `
@@ -261,6 +262,8 @@ export default function gettingStartedJavaScript(app) {
                     </article>
                 </div>
             </section>
+
+            ${renderDemoFooter({ demoHref: '#javascript-demo' })}
 
         </main>
     `;

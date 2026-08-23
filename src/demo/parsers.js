@@ -65,7 +65,7 @@ const parserRowCopy = {
         time: ['Ora', 'Ora normalizzata nel formato HH:MM:SS.'],
         boolean: ['Booleano', 'Booleano applicativo convertito nel valore backend configurato.'],
         emptyToNull: ['Vuoto a null', 'Un input di soli spazi diventa un vero valore null.'],
-        custom: ['Personalizzato', 'Parser applicativo personalizzato per una regola business.']
+        custom: ['Personalizzato', 'Regola applicativa personalizzata che converte una priorità business nel valore previsto dal payload.']
     },
     en: {
         decimal: ['Decimal', 'Visual decimal to payload decimal string.'],
@@ -76,7 +76,7 @@ const parserRowCopy = {
         time: ['Time', 'Time normalized to HH:MM:SS.'],
         boolean: ['Boolean', 'Application boolean converted to a configured backend value.'],
         emptyToNull: ['Empty to null', 'Whitespace-only input becomes a real null value.'],
-        custom: ['Custom', 'Application-defined parser for a business-specific rule.']
+        custom: ['Custom', 'Application-defined rule that converts a business priority into the value expected by the payload.']
     }
 };
 
@@ -139,7 +139,9 @@ export default function parsers(app) {
             points: [
                 { title: 'Normalization', titleKey: 'examples.parsers.point1Title', description: 'Each row applies one public AMB parser to the edited Input value.', descriptionKey: 'examples.parsers.detail1' },
                 { title: 'Payload shape', titleKey: 'examples.parsers.point2Title', description: 'Parsed value shows the predictable representation intended for application payloads.', descriptionKey: 'examples.parsers.detail2' },
-                { title: 'Separate validation', titleKey: 'examples.parsers.point3Title', description: 'A parser transforms syntax; validation and business rules still decide whether data is acceptable.', descriptionKey: 'examples.parsers.detail3' }
+                { title: 'Separate validation', titleKey: 'examples.parsers.point3Title', description: 'A parser transforms syntax; validation and business rules still decide whether data is acceptable.', descriptionKey: 'examples.parsers.detail3' },
+                { title: 'Built-in parsers', titleKey: 'examples.parsers.point4Title', description: 'AMB Grid provides ready-to-use parsers for common payload transformations such as numbers, dates, times, booleans and null values. Their options can be configured for the application contract.', descriptionKey: 'examples.parsers.detail4' },
+                { title: 'Custom parsers', titleKey: 'examples.parsers.point5Title', description: 'When a business rule needs a specific transformation, AMB.parsers.custom(parseFn) lets the application define its own reusable parsing logic.', descriptionKey: 'examples.parsers.detail5' }
             ],
             columns: [
                 { title: 'Type', titleKey: 'guides.parsers.type.title', badge: 'PARSER', description: 'Identifies the transformation and its public parser.', descriptionKey: 'guides.parsers.type.description' },

@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
+import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
 
 const minDate = '2025-01-01';
 const maxDate = '2027-12-31';
@@ -201,6 +202,11 @@ export default function dates(app) {
     });
 
     const reportDialog = createDemoReportDialog();
+    const stopDecoratingDateButtons = decorateDemoEditorButtons(app.querySelector('#dates-table'), {
+        selector: '.amb-date-editor-picker-button',
+        icon: 'date',
+        label: 'Open calendar'
+    });
     const validateButton = app.querySelector('[data-action="validate"]');
     const validateLabel = validateButton && validateButton.querySelector('.amb-toolbar__button-label');
     const originalDestroy = demo.destroy.bind(demo);
@@ -214,6 +220,7 @@ export default function dates(app) {
 
     demo.destroy = () => {
         reportDialog.destroy();
+        stopDecoratingDateButtons();
         originalDestroy();
     };
 

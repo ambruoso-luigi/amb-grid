@@ -18,6 +18,7 @@ import { demoIcon, frameworkIcon } from './demo-icons.js';
 import { initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
+import { renderDemoFooter } from './demo-footer.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -131,7 +132,22 @@ const translations = {
         'guide.openMainDemo': 'Torna alla demo',
         'guide.openExamples': 'Vedi esempi funzionali',
         'guide.videoLabel': 'Video demo — placeholder',
-        'guide.videoOpen': 'Apri il video demo placeholder su YouTube'
+        'guide.videoOpen': 'Apri il video demo placeholder su YouTube',
+        'footer.cta.kicker': 'Prossimo passo',
+        'footer.cta.title': 'Porta AMB Grid nel tuo progetto',
+        'footer.cta.description': 'Esplora la guida JavaScript, prova gli esempi funzionali oppure consulta il progetto su GitHub.',
+        'footer.cta.guide': 'Guida JavaScript',
+        'footer.cta.examples': 'Vedi esempi',
+        'footer.cta.github': 'GitHub',
+        'footer.tagline': 'Libreria CRUD framework-agnostic per applicazioni business.',
+        'footer.project': 'Progetto open source',
+        'footer.demo': 'Demo principale',
+        'footer.examples': 'Esempi funzionali',
+        'footer.guide': 'Guida JavaScript',
+        'footer.github': 'GitHub',
+        'footer.issues': 'Issues / Feedback',
+        'footer.license': 'Apache 2.0',
+        'footer.maintainer': 'Creato e mantenuto da Luigi Ambruoso'
     },
     en: {
         ...publicExampleTranslations.en,
@@ -230,7 +246,22 @@ const translations = {
         'guide.openMainDemo': 'Back to demo',
         'guide.openExamples': 'View feature examples',
         'guide.videoLabel': 'Demo video — placeholder',
-        'guide.videoOpen': 'Open the placeholder demo video on YouTube'
+        'guide.videoOpen': 'Open the placeholder demo video on YouTube',
+        'footer.cta.kicker': 'Next step',
+        'footer.cta.title': 'Bring AMB Grid into your project',
+        'footer.cta.description': 'Explore the JavaScript guide, try the feature examples, or follow the project on GitHub.',
+        'footer.cta.guide': 'JavaScript guide',
+        'footer.cta.examples': 'View examples',
+        'footer.cta.github': 'GitHub',
+        'footer.tagline': 'Framework-agnostic CRUD grid library for business applications.',
+        'footer.project': 'Open-source project',
+        'footer.demo': 'Main demo',
+        'footer.examples': 'Feature examples',
+        'footer.guide': 'JavaScript guide',
+        'footer.github': 'GitHub',
+        'footer.issues': 'Issues / Feedback',
+        'footer.license': 'Apache 2.0',
+        'footer.maintainer': 'Created and maintained by Luigi Ambruoso'
     }
 };
 
@@ -522,6 +553,8 @@ const renderShell = selectedId => {
                 </div>
                 <section id="feature-example" class="demo-example demo-panel"></section>
             </section>
+
+            ${renderDemoFooter()}
 
         </main>
     `;
