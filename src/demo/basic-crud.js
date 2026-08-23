@@ -56,13 +56,8 @@ export default function basicCrud(app) {
         ${createDemoColumnGuide({
             summary: 'Basic CRUD behavior',
             summaryKey: 'examples.basicCrud.detailsTitle',
-            points: [
-                { title: 'Add and edit', titleKey: 'examples.basicCrud.point1Title', description: 'Add Row creates a local row. Editing an existing row marks it as modified.', descriptionKey: 'examples.basicCrud.detail1' },
-                { title: 'Row states', titleKey: 'examples.basicCrud.point2Title', description: 'The State column shows which records are new, modified, deleted, or saved.', descriptionKey: 'examples.basicCrud.detail2' },
-                { title: 'Delete and rollback', titleKey: 'examples.basicCrud.point3Title', description: 'Existing rows are marked for deletion; unsaved new rows can be removed directly.', descriptionKey: 'examples.basicCrud.detail3' },
-                { title: 'Payload', titleKey: 'examples.basicCrud.point4Title', description: 'Show payload separates inserted, updated, and deleted records.', descriptionKey: 'examples.basicCrud.detail4' },
-                { title: 'Validate and save', titleKey: 'examples.basicCrud.point5Title', description: 'Save validates current changes and realigns valid row states after application confirmation.', descriptionKey: 'examples.basicCrud.detail5' }
-            ],
+            intro: 'Basic CRUD demonstrates the essential row lifecycle: editing existing records, adding new rows, validation, deletion or rollback, and generation of the save payload.',
+            introKey: 'examples.basicCrud.intro',
             columns: [
                 { title: 'ID', titleKey: 'guides.basic.id.title', badge: 'PERSISTENT', description: 'Persistent identifier assigned to a saved note.', descriptionKey: 'guides.basic.id.description' },
                 { title: 'Temp ID', titleKey: 'guides.basic.tempId.title', badge: 'TEMP', description: 'Temporary identifier used by a new row before it is saved.', descriptionKey: 'guides.basic.tempId.description' },

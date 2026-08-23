@@ -48,7 +48,7 @@ export const demoColumnGuideTranslations = {
         'guides.autocomplete.city.description': 'Suggerisce al massimo cinque città compatibili e accetta testo personalizzato.',
 
         'guides.multifield.municipality.title': 'Comune',
-        'guides.multifield.municipality.description': 'Campo master azionabile: fai clic per aprire il lookup dei Comuni.',
+        'guides.multifield.municipality.description': 'Campo master modificabile: digita per usare l’autocomplete oppure usa il pulsante di ricerca per aprire il lookup completo.',
         'guides.multifield.province.title': 'Provincia',
         'guides.multifield.province.description': 'Valore readonly compilato automaticamente dal Comune selezionato.',
         'guides.multifield.region.title': 'Regione',
@@ -180,7 +180,7 @@ export const demoColumnGuideTranslations = {
         'guides.autocomplete.city.description': 'Suggests at most five matching cities and accepts custom text.',
 
         'guides.multifield.municipality.title': 'Municipality',
-        'guides.multifield.municipality.description': 'Actionable master field: click it to open the municipality lookup.',
+        'guides.multifield.municipality.description': 'Editable master field: type for autocomplete or use the search button to open the complete lookup.',
         'guides.multifield.province.title': 'Province',
         'guides.multifield.province.description': 'Readonly value filled automatically from the selected municipality.',
         'guides.multifield.region.title': 'Region',

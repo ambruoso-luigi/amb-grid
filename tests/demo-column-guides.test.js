@@ -38,6 +38,7 @@ describe('Public demo column guides', () => {
         expect(markup).toContain('class="demo-column-guide"');
         expect(markup).toContain('class="demo-column-guide__item"');
         expect(markup).toContain('class="demo-column-guide__title"');
+        expect(markup).not.toContain('data-i18n="guide.name"');
         expect(markup).toContain('class="demo-column-guide__badge"');
         expect(markup).toContain('class="demo-column-guide__description"');
     });
@@ -105,7 +106,7 @@ describe('Public demo column guides', () => {
         expect(validationGuide).toContain("className: 'demo-column-guide--validation'");
         expect(validationGuide.match(/badge: '/g)).toHaveLength(8);
         expect(multifield).toContain("badge: 'MASTER'");
-        expect(multifield).toContain('Actionable master field: click it to open the municipality lookup.');
+        expect(multifield).toContain('Editable master field: type for autocomplete or use the search button to open the complete lookup.');
         expect(multifield).toContain('Derived field, hidden in the lookup and filled after selection.');
         expect(multifieldConfig).toContain("{ field: 'cadastralCode', title: 'Cadastral Code', visible: false }");
         expect(fullDemo).toContain('matching PRD-A001 format and unique ignoring case.');

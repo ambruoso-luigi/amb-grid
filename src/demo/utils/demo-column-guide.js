@@ -29,7 +29,6 @@ const renderColumns = (columns, className = '') => `
         ${columns.map(column => `<li class="demo-column-guide__item">
             ${renderTranslatedText({
                 tag: 'strong',
-                key: column.titleKey,
                 text: column.title,
                 className: 'demo-column-guide__title'
             })}

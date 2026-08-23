@@ -3006,6 +3006,29 @@ a {
     color: var(--demo-muted);
 }
 
+#municipality-table .amb-lookup-editor__button {
+    align-items: center;
+    background: var(--amb-site-surface-soft);
+    border: 1px solid var(--amb-site-border-strong);
+    border-radius: 7px;
+    box-shadow: 0 1px 2px rgb(16 35 63 / 8%);
+    color: var(--amb-site-blue-strong);
+    display: inline-flex;
+    justify-content: center;
+    transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+#municipality-table .amb-lookup-editor__button:hover {
+    background: var(--amb-site-blue-soft);
+    border-color: var(--amb-site-blue);
+}
+
+#municipality-table .amb-lookup-editor__button:focus-visible {
+    border-color: var(--amb-site-blue);
+    box-shadow: var(--amb-site-ring);
+    outline: none;
+}
+
 .demo-panel .tabulator-cell .amb-checkbox-editor__input {
     accent-color: var(--amb-site-blue-strong);
     height: 15px;
