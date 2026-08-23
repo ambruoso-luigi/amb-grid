@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import {
-    MUNICIPALITY_LOOKUP_COLUMNS
+    MUNICIPALITY_LOOKUP_COLUMNS,
+    MUNICIPALITY_MAP_TO_ROW
 } from './multifield-lookup-config.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
@@ -9,6 +10,25 @@ const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.me
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
     + 'It may be incomplete, outdated, or inaccurate. '
     + 'Do not use it as an official source for production systems.';
+
+const filterMunicipalities = (records, query) => {
+    const normalizedQuery = String(query || '').trim().toLowerCase();
+
+    if (!normalizedQuery) return records;
+
+    return records.filter(record => {
+        return [
+            record.municipalityName,
+            record.province,
+            record.region,
+            record.postalCode,
+            record.istatCode,
+            record.cadastralCode
+        ].some(value => {
+            return String(value || '').toLowerCase().includes(normalizedQuery);
+        });
+    });
+};
 const createInitialData = () => [
     {
         id: 1,
@@ -141,9 +161,10 @@ const loadMunicipalities = async () => {
 
 export default async function multifieldLookup(app) {
     app.innerHTML = `
-        <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
-        <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Municipality is the editable master field. Type to use autocomplete or use the search button to open the complete lookup.</p>
-        ${createDemoColumnGuide({
+        <div class="demo-multifield-lookup">
+            <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
+            <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Municipality is the editable master field. Type to use autocomplete or use the search button to open the complete lookup.</p>
+            ${createDemoColumnGuide({
             summary: 'Multifield lookup behavior',
             summaryKey: 'examples.multifieldLookup.detailsTitle',
             points: [
@@ -161,10 +182,11 @@ export default async function multifieldLookup(app) {
                 { title: 'ISTAT Code', titleKey: 'guides.multifield.istatCode.title', badge: 'DERIVED', description: 'Readonly ISTAT identifier supplied by the selected record.', descriptionKey: 'guides.multifield.istatCode.description' },
                 { title: 'Cadastral Code', titleKey: 'guides.multifield.cadastralCode.title', badge: 'DERIVED', description: 'Derived field, hidden in the lookup and filled after selection.', descriptionKey: 'guides.multifield.cadastralCode.description' }
             ]
-        })}
-        <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
-        <div class="demo-table-workbench">
-            <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
+            })}
+            <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
+            <div class="demo-table-workbench">
+                <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
+            </div>
         </div>
     `;
 
@@ -180,26 +202,14 @@ export default async function multifieldLookup(app) {
 
     const municipalityLookup = AMB.lookup({
         keyField: 'istatCode',
-        valueField: 'istatCode',
+        valueField: 'municipalityName',
         labelField: 'municipalityName',
         columns: MUNICIPALITY_LOOKUP_COLUMNS,
         search: {
             fields: 'visible'
         },
-        load: ({ query = '' } = {}) => {
-            const normalizedQuery = String(query).trim().toLowerCase();
-
-            if (!normalizedQuery) return municipalities;
-
-            return municipalities.filter(record => {
-                return [
-                    record.municipalityName,
-                    record.province,
-                    record.region,
-                    record.postalCode
-                ].some(value => String(value ?? '').toLowerCase().includes(normalizedQuery));
-            });
-        }
+        mapToRow: MUNICIPALITY_MAP_TO_ROW,
+        load: ({ query }) => filterMunicipalities(municipalities, query)
     });
     const municipalityDialog = new AMB.LookupDialog();
     const municipalityMultifieldLookup = AMB.multifieldLookup({
