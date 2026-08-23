@@ -5,6 +5,7 @@ import {
 } from './multifield-lookup-config.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { demoIcon } from './demo-icons.js';
 
 const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.meta.url);
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
@@ -28,6 +29,28 @@ const filterMunicipalities = (records, query) => {
             return String(value || '').toLowerCase().includes(normalizedQuery);
         });
     });
+};
+
+const decorateMunicipalityLookupButtons = tableMount => {
+    const decorate = () => {
+        tableMount.querySelectorAll('.amb-lookup-editor__button').forEach(button => {
+            if (button.dataset.demoLookupDecorated) return;
+
+            button.dataset.demoLookupDecorated = 'true';
+            button.setAttribute('aria-label', 'Open complete municipality lookup');
+            button.innerHTML = `${demoIcon('lookup', { size: 17 })}<span class="demo-visually-hidden">Search</span>`;
+        });
+    };
+
+    decorate();
+
+    if (typeof MutationObserver !== 'function') return () => {};
+
+    const observer = new MutationObserver(decorate);
+
+    observer.observe(tableMount, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
 };
 const createInitialData = () => [
     {
@@ -339,6 +362,7 @@ export default async function multifieldLookup(app) {
             })
         ]
     });
+    const stopDecoratingLookupButtons = decorateMunicipalityLookupButtons(tableMount);
 
     function handleAddRow() {
         grid.feedback.clear();
@@ -366,6 +390,7 @@ export default async function multifieldLookup(app) {
         ...grid,
         destroy() {
             reportDialog.destroy();
+            stopDecoratingLookupButtons();
 
             municipalityDialog.destroy();
 

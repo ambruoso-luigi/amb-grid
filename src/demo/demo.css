@@ -3029,6 +3029,16 @@ a {
     outline: none;
 }
 
+.demo-multifield-lookup .demo-visually-hidden {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
 .demo-panel .tabulator-cell .amb-checkbox-editor__input {
     accent-color: var(--amb-site-blue-strong);
     height: 15px;
@@ -3410,8 +3420,29 @@ a {
     color: #e8f1ec;
     font-family: Consolas, "Courier New", monospace;
     font-size: 12px;
-    line-height: 1.45;
+    line-height: 1.6;
     max-height: min(480px, calc(100vh - 220px));
+}
+
+.demo-report-dialog__json .demo-json-key {
+    color: #8bd5ff;
+}
+
+.demo-report-dialog__json .demo-json-string {
+    color: #a9d6a5;
+}
+
+.demo-report-dialog__json .demo-json-number {
+    color: #d7b7f4;
+}
+
+.demo-report-dialog__json .demo-json-boolean,
+.demo-report-dialog__json .demo-json-null {
+    color: #b9a7ee;
+}
+
+.demo-report-dialog__json .demo-json-punctuation {
+    color: #aab8c8;
 }
 
 .demo-report-dialog__actions {

@@ -12,6 +12,95 @@ const normalizeReportText = ({ reportText, reportLines }) => {
         : String(reportText);
 };
 
+const escapeHtml = value => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const highlightJson = serialized => {
+    const source = String(serialized ?? '');
+    const tokens = [];
+    let index = 0;
+
+    const addToken = (className, value) => {
+        tokens.push(`<span class="${className}">${escapeHtml(value)}</span>`);
+    };
+
+    while (index < source.length) {
+        const character = source[index];
+
+        if (/\s/.test(character)) {
+            let end = index + 1;
+
+            while (end < source.length && /\s/.test(source[end])) end += 1;
+
+            tokens.push(escapeHtml(source.slice(index, end)));
+            index = end;
+            continue;
+        }
+
+        if (character === '"') {
+            let end = index + 1;
+            let escaped = false;
+
+            while (end < source.length) {
+                const current = source[end];
+
+                if (current === '"' && !escaped) {
+                    end += 1;
+                    break;
+                }
+
+                escaped = current === '\\' && !escaped;
+
+                if (current !== '\\') escaped = false;
+                end += 1;
+            }
+
+            let lookahead = end;
+
+            while (/\s/.test(source[lookahead] || '')) lookahead += 1;
+
+            addToken(source[lookahead] === ':' ? 'demo-json-key' : 'demo-json-string', source.slice(index, end));
+            index = end;
+            continue;
+        }
+
+        if (/[{}\[\],:]/.test(character)) {
+            addToken('demo-json-punctuation', character);
+            index += 1;
+            continue;
+        }
+
+        const number = source.slice(index).match(/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
+
+        if (number) {
+            addToken('demo-json-number', number[0]);
+            index += number[0].length;
+            continue;
+        }
+
+        const literal = source.slice(index).match(/^(?:true|false|null)/);
+
+        if (literal) {
+            const className = literal[0] === 'null'
+                ? 'demo-json-null'
+                : 'demo-json-boolean';
+
+            addToken(className, literal[0]);
+            index += literal[0].length;
+            continue;
+        }
+
+        tokens.push(escapeHtml(character));
+        index += 1;
+    }
+
+    return tokens.join('');
+};
+
 export const createDemoReportDialog = () => {
     const dialogId = nextDialogId;
     const titleId = `demo-report-dialog-title-${dialogId}`;
@@ -131,7 +220,9 @@ export const createDemoReportDialog = () => {
             previouslyFocusedElement = document.activeElement;
             title.textContent = dialogTitle;
             report.textContent = normalizeReportText({ reportText, reportLines });
-            json.textContent = JSON.stringify(jsonData, null, 2);
+            const serializedJson = JSON.stringify(jsonData, null, 2);
+
+            json.innerHTML = highlightJson(serializedJson === undefined ? 'null' : serializedJson);
             setView('report');
             overlay.hidden = false;
             document.removeEventListener('keydown', handleKeyDown);

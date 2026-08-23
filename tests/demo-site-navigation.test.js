@@ -4,6 +4,12 @@ import { describe, expect, test } from 'vitest';
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
 describe('demo site navigation', () => {
+    test('keeps public demo copy free of mojibake markers', () => {
+        const exampleCopySource = read('src/demo/example-copy.js');
+
+        expect(exampleCopySource).not.toMatch(/Ãƒ|Ã‚|Ã¢â‚¬|ï¿½/);
+    });
+
     test('links the JavaScript framework card to the internal JavaScript page', () => {
         const main = read('src/demo/main.js');
 
