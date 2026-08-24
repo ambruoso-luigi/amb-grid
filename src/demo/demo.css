@@ -718,6 +718,131 @@ a {
     grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.demo-cycle-detail {
+    border-top: 1px solid rgb(145 168 191 / 46%);
+    margin-top: 24px;
+    overflow: hidden;
+    padding: 28px 4px 4px;
+}
+
+.demo-cycle-detail__content {
+    max-width: 1120px;
+}
+
+.demo-cycle-detail h3 {
+    color: var(--amb-site-navy);
+    font-size: clamp(22px, 2.4vw, 30px);
+    line-height: 1.15;
+    margin: 0 0 9px;
+}
+
+.demo-cycle-detail__intro,
+.demo-cycle-detail__groups p,
+.demo-cycle-detail__text-stack p {
+    color: #465d76;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.demo-cycle-detail__intro {
+    margin-bottom: 24px;
+    max-width: 820px;
+}
+
+.demo-cycle-detail__groups {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.demo-cycle-detail__groups h4 {
+    color: var(--amb-site-navy);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    margin: 0 0 7px;
+}
+
+.demo-cycle-detail__keycaps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.demo-cycle-detail kbd {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-bottom-color: #b4c0cf;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 #e2e8f0;
+    color: #334155;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1;
+    padding: 5px 7px;
+    white-space: nowrap;
+}
+
+.demo-cycle-detail__group-with-icon {
+    align-items: start;
+    display: flex;
+    gap: 9px;
+}
+
+.demo-cycle-detail__icon {
+    color: var(--amb-site-blue-strong);
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.demo-cycle-detail__payload-flow {
+    align-items: center;
+    color: var(--amb-site-slate);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    justify-content: center;
+    margin: 4px 0 24px;
+    text-align: center;
+}
+
+.demo-cycle-detail__payload-states {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.demo-cycle-detail__payload-states span,
+.demo-cycle-detail__payload-flow > span:last-child {
+    background: #f8fafc;
+    border: 1px solid #d5dee9;
+    border-radius: 4px;
+    color: #334155;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 12px;
+    padding: 7px 9px;
+}
+
+.demo-cycle-detail__payload-arrow {
+    color: var(--amb-site-blue);
+    font-size: 18px;
+}
+
+.demo-cycle-detail__payload-flow strong {
+    color: var(--amb-site-navy);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 13px;
+}
+
+.demo-cycle-detail__text-stack {
+    display: grid;
+    gap: 8px;
+    margin: 0 auto;
+    max-width: 820px;
+    text-align: center;
+}
+
 .demo-flow-card {
     --flow-accent: var(--amb-site-blue);
     align-content: start;
@@ -730,6 +855,7 @@ a {
     box-shadow:
         0 1px 0 rgb(255 255 255 / 82%) inset,
         0 14px 32px rgb(16 35 63 / 8%);
+    cursor: pointer;
     display: grid;
     gap: 14px;
     min-height: 184px;
@@ -770,6 +896,11 @@ a {
         0 1px 0 rgb(255 255 255 / 84%) inset,
         0 18px 40px rgb(16 35 63 / 12%);
     transform: translateY(-2px);
+}
+
+.demo-flow-card:focus-visible {
+    box-shadow: 0 0 0 3px rgb(29 95 153 / 20%), var(--amb-site-shadow-sm);
+    outline: 1px solid var(--amb-site-blue);
 }
 
 .demo-flow-card:hover::after {
@@ -3609,6 +3740,10 @@ a {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
+    .demo-cycle-detail__groups {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .demo-feature-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -3755,6 +3890,20 @@ a {
 
     .demo-flow-grid {
         grid-template-columns: 1fr;
+    }
+
+    .demo-cycle-detail {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .demo-cycle-detail__groups {
+        grid-template-columns: 1fr;
+    }
+
+    .demo-cycle-detail__payload-flow {
+        justify-content: flex-start;
+        text-align: left;
     }
 
     .demo-feature-grid,

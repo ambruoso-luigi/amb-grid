@@ -427,9 +427,9 @@ describe('demo site navigation', () => {
 
         expect(css).toContain('width: min(100% - 12px, 1824px);');
         expect(main).toContain("'cycle.keyboardTitle': 'Editing orientato alla tastiera'");
-        expect(main).toContain("'cycle.keyboardText': 'Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.'");
+        expect(main).toContain("'cycle.keyboardText': 'Navigazione Tab/Shift+Tab, editing senza mouse, checkbox da tastiera e lookup rapidi anche tramite codice.'");
         expect(main).toContain("'cycle.keyboardTitle': 'Work without leaving the keyboard'");
-        expect(main).toContain("'cycle.keyboardText': 'AMB Grid is designed for fast backoffice-style data entry: type, confirm with Tab and move to the next cell.'");
+        expect(main).toContain("'cycle.keyboardText': 'Tab/Shift+Tab navigation, mouse-free editing, keyboard checkboxes and fast lookup entry by code.'");
         expect(main).toContain('data-i18n="cycle.keyboardTitle"');
         expect(main).toContain('data-i18n="cycle.keyboardText"');
     });

@@ -49,6 +49,29 @@ const revealWhenVisible = (root, containerSelector, itemSelector, options = {}) 
     );
 };
 
+export const animateCycleDetail = (element, phase = 'open') => {
+    if (!element || prefersReducedMotion()) {
+        if (element) {
+            element.style.opacity = phase === 'close' ? '0' : '1';
+            element.style.transform = 'translateY(0)';
+        }
+
+        return Promise.resolve();
+    }
+
+    const keyframes = phase === 'close'
+        ? { opacity: [1, 0], y: [0, 6] }
+        : phase === 'content'
+            ? { opacity: [0.35, 1] }
+            : { opacity: [0, 1], y: [8, 0] };
+    const animation = animate(element, keyframes, {
+        duration: phase === 'content' ? 0.18 : phase === 'close' ? 0.2 : 0.24,
+        ease: 'ease-out'
+    });
+
+    return animation.finished;
+};
+
 export const initDemoMotion = (root = document) => {
     if (prefersReducedMotion()) return;
 

@@ -15,7 +15,7 @@ import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon, frameworkIcon } from './demo-icons.js';
-import { initDemoMotion } from './demo-motion.js';
+import { animateCycleDetail, initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
 import { renderDemoFooter } from './demo-footer.js';
@@ -77,15 +77,57 @@ const translations = {
         'cycle.title': 'CRUD, validazione e payload nello stesso ciclo',
         'cycle.description': 'AMB Grid coordina editing, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
         'cycle.editTitle': 'Edit',
-        'cycle.editText': 'Le celle editabili aggiornano i dati senza nascondere gli stati riga.',
+        'cycle.editText': 'Le celle editabili aggiornano lo stato della riga senza interrompere il flusso CRUD.',
         'cycle.keyboardTitle': 'Editing orientato alla tastiera',
-        'cycle.keyboardText': 'Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.',
+        'cycle.keyboardText': 'Navigazione Tab/Shift+Tab, editing senza mouse, checkbox da tastiera e lookup rapidi anche tramite codice.',
         'cycle.validateTitle': 'Validate',
-        'cycle.validateText': 'Validatori e parser separano qualità del dato e normalizzazione payload.',
+        'cycle.validateText': 'Validatori e parser separano qualità del dato e trasformazione del payload.',
         'cycle.payloadTitle': 'Payload',
-        'cycle.payloadText': 'Le modifiche diventano JSON leggibile e pronto per una API applicativa.',
+        'cycle.payloadText': 'Le modifiche diventano un payload leggibile e pronto per il backend.',
         'cycle.alignTitle': 'Align',
-        'cycle.alignText': 'Dopo il salvataggio, ID backend e stati possono essere riallineati.',
+        'cycle.alignText': 'Dopo il salvataggio, dati applicativi e stato locale possono riallinearsi.',
+        'cycle.detail.edit.title': 'Editing pensato per dati gestionali',
+        'cycle.detail.edit.intro': 'Gli editor lavorano direttamente sulle celle mantenendo visibili stato della riga, validazione e comportamento CRUD.',
+        'cycle.detail.edit.group1Title': 'Editor dedicati',
+        'cycle.detail.edit.group1Text': 'Testo, numeri, date, checkbox e lookup possono usare editor adatti al tipo di dato.',
+        'cycle.detail.edit.group2Title': 'Modifica immediata',
+        'cycle.detail.edit.group2Text': 'Una modifica reale aggiorna lo stato della riga senza richiedere form separati.',
+        'cycle.detail.edit.group3Title': 'Rollback',
+        'cycle.detail.edit.group3Text': 'Le modifiche possono essere annullate riportando la riga ai valori originali.',
+        'cycle.detail.keyboard.title': 'Editing orientato alla tastiera',
+        'cycle.detail.keyboard.intro': 'Il flusso è pensato per inserimento rapido dei dati e uso frequente della tastiera, riducendo la necessità del mouse.',
+        'cycle.detail.keyboard.tab': 'Tab',
+        'cycle.detail.keyboard.shiftTab': 'Shift+Tab',
+        'cycle.detail.keyboard.space': 'Space',
+        'cycle.detail.keyboard.enter': 'Enter',
+        'cycle.detail.keyboard.group1Text': 'Navigano tra le celle editabili e proseguono automaticamente tra le righe.',
+        'cycle.detail.keyboard.group2Text': 'Space e Invio effettuano il toggle; 0 e 1 impostano direttamente off/on senza usare il mouse.',
+        'cycle.detail.keyboard.group3Text': 'Se conosci il codice puoi iniziare a digitarlo direttamente: lookup e autocomplete aiutano a completare o validare il valore senza interrompere il flusso di editing.',
+        'cycle.detail.validate.title': 'Validazione separata dalla trasformazione',
+        'cycle.detail.validate.intro': 'AMB Grid mantiene distinti controllo della qualità del dato e trasformazione del valore destinato al payload.',
+        'cycle.detail.validate.group1Title': 'Validatori',
+        'cycle.detail.validate.group1Text': 'Controllano required, formati, range e altre regole applicative.',
+        'cycle.detail.validate.group2Title': 'Parser',
+        'cycle.detail.validate.group2Text': 'Normalizzano il valore nella forma prevista dal backend senza sostituire la validazione.',
+        'cycle.detail.validate.group3Title': 'Feedback',
+        'cycle.detail.validate.group3Text': 'Gli errori restano associati alla cella e alla riga interessata.',
+        'cycle.detail.payload.title': 'Dal ciclo CRUD al payload',
+        'cycle.detail.payload.intro': 'Il flusso di salvataggio conserva la distinzione tra righe nuove, modificate ed eliminate.',
+        'cycle.detail.payload.flowTitle': 'getSavePayload()',
+        'cycle.detail.payload.flowResult': 'payload pronto per il backend',
+        'cycle.detail.payload.new': 'new',
+        'cycle.detail.payload.modified': 'modified',
+        'cycle.detail.payload.deleted': 'deleted',
+        'cycle.detail.payload.group1Text': 'Il payload distingue le righe inserite, aggiornate ed eliminate e mantiene separate le righe modificate non valide.',
+        'cycle.detail.payload.group2Text': 'L’applicazione può quindi inviare al backend soltanto le modifiche rilevanti.',
+        'cycle.detail.align.title': 'Riallineamento dopo il salvataggio',
+        'cycle.detail.align.intro': 'Dopo la conferma del backend, la griglia può riallineare dati applicativi e stato locale.',
+        'cycle.detail.align.group1Title': 'ID backend',
+        'cycle.detail.align.group1Text': 'Una nuova riga può ricevere l’identificatore definitivo assegnato dal backend.',
+        'cycle.detail.align.group2Title': 'Stati',
+        'cycle.detail.align.group2Text': 'Le righe salvate possono essere riportate allo stato coerente con i dati confermati.',
+        'cycle.detail.align.group3Title': 'Nuovo riferimento',
+        'cycle.detail.align.group3Text': 'I dati restituiti dal backend diventano il nuovo punto di riferimento per modifiche e rollback successivi.',
         'examples.kicker': 'Mini-demo tecniche',
         'examples.title': 'Esempi funzionali',
         'examples.description': 'Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.',
@@ -195,13 +237,55 @@ const translations = {
         'cycle.editTitle': 'Edit',
         'cycle.editText': 'Editable cells update data while row states remain visible.',
         'cycle.keyboardTitle': 'Work without leaving the keyboard',
-        'cycle.keyboardText': 'AMB Grid is designed for fast backoffice-style data entry: type, confirm with Tab and move to the next cell.',
+        'cycle.keyboardText': 'Tab/Shift+Tab navigation, mouse-free editing, keyboard checkboxes and fast lookup entry by code.',
         'cycle.validateTitle': 'Validate',
-        'cycle.validateText': 'Validators and parsers keep data quality and payload normalization separate.',
+        'cycle.validateText': 'Validators and parsers keep data quality checks separate from payload transformation.',
         'cycle.payloadTitle': 'Payload',
-        'cycle.payloadText': 'Changes become readable JSON ready for an application API.',
+        'cycle.payloadText': 'Changes become a readable payload ready for the backend.',
         'cycle.alignTitle': 'Align',
-        'cycle.alignText': 'After save, backend IDs and row states can be synchronized.',
+        'cycle.alignText': 'After saving, application data and local state can be synchronized.',
+        'cycle.detail.edit.title': 'Editing for business data',
+        'cycle.detail.edit.intro': 'Editors work directly on cells while keeping row state, validation, and CRUD behavior visible.',
+        'cycle.detail.edit.group1Title': 'Dedicated editors',
+        'cycle.detail.edit.group1Text': 'Text, numbers, dates, checkboxes, and lookups can use editors suited to the data type.',
+        'cycle.detail.edit.group2Title': 'Immediate editing',
+        'cycle.detail.edit.group2Text': 'A real edit updates row state without requiring separate forms.',
+        'cycle.detail.edit.group3Title': 'Rollback',
+        'cycle.detail.edit.group3Text': 'Changes can be cancelled by restoring the row to its original values.',
+        'cycle.detail.keyboard.title': 'Keyboard-first editing',
+        'cycle.detail.keyboard.intro': 'The workflow is designed for fast data entry and frequent keyboard use, reducing the need for a mouse.',
+        'cycle.detail.keyboard.tab': 'Tab',
+        'cycle.detail.keyboard.shiftTab': 'Shift+Tab',
+        'cycle.detail.keyboard.space': 'Space',
+        'cycle.detail.keyboard.enter': 'Enter',
+        'cycle.detail.keyboard.group1Text': 'They move between editable cells and continue automatically across rows.',
+        'cycle.detail.keyboard.group2Text': 'Space and Enter toggle; 0 and 1 set off/on directly without using the mouse.',
+        'cycle.detail.keyboard.group3Text': 'If you know the code, start typing directly: lookup and autocomplete help complete or validate the value without interrupting the editing flow.',
+        'cycle.detail.validate.title': 'Validation separate from transformation',
+        'cycle.detail.validate.intro': 'AMB Grid keeps data-quality checks distinct from transforming the value destined for the payload.',
+        'cycle.detail.validate.group1Title': 'Validators',
+        'cycle.detail.validate.group1Text': 'They check required fields, formats, ranges, and other application rules.',
+        'cycle.detail.validate.group2Title': 'Parser',
+        'cycle.detail.validate.group2Text': 'They normalize the value into the form expected by the backend without replacing validation.',
+        'cycle.detail.validate.group3Title': 'Feedback',
+        'cycle.detail.validate.group3Text': 'Errors remain associated with the affected cell and row.',
+        'cycle.detail.payload.title': 'From CRUD cycle to payload',
+        'cycle.detail.payload.intro': 'The save flow preserves the distinction between new, modified, and deleted rows.',
+        'cycle.detail.payload.flowTitle': 'getSavePayload()',
+        'cycle.detail.payload.flowResult': 'payload ready for the backend',
+        'cycle.detail.payload.new': 'new',
+        'cycle.detail.payload.modified': 'modified',
+        'cycle.detail.payload.deleted': 'deleted',
+        'cycle.detail.payload.group1Text': 'The payload distinguishes inserted, updated, and deleted rows while keeping invalid modified rows separate.',
+        'cycle.detail.payload.group2Text': 'The application can therefore send only relevant changes to the backend.',
+        'cycle.detail.align.title': 'Realignment after saving',
+        'cycle.detail.align.intro': 'After backend confirmation, the grid can realign application data and local state.',
+        'cycle.detail.align.group1Title': 'Backend ID',
+        'cycle.detail.align.group1Text': 'A new row can receive the definitive identifier assigned by the backend.',
+        'cycle.detail.align.group2Title': 'States',
+        'cycle.detail.align.group2Text': 'Saved rows can be returned to the state consistent with the confirmed data.',
+        'cycle.detail.align.group3Title': 'New reference',
+        'cycle.detail.align.group3Text': 'Data returned by the backend becomes the new reference point for later edits and rollbacks.',
         'examples.kicker': 'Technical mini-demos',
         'examples.title': 'Feature examples',
         'examples.description': 'The existing demos remain available as focused examples for individual AMB Grid capabilities.',
@@ -278,6 +362,89 @@ let featureLoadToken = 0;
 let mainDemoLoadToken = 0;
 
 const getText = key => translations[currentLang][key] || translations.it[key] || key;
+
+const cycleDetailBodies = {
+    edit: `
+        <div class="demo-cycle-detail__groups">
+            <div>
+                <h4 data-i18n="cycle.detail.edit.group1Title">Editor dedicati</h4>
+                <p data-i18n="cycle.detail.edit.group1Text">Testo, numeri, date, checkbox e lookup possono usare editor adatti al tipo di dato.</p>
+            </div>
+            <div>
+                <h4 data-i18n="cycle.detail.edit.group2Title">Modifica immediata</h4>
+                <p data-i18n="cycle.detail.edit.group2Text">Una modifica reale aggiorna lo stato della riga senza richiedere form separati.</p>
+            </div>
+            <div>
+                <h4 data-i18n="cycle.detail.edit.group3Title">Rollback</h4>
+                <p data-i18n="cycle.detail.edit.group3Text">Le modifiche possono essere annullate riportando la riga ai valori originali.</p>
+            </div>
+        </div>`,
+    keyboard: `
+        <div class="demo-cycle-detail__groups demo-cycle-detail__groups--keyboard">
+            <div>
+                <div class="demo-cycle-detail__keycaps"><kbd data-i18n="cycle.detail.keyboard.tab">Tab</kbd><kbd data-i18n="cycle.detail.keyboard.shiftTab">Shift+Tab</kbd></div>
+                <p data-i18n="cycle.detail.keyboard.group1Text">Navigano tra le celle editabili e proseguono automaticamente tra le righe.</p>
+            </div>
+            <div>
+                <div class="demo-cycle-detail__keycaps"><kbd data-i18n="cycle.detail.keyboard.space">Space</kbd><kbd data-i18n="cycle.detail.keyboard.enter">Enter</kbd><kbd>0</kbd><kbd>1</kbd></div>
+                <p data-i18n="cycle.detail.keyboard.group2Text">Space e Invio effettuano il toggle; 0 e 1 impostano direttamente off/on senza usare il mouse.</p>
+            </div>
+            <div class="demo-cycle-detail__group-with-icon">
+                ${demoIcon('lookup', { className: 'demo-cycle-detail__icon', size: 18 })}
+                <p data-i18n="cycle.detail.keyboard.group3Text">Se conosci il codice puoi iniziare a digitarlo direttamente: lookup e autocomplete aiutano a completare o validare il valore senza interrompere il flusso di editing.</p>
+            </div>
+        </div>`,
+    validate: `
+        <div class="demo-cycle-detail__groups">
+            <div>
+                <h4 data-i18n="cycle.detail.validate.group1Title">Validatori</h4>
+                <p data-i18n="cycle.detail.validate.group1Text">Controllano required, formati, range e altre regole applicative.</p>
+            </div>
+            <div>
+                <h4 data-i18n="cycle.detail.validate.group2Title">Parser</h4>
+                <p data-i18n="cycle.detail.validate.group2Text">Normalizzano il valore nella forma prevista dal backend senza sostituire la validazione.</p>
+            </div>
+            <div>
+                <h4 data-i18n="cycle.detail.validate.group3Title">Feedback</h4>
+                <p data-i18n="cycle.detail.validate.group3Text">Gli errori restano associati alla cella e alla riga interessata.</p>
+            </div>
+        </div>`,
+    payload: `
+        <div class="demo-cycle-detail__payload-flow">
+            <div class="demo-cycle-detail__payload-states"><span data-i18n="cycle.detail.payload.new">new</span><span data-i18n="cycle.detail.payload.modified">modified</span><span data-i18n="cycle.detail.payload.deleted">deleted</span></div>
+            <div class="demo-cycle-detail__payload-arrow" aria-hidden="true">↓</div>
+            <strong data-i18n="cycle.detail.payload.flowTitle">getSavePayload()</strong>
+            <div class="demo-cycle-detail__payload-arrow" aria-hidden="true">↓</div>
+            <span data-i18n="cycle.detail.payload.flowResult">payload pronto per il backend</span>
+        </div>
+        <div class="demo-cycle-detail__text-stack">
+            <p data-i18n="cycle.detail.payload.group1Text">Il payload distingue le righe inserite, aggiornate ed eliminate e mantiene separate le righe modificate non valide.</p>
+            <p data-i18n="cycle.detail.payload.group2Text">L’applicazione può quindi inviare al backend soltanto le modifiche rilevanti.</p>
+        </div>`,
+    align: `
+        <div class="demo-cycle-detail__groups">
+            <div>
+                <h4 data-i18n="cycle.detail.align.group1Title">ID backend</h4>
+                <p data-i18n="cycle.detail.align.group1Text">Una nuova riga può ricevere l’identificatore definitivo assegnato dal backend.</p>
+            </div>
+            <div>
+                <h4 data-i18n="cycle.detail.align.group2Title">Stati</h4>
+                <p data-i18n="cycle.detail.align.group2Text">Le righe salvate possono essere riportate allo stato coerente con i dati confermati.</p>
+            </div>
+            <div>
+                <h4 data-i18n="cycle.detail.align.group3Title">Nuovo riferimento</h4>
+                <p data-i18n="cycle.detail.align.group3Text">I dati restituiti dal backend diventano il nuovo punto di riferimento per modifiche e rollback successivi.</p>
+            </div>
+        </div>`
+};
+
+const cycleDetailCopy = {
+    edit: ['cycle.detail.edit.title', 'cycle.detail.edit.intro'],
+    keyboard: ['cycle.detail.keyboard.title', 'cycle.detail.keyboard.intro'],
+    validate: ['cycle.detail.validate.title', 'cycle.detail.validate.intro'],
+    payload: ['cycle.detail.payload.title', 'cycle.detail.payload.intro'],
+    align: ['cycle.detail.align.title', 'cycle.detail.align.intro']
+};
 
 const renderLanguageSwitch = () => `
     <div class="language-switch is-it" data-language-switch aria-label="Language">
@@ -392,6 +559,87 @@ const bindLanguageButtons = () => {
     });
 };
 
+let activeCycleDetail = null;
+
+const renderCycleDetailContent = id => {
+    const [titleKey, introKey] = cycleDetailCopy[id];
+
+    return `
+        <h3 id="cycle-detail-title" data-i18n="${titleKey}">${getText(titleKey)}</h3>
+        <p class="demo-cycle-detail__intro" data-i18n="${introKey}">${getText(introKey)}</p>
+        ${cycleDetailBodies[id]}`;
+};
+
+const setCycleDetailState = id => {
+    root.querySelectorAll('[data-cycle-detail]').forEach(card => {
+        const isActive = card.dataset.cycleDetail === id;
+
+        card.setAttribute('aria-expanded', String(isActive));
+    });
+};
+
+const closeCycleDetail = () => {
+    const panel = root.querySelector('#cycle-detail');
+
+    if (!panel || !activeCycleDetail) return;
+
+    activeCycleDetail = null;
+    setCycleDetailState(null);
+
+    const closing = animateCycleDetail(panel, 'close');
+
+    Promise.resolve(closing).then(() => {
+        if (!activeCycleDetail) panel.hidden = true;
+    });
+};
+
+const openCycleDetail = id => {
+    const panel = root.querySelector('#cycle-detail');
+    const content = panel?.querySelector('.demo-cycle-detail__content');
+
+    if (!panel || !content) return;
+
+    if (activeCycleDetail === id) {
+        closeCycleDetail();
+        return;
+    }
+
+    const wasOpen = !panel.hidden;
+
+    activeCycleDetail = id;
+    setCycleDetailState(id);
+    content.innerHTML = renderCycleDetailContent(id);
+    applyI18n();
+    panel.hidden = false;
+
+    if (wasOpen) {
+        animateCycleDetail(content, 'content');
+    } else {
+        animateCycleDetail(panel, 'open');
+    }
+
+    panel.dataset.opened = 'true';
+};
+
+const bindCycleDetails = () => {
+    root.querySelectorAll('[data-cycle-detail]').forEach(card => {
+        card.addEventListener('click', () => openCycleDetail(card.dataset.cycleDetail));
+        card.addEventListener('keydown', event => {
+            if (!['Enter', ' '].includes(event.key)) return;
+
+            event.preventDefault();
+            openCycleDetail(card.dataset.cycleDetail);
+        });
+    });
+
+    root.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && activeCycleDetail) {
+            event.preventDefault();
+            closeCycleDetail();
+        }
+    });
+};
+
 const renderShell = selectedId => {
     root.innerHTML = `
         <main class="demo-page site-container">
@@ -493,47 +741,50 @@ const renderShell = selectedId => {
                     <p class="demo-note" data-i18n="cycle.description">AMB Grid coordina editing, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.</p>
                 </div>
                 <div class="demo-flow-grid">
-                    <article class="demo-flow-card">
+                    <article class="demo-flow-card" role="button" tabindex="0" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="edit">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">01</span>
                             ${demoIcon('edit', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.editTitle">Edit</strong>
                         </span>
-                        <p data-i18n="cycle.editText">Le celle editabili aggiornano i dati senza nascondere gli stati riga.</p>
+                        <p data-i18n="cycle.editText">Le celle editabili aggiornano lo stato della riga senza interrompere il flusso CRUD.</p>
                     </article>
-                    <article class="demo-flow-card">
+                    <article class="demo-flow-card" role="button" tabindex="0" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="keyboard">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">02</span>
                             ${demoIcon('keyboard', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.keyboardTitle">Editing orientato alla tastiera</strong>
                         </span>
-                        <p data-i18n="cycle.keyboardText">Inserimento rapido dei dati con navigazione Tab, conferma lookup e flusso pensato per utenti gestionali.</p>
+                        <p data-i18n="cycle.keyboardText">Navigazione Tab/Shift+Tab, editing senza mouse, checkbox da tastiera e lookup rapidi anche tramite codice.</p>
                     </article>
-                    <article class="demo-flow-card">
+                    <article class="demo-flow-card" role="button" tabindex="0" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="validate">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">03</span>
                             ${demoIcon('validation', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.validateTitle">Validate</strong>
                         </span>
-                        <p data-i18n="cycle.validateText">Validatori e parser separano qualità del dato e normalizzazione payload.</p>
+                        <p data-i18n="cycle.validateText">Validatori e parser separano qualità del dato e trasformazione del payload.</p>
                     </article>
-                    <article class="demo-flow-card">
+                    <article class="demo-flow-card" role="button" tabindex="0" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="payload">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">04</span>
                             ${demoIcon('payload', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.payloadTitle">Payload</strong>
                         </span>
-                        <p data-i18n="cycle.payloadText">Le modifiche diventano JSON leggibile e pronto per una API applicativa.</p>
+                        <p data-i18n="cycle.payloadText">Le modifiche diventano un payload leggibile e pronto per il backend.</p>
                     </article>
-                    <article class="demo-flow-card">
+                    <article class="demo-flow-card" role="button" tabindex="0" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="align">
                         <span class="demo-flow-card__header">
                             <span class="demo-flow-card__step" aria-hidden="true">05</span>
                             ${demoIcon('backend', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.alignTitle">Align</strong>
                         </span>
-                        <p data-i18n="cycle.alignText">Dopo il salvataggio, ID backend e stati possono essere riallineati.</p>
+                        <p data-i18n="cycle.alignText">Dopo il salvataggio, dati applicativi e stato locale possono riallinearsi.</p>
                     </article>
                 </div>
+                <section id="cycle-detail" class="demo-cycle-detail" hidden aria-live="polite" aria-labelledby="cycle-detail-title">
+                    <div class="demo-cycle-detail__content"></div>
+                </section>
             </section>
 
             <section class="demo-section" id="feature-examples">
@@ -566,6 +817,7 @@ const renderShell = selectedId => {
     root.querySelectorAll('[data-example]').forEach(button => {
         button.addEventListener('click', () => loadFeatureExample(button.dataset.example));
     });
+    bindCycleDetails();
     bindLanguageButtons();
 };
 
