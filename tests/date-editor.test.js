@@ -584,6 +584,56 @@ describe('date editor picker keyboard navigation', () => {
         expect(datepicker.active).toBe(true);
     });
 
+    test('manual picker selection commits the new value on a real external blur', async () => {
+        const harness = createPickerHarness();
+        const outside = createElement('button');
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await harness.pickerInput.dispatch('changeDate', {
+            detail: {
+                date: new Date(2026, 7, 9)
+            }
+        });
+
+        expect(harness.input.value).toBe('09/08/2026');
+        expect(harness.success).not.toHaveBeenCalled();
+        await flushDeferred();
+
+        globalThis.document.activeElement = outside;
+        await harness.input.dispatch('blur', { relatedTarget: outside });
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('09/08/2026');
+        expect(harness.cancel).not.toHaveBeenCalled();
+    });
+
+    test('manual picker blur toward the picker does not commit prematurely', async () => {
+        const harness = createPickerHarness();
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        globalThis.document.activeElement = harness.pickerInput;
+        await harness.input.dispatch('blur', { relatedTarget: harness.pickerInput });
+        await flushDeferred();
+
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+    });
+
+    test('typed manual picker value commits on external blur', async () => {
+        const harness = createPickerHarness();
+        const outside = createElement('button');
+
+        harness.input.value = '09/08/2026';
+        globalThis.document.activeElement = outside;
+        await harness.input.dispatch('blur', { relatedTarget: outside });
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('09/08/2026');
+        expect(harness.cancel).not.toHaveBeenCalled();
+    });
+
     test('Escape cancels without navigating', async () => {
         const harness = createPickerHarness();
 

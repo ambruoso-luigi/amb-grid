@@ -84,6 +84,8 @@ const createPickerOptions = options => {
      * - while the picker is open, arrow keys do not propagate to the grid,
      *   `Enter` is left to the picker when appropriate, and `Escape` preserves
      *   the configured manual or picker-only close behavior.
+     * - picker selection updates the manual editor value; leaving the editor
+     *   commits it, while `Tab` and `Shift+Tab` commit and navigate.
      * - manual picker editors keep the calendar button mounted after picker
      *   close so the calendar can be reopened.
      *
@@ -130,6 +132,7 @@ export function date(options = {}) {
                 let datepicker = null;
                 let closed = false;
                 let blurTimeout = null;
+                let pickerSelectionInProgress = false;
                 let tabCommitInProgress = false;
                 let navigationScheduled = false;
                 let pickerKeyboardListenerAttached = false;
@@ -138,6 +141,7 @@ export function date(options = {}) {
                 let handlePickerDocumentKeydown = null;
                 let handlePickerTabKeydown = null;
                 let pickerFocusTrap = null;
+                let pickerPointerPopup = null;
 
                 input.className = 'amb-date-editor';
                 wrapper.className = 'amb-date-editor-wrapper';
@@ -201,6 +205,11 @@ export function date(options = {}) {
                 const cleanupPickerSession = ({ restoreFocus = true } = {}) => {
                     removePickerKeyboardListener();
                     removePickerTabListener();
+                    if (pickerPointerPopup) {
+                        pickerPointerPopup.removeEventListener('mousedown', markPickerPointerDown, true);
+                        pickerPointerPopup.removeEventListener('click', clearPickerPointerState, true);
+                        pickerPointerPopup = null;
+                    }
                     pickerFocusTrap?.deactivate({ restore: restoreFocus });
                     pickerFocusTrap = null;
 
@@ -337,6 +346,74 @@ export function date(options = {}) {
                         || document.querySelector('.datepicker');
                 };
 
+                const markPickerPointerDown = event => {
+                    if (isPickerFocusTarget(event.target)) {
+                        event.stopPropagation();
+                        pickerSelectionInProgress = true;
+                    }
+                };
+
+                const clearPickerPointerState = event => {
+                    if (!isPickerFocusTarget(event.target)) return;
+
+                    event.stopPropagation();
+                    globalThis.setTimeout(() => {
+                        pickerSelectionInProgress = false;
+                    }, 0);
+                };
+
+                const attachPickerPointerListeners = () => {
+                    const popup = getPickerPopup();
+
+                    if (!popup || typeof popup.addEventListener !== 'function') return;
+
+                    pickerPointerPopup = popup;
+                    popup.addEventListener('mousedown', markPickerPointerDown, true);
+                    popup.addEventListener('click', clearPickerPointerState, true);
+                };
+
+                const isPickerFocusTarget = target => {
+                    if (!target) return false;
+
+                    const popup = getPickerPopup();
+
+                    return target === pickerButton
+                        || target === pickerInput
+                        || target === wrapper
+                        || (typeof wrapper.contains === 'function' && wrapper.contains(target))
+                        || (typeof popup?.contains === 'function' && popup.contains(target));
+                };
+
+                const commitManualInputOnBlur = event => {
+                    if (
+                        closed
+                        || pickerSelectionInProgress
+                        || normalizedOptions.mode !== 'manualWithPickerButton'
+                        || (datepicker?.active && !event.relatedTarget)
+                        || isPickerFocusTarget(event.relatedTarget)
+                    ) {
+                        return;
+                    }
+
+                    if (blurTimeout) {
+                        globalThis.clearTimeout(blurTimeout);
+                    }
+
+                    blurTimeout = globalThis.setTimeout(() => {
+                        blurTimeout = null;
+
+                        if (
+                            closed
+                            || document.activeElement === input
+                            || isPickerFocusTarget(document.activeElement)
+                        ) {
+                            return;
+                        }
+
+                        commit();
+                    }, 0);
+                };
+
                 const getPickerFocusableElements = () => {
                     const pickerElements = getFocusableElements(getPickerPopup());
                     const elements = [pickerInput, ...pickerElements];
@@ -452,6 +529,7 @@ export function date(options = {}) {
                     datepicker.show();
 
                     if (datepicker.active) {
+                        attachPickerPointerListeners();
                         addPickerKeyboardListener();
                         ensurePickerFocusTrap().activate();
 
@@ -485,10 +563,17 @@ export function date(options = {}) {
 
                     const formattedValue = formatPickerDate(date, normalizedOptions.format);
 
+                    if (editorBehavior.hasManualInput) {
+                        pickerSelectionInProgress = true;
+                    }
+
                     input.value = formattedValue;
 
                     if (editorBehavior.hasManualInput) {
                         closePickerPopup();
+                        globalThis.setTimeout(() => {
+                            pickerSelectionInProgress = false;
+                        }, 0);
                         return;
                     }
 
@@ -543,6 +628,7 @@ export function date(options = {}) {
                             closeWithCancel();
                         }
                     });
+                    input.addEventListener('blur', commitManualInputOnBlur);
                 }
 
                 onRendered(() => {
