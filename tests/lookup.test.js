@@ -828,8 +828,8 @@ describe('LookupDialog filtering', () => {
             ]);
             expect(buttons.map(button => button.title)).toEqual([
                 'First page',
-                'Previous page',
-                'Next page',
+                'Previous page (Alt+PageUp)',
+                'Next page (Alt+PageDown)',
                 'Last page'
             ]);
             expect(buttons.every(button => button.hidden === false)).toBe(true);

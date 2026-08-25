@@ -310,10 +310,12 @@ export class LookupDialog {
         firstPageButton.title = 'First page';
         previousPageButton.type = 'button';
         previousPageButton.setAttribute('aria-label', 'Previous lookup page');
-        previousPageButton.title = 'Previous page';
+        previousPageButton.title = 'Previous page (Alt+PageUp)';
+        previousPageButton.setAttribute('aria-keyshortcuts', 'Alt+PageUp');
         nextPageButton.type = 'button';
         nextPageButton.setAttribute('aria-label', 'Next lookup page');
-        nextPageButton.title = 'Next page';
+        nextPageButton.title = 'Next page (Alt+PageDown)';
+        nextPageButton.setAttribute('aria-keyshortcuts', 'Alt+PageDown');
         lastPageButton.type = 'button';
         lastPageButton.setAttribute('aria-label', 'Last lookup page');
         lastPageButton.title = 'Last page';
@@ -640,6 +642,17 @@ export class LookupDialog {
             event.preventDefault();
             event.stopPropagation?.();
             this.close(null);
+            return;
+        }
+
+        if (
+            this.options.pagination.enabled
+            && event.altKey
+            && (event.key === 'PageUp' || event.key === 'PageDown')
+        ) {
+            event.preventDefault();
+            event.stopPropagation?.();
+            this.changePage(event.key === 'PageUp' ? -1 : 1);
             return;
         }
 

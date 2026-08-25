@@ -155,6 +155,7 @@ const createDialogHarness = () => {
                 defaultPrevented: false,
                 propagationStopped: false,
                 shiftKey: false,
+                altKey: false,
                 ...event
             };
 
@@ -265,6 +266,61 @@ describe('LookupDialog smart pagination', () => {
             expect(dialog.currentPage).toBe(2);
             expect(getRows(dialog)).toHaveLength(1);
             expect(getFirstCellText(getRows(dialog)[0])).toBe('Result 51');
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('supports Alt+PageUp and Alt+PageDown without leaving the dialog', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const { dialog, resultPromise } = openDialog({
+                data: createRows(101)
+            });
+
+            expect(dialog.previousPageButton.title).toBe('Previous page (Alt+PageUp)');
+            expect(dialog.nextPageButton.title).toBe('Next page (Alt+PageDown)');
+            expect(dialog.previousPageButton['aria-keyshortcuts']).toBe('Alt+PageUp');
+            expect(dialog.nextPageButton['aria-keyshortcuts']).toBe('Alt+PageDown');
+
+            const nextEvent = harness.keydown({ key: 'PageDown', altKey: true });
+            expect(nextEvent.defaultPrevented).toBe(true);
+            expect(nextEvent.propagationStopped).toBe(true);
+            expect(dialog.currentPage).toBe(2);
+
+            const previousEvent = harness.keydown({ key: 'PageUp', altKey: true });
+            expect(previousEvent.defaultPrevented).toBe(true);
+            expect(previousEvent.propagationStopped).toBe(true);
+            expect(dialog.currentPage).toBe(1);
+
+            harness.keydown({ key: 'PageUp', altKey: true });
+            expect(dialog.currentPage).toBe(1);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('ignores pagination shortcuts when pagination is disabled', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const { dialog, resultPromise } = openDialog({
+                data: createRows(101),
+                pagination: false
+            });
+
+            const event = harness.keydown({ key: 'PageDown', altKey: true });
+
+            expect(event.defaultPrevented).toBe(false);
+            expect(event.propagationStopped).toBe(false);
+            expect(dialog.currentPage).toBe(1);
 
             dialog.close(null);
             await expect(resultPromise).resolves.toBeNull();

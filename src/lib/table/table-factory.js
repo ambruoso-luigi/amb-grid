@@ -46,6 +46,7 @@ import { createFilterMethods } from './controller/filter-methods.js';
 import { createSearchMethods } from './controller/search-methods.js';
 import { createSortMethods } from './controller/sort-methods.js';
 import { createValidationMethods } from './controller/validation-methods.js';
+import { createPaginationKeyboardRuntime } from './pagination-keyboard-runtime.js';
 
 export {
     applyDefaultColumnAlignments,
@@ -638,7 +639,8 @@ export function createTable(options = {}) {
         calculationPresentationRuntime: null,
         historyRuntime: null,
         searchController: null,
-        feedback: null
+        feedback: null,
+        paginationKeyboardRuntime: null
     };
 
     if (selectionColumnController && normalizedOptions.selectableRows === undefined) {
@@ -712,6 +714,12 @@ export function createTable(options = {}) {
         columnMethods
     });
     const paginationMethods = createPaginationMethods({ table, crud });
+    lifecycleResources.paginationKeyboardRuntime = createPaginationKeyboardRuntime({
+        table,
+        tableElement,
+        paginationMethods,
+        enabled: normalizedOptions.pagination === true
+    });
     const selectionMethods = createSelectionMethods({ table, crud });
     const validationMethods = createValidationMethods({ crud });
     const rangeMethods = createRangeMethods({
