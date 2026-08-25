@@ -597,11 +597,20 @@ describe('date editor picker keyboard navigation', () => {
 
         expect(harness.input.value).toBe('09/08/2026');
         expect(harness.success).not.toHaveBeenCalled();
-        await flushDeferred();
 
         globalThis.document.activeElement = outside;
         await harness.input.dispatch('blur', { relatedTarget: outside });
-        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('09/08/2026');
+        expect(harness.cancel).not.toHaveBeenCalled();
+    });
+
+    test('manual picker external blur with no related target commits synchronously', async () => {
+        const harness = createPickerHarness();
+
+        harness.input.value = '09/08/2026';
+        await harness.input.dispatch('blur', { relatedTarget: null });
 
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('09/08/2026');

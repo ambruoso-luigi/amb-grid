@@ -12,17 +12,18 @@ const openDatesExample = async page => {
 const pickerRow = page => page.locator('#dates-table .tabulator-row').first();
 const pickerCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="pickerDate"]');
 const eventCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="eventName"]');
-const previousCell = page => eventCell(page);
+const previousCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="manualDate"]');
 const nextCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="isoDate"]');
 
 const openPicker = async page => {
     const cell = pickerCell(page);
 
-    await cell.dblclick();
+    await cell.scrollIntoViewIfNeeded();
+    await cell.dblclick({ delay: 100 });
     const input = page.locator('input.amb-date-editor').last();
     await expect(input).toBeVisible();
     const initialValue = await input.inputValue();
-    await page.locator('.amb-date-editor-picker-button').last().click({ force: true });
+    await input.locator('xpath=..').locator('.amb-date-editor-picker-button').click();
     await expect(page.locator('.datepicker.active')).toBeVisible();
 
     return { cell, initialValue, input };

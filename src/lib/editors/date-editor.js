@@ -131,8 +131,6 @@ export function date(options = {}) {
                 const pickerInput = document.createElement('input');
                 let datepicker = null;
                 let closed = false;
-                let blurTimeout = null;
-                let pickerSelectionInProgress = false;
                 let tabCommitInProgress = false;
                 let navigationScheduled = false;
                 let pickerKeyboardListenerAttached = false;
@@ -141,7 +139,6 @@ export function date(options = {}) {
                 let handlePickerDocumentKeydown = null;
                 let handlePickerTabKeydown = null;
                 let pickerFocusTrap = null;
-                let pickerPointerPopup = null;
 
                 input.className = 'amb-date-editor';
                 wrapper.className = 'amb-date-editor-wrapper';
@@ -205,18 +202,8 @@ export function date(options = {}) {
                 const cleanupPickerSession = ({ restoreFocus = true } = {}) => {
                     removePickerKeyboardListener();
                     removePickerTabListener();
-                    if (pickerPointerPopup) {
-                        pickerPointerPopup.removeEventListener('mousedown', markPickerPointerDown, true);
-                        pickerPointerPopup.removeEventListener('click', clearPickerPointerState, true);
-                        pickerPointerPopup = null;
-                    }
                     pickerFocusTrap?.deactivate({ restore: restoreFocus });
                     pickerFocusTrap = null;
-
-                    if (blurTimeout) {
-                        window.clearTimeout(blurTimeout);
-                        blurTimeout = null;
-                    }
                 };
 
                 const closePickerPopup = ({ restoreFocus = true } = {}) => {
@@ -346,32 +333,6 @@ export function date(options = {}) {
                         || document.querySelector('.datepicker');
                 };
 
-                const markPickerPointerDown = event => {
-                    if (isPickerFocusTarget(event.target)) {
-                        event.stopPropagation();
-                        pickerSelectionInProgress = true;
-                    }
-                };
-
-                const clearPickerPointerState = event => {
-                    if (!isPickerFocusTarget(event.target)) return;
-
-                    event.stopPropagation();
-                    globalThis.setTimeout(() => {
-                        pickerSelectionInProgress = false;
-                    }, 0);
-                };
-
-                const attachPickerPointerListeners = () => {
-                    const popup = getPickerPopup();
-
-                    if (!popup || typeof popup.addEventListener !== 'function') return;
-
-                    pickerPointerPopup = popup;
-                    popup.addEventListener('mousedown', markPickerPointerDown, true);
-                    popup.addEventListener('click', clearPickerPointerState, true);
-                };
-
                 const isPickerFocusTarget = target => {
                     if (!target) return false;
 
@@ -384,34 +345,31 @@ export function date(options = {}) {
                         || (typeof popup?.contains === 'function' && popup.contains(target));
                 };
 
+                const isEditorCellTarget = target => {
+                    const cellElement = typeof cell?.getElement === 'function'
+                        ? cell.getElement()
+                        : null;
+
+                    return Boolean(
+                        target
+                        && cellElement
+                        && (target === cellElement
+                            || (typeof cellElement.contains === 'function' && cellElement.contains(target)))
+                    );
+                };
+
                 const commitManualInputOnBlur = event => {
                     if (
                         closed
-                        || pickerSelectionInProgress
                         || normalizedOptions.mode !== 'manualWithPickerButton'
-                        || (datepicker?.active && !event.relatedTarget)
+                        || datepicker?.active
                         || isPickerFocusTarget(event.relatedTarget)
+                        || isEditorCellTarget(event.relatedTarget)
                     ) {
                         return;
                     }
 
-                    if (blurTimeout) {
-                        globalThis.clearTimeout(blurTimeout);
-                    }
-
-                    blurTimeout = globalThis.setTimeout(() => {
-                        blurTimeout = null;
-
-                        if (
-                            closed
-                            || document.activeElement === input
-                            || isPickerFocusTarget(document.activeElement)
-                        ) {
-                            return;
-                        }
-
-                        commit();
-                    }, 0);
+                    commit();
                 };
 
                 const getPickerFocusableElements = () => {
@@ -529,7 +487,6 @@ export function date(options = {}) {
                     datepicker.show();
 
                     if (datepicker.active) {
-                        attachPickerPointerListeners();
                         addPickerKeyboardListener();
                         ensurePickerFocusTrap().activate();
 
@@ -563,17 +520,10 @@ export function date(options = {}) {
 
                     const formattedValue = formatPickerDate(date, normalizedOptions.format);
 
-                    if (editorBehavior.hasManualInput) {
-                        pickerSelectionInProgress = true;
-                    }
-
                     input.value = formattedValue;
 
                     if (editorBehavior.hasManualInput) {
                         closePickerPopup();
-                        globalThis.setTimeout(() => {
-                            pickerSelectionInProgress = false;
-                        }, 0);
                         return;
                     }
 
