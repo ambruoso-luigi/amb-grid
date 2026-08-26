@@ -1,3 +1,5 @@
+import { navigateToCandidate } from '../editors/shared.js';
+
 /**
  * Adds keyboard shortcuts to a table's pagination controls.
  *
@@ -35,11 +37,28 @@ export const createPaginationKeyboardRuntime = ({
         event.preventDefault();
         event.stopPropagation?.();
 
-        if (event.key === 'PageUp') {
-            paginationMethods.previousPage();
-        } else {
-            paginationMethods.nextPage();
-        }
+        const pageBefore = paginationMethods.getPage();
+        const change = event.key === 'PageUp'
+            ? paginationMethods.previousPage()
+            : paginationMethods.nextPage();
+
+        Promise.resolve(change).then(() => {
+            const pageAfter = paginationMethods.getPage();
+
+            if (pageAfter === pageBefore || typeof table.getRows !== 'function') return;
+
+            const rows = table.getRows('visible') || [];
+
+            for (const row of rows) {
+                const cells = typeof row?.getCells === 'function'
+                    ? row.getCells()
+                    : [];
+
+                for (const cell of cells) {
+                    if (navigateToCandidate(cell)) return;
+                }
+            }
+        });
     };
 
     const decoratePager = () => {

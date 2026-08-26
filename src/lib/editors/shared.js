@@ -49,7 +49,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
     return true;
 };
 
-const navigateToCandidate = candidate => {
+export const navigateToCandidate = candidate => {
     if (!candidate) return false;
 
     const column = candidate.getColumn && candidate.getColumn();

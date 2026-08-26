@@ -307,6 +307,60 @@ describe('LookupDialog smart pagination', () => {
         }
     });
 
+    test('keeps keyboard selection inside the scroll viewport without scrolling on mouse selection', async () => {
+        const harness = createDialogHarness();
+
+        try {
+            const { dialog, resultPromise } = openDialog({
+                data: createRows(12),
+                pagination: {
+                    enabled: true,
+                    pageSize: 20
+                }
+            });
+            const rows = getRows(dialog);
+            const initialScrollTop = 0;
+
+            dialog.tableWrap.scrollTop = initialScrollTop;
+            dialog.tableWrap.getBoundingClientRect = () => ({ top: 100, bottom: 220 });
+            dialog.table.querySelector = selector => selector === 'thead'
+                ? { getBoundingClientRect: () => ({ bottom: 120 }) }
+                : null;
+            dialog.table.querySelectorAll = selector => selector === '.amb-lookup-dialog__row'
+                ? rows
+                : [];
+            rows.forEach((row, index) => {
+                row.getBoundingClientRect = () => {
+                    const top = 120 + index * 30 - dialog.tableWrap.scrollTop;
+
+                    return { top, bottom: top + 30 };
+                };
+            });
+
+            for (let index = 0; index < 8; index += 1) {
+                dialog.moveSelection(1);
+            }
+
+            expect(dialog.selectedIndex).toBe(7);
+            expect(dialog.tableWrap.scrollTop).toBeGreaterThan(initialScrollTop);
+
+            const keyboardScrollTop = dialog.tableWrap.scrollTop;
+            dialog.moveSelection(-1);
+            expect(dialog.selectedIndex).toBe(6);
+            expect(dialog.tableWrap.scrollTop).toBeLessThanOrEqual(keyboardScrollTop);
+
+            dialog.tableWrap.scrollTop = 0;
+            await rows[10].dispatch('click');
+            expect(dialog.selectedIndex).toBe(10);
+            expect(dialog.tableWrap.scrollTop).toBe(0);
+
+            dialog.close(null);
+            await expect(resultPromise).resolves.toBeNull();
+        } finally {
+            harness.restore();
+        }
+    });
+
     test('ignores pagination shortcuts when pagination is disabled', async () => {
         const harness = createDialogHarness();
 

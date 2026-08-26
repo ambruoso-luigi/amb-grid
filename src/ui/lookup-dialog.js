@@ -604,7 +604,35 @@ export class LookupDialog {
         }
     }
 
-    updateRowSelection() {
+    ensureSelectedRowVisible() {
+        if (!this.table || !this.tableWrap) return;
+
+        const row = [...this.table.querySelectorAll('.amb-lookup-dialog__row')]
+            .find(candidate => Number(candidate.dataset.rowIndex) === this.selectedIndex);
+
+        if (!row || typeof row.getBoundingClientRect !== 'function') return;
+
+        const rowRect = row.getBoundingClientRect();
+        const wrapRect = typeof this.tableWrap.getBoundingClientRect === 'function'
+            ? this.tableWrap.getBoundingClientRect()
+            : null;
+        const header = this.table.querySelector('thead');
+        const headerRect = typeof header?.getBoundingClientRect === 'function'
+            ? header.getBoundingClientRect()
+            : null;
+        const visibleTop = Math.max(wrapRect?.top || 0, headerRect?.bottom || 0);
+        const visibleBottom = wrapRect?.bottom || 0;
+
+        if (!wrapRect || visibleBottom <= visibleTop) return;
+
+        if (rowRect.top < visibleTop) {
+            this.tableWrap.scrollTop -= visibleTop - rowRect.top;
+        } else if (rowRect.bottom > visibleBottom) {
+            this.tableWrap.scrollTop += rowRect.bottom - visibleBottom;
+        }
+    }
+
+    updateRowSelection({ ensureVisible = false } = {}) {
         if (!this.table) return;
 
         this.table.querySelectorAll('.amb-lookup-dialog__row').forEach(row => {
@@ -616,6 +644,10 @@ export class LookupDialog {
             );
         });
         this.updateSelectButton();
+
+        if (ensureVisible) {
+            this.ensureSelectedRowVisible();
+        }
     }
 
     filter(query) {
@@ -695,7 +727,7 @@ export class LookupDialog {
             this.selectedIndex = direction > 0
                 ? renderState.startIndex
                 : renderState.endIndex - 1;
-            this.updateRowSelection();
+            this.updateRowSelection({ ensureVisible: true });
             return;
         }
 
@@ -703,7 +735,7 @@ export class LookupDialog {
             renderState.startIndex,
             Math.min(renderState.endIndex - 1, this.selectedIndex + direction)
         );
-        this.updateRowSelection();
+        this.updateRowSelection({ ensureVisible: true });
     }
 
     selectCurrent() {
