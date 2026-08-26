@@ -49,7 +49,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
     return true;
 };
 
-export const navigateToCandidate = candidate => {
+export const isEditableCandidate = candidate => {
     if (!candidate) return false;
 
     const column = candidate.getColumn && candidate.getColumn();
@@ -62,7 +62,46 @@ export const navigateToCandidate = candidate => {
         if (definition.editable(candidate) === false) return false;
     }
 
-    if (definition && definition._ambInteractive) {
+    return Boolean(
+        definition._ambInteractive
+            ? definition.editor || definition._ambFocusSelector || definition._ambInteractiveSelector
+            : definition.editor && typeof candidate.edit === 'function'
+    );
+};
+
+const focusCellWithoutEditing = cell => {
+    const element = cell?.getElement?.();
+
+    if (!element?.focus) return false;
+
+    if (element.tabIndex < 0) {
+        element.tabIndex = 0;
+        element.setAttribute?.('tabindex', '0');
+    }
+
+    const blockEditFocus = event => event.stopImmediatePropagation?.();
+
+    element.addEventListener?.('focus', blockEditFocus, true);
+
+    try {
+        try {
+            element.focus({ preventScroll: true });
+        } catch {
+            element.focus();
+        }
+    } finally {
+        element.removeEventListener?.('focus', blockEditFocus, true);
+    }
+
+    return globalThis.document?.activeElement === element;
+};
+
+export const navigateToCandidate = candidate => {
+    if (!isEditableCandidate(candidate)) return false;
+
+    const definition = getCellDefinition(candidate);
+
+    if (definition._ambInteractive) {
         if (definition.editor && typeof candidate.edit === 'function') {
             return candidate.edit() !== false;
         }
@@ -70,12 +109,10 @@ export const navigateToCandidate = candidate => {
         return focusInteractiveCandidate(candidate, definition);
     }
 
-    if (!definition || !definition.editor || typeof candidate.edit !== 'function') {
-        return false;
-    }
-
     return candidate.edit() !== false;
 };
+
+export { focusCellWithoutEditing };
 
 export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
     globalThis.setTimeout(() => {

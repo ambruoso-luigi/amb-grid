@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createPaginationKeyboardRuntime } from '../src/lib/table/pagination-keyboard-runtime.js';
 
 const createTableElement = () => {
@@ -39,18 +39,41 @@ const createCandidate = ({ editable = true, interactive = false, edit = vi.fn() 
         _ambInteractive: interactive
     };
 
+    const focusListeners = new Map();
+    const element = {
+        addEventListener: (type, listener) => focusListeners.set(type, listener),
+        removeEventListener: (type, listener) => {
+            if (focusListeners.get(type) === listener) focusListeners.delete(type);
+        },
+        focus: () => {
+            const event = { stopImmediatePropagation: vi.fn() };
+            focusListeners.get('focus')?.(event);
+            globalThis.document.activeElement = element;
+            if (!event.stopImmediatePropagation.mock.calls.length) edit();
+        }
+    };
+
     return {
         getColumn: () => ({
             isVisible: () => true,
             getDefinition: () => definition
         }),
-        edit
+        edit,
+        getElement: () => element
     };
 };
 
 const flushPageChange = () => new Promise(resolve => setTimeout(resolve, 0));
 
 describe('table pagination keyboard runtime', () => {
+    beforeEach(() => {
+        globalThis.document = { activeElement: null };
+    });
+
+    afterEach(() => {
+        delete globalThis.document;
+    });
+
     test('uses public pagination methods for Alt+PageUp and Alt+PageDown', async () => {
         const tableElement = createTableElement();
         let page = 1;
@@ -104,7 +127,8 @@ describe('table pagination keyboard runtime', () => {
         expect(pageDown.stopPropagation).toHaveBeenCalledOnce();
         expect(paginationMethods.nextPage).toHaveBeenCalledOnce();
         expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
-        expect(firstEditable.edit).toHaveBeenCalledTimes(2);
+        expect(firstEditable.edit).not.toHaveBeenCalled();
+        expect(firstEditable.getElement()).toBe(globalThis.document.activeElement);
 
         runtime.destroy();
         expect(tableElement.removeEventListener).toHaveBeenCalledOnce();
@@ -186,7 +210,8 @@ describe('table pagination keyboard runtime', () => {
         await Promise.resolve();
 
         expect(readonly.edit).not.toHaveBeenCalled();
-        expect(editable.edit).toHaveBeenCalledOnce();
+        expect(editable.edit).not.toHaveBeenCalled();
+        expect(editable.getElement()).toBe(globalThis.document.activeElement);
         expect(secondRowEditable.edit).not.toHaveBeenCalled();
         runtime.destroy();
     });
@@ -220,7 +245,7 @@ describe('table pagination keyboard runtime', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        expect(interactive.edit).toHaveBeenCalledOnce();
+        expect(interactive.edit).not.toHaveBeenCalled();
     });
 
     test('does not install a listener when pagination is disabled', () => {
