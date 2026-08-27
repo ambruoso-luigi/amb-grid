@@ -156,6 +156,69 @@ describe('table pagination keyboard runtime', () => {
         expect(paginationMethods.nextPage).toHaveBeenCalledOnce();
     });
 
+    test('releases the transition lock after the last page and allows reverse navigation', async () => {
+        const tableElement = createTableElement();
+        const candidate = createCandidate();
+        const { table, paginationMethods } = createTable({ page: 10, max: 11, rows: [{ getCells: () => [candidate] }] });
+        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+
+        shortcut(tableElement);
+        await Promise.resolve();
+        shortcut(tableElement, 'PageUp');
+        await Promise.resolve();
+
+        expect(paginationMethods.nextPage).toHaveBeenCalledOnce();
+        expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
+        expect(candidate.edit).toHaveBeenCalledTimes(2);
+    });
+
+    test('allows reverse navigation after a boundary no-op at the last page', async () => {
+        const tableElement = createTableElement();
+        const activeElement = { cell: true, blur: vi.fn() };
+        globalThis.document.activeElement = activeElement;
+        const { table, paginationMethods } = createTable({ page: 11, max: 11, rows: [] });
+        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+
+        shortcut(tableElement);
+        shortcut(tableElement, 'PageUp');
+        await Promise.resolve();
+
+        expect(activeElement.blur).not.toHaveBeenCalled();
+        expect(paginationMethods.nextPage).not.toHaveBeenCalled();
+        expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
+    });
+
+    test('uses the Promise fallback when pageLoaded is missing', async () => {
+        const tableElement = createTableElement();
+        const candidate = createCandidate();
+        const { table, paginationMethods } = createTable({ page: 10, max: 11, rows: [{ getCells: () => [candidate] }], onPageLoaded: false });
+        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+
+        shortcut(tableElement);
+        await Promise.resolve();
+        shortcut(tableElement, 'PageUp');
+        await Promise.resolve();
+
+        expect(candidate.edit).toHaveBeenCalledTimes(2);
+        expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
+    });
+
+    test('releases the transition lock when activation throws', async () => {
+        const tableElement = createTableElement();
+        const edit = vi.fn()
+            .mockImplementationOnce(() => { throw new Error('activation failed'); })
+            .mockImplementation(() => true);
+        const candidate = createCandidate({ edit });
+        const { table, paginationMethods } = createTable({ rows: [{ getCells: () => [candidate] }] });
+        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+
+        expect(() => shortcut(tableElement)).toThrow('activation failed');
+        shortcut(tableElement, 'PageUp');
+        await Promise.resolve();
+
+        expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
+    });
+
     test('does not install a listener when pagination is disabled', () => {
         const tableElement = createTableElement();
         createPaginationKeyboardRuntime({ table: { on: vi.fn(), off: vi.fn() }, tableElement, paginationMethods: {}, enabled: false });

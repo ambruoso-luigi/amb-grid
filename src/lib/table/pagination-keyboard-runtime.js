@@ -67,44 +67,76 @@ export const createPaginationKeyboardRuntime = ({
         if (tableElement.querySelector?.('.tabulator-editing')) return;
 
         transitionInProgress = true;
-        const handlePageLoaded = () => {
-            table?.off?.('pageLoaded', handlePageLoaded);
+        let transitionFinished = false;
+        let pageActivationDone = false;
 
-            if (paginationMethods.getPage() !== pageBefore) {
-                const rows = table.getRows('visible') || [];
-                let editorOpened = false;
+        const openFirstEditableCell = () => {
+            const rows = table.getRows('visible') || [];
 
-                for (const row of rows) {
-                    const cells = typeof row?.getCells === 'function'
-                        ? row.getCells()
-                        : [];
+            for (const row of rows) {
+                const cells = typeof row?.getCells === 'function'
+                    ? row.getCells()
+                    : [];
 
-                    for (const cell of cells) {
-                        if (navigateToCandidate(cell)) {
-                            editorOpened = true;
-                            break;
-                        }
-                    }
-
-                    if (editorOpened) break;
+                for (const cell of cells) {
+                    if (navigateToCandidate(cell)) return true;
                 }
             }
 
+            return false;
+        };
+
+        const activatePage = () => {
+            if (pageActivationDone) return false;
+
+            pageActivationDone = true;
+            return openFirstEditableCell();
+        };
+
+        const finishTransition = () => {
+            if (transitionFinished) return;
+
+            transitionFinished = true;
+            table?.off?.('pageLoaded', handlePageLoaded);
             transitionInProgress = false;
         };
 
-        table?.on?.('pageLoaded', handlePageLoaded);
-        const change = event.key === 'PageUp'
-            ? paginationMethods.previousPage()
-            : paginationMethods.nextPage();
-        Promise.resolve(change).then(() => {
-            if (paginationMethods.getPage() === pageBefore) {
-                table?.off?.('pageLoaded', handlePageLoaded);
-                transitionInProgress = false;
+        const handlePageLoaded = () => {
+            try {
+                if (paginationMethods.getPage() !== pageBefore) {
+                    activatePage();
+                }
+            } finally {
+                finishTransition();
             }
+        };
+
+        table?.on?.('pageLoaded', handlePageLoaded);
+        let change;
+
+        try {
+            change = event.key === 'PageUp'
+                ? paginationMethods.previousPage()
+                : paginationMethods.nextPage();
+        } catch (error) {
+            finishTransition();
+            throw error;
+        }
+
+        Promise.resolve(change).then(() => {
+            if (paginationMethods.getPage() !== pageBefore) {
+                try {
+                    activatePage();
+                } finally {
+                    finishTransition();
+                }
+                return;
+            }
+
+            if (transitionFinished) return;
+            finishTransition();
         }, () => {
-            table?.off?.('pageLoaded', handlePageLoaded);
-            transitionInProgress = false;
+            finishTransition();
         });
     };
 
