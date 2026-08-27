@@ -1,7 +1,4 @@
-import {
-    focusCellWithoutEditing,
-    isEditableCandidate
-} from '../editors/shared.js';
+import { navigateToCandidate } from '../editors/shared.js';
 
 /**
  * Adds keyboard shortcuts to a table's pagination controls.
@@ -25,7 +22,7 @@ export const createPaginationKeyboardRuntime = ({
         return { destroy() {} };
     }
 
-    const activeTransitions = new Set();
+    let transitionInProgress = false;
 
     const handleKeydown = event => {
         const isInsideTable = event.target === tableElement
@@ -41,69 +38,73 @@ export const createPaginationKeyboardRuntime = ({
 
         event.preventDefault();
         event.stopPropagation?.();
-
-        activeTransitions.forEach(cleanupTransition => cleanupTransition());
+        event.stopImmediatePropagation?.();
 
         const pageBefore = paginationMethods.getPage();
-        let settled = false;
-        let changeStarted = false;
-        let focusRestored = false;
-        let change;
+        const pageMax = paginationMethods.getPageMax();
 
-        const cleanup = () => {
-            if (settled) return;
+        if (transitionInProgress) return;
+        if (
+            (event.key === 'PageUp' && pageBefore <= 1)
+            || (event.key === 'PageDown' && pageBefore >= pageMax)
+        ) return;
 
-            settled = true;
-            activeTransitions.delete(cleanup);
-            table?.off?.('renderComplete', tryRestoreFocus);
-        };
+        const activeElement = globalThis.document?.activeElement;
+        const editingElement = tableElement.querySelector?.('.tabulator-editing');
+        if (
+            activeElement
+            && typeof tableElement.contains === 'function'
+            && tableElement.contains(activeElement)
+            && (
+                activeElement.closest?.('.tabulator-editing')
+                || editingElement
+            )
+            && typeof activeElement.blur === 'function'
+        ) {
+            activeElement.blur();
+        }
 
-        const tryRestoreFocus = () => {
-            const pageAfter = paginationMethods.getPage();
+        if (tableElement.querySelector?.('.tabulator-editing')) return;
 
-            if (!changeStarted) return;
+        transitionInProgress = true;
+        const handlePageLoaded = () => {
+            table?.off?.('pageLoaded', handlePageLoaded);
 
-            if (pageAfter === pageBefore) {
-                cleanup();
-                return;
-            }
+            if (paginationMethods.getPage() !== pageBefore) {
+                const rows = table.getRows('visible') || [];
+                let editorOpened = false;
 
-            if (typeof table.getRows !== 'function') {
-                cleanup();
-                return;
-            }
+                for (const row of rows) {
+                    const cells = typeof row?.getCells === 'function'
+                        ? row.getCells()
+                        : [];
 
-            if (focusRestored && globalThis.document?.activeElement?.closest?.(
-                tableElement.id ? `#${tableElement.id}` : '.tabulator'
-            )) return;
-
-            const rows = table.getRows('visible') || [];
-
-            for (const row of rows) {
-                const cells = typeof row?.getCells === 'function'
-                    ? row.getCells()
-                    : [];
-
-                for (const cell of cells) {
-                    if (
-                        isEditableCandidate(cell)
-                        && focusCellWithoutEditing(cell)
-                    ) {
-                        focusRestored = true;
-                        return;
+                    for (const cell of cells) {
+                        if (navigateToCandidate(cell)) {
+                            editorOpened = true;
+                            break;
+                        }
                     }
+
+                    if (editorOpened) break;
                 }
             }
+
+            transitionInProgress = false;
         };
 
-        table?.on?.('renderComplete', tryRestoreFocus);
-        activeTransitions.add(cleanup);
-        changeStarted = true;
-        change = event.key === 'PageUp'
+        table?.on?.('pageLoaded', handlePageLoaded);
+        const change = event.key === 'PageUp'
             ? paginationMethods.previousPage()
             : paginationMethods.nextPage();
         Promise.resolve(change).then(() => {
-            tryRestoreFocus();
+            if (paginationMethods.getPage() === pageBefore) {
+                table?.off?.('pageLoaded', handlePageLoaded);
+                transitionInProgress = false;
+            }
+        }, () => {
+            table?.off?.('pageLoaded', handlePageLoaded);
+            transitionInProgress = false;
         });
     };
 
@@ -127,16 +128,15 @@ export const createPaginationKeyboardRuntime = ({
     const listenerAttached = typeof tableElement.addEventListener === 'function';
 
     if (listenerAttached) {
-        tableElement.addEventListener('keydown', handleKeydown);
+        tableElement.addEventListener('keydown', handleKeydown, true);
     }
     table?.on?.('renderComplete', decoratePager);
     decoratePager();
 
     return {
         destroy() {
-            activeTransitions.forEach(cleanupTransition => cleanupTransition());
             if (listenerAttached) {
-                tableElement.removeEventListener('keydown', handleKeydown);
+                tableElement.removeEventListener('keydown', handleKeydown, true);
             }
             table?.off?.('renderComplete', decoratePager);
         }

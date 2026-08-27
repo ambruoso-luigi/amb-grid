@@ -49,7 +49,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
     return true;
 };
 
-export const isEditableCandidate = candidate => {
+const isEditableCandidate = candidate => {
     if (!candidate) return false;
 
     const column = candidate.getColumn && candidate.getColumn();
@@ -69,33 +69,6 @@ export const isEditableCandidate = candidate => {
     );
 };
 
-const focusCellWithoutEditing = cell => {
-    const element = cell?.getElement?.();
-
-    if (!element?.focus) return false;
-
-    if (element.tabIndex < 0) {
-        element.tabIndex = 0;
-        element.setAttribute?.('tabindex', '0');
-    }
-
-    const blockEditFocus = event => event.stopImmediatePropagation?.();
-
-    element.addEventListener?.('focus', blockEditFocus, true);
-
-    try {
-        try {
-            element.focus({ preventScroll: true });
-        } catch {
-            element.focus();
-        }
-    } finally {
-        element.removeEventListener?.('focus', blockEditFocus, true);
-    }
-
-    return globalThis.document?.activeElement === element;
-};
-
 export const navigateToCandidate = candidate => {
     if (!isEditableCandidate(candidate)) return false;
 
@@ -111,8 +84,6 @@ export const navigateToCandidate = candidate => {
 
     return candidate.edit() !== false;
 };
-
-export { focusCellWithoutEditing };
 
 export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
     globalThis.setTimeout(() => {
