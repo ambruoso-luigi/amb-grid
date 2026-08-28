@@ -37,37 +37,26 @@ test.describe('keyboard pagination focus', () => {
         await expect(table(page).locator('.tabulator-page[data-page="2"]')).toBeVisible();
     });
 
-    test('reaches the dynamic last page and returns without manual refocus', async ({ page }) => {
+    test('navigates 9 to 10 to 11 and back with the first editor active', async ({ page }) => {
         await cell(page, 'itemCode').dblclick({ delay: 100 });
         await expectItemCodeEditor(page);
 
-        let pageNumber = 1;
-        let lastPage = pageNumber;
-
-        for (let attempt = 0; attempt < 20; attempt += 1) {
-            await page.keyboard.press('Alt+PageDown');
-            const nextPage = await currentPage(page);
-
-            if (nextPage === pageNumber) break;
-
-            pageNumber = nextPage;
-            lastPage = pageNumber;
-            await expectItemCodeEditor(page);
+        for (let pageNumber = 2; pageNumber <= 9; pageNumber += 1) {
+            await moveAndCheck(page, 'Alt+PageDown', pageNumber);
         }
 
-        expect(lastPage).toBeGreaterThan(1);
-        await expectItemCodeEditor(page);
-
-        await moveAndCheck(page, 'Alt+PageUp', lastPage - 1);
-        await moveAndCheck(page, 'Alt+PageDown', lastPage);
+        await moveAndCheck(page, 'Alt+PageDown', 10);
+        await moveAndCheck(page, 'Alt+PageDown', 11);
+        await expect(table(page).locator('.tabulator-row')).toHaveCount(1);
 
         for (let attempt = 0; attempt < 3; attempt += 1) {
             await page.keyboard.press('Alt+PageDown');
-            await waitForPage(page, lastPage);
+            await waitForPage(page, 11);
             await expectItemCodeEditor(page);
         }
 
-        await moveAndCheck(page, 'Alt+PageUp', lastPage - 1);
+        await moveAndCheck(page, 'Alt+PageUp', 10);
+        await moveAndCheck(page, 'Alt+PageUp', 9);
     });
 
     test('closes Warehouse naturally before keyboard pagination', async ({ page }) => {

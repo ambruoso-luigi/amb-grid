@@ -49,7 +49,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
     return true;
 };
 
-export const isEditableCandidate = candidate => {
+const isEditableCandidate = candidate => {
     if (!candidate) return false;
 
     const column = candidate.getColumn && candidate.getColumn();
@@ -106,26 +106,88 @@ export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
             }
         }
 
-        if (direction === 'prev' && cell && typeof cell.navigatePrev === 'function') {
-            cell.navigatePrev();
-            return;
-        }
+        const navigate = direction === 'prev' ? cell?.navigatePrev : cell?.navigateNext;
 
-        if (direction === 'next' && cell && typeof cell.navigateNext === 'function') {
-            cell.navigateNext();
-            return;
-        }
+        if (typeof navigate === 'function' && navigate.call(cell)) return;
 
         const table = cell && cell.getTable && cell.getTable();
+        const tableNavigate = direction === 'prev'
+            ? table?.navigatePrev
+            : table?.navigateNext;
 
-        if (direction === 'prev' && table && typeof table.navigatePrev === 'function') {
-            table.navigatePrev();
+        if (typeof tableNavigate === 'function' && tableNavigate.call(table)) return;
+
+        const currentPage = table && typeof table.getPage === 'function'
+            ? table.getPage()
+            : false;
+        const pageMax = table && typeof table.getPageMax === 'function'
+            ? table.getPageMax()
+            : false;
+        const canChangePage = direction === 'prev'
+            ? currentPage > 1
+            : currentPage < pageMax;
+
+        const openPageDestination = () => {
+            const rows = table.getRows('visible') || [];
+            const orderedRows = direction === 'prev' ? rows.slice().reverse() : rows;
+
+            for (const destinationRow of orderedRows) {
+                const cells = destinationRow?.getCells?.() || [];
+                const orderedCells = direction === 'prev' ? cells.slice().reverse() : cells;
+
+                for (const destinationCell of orderedCells) {
+                    if (navigateToCandidate(destinationCell)) return true;
+                }
+            }
+
+            return false;
+        };
+
+        if (canChangePage) {
+            const change = direction === 'prev'
+                ? table.previousPage?.()
+                : table.nextPage?.();
+
+            Promise.resolve(change).then(() => {
+                if (table.getPage() !== currentPage) openPageDestination();
+            });
             return;
         }
 
-        if (direction === 'next' && table && typeof table.navigateNext === 'function') {
-            table.navigateNext();
+        const grid = cell?.getElement?.()?.closest?.('.tabulator');
+        const documentElement = globalThis.document;
+        const focusableSelector = [
+            'a[href]',
+            'button:not([disabled])',
+            'input:not([disabled])',
+            'select:not([disabled])',
+            'textarea:not([disabled])',
+            '[tabindex]:not([tabindex="-1"])'
+        ].join(',');
+        const focusableElements = grid && documentElement?.querySelectorAll
+            ? Array.from(documentElement.querySelectorAll(focusableSelector))
+                .filter(element => !grid.contains(element))
+            : [];
+        const gridPosition = element => {
+            if (!grid || typeof grid.compareDocumentPosition !== 'function') return false;
+
+            const position = direction === 'prev'
+                ? globalThis.Node?.DOCUMENT_POSITION_PRECEDING || 2
+                : globalThis.Node?.DOCUMENT_POSITION_FOLLOWING || 4;
+            return Boolean(grid.compareDocumentPosition(element) & position);
+        };
+        const outsideElements = focusableElements.filter(gridPosition);
+        const target = direction === 'prev'
+            ? outsideElements[outsideElements.length - 1]
+            : outsideElements[0];
+
+        if (target && typeof target.focus === 'function') {
+            target.focus();
+            return;
         }
+
+        globalThis.document?.activeElement?.blur?.();
+
     }, 0);
 };
 
