@@ -49,7 +49,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
     return true;
 };
 
-const isEditableCandidate = candidate => {
+export const isEditableCandidate = candidate => {
     if (!candidate) return false;
 
     const column = candidate.getColumn && candidate.getColumn();
