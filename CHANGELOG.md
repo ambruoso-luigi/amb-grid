@@ -2,6 +2,21 @@
 
 All notable changes to AMB Grid are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Added global keyboard shortcuts for page navigation and same-column vertical navigation.
+
+### Fixed
+
+- Preserved the active editor and focus through paginated keyboard navigation, including partial final pages.
+- Kept lookup keyboard selection and automatic scrolling aligned while navigating results.
+
+### Changed
+
+- Extended `Tab` and `Shift+Tab` navigation across local page boundaries with predictable focus exit at absolute boundaries.
+
 ## [0.6.0] - 2026-08-21
 
 ### Added

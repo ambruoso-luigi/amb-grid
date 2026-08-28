@@ -37,6 +37,24 @@ const isCandidateActuallyActive = candidate => {
     );
 };
 
+/**
+ * Coordinates global keyboard navigation for a paginated grid.
+ *
+ * Page transitions wait for both the page Promise and the new-page render,
+ * stabilize virtual rows, activate the requested destination, and release all
+ * temporary listeners through one idempotent finalizer. `direction` is
+ * `next`/`prev`; `destination` is `first`/`last` or an object containing an
+ * `edge` and an exact column `field` for vertical navigation.
+ *
+ * @param {object} context - Runtime dependencies.
+ * @param {HTMLElement} context.tableElement - Grid root element.
+ * @param {object} context.table - Runtime table component.
+ * @param {object} context.paginationMethods - Public pagination methods.
+ * @param {boolean} context.enabled - Whether pagination navigation is active.
+ * @returns {{transitionPage: Function, destroy: Function}} Runtime lifecycle.
+ * @private
+ * @internal
+ */
 export const createPaginationKeyboardRuntime = ({
     tableElement,
     table,
@@ -48,6 +66,12 @@ export const createPaginationKeyboardRuntime = ({
     let transitionInProgress = false;
     let activeFinalizer = null;
     let destroyed = false;
+
+    const normalizeDestination = destination => (
+        typeof destination === 'string'
+            ? { edge: destination, field: null }
+            : { edge: destination?.edge || 'first', field: destination?.field || null }
+    );
 
     const getRenderedRows = destination => {
         const rowElements = Array.from(
@@ -77,26 +101,38 @@ export const createPaginationKeyboardRuntime = ({
         return pageRows[pageRows.length - 1] || null;
     };
 
-    const activateRenderedCandidate = async (destination, allowRenderRecovery) => {
-        for (const row of getRenderedRows(destination)) {
+    const getDestinationCandidates = destination => {
+        const { edge, field } = normalizeDestination(destination);
+        const rows = getRenderedRows(edge);
+
+        if (field) {
+            const row = rows[0];
+            const candidate = row?.getCell?.(field)
+                || row?.getCells?.().find(cell => cell.getField?.() === field);
+            return candidate ? [candidate] : [];
+        }
+
+        return rows.flatMap(row => {
             const cells = row.getCells();
-            const candidates = destination === 'last' ? cells.slice().reverse() : cells;
+            return edge === 'last' ? cells.slice().reverse() : cells;
+        });
+    };
 
-            for (const candidate of candidates) {
-                const result = navigateToCandidate(candidate);
-                const activeImmediately = isCandidateActuallyActive(candidate);
-                if (!result) continue;
+    const activateRenderedCandidate = async (destination, allowRenderRecovery) => {
+        for (const candidate of getDestinationCandidates(destination)) {
+            const result = navigateToCandidate(candidate);
+            const activeImmediately = isCandidateActuallyActive(candidate);
+            if (!result) continue;
 
-                await Promise.resolve();
-                await nextFrame();
-                await nextFrame();
+            await Promise.resolve();
+            await nextFrame();
+            await nextFrame();
 
-                if (isCandidateActuallyActive(candidate)) return true;
-                if (activeImmediately && allowRenderRecovery) {
-                    // A partial final page can realign its virtual rows after
-                    // the first edit. Reacquire the replaced component once.
-                    return activateRenderedCandidate(destination, false);
-                }
+            if (isCandidateActuallyActive(candidate)) return true;
+            if (activeImmediately && allowRenderRecovery) {
+                // A partial final page can realign its virtual rows after
+                // the first edit. Reacquire the replaced component once.
+                return activateRenderedCandidate(destination, false);
             }
         }
 
@@ -104,9 +140,10 @@ export const createPaginationKeyboardRuntime = ({
     };
 
     const activateDestination = async destination => {
-        const destinationRow = destination === 'last'
-            ? getLastPageRow() || getRenderedRows(destination)[0]
-            : getRenderedRows(destination)[0];
+        const { edge } = normalizeDestination(destination);
+        const destinationRow = edge === 'last'
+            ? getLastPageRow() || getRenderedRows(edge)[0]
+            : getRenderedRows(edge)[0];
         const tableHolder = tableElement.querySelector?.('.tabulator-tableholder');
 
         if (typeof destinationRow?.scrollTo === 'function') {
@@ -118,7 +155,7 @@ export const createPaginationKeyboardRuntime = ({
             table.on?.('renderComplete', handleScrollRender);
 
             try {
-                await destinationRow.scrollTo(destination === 'last' ? 'bottom' : 'top', true);
+                await destinationRow.scrollTo(edge === 'last' ? 'bottom' : 'top', true);
 
                 if (tableHolder && tableHolder.scrollTop !== scrollBefore) {
                     await scrollRender;
@@ -130,6 +167,20 @@ export const createPaginationKeyboardRuntime = ({
 
         await nextFrame();
         return activateRenderedCandidate(destination, true);
+    };
+
+    const getCurrentPageRows = () => {
+        if (typeof table.getRows !== 'function') return getRenderedRows('first');
+
+        const rows = table.getRows('active') || [];
+        const pageSize = paginationMethods.getPageSize?.();
+        const page = paginationMethods.getPage();
+
+        if (!Number.isInteger(pageSize) || pageSize <= 0 || rows.length <= pageSize) {
+            return rows;
+        }
+
+        return rows.slice((page - 1) * pageSize, page * pageSize);
     };
 
     const closeActiveEditor = () => {
@@ -148,6 +199,18 @@ export const createPaginationKeyboardRuntime = ({
         return !tableElement.querySelector?.('.tabulator-editing');
     };
 
+    /**
+     * Changes one local page and activates a destination after rendering.
+     * The transition is serialized and owns all temporary render listeners.
+     *
+     * @param {object} request - Page transition request.
+     * @param {'next'|'prev'} request.direction - Adjacent page direction.
+     * @param {'first'|'last'|{edge: 'first'|'last', field: string}} request.destination
+     * Destination edge, optionally constrained to an exact field.
+     * @returns {Promise<boolean>} Whether the destination became active.
+     * @private
+     * @internal
+     */
     const transitionPage = ({ direction, destination }) => {
         const pageBefore = paginationMethods.getPage();
         const pageMax = paginationMethods.getPageMax();
@@ -231,17 +294,75 @@ export const createPaginationKeyboardRuntime = ({
 
     const unregisterCoordinator = registerPageNavigationCoordinator(table, { transitionPage });
 
+    const handleVerticalNavigation = direction => {
+        const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
+        const renderedCells = getRenderedRows('first').flatMap(row => row.getCells());
+        const currentCell = renderedCells.find(cell => cell.getElement?.() === editingElement);
+
+        if (!currentCell) return false;
+
+        const field = currentCell.getField?.();
+        const currentRow = currentCell.getRow?.();
+        const pageRows = getCurrentPageRows();
+        const rowIndex = pageRows.indexOf(currentRow);
+
+        if (!field || rowIndex === -1) return false;
+
+        const step = direction === 'prev' ? -1 : 1;
+        const targetRow = pageRows[rowIndex + step];
+
+        if (targetRow) {
+            const targetCell = targetRow.getCell?.(field)
+                || targetRow.getCells?.().find(cell => cell.getField?.() === field);
+
+            if (!isEditableCandidate(targetCell)) return true;
+            if (!closeActiveEditor()) return true;
+
+            navigateToCandidate(targetCell);
+            return true;
+        }
+
+        const page = paginationMethods.getPage();
+        const pageMax = paginationMethods.getPageMax();
+        const canChangePage = direction === 'prev' ? page > 1 : page < pageMax;
+
+        if (canChangePage) {
+            transitionPage({
+                direction,
+                destination: {
+                    edge: direction === 'prev' ? 'last' : 'first',
+                    field
+                }
+            });
+        }
+
+        return true;
+    };
+
     const handleKeydown = event => {
         const isInsideTable = event.target === tableElement
             || tableElement.contains?.(event.target);
         const previous = matchesShortcut(event, GRID_SHORTCUTS.previousPage);
         const next = matchesShortcut(event, GRID_SHORTCUTS.nextPage);
+        const verticalUp = matchesShortcut(event, GRID_SHORTCUTS.previousRow);
+        const verticalDown = matchesShortcut(event, GRID_SHORTCUTS.nextRow);
         const isTab = event.key === 'Tab'
             && !event.altKey
             && !event.ctrlKey
             && !event.metaKey;
 
-        if (!isInsideTable || (!previous && !next && !isTab)) return;
+        if (!isInsideTable || (!previous && !next && !verticalUp && !verticalDown && !isTab)) return;
+
+        if (verticalUp || verticalDown) {
+            const handled = handleVerticalNavigation(verticalUp ? 'prev' : 'next');
+
+            if (!handled) return;
+
+            event.preventDefault();
+            event.stopPropagation?.();
+            event.stopImmediatePropagation?.();
+            return;
+        }
 
         if (isTab) {
             const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
@@ -313,6 +434,13 @@ export const createPaginationKeyboardRuntime = ({
 
     return {
         transitionPage,
+        /**
+         * Releases permanent and in-flight listeners owned by this runtime.
+         *
+         * @returns {void}
+         * @private
+         * @internal
+         */
         destroy() {
             destroyed = true;
             activeFinalizer?.();

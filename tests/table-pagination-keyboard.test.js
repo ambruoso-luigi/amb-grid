@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createPaginationKeyboardRuntime } from '../src/lib/table/pagination-keyboard-runtime.js';
+import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
 
 const flush = async () => {
     for (let index = 0; index < 8; index += 1) await Promise.resolve();
@@ -214,5 +215,26 @@ describe('table pagination keyboard runtime', () => {
         shortcut(harness, 'PageDown');
         expect(harness.paginationMethods.nextPage).toHaveBeenCalledOnce();
         expect(harness.tableElement.next.title).toBe('Next page (Alt+PageDown)');
+    });
+
+    test.each([
+        ['ArrowUp', GRID_SHORTCUTS.previousRow],
+        ['ArrowDown', GRID_SHORTCUTS.nextRow]
+    ])('recognizes Alt+%s as vertical navigation', (key, shortcutDefinition) => {
+        expect(matchesShortcut({ key, altKey: true }, shortcutDefinition)).toBe(true);
+        expect(matchesShortcut({ key }, shortcutDefinition)).toBe(false);
+        expect(matchesShortcut({ key, ctrlKey: true }, shortcutDefinition)).toBe(false);
+        expect(matchesShortcut({ key, metaKey: true }, shortcutDefinition)).toBe(false);
+    });
+
+    test('keeps page shortcuts recognized', () => {
+        expect(matchesShortcut(
+            { key: 'PageUp', altKey: true },
+            GRID_SHORTCUTS.previousPage
+        )).toBe(true);
+        expect(matchesShortcut(
+            { key: 'PageDown', altKey: true },
+            GRID_SHORTCUTS.nextPage
+        )).toBe(true);
     });
 });

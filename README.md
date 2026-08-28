@@ -311,6 +311,16 @@ popup/action cells, and non-data interactive columns:
 * `Tab` moves to the next editable or interactive AMB Grid cell.
 * `Shift+Tab` moves to the previous editable or interactive AMB Grid
   cell.
+* With local pagination, `Tab` from the last editable cell opens the first
+  editable cell on the next page. `Shift+Tab` from the first editable cell
+  opens the last editable cell on the previous page.
+* At the absolute grid boundaries, `Tab` and `Shift+Tab` move focus out of the
+  grid in the corresponding direction.
+* `Alt+PageDown` opens the next page and its first editable cell.
+  `Alt+PageUp` opens the previous page and its first editable cell.
+* `Alt+ArrowDown` and `Alt+ArrowUp` move to the next or previous row while
+  preserving the current column. At a page edge they continue on the first or
+  last row of the adjacent page; at an absolute boundary they do nothing.
 * The standard selection column participates in cell navigation. `Enter` and
   `Space` toggle row selection through the Row Component API.
 * The standard delete/undo/remove-new column participates in cell navigation
