@@ -1,3 +1,8 @@
+import {
+    focusAdjacentOutsideGrid,
+    getPageNavigationCoordinator
+} from '../table/page-navigation-coordinator.js';
+
 export const getInitialValue = cell => {
     const value = cell.getValue();
 
@@ -49,7 +54,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
     return true;
 };
 
-const isEditableCandidate = candidate => {
+export const isEditableCandidate = candidate => {
     if (!candidate) return false;
 
     const column = candidate.getColumn && candidate.getColumn();
@@ -126,67 +131,21 @@ export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
         const canChangePage = direction === 'prev'
             ? currentPage > 1
             : currentPage < pageMax;
+        const coordinator = getPageNavigationCoordinator(table);
 
-        const openPageDestination = () => {
-            const rows = table.getRows('visible') || [];
-            const orderedRows = direction === 'prev' ? rows.slice().reverse() : rows;
-
-            for (const destinationRow of orderedRows) {
-                const cells = destinationRow?.getCells?.() || [];
-                const orderedCells = direction === 'prev' ? cells.slice().reverse() : cells;
-
-                for (const destinationCell of orderedCells) {
-                    if (navigateToCandidate(destinationCell)) return true;
-                }
-            }
-
-            return false;
-        };
-
-        if (canChangePage) {
-            const change = direction === 'prev'
-                ? table.previousPage?.()
-                : table.nextPage?.();
-
-            Promise.resolve(change).then(() => {
-                if (table.getPage() !== currentPage) openPageDestination();
+        if (canChangePage && coordinator) {
+            coordinator.transitionPage({
+                direction,
+                destination: direction === 'prev' ? 'last' : 'first'
             });
             return;
         }
 
         const grid = cell?.getElement?.()?.closest?.('.tabulator');
-        const documentElement = globalThis.document;
-        const focusableSelector = [
-            'a[href]',
-            'button:not([disabled])',
-            'input:not([disabled])',
-            'select:not([disabled])',
-            'textarea:not([disabled])',
-            '[tabindex]:not([tabindex="-1"])'
-        ].join(',');
-        const focusableElements = grid && documentElement?.querySelectorAll
-            ? Array.from(documentElement.querySelectorAll(focusableSelector))
-                .filter(element => !grid.contains(element))
-            : [];
-        const gridPosition = element => {
-            if (!grid || typeof grid.compareDocumentPosition !== 'function') return false;
 
-            const position = direction === 'prev'
-                ? globalThis.Node?.DOCUMENT_POSITION_PRECEDING || 2
-                : globalThis.Node?.DOCUMENT_POSITION_FOLLOWING || 4;
-            return Boolean(grid.compareDocumentPosition(element) & position);
-        };
-        const outsideElements = focusableElements.filter(gridPosition);
-        const target = direction === 'prev'
-            ? outsideElements[outsideElements.length - 1]
-            : outsideElements[0];
-
-        if (target && typeof target.focus === 'function') {
-            target.focus();
-            return;
+        if (!focusAdjacentOutsideGrid(grid, direction)) {
+            globalThis.document?.activeElement?.blur?.();
         }
-
-        globalThis.document?.activeElement?.blur?.();
 
     }, 0);
 };

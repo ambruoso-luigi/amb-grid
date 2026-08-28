@@ -29,6 +29,15 @@ const moveAndCheck = async (page, key, expectedPage) => {
     await expectItemCodeEditor(page);
 };
 
+const expectFocusOutsideGrid = async page => {
+    await expect.poll(() => page.evaluate(() => Boolean(
+        document.activeElement
+        && document.activeElement !== document.body
+        && !document.activeElement.closest('#inventory-table')
+        && !document.activeElement.closest('.amb-large-text-editor')
+    ))).toBe(true);
+};
+
 test.describe('keyboard pagination focus', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/#getting-started-javascript');
@@ -86,5 +95,54 @@ test.describe('keyboard pagination focus', () => {
 
         await cell(page, 'notes').click();
         await expect(warehouse).not.toHaveClass(/amb-autocomplete-cell--editing/);
+    });
+
+    test('moves Tab and Shift+Tab symmetrically across pages', async ({ page }) => {
+        const tableHolder = table(page).locator('.tabulator-tableholder');
+
+        await tableHolder.hover();
+        await page.mouse.wheel(0, 10000);
+        await expect(table(page).locator('.tabulator-row').filter({ hasText: 'PRD-H010' })).toBeVisible();
+
+        const lastNotes = table(page)
+            .locator('.tabulator-row')
+            .filter({ hasText: 'PRD-H010' })
+            .locator('.tabulator-cell[tabulator-field="notes"]');
+
+        await lastNotes.dblclick({ delay: 100 });
+        await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+        await page.keyboard.press('Tab');
+        await waitForPage(page, 2);
+        await expectItemCodeEditor(page);
+
+        await page.keyboard.press('Shift+Tab');
+        await waitForPage(page, 1);
+        await expect(table(page).locator('.tabulator-row').last().locator(
+            '.tabulator-cell[tabulator-field="notes"].tabulator-editing'
+        )).toHaveCount(1);
+        await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+    });
+
+    test('exits the grid at both absolute Tab boundaries', async ({ page }) => {
+        await cell(page, 'itemCode').dblclick({ delay: 100 });
+        await expectItemCodeEditor(page);
+        await page.keyboard.press('Shift+Tab');
+        await expectFocusOutsideGrid(page);
+
+        await cell(page, 'itemCode').dblclick({ delay: 100 });
+        await expectItemCodeEditor(page);
+        for (let pageNumber = 2; pageNumber <= 11; pageNumber += 1) {
+            await moveAndCheck(page, 'Alt+PageDown', pageNumber);
+        }
+
+        const finalNotes = table(page)
+            .locator('.tabulator-row')
+            .last()
+            .locator('.tabulator-cell[tabulator-field="notes"]');
+        await finalNotes.dblclick({ delay: 100 });
+        await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+        await page.keyboard.press('Tab');
+        await waitForPage(page, 11);
+        await expectFocusOutsideGrid(page);
     });
 });

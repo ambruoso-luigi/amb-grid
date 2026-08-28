@@ -1,211 +1,218 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createPaginationKeyboardRuntime } from '../src/lib/table/pagination-keyboard-runtime.js';
 
-const createTableElement = () => {
-    const listeners = new Map();
-    const rows = [];
-    const previous = { title: '', setAttribute: vi.fn() };
-    const next = { title: '', setAttribute: vi.fn() };
-    const editing = { present: false };
+const flush = async () => {
+    for (let index = 0; index < 8; index += 1) await Promise.resolve();
+};
+
+const createElement = () => {
+    const classes = new Set();
+    const editor = { editor: true };
 
     return {
-        rows, previous, next, editing,
-        addEventListener: (type, listener, capture) => listeners.set(`${type}:${capture}`, listener),
-        removeEventListener: vi.fn((type, listener, capture) => {
-            if (listeners.get(`${type}:${capture}`) === listener) listeners.delete(`${type}:${capture}`);
-        }),
-        contains: target => target?.inside === true || target?.cell === true,
-        querySelectorAll: selector => selector === '.tabulator-row' ? rows : [],
-        querySelector: selector => selector === '.tabulator-editing'
-            || selector === '.tabulator-cell.tabulator-editing'
-            ? (editing.present ? editing : null)
-            : selector.includes('prev') ? previous : next,
-        dispatch(event) {
-            const listener = listeners.get('keydown:true');
-            const dispatched = { preventDefault: vi.fn(), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn(), ...event };
-            listener?.(dispatched);
-            return dispatched;
-        },
-        listener: () => listeners.get('keydown:true')
+        editor,
+        classList: { contains: value => classes.has(value), add: value => classes.add(value) },
+        contains: value => value === editor
     };
 };
 
-const createCandidate = ({ editable = true, edit = vi.fn() } = {}) => ({
-    getColumn: () => ({ isVisible: () => true, getDefinition: () => ({ editable, editor: edit }) }),
-    edit,
-    getElement: () => ({ cell: true })
-});
+const createCandidate = ({ editable = true, activates = true } = {}) => {
+    const element = createElement();
+    const edit = vi.fn(() => {
+        if (activates) {
+            element.classList.add('tabulator-editing');
+            globalThis.document.activeElement = element.editor;
+        }
+        return true;
+    });
 
-const createTable = ({ page = 1, max = 3, rows = [] } = {}) => {
+    return {
+        edit,
+        getElement: () => element,
+        getColumn: () => ({
+            isVisible: () => true,
+            getDefinition: () => ({ editable, editor: edit })
+        })
+    };
+};
+
+const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
+    const listeners = new Map();
+    const keyListeners = new Map();
+    const rowElement = {};
+    const previous = { title: '', setAttribute: vi.fn() };
+    const next = { title: '', setAttribute: vi.fn() };
     let currentPage = page;
+    let editing = false;
+    const tableElement = {
+        previous,
+        next,
+        contains: target => target?.inside === true,
+        querySelectorAll: selector => selector === '.tabulator-row' ? [rowElement] : [],
+        querySelector: selector => selector === '.tabulator-editing'
+            ? (editing ? {} : null)
+            : selector.includes('prev') ? previous : next,
+        addEventListener: (type, listener, capture) => keyListeners.set(`${type}:${capture}`, listener),
+        removeEventListener: vi.fn(),
+        dispatch(event) {
+            const dispatched = { preventDefault: vi.fn(), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn(), ...event };
+            keyListeners.get('keydown:true')?.(dispatched);
+            return dispatched;
+        }
+    };
     const table = {
-        on: vi.fn(),
-        off: vi.fn(),
-        getRow: vi.fn(() => rows[0])
+        on: vi.fn((event, listener) => {
+            const eventListeners = listeners.get(event) || new Set();
+            eventListeners.add(listener);
+            listeners.set(event, eventListeners);
+        }),
+        off: vi.fn((event, listener) => listeners.get(event)?.delete(listener)),
+        getRow: vi.fn(() => ({ getCells: () => cells })),
+        emit: event => [...(listeners.get(event) || [])].forEach(listener => listener())
     };
     const paginationMethods = {
-        previousPage: vi.fn(() => { currentPage -= 1; return Promise.resolve(); }),
-        nextPage: vi.fn(() => { currentPage += 1; return Promise.resolve(); }),
         getPage: vi.fn(() => currentPage),
-        getPageMax: vi.fn(() => max)
+        getPageMax: vi.fn(() => max),
+        nextPage: vi.fn(() => { currentPage += 1; return Promise.resolve(); }),
+        previousPage: vi.fn(() => { currentPage -= 1; return Promise.resolve(); })
     };
-    return { table, paginationMethods, setPage: value => { currentPage = value; } };
+    const runtime = createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+
+    return {
+        table, tableElement, paginationMethods, runtime,
+        setEditing: value => { editing = value; },
+        setPage: value => { currentPage = value; },
+        page: () => currentPage
+    };
 };
 
-const shortcut = (tableElement, key = 'PageDown') => tableElement.dispatch({
-    key, altKey: true, target: { inside: true }
+const shortcut = (harness, key) => harness.tableElement.dispatch({
+    key,
+    altKey: true,
+    target: { inside: true }
 });
 
 describe('table pagination keyboard runtime', () => {
-    beforeEach(() => { globalThis.document = { activeElement: null }; });
-    afterEach(() => { delete globalThis.document; });
-
-    test('uses capture phase and opens the first rendered editable cell', async () => {
-        const tableElement = createTableElement();
-        const firstEditable = createCandidate();
-        const rowElement = {};
-        tableElement.rows.push(rowElement);
-        const { table, paginationMethods } = createTable({ rows: [{ getCells: () => [firstEditable] }] });
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
-
-        shortcut(tableElement);
-        await Promise.resolve();
-
-        expect(tableElement.listener()).toBeDefined();
-        expect(paginationMethods.nextPage).toHaveBeenCalledOnce();
-        expect(table.getRow).toHaveBeenCalledWith(rowElement);
-        expect(firstEditable.edit).toHaveBeenCalledOnce();
+    beforeEach(() => {
+        globalThis.document = { activeElement: null };
+        globalThis.requestAnimationFrame = callback => { callback(); return 1; };
     });
 
-    test('skips readonly cells and opens the first editable candidate', async () => {
-        const tableElement = createTableElement();
-        tableElement.rows.push({});
-        const readonly = createCandidate({ editable: false });
-        const editable = createCandidate();
-        const { table, paginationMethods } = createTable({ rows: [{ getCells: () => [readonly, editable] }] });
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
-
-        shortcut(tableElement);
-        await Promise.resolve();
-
-        expect(readonly.edit).not.toHaveBeenCalled();
-        expect(editable.edit).toHaveBeenCalledOnce();
+    afterEach(() => {
+        delete globalThis.document;
+        delete globalThis.requestAnimationFrame;
     });
 
-    test('uses the DOM rows instead of getRows visible', async () => {
-        const tableElement = createTableElement();
-        tableElement.rows.push({});
+    test.each([
+        ['next', 'first', 1, 'nextPage'],
+        ['prev', 'first', 2, 'previousPage'],
+        ['prev', 'last', 2, 'previousPage']
+    ])('coordinates %s + %s', async (direction, destination, page, method) => {
+        const first = createCandidate();
+        const last = createCandidate();
+        const harness = createHarness({ page, cells: [first, last] });
+        const transition = harness.runtime.transitionPage({ direction, destination });
+
+        harness.table.emit('renderComplete');
+        await transition;
+
+        expect(harness.paginationMethods[method]).toHaveBeenCalledOnce();
+        expect(destination === 'last' ? last.edit : first.edit).toHaveBeenCalledOnce();
+    });
+
+    test('waits when renderComplete happens before the page Promise', async () => {
         const candidate = createCandidate();
-        const { table, paginationMethods } = createTable({ rows: [{ getCells: () => [candidate] }] });
-        table.getRows = vi.fn();
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+        const harness = createHarness({ cells: [candidate] });
+        let resolvePage;
+        harness.paginationMethods.nextPage.mockImplementationOnce(() => {
+            harness.setPage(2);
+            return new Promise(resolve => { resolvePage = resolve; });
+        });
+        const transition = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });
 
-        shortcut(tableElement);
-        await Promise.resolve();
-
-        expect(table.getRows).not.toHaveBeenCalled();
+        harness.table.emit('renderComplete');
+        expect(candidate.edit).not.toHaveBeenCalled();
+        resolvePage();
+        await transition;
         expect(candidate.edit).toHaveBeenCalledOnce();
     });
 
-    test('always opens the first editable cell when navigating backwards', async () => {
-        const tableElement = createTableElement();
-        tableElement.rows.push({});
-        const first = createCandidate();
-        const later = createCandidate();
-        const { table, paginationMethods } = createTable({ page: 2, rows: [{ getCells: () => [first, later] }] });
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+    test('waits when the page Promise resolves before renderComplete', async () => {
+        const candidate = createCandidate();
+        const harness = createHarness({ cells: [candidate] });
+        const transition = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });
 
-        shortcut(tableElement, 'PageUp');
-        await Promise.resolve();
-
-        expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
-        expect(first.edit).toHaveBeenCalledOnce();
-        expect(later.edit).not.toHaveBeenCalled();
+        await flush();
+        expect(candidate.edit).not.toHaveBeenCalled();
+        harness.table.emit('renderComplete');
+        await transition;
+        expect(candidate.edit).toHaveBeenCalledOnce();
     });
 
-    test('ignores Tab and Shift+Tab', () => {
-        const tableElement = createTableElement();
-        const { table, paginationMethods } = createTable({ page: 2 });
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+    test('does not blur or transition at an absolute boundary', async () => {
+        const harness = createHarness({ page: 1, max: 1 });
+        const activeElement = { inside: true, blur: vi.fn() };
+        globalThis.document.activeElement = activeElement;
 
-        const tab = tableElement.dispatch({ key: 'Tab', target: { inside: true } });
-        const shiftTab = tableElement.dispatch({ key: 'Tab', shiftKey: true, target: { inside: true } });
+        expect(await harness.runtime.transitionPage({ direction: 'prev', destination: 'first' })).toBe(false);
+        expect(await harness.runtime.transitionPage({ direction: 'next', destination: 'first' })).toBe(false);
+        expect(activeElement.blur).not.toHaveBeenCalled();
+        expect(harness.paginationMethods.nextPage).not.toHaveBeenCalled();
+    });
+
+    test('locks repeated transitions and cleans up a rejection', async () => {
+        const harness = createHarness({ page: 1 });
+        let rejectPage;
+        harness.paginationMethods.nextPage.mockImplementationOnce(() => new Promise((resolve, reject) => { rejectPage = reject; }));
+        const first = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });
+
+        expect(await harness.runtime.transitionPage({ direction: 'next', destination: 'first' })).toBe(false);
+        rejectPage(new Error('page failed'));
+        expect(await first).toBe(false);
+
+        harness.setPage(2);
+        const reverse = harness.runtime.transitionPage({ direction: 'prev', destination: 'first' });
+        harness.table.emit('renderComplete');
+        await reverse;
+        expect(harness.paginationMethods.previousPage).toHaveBeenCalledOnce();
+    });
+
+    test('distinguishes edit invocation from a real active editor', async () => {
+        const failed = createCandidate({ activates: false });
+        const harness = createHarness({ cells: [failed] });
+        const transition = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });
+
+        harness.table.emit('renderComplete');
+        expect(await transition).toBe(false);
+        expect(failed.edit).toHaveBeenCalledOnce();
+
+        const reverse = harness.runtime.transitionPage({ direction: 'prev', destination: 'first' });
+        harness.table.emit('renderComplete');
+        await reverse;
+        expect(harness.paginationMethods.previousPage).toHaveBeenCalledOnce();
+    });
+
+    test('destroy removes a pending render listener and unlocks the coordinator', async () => {
+        const harness = createHarness({});
+        const transition = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });
+
+        harness.runtime.destroy();
+
+        expect(await transition).toBe(false);
+        expect(harness.table.off).toHaveBeenCalledWith('renderComplete', expect.any(Function));
+    });
+
+    test('uses centralized shortcuts and ignores Tab and Shift+Tab', () => {
+        const harness = createHarness({});
+        const tab = harness.tableElement.dispatch({ key: 'Tab', target: { inside: true } });
+        const shiftTab = harness.tableElement.dispatch({ key: 'Tab', shiftKey: true, target: { inside: true } });
 
         expect(tab.preventDefault).not.toHaveBeenCalled();
         expect(shiftTab.preventDefault).not.toHaveBeenCalled();
-        expect(paginationMethods.nextPage).not.toHaveBeenCalled();
-        expect(paginationMethods.previousPage).not.toHaveBeenCalled();
-    });
+        expect(harness.paginationMethods.nextPage).not.toHaveBeenCalled();
 
-    test('does not blur or paginate at either boundary', () => {
-        const tableElement = createTableElement();
-        const activeElement = { cell: true, blur: vi.fn() };
-        globalThis.document.activeElement = activeElement;
-        const { table, paginationMethods } = createTable({ page: 1, max: 1 });
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
-
-        shortcut(tableElement, 'PageUp');
-        shortcut(tableElement, 'PageDown');
-
-        expect(activeElement.blur).not.toHaveBeenCalled();
-        expect(paginationMethods.previousPage).not.toHaveBeenCalled();
-        expect(paginationMethods.nextPage).not.toHaveBeenCalled();
-    });
-
-    test('blocks a repeated shortcut while the Promise is pending', () => {
-        const tableElement = createTableElement();
-        const { table, paginationMethods } = createTable({ page: 2 });
-        let resolve;
-        paginationMethods.nextPage.mockReturnValueOnce(new Promise(done => { resolve = done; }));
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
-
-        shortcut(tableElement);
-        shortcut(tableElement);
-        expect(paginationMethods.nextPage).toHaveBeenCalledOnce();
-        resolve();
-    });
-
-    test('releases the transition lock when no rendered candidate exists', async () => {
-        const tableElement = createTableElement();
-        const { table, paginationMethods } = createTable({ page: 1 });
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
-
-        shortcut(tableElement);
-        await Promise.resolve();
-        await Promise.resolve();
-        shortcut(tableElement, 'PageUp');
-        await Promise.resolve();
-
-        expect(paginationMethods.nextPage).toHaveBeenCalledOnce();
-        expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
-    });
-
-    test('cleans up when page activation throws', async () => {
-        const tableElement = createTableElement();
-        tableElement.rows.push({});
-        const edit = vi.fn().mockImplementationOnce(() => { throw new Error('activation failed'); });
-        const candidate = createCandidate({ edit });
-        const { table, paginationMethods } = createTable({ page: 1, rows: [{ getCells: () => [candidate] }] });
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
-
-        shortcut(tableElement);
-        await Promise.resolve();
-        await Promise.resolve();
-        shortcut(tableElement, 'PageUp');
-        await Promise.resolve();
-
-        expect(paginationMethods.previousPage).toHaveBeenCalledOnce();
-    });
-
-    test('decorates pager controls and can be disabled', () => {
-        const tableElement = createTableElement();
-        const { table } = createTable({});
-        createPaginationKeyboardRuntime({ table, tableElement, paginationMethods: {}, enabled: true });
-        expect(tableElement.previous.title).toBe('Previous page (Alt+PageUp)');
-        expect(tableElement.next.title).toBe('Next page (Alt+PageDown)');
-
-        const disabled = createTableElement();
-        createPaginationKeyboardRuntime({ table: { on: vi.fn(), off: vi.fn() }, tableElement: disabled, paginationMethods: {}, enabled: false });
-        expect(disabled.listener()).toBeUndefined();
+        shortcut(harness, 'PageDown');
+        expect(harness.paginationMethods.nextPage).toHaveBeenCalledOnce();
+        expect(harness.tableElement.next.title).toBe('Next page (Alt+PageDown)');
     });
 });
