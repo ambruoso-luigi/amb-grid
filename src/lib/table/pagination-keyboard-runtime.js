@@ -153,7 +153,16 @@ export const createPaginationKeyboardRuntime = ({
         };
 
         pageLoadedListener = () => {
-            // The Promise below is the authoritative completion lifecycle.
+            try {
+                if (paginationMethods.getPage() !== pageBefore) {
+                    activatePage();
+                }
+            } catch {
+                // The transition must still be released when an editor
+                // cannot be activated after the page has rendered.
+            } finally {
+                finishTransition();
+            }
         };
 
         table?.on?.('pageLoaded', pageLoadedListener);
