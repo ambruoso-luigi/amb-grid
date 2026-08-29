@@ -68,6 +68,7 @@ export const createPaginationKeyboardRuntime = ({
     let activeFinalizer = null;
     let destroyed = false;
     const pendingEditorCloseFinalizers = new Set();
+    const pendingRenderWaitFinalizers = new Set();
 
     const normalizeDestination = destination => (
         typeof destination === 'string'
@@ -163,18 +164,22 @@ export const createPaginationKeyboardRuntime = ({
             const scrollRender = new Promise(resolve => { resolveScrollRender = resolve; });
             const handleScrollRender = () => resolveScrollRender();
 
-            table.on?.('renderComplete', handleScrollRender);
+            pendingRenderWaitFinalizers.add(handleScrollRender);
 
             try {
+                table.on?.('renderComplete', handleScrollRender);
                 await destinationRow.scrollTo(edge === 'last' ? 'bottom' : 'top', true);
 
                 if (tableHolder && tableHolder.scrollTop !== scrollBefore) {
                     await scrollRender;
                 }
             } finally {
+                pendingRenderWaitFinalizers.delete(handleScrollRender);
                 table.off?.('renderComplete', handleScrollRender);
             }
         }
+
+        if (destroyed) return false;
 
         await nextFrame();
         return activateRenderedCandidate(destination, true);
@@ -529,6 +534,7 @@ export const createPaginationKeyboardRuntime = ({
         destroy() {
             destroyed = true;
             for (const finalize of [...pendingEditorCloseFinalizers]) finalize();
+            for (const finalize of [...pendingRenderWaitFinalizers]) finalize();
             activeFinalizer?.();
             unregisterCoordinator();
             if (listenerAttached) tableElement.removeEventListener('keydown', handleKeydown, true);

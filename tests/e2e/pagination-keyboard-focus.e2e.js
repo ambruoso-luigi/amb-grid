@@ -181,7 +181,9 @@ test.describe('keyboard pagination focus', () => {
         await page.keyboard.press('Alt+ArrowUp');
         await expectFieldEditor(page, 'PRD-AB02', 'stockQuantity');
 
-        await rowCell(page, 'PRD-AB02', 'warehouse').dblclick({ delay: 100 });
+        const row2Warehouse = rowCell(page, 'PRD-AB02', 'warehouse');
+        await row2Warehouse.click();
+        await row2Warehouse.dblclick({ delay: 100 });
         await expect(page.locator('input.amb-autocomplete-editor')).toBeFocused();
         await page.keyboard.press('ArrowDown');
         await expect(page.getByRole('listbox', { name: 'Results List' })

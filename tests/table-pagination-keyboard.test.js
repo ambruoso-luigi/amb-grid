@@ -44,16 +44,18 @@ const createCandidate = ({ editable = true, activates = true } = {}) => {
     };
 };
 
-const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
+const createHarness = ({ page = 1, max = 3, cells = [], row = null } = {}) => {
     const listeners = new Map();
     const keyListeners = new Map();
     const rowElement = {};
     const previous = { title: '', setAttribute: vi.fn() };
     const next = { title: '', setAttribute: vi.fn() };
+    const tableHolder = { scrollTop: 0 };
     let currentPage = page;
     let editing = false;
     let editingElement = null;
     let renderedCells = cells;
+    const renderedRow = row || { getCells: () => renderedCells };
     const tableElement = {
         previous,
         next,
@@ -61,6 +63,7 @@ const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
         querySelectorAll: selector => selector === '.tabulator-row' ? [rowElement] : [],
         querySelector: selector => selector.includes('.tabulator-editing')
             ? (editing ? editingElement : null)
+            : selector === '.tabulator-tableholder' ? tableHolder
             : selector.includes('prev') ? previous : next,
         addEventListener: (type, listener, capture) => keyListeners.set(`${type}:${capture}`, listener),
         removeEventListener: vi.fn(),
@@ -77,7 +80,7 @@ const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
             listeners.set(event, eventListeners);
         }),
         off: vi.fn((event, listener) => listeners.get(event)?.delete(listener)),
-        getRow: vi.fn(() => ({ getCells: () => renderedCells })),
+        getRow: vi.fn(() => renderedRow),
         emit: (event, ...args) => [...(listeners.get(event) || [])]
             .forEach(listener => listener(...args))
     };
@@ -90,7 +93,7 @@ const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
     const runtime = createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
 
     return {
-        table, tableElement, paginationMethods, runtime,
+        table, tableElement, tableHolder, paginationMethods, runtime,
         listenerCount: event => listeners.get(event)?.size || 0,
         setCells: value => { renderedCells = value; },
         setEditing: (value, cell) => {
@@ -311,6 +314,33 @@ describe('table pagination keyboard runtime', () => {
 
         expect(await transition).toBe(false);
         expect(harness.table.off).toHaveBeenCalledWith('renderComplete', expect.any(Function));
+    });
+
+    test('destroy releases a pending virtual-scroll render wait', async () => {
+        const candidate = createCandidate();
+        let harness;
+        const row = {
+            getCells: () => [candidate],
+            scrollTo: vi.fn(async () => { harness.tableHolder.scrollTop = 100; })
+        };
+
+        harness = createHarness({ cells: [candidate], row });
+        const transition = harness.runtime.transitionPage({
+            direction: 'next',
+            destination: 'first'
+        });
+
+        harness.table.emit('renderComplete');
+        await flush();
+        expect(row.scrollTo).toHaveBeenCalledOnce();
+        expect(harness.listenerCount('renderComplete')).toBeGreaterThan(1);
+
+        harness.runtime.destroy();
+
+        expect(await transition).toBe(false);
+        await flush();
+        expect(harness.listenerCount('renderComplete')).toBe(0);
+        expect(candidate.edit).not.toHaveBeenCalled();
     });
 
     test('uses centralized shortcuts and ignores Tab and Shift+Tab', () => {
