@@ -1,6 +1,6 @@
 import { LookupDialog } from '../../ui/lookup-dialog.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
-import { getInitialValue, getLookupOptionValue } from './shared.js';
+import { getInitialValue, getLookupOptionValue, navigateToCandidate } from './shared.js';
 
     /**
      * Lookup code editor with a text input and search dialog button.
@@ -195,6 +195,54 @@ export function lookup(lookupInstance, options = {}) {
                 setCellLookupDescription(description);
                 clearInvalidCode();
                 closeWithSuccess(value);
+            };
+
+            const reopenAfterDialogSelection = () => {
+                const table = cell.getTable && cell.getTable();
+                const cellElement = cell.getElement && cell.getElement();
+
+                if (
+                    !table
+                    || typeof table.on !== 'function'
+                    || typeof table.off !== 'function'
+                ) return () => {};
+
+                let listening = true;
+                const cleanup = () => {
+                    if (!listening) return;
+
+                    listening = false;
+                    table.off('cellEdited', handleEditingFinished);
+                    table.off('cellEditCancelled', handleEditingFinished);
+                };
+                const matchesCurrentCell = editedCell => (
+                    editedCell === cell
+                    || editedCell?.getElement?.() === cellElement
+                );
+                function handleEditingFinished(editedCell) {
+                    if (!matchesCurrentCell(editedCell)) return;
+
+                    cleanup();
+                    const reopen = () => {
+                        const destinationCell = row?.getCell?.(field) || cell;
+                        const destinationElement = destinationCell?.getElement?.();
+
+                        if (!destinationElement || destinationElement.isConnected === false) return;
+
+                        navigateToCandidate(destinationCell);
+                    };
+
+                    if (typeof globalThis.requestAnimationFrame === 'function') {
+                        globalThis.requestAnimationFrame(reopen);
+                    } else {
+                        Promise.resolve().then(reopen);
+                    }
+                }
+
+                table.on('cellEdited', handleEditingFinished);
+                table.on('cellEditCancelled', handleEditingFinished);
+
+                return cleanup;
             };
 
             const applyMappedRecord = selected => {
@@ -662,7 +710,14 @@ export function lookup(lookupInstance, options = {}) {
                     if (normalizedOptions.mapToRow && appliedRecord === null) return;
 
                     input.value = String(committedValue ?? '');
-                    closeWithLookupItem(String(committedValue ?? ''), selected);
+                    const cancelReopen = reopenAfterDialogSelection();
+
+                    try {
+                        closeWithLookupItem(String(committedValue ?? ''), selected);
+                    } catch (error) {
+                        cancelReopen();
+                        throw error;
+                    }
                 } finally {
                     dialogOpen = false;
                 }

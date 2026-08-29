@@ -59,6 +59,18 @@ const expectLookupEditor = async (page, code) => {
     await expect(target.locator('.amb-lookup-editor__button')).toBeVisible();
 };
 
+const selectStatusDialogResult = async (page, value) => {
+    await page.keyboard.press('Enter');
+    const dialog = page.locator('.amb-lookup-dialog');
+
+    await expect(dialog).toBeVisible();
+    await dialog.locator('.amb-lookup-dialog__row')
+        .filter({ hasText: new RegExp(`^${value}\\b`) })
+        .click();
+    await dialog.locator('.amb-lookup-dialog__button--primary').click();
+    await expect(dialog).toHaveCount(0);
+};
+
 test.describe('keyboard pagination focus', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/#getting-started-javascript');
@@ -215,6 +227,54 @@ test.describe('keyboard pagination focus', () => {
 
         await page.keyboard.press('Alt+ArrowUp');
         await expectLookupEditor(page, 'PRD-AB02');
+    });
+
+    test('restores the lookup editor after selecting a real dialog result', async ({ page }) => {
+        const row2Status = rowCell(page, 'PRD-AB02', 'status');
+
+        await row2Status.click();
+        await row2Status.dblclick();
+        await expectLookupEditor(page, 'PRD-AB02');
+
+        await selectStatusDialogResult(page, 'A001');
+
+        await expectLookupEditor(page, 'PRD-AB02');
+        await expect(row2Status.locator('.amb-lookup-editor__input')).toHaveValue('A001');
+
+        await page.keyboard.press('Enter');
+        const dialog = page.locator('.amb-lookup-dialog');
+        await expect(dialog).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        await expectLookupEditor(page, 'PRD-AB02');
+
+        await page.keyboard.press('Alt+ArrowDown');
+        await expectLookupEditor(page, 'PRD-A003');
+        await page.keyboard.press('Alt+ArrowUp');
+        await expectLookupEditor(page, 'PRD-AB02');
+    });
+
+    test('moves Tab and Shift+Tab immediately after a real lookup selection', async ({ page }) => {
+        const row2Status = rowCell(page, 'PRD-AB02', 'status');
+
+        await row2Status.click();
+        await row2Status.dblclick();
+        await expectLookupEditor(page, 'PRD-AB02');
+        await selectStatusDialogResult(page, 'A001');
+        await expectLookupEditor(page, 'PRD-AB02');
+
+        await page.keyboard.press('Shift+Tab');
+        await expectFieldEditor(page, 'PRD-AB02', 'lastCheckDate');
+
+        await page.keyboard.press('Escape');
+        await row2Status.click();
+        await row2Status.dblclick();
+        await expectLookupEditor(page, 'PRD-AB02');
+        await selectStatusDialogResult(page, 'AB03');
+        await expectLookupEditor(page, 'PRD-AB02');
+
+        await page.keyboard.press('Tab');
+        await expectFieldEditor(page, 'PRD-AB02', 'requiresInspection');
     });
 
     test('waits for lookup lifecycle across pages and page shortcuts', async ({ page }) => {
