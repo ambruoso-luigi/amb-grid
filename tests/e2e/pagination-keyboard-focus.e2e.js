@@ -51,6 +51,14 @@ const expectFieldEditor = async (page, code, field) => {
     ), field)).toBe(field);
 };
 
+const expectLookupEditor = async (page, code) => {
+    const target = rowCell(page, code, 'status');
+
+    await expectFieldEditor(page, code, 'status');
+    await expect(target.locator('.amb-lookup-editor__input')).toBeFocused();
+    await expect(target.locator('.amb-lookup-editor__button')).toBeVisible();
+};
+
 test.describe('keyboard pagination focus', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/#getting-started-javascript');
@@ -184,6 +192,57 @@ test.describe('keyboard pagination focus', () => {
         await expectFieldEditor(page, 'PRD-A003', 'warehouse');
         await page.keyboard.press('Alt+ArrowUp');
         await expectFieldEditor(page, 'PRD-AB02', 'warehouse');
+    });
+
+    test('waits for lookup lifecycle during same-page vertical navigation', async ({ page }) => {
+        const row2Status = rowCell(page, 'PRD-AB02', 'status');
+
+        await row2Status.click();
+        await row2Status.dblclick();
+        await expectLookupEditor(page, 'PRD-AB02');
+
+        await page.keyboard.press('Alt+ArrowDown');
+        await expect(row2Status).not.toHaveClass(/tabulator-editing/);
+        await expectLookupEditor(page, 'PRD-A003');
+
+        await page.keyboard.press('Enter');
+        const dialog = page.locator('.amb-lookup-dialog');
+        await expect(dialog).toBeVisible();
+        await dialog.locator('.amb-lookup-dialog__footer .amb-lookup-dialog__button').first().click();
+        await expect(dialog).toHaveCount(0);
+
+        await page.keyboard.press('Alt+ArrowUp');
+        await expectLookupEditor(page, 'PRD-AB02');
+    });
+
+    test('waits for lookup lifecycle across pages and page shortcuts', async ({ page }) => {
+        const tableHolder = table(page).locator('.tabulator-tableholder');
+
+        await tableHolder.hover();
+        await page.mouse.wheel(0, 10000);
+        await expect(rowByCode(page, 'PRD-H010')).toBeVisible();
+        const lastStatus = rowCell(page, 'PRD-H010', 'status');
+        await lastStatus.click();
+        await lastStatus.dblclick();
+        await expectLookupEditor(page, 'PRD-H010');
+
+        await page.keyboard.press('Alt+ArrowDown');
+        await waitForPage(page, 2);
+        await expectLookupEditor(page, 'PRD-A011');
+
+        await page.keyboard.press('Alt+ArrowUp');
+        await waitForPage(page, 1);
+        await expectLookupEditor(page, 'PRD-H010');
+
+        await page.keyboard.press('Alt+PageDown');
+        await waitForPage(page, 2);
+        await expect(page.locator('.amb-lookup-editor')).toHaveCount(0);
+        await expectItemCodeEditor(page);
+
+        await page.keyboard.press('Alt+PageUp');
+        await waitForPage(page, 1);
+        await expect(page.locator('.amb-lookup-editor')).toHaveCount(0);
+        await expectItemCodeEditor(page);
     });
 
     test('crosses adjacent pages vertically while preserving the field', async ({ page }) => {

@@ -64,8 +64,10 @@ export const createPaginationKeyboardRuntime = ({
     if (!tableElement || !enabled) return { destroy() {} };
 
     let transitionInProgress = false;
+    let verticalNavigationInProgress = false;
     let activeFinalizer = null;
     let destroyed = false;
+    const pendingEditorCloseFinalizers = new Set();
 
     const normalizeDestination = destination => (
         typeof destination === 'string'
@@ -118,17 +120,26 @@ export const createPaginationKeyboardRuntime = ({
         });
     };
 
+    const activateCandidate = async candidate => {
+        const result = navigateToCandidate(candidate);
+        const activeImmediately = isCandidateActuallyActive(candidate);
+        if (!result) return { active: false, activeImmediately };
+
+        await Promise.resolve();
+        await nextFrame();
+        await nextFrame();
+
+        return {
+            active: isCandidateActuallyActive(candidate),
+            activeImmediately
+        };
+    };
+
     const activateRenderedCandidate = async (destination, allowRenderRecovery) => {
         for (const candidate of getDestinationCandidates(destination)) {
-            const result = navigateToCandidate(candidate);
-            const activeImmediately = isCandidateActuallyActive(candidate);
-            if (!result) continue;
+            const { active, activeImmediately } = await activateCandidate(candidate);
 
-            await Promise.resolve();
-            await nextFrame();
-            await nextFrame();
-
-            if (isCandidateActuallyActive(candidate)) return true;
+            if (active) return true;
             if (activeImmediately && allowRenderRecovery) {
                 // A partial final page can realign its virtual rows after
                 // the first edit. Reacquire the replaced component once.
@@ -183,20 +194,75 @@ export const createPaginationKeyboardRuntime = ({
         return rows.slice((page - 1) * pageSize, page * pageSize);
     };
 
-    const closeActiveEditor = () => {
-        const activeElement = globalThis.document?.activeElement;
-        const editingElement = tableElement.querySelector?.('.tabulator-editing');
+    const getEditingCell = editingElement => {
+        if (!editingElement) return null;
 
-        if (
+        return getRenderedRows('first')
+            .flatMap(row => row.getCells())
+            .find(cell => cell.getElement?.() === editingElement) || null;
+    };
+
+    const closeActiveEditorAndWait = currentCell => {
+        const activeElement = globalThis.document?.activeElement;
+        const editingElement = currentCell?.getElement?.()
+            || tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
+
+        if (!editingElement) return Promise.resolve(true);
+
+        const isCurrentCellEditing = () => (
+            editingElement.classList?.contains?.('tabulator-editing')
+            || tableElement.querySelector?.('.tabulator-cell.tabulator-editing') === editingElement
+        );
+        const canBlurActiveEditor = Boolean(
             activeElement
             && tableElement.contains?.(activeElement)
             && (activeElement.closest?.('.tabulator-editing') || editingElement)
             && typeof activeElement.blur === 'function'
-        ) {
-            activeElement.blur();
-        }
+            && typeof table.on === 'function'
+            && typeof table.off === 'function'
+        );
 
-        return !tableElement.querySelector?.('.tabulator-editing');
+        if (!isCurrentCellEditing()) return Promise.resolve(true);
+        if (!canBlurActiveEditor) return Promise.resolve(false);
+
+        return new Promise(resolve => {
+            let settled = false;
+            const cleanup = () => {
+                table.off?.('cellEdited', handleEditFinished);
+                table.off?.('cellEditCancelled', handleEditFinished);
+                pendingEditorCloseFinalizers.delete(abort);
+            };
+            const finalize = result => {
+                if (settled) return;
+
+                settled = true;
+                cleanup();
+                resolve(result);
+            };
+            const isCurrentCell = eventCell => (
+                eventCell === currentCell
+                || eventCell?.getElement?.() === editingElement
+            );
+            function handleEditFinished(eventCell) {
+                if (!isCurrentCell(eventCell)) return;
+
+                finalize(!isCurrentCellEditing());
+            }
+            const abort = () => finalize(false);
+
+            pendingEditorCloseFinalizers.add(abort);
+
+            try {
+                table.on('cellEdited', handleEditFinished);
+                table.on('cellEditCancelled', handleEditFinished);
+                activeElement.blur();
+            } catch {
+                finalize(false);
+                return;
+            }
+
+            if (!isCurrentCellEditing()) finalize(true);
+        });
     };
 
     /**
@@ -222,82 +288,93 @@ export const createPaginationKeyboardRuntime = ({
             return Promise.resolve(false);
         }
 
-        if (!closeActiveEditor()) return Promise.resolve(false);
-
         transitionInProgress = true;
-        let pagePromiseResolved = false;
-        let renderCompletedForNewPage = false;
-        let activationStarted = false;
-        let settled = false;
-        let resolveTransition;
-
-        const transition = new Promise(resolve => { resolveTransition = resolve; });
-        const finalize = result => {
-            if (settled) return;
-
-            settled = true;
-            table.off?.('renderComplete', handleRenderComplete);
+        const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
+        const currentCell = getEditingCell(editingElement);
+        const transition = (editingElement
+            ? closeActiveEditorAndWait(currentCell).then(closed => (
+                closed && !destroyed ? changePageAndActivate() : false
+            ))
+            : changePageAndActivate()
+        ).finally(() => {
             transitionInProgress = false;
-            activeFinalizer = null;
-            resolveTransition(result);
-        };
-        const tryActivate = () => {
-            if (
-                settled
-                || activationStarted
-                || !pagePromiseResolved
-                || !renderCompletedForNewPage
-            ) return;
-
-            if (paginationMethods.getPage() === pageBefore) {
-                finalize(false);
-                return;
-            }
-
-            activationStarted = true;
-            activateDestination(destination).then(finalize, () => finalize(false));
-        };
-        function handleRenderComplete() {
-            if (paginationMethods.getPage() === pageBefore) return;
-
-            renderCompletedForNewPage = true;
-            tryActivate();
-        }
-
-        activeFinalizer = () => finalize(false);
-        table.on?.('renderComplete', handleRenderComplete);
-
-        let change;
-
-        try {
-            change = direction === 'prev'
-                ? paginationMethods.previousPage()
-                : paginationMethods.nextPage();
-        } catch (error) {
-            finalize(false);
-            throw error;
-        }
-
-        Promise.resolve(change).then(() => {
-            pagePromiseResolved = true;
-
-            if (paginationMethods.getPage() === pageBefore) {
-                finalize(false);
-                return;
-            }
-
-            tryActivate();
-        }, () => finalize(false));
+        });
 
         return transition;
+
+        function changePageAndActivate() {
+            let pagePromiseResolved = false;
+            let renderCompletedForNewPage = false;
+            let activationStarted = false;
+            let settled = false;
+            let resolveTransition;
+
+            const pageTransition = new Promise(resolve => { resolveTransition = resolve; });
+            const finalize = result => {
+                if (settled) return;
+
+                settled = true;
+                table.off?.('renderComplete', handleRenderComplete);
+                activeFinalizer = null;
+                resolveTransition(result);
+            };
+            const tryActivate = () => {
+                if (
+                    settled
+                    || activationStarted
+                    || !pagePromiseResolved
+                    || !renderCompletedForNewPage
+                ) return;
+
+                if (paginationMethods.getPage() === pageBefore) {
+                    finalize(false);
+                    return;
+                }
+
+                activationStarted = true;
+                activateDestination(destination).then(finalize, () => finalize(false));
+            };
+            function handleRenderComplete() {
+                if (paginationMethods.getPage() === pageBefore) return;
+
+                renderCompletedForNewPage = true;
+                tryActivate();
+            }
+
+            activeFinalizer = () => finalize(false);
+            table.on?.('renderComplete', handleRenderComplete);
+
+            let change;
+
+            try {
+                change = direction === 'prev'
+                    ? paginationMethods.previousPage()
+                    : paginationMethods.nextPage();
+            } catch (error) {
+                finalize(false);
+                throw error;
+            }
+
+            Promise.resolve(change).then(() => {
+                pagePromiseResolved = true;
+
+                if (paginationMethods.getPage() === pageBefore) {
+                    finalize(false);
+                    return;
+                }
+
+                tryActivate();
+            }, () => finalize(false));
+
+            return pageTransition;
+        }
     };
 
     const unregisterCoordinator = registerPageNavigationCoordinator(table, { transitionPage });
 
     const handleVerticalNavigation = direction => {
         const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
-        const renderedCells = getRenderedRows('first').flatMap(row => row.getCells());
-        const currentCell = renderedCells.find(cell => cell.getElement?.() === editingElement);
+        const currentCell = getEditingCell(editingElement);
 
         if (!currentCell) return false;
 
@@ -307,6 +384,7 @@ export const createPaginationKeyboardRuntime = ({
         const rowIndex = pageRows.indexOf(currentRow);
 
         if (!field || rowIndex === -1) return false;
+        if (verticalNavigationInProgress) return true;
 
         const step = direction === 'prev' ? -1 : 1;
         const targetRow = pageRows[rowIndex + step];
@@ -316,9 +394,14 @@ export const createPaginationKeyboardRuntime = ({
                 || targetRow.getCells?.().find(cell => cell.getField?.() === field);
 
             if (!isEditableCandidate(targetCell)) return true;
-            if (!closeActiveEditor()) return true;
+            verticalNavigationInProgress = true;
+            void closeActiveEditorAndWait(currentCell)
+                .then(async closed => {
+                    if (!closed || destroyed) return;
 
-            navigateToCandidate(targetCell);
+                    await activateCandidate(targetCell);
+                })
+                .finally(() => { verticalNavigationInProgress = false; });
             return true;
         }
 
@@ -393,12 +476,14 @@ export const createPaginationKeyboardRuntime = ({
                 return;
             }
 
-            if (closeActiveEditor()) {
+            void closeActiveEditorAndWait(getEditingCell(editingElement)).then(closed => {
+                if (!closed || destroyed) return;
+
                 const grid = editingElement?.closest?.('.tabulator') || tableElement;
                 if (!focusAdjacentOutsideGrid(grid, direction)) {
                     globalThis.document?.activeElement?.blur?.();
                 }
-            }
+            });
             return;
         }
 
@@ -443,6 +528,7 @@ export const createPaginationKeyboardRuntime = ({
          */
         destroy() {
             destroyed = true;
+            for (const finalize of [...pendingEditorCloseFinalizers]) finalize();
             activeFinalizer?.();
             unregisterCoordinator();
             if (listenerAttached) tableElement.removeEventListener('keydown', handleKeydown, true);

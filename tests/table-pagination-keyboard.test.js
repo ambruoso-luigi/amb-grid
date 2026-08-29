@@ -8,13 +8,20 @@ const flush = async () => {
 
 const createElement = () => {
     const classes = new Set();
-    const editor = { editor: true };
-
-    return {
+    const editor = { editor: true, inside: true };
+    const element = {
         editor,
-        classList: { contains: value => classes.has(value), add: value => classes.add(value) },
+        classList: {
+            contains: value => classes.has(value),
+            add: value => classes.add(value),
+            remove: value => classes.delete(value)
+        },
         contains: value => value === editor
     };
+
+    editor.closest = selector => selector === '.tabulator-editing' ? element : null;
+
+    return element;
 };
 
 const createCandidate = ({ editable = true, activates = true } = {}) => {
@@ -45,13 +52,15 @@ const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
     const next = { title: '', setAttribute: vi.fn() };
     let currentPage = page;
     let editing = false;
+    let editingElement = null;
+    let renderedCells = cells;
     const tableElement = {
         previous,
         next,
         contains: target => target?.inside === true,
         querySelectorAll: selector => selector === '.tabulator-row' ? [rowElement] : [],
-        querySelector: selector => selector === '.tabulator-editing'
-            ? (editing ? {} : null)
+        querySelector: selector => selector.includes('.tabulator-editing')
+            ? (editing ? editingElement : null)
             : selector.includes('prev') ? previous : next,
         addEventListener: (type, listener, capture) => keyListeners.set(`${type}:${capture}`, listener),
         removeEventListener: vi.fn(),
@@ -68,8 +77,9 @@ const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
             listeners.set(event, eventListeners);
         }),
         off: vi.fn((event, listener) => listeners.get(event)?.delete(listener)),
-        getRow: vi.fn(() => ({ getCells: () => cells })),
-        emit: event => [...(listeners.get(event) || [])].forEach(listener => listener())
+        getRow: vi.fn(() => ({ getCells: () => renderedCells })),
+        emit: (event, ...args) => [...(listeners.get(event) || [])]
+            .forEach(listener => listener(...args))
     };
     const paginationMethods = {
         getPage: vi.fn(() => currentPage),
@@ -81,7 +91,13 @@ const createHarness = ({ page = 1, max = 3, cells = [] } = {}) => {
 
     return {
         table, tableElement, paginationMethods, runtime,
-        setEditing: value => { editing = value; },
+        listenerCount: event => listeners.get(event)?.size || 0,
+        setCells: value => { renderedCells = value; },
+        setEditing: (value, cell) => {
+            editing = value;
+            if (cell) editingElement = cell.getElement();
+            editingElement?.classList[value ? 'add' : 'remove']('tabulator-editing');
+        },
         setPage: value => { currentPage = value; },
         page: () => currentPage
     };
@@ -148,6 +164,100 @@ describe('table pagination keyboard runtime', () => {
         harness.table.emit('renderComplete');
         await transition;
         expect(candidate.edit).toHaveBeenCalledOnce();
+    });
+
+    test.each(['cellEdited', 'cellEditCancelled'])(
+        'waits for async editor closure through %s and ignores other cells',
+        async editEvent => {
+            const current = createCandidate();
+            const other = createCandidate();
+            const destination = createCandidate();
+            const harness = createHarness({ cells: [current] });
+            const blur = vi.fn();
+
+            harness.setEditing(true, current);
+            globalThis.document.activeElement = {
+                inside: true,
+                blur,
+                closest: selector => selector === '.tabulator-editing'
+                    ? current.getElement()
+                    : null
+            };
+
+            const transition = harness.runtime.transitionPage({
+                direction: 'next',
+                destination: 'first'
+            });
+
+            expect(blur).toHaveBeenCalledOnce();
+            expect(harness.paginationMethods.nextPage).not.toHaveBeenCalled();
+            expect(harness.listenerCount('cellEdited')).toBe(1);
+            expect(harness.listenerCount('cellEditCancelled')).toBe(1);
+
+            harness.table.emit(editEvent, other);
+            await flush();
+            expect(harness.paginationMethods.nextPage).not.toHaveBeenCalled();
+
+            harness.setEditing(false, current);
+            harness.setCells([destination]);
+            harness.table.emit(editEvent, current);
+            await flush();
+
+            expect(harness.paginationMethods.nextPage).toHaveBeenCalledOnce();
+            expect(destination.edit).not.toHaveBeenCalled();
+            harness.table.emit('renderComplete');
+
+            expect(await transition).toBe(true);
+            expect(destination.edit).toHaveBeenCalledOnce();
+            expect(harness.listenerCount('cellEdited')).toBe(0);
+            expect(harness.listenerCount('cellEditCancelled')).toBe(0);
+        }
+    );
+
+    test('destroy aborts an async editor close and removes temporary listeners', async () => {
+        const current = createCandidate();
+        const harness = createHarness({ cells: [current] });
+
+        harness.setEditing(true, current);
+        globalThis.document.activeElement = {
+            inside: true,
+            blur: vi.fn(),
+            closest: () => current.getElement()
+        };
+
+        const transition = harness.runtime.transitionPage({
+            direction: 'next',
+            destination: 'first'
+        });
+
+        expect(harness.listenerCount('cellEdited')).toBe(1);
+        expect(harness.listenerCount('cellEditCancelled')).toBe(1);
+        harness.runtime.destroy();
+
+        expect(await transition).toBe(false);
+        expect(harness.listenerCount('cellEdited')).toBe(0);
+        expect(harness.listenerCount('cellEditCancelled')).toBe(0);
+        expect(harness.paginationMethods.nextPage).not.toHaveBeenCalled();
+    });
+
+    test('cleans temporary edit listeners when blur throws', async () => {
+        const current = createCandidate();
+        const harness = createHarness({ cells: [current] });
+
+        harness.setEditing(true, current);
+        globalThis.document.activeElement = {
+            inside: true,
+            blur: vi.fn(() => { throw new Error('blur failed'); }),
+            closest: () => current.getElement()
+        };
+
+        expect(await harness.runtime.transitionPage({
+            direction: 'next',
+            destination: 'first'
+        })).toBe(false);
+        expect(harness.listenerCount('cellEdited')).toBe(0);
+        expect(harness.listenerCount('cellEditCancelled')).toBe(0);
+        expect(harness.paginationMethods.nextPage).not.toHaveBeenCalled();
     });
 
     test('does not blur or transition at an absolute boundary', async () => {
