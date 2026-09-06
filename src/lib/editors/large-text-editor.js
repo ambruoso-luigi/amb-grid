@@ -1,4 +1,6 @@
 import { getInitialValue, navigateEditableCellAfterClose, toCssSize } from './shared.js';
+import { GRID_SHORTCUTS, matchesShortcut } from '../table/keyboard-shortcuts.js';
+import { getPageNavigationCoordinator } from '../table/page-navigation-coordinator.js';
 
     /**
      * Modal textarea editor for long text.
@@ -6,7 +8,8 @@ import { getInitialValue, navigateEditableCellAfterClose, toCssSize } from './sh
      * Keyboard behavior: `Escape` cancels and `Ctrl+Enter` saves. With
      * `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates to the
      * next editable cell and `Shift+Tab` saves and navigates to the previous
-     * editable cell.
+     * editable cell. `Alt+ArrowUp` and `Alt+ArrowDown` save and navigate in
+     * the same column when grid vertical navigation is available.
      *
      * @param {object} [options] - Large text editor options.
      * @param {string} [options.title='Edit text'] - Dialog title.
@@ -126,6 +129,22 @@ export function largeText(options = {}) {
                 navigateEditableCellAfterClose(cell, direction);
             };
 
+            const navigateVertically = direction => {
+                const table = cell.getTable?.();
+                const coordinator = getPageNavigationCoordinator(table);
+
+                if (!coordinator?.navigateVertical) return false;
+
+                return coordinator.navigateVertical({
+                    cell,
+                    direction,
+                    closeEditor: () => {
+                        closeWithSuccess();
+                        return true;
+                    }
+                });
+            };
+
             cancelButton.addEventListener('click', closeWithCancel);
             saveButton.addEventListener('click', closeWithSuccess);
             overlay.addEventListener('mousedown', event => {
@@ -139,6 +158,18 @@ export function largeText(options = {}) {
                 closeWithCancel();
             });
             textarea.addEventListener('keydown', event => {
+                const verticalUp = matchesShortcut(event, GRID_SHORTCUTS.previousRow);
+                const verticalDown = matchesShortcut(event, GRID_SHORTCUTS.nextRow);
+
+                if (verticalUp || verticalDown) {
+                    if (!navigateVertically(verticalUp ? 'prev' : 'next')) return;
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation?.();
+                    return;
+                }
+
                 if (
                     event.key === 'Tab'
                     && normalizedOptions.tabBehavior === 'save-and-navigate'

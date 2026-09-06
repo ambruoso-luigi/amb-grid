@@ -51,7 +51,7 @@ const isCandidateActuallyActive = candidate => {
  * @param {object} context.table - Runtime table component.
  * @param {object} context.paginationMethods - Public pagination methods.
  * @param {boolean} context.enabled - Whether pagination navigation is active.
- * @returns {{transitionPage: Function, destroy: Function}} Runtime lifecycle.
+ * @returns {{transitionPage: Function, navigateVertical: Function, destroy: Function}} Runtime lifecycle.
  * @private
  * @internal
  */
@@ -282,7 +282,7 @@ export const createPaginationKeyboardRuntime = ({
      * @private
      * @internal
      */
-    const transitionPage = ({ direction, destination }) => {
+    const transitionPage = ({ direction, destination, currentCell, closeEditor }) => {
         const pageBefore = paginationMethods.getPage();
         const pageMax = paginationMethods.getPageMax();
         const canChangePage = direction === 'prev'
@@ -295,9 +295,12 @@ export const createPaginationKeyboardRuntime = ({
 
         transitionInProgress = true;
         const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
-        const currentCell = getEditingCell(editingElement);
-        const transition = (editingElement
-            ? closeActiveEditorAndWait(currentCell).then(closed => (
+        const sourceCell = currentCell || getEditingCell(editingElement);
+        const closeSourceEditor = closeEditor
+            ? () => Promise.resolve(closeEditor())
+            : () => closeActiveEditorAndWait(sourceCell);
+        const transition = (editingElement || closeEditor
+            ? closeSourceEditor().then(closed => (
                 closed && !destroyed ? changePageAndActivate() : false
             ))
             : changePageAndActivate()
@@ -375,13 +378,8 @@ export const createPaginationKeyboardRuntime = ({
         }
     };
 
-    const unregisterCoordinator = registerPageNavigationCoordinator(table, { transitionPage });
-
-    const handleVerticalNavigation = direction => {
-        const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
-        const currentCell = getEditingCell(editingElement);
-
-        if (!currentCell) return false;
+    const navigateVertical = ({ cell: currentCell, direction, closeEditor }) => {
+        if (!currentCell || destroyed) return false;
 
         const field = currentCell.getField?.();
         const currentRow = currentCell.getRow?.();
@@ -400,7 +398,10 @@ export const createPaginationKeyboardRuntime = ({
 
             if (!isEditableCandidate(targetCell)) return true;
             verticalNavigationInProgress = true;
-            void closeActiveEditorAndWait(currentCell)
+            const closeSourceEditor = closeEditor
+                ? () => Promise.resolve(closeEditor())
+                : () => closeActiveEditorAndWait(currentCell);
+            void closeSourceEditor()
                 .then(async closed => {
                     if (!closed || destroyed) return;
 
@@ -415,16 +416,30 @@ export const createPaginationKeyboardRuntime = ({
         const canChangePage = direction === 'prev' ? page > 1 : page < pageMax;
 
         if (canChangePage) {
-            transitionPage({
+            void transitionPage({
                 direction,
                 destination: {
                     edge: direction === 'prev' ? 'last' : 'first',
                     field
-                }
+                },
+                currentCell,
+                closeEditor
             });
         }
 
         return true;
+    };
+
+    const unregisterCoordinator = registerPageNavigationCoordinator(table, {
+        transitionPage,
+        navigateVertical
+    });
+
+    const handleVerticalNavigation = direction => {
+        const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
+        const currentCell = getEditingCell(editingElement);
+
+        return navigateVertical({ cell: currentCell, direction });
     };
 
     const handleKeydown = event => {
@@ -524,6 +539,7 @@ export const createPaginationKeyboardRuntime = ({
 
     return {
         transitionPage,
+        navigateVertical,
         /**
          * Releases permanent and in-flight listeners owned by this runtime.
          *

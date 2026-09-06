@@ -59,6 +59,20 @@ const expectLookupEditor = async (page, code) => {
     await expect(target.locator('.amb-lookup-editor__button')).toBeVisible();
 };
 
+const openNotesEditor = async (page, code) => {
+    const notes = rowCell(page, code, 'notes');
+
+    await notes.click();
+    await expect(notes).toHaveClass(/tabulator-editing/);
+    await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+};
+
+const expectNotesEditor = async (page, code) => {
+    await expect(rowCell(page, code, 'notes')).toHaveClass(/tabulator-editing/);
+    await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+    await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+};
+
 const selectStatusDialogResult = async (page, value) => {
     await page.keyboard.press('Enter');
     const dialog = page.locator('.amb-lookup-dialog');
@@ -81,6 +95,7 @@ test.describe('keyboard pagination focus', () => {
     });
 
     test('navigates 9 to 10 to 11 and back with the first editor active', async ({ page }) => {
+        await cell(page, 'itemCode').click();
         await cell(page, 'itemCode').dblclick({ delay: 100 });
         await expectItemCodeEditor(page);
 
@@ -105,6 +120,7 @@ test.describe('keyboard pagination focus', () => {
     test('closes Warehouse naturally before keyboard pagination', async ({ page }) => {
         const warehouse = cell(page, 'warehouse');
 
+        await warehouse.click();
         await warehouse.dblclick({ delay: 100 });
         await expect(page.locator('input.amb-autocomplete-editor')).toBeVisible();
         await expect(warehouse).toHaveClass(/amb-autocomplete-cell--editing/);
@@ -207,6 +223,74 @@ test.describe('keyboard pagination focus', () => {
         await expectFieldEditor(page, 'PRD-A003', 'warehouse');
         await page.keyboard.press('Alt+ArrowUp');
         await expectFieldEditor(page, 'PRD-AB02', 'warehouse');
+    });
+
+    test('moves large-text Notes vertically on the same page and commits once', async ({ page }) => {
+        await openNotesEditor(page, 'PRD-AB02');
+        const textarea = page.locator('.amb-large-text-editor__textarea');
+
+        await textarea.fill('Saved while moving down');
+        await page.keyboard.press('Alt+ArrowDown');
+
+        await expect(page.locator('.amb-large-text-editor')).toHaveCount(1);
+        await expectNotesEditor(page, 'PRD-A003');
+        await expect(rowCell(page, 'PRD-AB02', 'notes')).toContainText('Saved while moving down');
+
+        await page.keyboard.press('Alt+ArrowUp');
+        await expectNotesEditor(page, 'PRD-AB02');
+    });
+
+    test('moves large-text Notes across pages including the final partial page', async ({ page }) => {
+        const tableHolder = table(page).locator('.tabulator-tableholder');
+
+        await tableHolder.hover();
+        await page.mouse.wheel(0, 10000);
+        await expect(rowByCode(page, 'PRD-H010')).toBeVisible();
+        await openNotesEditor(page, 'PRD-H010');
+        await page.keyboard.press('Alt+ArrowDown');
+        await waitForPage(page, 2);
+        await expectNotesEditor(page, 'PRD-A011');
+
+        await page.keyboard.press('Alt+ArrowUp');
+        await waitForPage(page, 1);
+        await expectNotesEditor(page, 'PRD-H010');
+
+        await page.keyboard.press('Escape');
+        for (let pageNumber = 2; pageNumber <= 10; pageNumber += 1) {
+            await table(page).locator('.tabulator-page[data-page="next"]').click();
+            await waitForPage(page, pageNumber);
+        }
+        await openNotesEditor(page, 'PRD-H100');
+        await page.keyboard.press('Alt+ArrowDown');
+        await waitForPage(page, 11);
+        await expectNotesEditor(page, 'PRD-A101');
+
+        await page.keyboard.press('Alt+ArrowUp');
+        await waitForPage(page, 10);
+        await expectNotesEditor(page, 'PRD-H100');
+    });
+
+    test('keeps large-text Notes open with unsaved text at absolute boundaries', async ({ page }) => {
+        await openNotesEditor(page, 'PRD-A001');
+        const textarea = page.locator('.amb-large-text-editor__textarea');
+
+        await textarea.fill('Unsaved boundary text');
+        await page.keyboard.press('Alt+ArrowUp');
+        await waitForPage(page, 1);
+        await expect(textarea).toHaveValue('Unsaved boundary text');
+        await expect(textarea).toBeFocused();
+
+        await page.keyboard.press('Escape');
+        for (let pageNumber = 2; pageNumber <= 11; pageNumber += 1) {
+            await table(page).locator('.tabulator-page[data-page="next"]').click();
+            await waitForPage(page, pageNumber);
+        }
+        await openNotesEditor(page, 'PRD-A101');
+        await textarea.fill('Unsaved boundary text');
+        await page.keyboard.press('Alt+ArrowDown');
+        await waitForPage(page, 11);
+        await expect(textarea).toHaveValue('Unsaved boundary text');
+        await expect(textarea).toBeFocused();
     });
 
     test('waits for lookup lifecycle during same-page vertical navigation', async ({ page }) => {

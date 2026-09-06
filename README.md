@@ -348,6 +348,8 @@ popup/action cells, and non-data interactive columns:
 * Large text editors cancel with `Escape` and save with `Ctrl+Enter`.
   With `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates forward
   and `Shift+Tab` saves and navigates backward.
+  Global `Alt+ArrowUp` and `Alt+ArrowDown` remain available for same-column
+  vertical navigation while the editor is open.
 
 ### Formatters
 

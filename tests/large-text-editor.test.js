@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { largeText } from '../src/lib/editors/large-text-editor.js';
+import { registerPageNavigationCoordinator } from '../src/lib/table/page-navigation-coordinator.js';
 
 const createElement = tagName => {
     const listeners = new Map();
@@ -40,7 +41,7 @@ const createElement = tagName => {
     return element;
 };
 
-const createHarness = (options = {}, { withRowNavigation = false } = {}) => {
+const createHarness = (options = {}, { withRowNavigation = false, coordinator } = {}) => {
     const success = vi.fn();
     const cancel = vi.fn();
     const previousCell = {
@@ -59,6 +60,9 @@ const createHarness = (options = {}, { withRowNavigation = false } = {}) => {
         navigateNext: vi.fn(),
         navigatePrev: vi.fn()
     };
+    const unregisterCoordinator = coordinator
+        ? registerPageNavigationCoordinator(table, coordinator)
+        : () => {};
     const cell = {
         getValue: () => 'Original notes',
         getTable: () => table,
@@ -93,7 +97,8 @@ const createHarness = (options = {}, { withRowNavigation = false } = {}) => {
         saveButton: panel.children[2].children[1],
         success,
         table,
-        textarea: panel.children[1]
+        textarea: panel.children[1],
+        unregisterCoordinator
     };
 };
 
@@ -154,6 +159,97 @@ describe('large text editor', () => {
 
         expect(harness.cancel).toHaveBeenCalledOnce();
         expect(harness.success).not.toHaveBeenCalled();
+    });
+
+    test('delegates Alt+ArrowDown to same-column vertical navigation', () => {
+        const navigateVertical = vi.fn(() => true);
+        const harness = createHarness({}, { coordinator: { navigateVertical } });
+        const preventDefault = vi.fn();
+        const stopPropagation = vi.fn();
+
+        harness.textarea.dispatch('keydown', {
+            key: 'ArrowDown',
+            altKey: true,
+            preventDefault,
+            stopPropagation
+        });
+
+        expect(preventDefault).toHaveBeenCalledOnce();
+        expect(stopPropagation).toHaveBeenCalledOnce();
+        expect(navigateVertical).toHaveBeenCalledWith(expect.objectContaining({
+            cell: harness.cell,
+            direction: 'next',
+            closeEditor: expect.any(Function)
+        }));
+    });
+
+    test('delegates Alt+ArrowUp to same-column vertical navigation', () => {
+        const navigateVertical = vi.fn(() => true);
+        const harness = createHarness({}, { coordinator: { navigateVertical } });
+
+        harness.textarea.dispatch('keydown', { key: 'ArrowUp', altKey: true });
+
+        expect(navigateVertical).toHaveBeenCalledWith(expect.objectContaining({
+            direction: 'prev'
+        }));
+    });
+
+    test.each(['ArrowUp', 'ArrowDown'])('leaves normal textarea %s unchanged', key => {
+        const navigateVertical = vi.fn(() => true);
+        const harness = createHarness({}, { coordinator: { navigateVertical } });
+        const preventDefault = vi.fn();
+        const stopPropagation = vi.fn();
+
+        harness.textarea.dispatch('keydown', { key, preventDefault, stopPropagation });
+
+        expect(preventDefault).not.toHaveBeenCalled();
+        expect(stopPropagation).not.toHaveBeenCalled();
+        expect(navigateVertical).not.toHaveBeenCalled();
+    });
+
+    test('saves and removes the overlay once when vertical navigation is valid', () => {
+        let request;
+        const harness = createHarness({}, {
+            coordinator: {
+                navigateVertical: vi.fn(options => {
+                    request = options;
+                    return true;
+                })
+            }
+        });
+        harness.textarea.value = 'Saved vertically';
+
+        harness.textarea.dispatch('keydown', { key: 'ArrowDown', altKey: true });
+        request.closeEditor();
+        request.closeEditor();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('Saved vertically');
+        expect(globalThis.document.body.children).not.toContain(harness.overlay);
+    });
+
+    test('keeps the modal and unsaved text when vertical navigation reaches a boundary', () => {
+        const harness = createHarness({}, {
+            coordinator: { navigateVertical: vi.fn(() => false) }
+        });
+        harness.textarea.value = 'Unsaved boundary text';
+
+        harness.textarea.dispatch('keydown', { key: 'ArrowDown', altKey: true });
+
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(harness.textarea.value).toBe('Unsaved boundary text');
+        expect(globalThis.document.body.children).toContain(harness.overlay);
+    });
+
+    test('keeps the modal unchanged when no page coordinator is registered', () => {
+        const harness = createHarness();
+
+        harness.textarea.dispatch('keydown', { key: 'ArrowDown', altKey: true });
+
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).toContain(harness.overlay);
     });
 
     test('keeps the normal textarea Tab behavior by default', () => {
