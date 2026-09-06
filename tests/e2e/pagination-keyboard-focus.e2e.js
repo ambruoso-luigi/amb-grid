@@ -64,8 +64,9 @@ const selectStatusDialogResult = async (page, value) => {
     const dialog = page.locator('.amb-lookup-dialog');
 
     await expect(dialog).toBeVisible();
-    await dialog.locator('.amb-lookup-dialog__row')
-        .filter({ hasText: new RegExp(`^${value}\\b`) })
+    await dialog.locator('tbody tr')
+        .filter({ hasText: value })
+        .first()
         .click();
     await dialog.locator('.amb-lookup-dialog__button--primary').click();
     await expect(dialog).toHaveCount(0);
@@ -252,6 +253,30 @@ test.describe('keyboard pagination focus', () => {
         await expectLookupEditor(page, 'PRD-A003');
         await page.keyboard.press('Alt+ArrowUp');
         await expectLookupEditor(page, 'PRD-AB02');
+    });
+
+    test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {
+        const row2Status = rowCell(page, 'PRD-AB02', 'status');
+
+        await row2Status.click();
+        await row2Status.dblclick();
+        await expectLookupEditor(page, 'PRD-AB02');
+        const statusValue = await row2Status.locator('.amb-lookup-editor__input').inputValue();
+
+        await selectStatusDialogResult(page, statusValue);
+
+        await expectLookupEditor(page, 'PRD-AB02');
+        await expect(row2Status.locator('.amb-lookup-editor__input')).toHaveValue(statusValue);
+        await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+
+        await page.keyboard.press('Enter');
+        const dialog = page.locator('.amb-lookup-dialog');
+        await expect(dialog).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+
+        await page.keyboard.press('Alt+ArrowDown');
+        await expectLookupEditor(page, 'PRD-A003');
     });
 
     test('moves Tab and Shift+Tab immediately after a real lookup selection', async ({ page }) => {

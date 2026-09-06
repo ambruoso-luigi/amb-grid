@@ -54,10 +54,17 @@ const createHarness = ({
     options = {},
     load = ({ query }) => records.filter(record => record.id.includes(query)),
     lookupOptions = {},
-    withRowNavigation = false
+    withRowNavigation = false,
+    dialogLifecycle = {}
 } = {}) => {
     const rowData = { id: 1, status: initialValue };
-    const cellElement = { dataset: {} };
+    let editing = dialogLifecycle.editing !== false;
+    const cellElement = {
+        dataset: {},
+        classList: {
+            contains: className => className === 'tabulator-editing' && editing
+        }
+    };
     const previousCell = {
         edit: vi.fn(),
         getColumn: () => ({
@@ -73,14 +80,21 @@ const createHarness = ({
     let cell;
     const row = {
         getData: () => rowData,
+        getCell: () => cell,
         update: patch => Object.assign(rowData, patch),
         getCells: () => withRowNavigation
             ? [previousCell, cell, nextCell]
             : []
     };
+    const listeners = new Map();
     const table = {
         navigateNext: vi.fn(),
-        navigatePrev: vi.fn()
+        navigatePrev: vi.fn(),
+        on: vi.fn((event, listener) => listeners.set(event, listener)),
+        off: vi.fn((event, listener) => {
+            if (listeners.get(event) === listener) listeners.delete(event);
+        }),
+        emit: (event, editedCell) => listeners.get(event)?.(editedCell)
     };
     cell = {
         getValue: () => rowData.status,
@@ -88,6 +102,10 @@ const createHarness = ({
         getRow: () => row,
         getElement: () => cellElement,
         getTable: () => table,
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'input' })
+        }),
+        edit: vi.fn(),
         navigateNext: vi.fn(),
         navigatePrev: vi.fn()
     };
@@ -101,7 +119,13 @@ const createHarness = ({
         delete cellElement.dataset.cellError;
         delete cellElement.title;
     };
-    const success = vi.fn(clearRenderedError);
+    const success = vi.fn(value => {
+        clearRenderedError();
+        if (!dialogLifecycle.closeOnSuccess) return;
+
+        editing = false;
+        if (dialogLifecycle.event) table.emit(dialogLifecycle.event, cell);
+    });
     const cancel = vi.fn(clearRenderedError);
     const markInvalid = vi.fn((_cell, message) => {
         cellElement.dataset.cellError = 'true';
@@ -131,6 +155,9 @@ const createHarness = ({
         cancel,
         cell,
         cellElement,
+        closeEditor: () => {
+            editing = false;
+        },
         clearInvalid,
         container,
         input: container.children[0],
@@ -838,6 +865,110 @@ describe('lookup editor blur commits', () => {
             value: 'REPAIR',
             description: 'Under repair'
         });
+    });
+
+    test('reopens once after a changed dialog selection and cleans up lifecycle listeners', async () => {
+        const harness = createHarness({
+            dialogLifecycle: { closeOnSuccess: true, event: 'cellEdited' },
+            options: { dialog: { open: vi.fn(async () => records[1]) } }
+        });
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await Promise.resolve();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+        expect(harness.cell.edit).toHaveBeenCalledOnce();
+        expect(harness.table.off).toHaveBeenCalledWith('cellEdited', expect.any(Function));
+        expect(harness.table.off).toHaveBeenCalledWith('cellEditCancelled', expect.any(Function));
+    });
+
+    test('reopens once when a same-value dialog selection closes without lifecycle events', async () => {
+        const harness = createHarness({
+            dialogLifecycle: { closeOnSuccess: true },
+            options: { dialog: { open: vi.fn(async () => records[0]) } }
+        });
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await Promise.resolve();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('ACTIVE');
+        expect(harness.cell.edit).toHaveBeenCalledOnce();
+        expect(harness.table.off).toHaveBeenCalledTimes(2);
+    });
+
+    test('synchronous cellEdited schedules only one dialog-selection reopen', async () => {
+        const harness = createHarness({
+            dialogLifecycle: { closeOnSuccess: true, event: 'cellEdited' },
+            options: { dialog: { open: vi.fn(async () => records[0]) } }
+        });
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await Promise.resolve();
+
+        expect(harness.cell.edit).toHaveBeenCalledOnce();
+        expect(harness.table.off).toHaveBeenCalledTimes(2);
+    });
+
+    test('cellEditCancelled completes the equivalent dialog-selection lifecycle once', async () => {
+        const harness = createHarness({
+            dialogLifecycle: { closeOnSuccess: true, event: 'cellEditCancelled' },
+            options: { dialog: { open: vi.fn(async () => records[0]) } }
+        });
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await Promise.resolve();
+
+        expect(harness.cell.edit).toHaveBeenCalledOnce();
+        expect(harness.table.off).toHaveBeenCalledTimes(2);
+    });
+
+    test('ignores unrelated edit events until the current editor has really closed', async () => {
+        const otherCell = { getElement: () => ({}) };
+        const harness = createHarness({
+            options: { dialog: { open: vi.fn(async () => records[0]) } }
+        });
+        harness.success.mockImplementation(() => {
+            harness.table.emit('cellEdited', otherCell);
+            harness.closeEditor();
+        });
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await Promise.resolve();
+
+        expect(harness.cell.edit).toHaveBeenCalledOnce();
+        expect(harness.table.off).toHaveBeenCalledTimes(2);
+    });
+
+    test('does not reopen when validation leaves the current editor active', async () => {
+        const harness = createHarness({
+            options: { dialog: { open: vi.fn(async () => records[0]) } }
+        });
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await Promise.resolve();
+
+        expect(harness.cell.edit).not.toHaveBeenCalled();
+        expect(harness.table.off).toHaveBeenCalledTimes(2);
+    });
+
+    test('applies a mapped dialog record once before reopening once', async () => {
+        const selected = { id: 'ACTIVE', description: 'Active', category: 'open' };
+        const harness = createHarness({
+            dialogLifecycle: { closeOnSuccess: true },
+            options: {
+                dialog: { open: vi.fn(async () => selected) },
+                mapToRow: { status: 'id', statusCategory: 'category' }
+            }
+        });
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await Promise.resolve();
+
+        expect(harness.applyRecord).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.cell.edit).toHaveBeenCalledOnce();
     });
 
     test('forwards dialogOptions while preserving editor-calculated dialog fields', async () => {

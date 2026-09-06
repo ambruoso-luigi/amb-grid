@@ -205,9 +205,13 @@ export function lookup(lookupInstance, options = {}) {
                     !table
                     || typeof table.on !== 'function'
                     || typeof table.off !== 'function'
-                ) return () => {};
+                ) return {
+                    cleanup: () => {},
+                    finishIfEditingEnded: () => {}
+                };
 
                 let listening = true;
+                let finished = false;
                 const cleanup = () => {
                     if (!listening) return;
 
@@ -219,10 +223,7 @@ export function lookup(lookupInstance, options = {}) {
                     editedCell === cell
                     || editedCell?.getElement?.() === cellElement
                 );
-                function handleEditingFinished(editedCell) {
-                    if (!matchesCurrentCell(editedCell)) return;
-
-                    cleanup();
+                const scheduleReopen = () => {
                     const reopen = () => {
                         const destinationCell = row?.getCell?.(field) || cell;
                         const destinationElement = destinationCell?.getElement?.();
@@ -237,12 +238,33 @@ export function lookup(lookupInstance, options = {}) {
                     } else {
                         Promise.resolve().then(reopen);
                     }
+                };
+                const finishAndScheduleReopen = () => {
+                    if (finished) return;
+
+                    finished = true;
+                    cleanup();
+                    scheduleReopen();
+                };
+                function handleEditingFinished(editedCell) {
+                    if (!matchesCurrentCell(editedCell)) return;
+
+                    finishAndScheduleReopen();
                 }
 
                 table.on('cellEdited', handleEditingFinished);
                 table.on('cellEditCancelled', handleEditingFinished);
 
-                return cleanup;
+                return {
+                    cleanup,
+                    finishIfEditingEnded: () => {
+                        if (!cellElement?.classList?.contains('tabulator-editing')) {
+                            finishAndScheduleReopen();
+                        } else {
+                            cleanup();
+                        }
+                    }
+                };
             };
 
             const applyMappedRecord = selected => {
@@ -710,12 +732,13 @@ export function lookup(lookupInstance, options = {}) {
                     if (normalizedOptions.mapToRow && appliedRecord === null) return;
 
                     input.value = String(committedValue ?? '');
-                    const cancelReopen = reopenAfterDialogSelection();
+                    const reopen = reopenAfterDialogSelection();
 
                     try {
                         closeWithLookupItem(String(committedValue ?? ''), selected);
+                        reopen.finishIfEditingEnded();
                     } catch (error) {
-                        cancelReopen();
+                        reopen.cleanup();
                         throw error;
                     }
                 } finally {

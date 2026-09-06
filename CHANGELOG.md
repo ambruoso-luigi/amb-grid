@@ -12,6 +12,7 @@ All notable changes to AMB Grid are documented in this file.
 
 - Preserved the active editor and focus through paginated keyboard navigation, including partial final pages.
 - Kept lookup keyboard selection and automatic scrolling aligned while navigating results.
+- Preserved lookup editing and keyboard focus after selecting a dialog result.
 
 ### Changed
 
