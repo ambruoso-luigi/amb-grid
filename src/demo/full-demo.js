@@ -542,8 +542,7 @@ export default async function fullDemo(app, options = {}) {
                 editor: AMB.editors.largeText({
                     title: 'Edit inventory notes',
                     rows: 10,
-                    closeOnBackdropClick: false,
-                    tabBehavior: 'save-and-navigate'
+                    closeOnBackdropClick: false
                 })
             }
         ]

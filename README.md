@@ -345,11 +345,12 @@ popup/action cells, and non-data interactive columns:
   `Escape` preserves the editor mode's close behavior. Manual picker editors
   keep the calendar button available after the popup closes so it can be
   reopened.
-* Large text editors cancel with `Escape` and save with `Ctrl+Enter`.
-  With `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates forward
-  and `Shift+Tab` saves and navigates backward.
-  Global `Alt+ArrowUp` and `Alt+ArrowDown` remain available for same-column
-  vertical navigation while the editor is open.
+* Keyboard navigation focuses a large-text cell without opening its editor;
+  press `Enter` to open the dialog. Text is selectable and editable only in
+  the dialog, which traps `Tab`/`Shift+Tab`. `Ctrl+Enter` saves and `Escape`
+  cancels; Save and Cancel both return focus to the source cell. Same-column
+  `Alt+ArrowUp`/`Alt+ArrowDown` navigation applies to the focused cell while
+  the dialog is closed.
 
 ### Formatters
 

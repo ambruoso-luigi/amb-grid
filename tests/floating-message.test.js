@@ -1,5 +1,4 @@
 import { describe, expect, test, vi } from 'vitest';
-import { CellMessageBinder } from '../src/ui/cell-message-binder.js';
 import { FloatingMessage } from '../src/ui/floating-message.js';
 
 class ElementMock {
@@ -95,42 +94,24 @@ describe('FloatingMessage', () => {
         }
     });
 
-    test('CellMessageBinder can disable validation hover listeners', () => {
-        const handlers = new Map();
-        const crudHelper = {
-            on: vi.fn((eventName, handler) => {
-                handlers.set(eventName, handler);
-                return vi.fn();
-            })
-        };
-        const floatingMessage = {
-            scheduleShow: vi.fn(),
-            hide: vi.fn()
-        };
-        const cellElement = new ElementMock();
-        const cell = {
-            getElement: () => cellElement
-        };
-        const binder = new CellMessageBinder(crudHelper, floatingMessage, {
-            enabled: false
-        });
+    test('an immediate show cancels a pending scheduled message', () => {
+        vi.useFakeTimers();
+        const harness = createDocumentHarness();
 
-        cellElement.addEventListener = vi.fn();
-        cellElement.removeEventListener = vi.fn();
-        cellElement.removeAttribute = vi.fn();
+        try {
+            const message = new FloatingMessage({ hoverDelay: 300 });
+            const first = new ElementMock();
+            const second = new ElementMock();
 
-        handlers.get('cell-error')({
-            cell,
-            message: 'Required'
-        });
+            message.scheduleShow(first, { message: 'Stale' });
+            message.show(second, { message: 'Current' });
+            vi.advanceTimersByTime(300);
 
-        expect(cellElement.removeAttribute).toHaveBeenCalledWith('title');
-        expect(cellElement.addEventListener).not.toHaveBeenCalled();
-
-        handlers.get('cell-error-cleared')({ cell });
-        expect(floatingMessage.hide).toHaveBeenCalledOnce();
-
-        binder.destroy();
-        expect(cellElement.removeEventListener).not.toHaveBeenCalled();
+            expect(message.bodyElement.textContent).toBe('Current');
+            expect(message.showTimer).toBeNull();
+        } finally {
+            vi.useRealTimers();
+            harness.restore();
+        }
     });
 });

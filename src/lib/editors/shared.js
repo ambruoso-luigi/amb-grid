@@ -54,6 +54,33 @@ const focusInteractiveCandidate = (candidate, definition) => {
     return true;
 };
 
+/**
+ * Focuses a cell while suppressing the table engine's focus-to-edit behavior.
+ *
+ * @param {object} cell - Cell component to focus.
+ * @returns {boolean} Whether focus was requested.
+ * @private
+ * @internal
+ */
+export const focusCellWithoutEditing = cell => {
+    const cellElement = cell?.getElement?.();
+
+    if (!cellElement || typeof cellElement.focus !== 'function') return false;
+
+    const blockEditFocus = event => event.stopImmediatePropagation?.();
+
+    cellElement.addEventListener?.('focus', blockEditFocus, true);
+    try {
+        cellElement.focus({ preventScroll: true });
+    } catch {
+        cellElement.focus();
+    } finally {
+        cellElement.removeEventListener?.('focus', blockEditFocus, true);
+    }
+
+    return true;
+};
+
 export const isEditableCandidate = candidate => {
     if (!candidate) return false;
 
@@ -78,6 +105,10 @@ export const navigateToCandidate = candidate => {
     if (!isEditableCandidate(candidate)) return false;
 
     const definition = getCellDefinition(candidate);
+
+    if (definition._ambKeyboardFocusOnly === true) {
+        return focusCellWithoutEditing(candidate);
+    }
 
     if (definition._ambInteractive) {
         if (definition.editor && typeof candidate.edit === 'function') {

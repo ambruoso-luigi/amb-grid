@@ -11,21 +11,32 @@ const createElement = () => {
     const editor = { editor: true, inside: true };
     const element = {
         editor,
+        inside: true,
+        rowElement: null,
+        field: 'field',
         classList: {
             contains: value => classes.has(value),
             add: value => classes.add(value),
             remove: value => classes.delete(value)
         },
-        contains: value => value === editor
+        contains: value => value === editor,
+        closest: selector => selector === '.tabulator-cell'
+            ? element
+            : selector === '.tabulator-row' ? element.rowElement : null,
+        getAttribute: name => name === 'tabulator-field' ? element.field : null,
+        focus: vi.fn(() => { globalThis.document.activeElement = element; })
     };
 
-    editor.closest = selector => selector === '.tabulator-editing' ? element : null;
+    editor.closest = selector => selector === '.tabulator-editing' || selector === '.tabulator-cell'
+        ? element
+        : selector === '.tabulator-row' ? element.rowElement : null;
 
     return element;
 };
 
-const createCandidate = ({ editable = true, activates = true } = {}) => {
+const createCandidate = ({ editable = true, activates = true, focusOnly = false, field = 'field' } = {}) => {
     const element = createElement();
+    element.field = field;
     const edit = vi.fn(() => {
         if (activates) {
             element.classList.add('tabulator-editing');
@@ -34,17 +45,21 @@ const createCandidate = ({ editable = true, activates = true } = {}) => {
         return true;
     });
 
-    return {
+    const candidate = {
         edit,
+        getField: () => field,
+        getRow: () => candidate.row,
         getElement: () => element,
         getColumn: () => ({
             isVisible: () => true,
-            getDefinition: () => ({ editable, editor: edit })
+            getDefinition: () => ({ editable, editor: edit, _ambKeyboardFocusOnly: focusOnly })
         })
     };
+
+    return candidate;
 };
 
-const createHarness = ({ page = 1, max = 3, cells = [], row = null } = {}) => {
+const createHarness = ({ page = 1, max = 3, cells = [], row = null, enabled = true } = {}) => {
     const listeners = new Map();
     const keyListeners = new Map();
     const rowElement = {};
@@ -56,6 +71,11 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null } = {}) => {
     let editingElement = null;
     let renderedCells = cells;
     const renderedRow = row || { getCells: () => renderedCells };
+    renderedRow.getCell ||= field => renderedCells.find(cell => cell.getField?.() === field);
+    renderedCells.forEach(cell => {
+        cell.row = renderedRow;
+        cell.getElement().rowElement = rowElement;
+    });
     const tableElement = {
         previous,
         next,
@@ -67,9 +87,9 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null } = {}) => {
             : selector.includes('prev') ? previous : next,
         addEventListener: (type, listener, capture) => keyListeners.set(`${type}:${capture}`, listener),
         removeEventListener: vi.fn(),
-        dispatch(event) {
-            const dispatched = { preventDefault: vi.fn(), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn(), ...event };
-            keyListeners.get('keydown:true')?.(dispatched);
+        dispatch(event, type = 'keydown') {
+            const dispatched = { type, preventDefault: vi.fn(), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn(), ...event };
+            keyListeners.get(`${type}:true`)?.(dispatched);
             return dispatched;
         }
     };
@@ -90,12 +110,18 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null } = {}) => {
         nextPage: vi.fn(() => { currentPage += 1; return Promise.resolve(); }),
         previousPage: vi.fn(() => { currentPage -= 1; return Promise.resolve(); })
     };
-    const runtime = createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled: true });
+    const runtime = createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled });
 
     return {
         table, tableElement, tableHolder, paginationMethods, runtime,
         listenerCount: event => listeners.get(event)?.size || 0,
-        setCells: value => { renderedCells = value; },
+        setCells: value => {
+            renderedCells = value;
+            renderedCells.forEach(cell => {
+                cell.row = renderedRow;
+                cell.getElement().rowElement = rowElement;
+            });
+        },
         setEditing: (value, cell) => {
             editing = value;
             if (cell) editingElement = cell.getElement();
@@ -355,6 +381,78 @@ describe('table pagination keyboard runtime', () => {
         shortcut(harness, 'PageDown');
         expect(harness.paginationMethods.nextPage).toHaveBeenCalledOnce();
         expect(harness.tableElement.next.title).toBe('Next page (Alt+PageDown)');
+    });
+
+    test('Enter opens a focused large-text cell exactly once', () => {
+        const notes = createCandidate({ focusOnly: true, field: 'notes' });
+        const harness = createHarness({ cells: [notes] });
+        globalThis.document.activeElement = notes.getElement();
+
+        const event = harness.tableElement.dispatch({
+            key: 'Enter',
+            target: notes.getElement()
+        });
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(notes.edit).toHaveBeenCalledOnce();
+    });
+
+    test('focus-only keyboard behavior remains active without pagination', () => {
+        const notes = createCandidate({ focusOnly: true, field: 'notes' });
+        const harness = createHarness({ cells: [notes], enabled: false });
+        globalThis.document.activeElement = notes.getElement();
+
+        harness.tableElement.dispatch({ key: 'Enter', target: notes.getElement() });
+
+        expect(notes.edit).toHaveBeenCalledOnce();
+        expect(harness.paginationMethods.nextPage).not.toHaveBeenCalled();
+    });
+
+    test('click focuses a large-text cell without opening its editor', async () => {
+        const notes = createCandidate({ focusOnly: true, field: 'notes' });
+        const harness = createHarness({ cells: [notes] });
+
+        const event = harness.tableElement.dispatch({ target: notes.getElement() }, 'click');
+        await flush();
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(notes.getElement().focus).toHaveBeenCalledOnce();
+        expect(notes.edit).not.toHaveBeenCalled();
+    });
+
+    test('click uses the large-text marker while a virtual row component is unavailable', () => {
+        const notes = createCandidate({ focusOnly: true, field: 'notes' });
+        const harness = createHarness({ cells: [notes] });
+        const element = notes.getElement();
+        element.classList.add('amb-cell--large-text');
+        harness.table.getRow.mockReturnValue(null);
+
+        const event = harness.tableElement.dispatch({ target: element }, 'mousedown');
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(element.focus).toHaveBeenCalledOnce();
+        expect(notes.edit).not.toHaveBeenCalled();
+    });
+
+    test.each([
+        ['Tab', false],
+        ['Shift+Tab', true]
+    ])('%s moves from a focused large-text cell without opening it', (_label, shiftKey) => {
+        const previous = createCandidate({ field: 'previous' });
+        const notes = createCandidate({ focusOnly: true, field: 'notes' });
+        const next = createCandidate({ field: 'next' });
+        const cells = [previous, notes, next];
+        const harness = createHarness({ cells });
+        globalThis.document.activeElement = notes.getElement();
+        const event = harness.tableElement.dispatch({
+            key: 'Tab',
+            shiftKey,
+            target: notes.getElement()
+        });
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(notes.edit).not.toHaveBeenCalled();
+        expect(shiftKey ? previous.edit : next.edit).toHaveBeenCalledOnce();
     });
 
     test.each([

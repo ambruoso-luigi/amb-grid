@@ -9,7 +9,6 @@ import { DEFAULT_MESSAGES } from './validation-extraction.js';
 import { createDeleteColumn } from './delete-column.js';
 import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
-import { createLargeTextBinder, createLookupDescriptionBinder } from './hover-binders.js';
 import {
     bindLookupMetadataInitialization,
     prepareColumnPipeline
@@ -553,11 +552,11 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @param {boolean} [options.search.wholeWord=false] - Match the query as a complete word or phrase.
  * @param {object} [options.search.filters] - Search field filter options.
  * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
- * @param {boolean|object} [options.floatingMessages] - Hover message options. Set `false` to disable all `teh-floating-message` output.
+ * @param {boolean|object} [options.floatingMessages] - Contextual cell message options. Set `false` to disable all `teh-floating-message` output.
  * @param {boolean} [options.floatingMessages.enabled=true] - Enable all floating message channels.
- * @param {boolean} [options.floatingMessages.lookupDescriptions=true] - Show lookup description hover messages.
- * @param {boolean} [options.floatingMessages.validationErrors=true] - Show validation error hover messages.
- * @param {boolean} [options.floatingMessages.largeTextPreviews=true] - Show large text preview hover messages.
+ * @param {boolean} [options.floatingMessages.lookupDescriptions=true] - Show lookup descriptions for pointer or keyboard focus.
+ * @param {boolean} [options.floatingMessages.validationErrors=true] - Show validation errors for pointer or keyboard focus.
+ * @param {boolean} [options.floatingMessages.largeTextPreviews=true] - Show large-text previews for pointer or keyboard focus.
  * @param {boolean} [options.floatingMessages.searchFilterStatus=true] - Show search filter status hover messages.
  * @param {boolean|object} [options.toolbar=true] - Backend-agnostic CRUD toolbar. Set `false` to disable.
  * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
@@ -632,9 +631,7 @@ export function createTable(options = {}) {
         toolbarController: null,
         unsubscribeDeleteColumn: null,
         unsubscribeSelectionColumn: null,
-        unsubscribeLookupDescriptions: null,
         unsubscribeLookupMetadata: null,
-        unsubscribeLargeText: null,
         unsubscribeCalculationRecalc: null,
         calculationPresentationRuntime: null,
         historyRuntime: null,
@@ -732,19 +729,19 @@ export function createTable(options = {}) {
     const floatingMessage = new FloatingMessage({
         enabled: normalizedFloatingMessages.enabled
     });
-    const cellMessageBinder = new CellMessageBinder(crud, floatingMessage, {
-        enabled: normalizedFloatingMessages.validationErrors
-    });
-    lifecycleResources.unsubscribeLookupDescriptions = createLookupDescriptionBinder(table, floatingMessage, {
-        enabled: normalizedFloatingMessages.lookupDescriptions
+    const cellMessageBinder = new CellMessageBinder({
+        table,
+        tableElement,
+        crudHelper: crud,
+        floatingMessage,
+        validationErrors: normalizedFloatingMessages.validationErrors,
+        lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
+        largeTextPreviews: normalizedFloatingMessages.largeTextPreviews
     });
     lifecycleResources.unsubscribeLookupMetadata = bindLookupMetadataInitialization(
         table,
         columnPipeline.lookupColumns
     );
-    lifecycleResources.unsubscribeLargeText = createLargeTextBinder(table, floatingMessage, {
-        enabled: normalizedFloatingMessages.largeTextPreviews
-    });
     lifecycleResources.toolbarController = createToolbar({
         selector,
         toolbar,

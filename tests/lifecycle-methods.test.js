@@ -14,9 +14,7 @@ describe('AMB table controller lifecycle methods', () => {
             toolbarController: destroyResource('toolbar'),
             unsubscribeDeleteColumn: unsubscribe('delete-column'),
             unsubscribeSelectionColumn: unsubscribe('selection-column'),
-            unsubscribeLookupDescriptions: unsubscribe('lookup-descriptions'),
             unsubscribeLookupMetadata: unsubscribe('lookup-metadata'),
-            unsubscribeLargeText: unsubscribe('large-text'),
             searchController: destroyResource('search'),
             feedback: destroyResource('feedback')
         };
@@ -46,9 +44,7 @@ describe('AMB table controller lifecycle methods', () => {
             'toolbar',
             'delete-column',
             'selection-column',
-            'lookup-descriptions',
             'lookup-metadata',
-            'large-text',
             'search',
             'feedback',
             'cell-message-binder',

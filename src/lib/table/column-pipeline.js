@@ -124,6 +124,25 @@ const isCheckboxColumn = column => {
     return CHECKBOX_EDITOR_TYPES.has(getAmbEditorType(column));
 };
 
+export const prepareLargeTextColumns = (columns = []) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) {
+            nextColumn.columns = prepareLargeTextColumns(nextColumn.columns);
+        }
+
+        if (getAmbEditorType(nextColumn) !== 'largeText') return nextColumn;
+
+        nextColumn._ambKeyboardFocusOnly = true;
+        nextColumn.cssClass = [nextColumn.cssClass, 'amb-cell--large-text']
+            .filter(Boolean)
+            .join(' ');
+
+        return nextColumn;
+    });
+};
+
 const getLookupConfig = column => {
     return isLookupColumn(column) && column.editor._ambLookupConfig
         ? column.editor._ambLookupConfig
@@ -796,9 +815,8 @@ export const prepareColumnPipeline = ({
         preparedLookupColumns,
         getCrud
     );
-    const preparedDataColumns = applyDefaultColumnAlignments(
-        preparedCheckboxColumns
-    );
+    const preparedLargeTextColumns = prepareLargeTextColumns(preparedCheckboxColumns);
+    const preparedDataColumns = applyDefaultColumnAlignments(preparedLargeTextColumns);
     const lookupColumns = collectLookupColumns(preparedDataColumns);
 
     configureLookupEditors(preparedDataColumns, getCrud);

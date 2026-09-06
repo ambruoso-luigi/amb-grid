@@ -78,6 +78,19 @@ const findPreparedColumn = (pipeline, field) => {
 };
 
 describe('AMB Grid column preparation pipeline', () => {
+    test('marks large-text editors as focus-only while preserving application classes', () => {
+        const editor = vi.fn();
+        editor._ambEditorType = 'largeText';
+
+        const pipeline = prepareColumnPipeline({
+            columns: [{ field: 'notes', editor, cssClass: 'application-notes' }]
+        });
+        const [notes] = pipeline.preparedDataColumns;
+
+        expect(notes._ambKeyboardFocusOnly).toBe(true);
+        expect(notes.cssClass).toBe('application-notes amb-cell--large-text');
+    });
+
     test('adds a decimal formatter from editor metadata while preserving explicit formatters', () => {
         const explicitFormatter = vi.fn(() => 'explicit');
         const commaOptions = { decimalDigits: 2 };

@@ -1,25 +1,20 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { largeText } from '../src/lib/editors/large-text-editor.js';
-import { registerPageNavigationCoordinator } from '../src/lib/table/page-navigation-coordinator.js';
 
 const createElement = tagName => {
     const listeners = new Map();
-    const element = {
+    return {
         tagName,
         children: [],
         parentNode: null,
         style: {},
+        attributes: {},
         value: '',
-        append(...children) {
-            children.forEach(child => this.appendChild(child));
-        },
-        appendChild(child) {
-            child.parentNode = this;
-            this.children.push(child);
-        },
-        addEventListener(type, listener) {
-            listeners.set(type, listener);
-        },
+        append(...children) { children.forEach(child => this.appendChild(child)); },
+        appendChild(child) { child.parentNode = this; this.children.push(child); },
+        setAttribute(name, value) { this.attributes[name] = value; },
+        addEventListener(type, listener) { listeners.set(type, listener); },
+        removeEventListener() {},
         dispatch(type, event = {}) {
             return listeners.get(type)?.({
                 target: this,
@@ -28,60 +23,30 @@ const createElement = tagName => {
                 ...event
             });
         },
-        focus() {},
+        focus() { globalThis.document.activeElement = this; },
         setSelectionRange() {},
         remove() {
             if (!this.parentNode) return;
-
             this.parentNode.children = this.parentNode.children.filter(child => child !== this);
             this.parentNode = null;
         }
     };
-
-    return element;
 };
 
-const createHarness = (options = {}, { withRowNavigation = false, coordinator } = {}) => {
+const createHarness = (options = {}) => {
     const success = vi.fn();
     const cancel = vi.fn();
-    const previousCell = {
-        edit: vi.fn(),
-        getColumn: () => ({
-            getDefinition: () => ({ editor: 'input' })
-        })
-    };
-    const nextCell = {
-        edit: vi.fn(),
-        getColumn: () => ({
-            getDefinition: () => ({ editor: 'input' })
-        })
-    };
-    const table = {
-        navigateNext: vi.fn(),
-        navigatePrev: vi.fn()
-    };
-    const unregisterCoordinator = coordinator
-        ? registerPageNavigationCoordinator(table, coordinator)
-        : () => {};
+    const cellElement = createElement('cell');
     const cell = {
+        edit: vi.fn(),
         getValue: () => 'Original notes',
-        getTable: () => table,
-        navigateNext: vi.fn(),
-        navigatePrev: vi.fn()
+        getField: () => 'notes',
+        getElement: () => cellElement
     };
-
-    cell.getRow = () => ({
-        getCells: () => withRowNavigation
-            ? [previousCell, cell, nextCell]
-            : []
-    });
+    const row = { getCell: () => cell };
+    cell.getRow = () => row;
     const editor = largeText(options);
-    const placeholder = editor(
-        cell,
-        callback => callback(),
-        success,
-        cancel
-    );
+    const placeholder = editor(cell, callback => callback(), success, cancel);
     const overlay = globalThis.document.body.children[0];
     const panel = overlay.children[0];
 
@@ -89,28 +54,27 @@ const createHarness = (options = {}, { withRowNavigation = false, coordinator } 
         cancel,
         cancelButton: panel.children[2].children[0],
         cell,
-        nextCell,
+        cellElement,
+        editor,
         overlay,
         panel,
         placeholder,
-        previousCell,
         saveButton: panel.children[2].children[1],
         success,
-        table,
-        textarea: panel.children[1],
-        unregisterCoordinator
+        textarea: panel.children[1]
     };
 };
 
-const flushDeferred = () => new Promise(resolve => {
-    globalThis.setTimeout(resolve, 0);
-});
+const flush = async () => {
+    for (let index = 0; index < 3; index += 1) await Promise.resolve();
+};
 
 describe('large text editor', () => {
     const originalDocument = globalThis.document;
 
     beforeEach(() => {
         globalThis.document = {
+            activeElement: null,
             body: createElement('body'),
             createElement
         };
@@ -121,238 +85,103 @@ describe('large text editor', () => {
         vi.restoreAllMocks();
     });
 
-    test('closes with cancel when the backdrop is clicked by default', () => {
+    test('exposes focus-only editor metadata and dialog semantics', () => {
         const harness = createHarness();
+
+        expect(harness.editor._ambEditorType).toBe('largeText');
+        expect(harness.editor._ambKeyboardFocusOnly).toBe(true);
+        expect(harness.overlay.attributes).toMatchObject({
+            role: 'dialog',
+            'aria-modal': 'true'
+        });
+        expect(harness.overlay.attributes['aria-labelledby']).toBeTruthy();
+        expect(globalThis.document.activeElement).toBe(harness.textarea);
+    });
+
+    test('focus trap cycles forward and backward through textarea and actions', () => {
+        const harness = createHarness();
+
+        harness.overlay.dispatch('keydown', { key: 'Tab' });
+        expect(globalThis.document.activeElement).toBe(harness.cancelButton);
+        harness.overlay.dispatch('keydown', { key: 'Tab' });
+        expect(globalThis.document.activeElement).toBe(harness.saveButton);
+        harness.overlay.dispatch('keydown', { key: 'Tab' });
+        expect(globalThis.document.activeElement).toBe(harness.textarea);
+        harness.overlay.dispatch('keydown', { key: 'Tab', shiftKey: true });
+        expect(globalThis.document.activeElement).toBe(harness.saveButton);
+        harness.overlay.dispatch('keydown', { key: 'Tab', shiftKey: true });
+        expect(globalThis.document.activeElement).toBe(harness.cancelButton);
+    });
+
+    test('Save commits once, removes the dialog and restores cell focus without editing', async () => {
+        const harness = createHarness();
+        harness.textarea.value = 'Saved notes';
+
+        harness.saveButton.dispatch('click');
+        await flush();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('Saved notes');
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(harness.overlay);
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+        expect(harness.cell.edit).not.toHaveBeenCalled();
+    });
+
+    test('Ctrl+Enter saves from the dialog', async () => {
+        const harness = createHarness();
+        harness.textarea.value = 'Keyboard save';
+
+        harness.overlay.dispatch('keydown', { key: 'Enter', ctrlKey: true });
+        await flush();
+
+        expect(harness.success).toHaveBeenCalledWith('Keyboard save');
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+    });
+
+    test('Escape cancels from any dialog control and restores cell focus', async () => {
+        const harness = createHarness();
+        harness.saveButton.focus();
+
+        harness.overlay.dispatch('keydown', { key: 'Escape', target: harness.saveButton });
+        await flush();
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+    });
+
+    test.each([
+        ['Cancel button', harness => harness.cancelButton.dispatch('click')],
+        ['backdrop', harness => harness.overlay.dispatch('mousedown')]
+    ])('%s cancels and restores cell focus', async (_label, close) => {
+        const harness = createHarness();
+
+        close(harness);
+        await flush();
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+    });
+
+    test('disabled backdrop closing keeps the dialog open', () => {
+        const harness = createHarness({ closeOnBackdropClick: false });
 
         harness.overlay.dispatch('mousedown');
 
-        expect(harness.cancel).toHaveBeenCalledOnce();
-        expect(harness.success).not.toHaveBeenCalled();
-        expect(globalThis.document.body.children).toHaveLength(0);
-    });
-
-    test('does not close when backdrop closing is disabled', () => {
-        const harness = createHarness({
-            closeOnBackdropClick: false
-        });
-        const preventDefault = vi.fn();
-        const stopPropagation = vi.fn();
-
-        harness.overlay.dispatch('mousedown', {
-            preventDefault,
-            stopPropagation
-        });
-
-        expect(preventDefault).toHaveBeenCalledOnce();
-        expect(stopPropagation).toHaveBeenCalledOnce();
         expect(harness.cancel).not.toHaveBeenCalled();
-        expect(harness.success).not.toHaveBeenCalled();
         expect(globalThis.document.body.children).toContain(harness.overlay);
     });
 
-    test('Escape still cancels the editor', () => {
-        const harness = createHarness({
-            closeOnBackdropClick: false
-        });
-
-        harness.textarea.dispatch('keydown', { key: 'Escape' });
-
-        expect(harness.cancel).toHaveBeenCalledOnce();
-        expect(harness.success).not.toHaveBeenCalled();
-    });
-
-    test('delegates Alt+ArrowDown to same-column vertical navigation', () => {
-        const navigateVertical = vi.fn(() => true);
-        const harness = createHarness({}, { coordinator: { navigateVertical } });
+    test.each(['ArrowUp', 'ArrowDown'])('does not intercept Alt+%s in the textarea', key => {
+        const harness = createHarness();
         const preventDefault = vi.fn();
-        const stopPropagation = vi.fn();
 
-        harness.textarea.dispatch('keydown', {
-            key: 'ArrowDown',
-            altKey: true,
-            preventDefault,
-            stopPropagation
-        });
-
-        expect(preventDefault).toHaveBeenCalledOnce();
-        expect(stopPropagation).toHaveBeenCalledOnce();
-        expect(navigateVertical).toHaveBeenCalledWith(expect.objectContaining({
-            cell: harness.cell,
-            direction: 'next',
-            closeEditor: expect.any(Function)
-        }));
-    });
-
-    test('delegates Alt+ArrowUp to same-column vertical navigation', () => {
-        const navigateVertical = vi.fn(() => true);
-        const harness = createHarness({}, { coordinator: { navigateVertical } });
-
-        harness.textarea.dispatch('keydown', { key: 'ArrowUp', altKey: true });
-
-        expect(navigateVertical).toHaveBeenCalledWith(expect.objectContaining({
-            direction: 'prev'
-        }));
-    });
-
-    test.each(['ArrowUp', 'ArrowDown'])('leaves normal textarea %s unchanged', key => {
-        const navigateVertical = vi.fn(() => true);
-        const harness = createHarness({}, { coordinator: { navigateVertical } });
-        const preventDefault = vi.fn();
-        const stopPropagation = vi.fn();
-
-        harness.textarea.dispatch('keydown', { key, preventDefault, stopPropagation });
+        harness.overlay.dispatch('keydown', { key, altKey: true, preventDefault });
 
         expect(preventDefault).not.toHaveBeenCalled();
-        expect(stopPropagation).not.toHaveBeenCalled();
-        expect(navigateVertical).not.toHaveBeenCalled();
-    });
-
-    test('saves and removes the overlay once when vertical navigation is valid', () => {
-        let request;
-        const harness = createHarness({}, {
-            coordinator: {
-                navigateVertical: vi.fn(options => {
-                    request = options;
-                    return true;
-                })
-            }
-        });
-        harness.textarea.value = 'Saved vertically';
-
-        harness.textarea.dispatch('keydown', { key: 'ArrowDown', altKey: true });
-        request.closeEditor();
-        request.closeEditor();
-
-        expect(harness.success).toHaveBeenCalledOnce();
-        expect(harness.success).toHaveBeenCalledWith('Saved vertically');
-        expect(globalThis.document.body.children).not.toContain(harness.overlay);
-    });
-
-    test('keeps the modal and unsaved text when vertical navigation reaches a boundary', () => {
-        const harness = createHarness({}, {
-            coordinator: { navigateVertical: vi.fn(() => false) }
-        });
-        harness.textarea.value = 'Unsaved boundary text';
-
-        harness.textarea.dispatch('keydown', { key: 'ArrowDown', altKey: true });
-
         expect(harness.success).not.toHaveBeenCalled();
-        expect(harness.cancel).not.toHaveBeenCalled();
-        expect(harness.textarea.value).toBe('Unsaved boundary text');
         expect(globalThis.document.body.children).toContain(harness.overlay);
-    });
-
-    test('keeps the modal unchanged when no page coordinator is registered', () => {
-        const harness = createHarness();
-
-        harness.textarea.dispatch('keydown', { key: 'ArrowDown', altKey: true });
-
-        expect(harness.success).not.toHaveBeenCalled();
-        expect(harness.cancel).not.toHaveBeenCalled();
-        expect(globalThis.document.body.children).toContain(harness.overlay);
-    });
-
-    test('keeps the normal textarea Tab behavior by default', () => {
-        const harness = createHarness();
-        const preventDefault = vi.fn();
-        const stopPropagation = vi.fn();
-
-        harness.textarea.dispatch('keydown', {
-            key: 'Tab',
-            preventDefault,
-            stopPropagation
-        });
-
-        expect(preventDefault).not.toHaveBeenCalled();
-        expect(stopPropagation).not.toHaveBeenCalled();
-        expect(harness.success).not.toHaveBeenCalled();
-        expect(harness.cancel).not.toHaveBeenCalled();
-        expect(globalThis.document.body.children).toContain(harness.overlay);
-    });
-
-    test('Tab saves and opens the next editable cell when configured', async () => {
-        const harness = createHarness({
-            tabBehavior: 'save-and-navigate'
-        }, {
-            withRowNavigation: true
-        });
-        const preventDefault = vi.fn();
-        const stopPropagation = vi.fn();
-
-        harness.textarea.value = 'Saved with Tab';
-        harness.textarea.dispatch('keydown', {
-            key: 'Tab',
-            preventDefault,
-            stopPropagation
-        });
-        await flushDeferred();
-
-        expect(preventDefault).toHaveBeenCalledOnce();
-        expect(stopPropagation).toHaveBeenCalledOnce();
-        expect(harness.success).toHaveBeenCalledWith('Saved with Tab');
-        expect(harness.success).toHaveBeenCalledOnce();
-        expect(harness.nextCell.edit).toHaveBeenCalledOnce();
-        expect(harness.previousCell.edit).not.toHaveBeenCalled();
-        expect(harness.cell.navigateNext).not.toHaveBeenCalled();
-        expect(globalThis.document.body.children).not.toContain(harness.overlay);
-    });
-
-    test('Shift+Tab saves and opens the previous editable cell when configured', async () => {
-        const harness = createHarness({
-            tabBehavior: 'save-and-navigate'
-        }, {
-            withRowNavigation: true
-        });
-
-        harness.textarea.value = 'Saved with Shift+Tab';
-        harness.textarea.dispatch('keydown', {
-            key: 'Tab',
-            shiftKey: true
-        });
-        await flushDeferred();
-
-        expect(harness.success).toHaveBeenCalledWith('Saved with Shift+Tab');
-        expect(harness.success).toHaveBeenCalledOnce();
-        expect(harness.previousCell.edit).toHaveBeenCalledOnce();
-        expect(harness.nextCell.edit).not.toHaveBeenCalled();
-        expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
-        expect(globalThis.document.body.children).not.toContain(harness.overlay);
-
-        harness.textarea.dispatch('keydown', { key: 'Tab', shiftKey: true });
-
-        expect(harness.success).toHaveBeenCalledOnce();
-    });
-
-    test('Save and Ctrl+Enter still commit the edited text', () => {
-        const saveHarness = createHarness();
-
-        saveHarness.textarea.value = 'Saved with button';
-        saveHarness.saveButton.dispatch('click');
-
-        expect(saveHarness.success).toHaveBeenCalledWith('Saved with button');
-        expect(saveHarness.cancel).not.toHaveBeenCalled();
-        expect(globalThis.document.body.children).not.toContain(saveHarness.overlay);
-
-        const keyboardHarness = createHarness();
-
-        keyboardHarness.textarea.value = 'Saved with keyboard';
-        keyboardHarness.textarea.dispatch('keydown', {
-            key: 'Enter',
-            ctrlKey: true
-        });
-
-        expect(keyboardHarness.success).toHaveBeenCalledWith('Saved with keyboard');
-        expect(keyboardHarness.cancel).not.toHaveBeenCalled();
-        expect(globalThis.document.body.children).not.toContain(keyboardHarness.overlay);
-    });
-
-    test('Cancel still discards the edited text', () => {
-        const harness = createHarness();
-
-        harness.textarea.value = 'Discard me';
-        harness.cancelButton.dispatch('click');
-
-        expect(harness.cancel).toHaveBeenCalledOnce();
-        expect(harness.success).not.toHaveBeenCalled();
     });
 });

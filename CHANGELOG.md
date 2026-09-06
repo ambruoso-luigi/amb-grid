@@ -7,17 +7,23 @@ All notable changes to AMB Grid are documented in this file.
 ### Added
 
 - Added global keyboard shortcuts for page navigation and same-column vertical navigation.
+- Added contextual cell messages that follow both pointer movement and keyboard focus, with validation errors taking priority over descriptions and previews.
 
 ### Fixed
 
 - Preserved the active editor and focus through paginated keyboard navigation, including partial final pages.
 - Kept lookup keyboard selection and automatic scrolling aligned while navigating results.
 - Preserved lookup editing and keyboard focus after selecting a dialog result.
-- Kept same-column vertical keyboard navigation available while editing large text notes.
 
 ### Changed
 
 - Extended `Tab` and `Shift+Tab` navigation across local page boundaries with predictable focus exit at absolute boundaries.
+- Changed large-text cells to focus-first activation: `Enter` opens a focus-trapped dialog that restores focus to its source cell after closing.
+- Made the most recent real pointer or keyboard interaction the owner of contextual cell messages.
+
+### Removed
+
+- Removed the large-text `tabBehavior` option and its save-and-navigate Tab behavior.
 
 ## [0.6.0] - 2026-08-21
 

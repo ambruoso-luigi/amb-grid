@@ -930,6 +930,10 @@
     z-index: 10020;
 }
 
+.amb-cell--large-text {
+    user-select: none;
+}
+
 .amb-large-text-editor__panel {
     background: var(--amb-color-surface);
     border: 1px solid var(--amb-color-border);

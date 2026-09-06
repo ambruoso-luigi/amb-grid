@@ -78,6 +78,8 @@ export class FloatingMessage {
      * @returns {void}
      */
     show(targetElement, messageOptions = {}) {
+        this._clearShowTimer();
+
         if (!this.options.enabled) return;
         if (!targetElement) return;
 

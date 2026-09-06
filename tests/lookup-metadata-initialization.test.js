@@ -10,10 +10,6 @@ import {
     prepareLookupColumns
 } from '../src/lib/table/table-factory.js';
 import { getSearchableValues } from '../src/lib/table/search-controller.js';
-import {
-    createLargeTextBinder,
-    createLookupDescriptionBinder
-} from '../src/lib/table/hover-binders.js';
 
 class ElementMock {
     constructor(className = '') {
@@ -150,11 +146,6 @@ const collectPreparedLookupColumns = columns => {
 const createRow = (rowData, rowElement = new ElementMock('tabulator-row')) => ({
     getData: () => rowData,
     getElement: () => rowElement
-});
-
-const createTableForHover = (row, tableElement = new ElementMock('tabulator')) => ({
-    element: tableElement,
-    getRows: () => [row]
 });
 
 describe('lookup metadata initialization', () => {
@@ -331,73 +322,6 @@ describe('lookup metadata initialization', () => {
             .toBe('Available for standard warehouse picking');
     });
 
-    test('lookup hover binder reads initial description metadata', async () => {
-        const rowData = { status: 'A001' };
-        const rowElement = new ElementMock('tabulator-row');
-        const cellElement = new ElementMock('tabulator-cell');
-        const tableElement = new ElementMock('tabulator');
-        const floatingMessage = {
-            scheduleShow: vi.fn(),
-            hide: vi.fn()
-        };
-
-        rowElement.appendChild(cellElement);
-        cellElement.dataset.lookupField = 'status';
-        setLookupMetadata(
-            rowData,
-            'status',
-            'A001',
-            'Available for standard warehouse picking',
-            { setInitial: true }
-        );
-
-        createLookupDescriptionBinder(
-            createTableForHover(createRow(rowData, rowElement), tableElement),
-            floatingMessage
-        );
-        await tableElement.dispatch('mouseover', { target: cellElement });
-
-        expect(floatingMessage.scheduleShow).toHaveBeenCalledWith(
-            cellElement,
-            expect.objectContaining({
-                title: 'Description',
-                message: 'Available for standard warehouse picking'
-            })
-        );
-    });
-
-    test('lookup hover binder can be disabled without touching lookup metadata', async () => {
-        const rowData = { status: 'A001' };
-        const rowElement = new ElementMock('tabulator-row');
-        const cellElement = new ElementMock('tabulator-cell');
-        const tableElement = new ElementMock('tabulator');
-        const floatingMessage = {
-            scheduleShow: vi.fn(),
-            hide: vi.fn()
-        };
-
-        rowElement.appendChild(cellElement);
-        cellElement.dataset.lookupField = 'status';
-        setLookupMetadata(
-            rowData,
-            'status',
-            'A001',
-            'Available for standard warehouse picking',
-            { setInitial: true }
-        );
-
-        createLookupDescriptionBinder(
-            createTableForHover(createRow(rowData, rowElement), tableElement),
-            floatingMessage,
-            { enabled: false }
-        );
-        await tableElement.dispatch('mouseover', { target: cellElement });
-
-        expect(floatingMessage.scheduleShow).not.toHaveBeenCalled();
-        expect(getLookupMetadata(rowData, 'status').current.description)
-            .toBe('Available for standard warehouse picking');
-    });
-
     test('deduplicates repeated lookup values across rows', async () => {
         const loadFn = vi.fn(({ query }) => {
             return statuses.filter(status => status.code === query);
@@ -541,54 +465,4 @@ describe('lookup metadata initialization', () => {
         expect(column).not.toHaveProperty('formatter');
     });
 
-    test('large text hover binder still reads data-large-text-field cells', async () => {
-        const rowData = { notes: 'Long operational note for the warehouse team.' };
-        const rowElement = new ElementMock('tabulator-row');
-        const cellElement = new ElementMock('tabulator-cell');
-        const tableElement = new ElementMock('tabulator');
-        const floatingMessage = {
-            scheduleShow: vi.fn(),
-            hide: vi.fn()
-        };
-
-        rowElement.appendChild(cellElement);
-        cellElement.dataset.largeTextField = 'notes';
-
-        createLargeTextBinder(
-            createTableForHover(createRow(rowData, rowElement), tableElement),
-            floatingMessage
-        );
-        await tableElement.dispatch('mouseover', { target: cellElement });
-
-        expect(floatingMessage.scheduleShow).toHaveBeenCalledWith(
-            cellElement,
-            expect.objectContaining({
-                title: 'Text',
-                message: 'Long operational note for the warehouse team.'
-            })
-        );
-    });
-
-    test('large text hover binder can be disabled', async () => {
-        const rowData = { notes: 'Long operational note for the warehouse team.' };
-        const rowElement = new ElementMock('tabulator-row');
-        const cellElement = new ElementMock('tabulator-cell');
-        const tableElement = new ElementMock('tabulator');
-        const floatingMessage = {
-            scheduleShow: vi.fn(),
-            hide: vi.fn()
-        };
-
-        rowElement.appendChild(cellElement);
-        cellElement.dataset.largeTextField = 'notes';
-
-        createLargeTextBinder(
-            createTableForHover(createRow(rowData, rowElement), tableElement),
-            floatingMessage,
-            { enabled: false }
-        );
-        await tableElement.dispatch('mouseover', { target: cellElement });
-
-        expect(floatingMessage.scheduleShow).not.toHaveBeenCalled();
-    });
 });

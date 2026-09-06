@@ -186,9 +186,6 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toMatch(
             /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?closeOnBackdropClick: false/
         );
-        expect(source).toMatch(
-            /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?tabBehavior: 'save-and-navigate'/
-        );
     });
 
     test('keeps the main demo toolbar compact and the Tabulator surface clean in demo CSS', () => {

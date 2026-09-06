@@ -5,7 +5,7 @@ const coordinators = new WeakMap();
  * Registration is removed by the returned lifecycle cleanup function.
  *
  * @param {object} table - Runtime table component.
- * @param {{transitionPage: Function, navigateVertical: Function}} coordinator - Page navigation owner.
+ * @param {{transitionPage: Function}} coordinator - Page navigation owner.
  * @returns {Function} Idempotent registration cleanup.
  * @private
  * @internal
@@ -24,7 +24,7 @@ export const registerPageNavigationCoordinator = (table, coordinator) => {
  * Resolves the page coordinator registered for a runtime table.
  *
  * @param {object} table - Runtime table component.
- * @returns {{transitionPage: Function, navigateVertical: Function}|null} Registered coordinator.
+ * @returns {{transitionPage: Function}|null} Registered coordinator.
  * @private
  * @internal
  */

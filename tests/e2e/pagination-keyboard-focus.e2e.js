@@ -59,18 +59,22 @@ const expectLookupEditor = async (page, code) => {
     await expect(target.locator('.amb-lookup-editor__button')).toBeVisible();
 };
 
-const openNotesEditor = async (page, code) => {
+const focusNotesCell = async (page, code) => {
     const notes = rowCell(page, code, 'notes');
 
+    await notes.scrollIntoViewIfNeeded();
     await notes.click();
-    await expect(notes).toHaveClass(/tabulator-editing/);
-    await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+    await expect(notes).toBeFocused();
+    await expect(notes).not.toHaveClass(/tabulator-editing/);
+    await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
 };
 
-const expectNotesEditor = async (page, code) => {
-    await expect(rowCell(page, code, 'notes')).toHaveClass(/tabulator-editing/);
-    await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
-    await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+const expectNotesFocused = async (page, code) => {
+    const notes = rowCell(page, code, 'notes');
+
+    await expect(notes).toBeFocused();
+    await expect(notes).not.toHaveClass(/tabulator-editing/);
+    await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
 };
 
 const selectStatusDialogResult = async (page, value) => {
@@ -154,23 +158,14 @@ test.describe('keyboard pagination focus', () => {
         await page.mouse.wheel(0, 10000);
         await expect(table(page).locator('.tabulator-row').filter({ hasText: 'PRD-H010' })).toBeVisible();
 
-        const lastNotes = table(page)
-            .locator('.tabulator-row')
-            .filter({ hasText: 'PRD-H010' })
-            .locator('.tabulator-cell[tabulator-field="notes"]');
-
-        await lastNotes.dblclick({ delay: 100 });
-        await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+        await focusNotesCell(page, 'PRD-H010');
         await page.keyboard.press('Tab');
         await waitForPage(page, 2);
         await expectItemCodeEditor(page);
 
         await page.keyboard.press('Shift+Tab');
         await waitForPage(page, 1);
-        await expect(table(page).locator('.tabulator-row').last().locator(
-            '.tabulator-cell[tabulator-field="notes"].tabulator-editing'
-        )).toHaveCount(1);
-        await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+        await expectNotesFocused(page, 'PRD-H010');
     });
 
     test('exits the grid at both absolute Tab boundaries', async ({ page }) => {
@@ -188,12 +183,12 @@ test.describe('keyboard pagination focus', () => {
             await moveAndCheck(page, 'Alt+PageDown', pageNumber);
         }
 
-        const finalNotes = table(page)
-            .locator('.tabulator-row')
-            .last()
-            .locator('.tabulator-cell[tabulator-field="notes"]');
-        await finalNotes.dblclick({ delay: 100 });
-        await expect(page.locator('.amb-large-text-editor__textarea')).toBeFocused();
+        await expect(table(page).locator('.tabulator-row')).toHaveCount(1);
+        const lastNotes = cell(page, 'notes');
+        await lastNotes.scrollIntoViewIfNeeded();
+        await lastNotes.click();
+        await expect(lastNotes).toBeFocused();
+        await expect(lastNotes).not.toHaveClass(/tabulator-editing/);
         await page.keyboard.press('Tab');
         await waitForPage(page, 11);
         await expectFocusOutsideGrid(page);
@@ -225,19 +220,14 @@ test.describe('keyboard pagination focus', () => {
         await expectFieldEditor(page, 'PRD-AB02', 'warehouse');
     });
 
-    test('moves large-text Notes vertically on the same page and commits once', async ({ page }) => {
-        await openNotesEditor(page, 'PRD-AB02');
-        const textarea = page.locator('.amb-large-text-editor__textarea');
-
-        await textarea.fill('Saved while moving down');
+    test('moves focused large-text Notes vertically on the same page without opening', async ({ page }) => {
+        await focusNotesCell(page, 'PRD-AB02');
         await page.keyboard.press('Alt+ArrowDown');
 
-        await expect(page.locator('.amb-large-text-editor')).toHaveCount(1);
-        await expectNotesEditor(page, 'PRD-A003');
-        await expect(rowCell(page, 'PRD-AB02', 'notes')).toContainText('Saved while moving down');
+        await expectNotesFocused(page, 'PRD-A003');
 
         await page.keyboard.press('Alt+ArrowUp');
-        await expectNotesEditor(page, 'PRD-AB02');
+        await expectNotesFocused(page, 'PRD-AB02');
     });
 
     test('moves large-text Notes across pages including the final partial page', async ({ page }) => {
@@ -246,51 +236,43 @@ test.describe('keyboard pagination focus', () => {
         await tableHolder.hover();
         await page.mouse.wheel(0, 10000);
         await expect(rowByCode(page, 'PRD-H010')).toBeVisible();
-        await openNotesEditor(page, 'PRD-H010');
+        await focusNotesCell(page, 'PRD-H010');
         await page.keyboard.press('Alt+ArrowDown');
         await waitForPage(page, 2);
-        await expectNotesEditor(page, 'PRD-A011');
+        await expectNotesFocused(page, 'PRD-A011');
 
         await page.keyboard.press('Alt+ArrowUp');
         await waitForPage(page, 1);
-        await expectNotesEditor(page, 'PRD-H010');
+        await expectNotesFocused(page, 'PRD-H010');
 
-        await page.keyboard.press('Escape');
         for (let pageNumber = 2; pageNumber <= 10; pageNumber += 1) {
             await table(page).locator('.tabulator-page[data-page="next"]').click();
             await waitForPage(page, pageNumber);
         }
-        await openNotesEditor(page, 'PRD-H100');
+        await focusNotesCell(page, 'PRD-H100');
         await page.keyboard.press('Alt+ArrowDown');
         await waitForPage(page, 11);
-        await expectNotesEditor(page, 'PRD-A101');
+        await expectNotesFocused(page, 'PRD-A101');
 
         await page.keyboard.press('Alt+ArrowUp');
         await waitForPage(page, 10);
-        await expectNotesEditor(page, 'PRD-H100');
+        await expectNotesFocused(page, 'PRD-H100');
     });
 
-    test('keeps large-text Notes open with unsaved text at absolute boundaries', async ({ page }) => {
-        await openNotesEditor(page, 'PRD-A001');
-        const textarea = page.locator('.amb-large-text-editor__textarea');
-
-        await textarea.fill('Unsaved boundary text');
+    test('keeps focused large-text Notes closed at absolute boundaries', async ({ page }) => {
+        await focusNotesCell(page, 'PRD-A001');
         await page.keyboard.press('Alt+ArrowUp');
         await waitForPage(page, 1);
-        await expect(textarea).toHaveValue('Unsaved boundary text');
-        await expect(textarea).toBeFocused();
+        await expectNotesFocused(page, 'PRD-A001');
 
-        await page.keyboard.press('Escape');
         for (let pageNumber = 2; pageNumber <= 11; pageNumber += 1) {
             await table(page).locator('.tabulator-page[data-page="next"]').click();
             await waitForPage(page, pageNumber);
         }
-        await openNotesEditor(page, 'PRD-A101');
-        await textarea.fill('Unsaved boundary text');
+        await focusNotesCell(page, 'PRD-A101');
         await page.keyboard.press('Alt+ArrowDown');
         await waitForPage(page, 11);
-        await expect(textarea).toHaveValue('Unsaved boundary text');
-        await expect(textarea).toBeFocused();
+        await expectNotesFocused(page, 'PRD-A101');
     });
 
     test('waits for lookup lifecycle during same-page vertical navigation', async ({ page }) => {

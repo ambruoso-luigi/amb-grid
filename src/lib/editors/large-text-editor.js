@@ -1,15 +1,14 @@
-import { getInitialValue, navigateEditableCellAfterClose, toCssSize } from './shared.js';
-import { GRID_SHORTCUTS, matchesShortcut } from '../table/keyboard-shortcuts.js';
-import { getPageNavigationCoordinator } from '../table/page-navigation-coordinator.js';
+import { focusCellWithoutEditing, getInitialValue, toCssSize } from './shared.js';
+import { createFocusTrap } from '../../ui/focus-trap.js';
+
+let dialogSequence = 0;
 
     /**
      * Modal textarea editor for long text.
      *
-     * Keyboard behavior: `Escape` cancels and `Ctrl+Enter` saves. With
-     * `tabBehavior: 'save-and-navigate'`, `Tab` saves and navigates to the
-     * next editable cell and `Shift+Tab` saves and navigates to the previous
-     * editable cell. `Alt+ArrowUp` and `Alt+ArrowDown` save and navigate in
-     * the same column when grid vertical navigation is available.
+     * Keyboard behavior: `Escape` cancels, `Ctrl+Enter` saves, and the dialog
+     * traps `Tab`/`Shift+Tab` across its textarea and actions. Closing restores
+     * keyboard focus to the source cell without reopening the editor.
      *
      * @param {object} [options] - Large text editor options.
      * @param {string} [options.title='Edit text'] - Dialog title.
@@ -23,7 +22,6 @@ import { getPageNavigationCoordinator } from '../table/page-navigation-coordinat
      * @param {boolean} [options.horizontalScroll=false] - Keep long lines on one line.
      * @param {string} [options.resize='vertical'] - CSS resize value for the textarea.
      * @param {boolean} [options.closeOnBackdropClick=true] - Close the editor when the backdrop is pressed.
-     * @param {'default'|'save-and-navigate'} [options.tabBehavior='default'] - Keep normal textarea Tab behavior or save and navigate to the adjacent editable cell.
      * @returns {Function} Grid editor function compatible with the internal table engine.
      * @example
      * {
@@ -47,11 +45,10 @@ export function largeText(options = {}) {
             horizontalScroll: false,
             resize: 'vertical',
             closeOnBackdropClick: true,
-            tabBehavior: 'default',
             ...options
         };
 
-        return (cell, onRendered, success, cancel) => {
+        const editor = (cell, onRendered, success, cancel) => {
             const placeholder = document.createElement('span');
             const overlay = document.createElement('div');
             const panel = document.createElement('div');
@@ -60,12 +57,17 @@ export function largeText(options = {}) {
             const actions = document.createElement('div');
             const cancelButton = document.createElement('button');
             const saveButton = document.createElement('button');
+            const sourceRow = cell.getRow?.();
+            const sourceField = cell.getField?.();
+            const titleId = `amb-large-text-title-${++dialogSequence}`;
             let closed = false;
+            let focusTrap;
 
             placeholder.textContent = '';
             overlay.className = 'amb-large-text-editor';
             panel.className = 'amb-large-text-editor__panel';
             title.className = 'amb-large-text-editor__title';
+            title.id = titleId;
             textarea.className = 'amb-large-text-editor__textarea';
             actions.className = 'amb-large-text-editor__actions';
             cancelButton.className = 'amb-large-text-editor__button';
@@ -79,6 +81,9 @@ export function largeText(options = {}) {
             cancelButton.textContent = normalizedOptions.cancelText;
             saveButton.type = 'button';
             saveButton.textContent = normalizedOptions.saveText;
+            overlay.setAttribute('role', 'dialog');
+            overlay.setAttribute('aria-modal', 'true');
+            overlay.setAttribute('aria-labelledby', titleId);
 
             panel.style.width = toCssSize(normalizedOptions.width);
             panel.style.maxWidth = toCssSize(normalizedOptions.maxWidth);
@@ -108,41 +113,38 @@ export function largeText(options = {}) {
                 overlay.remove();
             };
 
+            const restoreSourceFocus = () => {
+                const restore = () => {
+                    const sourceCell = sourceRow?.getCell?.(sourceField) || cell;
+
+                    focusCellWithoutEditing(sourceCell);
+                };
+
+                if (typeof globalThis.requestAnimationFrame === 'function') {
+                    globalThis.requestAnimationFrame(restore);
+                } else {
+                    Promise.resolve().then(restore);
+                }
+            };
+
             const closeWithSuccess = () => {
                 if (closed) return;
 
                 closed = true;
+                focusTrap?.deactivate({ restore: false });
                 success(textarea.value);
                 destroyPopup();
+                restoreSourceFocus();
             };
 
             const closeWithCancel = () => {
                 if (closed) return;
 
                 closed = true;
+                focusTrap?.deactivate({ restore: false });
                 cancel();
                 destroyPopup();
-            };
-
-            const saveAndNavigate = direction => {
-                closeWithSuccess();
-                navigateEditableCellAfterClose(cell, direction);
-            };
-
-            const navigateVertically = direction => {
-                const table = cell.getTable?.();
-                const coordinator = getPageNavigationCoordinator(table);
-
-                if (!coordinator?.navigateVertical) return false;
-
-                return coordinator.navigateVertical({
-                    cell,
-                    direction,
-                    closeEditor: () => {
-                        closeWithSuccess();
-                        return true;
-                    }
-                });
+                restoreSourceFocus();
             };
 
             cancelButton.addEventListener('click', closeWithCancel);
@@ -157,48 +159,41 @@ export function largeText(options = {}) {
 
                 closeWithCancel();
             });
-            textarea.addEventListener('keydown', event => {
-                const verticalUp = matchesShortcut(event, GRID_SHORTCUTS.previousRow);
-                const verticalDown = matchesShortcut(event, GRID_SHORTCUTS.nextRow);
-
-                if (verticalUp || verticalDown) {
-                    if (!navigateVertically(verticalUp ? 'prev' : 'next')) return;
-
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation?.();
-                    return;
-                }
-
-                if (
-                    event.key === 'Tab'
-                    && normalizedOptions.tabBehavior === 'save-and-navigate'
-                ) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    saveAndNavigate(event.shiftKey ? 'prev' : 'next');
-                    return;
-                }
-
+            overlay.addEventListener('keydown', event => {
+                if (focusTrap?.handleKeydown(event)) return;
                 if (event.key === 'Escape') {
                     event.preventDefault();
+                    event.stopPropagation?.();
                     closeWithCancel();
                     return;
                 }
 
                 if (event.key === 'Enter' && event.ctrlKey) {
                     event.preventDefault();
+                    event.stopPropagation?.();
                     closeWithSuccess();
                 }
+            });
+
+            focusTrap = createFocusTrap({
+                container: panel,
+                getElements: () => [textarea, cancelButton, saveButton],
+                initialFocus: textarea,
+                fallbackFocus: panel
             });
 
             document.body.appendChild(overlay);
 
             onRendered(() => {
-                textarea.focus();
+                focusTrap.activate();
                 textarea.setSelectionRange(textarea.value.length, textarea.value.length);
             });
 
             return placeholder;
         };
+
+        editor._ambEditorType = 'largeText';
+        editor._ambKeyboardFocusOnly = true;
+
+        return editor;
 }

@@ -69,19 +69,9 @@ export const createLifecycleMethods = ({
             resources.unsubscribeSelectionColumn = null;
         }
 
-        if (resources.unsubscribeLookupDescriptions) {
-            resources.unsubscribeLookupDescriptions();
-            resources.unsubscribeLookupDescriptions = null;
-        }
-
         if (resources.unsubscribeLookupMetadata) {
             resources.unsubscribeLookupMetadata();
             resources.unsubscribeLookupMetadata = null;
-        }
-
-        if (resources.unsubscribeLargeText) {
-            resources.unsubscribeLargeText();
-            resources.unsubscribeLargeText = null;
         }
 
         if (resources.searchController) {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { navigateEditableCellAfterClose } from '../src/lib/editors/shared.js';
+import { navigateEditableCellAfterClose, navigateToCandidate } from '../src/lib/editors/shared.js';
 import { registerPageNavigationCoordinator } from '../src/lib/table/page-navigation-coordinator.js';
 
 const flushNavigation = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -19,6 +19,33 @@ afterEach(() => {
 });
 
 describe('editable navigation across pagination boundaries', () => {
+    test('focuses a keyboard-focus-only cell without opening its editor', () => {
+        const listeners = new Map();
+        const element = {
+            addEventListener: (name, handler) => listeners.set(name, handler),
+            removeEventListener: vi.fn(),
+            focus: vi.fn()
+        };
+        const edit = vi.fn();
+        const cell = {
+            edit,
+            getElement: () => element,
+            getColumn: () => ({
+                isVisible: () => true,
+                getDefinition: () => ({ editor: edit, _ambKeyboardFocusOnly: true })
+            })
+        };
+
+        expect(navigateToCandidate(cell)).toBe(true);
+        expect(element.focus).toHaveBeenCalledOnce();
+        expect(edit).not.toHaveBeenCalled();
+        expect(element.removeEventListener).toHaveBeenCalledWith(
+            'focus',
+            expect.any(Function),
+            true
+        );
+    });
+
     test('keeps normal navigation inside the current page', async () => {
         const nextEdit = vi.fn();
         let startCell;
