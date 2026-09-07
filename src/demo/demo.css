@@ -2521,8 +2521,10 @@ a {
 .demo-column-guide__title {
     color: var(--amb-site-navy-2);
     font-size: 13px;
+    hyphens: none;
     min-width: 0;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
 .demo-column-guide__badge {

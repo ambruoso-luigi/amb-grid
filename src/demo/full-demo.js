@@ -77,122 +77,6 @@ const demoRowActionIcons = {
     removeNew: '×'
 };
 
-const getDemoRowState = (row, crud) => {
-    const data = row && typeof row.getData === 'function' ? row.getData() : {};
-    const stateField = crud && crud.options ? crud.options.stateField : '_state';
-
-    return data[stateField] || 'clean';
-};
-
-const getDemoRowIdentifier = (crud, data) => {
-    const id = data[crud.options.idField];
-
-    if (id !== null && id !== undefined && id !== '') return id;
-
-    return data[crud.options.tempIdField];
-};
-
-const getDemoRowActionConfig = state => {
-    if (state === 'new') {
-        return {
-            action: 'remove-new',
-            icon: demoRowActionIcons.removeNew,
-            label: demoRowActionLabels.removeNew,
-            className: 'amb-row-action-button--remove-new'
-        };
-    }
-
-    if (state === 'modified' || state === 'deleted') {
-        return {
-            action: 'rollback',
-            icon: demoRowActionIcons.rollback,
-            label: demoRowActionLabels.rollback,
-            className: 'amb-row-action-button--rollback'
-        };
-    }
-
-    return {
-        action: 'delete',
-        icon: demoRowActionIcons.delete,
-        label: demoRowActionLabels.delete,
-        className: 'amb-row-action-button--delete'
-    };
-};
-
-const createDemoRowActionsContainer = state => {
-    const container = document.createElement('div');
-    const config = getDemoRowActionConfig(state);
-    const button = document.createElement('button');
-
-    container.className = 'amb-row-actions amb-demo-row-actions';
-    button.type = 'button';
-    button.className = `amb-row-action-button ${config.className}`;
-    button.dataset.action = config.action;
-    button.textContent = config.icon;
-    button.setAttribute('aria-label', config.label);
-    button.title = config.label;
-    container.append(button);
-
-    return container;
-};
-
-const updateDemoRowActionButton = (row, crud) => {
-    const rowElement = row && typeof row.getElement === 'function' ? row.getElement() : null;
-    const container = rowElement && rowElement.querySelector('.amb-demo-row-actions');
-
-    if (!container) return;
-
-    container.replaceWith(createDemoRowActionsContainer(getDemoRowState(row, crud)));
-};
-
-const createDemoRowActionColumn = ({ getCrud, confirmDialog }) => ({
-    title: '',
-    field: '_demoRowActions',
-    width: 55,
-    hozAlign: 'center',
-    headerSort: false,
-    formatter: cell => createDemoRowActionsContainer(getDemoRowState(cell.getRow(), getCrud())),
-    cellClick: async (event, cell) => {
-        const target = event.target;
-        const actionElement = target && typeof target.closest === 'function'
-            ? target.closest('[data-action]')
-            : null;
-        const crud = getCrud();
-
-        if (!actionElement || !crud) return;
-
-        const row = cell.getRow();
-        const data = row.getData();
-        const state = getDemoRowState(row, crud);
-        const action = actionElement.dataset.action;
-        const identifier = getDemoRowIdentifier(crud, data);
-
-        if (action === 'remove-new' && state === 'new') {
-            if (await confirmDialog.confirm({ message: demoRowActionMessages.removeNew })) {
-                crud.deleteRow(identifier);
-            }
-
-            return;
-        }
-
-        if (action === 'rollback' && (state === 'modified' || state === 'deleted')) {
-            if (await confirmDialog.confirm({ message: demoRowActionMessages.rollback })) {
-                crud.rollbackRow(identifier);
-                updateDemoRowActionButton(row, crud);
-            }
-
-            return;
-        }
-
-        if (action !== 'delete' || (state !== 'clean' && state !== 'saved')) return;
-
-        if (await confirmDialog.confirm({ message: demoRowActionMessages.delete })) {
-            crud.deleteRow(identifier);
-            updateDemoRowActionButton(row, crud);
-        }
-    }
-});
-
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
@@ -345,15 +229,22 @@ export default async function fullDemo(app, options = {}) {
         load: ({ query }) => fakeApi.searchStatuses(query)
     });
     const statusDialog = new AMB.LookupDialog();
-    const confirmDialog = new AMB.ConfirmDialog();
     const reportDialog = createDemoReportDialog();
     const warehouseOptions = await fakeApi.getWarehouses();
     const products = await fakeApi.getProducts();
     let crud = null;
-    let unsubscribeDemoRowActions = null;
 
     const tableOptions = {
         selector: '#inventory-table',
+        deleteColumn: {
+            enabled: true,
+            width: 55,
+            confirmDeleteMessage: demoRowActionMessages.delete,
+            confirmRollbackMessage: demoRowActionMessages.rollback,
+            confirmRemoveNewMessage: demoRowActionMessages.removeNew,
+            icons: demoRowActionIcons,
+            labels: demoRowActionLabels
+        },
         search: {
             enabled: true,
             placeholder: 'Search inventory...',
@@ -388,10 +279,6 @@ export default async function fullDemo(app, options = {}) {
         paginationSize: 10,
         paginationSizeSelector: [10, 20, 50],
         columns: [
-            createDemoRowActionColumn({
-                getCrud: () => crud,
-                confirmDialog
-            }),
             {
                 title: 'Item code',
                 field: 'itemCode',
@@ -554,17 +441,9 @@ export default async function fullDemo(app, options = {}) {
 
     const demo = AMB.table(tableOptions);
     crud = demo.crud;
-    unsubscribeDemoRowActions = crud.on('row-state-changed', ({ row }) => {
-        updateDemoRowActionButton(row, crud);
-    });
     const originalDestroy = demo.destroy.bind(demo);
 
     demo.destroy = () => {
-        if (typeof unsubscribeDemoRowActions === 'function') {
-            unsubscribeDemoRowActions();
-        }
-
-        confirmDialog.destroy();
         reportDialog.destroy();
         app.style.removeProperty('--demo-table-height');
         document.body.classList.remove('demo-main-demo-active');

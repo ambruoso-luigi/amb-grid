@@ -142,33 +142,29 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('setTimeout');
     });
 
-    test('keeps full demo row actions on native button tab behavior', () => {
+    test('uses the standard delete column as the first grid column', () => {
         const tableColumnsSource = source.slice(source.indexOf('const tableOptions = {'));
-        const rowActionColumnIndex = tableColumnsSource.indexOf('createDemoRowActionColumn({');
+        const deleteColumnIndex = tableColumnsSource.indexOf('deleteColumn: {');
         const itemCodeIndex = tableColumnsSource.indexOf("title: 'Item code'");
-        const requiresInspectionIndex = tableColumnsSource.indexOf("title: 'Requires inspection'");
-        const notesIndex = tableColumnsSource.indexOf("title: 'Notes'");
 
-        expect(source).toContain('createDemoRowActionColumn({');
-        expect(source).toContain("field: '_demoRowActions'");
-        expect(rowActionColumnIndex).toBeGreaterThan(-1);
+        expect(deleteColumnIndex).toBeGreaterThan(-1);
         expect(itemCodeIndex).toBeGreaterThan(-1);
-        expect(requiresInspectionIndex).toBeGreaterThan(-1);
-        expect(notesIndex).toBeGreaterThan(-1);
-        expect(rowActionColumnIndex).toBeLessThan(itemCodeIndex);
-        expect(
-            rowActionColumnIndex > requiresInspectionIndex && rowActionColumnIndex < notesIndex
-        ).toBe(false);
-        expect(source).toContain('className = `amb-row-action-button ${config.className}`');
+        expect(deleteColumnIndex).toBeLessThan(itemCodeIndex);
+        expect(source).not.toContain('createDemoRowActionColumn');
+        expect(source).not.toContain("field: '_demoRowActions'");
+        expect(source).toContain('enabled: true');
+        expect(source).toContain('width: 55');
         expect(source).toContain("delete: 'Delete product'");
         expect(source).toContain("rollback: 'Rollback product changes'");
         expect(source).toContain("removeNew: 'Remove new product'");
         expect(source).toContain("delete: 'Delete this product?'");
         expect(source).toContain("rollback: 'Rollback this product?'");
         expect(source).toContain("removeNew: 'Remove this new product?'");
-        expect(source).not.toContain('deleteColumn: {');
-        expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?width: 58/);
-        expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?icons: \{/);
+        expect(source).toContain('confirmDeleteMessage: demoRowActionMessages.delete');
+        expect(source).toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
+        expect(source).toContain('confirmRemoveNewMessage: demoRowActionMessages.removeNew');
+        expect(source).toContain('icons: demoRowActionIcons');
+        expect(source).toContain('labels: demoRowActionLabels');
         expect(source).not.toContain('bindInventoryRowActionKeyboardBridge');
         expect(source).not.toContain('KEYDOWN_EVENT');
         expect(source).not.toContain("addEventListener('keydown'");
@@ -177,7 +173,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('stopPropagation()');
         expect(source).not.toContain('focus({ preventScroll: true })');
         expect(source).not.toContain('tabindex');
-        expect(source).toContain('confirmDialog.destroy()');
+        expect(source).not.toContain('new AMB.ConfirmDialog()');
         expect(basicCrudSource).toContain('deleteColumn: {');
         expect(basicCrudSource).toContain('selectionColumn: {');
     });

@@ -165,7 +165,6 @@ export default async function multifieldLookup(app) {
     app.innerHTML = `
         <div class="demo-multifield-lookup">
             <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
-            <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Municipality is the editable master field. Type to use autocomplete or use the search button to open the complete lookup.</p>
             ${createDemoColumnGuide({
             summary: 'Multifield lookup behavior',
             summaryKey: 'examples.multifieldLookup.detailsTitle',

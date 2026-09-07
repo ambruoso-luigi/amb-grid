@@ -270,7 +270,7 @@ describe('demo site navigation', () => {
         });
     });
 
-    test('keeps all eight public example introductions and disclosures bilingual', () => {
+    test('keeps public example disclosures bilingual without a redundant multifield introduction', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
             ['basic-crud', 'basicCrud'],
@@ -287,7 +287,11 @@ describe('demo site navigation', () => {
             const source = read(`src/demo/${fileName}.js`);
 
             expect(source).toContain(`data-i18n="examples.${key}.title"`);
-            expect(source).toContain(`data-i18n="examples.${key}.intro"`);
+            if (key === 'multifieldLookup') {
+                expect(source).not.toContain(`data-i18n="examples.${key}.intro"`);
+            } else {
+                expect(source).toContain(`data-i18n="examples.${key}.intro"`);
+            }
             expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
             expect(source).toContain(`summaryKey: 'examples.${key}.detailsTitle'`);
             expect(copy.match(new RegExp(`'examples\\.${key}\\.detailsTitle'`, 'g'))).toHaveLength(2);
