@@ -151,4 +151,69 @@ describe('AMB table controller selection method group', () => {
         expect(crud.getSavePayload).not.toHaveBeenCalled();
         expect(crud.getStateReport).not.toHaveBeenCalled();
     });
+
+    test('enforces the managed single-selection policy for AMB selection APIs', () => {
+        let firstSelected = false;
+        let secondSelected = false;
+        const first = {
+            isSelected: vi.fn(() => firstSelected),
+            select: vi.fn(() => { firstSelected = true; }),
+            deselect: vi.fn(() => { firstSelected = false; })
+        };
+        const second = {
+            isSelected: vi.fn(() => secondSelected),
+            select: vi.fn(() => { secondSelected = true; }),
+            deselect: vi.fn(() => { secondSelected = false; })
+        };
+        const table = {
+            deselectRow: vi.fn(() => {
+                firstSelected = false;
+                secondSelected = false;
+            })
+        };
+        const crud = {
+            findRowByKey: identifier => identifier === 'first' ? first
+                : identifier === 'second' ? second : null
+        };
+        const methods = createSelectionMethods({
+            table,
+            crud,
+            selectionMode: 'single'
+        });
+
+        expect(methods.selectRow('first')).toBe(true);
+        expect(firstSelected).toBe(true);
+        expect(methods.selectRow('second')).toBe(true);
+        expect(firstSelected).toBe(false);
+        expect(secondSelected).toBe(true);
+        expect(table.deselectRow).toHaveBeenCalledTimes(2);
+
+        expect(methods.selectRow('second')).toBe(true);
+        expect(second.select).toHaveBeenCalledOnce();
+        expect(table.deselectRow).toHaveBeenCalledTimes(2);
+
+        expect(methods.toggleSelectRow('first')).toBe(true);
+        expect(firstSelected).toBe(true);
+        expect(secondSelected).toBe(false);
+        expect(methods.toggleSelectRow('first')).toBe(true);
+        expect(firstSelected).toBe(false);
+    });
+
+    test('keeps multiple and unmanaged selection API delegation unchanged', () => {
+        const row = {
+            isSelected: vi.fn(() => false),
+            select: vi.fn(),
+            deselect: vi.fn(),
+            toggleSelect: vi.fn()
+        };
+        const table = { deselectRow: vi.fn() };
+        const crud = { findRowByKey: () => row };
+        const methods = createSelectionMethods({ table, crud });
+
+        expect(methods.selectRow('row')).toBe(true);
+        expect(methods.toggleSelectRow('row')).toBe(true);
+        expect(row.select).toHaveBeenCalledOnce();
+        expect(row.toggleSelect).toHaveBeenCalledOnce();
+        expect(table.deselectRow).not.toHaveBeenCalled();
+    });
 });

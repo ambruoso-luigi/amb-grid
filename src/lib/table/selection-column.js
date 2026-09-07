@@ -42,15 +42,6 @@ const setRowSelected = (row, selected, isMultiple = true) => {
 const toggleRowSelection = (row, isMultiple = true) => {
     if (!row) return false;
 
-    if (typeof row.toggleSelect === 'function') {
-        if (!isMultiple && !isRowSelected(row)) {
-            clearTableSelection(row);
-        }
-
-        row.toggleSelect();
-        return true;
-    }
-
     return setRowSelected(row, !isRowSelected(row), isMultiple);
 };
 
@@ -178,7 +169,10 @@ const syncSelectionInputs = table => {
  *
  * The column is an interactive non-data cell. It participates in AMB keyboard
  * navigation, focuses the native checkbox control, uses `Enter`/`Space` to
- * toggle row selection, and keeps `Tab`/`Shift+Tab` as cell navigation.
+ * toggle row selection, and keeps `Tab`/`Shift+Tab` as cell navigation. When
+ * enabled, this control is the exclusive user-interaction surface for managed
+ * row selection; clicks and keyboard activity in ordinary cells do not select
+ * rows.
  *
  * @param {object} [selectionColumn] - Selection column options.
  * @returns {object|null} Selection column controller, or null when disabled.
@@ -196,6 +190,7 @@ export const createSelectionColumn = (selectionColumn = {}) => {
     const isMultiple = normalizedOptions.mode !== 'single';
 
     return {
+        mode: normalizedOptions.mode,
         column: {
             width: normalizedOptions.width,
             hozAlign: 'center',
@@ -210,7 +205,7 @@ export const createSelectionColumn = (selectionColumn = {}) => {
             titleFormatterParams: isMultiple ? { rowRange: 'active' } : undefined,
             formatter: createSelectionFormatter(isMultiple)
         },
-        selectableRows: isMultiple ? true : 1,
+        selectableRows: 'highlight',
         bind(table) {
             if (!table || typeof table.on !== 'function') return () => {};
 

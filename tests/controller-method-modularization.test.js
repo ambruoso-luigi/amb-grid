@@ -572,7 +572,8 @@ describe('AMB table controller method modularization', () => {
         const controllerModules = readdirSync(controllerDir);
 
         expect(source).toContain("import { createSelectionMethods } from './controller/selection-methods.js';");
-        expect(source).toContain('const selectionMethods = createSelectionMethods({ table, crud });');
+        expect(source).toContain('const selectionMethods = createSelectionMethods({');
+        expect(source).toContain('selectionMode: selectionColumnController?.mode');
 
         const composition = source.match(/const controllerMethods = composeControllerMethods\(([\s\S]*?)\);/);
 
@@ -588,14 +589,11 @@ describe('AMB table controller method modularization', () => {
         expect(controllerModules).not.toContain('selection-toggle-methods.js');
         expect(controllerModules).not.toContain('toggle-selection-methods.js');
         expect(controllerModules).not.toContain('row-toggle-methods.js');
-        expect(selectionSource).toMatch(/createSelectionMethods = \(\{ table, crud \}\) => \(\{/);
+        expect(selectionSource).toMatch(/createSelectionMethods = \(\{ table, crud, selectionMode \}\) => \{/);
         expect(selectionSource).toMatch(/toggleSelectRow\(identifier\) \{\s*const row = crud\.findRowByKey\(identifier\);[\s\S]*?row\.toggleSelect\(\);[\s\S]*?return true;/);
         expect(toggleSelectRowImplementation).not.toBeNull();
         expect(toggleSelectRowImplementation[1]).not.toContain('table.toggleSelectRow');
         expect(toggleSelectRowImplementation[1]).not.toContain('table.selectRow');
-        expect(toggleSelectRowImplementation[1]).not.toContain('table.deselectRow');
-        expect(toggleSelectRowImplementation[1]).not.toContain('row.select(');
-        expect(toggleSelectRowImplementation[1]).not.toContain('row.deselect(');
         expect(toggleSelectRowImplementation[1]).not.toContain('updateRowFields');
         expect(toggleSelectRowImplementation[1]).not.toContain('validateRow');
         expect(toggleSelectRowImplementation[1]).not.toContain('validateAll');

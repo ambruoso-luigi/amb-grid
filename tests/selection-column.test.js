@@ -53,7 +53,8 @@ describe('selection column keyboard access', () => {
             mode: 'multiple'
         });
 
-        expect(controller.selectableRows).toBe(true);
+        expect(controller.mode).toBe('multiple');
+        expect(controller.selectableRows).toBe('highlight');
         expect(controller.column.titleFormatter).toBe('rowSelection');
     });
 
@@ -63,7 +64,8 @@ describe('selection column keyboard access', () => {
             mode: 'single'
         });
 
-        expect(controller.selectableRows).toBe(1);
+        expect(controller.mode).toBe('single');
+        expect(controller.selectableRows).toBe('highlight');
         expect(controller.column.titleFormatter()).toBe('');
         expect(controller.column.titleFormatterParams).toBeUndefined();
     });
@@ -89,14 +91,19 @@ describe('selection column keyboard access', () => {
 
     test('Enter toggles the row selection through the Tabulator row API', () => {
         const controller = createSelectionColumn({ enabled: true });
-        const row = { toggleSelect: vi.fn() };
+        let selected = false;
+        const row = {
+            isSelected: () => selected,
+            select: vi.fn(() => { selected = true; }),
+            deselect: vi.fn(() => { selected = false; })
+        };
         const event = createKeyboardEvent('Enter');
 
         const input = renderSelectionInput(controller, row);
 
         input.dispatch('keydown', event);
 
-        expect(row.toggleSelect).toHaveBeenCalledOnce();
+        expect(row.select).toHaveBeenCalledOnce();
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(event.stopPropagation).toHaveBeenCalledOnce();
     });
@@ -120,13 +127,18 @@ describe('selection column keyboard access', () => {
 
     test('Space toggles the row selection through the Tabulator row API', () => {
         const controller = createSelectionColumn({ enabled: true });
-        const row = { toggleSelect: vi.fn() };
+        let selected = true;
+        const row = {
+            isSelected: () => selected,
+            select: vi.fn(() => { selected = true; }),
+            deselect: vi.fn(() => { selected = false; })
+        };
         const event = createKeyboardEvent(' ');
         const input = renderSelectionInput(controller, row);
 
         input.dispatch('keydown', event);
 
-        expect(row.toggleSelect).toHaveBeenCalledOnce();
+        expect(row.deselect).toHaveBeenCalledOnce();
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(event.stopPropagation).toHaveBeenCalledOnce();
     });

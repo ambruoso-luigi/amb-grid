@@ -640,7 +640,7 @@ export function createTable(options = {}) {
         paginationKeyboardRuntime: null
     };
 
-    if (selectionColumnController && normalizedOptions.selectableRows === undefined) {
+    if (selectionColumnController) {
         normalizedOptions.selectableRows = selectionColumnController.selectableRows;
     }
 
@@ -717,7 +717,11 @@ export function createTable(options = {}) {
         paginationMethods,
         enabled: normalizedOptions.pagination === true
     });
-    const selectionMethods = createSelectionMethods({ table, crud });
+    const selectionMethods = createSelectionMethods({
+        table,
+        crud,
+        selectionMode: selectionColumnController?.mode
+    });
     const validationMethods = createValidationMethods({ crud });
     const rangeMethods = createRangeMethods({
         table,

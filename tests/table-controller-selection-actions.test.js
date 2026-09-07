@@ -263,6 +263,75 @@ const expectNoRowSideEffects = ({ allowSelect = [], allowDeselect = [], allowTog
 };
 
 describe('AMB table controller selection action API', () => {
+    test('makes the managed selection column the exclusive row-selection interaction owner', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            createTable({
+                selector: harness.mount,
+                columns: [],
+                selectionColumn: { enabled: true, mode: 'multiple' },
+                selectableRows: true,
+                toolbar: false
+            });
+
+            expect(tabulatorMock.instances[0].options.selectableRows).toBe('highlight');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('uses managed highlight selection without a raw selectableRows option', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            createTable({
+                selector: harness.mount,
+                columns: [],
+                selectionColumn: { enabled: true, mode: 'single' },
+                toolbar: false
+            });
+
+            expect(tabulatorMock.instances[0].options.selectableRows).toBe('highlight');
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('keeps raw selectableRows passthrough when the managed selection column is disabled', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            createTable({
+                selector: harness.mount,
+                columns: [],
+                selectableRows: 1,
+                toolbar: false
+            });
+
+            expect(tabulatorMock.instances[0].options.selectableRows).toBe(1);
+        } finally {
+            harness.restore();
+        }
+    });
+
+    test('keeps a true raw selectableRows passthrough when the managed selection column is disabled', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            createTable({
+                selector: harness.mount,
+                columns: [],
+                selectableRows: true,
+                toolbar: false
+            });
+
+            expect(tabulatorMock.instances[0].options.selectableRows).toBe(true);
+        } finally {
+            harness.restore();
+        }
+    });
+
     test('keeps the cumulative controller API available', () => {
         const harness = createDocumentHarness();
 

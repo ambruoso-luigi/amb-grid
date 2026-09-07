@@ -322,7 +322,9 @@ popup/action cells, and non-data interactive columns:
   preserving the current column. At a page edge they continue on the first or
   last row of the adjacent page; at an absolute boundary they do nothing.
 * The standard selection column participates in cell navigation. `Enter` and
-  `Space` toggle row selection through the Row Component API.
+  `Space` toggle row selection; `1`/`S`/`Y` select and `0`/`N` deselect. When
+  enabled, row selection is available exclusively through its checkbox, so
+  navigating, clicking, or editing other cells never changes row selection.
 * The standard delete/undo/remove-new column participates in cell navigation
   as an interactive action cell, not as a data column. `Enter` and `Space`
   activate the row action. Delete confirmation traps `Tab`/`Shift+Tab` inside

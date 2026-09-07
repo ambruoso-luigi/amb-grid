@@ -4,11 +4,18 @@
  * @param {object} context - Required method dependencies.
  * @param {object} context.table - Grid table instance.
  * @param {object} context.crud - AMB Grid CRUD layer.
+ * @param {'single'|'multiple'|undefined} context.selectionMode - Managed selection column mode.
  * @returns {object} Selection methods for the flat controller API.
  * @private
  * @internal
  */
-export const createSelectionMethods = ({ table, crud }) => ({
+export const createSelectionMethods = ({ table, crud, selectionMode }) => {
+    const isManagedSingleSelection = selectionMode === 'single';
+    const clearManagedSingleSelection = () => {
+        if (typeof table.deselectRow === 'function') table.deselectRow();
+    };
+
+    return {
     /**
      * Returns the data objects for the selected rows.
      *
@@ -103,6 +110,12 @@ export const createSelectionMethods = ({ table, crud }) => ({
 
         if (!row || typeof row.select !== 'function') return false;
 
+        if (isManagedSingleSelection) {
+            if (typeof row.isSelected === 'function' && row.isSelected()) return true;
+
+            clearManagedSingleSelection();
+        }
+
         row.select();
         return true;
     },
@@ -144,15 +157,30 @@ export const createSelectionMethods = ({ table, crud }) => ({
     toggleSelectRow(identifier) {
         const row = crud.findRowByKey(identifier);
 
-        if (
-            !row ||
-            typeof row.toggleSelect !== 'function'
-        ) {
-            return false;
+        if (!row) return false;
+
+        if (isManagedSingleSelection) {
+            if (typeof row.isSelected !== 'function') return false;
+
+            if (row.isSelected()) {
+                if (typeof row.deselect !== 'function') return false;
+
+                row.deselect();
+                return true;
+            }
+
+            if (typeof row.select !== 'function') return false;
+
+            clearManagedSingleSelection();
+            row.select();
+            return true;
         }
+
+        if (typeof row.toggleSelect !== 'function') return false;
 
         row.toggleSelect();
 
         return true;
     }
-});
+    };
+};

@@ -11,6 +11,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Prevented normal cell interaction from changing row selection when the managed selection column is enabled.
 - Made keyboard-focused large-text cells visibly identifiable while remaining outside edit mode.
 - Preserved the active editor and focus through paginated keyboard navigation, including partial final pages.
 - Kept lookup keyboard selection and automatic scrolling aligned while navigating results.
