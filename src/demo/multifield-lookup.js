@@ -278,6 +278,9 @@ export default async function multifieldLookup(app) {
     grid = AMB.table({
         selector: '#municipality-table',
         data: createInitialData(),
+        floatingMessages: {
+            lookupDescriptions: false
+        },
         toolbar: {
             buttons: [
                 'add',
