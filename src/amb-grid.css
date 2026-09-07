@@ -934,6 +934,11 @@
     user-select: none;
 }
 
+.tabulator-row .tabulator-cell.amb-cell--keyboard-focus-only:focus {
+    outline: 2px solid var(--amb-color-focus);
+    outline-offset: -2px;
+}
+
 .amb-large-text-editor__panel {
     background: var(--amb-color-surface);
     border: 1px solid var(--amb-color-border);

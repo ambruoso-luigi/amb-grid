@@ -6,6 +6,14 @@ const cell = (page, code, field) => row(page, code)
     .locator(`.tabulator-cell[tabulator-field="${field}"]`);
 const message = page => page.locator('.teh-floating-message');
 const messageBody = page => message(page).locator('.teh-floating-message__body');
+const hasFocusIndicator = target => target.evaluate(element => {
+    const style = getComputedStyle(element);
+
+    return style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0;
+});
+const expectFocusIndicator = async target => {
+    await expect.poll(() => hasFocusIndicator(target)).toBe(true);
+};
 
 test.describe('contextual cell messages and large-text focus', () => {
     test.beforeEach(async ({ page }) => {
@@ -45,6 +53,7 @@ test.describe('contextual cell messages and large-text focus', () => {
         await notes.scrollIntoViewIfNeeded();
         await notes.click();
         await expect(notes).toBeFocused();
+        await expectFocusIndicator(notes);
         await expect(notes).not.toHaveClass(/tabulator-editing/);
         await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
         await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
@@ -57,6 +66,7 @@ test.describe('contextual cell messages and large-text focus', () => {
         const save = dialog.getByRole('button', { name: 'Save' });
         await expect(dialog).toBeVisible();
         await expect(textarea).toBeFocused();
+        await expect.poll(() => hasFocusIndicator(notes)).toBe(false);
         await expect(message(page)).not.toHaveClass(/teh-floating-message--visible/);
 
         await page.keyboard.press('Tab');
@@ -72,6 +82,7 @@ test.describe('contextual cell messages and large-text focus', () => {
         await save.click();
         await expect(dialog).toHaveCount(0);
         await expect(notes).toBeFocused();
+        await expectFocusIndicator(notes);
         await expect(notes).not.toHaveClass(/tabulator-editing/);
         await expect(messageBody(page)).toHaveText('Updated contextual note');
 
@@ -81,7 +92,31 @@ test.describe('contextual cell messages and large-text focus', () => {
         await page.keyboard.press('Escape');
         await expect(dialog).toHaveCount(0);
         await expect(notes).toBeFocused();
+        await expectFocusIndicator(notes);
         await expect(messageBody(page)).toHaveText('Updated contextual note');
         await expect(messageBody(page)).not.toHaveText(originalText);
+    });
+
+    test('focus indicator coexists with error and modified cell styling', async ({ page }) => {
+        const notes = cell(page, 'PRD-AB02', 'notes');
+
+        await notes.scrollIntoViewIfNeeded();
+        await notes.click();
+        await expectFocusIndicator(notes);
+
+        await notes.evaluate(element => element.setAttribute('data-cell-error', 'true'));
+        await expectFocusIndicator(notes);
+        await expect.poll(() => notes.evaluate(element => (
+            getComputedStyle(element).boxShadow !== 'none'
+        ))).toBe(true);
+
+        await notes.evaluate(element => {
+            element.removeAttribute('data-cell-error');
+            element.setAttribute('data-cell-state', 'modified');
+        });
+        await expectFocusIndicator(notes);
+        await expect.poll(() => notes.evaluate(element => (
+            getComputedStyle(element).backgroundColor !== 'rgba(0, 0, 0, 0)'
+        ))).toBe(true);
     });
 });

@@ -124,6 +124,11 @@ const isCheckboxColumn = column => {
     return CHECKBOX_EDITOR_TYPES.has(getAmbEditorType(column));
 };
 
+const appendCssClasses = (cssClass, classes) => [...new Set([
+    ...(String(cssClass || '').split(/\s+/).filter(Boolean)),
+    ...classes
+])].join(' ');
+
 export const prepareLargeTextColumns = (columns = []) => {
     return (columns || []).map(column => {
         const nextColumn = { ...column };
@@ -135,9 +140,10 @@ export const prepareLargeTextColumns = (columns = []) => {
         if (getAmbEditorType(nextColumn) !== 'largeText') return nextColumn;
 
         nextColumn._ambKeyboardFocusOnly = true;
-        nextColumn.cssClass = [nextColumn.cssClass, 'amb-cell--large-text']
-            .filter(Boolean)
-            .join(' ');
+        nextColumn.cssClass = appendCssClasses(nextColumn.cssClass, [
+            'amb-cell--large-text',
+            'amb-cell--keyboard-focus-only'
+        ]);
 
         return nextColumn;
     });

@@ -1,6 +1,9 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { prepareColumnPipeline } from '../src/lib/table/column-pipeline.js';
+import {
+    prepareColumnPipeline,
+    prepareLargeTextColumns
+} from '../src/lib/table/column-pipeline.js';
 import { decimal as createDecimalEditor } from '../src/lib/editors/number-editors.js';
 
 const createEditor = (type, metadata = {}) => {
@@ -88,7 +91,22 @@ describe('AMB Grid column preparation pipeline', () => {
         const [notes] = pipeline.preparedDataColumns;
 
         expect(notes._ambKeyboardFocusOnly).toBe(true);
-        expect(notes.cssClass).toBe('application-notes amb-cell--large-text');
+        expect(notes.cssClass).toBe(
+            'application-notes amb-cell--large-text amb-cell--keyboard-focus-only'
+        );
+    });
+
+    test('does not duplicate focus-only classes when reapplied', () => {
+        const editor = createEditor('largeText');
+        const [notes] = prepareLargeTextColumns(prepareLargeTextColumns([{
+            field: 'notes',
+            editor,
+            cssClass: 'application-notes amb-cell--large-text'
+        }]));
+
+        expect(notes.cssClass).toBe(
+            'application-notes amb-cell--large-text amb-cell--keyboard-focus-only'
+        );
     });
 
     test('adds a decimal formatter from editor metadata while preserving explicit formatters', () => {

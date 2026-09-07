@@ -8,6 +8,13 @@ const rowCell = (page, code, field) => rowByCode(page, code)
     .locator(`.tabulator-cell[tabulator-field="${field}"]`);
 const currentPage = page => table(page).locator('.tabulator-page.active').textContent()
     .then(value => Number(value));
+const expectFocusIndicator = async target => {
+    await expect.poll(() => target.evaluate(element => {
+        const style = getComputedStyle(element);
+
+        return style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0;
+    })).toBe(true);
+};
 
 const waitForPage = async (page, pageNumber) => {
     await expect.poll(() => currentPage(page)).toBe(pageNumber);
@@ -65,6 +72,7 @@ const focusNotesCell = async (page, code) => {
     await notes.scrollIntoViewIfNeeded();
     await notes.click();
     await expect(notes).toBeFocused();
+    await expectFocusIndicator(notes);
     await expect(notes).not.toHaveClass(/tabulator-editing/);
     await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
 };
@@ -73,6 +81,7 @@ const expectNotesFocused = async (page, code) => {
     const notes = rowCell(page, code, 'notes');
 
     await expect(notes).toBeFocused();
+    await expectFocusIndicator(notes);
     await expect(notes).not.toHaveClass(/tabulator-editing/);
     await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
 };
