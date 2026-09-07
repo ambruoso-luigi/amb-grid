@@ -163,7 +163,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('confirmDeleteMessage: demoRowActionMessages.delete');
         expect(source).toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
         expect(source).toContain('confirmRemoveNewMessage: demoRowActionMessages.removeNew');
-        expect(source).toContain('icons: demoRowActionIcons');
+        expect(source).not.toContain('demoRowActionIcons');
+        expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?icons:/);
         expect(source).toContain('labels: demoRowActionLabels');
         expect(source).not.toContain('bindInventoryRowActionKeyboardBridge');
         expect(source).not.toContain('KEYDOWN_EVENT');

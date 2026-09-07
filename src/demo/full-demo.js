@@ -71,12 +71,6 @@ const demoRowActionLabels = {
     removeNew: 'Remove new product'
 };
 
-const demoRowActionIcons = {
-    delete: '🗑',
-    rollback: '↶',
-    removeNew: '×'
-};
-
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
@@ -242,7 +236,6 @@ export default async function fullDemo(app, options = {}) {
             confirmDeleteMessage: demoRowActionMessages.delete,
             confirmRollbackMessage: demoRowActionMessages.rollback,
             confirmRemoveNewMessage: demoRowActionMessages.removeNew,
-            icons: demoRowActionIcons,
             labels: demoRowActionLabels
         },
         search: {
