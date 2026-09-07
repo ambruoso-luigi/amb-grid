@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { navigateEditableCellAfterClose } from '../src/lib/editors/shared.js';
+import { isEditableCandidate, navigateEditableCellAfterClose } from '../src/lib/editors/shared.js';
 import { createDeleteColumn } from '../src/lib/table/delete-column.js';
 
 const createElementMock = tagName => {
@@ -58,6 +58,7 @@ const createElementMock = tagName => {
         },
         setAttribute(name, value) {
             this.attributes[name] = String(value);
+            if (name === 'class') this.className = String(value);
         },
         getAttribute(name) {
             return this.attributes[name] ?? null;
@@ -184,6 +185,8 @@ describe('delete column accessibility', () => {
 
     test.each([
         ['clean', 'delete'],
+        ['saved', 'delete'],
+        ['modified', 'rollback'],
         ['deleted', 'rollback'],
         ['new', 'remove-new']
     ])('renders %s row action through the same button selector', (state, action) => {
@@ -201,6 +204,70 @@ describe('delete column accessibility', () => {
         expect(button.dataset.action).toBe(action);
     });
 
+    test.each([
+        ['clean', { delete: false }, false],
+        ['clean', { delete: true }, true],
+        ['saved', { delete: false }, false],
+        ['modified', { rollback: false }, false],
+        ['modified', { rollback: true }, true],
+        ['deleted', { rollback: false }, false],
+        ['new', { removeNew: false }, false],
+        ['new', { removeNew: true }, true],
+        ['unexpected-state', {}, false]
+    ])('maps %s action availability to editable %s', (state, actions, expected) => {
+        const controller = createDeleteColumn(
+            { actions },
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const row = createRow({ id: 1, _state: state });
+        const cell = {
+            getRow: () => row,
+            getColumn: () => ({ getDefinition: () => controller.column }),
+            edit: vi.fn()
+        };
+        const element = controller.column.formatter({ getRow: () => row });
+
+        if (expected) {
+            expect(element.querySelector('.amb-row-action-button')).toBeTruthy();
+        } else {
+            expect(element.querySelector('.amb-row-action-button')).toBeNull();
+        }
+        expect(controller.column.editable(cell)).toBe(expected);
+        expect(isEditableCandidate(cell)).toBe(expected);
+    });
+
+    test('uses accessible default SVGs while preserving custom icon text safely', () => {
+        const controller = createDeleteColumn(
+            {},
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+
+        ['clean', 'deleted', 'new'].forEach(state => {
+            const button = controller.column.formatter({
+                getRow: () => createRow({ id: 1, _state: state })
+            }).querySelector('.amb-row-action-button');
+            const icon = button.querySelector('.amb-row-action-button__icon');
+
+            expect(icon).toBeTruthy();
+            expect(icon.getAttribute('aria-hidden')).toBe('true');
+            expect(icon.getAttribute('focusable')).toBe('false');
+        });
+
+        const custom = createDeleteColumn(
+            { icons: { delete: '<b>D</b>', rollback: 'R', removeNew: 'X' } },
+            () => createCrud(),
+            { confirm: () => Promise.resolve(true) }
+        );
+        const button = custom.column.formatter({
+            getRow: () => createRow({ id: 1, _state: 'clean' })
+        }).querySelector('.amb-row-action-button');
+
+        expect(button.textContent).toBe('<b>D</b>');
+        expect(button.querySelector('b')).toBeNull();
+    });
+
     test('AMB navigation edits the delete cell instead of skipping the action column', async () => {
         const controller = createDeleteColumn(
             {},
@@ -211,7 +278,8 @@ describe('delete column accessibility', () => {
         let startCell;
         let actionCell;
         const row = {
-            getCells: () => [startCell, actionCell]
+            getCells: () => [startCell, actionCell],
+            getData: () => ({ id: 1, _state: 'clean' })
         };
 
         startCell = {
@@ -219,6 +287,7 @@ describe('delete column accessibility', () => {
         };
         actionCell = {
             edit,
+            getRow: () => row,
             getColumn: () => ({
                 getDefinition: () => controller.column
             })
@@ -248,6 +317,28 @@ describe('delete column accessibility', () => {
         };
 
         expect(controller.column.editor(cell, vi.fn(), vi.fn(), vi.fn())).toBe(false);
+    });
+
+    test('unknown row states expose no action and reject direct editor or click execution', async () => {
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            {},
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const row = createRow({ id: 1, _state: 'unexpected-state' });
+        const cell = { getRow: () => row };
+
+        expect(controller.column.formatter(cell).querySelector('.amb-row-action-button')).toBeNull();
+        expect(controller.column.editable(cell)).toBe(false);
+        expect(controller.column.editor(cell, vi.fn(), vi.fn(), vi.fn())).toBe(false);
+
+        await controller.column.cellClick({
+            target: { closest: () => ({ dataset: { action: 'delete' } }) }
+        }, cell);
+
+        expect(crud.deleteRow).not.toHaveBeenCalled();
+        expect(crud.rollbackRow).not.toHaveBeenCalled();
     });
 
     test('AMB navigation skips the delete cell when the current row has no available action', async () => {
@@ -280,7 +371,7 @@ describe('delete column accessibility', () => {
         navigateEditableCellAfterClose(startCell, 'next');
 
         await flushDeferred();
-        expect(actionCell.edit).toHaveBeenCalledOnce();
+        expect(actionCell.edit).not.toHaveBeenCalled();
         expect(nextCell.edit).toHaveBeenCalledOnce();
     });
 
@@ -441,7 +532,7 @@ describe('delete column accessibility', () => {
         rowElement.append(container);
 
         await clickButton(container.querySelector('.amb-row-action-button'));
-        await flushDeferred();
+        await flushActionFocus();
 
         expect(crud.deleteRow).not.toHaveBeenCalled();
         expect(globalThis.document.activeElement.dataset.action).toBe('delete');
@@ -477,6 +568,39 @@ describe('delete column accessibility', () => {
 
         expect(crud.rollbackRow).toHaveBeenCalledWith(1);
         expect(globalThis.document.activeElement.dataset.action).toBe('delete');
+    });
+
+    test('after an action leaves its cell empty, focus moves to the next valid candidate', async () => {
+        const data = { id: 1, _state: 'clean' };
+        const crud = createCrud();
+        const controller = createDeleteColumn(
+            { actions: { delete: true, rollback: false } },
+            () => crud,
+            { confirm: () => Promise.resolve(true) }
+        );
+        const rowElement = globalThis.document.createElement('div');
+        const nextCell = createEditableCell();
+        let actionCell;
+        const row = {
+            getData: () => data,
+            getElement: () => rowElement,
+            getCells: () => [actionCell, nextCell]
+        };
+
+        actionCell = { getRow: () => row };
+        crud.deleteRow.mockImplementation(() => {
+            data._state = 'deleted';
+            return true;
+        });
+
+        const container = controller.column.editor(actionCell, callback => callback(), vi.fn(), vi.fn());
+        rowElement.append(container);
+
+        await clickButton(container.querySelector('.amb-row-action-button'));
+        await flushActionFocus();
+
+        expect(rowElement.querySelector('.amb-row-action-button')).toBeNull();
+        expect(nextCell.edit).toHaveBeenCalledOnce();
     });
 
     test('after remove-new, focus moves to the next row action cell when available', async () => {

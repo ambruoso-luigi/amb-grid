@@ -11,6 +11,12 @@ const openInventoryDemo = async page => {
     await expect(page.locator('#inventory-table .tabulator-row .amb-row-action-button--delete').first()).toBeVisible();
 };
 
+const openValidationDemo = async page => {
+    await page.goto('/src/demo/index.html#feature-examples');
+    await page.locator('[data-example="validation"]').click();
+    await expect(page.locator('#validation-table.tabulator')).toBeVisible();
+};
+
 const selectedRowCount = page => {
     return page.locator('#basic-table .tabulator-row.tabulator-selected').count();
 };
@@ -128,7 +134,7 @@ test.describe('row controls accessibility', () => {
 
         await expect(deleteButton).toBeFocused();
         expect(actionFocus.action).toBe('delete');
-        expect(actionFocus.field).toBe('_demoRowActions');
+        expect(actionFocus.field).toBeNull();
 
         await page.keyboard.press('Tab');
 
@@ -155,5 +161,49 @@ test.describe('row controls accessibility', () => {
 
         await cboxCell.click({ position: { x: 4, y: 4 } });
         await expect(cboxCell.locator('.demo-inspection-visual')).toHaveClass(/is-checked/);
+    });
+
+    test('validation row actions stay skipped while clean and become reachable after anomalies', async ({ page }) => {
+        await openValidationDemo(page);
+
+        const table = page.locator('#validation-table');
+        const rows = table.locator('.tabulator-row');
+        const firstRow = rows.nth(0);
+        const secondRow = rows.nth(1);
+
+        await expect(rows).toHaveCount(11);
+        await expect(table.locator('.amb-row-action-button')).toHaveCount(0);
+
+        await page.getByTitle('Create intentional validation errors').click();
+        await expect(firstRow).toHaveAttribute('data-state', 'clean');
+        await expect(firstRow.locator('.amb-row-action-button')).toHaveCount(0);
+        await expect(secondRow).toHaveAttribute('data-state', 'modified');
+        await expect(table.locator('.amb-row-action-button--rollback')).toHaveCount(10);
+
+        const rollback = table.locator('.amb-row-action-button--rollback').first();
+        const rollbackRow = rollback.locator('xpath=ancestor::div[contains(@class, "tabulator-row")]');
+
+        await rollback.focus();
+        await expect(rollback).toBeFocused();
+        await page.keyboard.press('Shift+Tab');
+        await expect.poll(() => page.evaluate(() => {
+            return !document.activeElement?.matches('.amb-row-actions');
+        })).toBe(true);
+        await rollback.focus();
+        await page.keyboard.press('Tab');
+        await expect.poll(() => page.evaluate(() => {
+            return !document.activeElement?.matches('.amb-row-actions');
+        })).toBe(true);
+        await rollback.focus();
+        await rollback.click();
+        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
+        await page.locator('.teh-confirm-dialog__button--confirm').click();
+        await expect(rollbackRow).toHaveAttribute('data-state', 'clean');
+        await expect(rollbackRow.locator('.amb-row-action-button')).toHaveCount(0);
+        await expect.poll(() => page.evaluate(() => {
+            const active = document.activeElement;
+
+            return Boolean(active && active !== document.body && !active.matches('.amb-row-actions'));
+        })).toBe(true);
     });
 });

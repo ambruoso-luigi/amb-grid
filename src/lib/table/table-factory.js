@@ -523,16 +523,16 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode delegated to the underlying table engine as `paginationMode`.
  * @param {number} [options.pagination.pageSize=10] - Page size delegated to the underlying table engine as `paginationSize`.
  * @param {number[]} [options.pagination.pageSizeSelector] - Page size options delegated to the underlying table engine as `paginationSizeSelector`.
- * @param {object} [options.deleteColumn] - Optional row action column.
- * @param {boolean} [options.deleteColumn.enabled=false] - Add the delete/rollback/remove column.
+ * @param {object} [options.deleteColumn] - Optional managed row action column.
+ * @param {boolean} [options.deleteColumn.enabled=false] - Add the row action column exposed as `deleteColumn`.
  * @param {object} [options.deleteColumn.actions] - Action visibility flags.
  * @param {boolean} [options.deleteColumn.actions.delete=true] - Show delete for clean/saved rows.
  * @param {boolean} [options.deleteColumn.actions.rollback=true] - Show rollback for modified/deleted rows.
  * @param {boolean} [options.deleteColumn.actions.removeNew=true] - Show remove for new rows.
- * @param {object} [options.deleteColumn.icons] - Action button text/icon overrides.
- * @param {string} [options.deleteColumn.icons.delete='🗑'] - Delete button text/icon.
- * @param {string} [options.deleteColumn.icons.rollback='↶'] - Rollback button text/icon.
- * @param {string} [options.deleteColumn.icons.removeNew='×'] - Remove new-row button text/icon.
+ * @param {object} [options.deleteColumn.icons] - Optional custom action button text/icon overrides; without an override AMB renders built-in SVG icons.
+ * @param {string} [options.deleteColumn.icons.delete] - Custom delete button text/icon.
+ * @param {string} [options.deleteColumn.icons.rollback] - Custom rollback button text/icon.
+ * @param {string} [options.deleteColumn.icons.removeNew] - Custom remove new-row button text/icon.
  * @param {object} [options.deleteColumn.labels] - Action button aria-label overrides.
  * @param {string} [options.deleteColumn.labels.delete='Delete row'] - Delete button aria-label.
  * @param {string} [options.deleteColumn.labels.rollback='Rollback row'] - Rollback button aria-label.

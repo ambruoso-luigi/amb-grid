@@ -1,11 +1,40 @@
-import { navigateEditableCellAfterClose } from '../editors/shared.js';
+import { navigateEditableCellAfterClose, navigateToCandidate } from '../editors/shared.js';
 import { ROW_STATE } from '../crud-helper.js';
 
 const ACTION_BUTTON_SELECTOR = '.amb-row-action-button';
 const PAGINATED_REMOVE_FOCUS_ATTEMPTS = 8;
+const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+
+const createDefaultActionIcon = action => {
+    const svg = typeof document.createElementNS === 'function'
+        ? document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        : document.createElement('svg');
+    const path = typeof document.createElementNS === 'function'
+        ? document.createElementNS('http://www.w3.org/2000/svg', 'path')
+        : document.createElement('path');
+    const paths = {
+        delete: 'M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5',
+        rollback: 'M9 7 4 12l5 5M5 12h10a5 5 0 0 1 0 10h-1',
+        removeNew: 'm7 7 10 10M17 7 7 17'
+    };
+
+    svg.setAttribute('class', 'amb-row-action-button__icon');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    path.setAttribute('d', paths[action === 'remove-new' ? 'removeNew' : action]);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'currentColor');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('stroke-width', '2');
+    svg.append(path);
+
+    return svg;
+};
 
 /**
- * Create the standard AMB row action column.
+ * Create the managed AMB row action column exposed as `deleteColumn`.
  *
  * The column is an interactive action cell, not a data column. It participates
  * in AMB keyboard navigation, focuses its row action button, and activates
@@ -30,12 +59,7 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         removeNew: true,
         ...deleteColumn.actions
     };
-    const icons = {
-        delete: '🗑',
-        rollback: '↶',
-        removeNew: '×',
-        ...deleteColumn.icons
-    };
+    const iconOverrides = deleteColumn.icons || {};
     const labels = {
         delete: 'Delete row',
         rollback: 'Rollback row',
@@ -60,36 +84,32 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 
     const getActionConfig = state => {
-        if (state === ROW_STATE.NEW) {
-            if (!actions.removeNew) return null;
+        const createConfig = (action, iconKey, label, className) => ({
+            action,
+            icon: iconOverrides[iconKey],
+            hasCustomIcon: hasOwn(iconOverrides, iconKey),
+            label,
+            className
+        });
 
-            return {
-                action: 'remove-new',
-                icon: icons.removeNew,
-                label: labels.removeNew,
-                className: 'amb-row-action-button--remove-new'
-            };
+        switch (state) {
+        case ROW_STATE.CLEAN:
+        case ROW_STATE.SAVED:
+            return actions.delete
+                ? createConfig('delete', 'delete', labels.delete, 'amb-row-action-button--delete')
+                : null;
+        case ROW_STATE.MODIFIED:
+        case ROW_STATE.DELETED:
+            return actions.rollback
+                ? createConfig('rollback', 'rollback', labels.rollback, 'amb-row-action-button--rollback')
+                : null;
+        case ROW_STATE.NEW:
+            return actions.removeNew
+                ? createConfig('remove-new', 'removeNew', labels.removeNew, 'amb-row-action-button--remove-new')
+                : null;
+        default:
+            return null;
         }
-
-        if (state === ROW_STATE.MODIFIED || state === ROW_STATE.DELETED) {
-            if (!actions.rollback) return null;
-
-            return {
-                action: 'rollback',
-                icon: icons.rollback,
-                label: labels.rollback,
-                className: 'amb-row-action-button--rollback'
-            };
-        }
-
-        if (!actions.delete) return null;
-
-        return {
-            action: 'delete',
-            icon: icons.delete,
-            label: labels.delete,
-            className: 'amb-row-action-button--delete'
-        };
     };
 
     const stopActionEvent = event => {
@@ -121,7 +141,11 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         button.type = 'button';
         button.className = `amb-row-action-button ${config.className}`;
         button.dataset.action = config.action;
-        button.textContent = config.icon;
+        if (config.hasCustomIcon) {
+            button.textContent = config.icon;
+        } else {
+            button.append(createDefaultActionIcon(config.action));
+        }
         button.setAttribute('aria-label', config.label);
         button.title = config.label;
 
@@ -151,11 +175,12 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         return !action || button && button.dataset && button.dataset.action === action;
     };
 
-    const focusRowActionButton = (row, expectedAction = null) => {
+    const getActionCell = row => {
         const cells = row && typeof row.getCells === 'function'
             ? row.getCells()
             : [];
-        const actionCell = cells.find(candidate => {
+
+        return cells.find(candidate => {
             const definition = candidate
                 && candidate.getColumn
                 && candidate.getColumn()
@@ -169,6 +194,13 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             return definition && definition._ambFocusSelector === ACTION_BUTTON_SELECTOR
                 || Boolean(cellElement && cellElement.querySelector(ACTION_BUTTON_SELECTOR));
         });
+    };
+
+    const focusRowActionButton = (row, expectedAction = null) => {
+        const actionCell = getActionCell(row);
+
+        if (actionCell && navigateToCandidate(actionCell)) return true;
+
         const cellElement = actionCell && typeof actionCell.getElement === 'function'
             ? actionCell.getElement()
             : null;
@@ -196,6 +228,14 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
 
         button.focus();
         return true;
+    };
+
+    const focusFirstNavigableCell = row => {
+        const cells = row && typeof row.getCells === 'function'
+            ? row.getCells()
+            : [];
+
+        return cells.some(candidate => navigateToCandidate(candidate));
     };
 
     const focusTableFallback = row => {
@@ -244,7 +284,9 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             .filter(candidate => candidate && candidate !== row);
 
         for (let index = rows.length - 1; index >= 0; index -= 1) {
-            if (focusRowActionButton(rows[index])) return true;
+            if (focusRowActionButton(rows[index]) || focusFirstNavigableCell(rows[index])) {
+                return true;
+            }
         }
 
         return false;
@@ -271,7 +313,9 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     const restoreActionFocus = (row, fallbackRow = null, options = {}, attempts = 4) => {
         globalThis.setTimeout(() => {
             if (!options.skipRow && focusRowActionButton(row, options.expectedAction || null)) return;
-            if (fallbackRow && focusRowActionButton(fallbackRow)) return;
+            if (fallbackRow && (
+                focusRowActionButton(fallbackRow) || focusFirstNavigableCell(fallbackRow)
+            )) return;
             if (options.skipRow && !fallbackRow) {
                 if (getVisibleActionFallbackRow(row)) return;
 
@@ -303,23 +347,25 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
     };
 
     const restoreActionCell = (cell, row, expectedAction) => {
-        if (!cell || typeof cell.edit !== 'function') {
-            scheduleRowButtonUpdate(row, {
-                expectedAction,
-                restoreFocus: true
-            });
-            return;
-        }
-
         globalThis.setTimeout(() => {
-            const editResult = cell.edit();
+            const actionCell = getActionCell(row);
+            const expectedConfig = getActionConfig(getRowState(row));
 
-            if (editResult !== false) return;
+            if (!actionCell && expectedConfig) {
+                updateRowButton(row);
+                restoreActionFocus(row, null, { expectedAction });
+                return;
+            }
 
-            scheduleRowButtonUpdate(row, {
-                expectedAction,
-                restoreFocus: true
-            });
+            if (
+                actionCell
+                && expectedConfig
+                && expectedConfig.action === expectedAction
+                && navigateToCandidate(actionCell)
+            ) return;
+
+            updateRowButton(row);
+            navigateEditableCellAfterClose(actionCell || cell);
         }, 0);
     };
 
@@ -351,6 +397,10 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
         const data = row.getData();
         const identifier = getRowIdentifier(crud, data);
         const state = getRowState(row);
+        const expectedConfig = getActionConfig(state);
+
+        if (!expectedConfig || expectedConfig.action !== action) return false;
+
         const removeFallbackRow = state === ROW_STATE.NEW
             ? getRemoveFallbackRow(row)
             : null;
@@ -472,6 +522,11 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
             _ambInteractive: true,
             _ambManagedColumn: 'delete',
             _ambFocusSelector: ACTION_BUTTON_SELECTOR,
+            editable: cell => {
+                const row = cell?.getRow?.();
+
+                return Boolean(row && getActionConfig(getRowState(row)));
+            },
             editor: createActionEditor,
             formatter: cell => {
                 return createActionsContainer(getRowState(cell.getRow()));

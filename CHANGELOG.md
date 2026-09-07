@@ -16,12 +16,16 @@ All notable changes to AMB Grid are documented in this file.
 - Preserved the active editor and focus through paginated keyboard navigation, including partial final pages.
 - Kept lookup keyboard selection and automatic scrolling aligned while navigating results.
 - Preserved lookup editing and keyboard focus after selecting a dialog result.
+- Skipped row action cells without an available action during keyboard navigation.
+- Prevented unknown row states from falling through to Delete.
+- Reused shared AMB navigation for row-action focus restoration where applicable.
 
 ### Changed
 
 - Extended `Tab` and `Shift+Tab` navigation across local page boundaries with predictable focus exit at absolute boundaries.
 - Changed large-text cells to focus-first activation: `Enter` opens a focus-trapped dialog that restores focus to its source cell after closing.
 - Made the most recent real pointer or keyboard interaction the owner of contextual cell messages.
+- Replaced built-in row action icons with platform-independent AMB SVGs while preserving custom icon text overrides.
 
 ### Removed
 

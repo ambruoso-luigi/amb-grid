@@ -741,6 +741,13 @@
     color: #333;
 }
 
+.amb-row-action-button__icon {
+    display: block;
+    height: 15px;
+    pointer-events: none;
+    width: 15px;
+}
+
 .amb-selection-column input[type="checkbox"],
 .amb-selection-checkbox {
     cursor: pointer;

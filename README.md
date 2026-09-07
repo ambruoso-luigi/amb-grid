@@ -325,11 +325,13 @@ popup/action cells, and non-data interactive columns:
   `Space` toggle row selection; `1`/`S`/`Y` select and `0`/`N` deselect. When
   enabled, row selection is available exclusively through its checkbox, so
   navigating, clicking, or editing other cells never changes row selection.
-* The standard delete/undo/remove-new column participates in cell navigation
-  as an interactive action cell, not as a data column. `Enter` and `Space`
-  activate the row action. Delete confirmation traps `Tab`/`Shift+Tab` inside
-  the dialog; after delete focus returns to undo, after undo focus returns to
-  delete, and remove-new falls back to the next or previous visible row action.
+* `deleteColumn` is the managed row action column. Clean and saved rows expose
+  Delete; modified and deleted rows expose Rollback; new rows expose Remove
+  new. An action cell participates in keyboard navigation only when its action
+  is available and enabled. `Enter` and `Space` activate the row action.
+  Delete confirmation traps `Tab`/`Shift+Tab` inside the dialog; after delete
+  focus returns to Rollback, after Rollback focus returns to Delete, and
+  Remove new falls back to the next or previous valid visible destination.
 * Checkbox editors use `Space` and configured toggle keys to change value.
   `Enter` confirms. `Tab`/`Shift+Tab` confirm and navigate without an
   accidental extra toggle.
