@@ -434,10 +434,16 @@ describe('demo site navigation', () => {
 
         expect(css).toContain('width: min(100% - 12px, 1824px);');
         expect(main).toContain("'cycle.keyboardTitle': 'Editing orientato alla tastiera'");
-        expect(main).toContain("'cycle.keyboardText': 'Navigazione Tab/Shift+Tab, editing senza mouse, checkbox da tastiera e lookup rapidi anche tramite codice.'");
-        expect(main).toContain("'cycle.keyboardTitle': 'Work without leaving the keyboard'");
-        expect(main).toContain("'cycle.keyboardText': 'Tab/Shift+Tab navigation, mouse-free editing, keyboard checkboxes and fast lookup entry by code.'");
+        expect(main).toContain("'cycle.keyboardText': 'Navigazione Tab/Shift+Tab e flusso rapido pensato per l’uso gestionale da tastiera.'");
+        expect(main).toContain("'cycle.keyboardTitle': 'Keyboard-first editing'");
+        expect(main).toContain("'cycle.keyboardText': 'Tab/Shift+Tab navigation and a fast keyboard-first workflow for business data entry.'");
         expect(main).toContain('data-i18n="cycle.keyboardTitle"');
         expect(main).toContain('data-i18n="cycle.keyboardText"');
+        expect(main).toContain("openCycleDetail('edit');");
+        expect(main).toContain("card.setAttribute('aria-selected', String(isActive));");
+        expect(main).toContain('panel.dataset.cycleAccent = id;');
+        expect(main).toContain('data-cycle-accent="edit"');
+        expect(css).toContain('.demo-flow-card.is-active');
+        expect(css).toContain('caret-color: transparent;');
     });
 });

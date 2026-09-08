@@ -62,7 +62,7 @@ export const animateCycleDetail = (element, phase = 'open') => {
     const keyframes = phase === 'close'
         ? { opacity: [1, 0], y: [0, 6] }
         : phase === 'content'
-            ? { opacity: [0.35, 1] }
+            ? { opacity: [0, 1], y: [6, 0] }
             : { opacity: [0, 1], y: [8, 0] };
     const animation = animate(element, keyframes, {
         duration: phase === 'content' ? 0.18 : phase === 'close' ? 0.2 : 0.24,
