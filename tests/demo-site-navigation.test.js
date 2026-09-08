@@ -445,5 +445,10 @@ describe('demo site navigation', () => {
         expect(main).toContain('data-cycle-accent="edit"');
         expect(css).toContain('.demo-flow-card.is-active');
         expect(css).toContain('caret-color: transparent;');
+        expect(main).toContain("demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })");
+        expect(main).toContain("'cycle.editText': 'Modifica diretta delle celle con editor dedicati, stato della riga e rollback integrati nel ciclo CRUD.'");
+        expect(main).toContain("'cycle.detail.edit.group2Title': 'Stato automatico della riga'");
+        expect(main).toContain("'cycle.detail.edit.group4Title': 'Editing nel contesto'");
+        expect(css).toContain('@media (prefers-reduced-motion: reduce)');
     });
 });

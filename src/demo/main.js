@@ -77,7 +77,7 @@ const translations = {
         'cycle.title': 'CRUD, validazione e payload nello stesso ciclo',
         'cycle.description': 'AMB Grid coordina editing, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
         'cycle.editTitle': 'Edit',
-        'cycle.editText': 'Modifica diretta delle celle con stati riga, rollback ed editor dedicati.',
+        'cycle.editText': 'Modifica diretta delle celle con editor dedicati, stato della riga e rollback integrati nel ciclo CRUD.',
         'cycle.keyboardTitle': 'Editing orientato alla tastiera',
         'cycle.keyboardText': 'Navigazione Tab/Shift+Tab e flusso rapido pensato per l’uso gestionale da tastiera.',
         'cycle.validateTitle': 'Validate',
@@ -87,16 +87,16 @@ const translations = {
         'cycle.alignTitle': 'Align',
         'cycle.alignText': 'Dopo il salvataggio dati, ID e stati vengono riallineati alla risposta backend.',
         'cycle.detail.edit.title': 'Editing pensato per dati gestionali',
-        'cycle.detail.edit.intro': 'AMB Grid coordina l’editing direttamente nella tabella senza separarlo dal ciclo CRUD della riga.',
+        'cycle.detail.edit.intro': 'Le modifiche avvengono direttamente nella griglia: AMB Grid coordina editor, stato della riga e rollback nello stesso ciclo CRUD, senza separare l’editing dal dato che l’utente sta gestendo.',
         'cycle.detail.edit.group1Title': 'Editor dedicati',
-        'cycle.detail.edit.group1Text': 'Testo, numeri, date, checkbox e lookup possono usare editor adatti al tipo di dato.',
-        'cycle.detail.edit.group2Title': 'Stato della riga',
-        'cycle.detail.edit.group2Text': 'Una modifica reale rende immediatamente visibile che il record è cambiato.',
+        'cycle.detail.edit.group1Text': 'Testo, numeri, date, checkbox e lookup usano editor coerenti con il tipo di dato, mantenendo l’utente sempre nel contesto della griglia.',
+        'cycle.detail.edit.group2Title': 'Stato automatico della riga',
+        'cycle.detail.edit.group2Text': 'Quando un valore cambia realmente, AMB Grid aggiorna automaticamente lo stato della riga e mantiene traccia della modifica.',
         'cycle.detail.edit.group3Title': 'Rollback',
-        'cycle.detail.edit.group3Text': 'Le modifiche possono essere annullate riportando il record alla baseline precedente.',
-        'cycle.detail.edit.group4Title': 'Flusso unico',
-        'cycle.detail.edit.group4Text': 'Editing, validazione e stato CRUD restano nello stesso contesto operativo.',
-        'cycle.detail.edit.value': 'L’utente lavora direttamente sui dati senza passare continuamente tra tabella e form separati.',
+        'cycle.detail.edit.group3Text': 'Le modifiche possono essere annullate ripristinando i valori precedenti e riallineando automaticamente lo stato della riga.',
+        'cycle.detail.edit.group4Title': 'Editing nel contesto',
+        'cycle.detail.edit.group4Text': 'Il record viene modificato nel punto in cui viene consultato, senza aprire continuamente form separati per ogni operazione.',
+        'cycle.detail.edit.value': 'Meno passaggi e meno perdita di contesto: l’utente lavora direttamente sui dati mentre AMB Grid mantiene coerente il ciclo CRUD.',
         'cycle.detail.keyboard.title': 'Editing orientato alla tastiera',
         'cycle.detail.keyboard.intro': 'Il flusso è pensato per inserimento rapido dei dati e uso frequente della tastiera, riducendo la necessità del mouse.',
         'cycle.detail.keyboard.tab': 'Tab',
@@ -258,7 +258,7 @@ const translations = {
         'cycle.title': 'CRUD, validation, and payload in one cycle',
         'cycle.description': 'AMB Grid coordinates editing, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
         'cycle.editTitle': 'Edit',
-        'cycle.editText': 'Direct cell editing with row states, rollback and dedicated editors.',
+        'cycle.editText': 'Direct cell editing with dedicated editors, row state tracking and rollback integrated into the CRUD lifecycle.',
         'cycle.keyboardTitle': 'Keyboard-first editing',
         'cycle.keyboardText': 'Tab/Shift+Tab navigation and a fast keyboard-first workflow for business data entry.',
         'cycle.validateTitle': 'Validate',
@@ -267,17 +267,17 @@ const translations = {
         'cycle.payloadText': 'Inserts, updates and deletes become a structured application payload.',
         'cycle.alignTitle': 'Align',
         'cycle.alignText': 'After save, data, IDs and states align with the backend response.',
-        'cycle.detail.edit.title': 'Editing for business data',
-        'cycle.detail.edit.intro': 'AMB Grid coordinates editing directly in the table without separating it from the row CRUD cycle.',
+        'cycle.detail.edit.title': 'Editing designed for business data',
+        'cycle.detail.edit.intro': 'Changes happen directly in the grid: AMB Grid coordinates editors, row state and rollback within the same CRUD lifecycle, without separating editing from the data the user is working with.',
         'cycle.detail.edit.group1Title': 'Dedicated editors',
-        'cycle.detail.edit.group1Text': 'Text, numbers, dates, checkboxes, and lookups can use editors suited to the data type.',
-        'cycle.detail.edit.group2Title': 'Row state',
-        'cycle.detail.edit.group2Text': 'A real edit makes it immediately clear that the record changed.',
+        'cycle.detail.edit.group1Text': 'Text, numbers, dates, checkboxes and lookups use editors suited to each data type, keeping the user in the context of the grid.',
+        'cycle.detail.edit.group2Title': 'Automatic row state',
+        'cycle.detail.edit.group2Text': 'When a value actually changes, AMB Grid automatically updates the row state and keeps track of the modification.',
         'cycle.detail.edit.group3Title': 'Rollback',
-        'cycle.detail.edit.group3Text': 'Changes can be cancelled by returning the record to its previous baseline.',
-        'cycle.detail.edit.group4Title': 'One workflow',
-        'cycle.detail.edit.group4Text': 'Editing, validation, and CRUD state stay in the same operational context.',
-        'cycle.detail.edit.value': 'Users work directly on data without constantly moving between a table and separate forms.',
+        'cycle.detail.edit.group3Text': 'Changes can be undone by restoring the previous values and automatically realigning the row state.',
+        'cycle.detail.edit.group4Title': 'Editing in context',
+        'cycle.detail.edit.group4Text': 'The record is edited where it is being viewed, without constantly opening separate forms for each operation.',
+        'cycle.detail.edit.value': 'Fewer steps and less context switching: the user works directly with the data while AMB Grid keeps the CRUD lifecycle consistent.',
         'cycle.detail.keyboard.title': 'Keyboard-first editing',
         'cycle.detail.keyboard.intro': 'The workflow is designed for fast data entry and frequent keyboard use, reducing the need for a mouse.',
         'cycle.detail.keyboard.tab': 'Tab',
@@ -414,22 +414,22 @@ const cycleDetailBodies = {
         <div class="demo-cycle-detail__groups">
             <div>
                 <h4 data-i18n="cycle.detail.edit.group1Title">Editor dedicati</h4>
-                <p data-i18n="cycle.detail.edit.group1Text">Testo, numeri, date, checkbox e lookup possono usare editor adatti al tipo di dato.</p>
+                <p data-i18n="cycle.detail.edit.group1Text">Testo, numeri, date, checkbox e lookup usano editor coerenti con il tipo di dato, mantenendo l’utente sempre nel contesto della griglia.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.edit.group2Title">Stato della riga</h4>
-                <p data-i18n="cycle.detail.edit.group2Text">Una modifica reale rende immediatamente visibile che il record è cambiato.</p>
+                <h4 data-i18n="cycle.detail.edit.group2Title">Stato automatico della riga</h4>
+                <p data-i18n="cycle.detail.edit.group2Text">Quando un valore cambia realmente, AMB Grid aggiorna automaticamente lo stato della riga e mantiene traccia della modifica.</p>
             </div>
             <div>
                 <h4 data-i18n="cycle.detail.edit.group3Title">Rollback</h4>
-                <p data-i18n="cycle.detail.edit.group3Text">Le modifiche possono essere annullate riportando il record alla baseline precedente.</p>
+                <p data-i18n="cycle.detail.edit.group3Text">Le modifiche possono essere annullate ripristinando i valori precedenti e riallineando automaticamente lo stato della riga.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.edit.group4Title">Flusso unico</h4>
-                <p data-i18n="cycle.detail.edit.group4Text">Editing, validazione e stato CRUD restano nello stesso contesto operativo.</p>
+                <h4 data-i18n="cycle.detail.edit.group4Title">Editing nel contesto</h4>
+                <p data-i18n="cycle.detail.edit.group4Text">Il record viene modificato nel punto in cui viene consultato, senza aprire continuamente form separati per ogni operazione.</p>
             </div>
         </div>
-        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.edit.value">L’utente lavora direttamente sui dati senza passare continuamente tra tabella e form separati.</p>`,
+        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.edit.value">Meno passaggi e meno perdita di contesto: l’utente lavora direttamente sui dati mentre AMB Grid mantiene coerente il ciclo CRUD.</p>`,
     keyboard: `
         <div class="demo-cycle-detail__groups demo-cycle-detail__groups--keyboard">
             <div>
@@ -801,7 +801,8 @@ const renderShell = selectedId => {
                             ${demoIcon('edit', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.editTitle">Edit</strong>
                         </span>
-                        <p data-i18n="cycle.editText">Le celle editabili aggiornano lo stato della riga senza interrompere il flusso CRUD.</p>
+                        <p data-i18n="cycle.editText">Modifica diretta delle celle con editor dedicati, stato della riga e rollback integrati nel ciclo CRUD.</p>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="keyboard">
                         <span class="demo-flow-card__header">
@@ -810,6 +811,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.keyboardTitle">Editing orientato alla tastiera</strong>
                         </span>
                         <p data-i18n="cycle.keyboardText">Navigazione Tab/Shift+Tab, editing senza mouse, checkbox da tastiera e lookup rapidi anche tramite codice.</p>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="validate">
                         <span class="demo-flow-card__header">
@@ -818,6 +820,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.validateTitle">Validate</strong>
                         </span>
                         <p data-i18n="cycle.validateText">Validatori e parser separano qualità del dato e trasformazione del payload.</p>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="payload">
                         <span class="demo-flow-card__header">
@@ -826,6 +829,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.payloadTitle">Payload</strong>
                         </span>
                         <p data-i18n="cycle.payloadText">Le modifiche diventano un payload leggibile e pronto per il backend.</p>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="align">
                         <span class="demo-flow-card__header">
@@ -834,6 +838,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.alignTitle">Align</strong>
                         </span>
                         <p data-i18n="cycle.alignText">Dopo il salvataggio, dati applicativi e stato locale possono riallinearsi.</p>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
                     </article>
                 </div>
                 <section id="cycle-detail" class="demo-cycle-detail" data-cycle-accent="edit" hidden aria-live="polite" aria-labelledby="cycle-detail-title">
