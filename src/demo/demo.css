@@ -780,6 +780,13 @@ a {
     margin-bottom: 26px;
 }
 
+.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__intro {
+    color: #40566f;
+    font-size: 15px;
+    line-height: 1.65;
+    margin-bottom: 26px;
+}
+
 .demo-cycle-detail__groups {
     display: grid;
     gap: 24px;
@@ -806,7 +813,25 @@ a {
     margin-bottom: 5px;
 }
 
+.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__groups {
+    gap: 26px;
+}
+
+.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__groups h4 {
+    color: var(--cycle-accent);
+    font-size: 14px;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+    line-height: 1.35;
+    margin-bottom: 5px;
+}
+
 .demo-cycle-detail[data-cycle-accent="edit"] .demo-cycle-detail__groups p {
+    color: #40566f;
+    line-height: 1.64;
+}
+
+.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__groups p {
     color: #40566f;
     line-height: 1.64;
 }
@@ -830,6 +855,12 @@ a {
     line-height: 1;
     padding: 5px 7px;
     white-space: nowrap;
+}
+
+.demo-cycle-detail[data-cycle-accent="keyboard"] kbd {
+    background: color-mix(in srgb, var(--cycle-accent-soft) 68%, #ffffff);
+    border-color: color-mix(in srgb, var(--cycle-accent) 38%, #ffffff);
+    color: var(--cycle-accent);
 }
 
 .demo-cycle-detail__group-with-icon {
@@ -902,6 +933,13 @@ a {
 }
 
 .demo-cycle-detail[data-cycle-accent="edit"] .demo-cycle-detail__value {
+    color: var(--amb-site-navy);
+    font-weight: 600;
+    line-height: 1.65;
+    margin-top: 28px;
+}
+
+.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__value {
     color: var(--amb-site-navy);
     font-weight: 600;
     line-height: 1.65;
@@ -986,14 +1024,14 @@ a {
     box-shadow: 0 5px 11px color-mix(in srgb, var(--flow-accent) 16%, rgb(16 35 63 / 10%));
     color: var(--flow-accent);
     display: none;
-    height: 30px;
+    height: 33px;
     justify-content: center;
     left: 50%;
     line-height: 1;
     position: absolute;
     top: calc(100% - 3px);
     transform: translateX(-50%);
-    width: 30px;
+    width: 33px;
 }
 
 .demo-flow-card.is-active .demo-flow-card__connector {

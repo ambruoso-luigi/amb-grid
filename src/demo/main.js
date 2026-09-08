@@ -79,7 +79,7 @@ const translations = {
         'cycle.editTitle': 'Edit',
         'cycle.editText': 'Modifica diretta delle celle con editor dedicati, stato della riga e rollback integrati nel ciclo CRUD.',
         'cycle.keyboardTitle': 'Editing orientato alla tastiera',
-        'cycle.keyboardText': 'Navigazione Tab/Shift+Tab e flusso rapido pensato per l’uso gestionale da tastiera.',
+        'cycle.keyboardText': 'Navigazione, editing e controlli gestibili interamente da tastiera, anche tra righe, pagine ed editor complessi.',
         'cycle.validateTitle': 'Validate',
         'cycle.validateText': 'Validatori e parser mantengono separati qualità del dato e formato del payload.',
         'cycle.payloadTitle': 'Payload',
@@ -98,21 +98,23 @@ const translations = {
         'cycle.detail.edit.group4Text': 'Il record viene modificato nel punto in cui viene consultato, senza aprire continuamente form separati per ogni operazione.',
         'cycle.detail.edit.value': 'Meno passaggi e meno perdita di contesto: l’utente lavora direttamente sui dati mentre AMB Grid mantiene coerente il ciclo CRUD.',
         'cycle.detail.keyboard.title': 'Editing orientato alla tastiera',
-        'cycle.detail.keyboard.intro': 'Il flusso è pensato per inserimento rapido dei dati e uso frequente della tastiera, riducendo la necessità del mouse.',
+        'cycle.detail.keyboard.intro': 'L’intero flusso di navigazione ed editing della griglia può essere gestito da tastiera: celle, righe, pagine, selezione, azioni ed editor complessi mantengono un percorso di focus coerente.',
         'cycle.detail.keyboard.tab': 'Tab',
         'cycle.detail.keyboard.shiftTab': 'Shift+Tab',
+        'cycle.detail.keyboard.pageUp': 'Alt+PageUp',
+        'cycle.detail.keyboard.pageDown': 'Alt+PageDown',
         'cycle.detail.keyboard.space': 'Space',
         'cycle.detail.keyboard.enter': 'Enter',
         'cycle.detail.keyboard.vertical': 'Alt+↑ / Alt+↓',
-        'cycle.detail.keyboard.group1Title': 'Navigazione orizzontale',
-        'cycle.detail.keyboard.group1Text': 'Spostano il focus tra le celle gestibili mantenendo continuo il flusso di editing.',
+        'cycle.detail.keyboard.group1Title': 'Navigazione continua',
+        'cycle.detail.keyboard.group1Text': 'Tab e Shift+Tab attraversano le celle editabili e continuano automaticamente tra le pagine. Alt+PageUp e Alt+PageDown permettono di cambiare pagina direttamente da tastiera.',
         'cycle.detail.keyboard.group2Title': 'Navigazione verticale',
-        'cycle.detail.keyboard.group2Text': 'Consentono di cambiare riga mantenendo la stessa colonna quando il flusso lo richiede.',
-        'cycle.detail.keyboard.group3Title': 'Checkbox',
-        'cycle.detail.keyboard.group3Text': 'Le checkbox possono essere gestite da tastiera: toggle con Space/Invio e impostazione esplicita con 0/1.',
-        'cycle.detail.keyboard.group4Title': 'Lookup ed editor complessi',
-        'cycle.detail.keyboard.group4Text': 'Lookup, autocomplete, datepicker e dialog mantengono un percorso di focus coerente per tornare alla griglia senza interrompere il lavoro.',
-        'cycle.detail.keyboard.value': 'Un flusso particolarmente adatto a backoffice e gestionali con inserimento intensivo di dati.',
+        'cycle.detail.keyboard.group2Text': 'Alt+↑ e Alt+↓ cambiano riga mantenendo la stessa colonna e continuano anche oltre il bordo della pagina.',
+        'cycle.detail.keyboard.group3Title': 'Controlli e azioni',
+        'cycle.detail.keyboard.group3Text': 'Checkbox, selezione di riga e azioni CRUD possono essere gestite senza mouse. Space ed Enter attivano i controlli, mentre 0 e 1 consentono impostazioni esplicite dove previste.',
+        'cycle.detail.keyboard.group4Title': 'Editor e dialog',
+        'cycle.detail.keyboard.group4Text': 'Lookup, calendari e testi estesi mantengono il flusso da tastiera: Enter apre o conferma, le frecce navigano dove previsto, Escape annulla e il focus ritorna coerentemente alla griglia.',
+        'cycle.detail.keyboard.value': 'Pensato per backoffice e inserimento intensivo: l’intero flusso di editing può restare sulla tastiera.',
         'cycle.detail.validate.title': 'Validazione e trasformazione restano separate',
         'cycle.detail.validate.intro': 'AMB Grid mantiene distinti controllo della qualità del dato e trasformazione del valore destinato al payload.',
         'cycle.detail.validate.group1Title': 'Regole sul dato',
@@ -260,7 +262,7 @@ const translations = {
         'cycle.editTitle': 'Edit',
         'cycle.editText': 'Direct cell editing with dedicated editors, row state tracking and rollback integrated into the CRUD lifecycle.',
         'cycle.keyboardTitle': 'Keyboard-first editing',
-        'cycle.keyboardText': 'Tab/Shift+Tab navigation and a fast keyboard-first workflow for business data entry.',
+        'cycle.keyboardText': 'Navigation, editing and controls can be managed entirely from the keyboard, across rows, pages and complex editors.',
         'cycle.validateTitle': 'Validate',
         'cycle.validateText': 'Validators and parsers keep data quality separate from payload formatting.',
         'cycle.payloadTitle': 'Payload',
@@ -279,21 +281,23 @@ const translations = {
         'cycle.detail.edit.group4Text': 'The record is edited where it is being viewed, without constantly opening separate forms for each operation.',
         'cycle.detail.edit.value': 'Fewer steps and less context switching: the user works directly with the data while AMB Grid keeps the CRUD lifecycle consistent.',
         'cycle.detail.keyboard.title': 'Keyboard-first editing',
-        'cycle.detail.keyboard.intro': 'The workflow is designed for fast data entry and frequent keyboard use, reducing the need for a mouse.',
+        'cycle.detail.keyboard.intro': 'The entire grid navigation and editing flow can be managed from the keyboard: cells, rows, pages, selection, actions and complex editors maintain a consistent focus path.',
         'cycle.detail.keyboard.tab': 'Tab',
         'cycle.detail.keyboard.shiftTab': 'Shift+Tab',
+        'cycle.detail.keyboard.pageUp': 'Alt+PageUp',
+        'cycle.detail.keyboard.pageDown': 'Alt+PageDown',
         'cycle.detail.keyboard.space': 'Space',
         'cycle.detail.keyboard.enter': 'Enter',
         'cycle.detail.keyboard.vertical': 'Alt+↑ / Alt+↓',
-        'cycle.detail.keyboard.group1Title': 'Horizontal navigation',
-        'cycle.detail.keyboard.group1Text': 'They move focus between manageable cells while keeping the editing flow continuous.',
+        'cycle.detail.keyboard.group1Title': 'Continuous navigation',
+        'cycle.detail.keyboard.group1Text': 'Tab and Shift+Tab move through editable cells and continue automatically across pages. Alt+PageUp and Alt+PageDown switch pages directly from the keyboard.',
         'cycle.detail.keyboard.group2Title': 'Vertical navigation',
-        'cycle.detail.keyboard.group2Text': 'They change row while preserving the same column when the workflow requires it.',
-        'cycle.detail.keyboard.group3Title': 'Checkboxes',
-        'cycle.detail.keyboard.group3Text': 'Checkboxes work directly from the keyboard: Space/Enter toggle and 0/1 explicitly set the value.',
-        'cycle.detail.keyboard.group4Title': 'Lookups and complex editors',
-        'cycle.detail.keyboard.group4Text': 'Lookup, autocomplete, datepicker, and dialogs preserve a coherent focus route back to the grid.',
-        'cycle.detail.keyboard.value': 'Especially suited to back-office and business workflows with intensive data entry.',
+        'cycle.detail.keyboard.group2Text': 'Alt+↑ and Alt+↓ move between rows while keeping the same column and continue across page boundaries.',
+        'cycle.detail.keyboard.group3Title': 'Controls and actions',
+        'cycle.detail.keyboard.group3Text': 'Checkboxes, row selection and CRUD actions can be managed without a mouse. Space and Enter activate controls, while 0 and 1 provide explicit values where supported.',
+        'cycle.detail.keyboard.group4Title': 'Editors and dialogs',
+        'cycle.detail.keyboard.group4Text': 'Lookups, calendars and extended-text editors preserve the keyboard flow: Enter opens or confirms, arrow keys navigate where supported, Escape cancels and focus returns consistently to the grid.',
+        'cycle.detail.keyboard.value': 'Designed for backoffice and intensive data entry: the entire editing flow can remain on the keyboard.',
         'cycle.detail.validate.title': 'Validation and transformation stay separate',
         'cycle.detail.validate.intro': 'AMB Grid keeps data-quality checks distinct from transforming the value destined for the payload.',
         'cycle.detail.validate.group1Title': 'Data rules',
@@ -433,26 +437,27 @@ const cycleDetailBodies = {
     keyboard: `
         <div class="demo-cycle-detail__groups demo-cycle-detail__groups--keyboard">
             <div>
-                <div class="demo-cycle-detail__keycaps"><kbd data-i18n="cycle.detail.keyboard.tab">Tab</kbd><kbd data-i18n="cycle.detail.keyboard.shiftTab">Shift+Tab</kbd></div>
-                <h4 data-i18n="cycle.detail.keyboard.group1Title">Navigazione orizzontale</h4>
-                <p data-i18n="cycle.detail.keyboard.group1Text">Spostano il focus tra le celle gestibili mantenendo continuo il flusso di editing.</p>
+                <h4 data-i18n="cycle.detail.keyboard.group1Title">Navigazione continua</h4>
+                <div class="demo-cycle-detail__keycaps"><kbd data-i18n="cycle.detail.keyboard.tab">Tab</kbd><kbd data-i18n="cycle.detail.keyboard.shiftTab">Shift+Tab</kbd><kbd data-i18n="cycle.detail.keyboard.pageUp">Alt+PageUp</kbd><kbd data-i18n="cycle.detail.keyboard.pageDown">Alt+PageDown</kbd></div>
+                <p data-i18n="cycle.detail.keyboard.group1Text">Tab e Shift+Tab attraversano le celle editabili e continuano automaticamente tra le pagine. Alt+PageUp e Alt+PageDown permettono di cambiare pagina direttamente da tastiera.</p>
             </div>
             <div>
-                <div class="demo-cycle-detail__keycaps"><kbd data-i18n="cycle.detail.keyboard.vertical">Alt+↑ / Alt+↓</kbd></div>
                 <h4 data-i18n="cycle.detail.keyboard.group2Title">Navigazione verticale</h4>
-                <p data-i18n="cycle.detail.keyboard.group2Text">Consentono di cambiare riga mantenendo la stessa colonna quando il flusso lo richiede.</p>
+                <div class="demo-cycle-detail__keycaps"><kbd>Alt+↑</kbd><kbd>Alt+↓</kbd></div>
+                <p data-i18n="cycle.detail.keyboard.group2Text">Alt+↑ e Alt+↓ cambiano riga mantenendo la stessa colonna e continuano anche oltre il bordo della pagina.</p>
             </div>
             <div>
+                <h4 data-i18n="cycle.detail.keyboard.group3Title">Controlli e azioni</h4>
                 <div class="demo-cycle-detail__keycaps"><kbd data-i18n="cycle.detail.keyboard.space">Space</kbd><kbd data-i18n="cycle.detail.keyboard.enter">Enter</kbd><kbd>0</kbd><kbd>1</kbd></div>
-                <h4 data-i18n="cycle.detail.keyboard.group3Title">Checkbox</h4>
-                <p data-i18n="cycle.detail.keyboard.group3Text">Le checkbox possono essere gestite da tastiera: toggle con Space/Invio e impostazione esplicita con 0/1.</p>
+                <p data-i18n="cycle.detail.keyboard.group3Text">Checkbox, selezione di riga e azioni CRUD possono essere gestite senza mouse. Space ed Enter attivano i controlli, mentre 0 e 1 consentono impostazioni esplicite dove previste.</p>
             </div>
-            <div class="demo-cycle-detail__group-with-icon">
-                ${demoIcon('lookup', { className: 'demo-cycle-detail__icon', size: 18 })}
-                <div><h4 data-i18n="cycle.detail.keyboard.group4Title">Lookup ed editor complessi</h4><p data-i18n="cycle.detail.keyboard.group4Text">Lookup, autocomplete, datepicker e dialog mantengono un percorso di focus coerente per tornare alla griglia senza interrompere il lavoro.</p></div>
+            <div>
+                <h4 data-i18n="cycle.detail.keyboard.group4Title">Editor e dialog</h4>
+                <div class="demo-cycle-detail__keycaps"><kbd data-i18n="cycle.detail.keyboard.enter">Enter</kbd><kbd>↑ ↓</kbd><kbd>Esc</kbd><kbd>Ctrl+Enter</kbd></div>
+                <p data-i18n="cycle.detail.keyboard.group4Text">Lookup, calendari e testi estesi mantengono il flusso da tastiera: Enter apre o conferma, le frecce navigano dove previsto, Escape annulla e il focus ritorna coerentemente alla griglia.</p>
             </div>
         </div>
-        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.keyboard.value">Un flusso particolarmente adatto a backoffice e gestionali con inserimento intensivo di dati.</p>`,
+        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.keyboard.value">Pensato per backoffice e inserimento intensivo: l’intero flusso di editing può restare sulla tastiera.</p>`,
     validate: `
         <div class="demo-cycle-detail__groups">
             <div>
@@ -802,7 +807,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.editTitle">Edit</strong>
                         </span>
                         <p data-i18n="cycle.editText">Modifica diretta delle celle con editor dedicati, stato della riga e rollback integrati nel ciclo CRUD.</p>
-                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="keyboard">
                         <span class="demo-flow-card__header">
@@ -810,8 +815,8 @@ const renderShell = selectedId => {
                             ${demoIcon('keyboard', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.keyboardTitle">Editing orientato alla tastiera</strong>
                         </span>
-                        <p data-i18n="cycle.keyboardText">Navigazione Tab/Shift+Tab, editing senza mouse, checkbox da tastiera e lookup rapidi anche tramite codice.</p>
-                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
+                        <p data-i18n="cycle.keyboardText">Navigazione, editing e controlli gestibili interamente da tastiera, anche tra righe, pagine ed editor complessi.</p>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="validate">
                         <span class="demo-flow-card__header">
@@ -820,7 +825,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.validateTitle">Validate</strong>
                         </span>
                         <p data-i18n="cycle.validateText">Validatori e parser separano qualità del dato e trasformazione del payload.</p>
-                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="payload">
                         <span class="demo-flow-card__header">
@@ -829,7 +834,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.payloadTitle">Payload</strong>
                         </span>
                         <p data-i18n="cycle.payloadText">Le modifiche diventano un payload leggibile e pronto per il backend.</p>
-                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="align">
                         <span class="demo-flow-card__header">
@@ -838,7 +843,7 @@ const renderShell = selectedId => {
                             <strong data-i18n="cycle.alignTitle">Align</strong>
                         </span>
                         <p data-i18n="cycle.alignText">Dopo il salvataggio, dati applicativi e stato locale possono riallinearsi.</p>
-                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })}</span>
+                        <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                 </div>
                 <section id="cycle-detail" class="demo-cycle-detail" data-cycle-accent="edit" hidden aria-live="polite" aria-labelledby="cycle-detail-title">

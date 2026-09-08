@@ -434,9 +434,9 @@ describe('demo site navigation', () => {
 
         expect(css).toContain('width: min(100% - 12px, 1824px);');
         expect(main).toContain("'cycle.keyboardTitle': 'Editing orientato alla tastiera'");
-        expect(main).toContain("'cycle.keyboardText': 'Navigazione Tab/Shift+Tab e flusso rapido pensato per l’uso gestionale da tastiera.'");
+        expect(main).toContain("'cycle.keyboardText': 'Navigazione, editing e controlli gestibili interamente da tastiera, anche tra righe, pagine ed editor complessi.'");
         expect(main).toContain("'cycle.keyboardTitle': 'Keyboard-first editing'");
-        expect(main).toContain("'cycle.keyboardText': 'Tab/Shift+Tab navigation and a fast keyboard-first workflow for business data entry.'");
+        expect(main).toContain("'cycle.keyboardText': 'Navigation, editing and controls can be managed entirely from the keyboard, across rows, pages and complex editors.'");
         expect(main).toContain('data-i18n="cycle.keyboardTitle"');
         expect(main).toContain('data-i18n="cycle.keyboardText"');
         expect(main).toContain("openCycleDetail('edit');");
@@ -445,10 +445,14 @@ describe('demo site navigation', () => {
         expect(main).toContain('data-cycle-accent="edit"');
         expect(css).toContain('.demo-flow-card.is-active');
         expect(css).toContain('caret-color: transparent;');
-        expect(main).toContain("demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 18 })");
+        expect(main).toContain("demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })");
         expect(main).toContain("'cycle.editText': 'Modifica diretta delle celle con editor dedicati, stato della riga e rollback integrati nel ciclo CRUD.'");
         expect(main).toContain("'cycle.detail.edit.group2Title': 'Stato automatico della riga'");
         expect(main).toContain("'cycle.detail.edit.group4Title': 'Editing nel contesto'");
         expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+        expect(main).toContain("'cycle.detail.keyboard.group1Title': 'Navigazione continua'");
+        expect(main).toContain("'cycle.detail.keyboard.group3Title': 'Controlli e azioni'");
+        expect(main).toContain("'cycle.detail.keyboard.group4Title': 'Editor e dialog'");
+        expect(css).toContain('.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__groups h4');
     });
 });
