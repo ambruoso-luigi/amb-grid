@@ -144,12 +144,12 @@ describe('Legacy-friendly warehouse demo', () => {
 
     test('uses the standard delete column as the first grid column', () => {
         const tableColumnsSource = source.slice(source.indexOf('const tableOptions = {'));
-        const deleteColumnIndex = tableColumnsSource.indexOf('deleteColumn: {');
+        const rowActionColumnIndex = tableColumnsSource.indexOf('rowActionColumn: {');
         const itemCodeIndex = tableColumnsSource.indexOf("title: 'Item code'");
 
-        expect(deleteColumnIndex).toBeGreaterThan(-1);
+        expect(rowActionColumnIndex).toBeGreaterThan(-1);
         expect(itemCodeIndex).toBeGreaterThan(-1);
-        expect(deleteColumnIndex).toBeLessThan(itemCodeIndex);
+        expect(rowActionColumnIndex).toBeLessThan(itemCodeIndex);
         expect(source).not.toContain('createDemoRowActionColumn');
         expect(source).not.toContain("field: '_demoRowActions'");
         expect(source).toContain('enabled: true');
@@ -164,7 +164,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
         expect(source).toContain('confirmRemoveNewMessage: demoRowActionMessages.removeNew');
         expect(source).not.toContain('demoRowActionIcons');
-        expect(source).not.toMatch(/deleteColumn: \{[\s\S]*?icons:/);
+        expect(source).not.toMatch(/rowActionColumn: \{[\s\S]*?icons:/);
         expect(source).toContain('labels: demoRowActionLabels');
         expect(source).not.toContain('bindInventoryRowActionKeyboardBridge');
         expect(source).not.toContain('KEYDOWN_EVENT');
@@ -175,7 +175,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('focus({ preventScroll: true })');
         expect(source).not.toContain('tabindex');
         expect(source).not.toContain('new AMB.ConfirmDialog()');
-        expect(basicCrudSource).toContain('deleteColumn: {');
+        expect(basicCrudSource).toContain('rowActionColumn: {');
         expect(basicCrudSource).toContain('selectionColumn: {');
     });
 

@@ -230,7 +230,7 @@ export default async function fullDemo(app, options = {}) {
 
     const tableOptions = {
         selector: '#inventory-table',
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             width: 55,
             confirmDeleteMessage: demoRowActionMessages.delete,

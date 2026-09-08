@@ -12,7 +12,7 @@ describe('AMB table controller lifecycle methods', () => {
         const resources = {
             historyRuntime: destroyResource('history-runtime'),
             toolbarController: destroyResource('toolbar'),
-            unsubscribeDeleteColumn: unsubscribe('delete-column'),
+            unsubscribeRowActionColumn: unsubscribe('row-action-column'),
             unsubscribeSelectionColumn: unsubscribe('selection-column'),
             unsubscribeLookupMetadata: unsubscribe('lookup-metadata'),
             searchController: destroyResource('search'),
@@ -42,7 +42,7 @@ describe('AMB table controller lifecycle methods', () => {
         expect(order).toEqual([
             'history-runtime',
             'toolbar',
-            'delete-column',
+            'row-action-column',
             'selection-column',
             'lookup-metadata',
             'search',

@@ -325,7 +325,7 @@ popup/action cells, and non-data interactive columns:
   `Space` toggle row selection; `1`/`S`/`Y` select and `0`/`N` deselect. When
   enabled, row selection is available exclusively through its checkbox, so
   navigating, clicking, or editing other cells never changes row selection.
-* `deleteColumn` is the managed row action column. Clean and saved rows expose
+* `rowActionColumn` is the managed row action column. Clean and saved rows expose
   Delete; modified and deleted rows expose Rollback; new rows expose Remove
   new. An action cell participates in keyboard navigation only when its action
   is available and enabled. `Enter` and `Space` activate the row action.

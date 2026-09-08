@@ -213,7 +213,7 @@ describe('AMB table controller localization API', () => {
             const messages = {
                 required: 'Campo obbligatorio'
             };
-            const deleteColumn = {
+            const rowActionColumn = {
                 enabled: true,
                 labels: {
                     delete: 'Elimina'
@@ -244,7 +244,7 @@ describe('AMB table controller localization API', () => {
                     'it-it': lang
                 },
                 messages,
-                deleteColumn,
+                rowActionColumn,
                 search: {
                     enabled: true
                 },
@@ -292,8 +292,8 @@ describe('AMB table controller localization API', () => {
             expect(messages).toEqual({
                 required: 'Campo obbligatorio'
             });
-            expect(deleteColumn.labels.delete).toBe('Elimina');
-            expect(deleteColumn.confirmDeleteMessage).toBe('Confermi eliminazione?');
+            expect(rowActionColumn.labels.delete).toBe('Elimina');
+            expect(rowActionColumn.confirmDeleteMessage).toBe('Confermi eliminazione?');
             expect(controller.getSearchState()).toEqual(searchState);
             expect(table.redraw).not.toHaveBeenCalled();
             expect(table.setFilter).not.toHaveBeenCalled();

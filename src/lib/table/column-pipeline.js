@@ -740,12 +740,12 @@ export const wrapEditableForDeletedRows = (
 const composeRuntimeColumns = (
     preparedDataColumns,
     selectionColumn,
-    deleteColumn
+    rowActionColumn
 ) => {
     const runtimeColumns = [];
     const managedColumns = new Set();
 
-    [selectionColumn, deleteColumn].forEach(column => {
+    [selectionColumn, rowActionColumn].forEach(column => {
         if (!column || managedColumns.has(column)) return;
 
         managedColumns.add(column);
@@ -778,7 +778,7 @@ const composeRuntimeColumns = (
  * @param {Function} [options.getCrud] - Return the current CRUD helper.
  * @param {Function} [options.getTable] - Return the current internal table.
  * @param {object|null} [options.selectionColumn] - AMB-managed selection definition.
- * @param {object|null} [options.deleteColumn] - AMB-managed action definition.
+ * @param {object|null} [options.rowActionColumn] - AMB-managed action definition.
  * @returns {{
  *   applicationColumns: object[],
  *   preparedDataColumns: object[],
@@ -797,7 +797,7 @@ export const prepareColumnPipeline = ({
     getCrud = () => null,
     getTable = () => null,
     selectionColumn = null,
-    deleteColumn = null
+    rowActionColumn = null
 } = {}) => {
     const applicationColumns = cloneApplicationColumns(columns);
     const extracted = extractColumnValidators(applicationColumns, messages);
@@ -833,7 +833,7 @@ export const prepareColumnPipeline = ({
         runtimeColumns: composeRuntimeColumns(
             preparedDataColumns,
             selectionColumn,
-            deleteColumn
+            rowActionColumn
         ),
         validators: extracted.validators,
         lookupColumns,

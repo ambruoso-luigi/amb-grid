@@ -21,7 +21,7 @@ describe('Row states demo', () => {
     });
 
     test('uses the standard delete column and an expanded sample dataset', () => {
-        expect(source).toContain('deleteColumn: {');
+        expect(source).toContain('rowActionColumn: {');
         expect(source).toContain('enabled: true');
         expect(source.match(/\{ id: \d+, item:/g)).toHaveLength(10);
         expect(source.match(/_state: 'clean'/g)).toHaveLength(10);

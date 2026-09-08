@@ -373,7 +373,7 @@ const createGrid = async (selectionMode = 'single') => {
             enabled: true,
             mode: selectionMode
         },
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this product?',
             confirmRemoveNewMessage: 'Remove this new product?'
@@ -744,7 +744,7 @@ const createMultifieldLookupGrid = async () => {
     const municipalityMultifieldLookup = createMunicipalityMultifieldLookup(municipalityLookup);
     const grid = AMB.table({
         selector: '#multifield-lookup-test-table',
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this municipality row?',
             confirmRemoveNewMessage: 'Remove this new municipality row?'
@@ -991,7 +991,7 @@ const createColumnCalculationsGrid = () => {
                 return grid.addRow(createEmptyColumnCalculationsRow());
             }
         },
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             confirmDeleteMessage: 'Eliminare questa riga?',
             confirmRollbackMessage: 'Ripristinare questa riga?',

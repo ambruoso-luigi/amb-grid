@@ -237,7 +237,7 @@ describe('AMB Grid column preparation pipeline', () => {
         const selectionColumn = {
             cssClass: 'amb-selection-column'
         };
-        const deleteColumn = {
+        const rowActionColumn = {
             cssClass: 'amb-action-column'
         };
         const crud = {
@@ -258,7 +258,7 @@ describe('AMB Grid column preparation pipeline', () => {
             },
             getCrud: () => crud,
             selectionColumn,
-            deleteColumn
+            rowActionColumn
         });
         const preparedName = findPreparedColumn(pipeline, 'name');
         const preparedAmount = findPreparedColumn(pipeline, 'amount');
@@ -268,14 +268,14 @@ describe('AMB Grid column preparation pipeline', () => {
 
         expect(pipeline.runtimeColumns).toEqual([
             selectionColumn,
-            deleteColumn,
+            rowActionColumn,
             pipeline.preparedDataColumns[0]
         ]);
         expect(pipeline.runtimeColumns[0]).toBe(selectionColumn);
-        expect(pipeline.runtimeColumns[1]).toBe(deleteColumn);
+        expect(pipeline.runtimeColumns[1]).toBe(rowActionColumn);
         expect(pipeline.searchColumns).toBe(pipeline.preparedDataColumns);
         expect(pipeline.searchColumns).not.toContain(selectionColumn);
-        expect(pipeline.searchColumns).not.toContain(deleteColumn);
+        expect(pipeline.searchColumns).not.toContain(rowActionColumn);
         expect(pipeline.validators).toHaveLength(3);
         expect(pipeline.validators.map(validator => validator.field))
             .toEqual(['name', 'name', 'name']);
@@ -445,7 +445,7 @@ describe('AMB Grid column preparation pipeline', () => {
         const selectionColumn = {
             cssClass: 'amb-selection-column'
         };
-        const deleteColumn = {
+        const rowActionColumn = {
             cssClass: 'amb-action-column'
         };
         const getCrud = () => ({
@@ -460,7 +460,7 @@ describe('AMB Grid column preparation pipeline', () => {
             columns,
             getCrud,
             selectionColumn,
-            deleteColumn
+            rowActionColumn
         });
         const firstEditable = findPreparedColumn(first, 'name').editable;
         const firstLookupFormatter = findPreparedColumn(first, 'status').formatter;
@@ -470,7 +470,7 @@ describe('AMB Grid column preparation pipeline', () => {
             columns,
             getCrud,
             selectionColumn,
-            deleteColumn
+            rowActionColumn
         });
         const secondEditable = findPreparedColumn(second, 'name').editable;
         const secondLookupFormatter = findPreparedColumn(second, 'status').formatter;
@@ -487,9 +487,9 @@ describe('AMB Grid column preparation pipeline', () => {
             .toHaveLength(1);
         expect(second.runtimeColumns.filter(column => column === selectionColumn))
             .toHaveLength(1);
-        expect(first.runtimeColumns.filter(column => column === deleteColumn))
+        expect(first.runtimeColumns.filter(column => column === rowActionColumn))
             .toHaveLength(1);
-        expect(second.runtimeColumns.filter(column => column === deleteColumn))
+        expect(second.runtimeColumns.filter(column => column === rowActionColumn))
             .toHaveLength(1);
         expect(firstEditable).not.toBe(secondEditable);
         expect(firstLookupFormatter).not.toBe(secondLookupFormatter);

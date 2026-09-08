@@ -250,7 +250,7 @@ export default function validation(app) {
 
     const demo = AMB.table({
         selector: '#validation-table',
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             actions: {
                 delete: false,

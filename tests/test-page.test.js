@@ -134,7 +134,7 @@ describe('technical test page', () => {
         expect(columnCalculationsGridSource).toContain('return grid.addRow(createEmptyColumnCalculationsRow());');
         expect(columnCalculationsGridSource).not.toContain('grid.crud');
         expect(columnCalculationsGridSource).not.toContain('grid.table');
-        expect(columnCalculationsGridSource).toContain('deleteColumn: {');
+        expect(columnCalculationsGridSource).toContain('rowActionColumn: {');
         expect(columnCalculationsGridSource).toContain("confirmDeleteMessage: 'Eliminare questa riga?'");
         expect(columnCalculationsGridSource).not.toContain('formatter: AMB.formatters.decimal(2)');
         expect(testSource).toContain("topCalc: calculateScoreRange");

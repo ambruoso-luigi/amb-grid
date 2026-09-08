@@ -296,7 +296,7 @@ export default async function multifieldLookup(app) {
             onPayload: handleShowPayload
         },
         layout: 'fitColumns',
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true
         },
         columns: [

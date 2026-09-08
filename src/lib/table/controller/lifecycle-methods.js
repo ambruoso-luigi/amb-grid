@@ -54,9 +54,9 @@ export const createLifecycleMethods = ({
             controller.toolbar = null;
         }
 
-        if (resources.unsubscribeDeleteColumn) {
-            resources.unsubscribeDeleteColumn();
-            resources.unsubscribeDeleteColumn = null;
+        if (resources.unsubscribeRowActionColumn) {
+            resources.unsubscribeRowActionColumn();
+            resources.unsubscribeRowActionColumn = null;
         }
 
         if (resources.unsubscribeCalculationRecalc) {

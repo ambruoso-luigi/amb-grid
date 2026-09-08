@@ -75,7 +75,7 @@ export default function basicCrud(app) {
 
     const demo = AMB.table({
         selector: '#basic-table',
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this note?',
             confirmRollbackMessage: 'Rollback this note?',

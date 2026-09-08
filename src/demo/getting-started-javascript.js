@@ -134,7 +134,7 @@ export default function gettingStartedJavaScript(app) {
   <span class="syntax-property">data</span>: rows,
   <span class="syntax-property">columns</span>,
   <span class="syntax-property">layout</span>: <span class="syntax-string">'fitColumns'</span>,
-  <span class="syntax-property">deleteColumn</span>: { <span class="syntax-property">enabled</span>: <span class="syntax-keyword">true</span> },
+  <span class="syntax-property">rowActionColumn</span>: { <span class="syntax-property">enabled</span>: <span class="syntax-keyword">true</span> },
   <span class="syntax-property">toolbar</span>: {
     <span class="syntax-property">buttons</span>: [<span class="syntax-string">'add'</span>, <span class="syntax-string">'reload'</span>, <span class="syntax-string">'save'</span>, <span class="syntax-string">'payload'</span>, <span class="syntax-string">'validate'</span>],
     <span class="syntax-function">onAdd</span>: () => {

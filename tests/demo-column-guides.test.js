@@ -134,7 +134,7 @@ describe('Public Column calculations interactions', () => {
 
         expect(source).toContain("buttons: ['add']");
         expect(source).toContain('onAdd: handleAdd');
-        expect(source).toContain('deleteColumn: {');
+        expect(source).toContain('rowActionColumn: {');
         expect(source).toContain('enabled: true');
         expect(source).toContain('return grid.crud.addRow({');
         expect(source).toContain('id: nextProductId++');

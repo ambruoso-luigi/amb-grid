@@ -22,6 +22,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Changed
 
+- Renamed the managed row action configuration from `deleteColumn` to `rowActionColumn` (breaking, no compatibility alias). The separate `grid.deleteColumn(...)` controller method for application data columns is unchanged.
 - Extended `Tab` and `Shift+Tab` navigation across local page boundaries with predictable focus exit at absolute boundaries.
 - Changed large-text cells to focus-first activation: `Enter` opens a focus-trapped dialog that restores focus to its source cell after closing.
 - Made the most recent real pointer or keyboard interaction the owner of contextual cell messages.

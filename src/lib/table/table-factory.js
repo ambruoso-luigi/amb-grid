@@ -6,7 +6,7 @@ import { ConfirmDialog } from '../../ui/confirm-dialog.js';
 import { FeedbackRegion } from '../../ui/feedback-region.js';
 import { createToolbar } from '../../ui/toolbar.js';
 import { DEFAULT_MESSAGES } from './validation-extraction.js';
-import { createDeleteColumn } from './delete-column.js';
+import { createRowActionColumn } from './row-action-column.js';
 import { createSelectionColumn } from './selection-column.js';
 import { createSearchController } from './search-controller.js';
 import {
@@ -523,24 +523,24 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode delegated to the underlying table engine as `paginationMode`.
  * @param {number} [options.pagination.pageSize=10] - Page size delegated to the underlying table engine as `paginationSize`.
  * @param {number[]} [options.pagination.pageSizeSelector] - Page size options delegated to the underlying table engine as `paginationSizeSelector`.
- * @param {object} [options.deleteColumn] - Optional managed row action column.
- * @param {boolean} [options.deleteColumn.enabled=false] - Add the row action column exposed as `deleteColumn`.
- * @param {object} [options.deleteColumn.actions] - Action visibility flags.
- * @param {boolean} [options.deleteColumn.actions.delete=true] - Show delete for clean/saved rows.
- * @param {boolean} [options.deleteColumn.actions.rollback=true] - Show rollback for modified/deleted rows.
- * @param {boolean} [options.deleteColumn.actions.removeNew=true] - Show remove for new rows.
- * @param {object} [options.deleteColumn.icons] - Optional custom action button text/icon overrides; without an override AMB renders built-in SVG icons.
- * @param {string} [options.deleteColumn.icons.delete] - Custom delete button text/icon.
- * @param {string} [options.deleteColumn.icons.rollback] - Custom rollback button text/icon.
- * @param {string} [options.deleteColumn.icons.removeNew] - Custom remove new-row button text/icon.
- * @param {object} [options.deleteColumn.labels] - Action button aria-label overrides.
- * @param {string} [options.deleteColumn.labels.delete='Delete row'] - Delete button aria-label.
- * @param {string} [options.deleteColumn.labels.rollback='Rollback row'] - Rollback button aria-label.
- * @param {string} [options.deleteColumn.labels.removeNew='Remove new row'] - Remove new-row button aria-label.
- * @param {string} [options.deleteColumn.confirmDeleteMessage] - Confirmation text before deleting a clean row.
- * @param {string} [options.deleteColumn.confirmRollbackMessage] - Confirmation text before rolling back a changed row.
- * @param {string} [options.deleteColumn.confirmRemoveNewMessage] - Confirmation text before removing an unsaved row.
- * @param {Function} [options.deleteColumn.confirmProvider] - Custom async confirmation function.
+ * @param {object} [options.rowActionColumn] - Optional managed row action column.
+ * @param {boolean} [options.rowActionColumn.enabled=false] - Add the managed row action column.
+ * @param {object} [options.rowActionColumn.actions] - Action visibility flags.
+ * @param {boolean} [options.rowActionColumn.actions.delete=true] - Show delete for clean/saved rows.
+ * @param {boolean} [options.rowActionColumn.actions.rollback=true] - Show rollback for modified/deleted rows.
+ * @param {boolean} [options.rowActionColumn.actions.removeNew=true] - Show remove for new rows.
+ * @param {object} [options.rowActionColumn.icons] - Optional custom action button text/icon overrides; without an override AMB renders built-in SVG icons.
+ * @param {string} [options.rowActionColumn.icons.delete] - Custom delete button text/icon.
+ * @param {string} [options.rowActionColumn.icons.rollback] - Custom rollback button text/icon.
+ * @param {string} [options.rowActionColumn.icons.removeNew] - Custom remove new-row button text/icon.
+ * @param {object} [options.rowActionColumn.labels] - Action button aria-label overrides.
+ * @param {string} [options.rowActionColumn.labels.delete='Delete row'] - Delete button aria-label.
+ * @param {string} [options.rowActionColumn.labels.rollback='Rollback row'] - Rollback button aria-label.
+ * @param {string} [options.rowActionColumn.labels.removeNew='Remove new row'] - Remove new-row button aria-label.
+ * @param {string} [options.rowActionColumn.confirmDeleteMessage] - Confirmation text before deleting a clean row.
+ * @param {string} [options.rowActionColumn.confirmRollbackMessage] - Confirmation text before rolling back a changed row.
+ * @param {string} [options.rowActionColumn.confirmRemoveNewMessage] - Confirmation text before removing an unsaved row.
+ * @param {Function} [options.rowActionColumn.confirmProvider] - Custom async confirmation function.
  * @param {object} [options.selectionColumn] - Optional row selection column.
  * @param {boolean} [options.selectionColumn.enabled=false] - Add a row selection column.
  * @param {'single'|'multiple'} [options.selectionColumn.mode='multiple'] - Selection mode.
@@ -589,7 +589,8 @@ export function createTable(options = {}) {
         selector,
         columns,
         messages,
-        deleteColumn,
+        rowActionColumn,
+        deleteColumn: _legacyDeleteColumn,
         selectionColumn,
         search,
         toolbar,
@@ -608,8 +609,8 @@ export function createTable(options = {}) {
     let table = null;
     const confirmDialog = new ConfirmDialog();
     const selectionColumnController = createSelectionColumn(selectionColumn);
-    const deleteColumnController = deleteColumn && deleteColumn.enabled
-        ? createDeleteColumn(deleteColumn, () => crud, confirmDialog)
+    const rowActionColumnController = rowActionColumn && rowActionColumn.enabled
+        ? createRowActionColumn(rowActionColumn, () => crud, confirmDialog)
         : null;
     const columnPipelineOptions = {
         messages: normalizedMessages,
@@ -619,8 +620,8 @@ export function createTable(options = {}) {
         selectionColumn: selectionColumnController
             ? selectionColumnController.column
             : null,
-        deleteColumn: deleteColumnController
-            ? deleteColumnController.column
+        rowActionColumn: rowActionColumnController
+            ? rowActionColumnController.column
             : null
     };
     const columnPipeline = prepareColumnPipeline({
@@ -629,7 +630,7 @@ export function createTable(options = {}) {
     });
     const lifecycleResources = {
         toolbarController: null,
-        unsubscribeDeleteColumn: null,
+        unsubscribeRowActionColumn: null,
         unsubscribeSelectionColumn: null,
         unsubscribeLookupMetadata: null,
         unsubscribeCalculationRecalc: null,
@@ -779,9 +780,9 @@ export function createTable(options = {}) {
         searchController: lifecycleResources.searchController
     });
 
-    if (deleteColumnController) {
-        lifecycleResources.unsubscribeDeleteColumn = crud.on('row-state-changed', ({ row }) => {
-            deleteColumnController.updateRowButton(row);
+    if (rowActionColumnController) {
+        lifecycleResources.unsubscribeRowActionColumn = crud.on('row-state-changed', ({ row }) => {
+            rowActionColumnController.updateRowButton(row);
         });
     }
 

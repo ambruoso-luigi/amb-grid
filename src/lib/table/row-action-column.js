@@ -34,7 +34,7 @@ const createDefaultActionIcon = action => {
 };
 
 /**
- * Create the managed AMB row action column exposed as `deleteColumn`.
+ * Create the managed AMB row action column exposed as `rowActionColumn`.
  *
  * The column is an interactive action cell, not a data column. It participates
  * in AMB keyboard navigation, focuses its row action button, and activates
@@ -43,28 +43,28 @@ const createDefaultActionIcon = action => {
  * to rollback, after rollback focus returns to delete, and remove-new falls
  * back to the next or previous visible row action when possible.
  *
- * @param {object} deleteColumn - Delete column options.
+ * @param {object} rowActionColumn - Row action column options.
  * @param {Function} getCrud - Returns the active CRUD helper.
  * @param {object} confirmDialog - Confirmation dialog adapter.
- * @returns {{column: object, updateRowButton: Function}} Delete column controller.
+ * @returns {{column: object, updateRowButton: Function}} Row action column controller.
  */
-export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
-    const confirmDeleteMessage = deleteColumn.confirmDeleteMessage || deleteColumn.confirmMessage;
-    const confirmRollbackMessage = deleteColumn.confirmRollbackMessage;
-    const confirmRemoveNewMessage = deleteColumn.confirmRemoveNewMessage;
-    const confirmProvider = deleteColumn.confirmProvider;
+export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) => {
+    const confirmDeleteMessage = rowActionColumn.confirmDeleteMessage || rowActionColumn.confirmMessage;
+    const confirmRollbackMessage = rowActionColumn.confirmRollbackMessage;
+    const confirmRemoveNewMessage = rowActionColumn.confirmRemoveNewMessage;
+    const confirmProvider = rowActionColumn.confirmProvider;
     const actions = {
         delete: true,
         rollback: true,
         removeNew: true,
-        ...deleteColumn.actions
+        ...rowActionColumn.actions
     };
-    const iconOverrides = deleteColumn.icons || {};
+    const iconOverrides = rowActionColumn.icons || {};
     const labels = {
         delete: 'Delete row',
         rollback: 'Rollback row',
         removeNew: 'Remove new row',
-        ...deleteColumn.labels
+        ...rowActionColumn.labels
     };
 
     const getRowState = row => {
@@ -516,11 +516,11 @@ export const createDeleteColumn = (deleteColumn, getCrud, confirmDialog) => {
 
     return {
         column: {
-            width: deleteColumn.width || 55,
+            width: rowActionColumn.width || 55,
             hozAlign: 'center',
             headerSort: false,
             _ambInteractive: true,
-            _ambManagedColumn: 'delete',
+            _ambManagedColumn: 'rowAction',
             _ambFocusSelector: ACTION_BUTTON_SELECTOR,
             editable: cell => {
                 const row = cell?.getRow?.();

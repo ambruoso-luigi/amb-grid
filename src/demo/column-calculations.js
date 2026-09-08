@@ -37,7 +37,7 @@ export default function columnCalculations(app) {
 
     const grid = AMB.table({
         selector: '#column-calculations-table',
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this product?',
             confirmRollbackMessage: 'Rollback this product?',

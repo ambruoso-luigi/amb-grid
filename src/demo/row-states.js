@@ -103,7 +103,7 @@ export default function rowStates(app) {
 
     const demo = AMB.table({
         selector: '#row-states-table',
-        deleteColumn: {
+        rowActionColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete this sample?',
             confirmRollbackMessage: 'Rollback this sample?',

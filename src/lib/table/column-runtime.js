@@ -552,7 +552,7 @@ export const createColumnRuntime = ({
                 currentPipeline.applicationColumns,
                 [
                     pipelineOptions.selectionColumn,
-                    pipelineOptions.deleteColumn
+                    pipelineOptions.rowActionColumn
                 ]
             );
 
@@ -682,7 +682,7 @@ export const createColumnRuntime = ({
                 currentPipeline.applicationColumns,
                 [
                     pipelineOptions.selectionColumn,
-                    pipelineOptions.deleteColumn
+                    pipelineOptions.rowActionColumn
                 ]
             );
 

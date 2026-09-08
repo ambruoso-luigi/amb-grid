@@ -327,7 +327,7 @@ test.describe('browser addRow focus regression', () => {
 
         for (let iteration = 1; iteration <= 3; iteration += 1) {
             const diagnostic = await runToolbarDiagnostic(page, {
-                scenario: 'Gestionale Magazzino Classico paginated deleteColumn via toolbar',
+                scenario: 'Gestionale Magazzino Classico paginated rowActionColumn via toolbar',
                 iteration,
                 tableSelector: '#inventory-table',
                 targetField: 'itemCode',
@@ -343,7 +343,7 @@ test.describe('browser addRow focus regression', () => {
         await openBasicCrudDemo(page);
 
         const diagnostic = await runToolbarDiagnostic(page, {
-            scenario: 'Basic CRUD non-paginated deleteColumn via toolbar',
+            scenario: 'Basic CRUD non-paginated rowActionColumn via toolbar',
             iteration: 1,
             tableSelector: '#basic-table',
             targetField: 'title',

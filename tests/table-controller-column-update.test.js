@@ -126,8 +126,8 @@ const createHarness = () => {
     const selectionColumn = {
         _ambManagedColumn: 'selection'
     };
-    const deleteColumn = {
-        _ambManagedColumn: 'delete'
+    const rowActionColumn = {
+        _ambManagedColumn: 'rowAction'
     };
     let crud;
     const pipelineOptions = {
@@ -137,7 +137,7 @@ const createHarness = () => {
         lookupDescriptions: true,
         getCrud: () => crud,
         selectionColumn,
-        deleteColumn
+        rowActionColumn
     };
     const initialPipeline = prepareColumnPipeline({
         ...pipelineOptions,
@@ -181,7 +181,7 @@ const createHarness = () => {
     };
     const deleteComponent = {
         getField: () => false,
-        getDefinition: () => deleteColumn
+        getDefinition: () => rowActionColumn
     };
     const groupComponent = {
         getField: () => false,
@@ -247,7 +247,7 @@ const createHarness = () => {
         applicationColumns,
         columnRuntime,
         crud,
-        deleteColumn,
+        rowActionColumn,
         initialEditor,
         initialPipeline,
         lifecycleResources,
@@ -299,8 +299,8 @@ const createAddHarness = () => {
     const selectionColumn = {
         _ambManagedColumn: 'selection'
     };
-    const deleteColumn = {
-        _ambManagedColumn: 'delete'
+    const rowActionColumn = {
+        _ambManagedColumn: 'rowAction'
     };
     const runtimeValidator = vi.fn(() => true);
     const declarativeByField = new Map();
@@ -345,7 +345,7 @@ const createAddHarness = () => {
         lookupDescriptions: true,
         getCrud: () => crud,
         selectionColumn,
-        deleteColumn
+        rowActionColumn
     };
     const initialPipeline = prepareColumnPipeline({
         ...pipelineOptions,
@@ -376,7 +376,7 @@ const createAddHarness = () => {
         getData: () => rowData
     };
     const selectionComponent = createRuntimeComponent(selectionColumn);
-    const deleteComponent = createRuntimeComponent(deleteColumn);
+    const deleteComponent = createRuntimeComponent(rowActionColumn);
     const nameComponent = createRuntimeComponent(applicationColumns[0]);
     const nestedComponent = createRuntimeComponent(
         applicationColumns[1].columns[0]
@@ -536,8 +536,8 @@ const createDeleteHarness = () => {
     const selectionColumn = {
         _ambManagedColumn: 'selection'
     };
-    const deleteColumn = {
-        _ambManagedColumn: 'delete'
+    const rowActionColumn = {
+        _ambManagedColumn: 'rowAction'
     };
     const cellValidators = new Map();
     const declarativeCellValidators = new Map();
@@ -636,7 +636,7 @@ const createDeleteHarness = () => {
         lookupDescriptions: true,
         getCrud: () => crud,
         selectionColumn,
-        deleteColumn
+        rowActionColumn
     };
     const initialPipeline = prepareColumnPipeline({
         ...pipelineOptions,
@@ -707,7 +707,7 @@ const createDeleteHarness = () => {
         getData: () => rowData
     };
     const selectionComponent = createRuntimeComponent(selectionColumn);
-    const deleteComponent = createRuntimeComponent(deleteColumn);
+    const deleteComponent = createRuntimeComponent(rowActionColumn);
     const nameComponent = createRuntimeComponent(applicationColumns[0]);
     const nestedComponent = createRuntimeComponent(
         applicationColumns[1].columns[0]
@@ -870,8 +870,8 @@ const createLastDeleteHarness = () => {
     const selectionColumn = {
         _ambManagedColumn: 'selection'
     };
-    const deleteColumn = {
-        _ambManagedColumn: 'delete'
+    const rowActionColumn = {
+        _ambManagedColumn: 'rowAction'
     };
     const crud = {
         replaceDeclarativeCellValidators: vi.fn(),
@@ -880,14 +880,14 @@ const createLastDeleteHarness = () => {
     const pipelineOptions = {
         getCrud: () => crud,
         selectionColumn,
-        deleteColumn
+        rowActionColumn
     };
     const initialPipeline = prepareColumnPipeline({
         ...pipelineOptions,
         columns: applicationColumns
     });
     const selectionComponent = createRuntimeComponent(selectionColumn);
-    const deleteComponent = createRuntimeComponent(deleteColumn);
+    const deleteComponent = createRuntimeComponent(rowActionColumn);
     const onlyComponent = createRuntimeComponent(applicationColumns[0]);
     const topLevelComponents = [
         selectionComponent,
@@ -999,12 +999,12 @@ describe('AMB Grid managed column definition updates', () => {
         expect(harness.table.setColumns).not.toHaveBeenCalled();
         expect(initialRuntimeColumns).toEqual([
             harness.selectionColumn,
-            harness.deleteColumn,
+            harness.rowActionColumn,
             harness.initialPipeline.preparedDataColumns[0]
         ]);
         expect(initialRuntimeColumns.filter(column => column === harness.selectionColumn))
             .toHaveLength(1);
-        expect(initialRuntimeColumns.filter(column => column === harness.deleteColumn))
+        expect(initialRuntimeColumns.filter(column => column === harness.rowActionColumn))
             .toHaveLength(1);
 
         expect(harness.crud.replaceDeclarativeCellValidators)
@@ -1792,7 +1792,7 @@ describe('AMB Grid managed column definition updates', () => {
 
         expect(runtimeColumns.slice(0, 2)).toEqual([
             harness.pipelineOptions.selectionColumn,
-            harness.pipelineOptions.deleteColumn
+            harness.pipelineOptions.rowActionColumn
         ]);
         expect(runtimeColumns).toHaveLength(7);
         expect(collectFields(runtimeColumns)).toEqual([
@@ -1928,7 +1928,7 @@ describe('AMB Grid managed column definition updates', () => {
         expect(harness.table.setColumns).toHaveBeenCalledOnce();
         expect(harness.table.setColumns).toHaveBeenCalledWith([
             harness.pipelineOptions.selectionColumn,
-            harness.pipelineOptions.deleteColumn
+            harness.pipelineOptions.rowActionColumn
         ]);
         expect(harness.columnRuntime.getApplicationColumns())
             .toEqual([]);

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { isEditableCandidate, navigateEditableCellAfterClose } from '../src/lib/editors/shared.js';
-import { createDeleteColumn } from '../src/lib/table/delete-column.js';
+import { createRowActionColumn } from '../src/lib/table/row-action-column.js';
 
 const createElementMock = tagName => {
     const element = {
@@ -147,7 +147,7 @@ describe('delete column accessibility', () => {
 
     test('renders row action buttons as native buttons with aria-label and title', () => {
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {
                 labels: {
                     delete: 'Delete product'
@@ -171,7 +171,7 @@ describe('delete column accessibility', () => {
     });
 
     test('marks the delete column as an AMB interactive navigation target', () => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -190,7 +190,7 @@ describe('delete column accessibility', () => {
         ['deleted', 'rollback'],
         ['new', 'remove-new']
     ])('renders %s row action through the same button selector', (state, action) => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -215,7 +215,7 @@ describe('delete column accessibility', () => {
         ['new', { removeNew: true }, true],
         ['unexpected-state', {}, false]
     ])('maps %s action availability to editable %s', (state, actions, expected) => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             { actions },
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -238,7 +238,7 @@ describe('delete column accessibility', () => {
     });
 
     test('uses accessible default SVGs while preserving custom icon text safely', () => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -255,7 +255,7 @@ describe('delete column accessibility', () => {
             expect(icon.getAttribute('focusable')).toBe('false');
         });
 
-        const custom = createDeleteColumn(
+        const custom = createRowActionColumn(
             { icons: { delete: '<b>D</b>', rollback: 'R', removeNew: 'X' } },
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -269,7 +269,7 @@ describe('delete column accessibility', () => {
     });
 
     test('AMB navigation edits the delete cell instead of skipping the action column', async () => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -300,7 +300,7 @@ describe('delete column accessibility', () => {
     });
 
     test('internal action editor returns false when the current row has no available action', () => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {
                 actions: {
                     delete: false
@@ -321,7 +321,7 @@ describe('delete column accessibility', () => {
 
     test('unknown row states expose no action and reject direct editor or click execution', async () => {
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => crud,
             { confirm: () => Promise.resolve(true) }
@@ -342,7 +342,7 @@ describe('delete column accessibility', () => {
     });
 
     test('AMB navigation skips the delete cell when the current row has no available action', async () => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {
                 actions: {
                     delete: false
@@ -376,7 +376,7 @@ describe('delete column accessibility', () => {
     });
 
     test('the internal action editor focuses the row action button and navigates next on Tab', async () => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -412,7 +412,7 @@ describe('delete column accessibility', () => {
     });
 
     test('the internal action editor navigates previous on Rtab', async () => {
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => createCrud(),
             { confirm: () => Promise.resolve(true) }
@@ -450,7 +450,7 @@ describe('delete column accessibility', () => {
     ])('editor button click executes %s row action', async (state, action, methodName) => {
         const crud = createCrud();
         const cancel = vi.fn();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => crud,
             { confirm: () => Promise.resolve(true) }
@@ -478,7 +478,7 @@ describe('delete column accessibility', () => {
     test('after confirmed delete, focus returns to the same action cell on the rollback button', async () => {
         const data = { id: 1, _state: 'clean' };
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {
                 confirmDeleteMessage: 'Delete row?'
             },
@@ -512,7 +512,7 @@ describe('delete column accessibility', () => {
     test('after canceled delete, focus returns to the same action cell on the delete button', async () => {
         const data = { id: 1, _state: 'clean' };
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {
                 confirmDeleteMessage: 'Delete row?'
             },
@@ -541,7 +541,7 @@ describe('delete column accessibility', () => {
     test('after rollback without confirmation, focus returns to the same action cell on the delete button', async () => {
         const data = { id: 1, _state: 'deleted' };
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => crud,
             { confirm: () => Promise.resolve(true) }
@@ -573,7 +573,7 @@ describe('delete column accessibility', () => {
     test('after an action leaves its cell empty, focus moves to the next valid candidate', async () => {
         const data = { id: 1, _state: 'clean' };
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             { actions: { delete: true, rollback: false } },
             () => crud,
             { confirm: () => Promise.resolve(true) }
@@ -605,7 +605,7 @@ describe('delete column accessibility', () => {
 
     test('after remove-new, focus moves to the next row action cell when available', async () => {
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => crud,
             { confirm: () => Promise.resolve(true) }
@@ -640,7 +640,7 @@ describe('delete column accessibility', () => {
 
     test('after remove-new, focus moves to the previous row action cell when no next row exists', async () => {
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => crud,
             { confirm: () => Promise.resolve(true) }
@@ -675,7 +675,7 @@ describe('delete column accessibility', () => {
 
     test('after remove-new on a disappearing paginated page, focus moves to a visible row action cell', async () => {
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => crud,
             { confirm: () => Promise.resolve(true) }
@@ -725,7 +725,7 @@ describe('delete column accessibility', () => {
 
     test('after remove-new, focus falls back to the table element without errors when no rows remain', async () => {
         const crud = createCrud();
-        const controller = createDeleteColumn(
+        const controller = createRowActionColumn(
             {},
             () => crud,
             { confirm: () => Promise.resolve(true) }

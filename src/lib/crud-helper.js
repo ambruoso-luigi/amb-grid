@@ -709,7 +709,7 @@ export class CrudHelper {
             '_ambActions',
             'actions',
             'rowActions',
-            'deleteColumn'
+            'rowActionColumn'
         ]);
         const field = definition.field;
 
@@ -727,7 +727,7 @@ export class CrudHelper {
         return markers.some(value => {
             return value.includes('amb-row-action')
                 || value.includes('row-action')
-                || value.includes('delete-column')
+                || value.includes('row-action-column')
                 || value.includes('remove-new');
         });
     }
