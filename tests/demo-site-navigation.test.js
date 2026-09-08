@@ -454,5 +454,10 @@ describe('demo site navigation', () => {
         expect(main).toContain("'cycle.detail.keyboard.group3Title': 'Controlli e azioni'");
         expect(main).toContain("'cycle.detail.keyboard.group4Title': 'Editor e dialog'");
         expect(css).toContain('.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__groups h4');
+        expect(main).toContain("'cycle.validateText': 'Validazione, errori contestuali e parser mantengono separate qualità del dato e forma del payload.'");
+        expect(main).toContain("'cycle.detail.validate.title': 'Qualità del dato e forma del payload restano separate'");
+        expect(main).toContain('<code>validateChanges()</code>');
+        expect(main).toContain('<code>validate()</code>');
+        expect(css).toContain('.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__groups h4');
     });
 });

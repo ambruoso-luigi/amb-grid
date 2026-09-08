@@ -81,7 +81,7 @@ const translations = {
         'cycle.keyboardTitle': 'Editing orientato alla tastiera',
         'cycle.keyboardText': 'Navigazione, editing e controlli gestibili interamente da tastiera, anche tra righe, pagine ed editor complessi.',
         'cycle.validateTitle': 'Validate',
-        'cycle.validateText': 'Validatori e parser mantengono separati qualità del dato e formato del payload.',
+        'cycle.validateText': 'Validazione, errori contestuali e parser mantengono separate qualità del dato e forma del payload.',
         'cycle.payloadTitle': 'Payload',
         'cycle.payloadText': 'Inserimenti, modifiche ed eliminazioni diventano un payload strutturato.',
         'cycle.alignTitle': 'Align',
@@ -115,17 +115,18 @@ const translations = {
         'cycle.detail.keyboard.group4Title': 'Editor e dialog',
         'cycle.detail.keyboard.group4Text': 'Lookup, calendari e testi estesi mantengono il flusso da tastiera: Enter apre o conferma, le frecce navigano dove previsto, Escape annulla e il focus ritorna coerentemente alla griglia.',
         'cycle.detail.keyboard.value': 'Pensato per backoffice e inserimento intensivo: l’intero flusso di editing può restare sulla tastiera.',
-        'cycle.detail.validate.title': 'Validazione e trasformazione restano separate',
-        'cycle.detail.validate.intro': 'AMB Grid mantiene distinti controllo della qualità del dato e trasformazione del valore destinato al payload.',
+        'cycle.detail.validate.title': 'Qualità del dato e forma del payload restano separate',
+        'cycle.detail.validate.intro': 'AMB Grid verifica se un dato è accettabile senza confondere questa decisione con la sua trasformazione per il backend: validatori e parser restano due passaggi distinti dello stesso flusso.',
         'cycle.detail.validate.group1Title': 'Regole sul dato',
-        'cycle.detail.validate.group1Text': 'Required, formati, range, valori ammessi e regole applicative verificano la qualità del dato.',
-        'cycle.detail.validate.group2Title': 'Parser',
-        'cycle.detail.validate.group2Text': 'Normalizzano il valore nella forma prevista dal backend senza sostituire la validazione.',
-        'cycle.detail.validate.group3Title': 'Errori contestuali',
-        'cycle.detail.validate.group3Text': 'Gli errori restano associati alla cella e alla riga interessata.',
-        'cycle.detail.validate.group4Title': 'Salvataggio consapevole',
-        'cycle.detail.validate.group4Text': 'Lo stato di validità determina quali modifiche sono pronte per il backend.',
-        'cycle.detail.validate.value': 'La UI distingue chiaramente un dato modificato da un dato effettivamente valido.',
+        'cycle.detail.validate.group1Text': 'Required, formati, range, valori ammessi, unicità e regole personalizzate verificano la qualità del dato e possono essere combinate quando il controllo richiede più condizioni.',
+        'cycle.detail.validate.group2Title': 'Parser separati',
+        'cycle.detail.validate.group2Text': 'I parser normalizzano il valore nella forma prevista dal payload, ma non decidono se il dato è valido e non sostituiscono le regole applicative.',
+        'cycle.detail.validate.group3Title': 'Errori nel contesto',
+        'cycle.detail.validate.group3Text': 'Gli errori restano associati alla cella e alla riga interessata, così l’utente individua dove intervenire, corregge il valore e può validarlo nuovamente.',
+        'cycle.detail.validate.group4Title': 'Validazione mirata',
+        'cycle.detail.validate.group4.prefix': 'controlla le righe nuove o modificate, mentre',
+        'cycle.detail.validate.group4.middle': 'può verificare l’intera griglia e restituisce all’applicazione un risultato strutturato.',
+        'cycle.detail.validate.value': 'AMB Grid distingue ciò che è cambiato, ciò che è valido e ciò che viene trasformato per il backend.',
         'cycle.detail.payload.title': 'Dal ciclo CRUD al payload backend',
         'cycle.detail.payload.intro': 'Il flusso di salvataggio conserva la distinzione tra righe nuove, modificate ed eliminate.',
         'cycle.detail.payload.flowTitle': 'getSavePayload()',
@@ -264,7 +265,7 @@ const translations = {
         'cycle.keyboardTitle': 'Keyboard-first editing',
         'cycle.keyboardText': 'Navigation, editing and controls can be managed entirely from the keyboard, across rows, pages and complex editors.',
         'cycle.validateTitle': 'Validate',
-        'cycle.validateText': 'Validators and parsers keep data quality separate from payload formatting.',
+        'cycle.validateText': 'Validation, contextual errors and parsers keep data quality separate from payload representation.',
         'cycle.payloadTitle': 'Payload',
         'cycle.payloadText': 'Inserts, updates and deletes become a structured application payload.',
         'cycle.alignTitle': 'Align',
@@ -298,17 +299,18 @@ const translations = {
         'cycle.detail.keyboard.group4Title': 'Editors and dialogs',
         'cycle.detail.keyboard.group4Text': 'Lookups, calendars and extended-text editors preserve the keyboard flow: Enter opens or confirms, arrow keys navigate where supported, Escape cancels and focus returns consistently to the grid.',
         'cycle.detail.keyboard.value': 'Designed for backoffice and intensive data entry: the entire editing flow can remain on the keyboard.',
-        'cycle.detail.validate.title': 'Validation and transformation stay separate',
-        'cycle.detail.validate.intro': 'AMB Grid keeps data-quality checks distinct from transforming the value destined for the payload.',
+        'cycle.detail.validate.title': 'Data quality and payload representation remain separate',
+        'cycle.detail.validate.intro': 'AMB Grid determines whether data is acceptable without mixing that decision with its transformation for the backend: validators and parsers remain two distinct steps in the same flow.',
         'cycle.detail.validate.group1Title': 'Data rules',
-        'cycle.detail.validate.group1Text': 'Required fields, formats, ranges, allowed values, and application rules verify data quality.',
-        'cycle.detail.validate.group2Title': 'Parser',
-        'cycle.detail.validate.group2Text': 'They normalize the value into the form expected by the backend without replacing validation.',
-        'cycle.detail.validate.group3Title': 'Contextual errors',
-        'cycle.detail.validate.group3Text': 'Errors remain associated with the affected cell and row.',
-        'cycle.detail.validate.group4Title': 'Aware saving',
-        'cycle.detail.validate.group4Text': 'Validation state helps determine which changes are ready for the backend.',
-        'cycle.detail.validate.value': 'The UI clearly distinguishes changed data from data that is actually valid.',
+        'cycle.detail.validate.group1Text': 'Required fields, formats, ranges, allowed values, uniqueness and custom rules verify data quality and can be combined when a check requires multiple conditions.',
+        'cycle.detail.validate.group2Title': 'Separate parsers',
+        'cycle.detail.validate.group2Text': 'Parsers normalize values into the representation expected by the payload, but they do not decide whether the data is valid and do not replace application rules.',
+        'cycle.detail.validate.group3Title': 'Errors in context',
+        'cycle.detail.validate.group3Text': 'Errors remain associated with the affected cell and row, so users can see where to intervene, correct the value and validate it again.',
+        'cycle.detail.validate.group4Title': 'Targeted validation',
+        'cycle.detail.validate.group4.prefix': 'checks new or modified rows, while',
+        'cycle.detail.validate.group4.middle': 'can validate the entire grid and returns a structured result to the application.',
+        'cycle.detail.validate.value': 'AMB Grid distinguishes what changed, what is valid and what is transformed for the backend.',
         'cycle.detail.payload.title': 'From CRUD cycle to backend payload',
         'cycle.detail.payload.intro': 'The save flow preserves the distinction between new, modified, and deleted rows.',
         'cycle.detail.payload.flowTitle': 'getSavePayload()',
@@ -462,22 +464,22 @@ const cycleDetailBodies = {
         <div class="demo-cycle-detail__groups">
             <div>
                 <h4 data-i18n="cycle.detail.validate.group1Title">Regole sul dato</h4>
-                <p data-i18n="cycle.detail.validate.group1Text">Required, formati, range, valori ammessi e regole applicative verificano la qualità del dato.</p>
+                <p data-i18n="cycle.detail.validate.group1Text">Required, formati, range, valori ammessi, unicità e regole personalizzate verificano la qualità del dato e possono essere combinate quando il controllo richiede più condizioni.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.validate.group2Title">Parser</h4>
-                <p data-i18n="cycle.detail.validate.group2Text">Normalizzano il valore nella forma prevista dal backend senza sostituire la validazione.</p>
+                <h4 data-i18n="cycle.detail.validate.group2Title">Parser separati</h4>
+                <p data-i18n="cycle.detail.validate.group2Text">I parser normalizzano il valore nella forma prevista dal payload, ma non decidono se il dato è valido e non sostituiscono le regole applicative.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.validate.group3Title">Errori contestuali</h4>
-                <p data-i18n="cycle.detail.validate.group3Text">Gli errori restano associati alla cella e alla riga interessata.</p>
+                <h4 data-i18n="cycle.detail.validate.group3Title">Errori nel contesto</h4>
+                <p data-i18n="cycle.detail.validate.group3Text">Gli errori restano associati alla cella e alla riga interessata, così l’utente individua dove intervenire, corregge il valore e può validarlo nuovamente.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.validate.group4Title">Salvataggio consapevole</h4>
-                <p data-i18n="cycle.detail.validate.group4Text">Lo stato di validità determina quali modifiche sono pronte per il backend.</p>
+                <h4 data-i18n="cycle.detail.validate.group4Title">Validazione mirata</h4>
+                <p><code>validateChanges()</code> <span data-i18n="cycle.detail.validate.group4.prefix">controlla le righe nuove o modificate, mentre</span> <code>validate()</code> <span data-i18n="cycle.detail.validate.group4.middle">può verificare l’intera griglia e restituisce all’applicazione un risultato strutturato.</span></p>
             </div>
         </div>
-        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.validate.value">La UI distingue chiaramente un dato modificato da un dato effettivamente valido.</p>`,
+        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.validate.value">AMB Grid distingue ciò che è cambiato, ciò che è valido e ciò che viene trasformato per il backend.</p>`,
     payload: `
         <div class="demo-cycle-detail__payload-flow">
             <div class="demo-cycle-detail__payload-states"><span data-i18n="cycle.detail.payload.new">new</span><span data-i18n="cycle.detail.payload.modified">modified</span><span data-i18n="cycle.detail.payload.deleted">deleted</span></div>
@@ -824,7 +826,7 @@ const renderShell = selectedId => {
                             ${demoIcon('validation', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.validateTitle">Validate</strong>
                         </span>
-                        <p data-i18n="cycle.validateText">Validatori e parser separano qualità del dato e trasformazione del payload.</p>
+                        <p data-i18n="cycle.validateText">Validazione, errori contestuali e parser mantengono separate qualità del dato e forma del payload.</p>
                         <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="payload">

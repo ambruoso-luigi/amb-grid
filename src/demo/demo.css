@@ -787,6 +787,13 @@ a {
     margin-bottom: 26px;
 }
 
+.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__intro {
+    color: #40566f;
+    font-size: 15px;
+    line-height: 1.65;
+    margin-bottom: 26px;
+}
+
 .demo-cycle-detail__groups {
     display: grid;
     gap: 24px;
@@ -826,6 +833,19 @@ a {
     margin-bottom: 5px;
 }
 
+.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__groups {
+    gap: 26px;
+}
+
+.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__groups h4 {
+    color: var(--cycle-accent);
+    font-size: 14px;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+    line-height: 1.35;
+    margin-bottom: 5px;
+}
+
 .demo-cycle-detail[data-cycle-accent="edit"] .demo-cycle-detail__groups p {
     color: #40566f;
     line-height: 1.64;
@@ -834,6 +854,18 @@ a {
 .demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__groups p {
     color: #40566f;
     line-height: 1.64;
+}
+
+.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__groups p {
+    color: #40566f;
+    line-height: 1.64;
+}
+
+.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__groups code {
+    color: var(--cycle-accent);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.94em;
+    font-weight: 700;
 }
 
 .demo-cycle-detail__keycaps {
@@ -940,6 +972,13 @@ a {
 }
 
 .demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__value {
+    color: var(--amb-site-navy);
+    font-weight: 600;
+    line-height: 1.65;
+    margin-top: 28px;
+}
+
+.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__value {
     color: var(--amb-site-navy);
     font-weight: 600;
     line-height: 1.65;
