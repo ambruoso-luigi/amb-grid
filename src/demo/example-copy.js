@@ -189,7 +189,7 @@ export const publicExampleTranslations = {
         'examples.multifieldLookup.warningText': 'This dataset is provided for demonstration purposes only. It may be incomplete, outdated, or inaccurate. Do not use it as an official source for production systems.',
         'examples.rowStates.title': 'Row states',
         'examples.rowStates.description': 'Row states, rollback, delete, and technical reports.',
-        'examples.rowStates.intro': 'Use the toolbar and delete column to follow each row through its application lifecycle.',
+        'examples.rowStates.intro': 'Use the toolbar and row action column to follow each row through its application lifecycle.',
         'examples.rowStates.detailsTitle': 'How row states work',
         'examples.rowStates.point1Title': 'Lifecycle',
         'examples.rowStates.detail1': 'clean is unchanged, new was added locally, and modified differs from its original data.',

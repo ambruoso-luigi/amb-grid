@@ -511,7 +511,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * `paginationAddRow` to `'table'` unless explicitly provided, so
  * `grid.addRow(...)` appends to the whole grid, uses the underlying engine row
  * component to open the page containing the new row when possible, and attempts
- * to focus the first editable visible data cell. Action/delete columns are not
+ * to focus the first editable visible data cell. Action columns are not
  * candidates for automatic focus.
  *
  * @param {object} options - AMB Grid options, including supported internal-engine configuration.
@@ -585,12 +585,17 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * grid.destroy();
  */
 export function createTable(options = {}) {
+    if (Object.prototype.hasOwnProperty.call(options, 'deleteColumn')) {
+        throw new TypeError(
+            'AMB.table: `deleteColumn` was renamed to `rowActionColumn`.'
+        );
+    }
+
     const {
         selector,
         columns,
         messages,
         rowActionColumn,
-        deleteColumn: _legacyDeleteColumn,
         selectionColumn,
         search,
         toolbar,

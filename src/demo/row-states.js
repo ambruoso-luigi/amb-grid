@@ -39,7 +39,7 @@ const buildStateReport = report => [
     '',
     'Use Add row to create a new row.',
     'Edit Item, Category, Owner, or Note to create a modified row.',
-    'Use the delete column to mark an existing row as deleted.',
+    'Use the row action column to mark an existing row as deleted.',
     'Use Save to confirm valid changes and mark them as saved.',
     'Use Create error to modify two rows and attach demo errors.'
 ];
@@ -73,7 +73,7 @@ export default function rowStates(app) {
 
     app.innerHTML = `
         <h2 data-i18n="examples.rowStates.title">Row states</h2>
-        <p class="demo-note" data-i18n="examples.rowStates.intro">Use the CRUD toolbar and delete column to explore how AMB Grid tracks each row through its lifecycle.</p>
+        <p class="demo-note" data-i18n="examples.rowStates.intro">Use the CRUD toolbar and row action column to explore how AMB Grid tracks each row through its lifecycle.</p>
         ${createDemoColumnGuide({
             summary: 'Row states behavior',
             summaryKey: 'examples.rowStates.detailsTitle',

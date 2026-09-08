@@ -206,6 +206,27 @@ const clearCrudSetupCalls = crud => {
 };
 
 describe('AMB table controller localization API', () => {
+    test('rejects the removed deleteColumn row action configuration before creating the grid', () => {
+        const instancesBefore = tabulatorMock.instances.length;
+        let thrown;
+
+        try {
+            createTable({
+                selector: '#legacy-grid',
+                deleteColumn: {
+                    enabled: true
+                }
+            });
+        } catch (error) {
+            thrown = error;
+        }
+
+        expect(thrown).toBeInstanceOf(TypeError);
+        expect(thrown.message).toMatch(/deleteColumn/);
+        expect(thrown.message).toMatch(/rowActionColumn/);
+        expect(tabulatorMock.instances).toHaveLength(instancesBefore);
+    });
+
     test('exposes flat localization methods without changing AMB messages or grid state', () => {
         const harness = createDocumentHarness();
 
@@ -254,6 +275,9 @@ describe('AMB table controller localization API', () => {
             const crud = crudMock.instances[0];
 
             expect(controller.table).toBe(table);
+            expect(table.options.columns).toContainEqual(expect.objectContaining({
+                _ambManagedColumn: 'rowAction'
+            }));
             expect(typeof controller.setLocale).toBe('function');
             expect(typeof controller.getLocale).toBe('function');
             expect(typeof controller.getLang).toBe('function');

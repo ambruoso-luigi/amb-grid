@@ -131,7 +131,7 @@ const clickButton = button => {
     });
 };
 
-describe('delete column accessibility', () => {
+describe('row action column accessibility', () => {
     const originalDocument = globalThis.document;
 
     beforeEach(() => {
@@ -170,7 +170,7 @@ describe('delete column accessibility', () => {
         expect(button.tabIndex).toBe(0);
     });
 
-    test('marks the delete column as an AMB interactive navigation target', () => {
+    test('marks the row action column as an AMB interactive navigation target', () => {
         const controller = createRowActionColumn(
             {},
             () => createCrud(),
@@ -268,7 +268,7 @@ describe('delete column accessibility', () => {
         expect(button.querySelector('b')).toBeNull();
     });
 
-    test('AMB navigation edits the delete cell instead of skipping the action column', async () => {
+    test('AMB navigation edits the row action cell instead of skipping it', async () => {
         const controller = createRowActionColumn(
             {},
             () => createCrud(),
@@ -341,7 +341,7 @@ describe('delete column accessibility', () => {
         expect(crud.rollbackRow).not.toHaveBeenCalled();
     });
 
-    test('AMB navigation skips the delete cell when the current row has no available action', async () => {
+    test('AMB navigation skips the row action cell when it has no available action', async () => {
         const controller = createRowActionColumn(
             {
                 actions: {

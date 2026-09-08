@@ -129,7 +129,7 @@ describe('Public demo column guides', () => {
 });
 
 describe('Public Column calculations interactions', () => {
-    test('uses the standard Add toolbar and delete column with a valid editable row', () => {
+    test('uses the standard Add toolbar and row action column with a valid editable row', () => {
         const source = read('src/demo/column-calculations.js');
 
         expect(source).toContain("buttons: ['add']");

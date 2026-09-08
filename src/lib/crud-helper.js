@@ -2086,7 +2086,7 @@ export class CrudHelper {
     /**
      * Add a new row, mark it as inserted, reveal it, and focus the first editable data cell.
      * With pagination, AMB Grid uses the managed row component to reach the page
-     * containing the new row when possible. Action/delete columns are not
+     * containing the new row when possible. Action columns are not
      * candidates for automatic focus.
      *
      * @param {object} data - Row data to insert.

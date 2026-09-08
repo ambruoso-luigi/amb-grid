@@ -142,7 +142,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('setTimeout');
     });
 
-    test('uses the standard delete column as the first grid column', () => {
+    test('uses the standard row action column as the first grid column', () => {
         const tableColumnsSource = source.slice(source.indexOf('const tableOptions = {'));
         const rowActionColumnIndex = tableColumnsSource.indexOf('rowActionColumn: {');
         const itemCodeIndex = tableColumnsSource.indexOf("title: 'Item code'");

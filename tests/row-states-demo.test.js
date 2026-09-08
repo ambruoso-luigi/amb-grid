@@ -20,7 +20,7 @@ describe('Row states demo', () => {
         expect(source).not.toContain('id="state-save"');
     });
 
-    test('uses the standard delete column and an expanded sample dataset', () => {
+    test('uses the standard row action column and an expanded sample dataset', () => {
         expect(source).toContain('rowActionColumn: {');
         expect(source).toContain('enabled: true');
         expect(source.match(/\{ id: \d+, item:/g)).toHaveLength(10);
@@ -69,7 +69,7 @@ describe('Row states demo', () => {
         expect(source).toContain('buildErrorDetails(report)');
         expect(source).toContain('Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.');
         expect(
-            source.match(/cssClass: 'amb-cell--readonly-passive amb-cell--derived'/g)
+            source.match(/cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'/g)
         ).toHaveLength(5);
     });
 
