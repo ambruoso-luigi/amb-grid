@@ -66,7 +66,7 @@ const buildReadableReport = ({ validateResult, stateReport, validationScope }) =
     });
 
     lines.push('');
-    lines.push('Use the JSON tab to inspect the raw validation result and CrudHelper state report for integration/debugging.');
+    lines.push('Use the JSON tab to inspect the raw validation result and AMB Grid state report for integration/debugging.');
 
     return lines.join('\n');
 };
@@ -293,9 +293,10 @@ export default function validation(app) {
                 minWidth: 95,
                 widthGrow: 0.8,
                 editor: AMB.editors.text({ trim: true, maxLength: 20 }),
-                required: true,
-                requiredMessage: 'Alias is required',
                 validation: {
+                    required: {
+                        message: 'Alias is required'
+                    },
                     minLength: {
                         value: 3,
                         message: 'Alias must be at least 3 characters'
@@ -366,22 +367,10 @@ export default function validation(app) {
                 minWidth: 130,
                 widthGrow: 1,
                 editor: AMB.editors.text({ uppercase: true, trim: true, maxLength: 16 }),
-                validation: {
-                    anyOf: {
-                        message: 'Enter a valid Codice Fiscale or Partita IVA',
-                        validators: [
-                            {
-                                type: 'codiceFiscale',
-                                message: 'Invalid Codice Fiscale'
-                            },
-                            {
-                                type: 'pattern',
-                                regex: /^[0-9]{11}$/,
-                                message: 'Invalid Partita IVA'
-                            }
-                        ]
-                    }
-                }
+                validator: AMB.validators.anyOf([
+                    AMB.validators.codiceFiscale('Invalid Codice Fiscale'),
+                    AMB.validators.pattern(/^[0-9]{11}$/, 'Invalid Partita IVA')
+                ], 'Enter a valid Codice Fiscale or Partita IVA')
             },
             {
                 title: 'Italian IBAN',
@@ -414,7 +403,6 @@ export default function validation(app) {
             }
         ]
     });
-    const { crud } = demo;
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
 
@@ -422,7 +410,7 @@ export default function validation(app) {
         const details = {
             validateResult: null,
             validationScope: 'state',
-            stateReport: crud.getStateReport()
+            stateReport: demo.getStateReport()
         };
 
         reportDialog.open({
@@ -441,11 +429,11 @@ export default function validation(app) {
         demo.feedback.clear();
 
         anomalyPatches.forEach(({ id, ...patch }) => {
-            crud.updateRow(id, patch);
+            demo.updateRow(id, patch);
         });
 
         await new Promise(resolve => window.setTimeout(resolve, 0));
-        crud.validateChanges();
+        demo.validateChanges();
         demo.feedback.show({
             type: 'warning',
             message: 'Anomalies created. Check highlighted cells or open the report.'
@@ -458,8 +446,8 @@ export default function validation(app) {
 
     async function handleResetData() {
         demo.feedback.clear();
-        crud.getStateReport().rows.forEach(row => {
-            crud.rollbackRow(row.key);
+        demo.getStateReport().rows.forEach(row => {
+            demo.rollbackRow(row.key);
         });
 
         await new Promise(resolve => window.setTimeout(resolve, 0));

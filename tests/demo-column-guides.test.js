@@ -159,3 +159,19 @@ describe('Public Column calculations interactions', () => {
         expect(libraryCss).not.toContain('demo-calculation-summary');
     });
 });
+
+describe('Public Validation demo controller usage', () => {
+    test('uses canonical declaration and public controller methods', () => {
+        const source = read('src/demo/validation.js');
+
+        expect(source).not.toContain('const { crud } = demo');
+        expect(source).not.toContain('crud.');
+        expect(source).toContain('demo.updateRow(id, patch)');
+        expect(source).toContain('demo.validateChanges()');
+        expect(source).toContain('demo.getStateReport()');
+        expect(source).toContain('demo.rollbackRow(row.key)');
+        expect(source).toContain("required: {\n                        message: 'Alias is required'");
+        expect(source).toContain('AMB.validators.anyOf');
+        expect(source).toContain('AMB.validators.custom');
+    });
+});

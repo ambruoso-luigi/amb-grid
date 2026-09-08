@@ -66,7 +66,9 @@ describe('Public Parsers demo integration', () => {
         expect(inputColumn).toContain('cellEdited: handleInputEdited');
         expect(parsedColumn).toContain('editable: false');
         expect(parsedColumn).toContain('formatter: formatParsedValue');
-        expect(source).toContain('demo.crud.updateRowFields(rowData.id, { parsedValue })');
+        expect(source).toContain('demo.updateRow(rowData.id, { parsedValue })');
+        expect(source).not.toContain('demo.crud');
+        expect(source).not.toContain('crud.updateRowFields');
         expect(source).toContain("output.textContent = value === null ? 'null'");
         expect(source).toContain('parsedValue: parseExampleValue(example)');
         expect(source).not.toContain('parsedValue: String(');

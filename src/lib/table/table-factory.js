@@ -517,7 +517,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @param {object} options - AMB Grid options, including supported internal-engine configuration.
  * @param {string|HTMLElement} options.selector - CSS selector or element used to mount the grid.
  * @param {object[]} [options.data] - Initial row data.
- * @param {object[]} [options.columns] - Grid column definitions with optional AMB validation metadata.
+ * @param {object[]} [options.columns] - Grid column definitions. For normal AMB rules, use the recommended `validation` configuration; legacy `required`/`requiredMessage` and direct `validator` composition remain supported.
  * @param {boolean|object} [options.pagination] - Boolean pagination configuration or AMB object-style pagination convenience.
  * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using AMB object-style pagination.
  * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode delegated to the underlying table engine as `paginationMode`.

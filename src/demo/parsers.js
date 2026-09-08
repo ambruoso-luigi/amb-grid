@@ -202,7 +202,7 @@ export default function parsers(app) {
         const parsedValue = parseExampleValue(rowData);
 
         demo.feedback.clear();
-        demo.crud.updateRowFields(rowData.id, { parsedValue });
+        demo.updateRow(rowData.id, { parsedValue });
 
         if (parsedValue === null && !rowData.acceptsNull) {
             const language = document.documentElement.lang === 'en' ? 'en' : 'it';

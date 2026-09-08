@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { validators } from '../src/lib/validators.js';
+import { extractColumnValidators } from '../src/lib/table/validation-extraction.js';
 
 const createRow = data => ({
     getData: () => data
@@ -181,6 +182,85 @@ describe('validators.unique', () => {
             .toBe(true);
         expect(validators.unique().validate('ABC', currentRow.getData(), {}, createHelper([currentRow])))
             .toBe(true);
+    });
+});
+
+describe('validator combinators', () => {
+    test.each([
+        ['anyOf', validators.anyOf],
+        ['allOf', validators.allOf]
+    ])('%s forwards the full validation context to child validators', (name, combine) => {
+        const value = { value: name };
+        const rowData = { row: name };
+        const cell = { cell: name };
+        const helper = { helper: name };
+        const validate = (...args) => args.every((argument, index) => {
+            return argument === [value, rowData, cell, helper][index];
+        });
+
+        expect(combine([{ validate }]).validate(value, rowData, cell, helper)).toBe(true);
+    });
+
+    test.each([
+        ['anyOf', validators.anyOf],
+        ['allOf', validators.allOf]
+    ])('%s keeps unique context-aware', (name, combine) => {
+        const currentRow = createRow({ code: 'ABC' });
+        const duplicateRow = createRow({ code: 'ABC' });
+        const cell = createCell('code', currentRow);
+        const helper = createHelper([currentRow, duplicateRow]);
+
+        expect(combine([
+            validators.unique(),
+            { validate: () => name === 'anyOf' ? false : true }
+        ]).validate('ABC', currentRow.getData(), cell, helper)).toBe(false);
+    });
+
+    test('keeps short-circuit and value-only child validators', () => {
+        const laterValidator = { validate: () => { throw new Error('must not run'); } };
+
+        expect(validators.anyOf([{ validate: value => value === 'ABC' }, laterValidator])
+            .validate('ABC')).toBe(true);
+        expect(validators.allOf([{ validate: () => false }, laterValidator])
+            .validate('ABC')).toBe(false);
+    });
+
+    test.each(['anyOf', 'allOf'])('builds declarative %s children with context-aware unique validation', type => {
+        const currentRow = createRow({ code: 'ABC' });
+        const duplicateRow = createRow({ code: 'ABC' });
+        const cell = createCell('code', currentRow);
+        const helper = createHelper([currentRow, duplicateRow]);
+        const { validators: extractedValidators } = extractColumnValidators([{
+            field: 'code',
+            validation: {
+                [type]: {
+                    validators: [{ type: 'unique' }]
+                }
+            }
+        }]);
+        const [validator] = extractedValidators;
+
+        expect(validator.validate('ABC', currentRow.getData(), cell, helper)).toBe(false);
+    });
+});
+
+describe('validators.pattern', () => {
+    test('keeps global and sticky expressions deterministic without mutating the caller expression', () => {
+        const globalRegex = /^ABC$/g;
+        const stickyRegex = /ABC/y;
+        const globalValidator = validators.pattern(globalRegex);
+        const stickyValidator = validators.pattern(stickyRegex);
+
+        globalRegex.lastIndex = 2;
+        stickyRegex.lastIndex = 1;
+
+        [1, 2, 3].forEach(() => expect(globalValidator.validate('ABC')).toBe(true));
+        [1, 2, 3].forEach(() => expect(globalValidator.validate('X')).toBe(false));
+        [1, 2, 3].forEach(() => expect(stickyValidator.validate('ABC')).toBe(true));
+        [1, 2, 3].forEach(() => expect(stickyValidator.validate('XABC')).toBe(false));
+        expect(validators.pattern(/^ABC$/).validate('ABC')).toBe(true);
+        expect(globalRegex.lastIndex).toBe(2);
+        expect(stickyRegex.lastIndex).toBe(1);
     });
 });
 

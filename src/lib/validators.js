@@ -216,19 +216,28 @@ export const validators = {
     },
 
     /**
-     * Validate non-empty values against a regular expression.
+     * Validate non-empty values against a regular expression. Stateful global
+     * and sticky expressions are evaluated deterministically.
      *
      * @param {RegExp} regex - Pattern to test.
      * @param {string} message - Message shown when the pattern does not match.
      * @returns {{message: string, validate: Function}} Validator object.
      */
     pattern(regex, message) {
+        const statefulRegex = regex.global || regex.sticky
+            ? new RegExp(regex.source, regex.flags)
+            : null;
+
         return {
             message,
             validate: value => {
                 if (isEmptyValue(value)) return true;
 
-                return regex.test(String(value));
+                const validationRegex = statefulRegex || regex;
+
+                if (statefulRegex) validationRegex.lastIndex = 0;
+
+                return validationRegex.test(String(value));
             }
         };
     },
@@ -709,7 +718,8 @@ export const validators = {
     },
 
     /**
-     * Pass when at least one child validator accepts the value.
+     * Pass when at least one child validator accepts the value. Child
+     * validators receive the normal AMB validation context.
      *
      * @param {object[]} validatorsList - Validators to evaluate.
      * @param {string} [message='Value does not match any allowed format'] - Validation message.
@@ -718,7 +728,7 @@ export const validators = {
     anyOf(validatorsList, message = 'Value does not match any allowed format') {
         return {
             message,
-            validate: value => {
+            validate: (value, rowData, cell, helper) => {
                 if (!Array.isArray(validatorsList) || validatorsList.length === 0) {
                     return false;
                 }
@@ -726,14 +736,15 @@ export const validators = {
                 return validatorsList.some(validator => {
                     return validator
                         && typeof validator.validate === 'function'
-                        && validationResultIsValid(validator.validate(value));
+                        && validationResultIsValid(validator.validate(value, rowData, cell, helper));
                 });
             }
         };
     },
 
     /**
-     * Pass only when every child validator accepts the value.
+     * Pass only when every child validator accepts the value. Child
+     * validators receive the normal AMB validation context.
      *
      * @param {object[]} validatorsList - Validators to evaluate.
      * @param {string} [message='Value does not satisfy all validation rules'] - Validation message.
@@ -742,7 +753,7 @@ export const validators = {
     allOf(validatorsList, message = 'Value does not satisfy all validation rules') {
         return {
             message,
-            validate: value => {
+            validate: (value, rowData, cell, helper) => {
                 if (!Array.isArray(validatorsList) || validatorsList.length === 0) {
                     return false;
                 }
@@ -750,7 +761,7 @@ export const validators = {
                 return validatorsList.every(validator => {
                     return validator
                         && typeof validator.validate === 'function'
-                        && validationResultIsValid(validator.validate(value));
+                        && validationResultIsValid(validator.validate(value, rowData, cell, helper));
                 });
             }
         };

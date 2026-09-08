@@ -120,7 +120,11 @@ const grid = AMB.table({
       title: 'Email',
       field: 'email',
       editor: AMB.editors.text(),
-      validator: AMB.validators.email()
+      validation: {
+        email: {
+          message: 'Invalid email address'
+        }
+      }
     }
   ]
 });
@@ -276,6 +280,24 @@ Built-in validation support including:
 * Italian IBAN syntax
 * Static allowed-values validation
 * Custom validators
+
+#### Recommended column validation declaration
+
+Use `validation: { ... }` for ordinary column rules:
+
+```js
+validation: {
+  required: { message: 'Email is required' },
+  email: { message: 'Invalid email address' }
+}
+```
+
+`required` / `requiredMessage` remains a convenience shortcut. Use direct
+`validator: AMB.validators...` for reusable or advanced composition, including
+`AMB.validators.anyOf(...)` and `AMB.validators.allOf(...)`; their child
+validators receive the normal `value`, `rowData`, `cell`, and `helper` context.
+Use `AMB.validators.custom(...)` for application rules not represented by the
+standard declarative rules.
 
 Validator combinators:
 

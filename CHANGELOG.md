@@ -11,6 +11,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Preserved the full AMB validation context for child validators in `anyOf` and `allOf`.
+- Made pattern validation deterministic for global and sticky `RegExp` values.
 - Prevented normal cell interaction from changing row selection when the managed selection column is enabled.
 - Made keyboard-focused large-text cells visibly identifiable while remaining outside edit mode.
 - Preserved the active editor and focus through paginated keyboard navigation, including partial final pages.
@@ -22,6 +24,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Changed
 
+- Documented declarative `validation: { ... }` as the recommended syntax for ordinary column validation, and updated the Parser and Validation demos to use the public table controller rather than direct CRUD-layer access.
 - Renamed the managed row action configuration from `deleteColumn` to `rowActionColumn` (breaking, no compatibility alias); the removed configuration name now fails fast with a migration error. The separate `grid.deleteColumn(...)` controller method for application data columns is unchanged.
 - Extended `Tab` and `Shift+Tab` navigation across local page boundaries with predictable focus exit at absolute boundaries.
 - Changed large-text cells to focus-first activation: `Enter` opens a focus-trapped dialog that restores focus to its source cell after closing.

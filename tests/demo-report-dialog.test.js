@@ -99,11 +99,11 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain('id="action-create-anomalies"');
         expect(source).not.toContain('id="action-show-report"');
         expect(createAnomaliesHandler).not.toContain('reportDialog.open');
-        expect(createAnomaliesHandler).toContain('crud.validateChanges()');
+        expect(createAnomaliesHandler).toContain('demo.validateChanges()');
         expect(createAnomaliesHandler).toContain(
             'Anomalies created. Check highlighted cells or open the report.'
         );
-        expect(source).toContain('crud.rollbackRow(row.key)');
+        expect(source).toContain('demo.rollbackRow(row.key)');
         expect(source).toContain("message: 'Validation demo data reset.'");
     });
 
