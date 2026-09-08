@@ -83,7 +83,7 @@ const translations = {
         'cycle.validateTitle': 'Validate',
         'cycle.validateText': 'Validazione, errori contestuali e parser mantengono separate qualità del dato e forma del payload.',
         'cycle.payloadTitle': 'Payload',
-        'cycle.payloadText': 'Inserimenti, modifiche ed eliminazioni diventano un payload strutturato.',
+        'cycle.payloadText': 'Nuove, modificate ed eliminate restano distinte fino a un payload già pronto per il backend.',
         'cycle.alignTitle': 'Align',
         'cycle.alignText': 'Dopo il salvataggio dati, ID e stati vengono riallineati alla risposta backend.',
         'cycle.detail.edit.title': 'Editing pensato per dati gestionali',
@@ -127,22 +127,17 @@ const translations = {
         'cycle.detail.validate.group4.prefix': 'controlla le righe nuove o modificate, mentre',
         'cycle.detail.validate.group4.middle': 'può verificare l’intera griglia e restituisce all’applicazione un risultato strutturato.',
         'cycle.detail.validate.value': 'AMB Grid distingue ciò che è cambiato, ciò che è valido e ciò che viene trasformato per il backend.',
-        'cycle.detail.payload.title': 'Dal ciclo CRUD al payload backend',
-        'cycle.detail.payload.intro': 'Il flusso di salvataggio conserva la distinzione tra righe nuove, modificate ed eliminate.',
-        'cycle.detail.payload.flowTitle': 'getSavePayload()',
-        'cycle.detail.payload.flowResult': 'payload pronto per il backend',
-        'cycle.detail.payload.new': 'inserted',
-        'cycle.detail.payload.modified': 'updated',
-        'cycle.detail.payload.deleted': 'deleted',
+        'cycle.detail.payload.title': 'Dal ciclo CRUD a un payload pronto per il backend',
+        'cycle.detail.payload.intro': 'AMB Grid raccoglie le modifiche della griglia mantenendo separate righe inserite, aggiornate ed eliminate, così l’applicazione riceve un payload già organizzato per il salvataggio.',
         'cycle.detail.payload.group1Title': 'Inserite',
-        'cycle.detail.payload.group1Text': 'Le nuove righe vengono raccolte separatamente.',
+        'cycle.detail.payload.group1Text': 'Le nuove righe vengono raccolte separatamente, così il backend può riconoscere con chiarezza i record da creare.',
         'cycle.detail.payload.group2Title': 'Aggiornate',
-        'cycle.detail.payload.group2Text': 'I record realmente modificati vengono distinti dai dati rimasti invariati.',
+        'cycle.detail.payload.group2Text': 'Solo i record realmente modificati vengono inclusi come aggiornamenti, distinguendoli dai dati rimasti invariati.',
         'cycle.detail.payload.group3Title': 'Eliminate',
-        'cycle.detail.payload.group3Text': 'Le cancellazioni fanno parte dello stesso ciclo senza gestione esterna parallela.',
-        'cycle.detail.payload.group4Title': 'Validità',
-        'cycle.detail.payload.group4Text': 'Le modifiche non valide restano distinte da quelle pronte per il salvataggio.',
-        'cycle.detail.payload.value': 'L’applicazione riceve una struttura già organizzata per comunicare con il backend.',
+        'cycle.detail.payload.group3Text': 'Le cancellazioni fanno parte dello stesso flusso CRUD e vengono riportate nel payload senza richiedere una gestione parallela esterna.',
+        'cycle.detail.payload.group4Title': 'Payload applicativo',
+        'cycle.detail.payload.group4.prefix': 'restituisce una struttura già pronta per il backend, mantenendo la distinzione tra operazioni e lasciando separate le modifiche non ancora salvabili.',
+        'cycle.detail.payload.value': 'L’applicazione non deve ricostruire manualmente le differenze: AMB Grid consegna un payload coerente con il ciclo CRUD.',
         'cycle.detail.align.title': 'Riallineamento dopo il salvataggio',
         'cycle.detail.align.intro': 'Dopo la conferma del backend, la griglia può riallineare dati applicativi e stato locale.',
         'cycle.detail.align.group1Title': 'ID backend',
@@ -267,7 +262,7 @@ const translations = {
         'cycle.validateTitle': 'Validate',
         'cycle.validateText': 'Validation, contextual errors and parsers keep data quality separate from payload representation.',
         'cycle.payloadTitle': 'Payload',
-        'cycle.payloadText': 'Inserts, updates and deletes become a structured application payload.',
+        'cycle.payloadText': 'New, updated and deleted rows remain distinct through to a backend-ready payload.',
         'cycle.alignTitle': 'Align',
         'cycle.alignText': 'After save, data, IDs and states align with the backend response.',
         'cycle.detail.edit.title': 'Editing designed for business data',
@@ -311,22 +306,17 @@ const translations = {
         'cycle.detail.validate.group4.prefix': 'checks new or modified rows, while',
         'cycle.detail.validate.group4.middle': 'can validate the entire grid and returns a structured result to the application.',
         'cycle.detail.validate.value': 'AMB Grid distinguishes what changed, what is valid and what is transformed for the backend.',
-        'cycle.detail.payload.title': 'From CRUD cycle to backend payload',
-        'cycle.detail.payload.intro': 'The save flow preserves the distinction between new, modified, and deleted rows.',
-        'cycle.detail.payload.flowTitle': 'getSavePayload()',
-        'cycle.detail.payload.flowResult': 'payload ready for the backend',
-        'cycle.detail.payload.new': 'inserted',
-        'cycle.detail.payload.modified': 'updated',
-        'cycle.detail.payload.deleted': 'deleted',
+        'cycle.detail.payload.title': 'From the CRUD lifecycle to a backend-ready payload',
+        'cycle.detail.payload.intro': 'AMB Grid collects grid changes while keeping inserted, updated and deleted rows separate, so the application receives a payload already organized for saving.',
         'cycle.detail.payload.group1Title': 'Inserted',
-        'cycle.detail.payload.group1Text': 'New rows are collected separately.',
+        'cycle.detail.payload.group1Text': 'New rows are collected separately, allowing the backend to clearly identify the records that need to be created.',
         'cycle.detail.payload.group2Title': 'Updated',
-        'cycle.detail.payload.group2Text': 'Records that really changed stay distinct from unchanged data.',
+        'cycle.detail.payload.group2Text': 'Only records that actually changed are included as updates, keeping them separate from data that remained unchanged.',
         'cycle.detail.payload.group3Title': 'Deleted',
-        'cycle.detail.payload.group3Text': 'Deletes belong to the same cycle with no parallel external handling.',
-        'cycle.detail.payload.group4Title': 'Validity',
-        'cycle.detail.payload.group4Text': 'Invalid changes remain distinct from those ready to save.',
-        'cycle.detail.payload.value': 'The application receives a structure already organized for backend communication.',
+        'cycle.detail.payload.group3Text': 'Deletions remain part of the same CRUD flow and are represented in the payload without requiring a separate external process.',
+        'cycle.detail.payload.group4Title': 'Application payload',
+        'cycle.detail.payload.group4.prefix': 'returns a backend-ready structure that preserves the distinction between operations while keeping changes that are not yet savable separate.',
+        'cycle.detail.payload.value': 'The application does not need to reconstruct changes manually: AMB Grid provides a payload that remains consistent with the CRUD lifecycle.',
         'cycle.detail.align.title': 'Realignment after saving',
         'cycle.detail.align.intro': 'After backend confirmation, the grid can realign application data and local state.',
         'cycle.detail.align.group1Title': 'Backend ID',
@@ -481,20 +471,13 @@ const cycleDetailBodies = {
         </div>
         <p class="demo-cycle-detail__value" data-i18n="cycle.detail.validate.value">AMB Grid distingue ciò che è cambiato, ciò che è valido e ciò che viene trasformato per il backend.</p>`,
     payload: `
-        <div class="demo-cycle-detail__payload-flow">
-            <div class="demo-cycle-detail__payload-states"><span data-i18n="cycle.detail.payload.new">new</span><span data-i18n="cycle.detail.payload.modified">modified</span><span data-i18n="cycle.detail.payload.deleted">deleted</span></div>
-            <div class="demo-cycle-detail__payload-arrow" aria-hidden="true">↓</div>
-            <strong data-i18n="cycle.detail.payload.flowTitle">getSavePayload()</strong>
-            <div class="demo-cycle-detail__payload-arrow" aria-hidden="true">↓</div>
-            <span data-i18n="cycle.detail.payload.flowResult">payload pronto per il backend</span>
-        </div>
         <div class="demo-cycle-detail__groups">
-            <div><h4 data-i18n="cycle.detail.payload.group1Title">Inserite</h4><p data-i18n="cycle.detail.payload.group1Text">Le nuove righe vengono raccolte separatamente.</p></div>
-            <div><h4 data-i18n="cycle.detail.payload.group2Title">Aggiornate</h4><p data-i18n="cycle.detail.payload.group2Text">I record realmente modificati vengono distinti dai dati rimasti invariati.</p></div>
-            <div><h4 data-i18n="cycle.detail.payload.group3Title">Eliminate</h4><p data-i18n="cycle.detail.payload.group3Text">Le cancellazioni fanno parte dello stesso ciclo senza gestione esterna parallela.</p></div>
-            <div><h4 data-i18n="cycle.detail.payload.group4Title">Validità</h4><p data-i18n="cycle.detail.payload.group4Text">Le modifiche non valide restano distinte da quelle pronte per il salvataggio.</p></div>
+            <div><h4 data-i18n="cycle.detail.payload.group1Title">Inserite</h4><p data-i18n="cycle.detail.payload.group1Text">Le nuove righe vengono raccolte separatamente, così il backend può riconoscere con chiarezza i record da creare.</p></div>
+            <div><h4 data-i18n="cycle.detail.payload.group2Title">Aggiornate</h4><p data-i18n="cycle.detail.payload.group2Text">Solo i record realmente modificati vengono inclusi come aggiornamenti, distinguendoli dai dati rimasti invariati.</p></div>
+            <div><h4 data-i18n="cycle.detail.payload.group3Title">Eliminate</h4><p data-i18n="cycle.detail.payload.group3Text">Le cancellazioni fanno parte dello stesso flusso CRUD e vengono riportate nel payload senza richiedere una gestione parallela esterna.</p></div>
+            <div><h4 data-i18n="cycle.detail.payload.group4Title">Payload applicativo</h4><p><code>getSavePayload()</code> <span data-i18n="cycle.detail.payload.group4.prefix">restituisce una struttura già pronta per il backend, mantenendo la distinzione tra operazioni e lasciando separate le modifiche non ancora salvabili.</span></p></div>
         </div>
-        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.payload.value">L’applicazione riceve una struttura già organizzata per comunicare con il backend.</p>`,
+        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.payload.value">L’applicazione non deve ricostruire manualmente le differenze: AMB Grid consegna un payload coerente con il ciclo CRUD.</p>`,
     align: `
         <div class="demo-cycle-detail__groups">
             <div>
@@ -835,7 +818,7 @@ const renderShell = selectedId => {
                             ${demoIcon('payload', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.payloadTitle">Payload</strong>
                         </span>
-                        <p data-i18n="cycle.payloadText">Le modifiche diventano un payload leggibile e pronto per il backend.</p>
+                        <p data-i18n="cycle.payloadText">Nuove, modificate ed eliminate restano distinte fino a un payload già pronto per il backend.</p>
                         <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                     <article class="demo-flow-card" role="button" tabindex="0" aria-selected="false" aria-expanded="false" aria-controls="cycle-detail" data-cycle-detail="align">

@@ -459,5 +459,11 @@ describe('demo site navigation', () => {
         expect(main).toContain('<code>validateChanges()</code>');
         expect(main).toContain('<code>validate()</code>');
         expect(css).toContain('.demo-cycle-detail[data-cycle-accent="validate"] .demo-cycle-detail__groups h4');
+        expect(main).toContain("'cycle.payloadText': 'Nuove, modificate ed eliminate restano distinte fino a un payload già pronto per il backend.'");
+        expect(main).toContain("'cycle.detail.payload.title': 'Dal ciclo CRUD a un payload pronto per il backend'");
+        expect(main).toContain('<code>getSavePayload()</code>');
+        expect(main).not.toContain('demo-cycle-detail__payload-flow');
+        expect(css).toContain('--flow-accent: #0e7490;');
+        expect(css).toContain('--cycle-accent: #0e7490;');
     });
 });
