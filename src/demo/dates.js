@@ -165,7 +165,7 @@ export default function dates(app) {
         data: dateData.map(row => ({ ...row })),
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', minWidth: 58, widthGrow: 0.4 },
+            { title: 'ID', field: 'id', minWidth: 58, widthGrow: 0.4, cssClass: 'demo-cell--readonly' },
             { title: 'Event', field: 'eventName', minWidth: 135, widthGrow: 1.35, editor: AMB.editors.text({ trim: true, maxLength: 80 }) },
             {
                 title: 'Manual date', field: 'manualDate', minWidth: 115, widthGrow: 0.9,

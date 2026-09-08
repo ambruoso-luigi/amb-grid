@@ -286,7 +286,7 @@ export default function validation(app) {
         data: validationData,
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.45 },
+            { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.45, cssClass: 'demo-cell--readonly' },
             {
                 title: 'Alias',
                 field: 'alias',

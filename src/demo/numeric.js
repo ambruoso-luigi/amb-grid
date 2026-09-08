@@ -16,7 +16,7 @@ export default function numeric(app) {
                 </ul>
             </div>
         </details>
-        <div id="numeric-table"></div>
+        <div id="numeric-table" class="demo-business-grid"></div>
     `;
 
     return AMB.table({
@@ -30,7 +30,7 @@ export default function numeric(app) {
         ],
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', width: 80 },
+            { title: 'ID', field: 'id', width: 80, cssClass: 'demo-cell--readonly' },
             {
                 title: 'Count',
                 field: 'count',

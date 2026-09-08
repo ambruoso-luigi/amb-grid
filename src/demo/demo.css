@@ -3162,14 +3162,14 @@ a {
     outline: none;
 }
 
-#municipality-table .tabulator-cell.amb-cell--readonly-passive.amb-cell--derived {
+.demo-business-grid .demo-cell--readonly {
     background-color: var(--amb-site-blue-soft);
     box-shadow: inset 3px 0 0 var(--amb-site-border-strong);
     color: var(--amb-site-muted);
     cursor: default;
 }
 
-#municipality-table .tabulator-cell.amb-cell--readonly-passive.amb-cell--derived:hover {
+.demo-business-grid .demo-cell--readonly:hover {
     background-color: var(--amb-site-blue-soft);
     box-shadow: inset 3px 0 0 var(--amb-site-border-strong);
     color: var(--amb-site-muted);

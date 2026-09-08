@@ -323,23 +323,28 @@ export default async function multifieldLookup(app) {
             }),
             municipalityMultifieldLookup.dependentColumn('province', {
                 minWidth: 88,
-                widthGrow: 0.65
+                widthGrow: 0.65,
+                cssClass: 'demo-cell--readonly'
             }),
             municipalityMultifieldLookup.dependentColumn('region', {
                 minWidth: 105,
-                widthGrow: 1
+                widthGrow: 1,
+                cssClass: 'demo-cell--readonly'
             }),
             municipalityMultifieldLookup.dependentColumn('postalCode', {
                 minWidth: 105,
-                widthGrow: 0.8
+                widthGrow: 0.8,
+                cssClass: 'demo-cell--readonly'
             }),
             municipalityMultifieldLookup.dependentColumn('istatCode', {
                 minWidth: 105,
-                widthGrow: 0.8
+                widthGrow: 0.8,
+                cssClass: 'demo-cell--readonly'
             }),
             municipalityMultifieldLookup.dependentColumn('cadastralCode', {
                 minWidth: 125,
-                widthGrow: 0.95
+                widthGrow: 0.95,
+                cssClass: 'demo-cell--readonly'
             })
         ]
     });
