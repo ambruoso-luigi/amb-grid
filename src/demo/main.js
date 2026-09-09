@@ -59,7 +59,7 @@ const translations = {
         'frameworks.javascript.status': 'Apri guida JavaScript',
         'frameworks.react.badge': 'Lifecycle integration',
         'frameworks.react.description': 'Esempio concettuale con mount e grid.destroy() nel cleanup.',
-        'frameworks.react.status': 'Planned full demo',
+        'frameworks.react.status': 'Apri demo React',
         'frameworks.vue.badge': 'Composition API example',
         'frameworks.vue.description': 'Esempio concettuale con onMounted e onUnmounted.',
         'frameworks.vue.status': 'Snippet planned',
@@ -242,7 +242,7 @@ const translations = {
         'frameworks.javascript.status': 'Open JavaScript guide',
         'frameworks.react.badge': 'Lifecycle integration',
         'frameworks.react.description': 'Conceptual example with mount and grid.destroy() in cleanup.',
-        'frameworks.react.status': 'Planned full demo',
+        'frameworks.react.status': 'Open React demo',
         'frameworks.vue.badge': 'Composition API example',
         'frameworks.vue.description': 'Conceptual example with onMounted and onUnmounted.',
         'frameworks.vue.status': 'Snippet planned',
@@ -406,10 +406,12 @@ const translations = {
 const root = document.querySelector('#app');
 let currentMainDemo = null;
 let currentFeatureExample = null;
+let currentReactDemoUnmount = null;
 let currentLang = 'it';
 let currentView = null;
 let featureLoadToken = 0;
 let mainDemoLoadToken = 0;
+let reactDemoLoadToken = 0;
 
 const getText = key => translations[currentLang][key] || translations.it[key] || key;
 
@@ -607,10 +609,15 @@ const destroyDemo = demo => {
 const destroyCurrentDemos = () => {
     destroyDemo(currentMainDemo);
     destroyDemo(currentFeatureExample);
+    if (typeof currentReactDemoUnmount === 'function') {
+        currentReactDemoUnmount();
+    }
     currentMainDemo = null;
     currentFeatureExample = null;
+    currentReactDemoUnmount = null;
     featureLoadToken += 1;
     mainDemoLoadToken += 1;
+    reactDemoLoadToken += 1;
 };
 
 const bindLanguageButtons = () => {
@@ -750,7 +757,7 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--react demo-framework-card--integration card bg-base-100 border shadow-sm transition" href="#feature-examples">
+                    <a class="demo-framework-card demo-framework-card--react demo-framework-card--ready card bg-base-100 border shadow-sm transition" href="#getting-started-react">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('react')}
                         </span>
@@ -758,7 +765,7 @@ const renderShell = selectedId => {
                             <span class="demo-framework-card__name">React</span>
                             <span class="demo-framework-card__badge demo-framework-card__badge--integration" data-i18n="frameworks.react.badge">Lifecycle integration</span>
                             <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Esempio concettuale con mount e grid.destroy() nel cleanup.</span>
-                            <span class="demo-framework-card__status" data-i18n="frameworks.react.status">Planned full demo</span>
+                            <span class="demo-framework-card__status demo-framework-card__status--ready" data-i18n="frameworks.react.status">Apri demo React</span>
                         </span>
                         <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
                     </a>
@@ -963,6 +970,35 @@ const renderGuide = () => {
     window.scrollTo(0, 0);
 };
 
+const renderReactGuide = async () => {
+    if (currentView === 'react') return;
+
+    destroyCurrentDemos();
+    currentView = 'react';
+    const token = reactDemoLoadToken + 1;
+
+    reactDemoLoadToken = token;
+    root.innerHTML = '<div id="react-demo-root"></div>';
+    window.scrollTo(0, 0);
+
+    const { mountReactDemo } = await import('../../examples/react-demo/src/mount.tsx');
+
+    if (token !== reactDemoLoadToken || currentView !== 'react') return;
+
+    const container = root.querySelector('#react-demo-root');
+
+    if (!container) return;
+
+    const unmount = mountReactDemo(container);
+
+    if (token !== reactDemoLoadToken || currentView !== 'react') {
+        unmount();
+        return;
+    }
+
+    currentReactDemoUnmount = unmount;
+};
+
 const renderHome = () => {
     if (currentView !== 'home') {
         destroyCurrentDemos();
@@ -981,6 +1017,11 @@ const renderHome = () => {
 const renderRoute = () => {
     if (['#getting-started-javascript', '#javascript-demo'].includes(window.location.hash)) {
         renderGuide();
+        return;
+    }
+
+    if (window.location.hash === '#getting-started-react') {
+        renderReactGuide();
         return;
     }
 

@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { ArrowDown, Code2 } from 'lucide-react';
-import { ApplicationPreview } from '@/components/ApplicationPreview';
-import { Button } from '@/components/ui/button';
+import { ApplicationPreview } from './ApplicationPreview';
+import { Button } from './ui/button';
 
 const ReactMark = () => (
   <svg aria-hidden="true" className="react-mark" viewBox="0 0 64 64">
@@ -23,12 +23,12 @@ export function ReactHero() {
   return (
     <header className="react-hero-shell">
       <nav aria-label="React demo navigation" className="react-demo-topbar">
-        <a className="react-demo-brand" href="../../src/demo/index.html#top">
+        <a className="react-demo-brand" href="#top">
           <span className="react-demo-brand__mark">AMB</span>
           <span>Grid</span>
         </a>
         <div className="react-demo-topbar__actions">
-          <a className="react-demo-home-link" href="../../src/demo/index.html#top">Home</a>
+          <a className="react-demo-home-link" href="#top">Home</a>
           <span aria-label="Language: Italian" className="react-demo-language">IT <span>/</span> EN</span>
         </div>
       </nav>

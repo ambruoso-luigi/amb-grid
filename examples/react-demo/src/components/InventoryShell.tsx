@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { Braces, Filter, PackagePlus, Save, Search, ShieldCheck } from 'lucide-react';
-import { AppSidebar } from '@/components/AppSidebar';
-import { Button } from '@/components/ui/button';
+import { AppSidebar } from './AppSidebar';
+import { Button } from './ui/button';
 
 const metrics = ['Products', 'Modified', 'Errors', 'Pending save'];
 

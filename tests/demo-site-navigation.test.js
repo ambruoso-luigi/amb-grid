@@ -13,7 +13,7 @@ describe('demo site navigation', () => {
         expect(exampleCopySource).not.toMatch(/Ãƒ|Ã‚|Ã¢â‚¬|ï¿½/);
     });
 
-    test('links the JavaScript framework card to the internal JavaScript page', () => {
+    test('links the available framework cards to their internal demo pages', () => {
         const main = read('src/demo/main.js');
 
         expect(main).toContain('href="#getting-started-javascript"');
@@ -29,7 +29,13 @@ describe('demo site navigation', () => {
         expect(main).toContain("'frameworks.react.badge': 'Lifecycle integration'");
         expect(main).toContain("'frameworks.vue.badge': 'Composition API example'");
         expect(main).toContain("'frameworks.angular.badge': 'Component lifecycle example'");
-        expect(main).toContain("'frameworks.react.status': 'Planned full demo'");
+        expect(main).toContain('href="#getting-started-react"');
+        expect(main).toContain("'frameworks.react.status': 'Apri demo React'");
+        expect(main).toContain("'frameworks.react.status': 'Open React demo'");
+        expect(main).toContain("window.location.hash === '#getting-started-react'");
+        expect(main).toContain("import('../../examples/react-demo/src/mount.tsx')");
+        expect(main).toContain('currentReactDemoUnmount();');
+        expect(main).toContain('id="react-demo-root"');
         expect(main).toContain("'frameworks.angular.description': 'Conceptual example with AfterViewInit and OnDestroy.'");
         expect(main).not.toContain('demo-framework-card__meta-item');
 
@@ -170,7 +176,7 @@ describe('demo site navigation', () => {
         expect(main).toContain('data-i18n="video.youtube">YouTube</span>');
         expect(main).not.toContain('demo-guide-video__play');
         expect(main).not.toContain('demo-secondary-home-link');
-        expect(main.match(/href="#feature-examples"/g)).toHaveLength(4);
+        expect(main.match(/href="#feature-examples"/g)).toHaveLength(3);
         expect(main).toContain('class="demo-button demo-button--primary" href="#feature-examples"');
         expect(main).not.toContain('data-i18n="hero.primary"');
         expect(main).not.toContain('demo-hero__metrics');
