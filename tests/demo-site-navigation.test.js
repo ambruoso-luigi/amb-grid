@@ -118,7 +118,7 @@ describe('demo site navigation', () => {
         expect(motion).toContain('if (prefersReducedMotion()) return;');
     });
 
-    test('keeps the JavaScript guide header secondary while identifying its YouTube video', () => {
+    test('keeps the JavaScript guide header secondary while using the shared YouTube preview pattern', () => {
         const guide = read('src/demo/getting-started-javascript.js');
         const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');
@@ -129,20 +129,23 @@ describe('demo site navigation', () => {
         expect(guide).toContain('data-i18n="guide.home">Home</span>');
         expect(guide).not.toContain('Torna alla home demo');
         expect(guide).not.toContain('Back to demo home');
-        expect(guide).toContain('data-i18n="guide.videoTitle">Video demo JavaScript</span>');
-        expect(guide).toContain('data-i18n="guide.videoDestination">Guarda su YouTube</span>');
+        expect(guide).toContain('class="demo-video-preview demo-guide-video"');
+        expect(guide).toContain('data-i18n="guide.videoTitle">Demo JavaScript</span>');
+        expect(guide).toContain('data-i18n="video.youtube">YouTube</span>');
         expect(guide).toContain('data-i18n-title="guide.videoOpen"');
         expect(guide).toContain('demoYoutubeIcon({');
         expect(main).toContain("'guide.home': 'Home'");
-        expect(main).toContain("'guide.videoTitle': 'JavaScript demo video'");
-        expect(main).toContain("'guide.videoDestination': 'Watch on YouTube'");
+        expect(main).toContain("'guide.videoTitle': 'JavaScript Demo'");
+        expect(main).toContain("'video.youtube': 'YouTube'");
         expect(main).not.toContain('demo-secondary-home-link');
         expect(icons).toContain('home: Home');
         expect(icons).toContain('export const demoYoutubeIcon');
         expect(icons).not.toContain('Youtube,');
         expect(css).toContain('.demo-secondary-home-link');
-        expect(css).toContain('.demo-guide-video__destination');
-        expect(css).toContain('.demo-guide-video__brand');
+        expect(css).toContain('.demo-video-preview__destination');
+        expect(css).toContain('.demo-video-preview__brand');
+        expect(guide).not.toContain('demo-guide-video__play');
+        expect(main).not.toContain('demo-guide-video__play');
     });
 
     test('keeps the JavaScript guide add-row snippets promise-aware', () => {
@@ -160,10 +163,13 @@ describe('demo site navigation', () => {
 
         expect(main).not.toContain('id="main-demo"');
         expect(main).not.toContain('mountMainDemo();');
-        expect(main).toContain('class="demo-guide-video demo-hero__video"');
+        expect(main).toContain('class="demo-video-preview demo-guide-video demo-hero__video"');
         expect(main).toContain('href="https://youtu.be/4m0EZ4vPmT0"');
         expect(main).toContain('src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg"');
-        expect(main).toContain('data-i18n="hero.videoLabel">Anteprima video</span>');
+        expect(main).toContain('data-i18n="hero.videoLabel">Demo AMB Grid</span>');
+        expect(main).toContain('data-i18n="video.youtube">YouTube</span>');
+        expect(main).not.toContain('demo-guide-video__play');
+        expect(main).not.toContain('demo-secondary-home-link');
         expect(main.match(/href="#feature-examples"/g)).toHaveLength(4);
         expect(main).toContain('class="demo-button demo-button--primary" href="#feature-examples"');
         expect(main).not.toContain('data-i18n="hero.primary"');

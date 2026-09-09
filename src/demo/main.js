@@ -14,7 +14,7 @@ import parsers from './parsers.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
-import { demoIcon, frameworkIcon } from './demo-icons.js';
+import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
 import { animateCycleDetail, initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
@@ -49,8 +49,9 @@ const translations = {
         'hero.title': 'Griglie CRUD per applicazioni business',
         'hero.description': 'AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
         'hero.secondary': 'Vedi esempi funzionali',
-        'hero.videoLabel': 'Anteprima video',
-        'hero.videoOpen': 'Apri l’anteprima video su YouTube',
+        'hero.videoLabel': 'Demo AMB Grid',
+        'hero.videoOpen': 'Apri Demo AMB Grid su YouTube',
+        'video.youtube': 'YouTube',
         'frameworks.title': 'Integrabile dove lavori già',
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
         'frameworks.javascript.badge': 'Classic integration',
@@ -197,9 +198,8 @@ const translations = {
         'guide.integration.cssText': 'Lo stile della pagina resta piccolo e separato dallo stylesheet completo di AMB Grid.',
         'guide.openMainDemo': 'Torna alla demo',
         'guide.openExamples': 'Vedi esempi funzionali',
-        'guide.videoTitle': 'Video demo JavaScript',
-        'guide.videoDestination': 'Guarda su YouTube',
-        'guide.videoOpen': 'Apri il video demo JavaScript su YouTube',
+        'guide.videoTitle': 'Demo JavaScript',
+        'guide.videoOpen': 'Apri Demo JavaScript su YouTube',
         'footer.cta.kicker': 'Prossimo passo',
         'footer.cta.title': 'Porta AMB Grid nel tuo progetto',
         'footer.cta.description': 'Esplora la guida JavaScript, prova gli esempi funzionali oppure consulta il progetto su GitHub.',
@@ -232,8 +232,9 @@ const translations = {
         'hero.title': 'CRUD data grids for business applications',
         'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
         'hero.secondary': 'View feature examples',
-        'hero.videoLabel': 'Video preview',
-        'hero.videoOpen': 'Open the video preview on YouTube',
+        'hero.videoLabel': 'AMB Grid Demo',
+        'hero.videoOpen': 'Open the AMB Grid Demo on YouTube',
+        'video.youtube': 'YouTube',
         'frameworks.title': 'Use AMB Grid where you already work',
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
         'frameworks.javascript.badge': 'Classic integration',
@@ -380,9 +381,8 @@ const translations = {
         'guide.integration.cssText': 'Page styling stays small and separate from the complete AMB Grid stylesheet.',
         'guide.openMainDemo': 'Back to demo',
         'guide.openExamples': 'View feature examples',
-        'guide.videoTitle': 'JavaScript demo video',
-        'guide.videoDestination': 'Watch on YouTube',
-        'guide.videoOpen': 'Open the JavaScript demo video on YouTube',
+        'guide.videoTitle': 'JavaScript Demo',
+        'guide.videoOpen': 'Open the JavaScript Demo on YouTube',
         'footer.cta.kicker': 'Next step',
         'footer.cta.title': 'Bring AMB Grid into your project',
         'footer.cta.description': 'Explore the JavaScript guide, try the feature examples, or follow the project on GitHub.',
@@ -714,17 +714,20 @@ const renderShell = selectedId => {
                         </div>
                     </div>
                     <a
-                        class="demo-guide-video demo-hero__video"
+                        class="demo-video-preview demo-guide-video demo-hero__video"
                         href="https://youtu.be/4m0EZ4vPmT0"
                         target="_blank"
                         rel="noopener noreferrer"
                         data-i18n-title="hero.videoOpen"
-                        aria-label="Apri l’anteprima video su YouTube"
+                        aria-label="Apri Demo AMB Grid su YouTube"
                     >
-                        <img class="demo-guide-video__image" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" alt="" loading="eager">
-                        <span class="demo-guide-video__overlay" aria-hidden="true"></span>
-                        <span class="demo-guide-video__play" aria-hidden="true">${demoIcon('video', { size: 30 })}</span>
-                        <span class="demo-guide-video__label" data-i18n="hero.videoLabel">Anteprima video</span>
+                        <img class="demo-video-preview__image" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" alt="" loading="eager">
+                        <span class="demo-video-preview__overlay" aria-hidden="true"></span>
+                        <span class="demo-video-preview__title" data-i18n="hero.videoLabel">Demo AMB Grid</span>
+                        <span class="demo-video-preview__destination">
+                            <span class="demo-video-preview__brand">${demoYoutubeIcon({ className: 'demo-video-preview__brand-icon', size: 20 })}</span>
+                            <span data-i18n="video.youtube">YouTube</span>
+                        </span>
                     </a>
                 </div>
             </header>
