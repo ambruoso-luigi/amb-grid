@@ -315,7 +315,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} isCellValid - Read native runtime validation state independently from AMB Grid validation.
  * @property {Function} getChanges - Read changes currently classified by the AMB CRUD lifecycle.
  * @property {Function} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
- * @property {Function} getSavePayload - Generate the AMB save payload using the supported payload options.
+ * @property {CrudHelper.getSavePayload} getSavePayload - Generate the AMB save payload using the supported payload options.
  * @property {Function} addRow - Add a row through the AMB lifecycle rather than directly through the engine.
  * @property {Function} updateOrAddRow - Update one existing managed row or add a missing row through the AMB Grid CRUD lifecycle.
  * @property {Function} updateRow - Patch a row through AMB tracking and validation rather than directly through the engine.

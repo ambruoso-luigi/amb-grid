@@ -75,7 +75,228 @@ const createCrud = rowsData => {
     return { crud, rows };
 };
 
+const createMixedPolicyCrud = () => {
+    const result = createCrud([
+        { id: 1, alias: 'Atlas' },
+        { id: 2, alias: 'Beacon' },
+        { id: null, _ambTempId: 'amb-temp-1', alias: 'Comet', _state: ROW_STATE.NEW },
+        { id: 4, alias: 'Delta', _state: ROW_STATE.DELETED }
+    ]);
+
+    result.crud.updateRowFields(1, { alias: 'Atlas Updated' });
+    result.crud.updateRowFields(2, { alias: 'Atlas Updated' });
+
+    return result;
+};
+
 describe('CrudHelper validation lifecycle', () => {
+    describe('getSavePayload save policies', () => {
+        test('defaults to all-or-nothing semantics', () => {
+            const { crud } = createMixedPolicyCrud();
+
+            expect(crud.getSavePayload()).toEqual(crud.getSavePayload({
+                savePolicy: 'all-or-nothing'
+            }));
+        });
+
+        test('rejects unsupported policies and incompatible valid-only composition', () => {
+            const { crud } = createCrud([]);
+
+            expect(() => crud.getSavePayload({ savePolicy: 'unknown' }))
+                .toThrowError(TypeError);
+            expect(() => crud.getSavePayload({ savePolicy: 'unknown' }))
+                .toThrow(/unknown.*all-or-nothing.*valid-only/s);
+            expect(() => crud.getSavePayload({ savePolicy: null }))
+                .toThrowError(TypeError);
+            expect(() => crud.getSavePayload({
+                savePolicy: 'valid-only',
+                onlyValid: false
+            })).toThrow(/onlyValid:false.*valid-only/s);
+        });
+
+        test.each(['all-or-nothing', 'valid-only'])(
+            '%s reports no save candidate when there are no changes',
+            savePolicy => {
+                const { crud } = createCrud([{ id: 1, alias: 'Atlas' }]);
+                const payload = crud.getSavePayload({ savePolicy });
+
+                expect(payload).toEqual(expect.objectContaining({
+                    savePolicy,
+                    hasChanges: false,
+                    hasValidChanges: false,
+                    hasInvalidChanges: false,
+                    canSave: false,
+                    isPartialSave: false
+                }));
+            }
+        );
+
+        test.each(['all-or-nothing', 'valid-only'])(
+            '%s accepts valid modified, new, and deleted changes',
+            savePolicy => {
+                const { crud } = createCrud([
+                    { id: 1, alias: 'Atlas' },
+                    { id: null, _ambTempId: 'amb-temp-1', alias: 'Comet', _state: ROW_STATE.NEW },
+                    { id: 3, alias: 'Delta', _state: ROW_STATE.DELETED }
+                ]);
+
+                crud.updateRowFields(1, { alias: 'Atlas Updated' });
+
+                const payload = crud.getSavePayload({ savePolicy });
+
+                expect(payload).toEqual(expect.objectContaining({
+                    savePolicy,
+                    hasChanges: true,
+                    hasValidChanges: true,
+                    hasInvalidChanges: false,
+                    canSave: true,
+                    isPartialSave: false
+                }));
+                expect(payload.changes.inserted).toHaveLength(1);
+                expect(payload.changes.updated).toHaveLength(1);
+                expect(payload.changes.deleted).toHaveLength(1);
+            }
+        );
+
+        test('blocks a mixed change set with all-or-nothing', () => {
+            const { crud } = createMixedPolicyCrud();
+            const payload = crud.getSavePayload({ savePolicy: 'all-or-nothing' });
+
+            expect(payload).toEqual(expect.objectContaining({
+                savePolicy: 'all-or-nothing',
+                hasChanges: true,
+                hasValidChanges: true,
+                hasInvalidChanges: true,
+                canSave: false,
+                isPartialSave: false
+            }));
+        });
+
+        test('returns only valid changes for a mixed valid-only candidate', () => {
+            const { crud } = createMixedPolicyCrud();
+            const payload = crud.getSavePayload({
+                savePolicy: 'valid-only',
+                includeInvalid: true
+            });
+
+            expect(payload).toEqual(expect.objectContaining({
+                savePolicy: 'valid-only',
+                hasChanges: true,
+                hasValidChanges: true,
+                hasInvalidChanges: true,
+                canSave: true,
+                isPartialSave: true
+            }));
+            expect(payload.changes.inserted).toHaveLength(1);
+            expect(payload.changes.updated.map(change => change.id)).toEqual([1]);
+            expect(payload.changes.deleted.map(change => change.id)).toEqual([4]);
+            expect(payload.invalidChangedRows.map(row => row.id)).toEqual([2]);
+        });
+
+        test('keeps legacy onlyValid:false composition under all-or-nothing', () => {
+            const { crud } = createMixedPolicyCrud();
+            const payload = crud.getSavePayload({
+                savePolicy: 'all-or-nothing',
+                onlyValid: false
+            });
+
+            expect(payload.changes.updated.map(change => change.id)).toEqual([1, 2]);
+            expect(payload.canSave).toBe(false);
+            expect(payload.hasInvalidChanges).toBe(true);
+        });
+
+        test('returns an empty valid-only change set when all changes are invalid', () => {
+            const { crud } = createCrud([
+                { id: 1, alias: 'Atlas' },
+                { id: 2, alias: 'Beacon' }
+            ]);
+
+            crud.updateRowFields(2, { alias: 'Atlas' });
+
+            const payload = crud.getSavePayload({ savePolicy: 'valid-only' });
+
+            expect(payload).toEqual(expect.objectContaining({
+                hasChanges: true,
+                hasValidChanges: false,
+                hasInvalidChanges: true,
+                canSave: false,
+                isPartialSave: false
+            }));
+            expect(payload.changes).toEqual({
+                inserted: [],
+                updated: [],
+                deleted: []
+            });
+        });
+
+        test('does not let errors on clean rows block valid pending changes', () => {
+            const { crud } = createCrud([
+                { id: 1, alias: 'Atlas' },
+                { id: 2, alias: 'Beacon' }
+            ]);
+
+            crud.markCellError(1, 'alias', 'Clean row application error');
+            crud.updateRowFields(2, { alias: 'Comet' });
+
+            const report = crud.getStateReport();
+            const payload = crud.getSavePayload();
+
+            expect(report.hasErrors).toBe(true);
+            expect(payload).toEqual(expect.objectContaining({
+                hasErrors: true,
+                hasChanges: true,
+                hasValidChanges: true,
+                hasInvalidChanges: false,
+                canSave: true,
+                isPartialSave: false
+            }));
+        });
+
+        test('is side-effect free for data, states, errors, reports, and baselines', () => {
+            const { crud, rows } = createMixedPolicyCrud();
+            const before = {
+                data: structuredClone(rows.map(row => row.getData())),
+                report: crud.getStateReport(),
+                errors: crud.getErrors(),
+                originalRows: structuredClone(Array.from(crud.originalRows.entries()))
+            };
+
+            crud.getSavePayload({
+                savePolicy: 'valid-only',
+                includeInvalid: true
+            });
+
+            expect(rows.map(row => row.getData())).toEqual(before.data);
+            expect(crud.getStateReport()).toEqual(before.report);
+            expect(crud.getErrors()).toEqual(before.errors);
+            expect(Array.from(crud.originalRows.entries())).toEqual(before.originalRows);
+        });
+
+        test('leaves lifecycle confirmation to markValidChangesSaved', () => {
+            const { crud } = createCrud([
+                { id: 1, alias: 'Atlas' },
+                { id: 2, alias: 'Beacon' }
+            ]);
+
+            crud.updateRowFields(1, { alias: 'Comet' });
+            crud.updateRowFields(2, { alias: 'Comet' });
+
+            const payload = crud.getSavePayload({ savePolicy: 'valid-only' });
+
+            expect(payload.isPartialSave).toBe(true);
+            expect(crud.findRowById(1).getData()._state).toBe(ROW_STATE.MODIFIED);
+            expect(crud.findRowById(2).getData()._state).toBe(ROW_STATE.MODIFIED);
+
+            const result = crud.markValidChangesSaved();
+
+            expect(result.saved.map(row => row.id)).toEqual([1]);
+            expect(crud.findRowById(1).getData()._state).toBe(ROW_STATE.SAVED);
+            expect(crud.findRowById(2).getData()._state).toBe(ROW_STATE.MODIFIED);
+            expect(crud.getStateReport().invalidChangedRows.map(row => row.id)).toEqual([2]);
+            expect(crud.cellErrors.has(2)).toBe(true);
+        });
+    });
+
     test('keeps lifecycle state separate from manual cell errors', () => {
         const { crud } = createCrud([
             { id: 1, alias: 'Atlas' }

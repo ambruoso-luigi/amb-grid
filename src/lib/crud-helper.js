@@ -20,6 +20,51 @@ export const ROW_STATE = {
     SAVED: 'saved'
 };
 
+const SUPPORTED_SAVE_POLICIES = Object.freeze([
+    'all-or-nothing',
+    'valid-only'
+]);
+
+/**
+ * Policy used to decide whether pending CRUD changes form a save candidate.
+ *
+ * @typedef {'all-or-nothing'|'valid-only'} SavePolicy
+ */
+
+/**
+ * Options used to compose an AMB Grid save payload.
+ *
+ * @typedef {object} SavePayloadOptions
+ * @property {SavePolicy} [savePolicy='all-or-nothing'] - Policy used to determine whether the pending changes are savable.
+ * @property {boolean} [onlyValid=true] - Use only valid changes. `false` remains supported with `all-or-nothing`.
+ * @property {boolean} [includeInvalid=false] - Expose invalid changed rows as diagnostic metadata.
+ */
+
+/**
+ * Read-only save candidate generated from the current CRUD state.
+ *
+ * `canSave` means that the payload contains a savable set of changes under
+ * the requested policy; it does not mean that the whole grid has no errors.
+ * With `all-or-nothing`, every pending CRUD change must be valid. With
+ * `valid-only`, at least one valid change must exist and `changes` contains
+ * only valid changes.
+ *
+ * `isPartialSave` identifies a `valid-only` candidate that has both valid and
+ * invalid pending changes. It does not mean that AMB Grid performed a save.
+ *
+ * @typedef {object} SavePayload
+ * @property {SavePolicy} savePolicy - Effective save policy.
+ * @property {boolean} canSave - Whether changes form a save candidate under `savePolicy`.
+ * @property {boolean} hasChanges - Whether any CRUD change is pending.
+ * @property {boolean} hasValidChanges - Whether any valid CRUD change is pending.
+ * @property {boolean} hasInvalidChanges - Whether any invalid CRUD change is pending.
+ * @property {boolean} isPartialSave - Whether this is a mixed `valid-only` partial-save candidate.
+ * @property {boolean} hasErrors - Whether any error exists in the complete CRUD report.
+ * @property {{totalRows: number, changedRowsCount: number, validChangedRowsCount: number, invalidChangedRowsCount: number, errorRowsCount: number}} summary - Current report counts.
+ * @property {{inserted: object[], updated: object[], deleted: object[]}} changes - Changes composed for the requested policy and legacy options.
+ * @property {object[]} invalidChangedRows - Optional diagnostic invalid-change details.
+ */
+
 const cloneData = (data) => {
     if (typeof structuredClone === 'function') {
         return structuredClone(data);
@@ -3191,10 +3236,18 @@ export class CrudHelper {
     /**
      * Build a backend-ready save payload from the current report without changing state.
      *
-     * @param {object} [options] - Payload options.
-     * @param {boolean} [options.onlyValid=true] - Use only valid changes.
-     * @param {boolean} [options.includeInvalid=false] - Include invalid changed rows.
-     * @returns {object} Save payload snapshot.
+     * `canSave` describes whether the composed changes are savable under the
+     * requested policy; it is independent from errors on unchanged rows.
+     * `all-or-nothing` requires every pending CRUD change to be valid, while
+     * `valid-only` requires at least one valid change and always exposes only
+     * valid changes in `changes`.
+     *
+     * `isPartialSave` is true only for a `valid-only` candidate containing both
+     * valid and invalid pending changes. It reports a candidate and does not
+     * perform or confirm any save.
+     *
+     * @param {SavePayloadOptions} [options] - Payload options.
+     * @returns {SavePayload} Save payload snapshot.
      * @example
      * const payload = grid.getSavePayload();
      *
@@ -3203,20 +3256,50 @@ export class CrudHelper {
      * }
      */
     getSavePayload(options = {}) {
+        const savePolicy = options.savePolicy === undefined
+            ? 'all-or-nothing'
+            : options.savePolicy;
+
+        if (!SUPPORTED_SAVE_POLICIES.includes(savePolicy)) {
+            throw new TypeError(
+                `AMB Grid getSavePayload: unsupported savePolicy "${savePolicy}". `
+                + 'Supported values are "all-or-nothing" and "valid-only".'
+            );
+        }
+
+        if (savePolicy === 'valid-only' && options.onlyValid === false) {
+            throw new TypeError(
+                'AMB Grid getSavePayload: onlyValid:false is incompatible '
+                + 'with savePolicy:"valid-only".'
+            );
+        }
+
         const normalizedOptions = {
+            savePolicy,
             onlyValid: true,
             includeInvalid: false,
             ...options
         };
         const report = this.getStateReport();
-        const changes = normalizedOptions.onlyValid ? report.validChanges : report.changes;
-        const hasPayloadChanges = changes.inserted.length > 0
-            || changes.updated.length > 0
-            || changes.deleted.length > 0;
+        const hasValidChanges = report.validChangedRowsCount > 0;
+        const hasInvalidChanges = report.invalidChangedRowsCount > 0;
+        const changes = savePolicy === 'valid-only' || normalizedOptions.onlyValid
+            ? report.validChanges
+            : report.changes;
+        const canSave = savePolicy === 'valid-only'
+            ? hasValidChanges
+            : report.hasChanges && !hasInvalidChanges;
+        const isPartialSave = savePolicy === 'valid-only'
+            && hasValidChanges
+            && hasInvalidChanges;
 
         return {
-            canSave: hasPayloadChanges && !report.hasErrors,
+            savePolicy,
+            canSave,
             hasChanges: report.hasChanges,
+            hasValidChanges,
+            hasInvalidChanges,
+            isPartialSave,
             hasErrors: report.hasErrors,
             summary: {
                 totalRows: report.totalRows,

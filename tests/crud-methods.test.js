@@ -4,7 +4,10 @@ import { createCrudMethods } from '../src/lib/table/controller/crud-methods.js';
 
 describe('AMB table CRUD facade methods', () => {
     test('exposes the exact methods and delegates each call in isolation', () => {
-        const options = { onlyValid: false, includeInvalid: true };
+        const options = {
+            savePolicy: 'valid-only',
+            includeInvalid: true
+        };
         const identifier = 'amb-temp-1';
         const mappings = [
             {
