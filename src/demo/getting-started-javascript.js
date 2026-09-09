@@ -1,5 +1,5 @@
 import { renderDemoBrand } from './demo-brand.js';
-import { demoIcon } from './demo-icons.js';
+import { demoIcon, frameworkIcon } from './demo-icons.js';
 import { renderDemoFooter } from './demo-footer.js';
 
 export default function gettingStartedJavaScript(app) {
@@ -42,10 +42,19 @@ export default function gettingStartedJavaScript(app) {
                 <div class="demo-guide-hero__layout">
                     <div class="demo-guide-hero__copy">
                         <a class="demo-back-link" href="#top" data-i18n="guide.back">Torna alla home demo</a>
+                        <div class="demo-framework-identity">
+                            <span class="demo-framework-identity__logo">
+                                ${frameworkIcon('javascript')}
+                            </span>
+                            <div class="demo-framework-identity__copy">
+                                <p class="demo-framework-identity__title" data-i18n="guide.identity.title">Integrazione JavaScript</p>
+                                <p data-i18n="guide.identity.description">AMB Grid utilizzata direttamente in Vanilla JavaScript, senza framework applicativi obbligatori.</p>
+                            </div>
+                        </div>
                         <div class="demo-guide-hero__content">
-                            <p class="demo-kicker" data-i18n="guide.badge">JavaScript</p>
                             <h1 data-i18n="guide.title">AMB Grid con JavaScript</h1>
                             <p class="demo-hero__text" data-i18n="guide.description">Demo tabellare e guida essenziale per usare AMB Grid con JavaScript moderno o direttamente nel browser, senza framework obbligatori.</p>
+                            <p class="demo-framework-identity__stack" data-i18n="guide.identity.stack">JavaScript · Tailwind CSS · daisyUI · Motion · Lucide</p>
                         </div>
                     </div>
                     <a

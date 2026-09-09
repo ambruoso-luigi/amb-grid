@@ -18,12 +18,22 @@ const reveal = (elements, options = {}) => {
 
     visibleElements.forEach(element => revealedElements.add(element));
 
+    const keyframes = {
+        opacity: [0, 1],
+        y: [options.offset ?? 14, 0]
+    };
+
+    if (options.x !== undefined) {
+        keyframes.x = [options.x, 0];
+    }
+
+    if (options.scale !== undefined) {
+        keyframes.scale = [options.scale, 1];
+    }
+
     animate(
         visibleElements,
-        {
-            opacity: [0, 1],
-            y: [options.offset ?? 14, 0]
-        },
+        keyframes,
         {
             delay: options.delay ?? 0,
             duration: options.duration ?? 0.42,
@@ -78,7 +88,7 @@ export const initDemoMotion = (root = document) => {
     const heroElements = getElements(
         root,
         '.demo-hero__content, .demo-hero__video, .demo-guide-hero .demo-topbar, .demo-back-link, .demo-guide-hero__content'
-    );
+    ).filter(element => !element.closest('.js-guide-page'));
 
     reveal(heroElements, {
         delay: stagger(0.06),
@@ -139,6 +149,38 @@ export const initDemoMotion = (root = document) => {
         duration: 0.32,
         offset: 6
     });
+
+    const javaScriptGuideHero = root.querySelector('.js-guide-page .demo-guide-hero');
+
+    if (javaScriptGuideHero) {
+        reveal(getElements(javaScriptGuideHero, '.demo-topbar, .demo-back-link'), {
+            delay: stagger(0.06),
+            duration: 0.42,
+            offset: 10
+        });
+        reveal(getElements(javaScriptGuideHero, '.demo-framework-identity__logo'), {
+            delay: 0.06,
+            duration: 0.32,
+            offset: 0,
+            scale: 0.96
+        });
+        reveal(getElements(javaScriptGuideHero, '.demo-framework-identity__copy'), {
+            delay: 0.12,
+            duration: 0.36,
+            offset: 8
+        });
+        reveal(getElements(javaScriptGuideHero, '.demo-guide-hero__content > *'), {
+            delay: stagger(0.055, { startDelay: 0.18 }),
+            duration: 0.4,
+            offset: 10
+        });
+        reveal(getElements(javaScriptGuideHero, '.demo-guide-video'), {
+            delay: 0.22,
+            duration: 0.44,
+            offset: 0,
+            x: 12
+        });
+    }
 
     revealWhenVisible(root, '.demo-footer', '.demo-footer__brand, .demo-footer__group, .demo-footer__meta', {
         amount: 0.2,

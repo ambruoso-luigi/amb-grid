@@ -97,6 +97,27 @@ describe('demo site navigation', () => {
         expect(main).not.toContain('Planned browser bundle');
     });
 
+    test('gives the JavaScript guide a localized framework identity in its hero', () => {
+        const guide = read('src/demo/getting-started-javascript.js');
+        const main = read('src/demo/main.js');
+        const css = read('src/demo/demo.css');
+        const motion = read('src/demo/demo-motion.js');
+
+        expect(guide).toContain("import { demoIcon, frameworkIcon } from './demo-icons.js';");
+        expect(guide).toContain("frameworkIcon('javascript')");
+        expect(guide).toContain('class="demo-framework-identity"');
+        expect(guide).toContain('data-i18n="guide.identity.title"');
+        expect(guide).toContain('data-i18n="guide.identity.stack"');
+        expect(main).toContain("'guide.identity.title': 'Integrazione JavaScript'");
+        expect(main).toContain("'guide.identity.title': 'JavaScript integration'");
+        expect(main).toContain("'guide.identity.stack': 'JavaScript · Tailwind CSS · daisyUI · Motion · Lucide'");
+        expect(css).toContain('.js-guide-page {');
+        expect(css).toContain('--framework-accent:');
+        expect(css).toContain('.demo-framework-identity__logo');
+        expect(motion).toContain("root.querySelector('.js-guide-page .demo-guide-hero')");
+        expect(motion).toContain('if (prefersReducedMotion()) return;');
+    });
+
     test('keeps the JavaScript guide add-row snippets promise-aware', () => {
         const guide = read('src/demo/getting-started-javascript.js');
 

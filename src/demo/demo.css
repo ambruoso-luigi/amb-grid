@@ -1584,6 +1584,99 @@ a {
 
 .js-guide-page {
     align-content: start;
+    --framework-accent: #c8961d;
+    --framework-accent-border: #dbbb6e;
+    --framework-accent-soft: #fff8e6;
+}
+
+.js-guide-page .demo-guide-hero {
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 94%) 0%, rgb(255 252 243 / 93%) 50%, var(--framework-accent-soft) 100%),
+        linear-gradient(125deg, color-mix(in srgb, var(--framework-accent) 14%, transparent) 0%, transparent 58%),
+        var(--amb-site-surface);
+    border-top: 3px solid var(--framework-accent);
+}
+
+.js-guide-page .demo-guide-hero::before {
+    background:
+        linear-gradient(110deg, color-mix(in srgb, var(--framework-accent) 12%, transparent) 0%, transparent 60%),
+        linear-gradient(180deg, rgb(255 255 255 / 54%) 0%, color-mix(in srgb, var(--framework-accent-soft) 62%, transparent) 100%);
+}
+
+.js-guide-page .demo-guide-hero .demo-topbar {
+    border-bottom-color: color-mix(in srgb, var(--framework-accent-border) 58%, transparent);
+}
+
+.demo-framework-identity {
+    align-items: center;
+    border-left: 2px solid var(--framework-accent);
+    display: flex;
+    gap: 14px;
+    max-width: 760px;
+    padding-left: 14px;
+}
+
+.demo-framework-identity__logo {
+    align-items: center;
+    background: linear-gradient(180deg, #ffffff 0%, var(--framework-accent-soft) 100%);
+    border: 1px solid var(--framework-accent-border);
+    border-radius: 14px;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 90%),
+        0 8px 18px rgb(16 35 63 / 8%);
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 74px;
+    justify-content: center;
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    width: 74px;
+}
+
+.demo-framework-identity__logo:hover {
+    border-color: var(--framework-accent);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 90%),
+        0 11px 22px rgb(16 35 63 / 12%);
+    transform: scale(1.03);
+}
+
+.demo-framework-identity__logo .demo-framework-logo {
+    height: 58px;
+    width: 58px;
+}
+
+.demo-framework-identity__logo .demo-framework-logo__letters {
+    color: #172033;
+    font-size: 32px;
+}
+
+.demo-framework-identity__copy {
+    display: grid;
+    gap: 4px;
+}
+
+.demo-framework-identity__copy p {
+    color: #4b5a6c;
+    font-size: 14px;
+    line-height: 1.45;
+    margin: 0;
+    max-width: 620px;
+}
+
+.demo-framework-identity__title {
+    color: color-mix(in srgb, var(--framework-accent) 76%, #172033) !important;
+    font-size: 14px !important;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.demo-framework-identity__stack {
+    color: color-mix(in srgb, var(--framework-accent) 68%, #4b5a6c);
+    font-size: 13px;
+    font-weight: 750;
+    letter-spacing: 0.015em;
+    margin: 14px 0 0;
 }
 
 .demo-guide-hero {
@@ -4064,6 +4157,16 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 
     .demo-guide-page h1 {
         font-size: clamp(28px, 10vw, 40px);
+    }
+
+    .demo-framework-identity {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .demo-framework-identity__stack {
+        line-height: 1.5;
     }
 
     .demo-back-link {

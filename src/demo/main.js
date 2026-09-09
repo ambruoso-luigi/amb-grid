@@ -142,8 +142,8 @@ const translations = {
         'cycle.detail.align.intro': 'Dopo una risposta positiva del backend, AMB Grid riallinea le modifiche effettivamente salvate: integra gli identificativi assegnati, aggiorna la baseline e lascia invece pendenti le righe che non sono state confermate.',
         'cycle.detail.align.group1Title': 'ID backend',
         'cycle.detail.align.group1Text': 'Le nuove righe salvate possono ricevere l’identificativo definitivo assegnato dal backend, sostituendo il riferimento temporaneo usato durante l’editing locale.',
-        'cycle.detail.align.group2Title': 'Allineamento selettivo',
-        'cycle.detail.align.group2Text': 'Solo le modifiche effettivamente confermate vengono riallineate. In un salvataggio parziale, le righe valide possono diventare la nuova situazione confermata mentre quelle con errori restano ancora da correggere.',
+        'cycle.detail.align.group2Title': 'Salvataggio parziale opzionale',
+        'cycle.detail.align.group2Text': 'L’applicazione può scegliere un salvataggio completo oppure salvare solo le modifiche valide. In questo secondo caso AMB Grid consente di riallineare quelle confermate lasciando pendenti le righe ancora da correggere.',
         'cycle.detail.align.group3Title': 'Baseline aggiornata',
         'cycle.detail.align.group3Text': 'I valori confermati diventano il nuovo riferimento della riga, così eventuali modifiche successive e rollback partono dai dati realmente accettati dal backend.',
         'cycle.detail.align.group4Title': 'Modifiche pendenti',
@@ -157,6 +157,9 @@ const translations = {
         'guide.badge': 'JavaScript',
         'guide.title': 'AMB Grid con JavaScript',
         'guide.description': 'Demo tabellare e guida essenziale per usare AMB Grid con JavaScript moderno o direttamente nel browser, senza framework obbligatori.',
+        'guide.identity.title': 'Integrazione JavaScript',
+        'guide.identity.description': 'AMB Grid utilizzata direttamente in Vanilla JavaScript, senza framework applicativi obbligatori.',
+        'guide.identity.stack': 'JavaScript · Tailwind CSS · daisyUI · Motion · Lucide',
         'guide.startTitle': 'Inizia con AMB Grid in JavaScript',
         'guide.startText': 'Dopo la demo completa, questi step mostrano il minimo necessario per preparare container, dati, colonne e payload in una pagina JavaScript.',
         'guide.step1.title': 'Prepara il container',
@@ -321,8 +324,8 @@ const translations = {
         'cycle.detail.align.intro': 'After a successful backend response, AMB Grid aligns the changes that were actually saved: it applies assigned identifiers, updates the baseline, and leaves unconfirmed rows pending.',
         'cycle.detail.align.group1Title': 'Backend IDs',
         'cycle.detail.align.group1Text': 'Newly saved rows can receive the definitive identifier assigned by the backend, replacing the temporary reference used during local editing.',
-        'cycle.detail.align.group2Title': 'Selective alignment',
-        'cycle.detail.align.group2Text': 'Only confirmed changes are aligned. During a partial save, valid rows can become the new confirmed state while rows with errors remain pending for correction.',
+        'cycle.detail.align.group2Title': 'Optional partial save',
+        'cycle.detail.align.group2Text': 'The application can choose an all-or-nothing save or persist only valid changes. In the latter case, AMB Grid can align the confirmed changes while rows still needing correction remain pending.',
         'cycle.detail.align.group3Title': 'Updated baseline',
         'cycle.detail.align.group3Text': 'Confirmed values become the new reference for the row, so later edits and rollbacks start from the data actually accepted by the backend.',
         'cycle.detail.align.group4Title': 'Pending changes',
@@ -336,6 +339,9 @@ const translations = {
         'guide.badge': 'JavaScript',
         'guide.title': 'AMB Grid with JavaScript',
         'guide.description': 'A tabular demo and essential guide for using AMB Grid with modern JavaScript or directly in the browser, with no required framework.',
+        'guide.identity.title': 'JavaScript integration',
+        'guide.identity.description': 'AMB Grid used directly with Vanilla JavaScript, without requiring an application framework.',
+        'guide.identity.stack': 'JavaScript · Tailwind CSS · daisyUI · Motion · Lucide',
         'guide.startTitle': 'Getting started with AMB Grid in JavaScript',
         'guide.startText': 'After the complete demo, these steps show the minimum needed to prepare the container, data, columns, and payload in a JavaScript page.',
         'guide.step1.title': 'Prepare the container',
@@ -485,8 +491,8 @@ const cycleDetailBodies = {
                 <p data-i18n="cycle.detail.align.group1Text">Le nuove righe salvate possono ricevere l’identificativo definitivo assegnato dal backend, sostituendo il riferimento temporaneo usato durante l’editing locale.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.align.group2Title">Allineamento selettivo</h4>
-                <p data-i18n="cycle.detail.align.group2Text">Solo le modifiche effettivamente confermate vengono riallineate. In un salvataggio parziale, le righe valide possono diventare la nuova situazione confermata mentre quelle con errori restano ancora da correggere.</p>
+                <h4 data-i18n="cycle.detail.align.group2Title">Salvataggio parziale opzionale</h4>
+                <p data-i18n="cycle.detail.align.group2Text">L’applicazione può scegliere un salvataggio completo oppure salvare solo le modifiche valide. In questo secondo caso AMB Grid consente di riallineare quelle confermate lasciando pendenti le righe ancora da correggere.</p>
             </div>
             <div>
                 <h4 data-i18n="cycle.detail.align.group3Title">Baseline aggiornata</h4>
