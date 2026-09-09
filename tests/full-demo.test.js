@@ -60,7 +60,7 @@ describe('Legacy-friendly warehouse demo', () => {
             "import { createDemoReportDialog } from './utils/demo-report-dialog.js'"
         );
         expect(source).toContain('const reportDialog = createDemoReportDialog()');
-        expect(source).toContain('openPayloadReport(payload)');
+        expect(source).toContain('openPayloadReport();');
         expect(source).toContain('openStateReport()');
         expect(source).toContain('openValidationReport(validateResult)');
         expect(source).toContain("title: t('saveTitle')");
@@ -128,7 +128,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("lastCheckDate: ''");
         expect(source).toContain("status: ''");
         expect(source).toContain('requiresInspection: false');
-        expect(source).toContain('crud.getSavePayload()');
+        expect(source).toContain('demo.getSavePayload({');
     });
 
     test('uses the same simple Add row pattern as the base demos', () => {
@@ -174,7 +174,9 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('stopPropagation()');
         expect(source).not.toContain('focus({ preventScroll: true })');
         expect(source).not.toContain('tabindex');
-        expect(source).not.toContain('new AMB.ConfirmDialog()');
+        expect(source).toContain('const partialSaveDialog = new AMB.ConfirmDialog()');
+        expect(source).toContain('partialSaveDialog.destroy()');
+        expect(source).not.toContain('createDemoRowActionColumn');
         expect(basicCrudSource).toContain('rowActionColumn: {');
         expect(basicCrudSource).toContain('selectionColumn: {');
     });
@@ -183,6 +185,37 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toMatch(
             /title: 'Notes'[\s\S]*?AMB\.editors\.largeText\(\{[\s\S]*?closeOnBackdropClick: false/
         );
+    });
+
+    test('uses valid-only payloads and confirms a partial save before sending it', () => {
+        expect(source).toContain("const DEMO_SAVE_POLICY = 'valid-only'");
+        expect(source).toContain('const validateResult = demo.validateChanges()');
+        expect(source).toContain('const validateResult = demo.validate()');
+        expect(source).toContain('savePolicy: DEMO_SAVE_POLICY');
+        expect(source).toContain('includeInvalid: true');
+        expect(source).toContain('payload.hasChanges === false');
+        expect(source).toContain('payload.hasValidChanges === false && payload.hasInvalidChanges === true');
+        expect(source).toContain('&& payload.isPartialSave');
+        expect(source).toContain('if (!payload.canSave) {');
+        expect(source).toContain('await partialSaveDialog.confirm({');
+        expect(source).toContain("confirmText: t('partialSaveConfirm')");
+        expect(source).toContain("cancelText: t('partialSaveCancel')");
+        expect(source).toContain("partialSaveConfirm: 'Salva modifiche valide'");
+        expect(source).toContain("partialSaveConfirm: 'Save valid changes'");
+        expect(source).toContain('fakeApi.saveProductChanges(payload)');
+        expect(source).toContain('crud.applyBackendIds(result.generatedIds || [])');
+        expect(source).toContain('crud.markValidChangesSaved()');
+        expect(source).toContain('message: payload.isPartialSave ? t(\'partialSaved\') : t(\'saved\')');
+    });
+
+    test('keeps row-action confirmation standard while reserving ConfirmDialog for partial save', () => {
+        expect(source).toContain('rowActionColumn: {');
+        expect(source).toContain('confirmDeleteMessage: demoRowActionMessages.delete');
+        expect(source).toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
+        expect(source).toContain('confirmRemoveNewMessage: demoRowActionMessages.removeNew');
+        expect(source).toContain('const partialSaveDialog = new AMB.ConfirmDialog()');
+        expect(source).not.toContain('createDemoRowActionColumn');
+        expect(source).not.toContain('bindInventoryRowActionKeyboardBridge');
     });
 
     test('keeps the main demo toolbar compact and the Tabulator surface clean in demo CSS', () => {
@@ -205,6 +238,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('.demo-panel .amb-toolbar {');
         expect(demoCss).toContain('grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);');
         expect(demoCss).toContain('.demo-panel .amb-toolbar__search {');
+        expect(demoCss).toContain('body.demo-main-demo-active .teh-confirm-dialog__message');
+        expect(demoCss).toContain('white-space: pre-line;');
         expect(source).toContain('class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-tableholder,');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-placeholder');

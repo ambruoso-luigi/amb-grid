@@ -1875,6 +1875,10 @@ a {
     backdrop-filter: blur(4px);
 }
 
+body.demo-main-demo-active .teh-confirm-dialog__message {
+    white-space: pre-line;
+}
+
 .demo-main-demo-active .amb-lookup-dialog__panel {
     background:
         linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);

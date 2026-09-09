@@ -4,12 +4,15 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 
+const DEMO_SAVE_POLICY = 'valid-only';
+
 const messages = {
     it: {
         reloaded: 'Dati ricaricati.',
         noChanges: 'Non ci sono modifiche da salvare.',
         invalid: 'Correggi gli errori evidenziati prima di salvare.',
         saved: 'Modifiche salvate e stati riallineati.',
+        partialSaved: 'Modifiche valide salvate. Le righe con errori restano da correggere.',
         saveError: 'Il backend fake ha restituito errori di validazione.',
         payloadTitle: 'Payload di salvataggio',
         reportTitle: 'Report stato righe',
@@ -20,18 +23,31 @@ const messages = {
         stateReport: 'Report stato righe',
         totalRows: 'Righe totali',
         validChangedRows: 'Righe modificate valide',
+        invalidChangedRows: 'Righe modificate non valide',
         errorRows: 'Righe con errori',
+        savePolicy: 'Policy',
+        partialSave: 'Salvataggio parziale',
+        partialSaveAvailable: 'Salvataggio parziale disponibile',
         canSave: 'Salvabile',
         inserted: 'Inserite',
         updated: 'Aggiornate',
         deleted: 'Eliminate',
-        generatedIds: 'ID backend generati'
+        generatedIds: 'ID backend generati',
+        rowsStillNeedingCorrection: 'Righe rimaste da correggere',
+        partialSaveTitle: 'Sono presenti righe con errori',
+        partialSaveConfirm: 'Salva modifiche valide',
+        partialSaveCancel: 'Annulla',
+        row: 'Riga',
+        validChangesCanSave: '{count} modifiche valide possono comunque essere salvate.',
+        invalidRowsRemainPending: 'Le righe con errori resteranno in attesa di correzione.',
+        saveValidChangesQuestion: 'Vuoi salvare le modifiche valide?'
     },
     en: {
         reloaded: 'Data reloaded.',
         noChanges: 'There are no changes to save.',
         invalid: 'Fix highlighted errors before saving.',
         saved: 'Changes saved and row states aligned.',
+        partialSaved: 'Valid changes saved. Rows with errors are still pending correction.',
         saveError: 'The fake backend returned validation errors.',
         payloadTitle: 'Save payload',
         reportTitle: 'Row state report',
@@ -42,12 +58,24 @@ const messages = {
         stateReport: 'Row state report',
         totalRows: 'Total rows',
         validChangedRows: 'Valid changed rows',
+        invalidChangedRows: 'Invalid changed rows',
         errorRows: 'Rows with errors',
+        savePolicy: 'Policy',
+        partialSave: 'Partial save',
+        partialSaveAvailable: 'Partial save available',
         canSave: 'Can save',
         inserted: 'Inserted',
         updated: 'Updated',
         deleted: 'Deleted',
-        generatedIds: 'Generated backend IDs'
+        generatedIds: 'Generated backend IDs',
+        rowsStillNeedingCorrection: 'Rows still needing correction',
+        partialSaveTitle: 'Some changed rows contain errors',
+        partialSaveConfirm: 'Save valid changes',
+        partialSaveCancel: 'Cancel',
+        row: 'Row',
+        validChangesCanSave: '{count} valid changes can still be saved.',
+        invalidRowsRemainPending: 'Rows with errors will remain pending for correction.',
+        saveValidChangesQuestion: 'Do you want to save the valid changes?'
     }
 };
 
@@ -75,24 +103,43 @@ const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
 };
 
-const hasPayloadChanges = payload => {
+const getValidChangesCount = payload => {
     const changes = payload.changes || {};
 
-    return Boolean(
-        (changes.inserted || []).length
-        || (changes.updated || []).length
-        || (changes.deleted || []).length
-    );
+    return (changes.inserted || []).length
+        + (changes.updated || []).length
+        + (changes.deleted || []).length;
+};
+
+const getInvalidChangedRowLines = validateResult => {
+    const groupedRows = new Map();
+
+    validateResult.rows
+        .filter(row => !row.isValid)
+        .forEach(row => {
+            const rowLabel = row.rowNumber ?? row.id ?? row.key ?? 'n/a';
+            const fields = [...new Set(row.errors.map(error => error.field))];
+
+            groupedRows.set(rowLabel, fields);
+        });
+
+    return [...groupedRows.entries()].map(([rowLabel, fields]) => {
+        return `${t('row')} ${rowLabel}: ${fields.join(', ')}`;
+    });
 };
 
 const buildPayloadReport = payload => [
+    `${t('savePolicy')}: ${payload.savePolicy}`,
     `${t('inserted')}: ${payload.changes.inserted.length}`,
     `${t('updated')}: ${payload.changes.updated.length}`,
     `${t('deleted')}: ${payload.changes.deleted.length}`,
+    `${t('validChangedRows')}: ${payload.hasValidChanges ? getValidChangesCount(payload) : 0}`,
+    `${t('invalidChangedRows')}: ${payload.hasInvalidChanges ? payload.summary.invalidChangedRowsCount : 0}`,
+    `${t('partialSave')}: ${payload.isPartialSave}`,
     `${t('canSave')}: ${payload.canSave}`
 ];
 
-const buildStateReport = report => [
+const buildStateReport = (report, payload) => [
     t('stateReport'),
     '',
     `${t('totalRows')}: ${report.totalRows}`,
@@ -103,23 +150,27 @@ const buildStateReport = report => [
     `Saved: ${countRowsByState(report, 'saved')}`,
     `${t('errorRows')}: ${report.errorRowsCount}`,
     `${t('validChangedRows')}: ${report.validChangedRowsCount}`,
-    `${t('canSave')}: ${report.validChangedRowsCount > 0 && !report.hasErrors}`
+    `${t('invalidChangedRows')}: ${report.invalidChangedRowsCount}`,
+    `${t('partialSaveAvailable')}: ${payload.isPartialSave}`,
+    `${t('canSave')}: ${payload.canSave}`
 ];
 
 const buildValidationReport = validateResult => [
     validateResult.isValid ? t('validationValid') : t('validationInvalid'),
     '',
-    ...validateResult.rows
-        .filter(row => !row.isValid)
-        .map(row => {
-            const rowLabel = row.rowNumber ?? row.id ?? row.key ?? 'n/a';
-            const fields = row.errors.map(error => error.field).join(', ');
-
-            return `Row ${rowLabel}: ${fields}`;
-        })
+    ...getInvalidChangedRowLines(validateResult)
 ];
 
-const buildSaveReport = ({ result, applyIdsResult, savedResult }) => [
+const buildPartialSaveMessage = ({ payload, validateResult }) => [
+    ...getInvalidChangedRowLines(validateResult),
+    '',
+    t('validChangesCanSave').replace('{count}', getValidChangesCount(payload)),
+    t('invalidRowsRemainPending'),
+    '',
+    t('saveValidChangesQuestion')
+].join('\n');
+
+const buildSaveReport = ({ result, applyIdsResult, savedResult, payload, validateResult }) => [
     t('saveTitle'),
     '',
     `${t('inserted')}: ${result.saved.inserted.length}`,
@@ -127,7 +178,10 @@ const buildSaveReport = ({ result, applyIdsResult, savedResult }) => [
     `${t('deleted')}: ${result.saved.deleted.length}`,
     `${t('generatedIds')}: ${(result.generatedIds || []).length}`,
     `Applied IDs: ${applyIdsResult.applied.length}`,
-    `Saved rows: ${savedResult.saved.length}`
+    `Saved rows: ${savedResult.saved.length}`,
+    ...(payload.isPartialSave
+        ? [`${t('rowsStillNeedingCorrection')}: ${getInvalidChangedRowLines(validateResult).length}`]
+        : [])
 ];
 
 export default async function fullDemo(app, options = {}) {
@@ -187,7 +241,7 @@ export default async function fullDemo(app, options = {}) {
                         { title: 'Edit and add', titleKey: 'mainDemo.guide.edit.title', description: 'Edit cells directly or use Add Row to create a new local product.', descriptionKey: 'mainDemo.guide.edit.description' },
                         { title: 'Row actions', titleKey: 'mainDemo.guide.actions.title', description: 'Clean and saved rows show Delete, modified or deleted rows show Rollback, and new rows show Remove new.', descriptionKey: 'mainDemo.guide.actions.description' },
                         { title: 'Validation and lookup', titleKey: 'mainDemo.guide.validation.title', description: 'Field rules validate edits; autocomplete and lookup editors guide controlled selections.', descriptionKey: 'mainDemo.guide.validation.description' },
-                        { title: 'Payload and save', titleKey: 'mainDemo.guide.save.title', description: 'Payload separates inserted, updated, and deleted records; Save sends valid changes to the fake backend.', descriptionKey: 'mainDemo.guide.save.description' },
+                        { title: 'Payload and save', titleKey: 'mainDemo.guide.save.title', description: 'The payload separates inserted, updated and deleted records. If some changed rows contain errors, Save can persist the valid changes after confirmation while invalid rows remain pending.', descriptionKey: 'mainDemo.guide.save.description' },
                         { title: 'Search and filters', titleKey: 'mainDemo.guide.search.title', description: 'Search and filter controls narrow the visible inventory without changing the underlying data.', descriptionKey: 'mainDemo.guide.search.description' }
                     ],
                     columns: [
@@ -224,6 +278,7 @@ export default async function fullDemo(app, options = {}) {
     });
     const statusDialog = new AMB.LookupDialog();
     const reportDialog = createDemoReportDialog();
+    const partialSaveDialog = new AMB.ConfirmDialog();
     const warehouseOptions = await fakeApi.getWarehouses();
     const products = await fakeApi.getProducts();
     let crud = null;
@@ -438,6 +493,7 @@ export default async function fullDemo(app, options = {}) {
 
     demo.destroy = () => {
         reportDialog.destroy();
+        partialSaveDialog.destroy();
         app.style.removeProperty('--demo-table-height');
         document.body.classList.remove('demo-main-demo-active');
         if (extraClasses.length) {
@@ -453,7 +509,10 @@ export default async function fullDemo(app, options = {}) {
         originalDestroy();
     };
 
-    function openPayloadReport(payload = crud.getSavePayload()) {
+    function openPayloadReport(payload = demo.getSavePayload({
+        savePolicy: DEMO_SAVE_POLICY,
+        includeInvalid: true
+    })) {
         reportDialog.open({
             title: t('payloadTitle'),
             reportLines: buildPayloadReport(payload),
@@ -463,11 +522,15 @@ export default async function fullDemo(app, options = {}) {
 
     function openStateReport() {
         const report = crud.getStateReport();
+        const payload = demo.getSavePayload({
+            savePolicy: DEMO_SAVE_POLICY,
+            includeInvalid: true
+        });
 
         reportDialog.open({
             title: t('reportTitle'),
-            reportLines: buildStateReport(report),
-            jsonData: report
+            reportLines: buildStateReport(report, payload),
+            jsonData: { report, payload }
         });
     }
 
@@ -477,7 +540,10 @@ export default async function fullDemo(app, options = {}) {
             reportLines: buildValidationReport(validateResult),
             jsonData: {
                 validateResult,
-                payload: crud.getSavePayload({ includeInvalid: true })
+                payload: demo.getSavePayload({
+                    savePolicy: DEMO_SAVE_POLICY,
+                    includeInvalid: true
+                })
             }
         });
     }
@@ -511,8 +577,8 @@ export default async function fullDemo(app, options = {}) {
         });
     }
 
-    function handleShowPayload({ payload }) {
-        openPayloadReport(payload);
+    function handleShowPayload() {
+        openPayloadReport();
     }
 
     function handleShowReport() {
@@ -520,7 +586,7 @@ export default async function fullDemo(app, options = {}) {
     }
 
     function handleValidate() {
-        const validateResult = crud.validateAll();
+        const validateResult = demo.validate();
 
         openValidationReport(validateResult);
         demo.feedback.show({
@@ -532,9 +598,21 @@ export default async function fullDemo(app, options = {}) {
     async function handleSave() {
         demo.feedback.clear();
 
-        const validateResult = crud.validateAll();
+        const validateResult = demo.validateChanges();
+        const payload = demo.getSavePayload({
+            savePolicy: DEMO_SAVE_POLICY,
+            includeInvalid: true
+        });
 
-        if (!validateResult.isValid) {
+        if (payload.hasChanges === false) {
+            demo.feedback.show({
+                type: 'info',
+                message: t('noChanges')
+            });
+            return;
+        }
+
+        if (payload.hasValidChanges === false && payload.hasInvalidChanges === true) {
             openValidationReport(validateResult);
             demo.feedback.show({
                 type: 'warning',
@@ -543,12 +621,27 @@ export default async function fullDemo(app, options = {}) {
             return;
         }
 
-        const payload = crud.getSavePayload();
+        if (payload.hasValidChanges
+            && payload.hasInvalidChanges
+            && payload.isPartialSave
+            && payload.canSave) {
+            const confirmed = await partialSaveDialog.confirm({
+                title: t('partialSaveTitle'),
+                message: buildPartialSaveMessage({ payload, validateResult }),
+                confirmText: t('partialSaveConfirm'),
+                cancelText: t('partialSaveCancel')
+            });
 
-        if (!hasPayloadChanges(payload)) {
+            if (!confirmed) {
+                return;
+            }
+        }
+
+        if (!payload.canSave) {
+            openValidationReport(validateResult);
             demo.feedback.show({
-                type: 'info',
-                message: t('noChanges')
+                type: 'warning',
+                message: t('invalid')
             });
             return;
         }
@@ -562,6 +655,8 @@ export default async function fullDemo(app, options = {}) {
                 result,
                 applyIdsResult,
                 savedResult,
+                payload,
+                validateResult,
                 report: crud.getStateReport()
             };
 
@@ -572,7 +667,7 @@ export default async function fullDemo(app, options = {}) {
             });
             demo.feedback.show({
                 type: 'success',
-                message: t('saved')
+                message: payload.isPartialSave ? t('partialSaved') : t('saved')
             });
             return;
         }
