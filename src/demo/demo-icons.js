@@ -12,6 +12,7 @@ import {
     FileCode,
     FileJson,
     BookOpen,
+    Home,
     Keyboard,
     Layers,
     ListChecks,
@@ -41,6 +42,7 @@ export const demoIcons = {
     framework: Blocks,
     github: CodeXml,
     guide: BookOpen,
+    home: Home,
     javascript: CodeXml,
     json: FileCode,
     keyboard: Keyboard,
@@ -79,6 +81,33 @@ const renderChildren = children => children
         return `<${tag} ${stringifyAttributes(attributes)}>${renderedChildren}</${tag}>`;
     })
     .join('');
+
+export const demoYoutubeIcon = (options = {}) => {
+    const {
+        size = 16,
+        className = 'demo-icon',
+        ariaLabel = null
+    } = options;
+    const accessibilityAttributes = ariaLabel
+        ? {
+            role: 'img',
+            'aria-label': ariaLabel
+        }
+        : {
+            'aria-hidden': 'true'
+        };
+
+    return `<svg ${stringifyAttributes({
+        class: className,
+        xmlns: 'http://www.w3.org/2000/svg',
+        width: size,
+        height: size,
+        viewBox: '0 0 24 24',
+        fill: 'none',
+        focusable: 'false',
+        ...accessibilityAttributes
+    })}><path d="M23.5 6.2a2.9 2.9 0 0 0-2-2C19.7 3.7 12 3.7 12 3.7s-7.7 0-9.5.5a2.9 2.9 0 0 0-2 2A30.1 30.1 0 0 0 0 12a30.1 30.1 0 0 0 .5 5.8 2.9 2.9 0 0 0 2 2c1.8.5 9.5.5 9.5.5s7.7 0 9.5-.5a2.9 2.9 0 0 0 2-2A30.1 30.1 0 0 0 24 12a30.1 30.1 0 0 0-.5-5.8Z" fill="currentColor"/><path d="m9.5 15.6 6.3-3.6-6.3-3.6v7.2Z" fill="#fff"/></svg>`;
+};
 
 export const demoIcon = (name, options = {}) => {
     const icon = demoIcons[name];

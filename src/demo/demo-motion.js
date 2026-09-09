@@ -87,7 +87,7 @@ export const initDemoMotion = (root = document) => {
 
     const heroElements = getElements(
         root,
-        '.demo-hero__content, .demo-hero__video, .demo-guide-hero .demo-topbar, .demo-back-link, .demo-guide-hero__content'
+        '.demo-hero__content, .demo-hero__video, .demo-guide-hero .demo-topbar, .demo-secondary-home-link, .demo-guide-hero__content'
     ).filter(element => !element.closest('.js-guide-page'));
 
     reveal(heroElements, {
@@ -153,7 +153,7 @@ export const initDemoMotion = (root = document) => {
     const javaScriptGuideHero = root.querySelector('.js-guide-page .demo-guide-hero');
 
     if (javaScriptGuideHero) {
-        reveal(getElements(javaScriptGuideHero, '.demo-topbar, .demo-back-link'), {
+        reveal(getElements(javaScriptGuideHero, '.demo-topbar, .demo-secondary-home-link'), {
             delay: stagger(0.06),
             duration: 0.42,
             offset: 10

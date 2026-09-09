@@ -103,7 +103,7 @@ describe('demo site navigation', () => {
         const css = read('src/demo/demo.css');
         const motion = read('src/demo/demo-motion.js');
 
-        expect(guide).toContain("import { demoIcon, frameworkIcon } from './demo-icons.js';");
+        expect(guide).toContain("import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';");
         expect(guide).toContain("frameworkIcon('javascript')");
         expect(guide).toContain('class="demo-framework-identity"');
         expect(guide).toContain('data-i18n="guide.identity.title"');
@@ -116,6 +116,33 @@ describe('demo site navigation', () => {
         expect(css).toContain('.demo-framework-identity__logo');
         expect(motion).toContain("root.querySelector('.js-guide-page .demo-guide-hero')");
         expect(motion).toContain('if (prefersReducedMotion()) return;');
+    });
+
+    test('keeps the JavaScript guide header secondary while identifying its YouTube video', () => {
+        const guide = read('src/demo/getting-started-javascript.js');
+        const main = read('src/demo/main.js');
+        const css = read('src/demo/demo.css');
+        const icons = read('src/demo/demo-icons.js');
+
+        expect(guide).toContain("demoIcon('home'");
+        expect(guide).toContain('class="demo-secondary-home-link" href="#top"');
+        expect(guide).toContain('data-i18n="guide.home">Home</span>');
+        expect(guide).not.toContain('Torna alla home demo');
+        expect(guide).not.toContain('Back to demo home');
+        expect(guide).toContain('data-i18n="guide.videoTitle">Video demo JavaScript</span>');
+        expect(guide).toContain('data-i18n="guide.videoDestination">Guarda su YouTube</span>');
+        expect(guide).toContain('data-i18n-title="guide.videoOpen"');
+        expect(guide).toContain('demoYoutubeIcon({');
+        expect(main).toContain("'guide.home': 'Home'");
+        expect(main).toContain("'guide.videoTitle': 'JavaScript demo video'");
+        expect(main).toContain("'guide.videoDestination': 'Watch on YouTube'");
+        expect(main).not.toContain('demo-secondary-home-link');
+        expect(icons).toContain('home: Home');
+        expect(icons).toContain('export const demoYoutubeIcon');
+        expect(icons).not.toContain('Youtube,');
+        expect(css).toContain('.demo-secondary-home-link');
+        expect(css).toContain('.demo-guide-video__destination');
+        expect(css).toContain('.demo-guide-video__brand');
     });
 
     test('keeps the JavaScript guide add-row snippets promise-aware', () => {

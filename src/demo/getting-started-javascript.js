@@ -1,5 +1,5 @@
 import { renderDemoBrand } from './demo-brand.js';
-import { demoIcon, frameworkIcon } from './demo-icons.js';
+import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
 import { renderDemoFooter } from './demo-footer.js';
 
 export default function gettingStartedJavaScript(app) {
@@ -41,7 +41,10 @@ export default function gettingStartedJavaScript(app) {
                 </nav>
                 <div class="demo-guide-hero__layout">
                     <div class="demo-guide-hero__copy">
-                        <a class="demo-back-link" href="#top" data-i18n="guide.back">Torna alla home demo</a>
+                        <a class="demo-secondary-home-link" href="#top">
+                            ${demoIcon('home', { className: 'demo-secondary-home-link__icon', size: 15 })}
+                            <span data-i18n="guide.home">Home</span>
+                        </a>
                         <div class="demo-framework-identity">
                             <span class="demo-framework-identity__logo">
                                 ${frameworkIcon('javascript')}
@@ -63,7 +66,7 @@ export default function gettingStartedJavaScript(app) {
                         target="_blank"
                         rel="noopener noreferrer"
                         data-i18n-title="guide.videoOpen"
-                        aria-label="Apri il video demo placeholder su YouTube"
+                        aria-label="Apri il video demo JavaScript su YouTube"
                     >
                         <img
                             class="demo-guide-video__image"
@@ -73,7 +76,11 @@ export default function gettingStartedJavaScript(app) {
                         >
                         <span class="demo-guide-video__overlay" aria-hidden="true"></span>
                         <span class="demo-guide-video__play" aria-hidden="true">${demoIcon('video', { size: 30 })}</span>
-                        <span class="demo-guide-video__label" data-i18n="guide.videoLabel">Video demo — placeholder</span>
+                        <span class="demo-guide-video__title" data-i18n="guide.videoTitle">Video demo JavaScript</span>
+                        <span class="demo-guide-video__destination">
+                            <span class="demo-guide-video__brand">${demoYoutubeIcon({ className: 'demo-guide-video__brand-icon', size: 16 })}</span>
+                            <span data-i18n="guide.videoDestination">Guarda su YouTube</span>
+                        </span>
                     </a>
                 </div>
             </header>
