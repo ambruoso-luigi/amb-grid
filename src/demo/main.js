@@ -85,7 +85,7 @@ const translations = {
         'cycle.payloadTitle': 'Payload',
         'cycle.payloadText': 'Nuove, modificate ed eliminate restano distinte fino a un payload già pronto per il backend.',
         'cycle.alignTitle': 'Align',
-        'cycle.alignText': 'Dopo il salvataggio dati, ID e stati vengono riallineati alla risposta backend.',
+        'cycle.alignText': 'Dopo il salvataggio, solo i dati confermati dal backend vengono riallineati; le modifiche ancora pendenti restano intatte.',
         'cycle.detail.edit.title': 'Editing pensato per dati gestionali',
         'cycle.detail.edit.intro': 'Le modifiche avvengono direttamente nella griglia: AMB Grid coordina editor, stato della riga e rollback nello stesso ciclo CRUD, senza separare l’editing dal dato che l’utente sta gestendo.',
         'cycle.detail.edit.group1Title': 'Editor dedicati',
@@ -138,17 +138,17 @@ const translations = {
         'cycle.detail.payload.group4Title': 'Payload applicativo',
         'cycle.detail.payload.group4.prefix': 'restituisce una struttura già pronta per il backend, mantenendo la distinzione tra operazioni e lasciando separate le modifiche non ancora salvabili.',
         'cycle.detail.payload.value': 'L’applicazione non deve ricostruire manualmente le differenze: AMB Grid consegna un payload coerente con il ciclo CRUD.',
-        'cycle.detail.align.title': 'Riallineamento dopo il salvataggio',
-        'cycle.detail.align.intro': 'Dopo la conferma del backend, la griglia può riallineare dati applicativi e stato locale.',
+        'cycle.detail.align.title': 'Dalla risposta backend a un nuovo stato coerente',
+        'cycle.detail.align.intro': 'Dopo una risposta positiva del backend, AMB Grid riallinea le modifiche effettivamente salvate: integra gli identificativi assegnati, aggiorna la baseline e lascia invece pendenti le righe che non sono state confermate.',
         'cycle.detail.align.group1Title': 'ID backend',
-        'cycle.detail.align.group1Text': 'Una nuova riga può ricevere l’identificatore definitivo assegnato dal backend.',
-        'cycle.detail.align.group2Title': 'Conferma dello stato',
-        'cycle.detail.align.group2Text': 'Le modifiche salvate possono diventare la nuova baseline della tabella.',
-        'cycle.detail.align.group3Title': 'Rollback aggiornato',
-        'cycle.detail.align.group3Text': 'I successivi rollback fanno riferimento ai dati ormai confermati.',
-        'cycle.detail.align.group4Title': 'Continuità applicativa',
-        'cycle.detail.align.group4Text': 'Il client continua a lavorare sugli stessi record senza ricostruire manualmente l’intero stato.',
-        'cycle.detail.align.value': 'Il ciclo non termina con l’invio del payload: AMB Grid gestisce anche il ritorno a uno stato coerente dopo il salvataggio.',
+        'cycle.detail.align.group1Text': 'Le nuove righe salvate possono ricevere l’identificativo definitivo assegnato dal backend, sostituendo il riferimento temporaneo usato durante l’editing locale.',
+        'cycle.detail.align.group2Title': 'Allineamento selettivo',
+        'cycle.detail.align.group2Text': 'Solo le modifiche effettivamente confermate vengono riallineate. In un salvataggio parziale, le righe valide possono diventare la nuova situazione confermata mentre quelle con errori restano ancora da correggere.',
+        'cycle.detail.align.group3Title': 'Baseline aggiornata',
+        'cycle.detail.align.group3Text': 'I valori confermati diventano il nuovo riferimento della riga, così eventuali modifiche successive e rollback partono dai dati realmente accettati dal backend.',
+        'cycle.detail.align.group4Title': 'Modifiche pendenti',
+        'cycle.detail.align.group4Text': 'Le righe escluse dal salvataggio non vengono perse né riallineate per errore: mantengono dati, stato ed eventuali errori e possono essere corrette e salvate successivamente.',
+        'cycle.detail.align.value': 'Il ciclo CRUD si chiude solo sui dati realmente confermati: ciò che è stato salvato viene riallineato, ciò che resta da correggere rimane disponibile senza perdere il lavoro dell’utente.',
         'examples.kicker': 'Mini-demo tecniche',
         'examples.title': 'Esempi funzionali',
         'examples.description': 'Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.',
@@ -264,7 +264,7 @@ const translations = {
         'cycle.payloadTitle': 'Payload',
         'cycle.payloadText': 'New, updated and deleted rows remain distinct through to a backend-ready payload.',
         'cycle.alignTitle': 'Align',
-        'cycle.alignText': 'After save, data, IDs and states align with the backend response.',
+        'cycle.alignText': 'After saving, only backend-confirmed data is aligned; changes still pending remain untouched.',
         'cycle.detail.edit.title': 'Editing designed for business data',
         'cycle.detail.edit.intro': 'Changes happen directly in the grid: AMB Grid coordinates editors, row state and rollback within the same CRUD lifecycle, without separating editing from the data the user is working with.',
         'cycle.detail.edit.group1Title': 'Dedicated editors',
@@ -317,17 +317,17 @@ const translations = {
         'cycle.detail.payload.group4Title': 'Application payload',
         'cycle.detail.payload.group4.prefix': 'returns a backend-ready structure that preserves the distinction between operations while keeping changes that are not yet savable separate.',
         'cycle.detail.payload.value': 'The application does not need to reconstruct changes manually: AMB Grid provides a payload that remains consistent with the CRUD lifecycle.',
-        'cycle.detail.align.title': 'Realignment after saving',
-        'cycle.detail.align.intro': 'After backend confirmation, the grid can realign application data and local state.',
-        'cycle.detail.align.group1Title': 'Backend ID',
-        'cycle.detail.align.group1Text': 'A new row can receive the definitive identifier assigned by the backend.',
-        'cycle.detail.align.group2Title': 'State confirmation',
-        'cycle.detail.align.group2Text': 'Saved changes can become the table’s new baseline.',
-        'cycle.detail.align.group3Title': 'Updated rollback',
-        'cycle.detail.align.group3Text': 'Later rollbacks reference the data that has now been confirmed.',
-        'cycle.detail.align.group4Title': 'Application continuity',
-        'cycle.detail.align.group4Text': 'The client keeps working on the same records without manually rebuilding the whole state.',
-        'cycle.detail.align.value': 'The cycle does not end with payload delivery: AMB Grid also returns to a coherent state after saving.',
+        'cycle.detail.align.title': 'From the backend response to a consistent new state',
+        'cycle.detail.align.intro': 'After a successful backend response, AMB Grid aligns the changes that were actually saved: it applies assigned identifiers, updates the baseline, and leaves unconfirmed rows pending.',
+        'cycle.detail.align.group1Title': 'Backend IDs',
+        'cycle.detail.align.group1Text': 'Newly saved rows can receive the definitive identifier assigned by the backend, replacing the temporary reference used during local editing.',
+        'cycle.detail.align.group2Title': 'Selective alignment',
+        'cycle.detail.align.group2Text': 'Only confirmed changes are aligned. During a partial save, valid rows can become the new confirmed state while rows with errors remain pending for correction.',
+        'cycle.detail.align.group3Title': 'Updated baseline',
+        'cycle.detail.align.group3Text': 'Confirmed values become the new reference for the row, so later edits and rollbacks start from the data actually accepted by the backend.',
+        'cycle.detail.align.group4Title': 'Pending changes',
+        'cycle.detail.align.group4Text': 'Rows excluded from the save are neither lost nor incorrectly aligned: they keep their data, state and errors and can be corrected and saved later.',
+        'cycle.detail.align.value': 'The CRUD cycle closes only for data actually confirmed by the backend: saved changes are aligned, while pending corrections remain available without losing the user’s work.',
         'examples.kicker': 'Technical mini-demos',
         'examples.title': 'Feature examples',
         'examples.description': 'The existing demos remain available as focused examples for individual AMB Grid capabilities.',
@@ -482,22 +482,22 @@ const cycleDetailBodies = {
         <div class="demo-cycle-detail__groups">
             <div>
                 <h4 data-i18n="cycle.detail.align.group1Title">ID backend</h4>
-                <p data-i18n="cycle.detail.align.group1Text">Una nuova riga può ricevere l’identificatore definitivo assegnato dal backend.</p>
+                <p data-i18n="cycle.detail.align.group1Text">Le nuove righe salvate possono ricevere l’identificativo definitivo assegnato dal backend, sostituendo il riferimento temporaneo usato durante l’editing locale.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.align.group2Title">Conferma dello stato</h4>
-                <p data-i18n="cycle.detail.align.group2Text">Le modifiche salvate possono diventare la nuova baseline della tabella.</p>
+                <h4 data-i18n="cycle.detail.align.group2Title">Allineamento selettivo</h4>
+                <p data-i18n="cycle.detail.align.group2Text">Solo le modifiche effettivamente confermate vengono riallineate. In un salvataggio parziale, le righe valide possono diventare la nuova situazione confermata mentre quelle con errori restano ancora da correggere.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.align.group3Title">Rollback aggiornato</h4>
-                <p data-i18n="cycle.detail.align.group3Text">I successivi rollback fanno riferimento ai dati ormai confermati.</p>
+                <h4 data-i18n="cycle.detail.align.group3Title">Baseline aggiornata</h4>
+                <p data-i18n="cycle.detail.align.group3Text">I valori confermati diventano il nuovo riferimento della riga, così eventuali modifiche successive e rollback partono dai dati realmente accettati dal backend.</p>
             </div>
             <div>
-                <h4 data-i18n="cycle.detail.align.group4Title">Continuità applicativa</h4>
-                <p data-i18n="cycle.detail.align.group4Text">Il client continua a lavorare sugli stessi record senza ricostruire manualmente l’intero stato.</p>
+                <h4 data-i18n="cycle.detail.align.group4Title">Modifiche pendenti</h4>
+                <p data-i18n="cycle.detail.align.group4Text">Le righe escluse dal salvataggio non vengono perse né riallineate per errore: mantengono dati, stato ed eventuali errori e possono essere corrette e salvate successivamente.</p>
             </div>
         </div>
-        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.align.value">Il ciclo non termina con l’invio del payload: AMB Grid gestisce anche il ritorno a uno stato coerente dopo il salvataggio.</p>`
+        <p class="demo-cycle-detail__value" data-i18n="cycle.detail.align.value">Il ciclo CRUD si chiude solo sui dati realmente confermati: ciò che è stato salvato viene riallineato, ciò che resta da correggere rimane disponibile senza perdere il lavoro dell’utente.</p>`
 };
 
 const cycleDetailCopy = {
@@ -827,7 +827,7 @@ const renderShell = selectedId => {
                             ${demoIcon('backend', { className: 'demo-card-icon demo-card-icon--flow', size: 18 })}
                             <strong data-i18n="cycle.alignTitle">Align</strong>
                         </span>
-                        <p data-i18n="cycle.alignText">Dopo il salvataggio, dati applicativi e stato locale possono riallinearsi.</p>
+                        <p data-i18n="cycle.alignText">Dopo il salvataggio, solo i dati confermati dal backend vengono riallineati; le modifiche ancora pendenti restano intatte.</p>
                         <span class="demo-flow-card__connector" aria-hidden="true">${demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })}</span>
                     </article>
                 </div>
