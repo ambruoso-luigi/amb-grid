@@ -59,26 +59,26 @@ export function ReactHero() {
         </div>
       </nav>
 
-      <div className="react-hero__home">
-        <a className="react-demo-home-link" href="#">
-          <Home aria-hidden="true" className="size-4" />
-          {text.home}
-        </a>
-      </div>
       <div className="react-hero">
         <motion.div animate={{ opacity: 1, y: 0 }} className="react-hero__copy" initial={enter} transition={{ duration: 0.45, ease: 'easeOut' }}>
+          <a className="react-demo-home-link" href="#">
+            <Home aria-hidden="true" className="size-4" />
+            {text.home}
+          </a>
           <div className="react-identity">
             <motion.span animate={{ opacity: 1, scale: 1 }} className="react-identity__logo" initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.92 }} transition={{ duration: 0.38, ease: 'easeOut' }}>
               <ReactMark />
             </motion.span>
-            <span>
+            <span className="react-identity__copy">
               <strong>{text.integration}</strong>
               <small>React + TypeScript</small>
             </span>
           </div>
+          <div className="react-hero__content">
           <h1>{text.title}</h1>
           <p>{text.description}</p>
           <p className="react-hero__stack">React · TypeScript · shadcn/ui · Motion · MSW</p>
+          </div>
         </motion.div>
         <motion.a animate={{ opacity: 1, scale: 1, y: 0 }} aria-label={text.videoOpen} className="react-video-preview" href="https://youtu.be/4m0EZ4vPmT0" initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.985, y: 14 }} rel="noopener noreferrer" target="_blank" transition={{ delay: 0.12, duration: 0.5, ease: 'easeOut' }} whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
           <img alt="" className="react-video-preview__image" loading="eager" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" />
