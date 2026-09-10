@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { ArrowDown, Home } from 'lucide-react';
-import { Button } from './ui/button';
+import { Home } from 'lucide-react';
 
 const ambGridLogo = new URL('../../../../src/demo/amb-grid-logo.png', import.meta.url).href;
 
@@ -12,7 +11,6 @@ const copy = {
     integration: 'INTEGRAZIONE REACT',
     title: 'AMB Grid dentro un’applicazione React',
     description: 'Una demo reale con lifecycle React, componenti TypeScript, UI moderna e la stessa logica CRUD di AMB Grid.',
-    openDemo: 'Apri demo React',
     home: 'Home',
     videoLabel: 'Demo React',
     videoOpen: 'Apri Demo React su YouTube',
@@ -21,7 +19,6 @@ const copy = {
     integration: 'REACT INTEGRATION',
     title: 'AMB Grid inside a React application',
     description: 'A real demo with the React lifecycle, TypeScript components, a modern UI and the same AMB Grid CRUD logic.',
-    openDemo: 'Open React demo',
     home: 'Home',
     videoLabel: 'React Demo',
     videoOpen: 'Open the React Demo on YouTube',
@@ -49,10 +46,6 @@ export function ReactHero() {
   const enter = shouldReduceMotion ? undefined : { opacity: 0, y: 14 };
   const [language, setLanguage] = useState<Language>('it');
   const text = copy[language];
-
-  const openInventory = () => {
-    document.querySelector('#inventory-operations')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <header className="react-hero-shell">
@@ -87,11 +80,6 @@ export function ReactHero() {
           <h1>{text.title}</h1>
           <p>{text.description}</p>
           <p className="react-hero__stack">React · TypeScript · shadcn/ui · Motion · MSW</p>
-          <div className="react-hero__actions">
-            <motion.div whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}>
-              <Button onClick={openInventory} size="lg">{text.openDemo} <ArrowDown aria-hidden="true" className="size-4" /></Button>
-            </motion.div>
-          </div>
         </motion.div>
         <motion.a animate={{ opacity: 1, scale: 1, y: 0 }} aria-label={text.videoOpen} className="react-video-preview" href="https://youtu.be/4m0EZ4vPmT0" initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.985, y: 14 }} rel="noopener noreferrer" target="_blank" transition={{ delay: 0.12, duration: 0.5, ease: 'easeOut' }} whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
           <img alt="" className="react-video-preview__image" loading="eager" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" />
