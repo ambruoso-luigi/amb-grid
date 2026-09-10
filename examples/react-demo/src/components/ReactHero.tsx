@@ -15,6 +15,8 @@ const copy = {
     description: 'Una demo reale con lifecycle React, componenti TypeScript, UI moderna e la stessa logica CRUD di AMB Grid.',
     openDemo: 'Apri demo React',
     home: 'Home',
+    videoLabel: 'Demo React',
+    videoOpen: 'Apri Demo React su YouTube',
   },
   en: {
     integration: 'REACT INTEGRATION',
@@ -22,6 +24,8 @@ const copy = {
     description: 'A real demo with the React lifecycle, TypeScript components, a modern UI and the same AMB Grid CRUD logic.',
     openDemo: 'Open React demo',
     home: 'Home',
+    videoLabel: 'React Demo',
+    videoOpen: 'Open the React Demo on YouTube',
   },
 } as const;
 
@@ -31,6 +35,13 @@ const ReactMark = () => (
     <ellipse cx="32" cy="32" rx="28" ry="11" fill="none" stroke="currentColor" strokeWidth="3" />
     <ellipse cx="32" cy="32" rx="28" ry="11" fill="none" stroke="currentColor" strokeWidth="3" transform="rotate(60 32 32)" />
     <ellipse cx="32" cy="32" rx="28" ry="11" fill="none" stroke="currentColor" strokeWidth="3" transform="rotate(120 32 32)" />
+  </svg>
+);
+
+const YouTubeMark = () => (
+  <svg aria-hidden="true" className="react-video-link__icon" viewBox="0 0 24 24">
+    <path d="M21.58 7.19a2.99 2.99 0 0 0-2.1-2.12C17.62 4.57 12 4.57 12 4.57s-5.62 0-7.48.5a2.99 2.99 0 0 0-2.1 2.12A31.2 31.2 0 0 0 1.92 12c0 1.62.2 3.23.5 4.81a2.99 2.99 0 0 0 2.1 2.12c1.86.5 7.48.5 7.48.5s5.62 0 7.48-.5a2.99 2.99 0 0 0 2.1-2.12c.3-1.58.5-3.19.5-4.81 0-1.62-.2-3.23-.5-4.81Z" fill="currentColor" />
+    <path d="m10 15.5 5.2-3.5L10 8.5v7Z" fill="#fff" />
   </svg>
 );
 
@@ -50,21 +61,19 @@ export function ReactHero() {
         <a aria-label="AMB Grid home" className="react-demo-brand" href="#">
           <img alt="AMB Grid" src={ambGridLogo} />
         </a>
-        <div className="react-demo-topbar__actions">
-          <a className="react-demo-home-link" href="#">
-            <Home aria-hidden="true" className="size-4" />
-            {text.home}
-          </a>
-          <div aria-label="Select language" className="react-demo-language" role="group">
-            {(['it', 'en'] as const).map((option) => (
-              <button aria-pressed={language === option} className={language === option ? 'is-active' : ''} key={option} onClick={() => setLanguage(option)} type="button">
-                {option.toUpperCase()}
-              </button>
-            ))}
-          </div>
+        <div aria-label="Select language" className={`react-demo-language is-${language}`} role="group">
+          <button aria-pressed={language === 'it'} className="react-demo-language__label" onClick={() => setLanguage('it')} type="button">IT</button>
+          <button aria-label={language === 'it' ? 'Switch to English' : 'Passa all’italiano'} className="react-demo-language__control" onClick={() => setLanguage(language === 'it' ? 'en' : 'it')} type="button"><span /></button>
+          <button aria-pressed={language === 'en'} className="react-demo-language__label" onClick={() => setLanguage('en')} type="button">EN</button>
         </div>
       </nav>
 
+      <div className="react-hero__home">
+        <a className="react-demo-home-link" href="#">
+          <Home aria-hidden="true" className="size-4" />
+          {text.home}
+        </a>
+      </div>
       <div className="react-hero">
         <motion.div animate={{ opacity: 1, y: 0 }} className="react-hero__copy" initial={enter} transition={{ duration: 0.45, ease: 'easeOut' }}>
           <div className="react-identity">
@@ -85,7 +94,13 @@ export function ReactHero() {
             </motion.div>
           </div>
         </motion.div>
-        <ApplicationPreview />
+        <div className="react-hero__preview-column">
+          <ApplicationPreview />
+          <motion.a aria-label={text.videoOpen} className="react-video-link" href="https://youtu.be/4m0EZ4vPmT0" rel="noopener noreferrer" target="_blank" whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
+            <YouTubeMark />
+            <span><small>YouTube</small><strong>{text.videoLabel}</strong></span>
+          </motion.a>
+        </div>
       </div>
     </header>
   );
