@@ -1,7 +1,29 @@
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { ArrowDown, Code2 } from 'lucide-react';
+import { ArrowDown, Home } from 'lucide-react';
 import { ApplicationPreview } from './ApplicationPreview';
 import { Button } from './ui/button';
+
+const ambGridLogo = new URL('../../../../src/demo/amb-grid-logo.png', import.meta.url).href;
+
+type Language = 'it' | 'en';
+
+const copy = {
+  it: {
+    integration: 'INTEGRAZIONE REACT',
+    title: 'AMB Grid dentro un’applicazione React',
+    description: 'Una demo reale con lifecycle React, componenti TypeScript, UI moderna e la stessa logica CRUD di AMB Grid.',
+    openDemo: 'Apri demo React',
+    home: 'Home',
+  },
+  en: {
+    integration: 'REACT INTEGRATION',
+    title: 'AMB Grid inside a React application',
+    description: 'A real demo with the React lifecycle, TypeScript components, a modern UI and the same AMB Grid CRUD logic.',
+    openDemo: 'Open React demo',
+    home: 'Home',
+  },
+} as const;
 
 const ReactMark = () => (
   <svg aria-hidden="true" className="react-mark" viewBox="0 0 64 64">
@@ -15,6 +37,8 @@ const ReactMark = () => (
 export function ReactHero() {
   const shouldReduceMotion = useReducedMotion();
   const enter = shouldReduceMotion ? undefined : { opacity: 0, y: 14 };
+  const [language, setLanguage] = useState<Language>('it');
+  const text = copy[language];
 
   const openInventory = () => {
     document.querySelector('#inventory-operations')?.scrollIntoView({ behavior: 'smooth' });
@@ -23,13 +47,21 @@ export function ReactHero() {
   return (
     <header className="react-hero-shell">
       <nav aria-label="React demo navigation" className="react-demo-topbar">
-        <a className="react-demo-brand" href="#top">
-          <span className="react-demo-brand__mark">AMB</span>
-          <span>Grid</span>
+        <a aria-label="AMB Grid home" className="react-demo-brand" href="#">
+          <img alt="AMB Grid" src={ambGridLogo} />
         </a>
         <div className="react-demo-topbar__actions">
-          <a className="react-demo-home-link" href="#top">Home</a>
-          <span aria-label="Language: Italian" className="react-demo-language">IT <span>/</span> EN</span>
+          <a className="react-demo-home-link" href="#">
+            <Home aria-hidden="true" className="size-4" />
+            {text.home}
+          </a>
+          <div aria-label="Select language" className="react-demo-language" role="group">
+            {(['it', 'en'] as const).map((option) => (
+              <button aria-pressed={language === option} className={language === option ? 'is-active' : ''} key={option} onClick={() => setLanguage(option)} type="button">
+                {option.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
       </nav>
 
@@ -40,16 +72,17 @@ export function ReactHero() {
               <ReactMark />
             </motion.span>
             <span>
-              <strong>INTEGRAZIONE REACT</strong>
+              <strong>{text.integration}</strong>
               <small>React + TypeScript</small>
             </span>
           </div>
-          <h1>AMB Grid dentro un&apos;applicazione React</h1>
-          <p>Una demo reale con lifecycle React, componenti TypeScript, UI moderna e la stessa logica CRUD di AMB Grid.</p>
+          <h1>{text.title}</h1>
+          <p>{text.description}</p>
           <p className="react-hero__stack">React · TypeScript · shadcn/ui · Motion · MSW</p>
           <div className="react-hero__actions">
-            <Button onClick={openInventory} size="lg">Apri demo React <ArrowDown aria-hidden="true" className="size-4" /></Button>
-            <Button disabled size="lg" variant="outline"><Code2 aria-hidden="true" className="size-4" /> Vedi integrazione</Button>
+            <motion.div whileTap={shouldReduceMotion ? undefined : { scale: 0.985 }}>
+              <Button onClick={openInventory} size="lg">{text.openDemo} <ArrowDown aria-hidden="true" className="size-4" /></Button>
+            </motion.div>
           </div>
         </motion.div>
         <ApplicationPreview />
