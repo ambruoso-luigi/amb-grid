@@ -9,7 +9,7 @@ type Language = 'it' | 'en';
 const copy = {
   it: {
     integration: 'INTEGRAZIONE REACT',
-    title: 'AMB Grid dentro un’applicazione React',
+    title: 'AMB Grid con React',
     description: 'Una demo reale con lifecycle React, componenti TypeScript, UI moderna e la stessa logica CRUD di AMB Grid.',
     home: 'Home',
     videoLabel: 'Demo React',
@@ -17,7 +17,7 @@ const copy = {
   },
   en: {
     integration: 'REACT INTEGRATION',
-    title: 'AMB Grid inside a React application',
+    title: 'AMB Grid with React',
     description: 'A real demo with the React lifecycle, TypeScript components, a modern UI and the same AMB Grid CRUD logic.',
     home: 'Home',
     videoLabel: 'React Demo',
@@ -53,9 +53,8 @@ export function ReactHero() {
         <a aria-label="AMB Grid home" className="react-demo-brand" href="#">
           <img alt="AMB Grid" src={ambGridLogo} />
         </a>
-        <div aria-label="Select language" className={`react-demo-language is-${language}`} role="group">
+        <div aria-label="Select language" className="react-demo-language" role="group">
           <button aria-pressed={language === 'it'} className="react-demo-language__label" onClick={() => setLanguage('it')} type="button">IT</button>
-          <button aria-label={language === 'it' ? 'Switch to English' : 'Passa all’italiano'} className="react-demo-language__control" onClick={() => setLanguage(language === 'it' ? 'en' : 'it')} type="button"><span /></button>
           <button aria-pressed={language === 'en'} className="react-demo-language__label" onClick={() => setLanguage('en')} type="button">EN</button>
         </div>
       </nav>
