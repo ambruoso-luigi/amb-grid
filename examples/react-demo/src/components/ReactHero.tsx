@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { ArrowDown, Home } from 'lucide-react';
-import { ApplicationPreview } from './ApplicationPreview';
 import { Button } from './ui/button';
 
 const ambGridLogo = new URL('../../../../src/demo/amb-grid-logo.png', import.meta.url).href;
@@ -39,7 +38,7 @@ const ReactMark = () => (
 );
 
 const YouTubeMark = () => (
-  <svg aria-hidden="true" className="react-video-link__icon" viewBox="0 0 24 24">
+  <svg aria-hidden="true" className="react-video-preview__brand-icon" viewBox="0 0 24 24">
     <path d="M21.58 7.19a2.99 2.99 0 0 0-2.1-2.12C17.62 4.57 12 4.57 12 4.57s-5.62 0-7.48.5a2.99 2.99 0 0 0-2.1 2.12A31.2 31.2 0 0 0 1.92 12c0 1.62.2 3.23.5 4.81a2.99 2.99 0 0 0 2.1 2.12c1.86.5 7.48.5 7.48.5s5.62 0 7.48-.5a2.99 2.99 0 0 0 2.1-2.12c.3-1.58.5-3.19.5-4.81 0-1.62-.2-3.23-.5-4.81Z" fill="currentColor" />
     <path d="m10 15.5 5.2-3.5L10 8.5v7Z" fill="#fff" />
   </svg>
@@ -94,13 +93,12 @@ export function ReactHero() {
             </motion.div>
           </div>
         </motion.div>
-        <div className="react-hero__preview-column">
-          <ApplicationPreview />
-          <motion.a aria-label={text.videoOpen} className="react-video-link" href="https://youtu.be/4m0EZ4vPmT0" rel="noopener noreferrer" target="_blank" whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
-            <YouTubeMark />
-            <span><small>YouTube</small><strong>{text.videoLabel}</strong></span>
-          </motion.a>
-        </div>
+        <motion.a animate={{ opacity: 1, scale: 1, y: 0 }} aria-label={text.videoOpen} className="react-video-preview" href="https://youtu.be/4m0EZ4vPmT0" initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.985, y: 14 }} rel="noopener noreferrer" target="_blank" transition={{ delay: 0.12, duration: 0.5, ease: 'easeOut' }} whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
+          <img alt="" className="react-video-preview__image" loading="eager" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" />
+          <span aria-hidden="true" className="react-video-preview__overlay" />
+          <span className="react-video-preview__title">{text.videoLabel}</span>
+          <span className="react-video-preview__destination"><span className="react-video-preview__brand"><YouTubeMark /></span><span>YouTube</span></span>
+        </motion.a>
       </div>
     </header>
   );
