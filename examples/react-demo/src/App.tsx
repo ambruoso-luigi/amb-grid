@@ -9,8 +9,8 @@ export default function App() {
       <section aria-label="React integration demo" className="react-demo-panel">
         <header className="react-demo-intro">
           <p className="react-demo-intro__kicker">Demo React + TypeScript</p>
-          <h2>Inventory Operations</h2>
-          <p>Una dashboard moderna che integra AMB Grid con componenti React, UI applicativa, animazioni e backend simulato.</p>
+          <h2>AMB Grid con React</h2>
+          <p>Una demo moderna che mostra come integrare AMB Grid in un'applicazione React + TypeScript, mantenendo la stessa logica CRUD, validazione e payload della libreria.</p>
         </header>
         <TableGuideAccordion />
         <InventoryShell />
