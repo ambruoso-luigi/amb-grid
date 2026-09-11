@@ -8,6 +8,7 @@
  * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit and comparison.
  * @param {number} [options.maxOptions=10] - Maximum matching suggestions shown.
  * @param {number} [options.dropdownWidth=420] - Preferred floating suggestion width in pixels.
+ * @param {number} [options.dropdownZIndex=10050] - Stacking order of the floating suggestion dropdown.
  * @param {boolean} [options.caseSensitive=false] - Whether matching preserves case.
  * @param {boolean} [options.commitMatchedValue=true] - Commit the canonical list value when typed text matches.
  * @returns {object} Normalized autocomplete options.

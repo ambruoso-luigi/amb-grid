@@ -255,8 +255,24 @@ const lookupEditor = AMB.editors.lookup(lookup, {
     }
 });
 
+const lookupInputEditor = AMB.editors.lookup(lookup, {
+    placeholder: 'Code',
+    selectOnFocus: true
+});
+
+const autocompleteEditor = AMB.editors.autocomplete(['A', 'B'], {
+    dropdownZIndex: 12000
+});
+
+const largeTextEditor = AMB.editors.largeText({
+    height: 480
+});
+
 void grid;
 void lookupEditor;
+void lookupInputEditor;
+void autocompleteEditor;
+void largeTextEditor;
 void [
     CrudHelper,
     ROW_STATE,

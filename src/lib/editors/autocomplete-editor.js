@@ -198,6 +198,7 @@ const createFloatingAutocomplete = ({
  * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit.
  * @param {number} [options.maxOptions=10] - Maximum number of matching suggestions displayed.
  * @param {number} [options.dropdownWidth=420] - Preferred floating suggestion width in pixels. The dropdown is always at least as wide as the input.
+ * @param {number} [options.dropdownZIndex=10050] - Stacking order of the floating suggestion dropdown.
  * @param {boolean} [options.caseSensitive=false] - Match suggestions with case sensitivity. The default ignores case.
  * @param {boolean} [options.commitMatchedValue=true] - Commit the canonical list value when typed text exactly or partially matches a suggestion.
  * @param {string} [options.placeholder] - Native input placeholder.

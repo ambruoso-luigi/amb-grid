@@ -18,6 +18,7 @@ let dialogSequence = 0;
      * @param {string} [options.cancelText='Cancel'] - Cancel button text.
      * @param {number|string} [options.width=640] - Panel width.
      * @param {number|string} [options.maxWidth='90vw'] - Panel maximum width.
+     * @param {number|string} [options.height='auto'] - Panel height. `auto` keeps the panel content-sized.
      * @param {number|string} [options.textareaHeight=260] - Textarea height.
      * @param {boolean} [options.horizontalScroll=false] - Keep long lines on one line.
      * @param {string} [options.resize='vertical'] - CSS resize value for the textarea.

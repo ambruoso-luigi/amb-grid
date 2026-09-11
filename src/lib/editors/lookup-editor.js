@@ -20,8 +20,10 @@ import { getInitialValue, getLookupOptionValue, navigateToCandidate } from './sh
      * @param {object} [options] - Lookup editor options.
      * @param {boolean} [options.allowEmpty=true] - Allow saving an empty string.
      * @param {string} [options.buttonText='🔍'] - Dialog button text.
+     * @param {string} [options.placeholder] - Native input placeholder.
      * @param {boolean} [options.uppercase=false] - Convert typed values to uppercase.
      * @param {boolean} [options.trim=true] - Trim typed values before saving.
+     * @param {boolean} [options.selectOnFocus=false] - Select the input value when the editor receives focus.
      * @param {boolean} [options.caseSensitive] - Override lookup matching case sensitivity. Defaults to `lookupInstance.caseSensitive`, then `false`.
      * @param {boolean} [options.validateOnBlur=true] - Validate typed codes on blur.
      * @param {boolean} [options.autoComplete=false] - Enable inline lookup suggestions.
