@@ -466,6 +466,139 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {object} AMBPaginationOptions
+ * @property {boolean} [enabled=true] - Enable AMB object-style pagination.
+ * @property {'local'|'remote'} [mode='local'] - Engine pagination mode.
+ * @property {number} [pageSize=10] - Engine page size.
+ * @property {number[]} [pageSizeSelector] - Engine page-size choices.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnActions
+ * @property {boolean} [delete=true] - Show delete for clean and saved rows.
+ * @property {boolean} [rollback=true] - Show rollback for modified and deleted rows.
+ * @property {boolean} [removeNew=true] - Show remove for new rows.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnIcons
+ * @property {string} [delete] - Custom delete button text or icon.
+ * @property {string} [rollback] - Custom rollback button text or icon.
+ * @property {string} [removeNew] - Custom remove-new button text or icon.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnLabels
+ * @property {string} [delete='Delete row'] - Delete button label.
+ * @property {string} [rollback='Rollback row'] - Rollback button label.
+ * @property {string} [removeNew='Remove new row'] - Remove-new button label.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnOptions
+ * @property {boolean} [enabled=false] - Add the managed row action column.
+ * @property {AMBRowActionColumnActions} [actions] - Action visibility flags.
+ * @property {AMBRowActionColumnIcons} [icons] - Custom action button text or icon overrides.
+ * @property {AMBRowActionColumnLabels} [labels] - Action button aria-label overrides.
+ * @property {string} [confirmDeleteMessage] - Confirmation text before deleting a clean row.
+ * @property {string} [confirmRollbackMessage] - Confirmation text before rolling back a changed row.
+ * @property {string} [confirmRemoveNewMessage] - Confirmation text before removing an unsaved row.
+ * @property {Function} [confirmProvider] - Custom async confirmation function.
+ */
+
+/**
+ * @typedef {object} AMBSelectionColumnOptions
+ * @property {boolean} [enabled=false] - Add a row selection column.
+ * @property {'single'|'multiple'} [mode='multiple'] - Selection mode.
+ * @property {number} [width=45] - Selection column width.
+ */
+
+/**
+ * @typedef {object} AMBSearchFilterOptions
+ * @property {boolean} [enabled=false] - Show the filters button.
+ */
+
+/**
+ * @typedef {object} AMBSearchOptions
+ * @property {boolean} [enabled=false] - Show the search toolbar.
+ * @property {string} [placeholder='Search...'] - Search input placeholder.
+ * @property {boolean} [caseSensitive=false] - Match search text with case sensitivity.
+ * @property {boolean} [wholeWord=false] - Match the query as a complete word or phrase.
+ * @property {AMBSearchFilterOptions} [filters] - Search field filter options.
+ */
+
+/**
+ * @typedef {object} AMBFloatingMessagesOptions
+ * @property {boolean} [enabled=true] - Enable all floating message channels.
+ * @property {boolean} [lookupDescriptions=true] - Show lookup descriptions for pointer or keyboard focus.
+ * @property {boolean} [validationErrors=true] - Show validation errors for pointer or keyboard focus.
+ * @property {boolean} [largeTextPreviews=true] - Show large-text previews for pointer or keyboard focus.
+ * @property {boolean} [searchFilterStatus=true] - Show search filter status hover messages.
+ */
+
+/**
+ * @typedef {object} AMBToolbarOptions
+ * @property {boolean} [enabled=true] - Render the toolbar.
+ * @property {Array.<string|object>} [buttons=['add','reload','save']] - Built-in ids or simple custom button definitions.
+ * @property {Function} [onAdd] - Developer callback receiving `{ grid, event }`.
+ * @property {Function} [onSave] - Developer callback receiving `{ grid, payload, event }`.
+ * @property {Function} [onReload] - Developer callback receiving `{ grid, event }`.
+ * @property {Function} [onValidate] - Developer callback receiving `{ grid, event }`.
+ * @property {Function} [onPayload] - Developer callback receiving `{ grid, payload, event }`.
+ */
+
+/**
+ * @typedef {object} AMBTableMessages
+ * @property {string} [required='This field is required'] - Default required message.
+ */
+
+/**
+ * @typedef {object} AMBErrorStyleOptions
+ * @property {boolean} [highlightRowOnCellError=false] - Mark a row when one of its cells has an error.
+ */
+
+/**
+ * @callback AMBGroupByFunction
+ * @param {object} data - Row data.
+ * @returns {unknown} Group key.
+ */
+
+/**
+ * @typedef {{[key: string]: unknown}} AMBTablePassthroughOptions
+ */
+
+/**
+ * Public options accepted by `AMB.table(...)`.
+ *
+ * Known AMB Grid options remain typed. Additional options are passed through
+ * to the internal table engine as `unknown`, keeping that implementation an
+ * internal detail of the AMB Grid public API.
+ *
+ * @typedef {AMBTablePassthroughOptions & {
+ *   selector: string|HTMLElement,
+ *   data?: object[],
+ *   columns?: object[],
+ *   pagination?: boolean|AMBPaginationOptions,
+ *   rowActionColumn?: AMBRowActionColumnOptions,
+ *   selectionColumn?: AMBSelectionColumnOptions,
+ *   search?: AMBSearchOptions,
+ *   floatingMessages?: boolean|AMBFloatingMessagesOptions,
+ *   toolbar?: boolean|AMBToolbarOptions,
+ *   messages?: AMBTableMessages,
+ *   errorStyle?: AMBErrorStyleOptions,
+ *   layout?: 'fitData'|'fitColumns'|'fitDataFill'|'fitDataStretch'|'fitDataTable',
+ *   height?: string|number|false,
+ *   history?: boolean,
+ *   groupBy?: string|string[]|AMBGroupByFunction|Array.<string|AMBGroupByFunction>,
+ *   responsiveLayout?: boolean|'hide'|'collapse',
+ *   movableColumns?: boolean,
+ *   paginationMode?: 'local'|'remote',
+ *   paginationSize?: number|true,
+ *   paginationSizeSelector?: true|number[]
+ * }} AMBTableOptions
+ */
+
+/**
  * Creates an AMB-managed CRUD grid controller.
  *
  * The returned controller is the main public API for data access, row
@@ -514,60 +647,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * to focus the first editable visible data cell. Action columns are not
  * candidates for automatic focus.
  *
- * @param {object} options - AMB Grid options, including supported internal-engine configuration.
- * @param {string|HTMLElement} options.selector - CSS selector or element used to mount the grid.
- * @param {object[]} [options.data] - Initial row data.
- * @param {object[]} [options.columns] - Grid column definitions. For normal AMB rules, use the recommended `validation` configuration; legacy `required`/`requiredMessage` and direct `validator` composition remain supported.
- * @param {boolean|object} [options.pagination] - Boolean pagination configuration or AMB object-style pagination convenience.
- * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using AMB object-style pagination.
- * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode delegated to the underlying table engine as `paginationMode`.
- * @param {number} [options.pagination.pageSize=10] - Page size delegated to the underlying table engine as `paginationSize`.
- * @param {number[]} [options.pagination.pageSizeSelector] - Page size options delegated to the underlying table engine as `paginationSizeSelector`.
- * @param {object} [options.rowActionColumn] - Optional managed row action column.
- * @param {boolean} [options.rowActionColumn.enabled=false] - Add the managed row action column.
- * @param {object} [options.rowActionColumn.actions] - Action visibility flags.
- * @param {boolean} [options.rowActionColumn.actions.delete=true] - Show delete for clean/saved rows.
- * @param {boolean} [options.rowActionColumn.actions.rollback=true] - Show rollback for modified/deleted rows.
- * @param {boolean} [options.rowActionColumn.actions.removeNew=true] - Show remove for new rows.
- * @param {object} [options.rowActionColumn.icons] - Optional custom action button text/icon overrides; without an override AMB renders built-in SVG icons.
- * @param {string} [options.rowActionColumn.icons.delete] - Custom delete button text/icon.
- * @param {string} [options.rowActionColumn.icons.rollback] - Custom rollback button text/icon.
- * @param {string} [options.rowActionColumn.icons.removeNew] - Custom remove new-row button text/icon.
- * @param {object} [options.rowActionColumn.labels] - Action button aria-label overrides.
- * @param {string} [options.rowActionColumn.labels.delete='Delete row'] - Delete button aria-label.
- * @param {string} [options.rowActionColumn.labels.rollback='Rollback row'] - Rollback button aria-label.
- * @param {string} [options.rowActionColumn.labels.removeNew='Remove new row'] - Remove new-row button aria-label.
- * @param {string} [options.rowActionColumn.confirmDeleteMessage] - Confirmation text before deleting a clean row.
- * @param {string} [options.rowActionColumn.confirmRollbackMessage] - Confirmation text before rolling back a changed row.
- * @param {string} [options.rowActionColumn.confirmRemoveNewMessage] - Confirmation text before removing an unsaved row.
- * @param {Function} [options.rowActionColumn.confirmProvider] - Custom async confirmation function.
- * @param {object} [options.selectionColumn] - Optional row selection column.
- * @param {boolean} [options.selectionColumn.enabled=false] - Add a row selection column.
- * @param {'single'|'multiple'} [options.selectionColumn.mode='multiple'] - Selection mode.
- * @param {number} [options.selectionColumn.width=45] - Selection column width.
- * @param {object} [options.search] - Optional client-side search toolbar.
- * @param {boolean} [options.search.enabled=false] - Show the search toolbar.
- * @param {string} [options.search.placeholder='Search...'] - Search input placeholder.
- * @param {boolean} [options.search.caseSensitive=false] - Match search text with case sensitivity.
- * @param {boolean} [options.search.wholeWord=false] - Match the query as a complete word or phrase.
- * @param {object} [options.search.filters] - Search field filter options.
- * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
- * @param {boolean|object} [options.floatingMessages] - Contextual cell message options. Set `false` to disable all `teh-floating-message` output.
- * @param {boolean} [options.floatingMessages.enabled=true] - Enable all floating message channels.
- * @param {boolean} [options.floatingMessages.lookupDescriptions=true] - Show lookup descriptions for pointer or keyboard focus.
- * @param {boolean} [options.floatingMessages.validationErrors=true] - Show validation errors for pointer or keyboard focus.
- * @param {boolean} [options.floatingMessages.largeTextPreviews=true] - Show large-text previews for pointer or keyboard focus.
- * @param {boolean} [options.floatingMessages.searchFilterStatus=true] - Show search filter status hover messages.
- * @param {boolean|object} [options.toolbar=true] - Backend-agnostic CRUD toolbar. Set `false` to disable.
- * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
- * @param {Array.<string|object>} [options.toolbar.buttons=['add','reload','save']] - Built-in ids or simple custom button definitions.
- * @param {Function} [options.toolbar.onAdd] - Developer callback receiving `{ grid, event }`.
- * @param {Function} [options.toolbar.onSave] - Developer callback receiving `{ grid, payload, event }`.
- * @param {Function} [options.toolbar.onReload] - Developer callback receiving `{ grid, event }`.
- * @param {Function} [options.toolbar.onValidate] - Developer callback receiving `{ grid, event }`.
- * @param {Function} [options.toolbar.onPayload] - Developer callback receiving `{ grid, payload, event }`.
- * @param {object} [options.messages] - Shared UI and validation messages.
- * @param {string} [options.messages.required='This field is required'] - Default required message.
+ * @param {AMBTableOptions} options - AMB Grid options and supported internal-engine passthrough configuration.
  * @returns {AMBTableController} AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.
  *
  * Underscored fields on the returned controller are internal integration

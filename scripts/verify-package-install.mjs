@@ -234,6 +234,22 @@ const grid = AMB.table({
     ]
 });
 
+const engineOptionsGrid = AMB.table({
+    selector: '#engine-options-grid',
+    data: [
+        { id: 1, status: 'OPEN' }
+    ],
+    columns: [
+        { title: 'Status', field: 'status' }
+    ],
+    layout: 'fitDataStretch',
+    height: 500,
+    history: true,
+    groupBy: 'status',
+    responsiveLayout: 'collapse',
+    movableColumns: true
+});
+
 const lookup = AMB.lookup({
     load: async () => []
 });
@@ -329,6 +345,7 @@ const searchFiltersResult = searchFiltersDialog.open({
 });
 
 void grid;
+void engineOptionsGrid;
 void lookupEditor;
 void lookupInputEditor;
 void advancedLookupEditor;
