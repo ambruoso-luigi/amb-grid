@@ -83,29 +83,6 @@ button, a { outline-offset: 3px; }
 .inventory-feedback[data-tone="error"] { background: #fff4f2; border-color: #efcdc7; color: #a43e35; }
 @keyframes inventory-spin { to { transform: rotate(360deg); } }
 
-.react-demo-grid-shell { background: #fff; border: 1px solid #cfdfe5; border-radius: 13px; box-shadow: 0 7px 22px rgb(25 59 84 / 6%); margin-top: 18px; min-height: 410px; overflow-x: auto; padding: 0; width: 100%; }
-.react-demo-grid { min-width: 1450px; width: 100%; }
-.react-demo-grid .tabulator { background: #fff; border: 0; border-radius: 13px; color: #40566f; overflow: hidden; }
-.react-demo-grid .tabulator-header { background: #f0f8fa; border-bottom: 1px solid #d6e5e9; }
-.react-demo-grid .tabulator-col { background: transparent; }
-.react-demo-grid .tabulator-row[data-state="new"] { background: #eefbfe; }
-.react-demo-grid .tabulator-row[data-state="modified"] { background: #fffbef; }
-.react-demo-grid .tabulator-row[data-state="deleted"] { background: #f8f2f1; color: #8b7774; }
-.react-demo-grid .tabulator-row[data-state="saved"] { animation: inventory-saved 750ms ease-out; }
-.inventory-stock { display: grid; gap: 6px; min-width: 88px; }
-.inventory-stock > strong { color: #28465f; font-size: 12px; }
-.inventory-stock > span { background: #e7eef1; border-radius: 999px; display: block; height: 5px; overflow: hidden; width: 100%; }
-.inventory-stock i { background: #19a3bd; border-radius: inherit; display: block; height: 100%; transition: width 220ms ease; }
-.inventory-stock[data-tone="low"] i { background: #d7a33d; }
-.inventory-stock[data-tone="high"] i { background: #55a874; }
-.inventory-status { border: 1px solid #c8d9df; border-radius: 999px; color: #50677b; display: inline-flex; font-size: 10px; font-weight: 850; letter-spacing: .035em; padding: 4px 7px; }
-.inventory-status[data-status="active"] { background: #eaf8ef; border-color: #bee2cb; color: #2f764d; }
-.inventory-status[data-status="review"] { background: #fff7e7; border-color: #ecd9ae; color: #956814; }
-.inventory-status[data-status="hold"] { background: #f8efee; border-color: #e8cfcb; color: #905047; }
-.inventory-operations .tabulator-cell input[type="checkbox"] { accent-color: #0d91aa; height: 16px; width: 16px; }
-.react-demo-grid .tabulator-calcs-holder { background: #eef7f9; border-top: 1px solid #c7dee4; color: #173b55; font-weight: 800; }
-@keyframes inventory-saved { from { background: #def5e6; } to { background: #fff; } }
-
 .react-table-guide__content-inner { display: grid; gap: 18px; padding-top: 17px; }
 .react-table-guide__section > h3, .react-table-guide__columns > h3 { color: #163253; font-size: 12px; font-weight: 850; letter-spacing: .08em; margin: 0; text-transform: uppercase; }
 .react-table-guide__section .react-table-guide__operations { margin-top: 10px; }
@@ -142,7 +119,7 @@ button, a { outline-offset: 3px; }
 @media (max-width: 1180px) { .inventory-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }.inventory-toolbar { align-items: stretch; }.inventory-toolbar__actions, .inventory-toolbar__utilities { width: 100%; }.inventory-toolbar__utilities { justify-content: space-between; }.inventory-search { flex: 1; }.inventory-search input { width: 100%; } }
 @media (max-width: 680px) { .react-demo-panel .inventory-operations { border-radius: 12px; }.inventory-workspace { padding: 19px 13px; }.inventory-workspace__header { flex-direction: column; gap: 13px; }.inventory-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }.inventory-kpi { min-height: 108px; }.inventory-toolbar__actions, .inventory-toolbar__utilities { align-items: stretch; }.inventory-toolbar__actions button { flex: 1 1 calc(50% - 8px); }.inventory-toolbar__utilities { display: grid; grid-template-columns: 1fr 1fr; }.inventory-search { grid-column: 1 / -1; }.inventory-filters { left: 0; right: auto; width: 100%; }.inventory-filters label { flex: 1; }.react-table-guide__column-list { grid-template-columns: 1fr; }.payload-summary { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 420px) { .inventory-kpis { grid-template-columns: 1fr; }.inventory-toolbar__actions button { flex-basis: 100%; }.inventory-filters { flex-direction: column; } }
-@media (prefers-reduced-motion: reduce) { .inventory-stock i, .inventory-kpi, .inventory-search { transition: none; }.inventory-spinner, .react-demo-grid .tabulator-row[data-state="saved"], .react-sheet__overlay, .react-alert__overlay, .react-sheet__content, .react-alert__content { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .inventory-stock i, .inventory-kpi, .inventory-search, .react-demo-grid .tabulator-row, .react-demo-grid .amb-row-action-button { transition: none; }.inventory-spinner, .react-demo-grid .tabulator-row[data-state="saved"], .react-sheet__overlay, .react-alert__overlay, .react-sheet__content, .react-alert__content { animation: none; } }
 
 .react-demo-panel { background: linear-gradient(180deg, #ffffff 0%, #fbfdff 52%, #f5f9fd 100%); border: 1px solid #7ab8c8; border-radius: 8px; box-shadow: 0 26px 70px rgb(16 35 63 / 16%); margin: 24px auto 0; min-width: 0; overflow: hidden; padding: clamp(14px, 1.8vw, 26px); scroll-margin-top: 18px; width: min(calc(100% - 12px), 1872px); }
 .react-how-it-works { color: #40566f; }.react-how-it-works__kicker, .react-demo-intro__kicker { color: #087f98; font-size: 12px; font-weight: 800; letter-spacing: .08em; margin: 0 0 8px; text-transform: uppercase; }.react-how-it-works h2, .react-demo-intro h2 { color: #10233f; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.025em; line-height: 1.16; margin: 0; }.react-how-it-works__summary { font-size: 16px; line-height: 1.6; margin: 14px 0 0; max-width: 760px; }
@@ -163,6 +140,54 @@ button, a { outline-offset: 3px; }
 .react-table-guide { border-color: #9dcfd9; border-radius: 11px; }.react-table-guide__trigger { background: #eef9fb; padding: 15px 16px; }.react-table-guide__trigger:hover { background: #e3f6f9; }.react-table-guide__trigger-copy { align-items: center; display: flex; gap: 11px; min-width: 0; }.react-table-guide__trigger-copy > span:last-child { display: grid; gap: 3px; min-width: 0; }.react-table-guide__trigger strong { color: #14304b; font-size: 16px; font-weight: 800; }.react-table-guide__trigger small { color: #587184; font-size: 13px; font-weight: 500; line-height: 1.35; }.react-table-guide__help-icon { align-items: center; background: #d4f2f7; border: 1px solid #a9dce6; border-radius: 7px; color: #087f98; display: inline-flex; flex: 0 0 auto; height: 30px; justify-content: center; width: 30px; }.react-table-guide__content { background: #fbfdfe; }.react-table-guide__content-inner { padding: 0 18px 20px; }.react-table-guide__overview { padding-top: 16px; }.react-table-guide__overview h3, .react-table-guide__columns > h3 { color: #163253; font-size: 16px; font-weight: 800; letter-spacing: -.01em; line-height: 1.3; margin: 0; }.react-table-guide__intro { margin-top: 6px; max-width: 760px; padding: 0; }
 .react-table-guide__operations { gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 18px; }.react-table-guide__operations article { background: #ffffff; border: 1px solid #d6e8ec; border-top: 2px solid #86d4e2; border-radius: 8px; min-width: 0; padding: 13px; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }.react-table-guide__operations article:hover { background: #f7fdfe; border-color: #9bd6e0; transform: translateY(-1px); }.react-table-guide__operations article > span { align-items: center; background: #e5f8fb; border-radius: 6px; color: #087f98; display: inline-flex; height: 30px; justify-content: center; margin-bottom: 10px; width: 30px; }.react-table-guide__operations h3 { font-size: 14px; font-weight: 800; }.react-table-guide__operations p { font-size: 13px; line-height: 1.48; }
 .react-table-guide__columns { margin-top: 20px; padding-top: 18px; }.react-table-guide__columns > p { color: #587184; font-size: 14px; line-height: 1.5; margin: 5px 0 0; }.react-table-guide__column-list { gap: 12px; margin-top: 14px; }.react-table-guide__column-list article { background: #ffffff; border: 1px solid #d6e8ec; border-radius: 8px; border-top: 3px solid #86d4e2; box-shadow: 0 2px 5px rgb(22 48 72 / 4%); min-width: 0; padding: 12px; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }.react-table-guide__column-list article:hover { background: #f7fdfe; border-color: #9bd6e0; transform: translateY(-1px); }.react-table-guide__column-list article > i { align-items: center; background: #e5f8fb; border-radius: 6px; color: #087f98; display: inline-flex; font-style: normal; height: 28px; justify-content: center; margin-bottom: 9px; width: 28px; }.react-table-guide__column-list article > div { align-items: flex-start; }.react-table-guide__column-list h4 { font-weight: 800; }.react-table-guide__column-list span { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-.react-demo-grid-shell { background: #f7fbfc; border-color: #c9e0e5; min-height: 438px; overflow: auto; padding: 0; }.react-demo-grid { min-width: 1080px; width: 100%; }.react-demo-grid .tabulator { background: #ffffff; border: 0; color: #40566f; font-family: inherit; font-size: 13px; }.react-demo-grid .tabulator-header { background: #f1f9fa; border-bottom: 1px solid #c9e0e5; color: #163253; font-weight: 800; }.react-demo-grid .tabulator-col { background: transparent; border-right-color: #dbe9ec; }.react-demo-grid .tabulator-col-content { padding: 12px 10px; }.react-demo-grid .tabulator-row { border-bottom-color: #e4eef0; }.react-demo-grid .tabulator-row:hover { background: #f2fbfc; }.react-demo-grid .tabulator-cell { border-right-color: #edf3f4; padding: 10px; }.react-demo-grid .tabulator-cell:focus { box-shadow: inset 0 0 0 2px rgb(8 127 152 / 32%); outline: 0; }.react-demo-grid .tabulator-footer { border-top-color: #c9e0e5; }
+.react-demo-grid-shell { background: #ffffff; border: 1px solid #d5e3e8; border-radius: 12px; box-shadow: 0 10px 30px rgb(25 59 84 / 8%); min-height: 438px; margin-top: 18px; overflow: auto; padding: 0; width: 100%; }
+.react-demo-grid { min-width: 1080px; width: 100%; }
+.react-demo-grid .tabulator { background: #ffffff; border: 0; color: #40556a; font-family: inherit; font-size: 13px; overflow: hidden; }
+.react-demo-grid .tabulator-header { background: #edf6f8; border-bottom: 1px solid #bfd6dc; box-shadow: 0 2px 5px rgb(30 65 88 / 5%); color: #17344d; }
+.react-demo-grid .tabulator-col { background: transparent; border-right-color: rgb(173 198 207 / 35%); }
+.react-demo-grid .tabulator-col-content { padding: 14px 11px; }
+.react-demo-grid .tabulator-col-title { font-size: 13px; font-weight: 700; letter-spacing: -.005em; }
+.react-demo-grid .tabulator-row { border-bottom: 1px solid #e8eff2; color: #40556a; transition: background-color 140ms ease; }
+.react-demo-grid .tabulator-row:hover { background-color: #f5fafb; }
+.react-demo-grid .tabulator-row[data-state="new"] { background-color: #f0fbfc; box-shadow: inset 3px 0 0 #58b7c8; }
+.react-demo-grid .tabulator-row[data-state="new"]:hover { background-color: #eef9fa; }
+.react-demo-grid .tabulator-row[data-state="modified"] { background-color: #fffbf1; box-shadow: inset 3px 0 0 #d4a94c; }
+.react-demo-grid .tabulator-row[data-state="modified"]:hover { background-color: #fff9e9; }
+.react-demo-grid .tabulator-row[data-state="deleted"] { background-color: #faf6f5; box-shadow: inset 3px 0 0 #c9948d; color: #877774; opacity: .78; }
+.react-demo-grid .tabulator-row[data-state="deleted"]:hover { background-color: #faf6f5; }
+.react-demo-grid .tabulator-row[data-state="saved"] { animation: inventory-saved 700ms ease-out; }
+.react-demo-grid .tabulator-row[data-has-cell-error="true"] { background-color: #fffafa; }
+.react-demo-grid .tabulator-row[data-has-cell-error="true"]:hover { background-color: #fff8f7; }
+.react-demo-grid .tabulator-row[data-row-error="true"] { background-color: #fff7f6; box-shadow: inset 3px 0 0 #c56b62; }
+.react-demo-grid .tabulator-row[data-row-error="true"]:hover { background-color: #fff7f6; }
+.react-demo-grid .tabulator-cell { border-right-color: rgb(205 220 226 / 25%); line-height: 1.35; padding: 12px 11px; }
+.react-demo-grid .tabulator-cell[tabulator-field="productName"] { color: #213c54; font-weight: 550; }
+.react-demo-grid .tabulator-cell[tabulator-field="itemCode"] { color: #496274; font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.react-demo-grid .tabulator-cell[tabulator-field="notes"] { color: #6f8291; font-weight: 400; }
+.react-demo-grid .tabulator-cell[tabulator-field="stockQuantity"], .react-demo-grid .tabulator-cell[tabulator-field="unitPrice"], .react-demo-grid .tabulator-cell[tabulator-field="inventoryValue"] { font-variant-numeric: tabular-nums; }
+.react-demo-grid .tabulator-cell[tabulator-field="inventoryValue"] { color: #24465d; font-weight: 600; }
+.react-demo-grid .tabulator-cell[data-cell-error="true"] { background-color: #fff5f4 !important; box-shadow: inset 0 0 0 1px rgb(190 72 62 / 32%), inset 0 -2px 0 #bb6259; }
+.react-demo-grid .tabulator-cell:focus, .react-demo-grid .tabulator-cell:focus-visible { box-shadow: inset 0 0 0 2px rgb(8 127 152 / 45%); outline: 0; }
+.react-demo-grid .tabulator-cell[data-cell-error="true"]:focus, .react-demo-grid .tabulator-cell[data-cell-error="true"]:focus-visible { box-shadow: inset 0 0 0 2px rgb(187 98 89 / 48%), inset 0 -2px 0 #bb6259; }
+.react-demo-grid .tabulator-footer { border-top-color: #b8d3da; }
+.react-demo-grid .tabulator-calcs-holder { background: #edf6f8; border-top: 2px solid #b8d3da; color: #213f55; font-weight: 700; }
+.react-demo-grid .tabulator-calcs-holder .tabulator-cell { font-variant-numeric: tabular-nums; padding-bottom: 12px; padding-top: 12px; }
+.inventory-stock { display: grid; gap: 6px; min-width: 88px; }
+.inventory-stock > strong { color: #28465f; font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.inventory-stock > span { background: #e8eff2; border-radius: 999px; display: block; height: 4px; overflow: hidden; width: 100%; }
+.inventory-stock i { background: #19a3bd; border-radius: 999px; display: block; height: 100%; transition: width 180ms ease-out; }
+.inventory-stock[data-tone="low"] i { background: #d4a24c; }
+.inventory-stock[data-tone="high"] i { background: #65a980; }
+.inventory-status { align-items: center; border: 1px solid; border-radius: 6px; display: inline-flex; font-size: 10px; font-weight: 700; letter-spacing: .035em; line-height: 1; padding: 5px 7px; }
+.inventory-status[data-status="active"] { background: #edf8f1; border-color: #c8e4d1; color: #397654; }
+.inventory-status[data-status="review"] { background: #fff8e9; border-color: #ead9b4; color: #8d671e; }
+.inventory-status[data-status="hold"] { background: #fbf1f0; border-color: #e6cfcc; color: #8b514b; }
+.react-demo-grid .tabulator-cell input[type="checkbox"] { accent-color: #0d91aa; height: 16px; width: 16px; }
+.react-demo-grid .tabulator-cell input[type="checkbox"]:focus-visible { outline: 2px solid rgb(13 145 170 / 35%); outline-offset: 2px; }
+.react-demo-grid .amb-row-action-button { background: #ffffff; border: 1px solid #d7e2e6; border-radius: 6px; color: #536c7d; height: 28px; width: 28px; }
+.react-demo-grid .amb-row-action-button:hover { background: #eef8fa; border-color: #acd2da; color: #087f98; }
+.react-demo-grid .amb-row-action-button--delete:hover { background: #fcf2f0; border-color: #dfc0bc; color: #a35d55; }
+.react-demo-grid .amb-row-action-button:focus-visible { outline: 2px solid rgb(8 127 152 / 45%); outline-offset: 2px; }
+@keyframes inventory-saved { 0% { background-color: #e8f7ed; } 100% { background-color: #ffffff; } }
 @media (max-width: 820px) { .react-table-guide__operations { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .react-demo-intro h2 { font-size: clamp(28px, 9vw, 36px); }.react-table-guide__trigger { padding: 13px 14px; }.react-table-guide__trigger small { font-size: 12px; }.react-table-guide__content-inner { padding: 0 14px 16px; }.react-table-guide__operations { grid-template-columns: 1fr; }.react-table-guide__column-list { gap: 10px; }.react-table-guide__column-list article > div { flex-direction: row; }.react-demo-grid-shell { min-height: 438px; } }
