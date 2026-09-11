@@ -2,6 +2,51 @@ import { LookupDialog } from '../../ui/lookup-dialog.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
 import { getInitialValue, getLookupOptionValue, navigateToCandidate } from './shared.js';
 
+/**
+ * @callback LookupSuccessHandler
+ * @param {string} value - Value to commit.
+ * @returns {void}
+ */
+
+/**
+ * @callback LookupCancelHandler
+ * @returns {void}
+ */
+
+/**
+ * @typedef {object} LookupOpenDialogContext
+ * @property {string} value - Current lookup value.
+ * @property {object|undefined} rowData - Current row data when available.
+ * @property {string|undefined} field - Current grid field when available.
+ * @property {object} context - Lookup load context.
+ * @property {object} lookupInstance - Lookup instance created with `AMB.lookup`.
+ * @property {LookupSuccessHandler} success - Commit the selected value and close the editor.
+ * @property {LookupCancelHandler} cancel - Cancel and close the editor.
+ */
+
+/**
+ * @callback LookupOpenDialogHandler
+ * @param {LookupOpenDialogContext} options - Lookup dialog opening context.
+ * @returns {void}
+ */
+
+/**
+ * @typedef {object} LookupInvalidCodeContext
+ * @property {string} value - Invalid lookup value.
+ * @property {object|undefined} rowData - Current row data when available.
+ * @property {string|undefined} field - Current grid field when available.
+ * @property {object} context - Lookup load context.
+ * @property {object} lookupInstance - Lookup instance created with `AMB.lookup`.
+ * @property {string} message - Validation message for the invalid value.
+ * @property {object} cell - Grid cell component.
+ */
+
+/**
+ * @callback LookupInvalidCodeHandler
+ * @param {LookupInvalidCodeContext} options - Invalid lookup code context.
+ * @returns {void}
+ */
+
     /**
      * Lookup code editor with a text input and search dialog button.
      *
@@ -40,6 +85,8 @@ import { getInitialValue, getLookupOptionValue, navigateToCandidate } from './sh
      * @param {Array<{field: string, title?: string, width?: number}>} [options.dialogColumns] - Fallback dialog columns when the lookup does not define columns.
      * @param {string} [options.searchPlaceholder='Search...'] - Placeholder shown in the lookup dialog search input.
      * @param {Object<string, string>} [options.mapToRow] - Mapping from grid row fields to lookup record fields.
+     * @param {LookupOpenDialogHandler} [options.onOpenDialog] - Handle opening the lookup dialog.
+     * @param {LookupInvalidCodeHandler} [options.onInvalidCode] - Handle an invalid typed lookup code.
      * @param {object} [options.dialogOptions] - Options forwarded to `LookupDialog.open`. Editor-calculated title, columns, data, and search fields take precedence.
      * @returns {Function} Grid editor function compatible with the internal table engine.
      * @example

@@ -49,6 +49,7 @@ export const date = {
      * @param {string[]} [options.inputFormats] - Parser input formats.
      * @param {string} [options.payloadFormat='yyyy-mm-dd'] - Payload date format.
      * @param {'manual'|'manualWithPickerButton'|'pickerOnly'} [options.mode='manualWithPickerButton'] - Date editor mode.
+     * @param {boolean} [options.picker] - Compatibility alias: `true` selects `manualWithPickerButton` when `mode` is omitted. Prefer `mode` for new code; explicit `mode` takes precedence.
      * @param {string|Date} [options.minDate] - Earliest allowed date.
      * @param {string|Date} [options.maxDate] - Latest allowed date.
      * @param {boolean} [options.allowEmpty=true] - Whether empty values are accepted.

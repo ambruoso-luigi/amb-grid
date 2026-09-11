@@ -260,6 +260,19 @@ const lookupInputEditor = AMB.editors.lookup(lookup, {
     selectOnFocus: true
 });
 
+const advancedLookupEditor = AMB.editors.lookup(lookup, {
+    onOpenDialog: ({ value, success, cancel }) => {
+        if (value) {
+            success(value);
+        } else {
+            cancel();
+        }
+    },
+    onInvalidCode: ({ value, message }) => {
+        console.log(value, message);
+    }
+});
+
 const autocompleteEditor = AMB.editors.autocomplete(['A', 'B'], {
     dropdownZIndex: 12000
 });
@@ -301,6 +314,10 @@ const dateConfig = AMB.date.createConfig({
     emptyAs: null
 });
 
+const legacyPickerDateConfig = AMB.date.createConfig({
+    picker: true
+});
+
 const searchFiltersDialog = new AMB.SearchFiltersDialog();
 const searchFiltersResult = searchFiltersDialog.open({
     columns: [
@@ -314,10 +331,12 @@ const searchFiltersResult = searchFiltersDialog.open({
 void grid;
 void lookupEditor;
 void lookupInputEditor;
+void advancedLookupEditor;
 void autocompleteEditor;
 void largeTextEditor;
 void multifield;
 void dateConfig;
+void legacyPickerDateConfig;
 void searchFiltersResult;
 void [
     CrudHelper,
