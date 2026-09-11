@@ -33,6 +33,11 @@ import { getInitialValue, getLookupOptionValue, navigateToCandidate } from './sh
      * @param {Array<object>} [options.columns] - Dialog columns.
      * @param {string} [options.valueField] - Stored value field override.
      * @param {string} [options.labelField] - Display label field override.
+     * @param {{open: Function}} [options.dialog] - Lookup dialog instance or compatible object used to select a value.
+     * @param {string} [options.dialogTitle='Search value'] - Title shown by the lookup dialog.
+     * @param {Array<{field: string, title?: string, width?: number}>} [options.dialogColumns] - Fallback dialog columns when the lookup does not define columns.
+     * @param {string} [options.searchPlaceholder='Search...'] - Placeholder shown in the lookup dialog search input.
+     * @param {Object<string, string>} [options.mapToRow] - Mapping from grid row fields to lookup record fields.
      * @param {object} [options.dialogOptions] - Options forwarded to `LookupDialog.open`. Editor-calculated title, columns, data, and search fields take precedence.
      * @returns {Function} Grid editor function compatible with the internal table engine.
      * @example

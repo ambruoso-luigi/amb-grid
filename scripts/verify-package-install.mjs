@@ -234,7 +234,29 @@ const grid = AMB.table({
     ]
 });
 
+const lookup = AMB.lookup({
+    load: async () => []
+});
+
+const dialog = new AMB.LookupDialog();
+
+const lookupEditor = AMB.editors.lookup(lookup, {
+    dialog,
+    dialogTitle: 'Search value',
+    dialogColumns: [
+        { field: 'value', title: 'Value' }
+    ],
+    searchPlaceholder: 'Search...',
+    mapToRow: {
+        code: 'value'
+    },
+    dialogOptions: {
+        width: 800
+    }
+});
+
 void grid;
+void lookupEditor;
 void [
     CrudHelper,
     ROW_STATE,
