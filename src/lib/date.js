@@ -52,6 +52,7 @@ export const date = {
      * @param {string|Date} [options.minDate] - Earliest allowed date.
      * @param {string|Date} [options.maxDate] - Latest allowed date.
      * @param {boolean} [options.allowEmpty=true] - Whether empty values are accepted.
+     * @param {''|null} [options.emptyAs] - Value used by the parser for empty inputs.
      * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Invalid manual input behavior.
      * @param {object} [options.messages] - Date validation messages by category.
      * @returns {{format: string, displayFormat: string, editFormat: string, inputFormats: string[], payloadFormat: string, mode: string, formatter: string, editor: object, validator: object, parser: object, picker: object}}

@@ -54,8 +54,11 @@ export class SearchFiltersDialog {
      * @param {string} [options.selectAllText='Select All'] - Select-all button text.
      * @param {string} [options.applyText='Apply'] - Apply button text.
      * @param {string} [options.cancelText='Cancel'] - Cancel button text.
+     * @param {string} [options.searchInText='Search only in these columns:'] - Search columns section label.
      * @param {boolean} [options.caseSensitive=false] - Initial case-sensitive state.
+     * @param {string} [options.caseSensitiveText='Case sensitive'] - Case-sensitive option label.
      * @param {boolean} [options.wholeWord=false] - Initial whole-word state.
+     * @param {string} [options.wholeWordText='Whole word'] - Whole-word option label.
      * @returns {Promise<object>} Dialog result with selected fields and search options.
      */
     open(options = {}) {

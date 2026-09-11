@@ -90,9 +90,14 @@ const mergeCssClass = (...classes) => {
  * @param {object} options - Multifield Lookup options.
  * @param {string} options.id - Non-empty Multifield Lookup identifier for diagnostics.
  * @param {object} options.lookup - Record-based `AMB.lookup(...)` instance.
+ * @param {{open: Function}} [options.dialog] - Default dialog for the master field. `masterColumn({ dialog })` takes precedence.
  * @param {object} options.masterField - Master field definition.
  * @param {string} options.masterField.field - Row field updated by the master.
  * @param {string} options.masterField.from - Lookup record field mapped to the master.
+ * @param {string} [options.masterField.title] - User-facing master column title.
+ * @param {boolean} [options.masterField.required=false] - Require a value for the master field.
+ * @param {boolean} [options.masterField.autocomplete=true] - Enable autocomplete for the master field.
+ * @param {boolean} [options.masterField.dialog=true] - Create a lookup dialog when no dialog is configured.
  * @param {object[]} [options.dependentFields=[]] - Dependent readonly fields.
  * @param {boolean} [options.clearDependentsOnInvalidMaster=true] - Clear dependents when typed master is invalid.
  * @param {boolean} [options.clearDependentsOnEmptyMaster=true] - Clear dependents when master is empty.

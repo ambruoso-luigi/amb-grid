@@ -268,11 +268,57 @@ const largeTextEditor = AMB.editors.largeText({
     height: 480
 });
 
+const recordLookup = AMB.lookup({
+    keyField: 'id',
+    valueField: 'name',
+    labelField: 'name',
+    load: async () => []
+});
+
+const multifield = AMB.multifieldLookup({
+    id: 'example',
+    lookup: recordLookup,
+    dialog: new AMB.LookupDialog(),
+    masterField: {
+        field: 'name',
+        from: 'name',
+        title: 'Name',
+        required: true,
+        autocomplete: true,
+        dialog: true
+    },
+    dependentFields: [
+        {
+            field: 'code',
+            from: 'id',
+            title: 'Code',
+            required: true
+        }
+    ]
+});
+
+const dateConfig = AMB.date.createConfig({
+    emptyAs: null
+});
+
+const searchFiltersDialog = new AMB.SearchFiltersDialog();
+const searchFiltersResult = searchFiltersDialog.open({
+    columns: [
+        { field: 'name', title: 'Name' }
+    ],
+    searchInText: 'Search in:',
+    caseSensitiveText: 'Case sensitive',
+    wholeWordText: 'Whole word'
+});
+
 void grid;
 void lookupEditor;
 void lookupInputEditor;
 void autocompleteEditor;
 void largeTextEditor;
+void multifield;
+void dateConfig;
+void searchFiltersResult;
 void [
     CrudHelper,
     ROW_STATE,
