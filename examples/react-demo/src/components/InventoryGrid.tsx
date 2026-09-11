@@ -10,8 +10,13 @@ type InventoryGridProps = {
 };
 
 type GridCell = {
+  getField: () => string;
+  getElement: () => HTMLElement;
   getValue: () => unknown;
-  getRow: () => { getData: () => Record<string, unknown> };
+  getRow: () => {
+    getCell: (field: string) => GridCell | false;
+    getData: () => Record<string, unknown>;
+  };
 };
 
 const money = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: true });
@@ -63,11 +68,24 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
   useEffect(() => {
     if (!gridElementRef.current) return;
 
+    const statusDialog = new AMB.LookupDialog();
+    const statusEditorOptions = {
+      allowEmpty: false,
+      dialog: statusDialog,
+      dialogTitle: 'Search status',
+      invalidMessage: 'Unknown status code',
+      autoComplete: true,
+      autoCompleteMinChars: 1,
+      autoCompleteOnTab: true,
+      showDescription: true,
+      dialogOptions: { closeOnBackdropClick: false, destroyOnClose: true },
+    } as Parameters<typeof AMB.editors.lookup>[1] & { dialog: typeof statusDialog };
     const tableOptions = {
       selector: gridElementRef.current,
       data: [],
       layout: 'fitDataStretch',
       toolbar: false,
+      // React demo intentionally keeps row actions immediate.
       rowActionColumn: { enabled: true, width: 52 },
       columns: [
         { title: 'Item code', field: 'itemCode', minWidth: 118, editor: AMB.editors.text({ uppercase: true, trim: true }), required: true, validation: { pattern: { regex: /^ITM-[A-Z0-9]{4}$/, message: 'Use ITM-1001 format' }, unique: { caseSensitive: false, message: 'Item code must be unique' } } },
@@ -76,7 +94,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
         { title: 'Stock quantity', field: 'stockQuantity', minWidth: 142, editor: AMB.editors.integer({ allowEmpty: false }), formatter: stockFormatter, bottomCalc: sumNumbers, required: true, validation: { integer: true, min: { value: 0, message: 'Cannot be negative' } } },
         { title: 'Unit price', field: 'unitPrice', minWidth: 118, editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }), formatter: AMB.formatters.currency(), required: true, validation: { decimal: { integerDigits: 7, decimalDigits: 2, allowNegative: false, message: 'Enter a valid price' } } },
         { title: 'Inventory value', field: 'inventoryValue', minWidth: 142, editable: false, formatter: inventoryValueFormatter, bottomCalc: sumInventoryValue, bottomCalcFormatter: currencyCalculationFormatter },
-        { title: 'Status', field: 'status', minWidth: 112, editor: AMB.editors.lookup(statusLookup, { allowEmpty: false, autoComplete: true, showDescription: true }), formatter: statusFormatter, required: true },
+        { title: 'Status', field: 'status', minWidth: 112, editor: AMB.editors.lookup(statusLookup, statusEditorOptions), formatter: statusFormatter, required: true },
         { title: 'Requires inspection', field: 'requiresInspection', minWidth: 150, hozAlign: 'center', formatter: AMB.formatters.checkbox(), editor: AMB.editors.checkbox(), bottomCalc: countInspections, bottomCalcFormatter: inspectionCalculationFormatter },
         { title: 'Last check date', field: 'lastCheckDate', minWidth: 132, editor: AMB.editors.date({ format: 'yyyy-mm-dd', allowEmpty: false, picker: true }), formatter: AMB.formatters.date('yyyy-mm-dd'), required: true, validation: { date: { format: 'yyyy-mm-dd', allowEmpty: false, message: 'Enter a valid date' } } },
         { title: 'Notes', field: 'notes', minWidth: 210, formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }), editor: AMB.editors.largeText({ title: 'Edit inventory notes', rows: 8 }) },
@@ -85,8 +103,11 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
     const grid = AMB.table(tableOptions);
     const refresh = () => queueMicrotask(() => onStateChange(grid));
     const refreshEditedRow = (cell: GridCell) => requestAnimationFrame(() => {
-      const data = cell.getRow().getData();
-      grid.reformatRow(data.id ?? data._ambTempId);
+      if (cell.getField() === 'stockQuantity' || cell.getField() === 'unitPrice') {
+        const valueCell = cell.getRow().getCell('inventoryValue');
+        if (valueCell) valueCell.getElement().textContent = inventoryValueFormatter(valueCell);
+      }
+      grid.recalc();
       onStateChange(grid);
     });
     const engineEvents = ['rowAdded', 'rowDeleted', 'dataChanged'];
@@ -104,6 +125,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
       grid.off('cellEdited', refreshEditedRow);
       removeCrudListeners.forEach((removeListener) => removeListener());
       gridRef.current?.destroy();
+      statusDialog.destroy();
       gridRef.current = null;
       onReady(null);
     };

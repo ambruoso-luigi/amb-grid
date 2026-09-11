@@ -18,7 +18,7 @@ export function InventoryKpis({ snapshot }: { snapshot: InventorySnapshot }) {
   const metrics = [
     ['Products', integer.format(snapshot.products), 'righe correnti', Boxes, 'neutral'],
     ['Modified', integer.format(snapshot.modified), 'record modificati', SquarePen, snapshot.modified ? 'pending' : 'neutral'],
-    ['Errors', integer.format(snapshot.errors), 'righe da correggere', AlertCircle, snapshot.errors ? 'error' : 'neutral'],
+    ['Errors', integer.format(snapshot.errors), 'celle non valide', AlertCircle, snapshot.errors ? 'error' : 'neutral'],
     ['Pending save', integer.format(snapshot.pending), 'insert · update · delete', Save, snapshot.pending ? 'pending' : 'neutral'],
     ['Total stock', integer.format(snapshot.totalStock), 'unità disponibili', PackageCheck, 'neutral'],
     ['Inventory value', currency.format(snapshot.inventoryValue), 'stock × prezzo', BadgeEuro, 'neutral'],

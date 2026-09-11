@@ -101,7 +101,7 @@ export function InventoryShell() {
     setSnapshot({
       products: report.totalRows,
       modified: report.changedRowsCount,
-      errors: report.errorRowsCount,
+      errors: controller.getCellErrors().length,
       pending: report.changedRowsCount,
       totalStock: totals.stock,
       inventoryValue: totals.value,
@@ -150,7 +150,10 @@ export function InventoryShell() {
     await Promise.resolve(grid.validate());
     syncFromGrid(grid);
     const report = grid.getStateReport() as InventoryReport;
-    showFeedback(report.errorRowsCount ? 'error' : 'success', report.errorRowsCount ? `${report.errorRowsCount} righe richiedono attenzione.` : 'Validazione completata: nessun errore.');
+    const cellErrorCount = grid.getCellErrors().length;
+    const cellLabel = cellErrorCount === 1 ? 'cella non valida' : 'celle non valide';
+    const rowLabel = report.errorRowsCount === 1 ? 'riga' : 'righe';
+    showFeedback(report.errorRowsCount ? 'error' : 'success', report.errorRowsCount ? `${cellErrorCount} ${cellLabel} in ${report.errorRowsCount} ${rowLabel}.` : 'Validazione completata: nessun errore.');
   }, [grid, showFeedback, syncFromGrid]);
 
   const saveValidChanges = useCallback(async () => {
