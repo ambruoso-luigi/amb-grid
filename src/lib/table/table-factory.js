@@ -413,6 +413,23 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @callback AMBGridCellValidator
+ * @param {unknown} value - Cell value to validate.
+ * @param {object} rowData - Current row data.
+ * @param {unknown} cell - Runtime cell component.
+ * @param {CrudHelper} helper - AMB CRUD helper instance.
+ * @returns {boolean} Whether the value is valid.
+ */
+
+/**
+ * @callback AMBGridAddCellValidator
+ * @param {string} field - Cell field name.
+ * @param {string} message - Error message used when validation fails.
+ * @param {AMBGridCellValidator} validateFn - Validator callback.
+ * @returns {void}
+ */
+
+/**
  * @typedef {object} AMBTableController
  * @property {object} table - Internal table engine instance for advanced integrations. Prefer controller methods for normal usage.
  * @property {CrudHelper} crud - Advanced, compatible access to the CRUD layer. Prefer direct controller methods for normal reports and save payloads.
@@ -535,27 +552,27 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {CrudHelper['updateRowFields']} updateRow - Patch a row through AMB tracking and validation rather than directly through the engine.
  * @property {CrudHelper['deleteRow']} deleteRow - Delete or mark one row deleted according to the AMB lifecycle.
  * @property {CrudHelper['rollbackRow']} rollbackRow - Restore or remove one row according to its AMB lifecycle state.
- * @property {Function} applyBackendIds - Reconcile temporary and backend ids without sending data to the backend.
- * @property {Function} markRowSaved - Confirm one row as saved without sending data to the backend.
- * @property {Function} markRowsSaved - Confirm an explicit row list as saved without sending data to the backend.
- * @property {Function} markValidChangesSaved - Confirm valid changes and return saved/skipped rows without sending data to the backend.
+ * @property {CrudHelper['applyBackendIds']} applyBackendIds - Reconcile temporary and backend ids without sending data to the backend.
+ * @property {CrudHelper['markRowSaved']} markRowSaved - Confirm one row as saved without sending data to the backend.
+ * @property {CrudHelper['markRowsSaved']} markRowsSaved - Confirm an explicit row list as saved without sending data to the backend.
+ * @property {CrudHelper['markValidChangesSaved']} markValidChangesSaved - Confirm valid changes and return saved/skipped rows without sending data to the backend.
  * @property {CrudHelper['hasErrors']} hasErrors - Return whether AMB CRUD currently tracks row or cell-field application errors.
- * @property {Function} getErrors - Return the grouped AMB CRUD error summary without reading native cell-validation markers.
- * @property {Function} getRowErrors - Return the currently registered AMB row-level errors.
+ * @property {CrudHelper['getErrors']} getErrors - Return the grouped AMB CRUD error summary without reading native cell-validation markers.
+ * @property {CrudHelper['getRowErrors']} getRowErrors - Return the currently registered AMB row-level errors.
  * @property {CrudHelper['getCellErrors']} getCellErrors - Return the currently registered AMB cell-field errors, not native Cell Components.
- * @property {Function} markCellError - Register an AMB application error for a row field without changing lifecycle state or native cell-validation markers.
- * @property {Function} clearCellError - Clear one AMB row-field error without clearing native Cell Component validation state.
- * @property {Function} markRowError - Register an AMB application error for an entire row without changing its lifecycle state.
- * @property {Function} clearRowError - Clear only an AMB row-level error, preserving cell-field errors and lifecycle state.
- * @property {Function} clearCellErrorsForRow - Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.
- * @property {Function} clearErrorsForRow - Clear every AMB application error for one row only, preserving native cell-validation markers.
+ * @property {CrudHelper['markCellError']} markCellError - Register an AMB application error for a row field without changing lifecycle state or native cell-validation markers.
+ * @property {CrudHelper['clearCellError']} clearCellError - Clear one AMB row-field error without clearing native Cell Component validation state.
+ * @property {CrudHelper['markRowError']} markRowError - Register an AMB application error for an entire row without changing its lifecycle state.
+ * @property {CrudHelper['clearRowError']} clearRowError - Clear only an AMB row-level error, preserving cell-field errors and lifecycle state.
+ * @property {CrudHelper['clearRowErrors']} clearCellErrorsForRow - Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.
+ * @property {CrudHelper['clearAllErrors']} clearErrorsForRow - Clear every AMB application error for one row only, preserving native cell-validation markers.
  * @property {AMBGridOnCrud} onCrud - Subscribe to an AMB CRUD application event and return its unsubscribe function, distinct from engine `on`.
  * @property {(eventName: string, callback: AMBGridEventCallback) => void} offCrud - Remove one specific AMB CRUD callback, distinct from engine `off`; remaining subscriptions are released on destroy.
- * @property {Function} addCellValidator - Append a runtime AMB rule for a field without immediately validating data.
- * @property {Function} removeCellValidators - Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.
+ * @property {AMBGridAddCellValidator} addCellValidator - Append a runtime AMB rule for a field without immediately validating data.
+ * @property {CrudHelper['removeCellValidator']} removeCellValidators - Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.
  * @property {CrudHelper['validateAll']} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
  * @property {CrudHelper['validateChanges']} validateChanges - Validate AMB rows with pending insert or update changes.
- * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
+ * @property {CrudHelper['validateRow']} validateRow - Validate one AMB-managed row by backend or temporary identifier.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowGroup - Return the row's runtime Group Component, or `false`.

@@ -385,6 +385,58 @@ const scrollPromise: Promise<void> = grid.scrollToRow(
     true
 );
 
+const backendIdResult = grid.applyBackendIds([
+    {
+        tempId: 'tmp-1',
+        id: 100
+    }
+]);
+
+const appliedMappings: object[] = backendIdResult.applied;
+
+const rowSaved: boolean = grid.markRowSaved(1);
+const rowsSaved: boolean = grid.markRowsSaved([1, 2]);
+
+const saveConfirmation = grid.markValidChangesSaved();
+const savedRows: object[] = saveConfirmation.saved;
+const skippedRows: object[] = saveConfirmation.skipped;
+
+const crudErrors = grid.getErrors();
+const crudHasErrors: boolean = crudErrors.hasErrors;
+const rowErrors: object[] = grid.getRowErrors();
+
+const markedCellError: boolean = grid.markCellError(
+    1,
+    'name',
+    'Invalid name'
+);
+
+const clearedCellError: boolean = grid.clearCellError(
+    1,
+    'name'
+);
+
+const markedRowError: boolean = grid.markRowError(
+    1,
+    'Invalid row'
+);
+
+const clearedRowError: boolean = grid.clearRowError(1);
+const clearedRowCellErrors: boolean = grid.clearCellErrorsForRow(1);
+const clearedAllRowErrors: boolean = grid.clearErrorsForRow(1);
+
+grid.addCellValidator(
+    'name',
+    'Name required',
+    (value) => {
+        return value !== null;
+    }
+);
+
+grid.removeCellValidators('name');
+
+const rowValidation: object | null = grid.validateRow(1);
+
 const lookup = AMB.lookup({
     load: async () => []
 });
@@ -554,6 +606,20 @@ void searchedData;
 void normalizedHeight;
 void reformatted;
 void scrollPromise;
+void appliedMappings;
+void rowSaved;
+void rowsSaved;
+void savedRows;
+void skippedRows;
+void crudHasErrors;
+void rowErrors;
+void markedCellError;
+void clearedCellError;
+void markedRowError;
+void clearedRowError;
+void clearedRowCellErrors;
+void clearedAllRowErrors;
+void rowValidation;
 void lookupEditor;
 void lookupInputEditor;
 void advancedLookupEditor;
