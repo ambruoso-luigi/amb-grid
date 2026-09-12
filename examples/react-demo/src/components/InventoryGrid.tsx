@@ -79,7 +79,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
       autoCompleteOnTab: true,
       showDescription: true,
       dialogOptions: { closeOnBackdropClick: false, destroyOnClose: true },
-    } as Parameters<typeof AMB.editors.lookup>[1] & { dialog: typeof statusDialog };
+    };
     const tableOptions = {
       selector: gridElementRef.current,
       data: [],
@@ -99,7 +99,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
         { title: 'Last check date', field: 'lastCheckDate', minWidth: 132, editor: AMB.editors.date({ format: 'yyyy-mm-dd', allowEmpty: false, picker: true }), formatter: AMB.formatters.date('yyyy-mm-dd'), required: true, validation: { date: { format: 'yyyy-mm-dd', allowEmpty: false, message: 'Enter a valid date' } } },
         { title: 'Notes', field: 'notes', minWidth: 210, formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }), editor: AMB.editors.largeText({ title: 'Edit inventory notes', rows: 8 }) },
       ],
-    };
+    } satisfies Parameters<typeof AMB.table>[0];
     const grid = AMB.table(tableOptions);
     const refresh = () => queueMicrotask(() => onStateChange(grid));
     const refreshEditedRow = (cell: GridCell) => requestAnimationFrame(() => {
