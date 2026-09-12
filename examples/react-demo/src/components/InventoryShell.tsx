@@ -92,7 +92,7 @@ export function InventoryShell() {
 
   const syncFromGrid = useCallback((controller: InventoryGridController) => {
     const report = controller.getStateReport() as InventoryReport;
-    const nextPayload = controller.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true }) as InventoryPayload;
+    const nextPayload = controller.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
     const totals = report.rows.reduce((current, row) => ({
       stock: current.stock + asNumber(row.after.stockQuantity),
       value: current.value + asNumber(row.after.stockQuantity) * asNumber(row.after.unitPrice),
@@ -158,7 +158,7 @@ export function InventoryShell() {
 
   const saveValidChanges = useCallback(async () => {
     if (!grid) return;
-    const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true }) as InventoryPayload;
+    const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
     const report = grid.getStateReport() as InventoryReport;
     const savedCandidates = report.validChangedRows.map(({ key, tempId }) => ({ key, tempId }));
     setBusy(true);
@@ -189,7 +189,7 @@ export function InventoryShell() {
     if (!grid) return;
     await Promise.resolve(grid.validateChanges());
     syncFromGrid(grid);
-    const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true }) as InventoryPayload;
+    const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
     if (!currentPayload.hasChanges) return showFeedback('success', 'Nessuna modifica da salvare.');
     if (!currentPayload.canSave) return showFeedback('error', 'Correggi le righe non valide prima di salvare.');
     if (currentPayload.isPartialSave) return setPartialSaveOpen(true);
