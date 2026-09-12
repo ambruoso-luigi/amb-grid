@@ -30,6 +30,12 @@ const stockFormatter = (cell: GridCell) => {
   return `<div class="inventory-stock" data-level="${level}"><div class="inventory-stock__top"><strong>${value}</strong><span>stock</span></div><span class="inventory-stock__track"><i style="width:${percentage}%"></i></span></div>`;
 };
 
+const inspectionCheckboxFormatter = (cell: GridCell) => {
+  const checked = Boolean(cell.getValue());
+
+  return `<span class="inventory-checkbox-visual" data-checked="${checked ? 'true' : 'false'}" aria-hidden="true"></span>`;
+};
+
 const statusFormatter = (cell: GridCell) => {
   const status = String(cell.getValue() ?? '');
   const icons: Record<string, string> = {
@@ -89,7 +95,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
         { title: 'Unit price', field: 'unitPrice', minWidth: 118, editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }), formatter: AMB.formatters.currency(), required: true, validation: { decimal: { integerDigits: 7, decimalDigits: 2, allowNegative: false, message: 'Enter a valid price' } } },
         { title: 'Inventory value', field: 'inventoryValue', minWidth: 142, editable: false, formatter: inventoryValueFormatter, bottomCalc: sumInventoryValue, bottomCalcFormatter: currencyCalculationFormatter },
         { title: 'Status', field: 'status', minWidth: 112, editor: AMB.editors.lookup(statusLookup, { allowEmpty: false, dialog: statusDialog, dialogTitle: 'Search status', invalidMessage: 'Unknown status code', autoComplete: true, autoCompleteMinChars: 1, autoCompleteOnTab: true, showDescription: true, dialogOptions: { closeOnBackdropClick: false, destroyOnClose: true } }), formatter: statusFormatter, required: true },
-        { title: 'Requires inspection', field: 'requiresInspection', minWidth: 150, hozAlign: 'center', formatter: AMB.formatters.checkbox(), editor: AMB.editors.checkbox(), bottomCalc: countInspections, bottomCalcFormatter: inspectionCalculationFormatter },
+        { title: 'Requires inspection', field: 'requiresInspection', minWidth: 150, hozAlign: 'center', formatter: inspectionCheckboxFormatter, editor: AMB.editors.checkbox(), bottomCalc: countInspections, bottomCalcFormatter: inspectionCalculationFormatter },
         { title: 'Last check date', field: 'lastCheckDate', minWidth: 132, editor: AMB.editors.date({ format: 'yyyy-mm-dd', allowEmpty: false, picker: true }), formatter: AMB.formatters.date('yyyy-mm-dd'), required: true, validation: { date: { format: 'yyyy-mm-dd', allowEmpty: false, message: 'Enter a valid date' } } },
         { title: 'Notes', field: 'notes', minWidth: 210, formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }), editor: AMB.editors.largeText({ title: 'Edit inventory notes', rows: 8 }) },
       ],

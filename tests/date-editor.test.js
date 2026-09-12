@@ -412,6 +412,7 @@ const createPickerHarness = (options = {}) => {
         notesCell,
         pickerButton: isPickerOnly ? null : wrapper.children[1],
         pickerInput: isPickerOnly ? wrapper.children[0] : wrapper.children[2],
+        row,
         success,
         table
     };
@@ -482,8 +483,8 @@ describe('date editor picker keyboard navigation', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('20/07/2026');
-        expect(harness.table.navigateRight).toHaveBeenCalledWith(harness.cell);
-        expect(harness.table.navigateNext).toHaveBeenCalledWith(harness.cell);
+        expect(harness.table.navigateRight).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(harness.hiddenCell.edit).not.toHaveBeenCalled();
         expect(harness.displayCell.edit).not.toHaveBeenCalled();
         expect(harness.notesCell.edit).not.toHaveBeenCalled();
@@ -502,9 +503,32 @@ describe('date editor picker keyboard navigation', () => {
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
-        expect(harness.table.navigateLeft).toHaveBeenCalledWith(harness.cell);
-        expect(harness.table.navigatePrev).toHaveBeenCalledWith(harness.cell);
+        expect(harness.table.navigateLeft).not.toHaveBeenCalled();
+        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
         expect(harness.cell.navigateNext).not.toHaveBeenCalled();
+        expect(harness.table.navigateNext).not.toHaveBeenCalled();
+    });
+
+    test('Tab focuses an adjacent keyboard-focus-only large-text cell without opening it', async () => {
+        const harness = createPickerHarness();
+        const notesElement = createElement('div');
+        const notes = {
+            edit: vi.fn(),
+            getColumn: () => ({
+                getDefinition: () => ({
+                    editor: 'textarea',
+                    _ambKeyboardFocusOnly: true
+                })
+            }),
+            getElement: () => notesElement
+        };
+        harness.row.getCells = () => [harness.cell, notes];
+
+        await harness.input.dispatch('keydown', { key: 'Tab' });
+        await flushDeferred();
+
+        expect(globalThis.document.activeElement).toBe(notesElement);
+        expect(notes.edit).not.toHaveBeenCalled();
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
     });
 
@@ -710,7 +734,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(datepicker.destroy).toHaveBeenCalledOnce();
         expect(datepicker.active).toBe(false);
-        expect(harness.table.navigateNext).toHaveBeenCalledWith(harness.cell);
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(documentListeners).toHaveLength(0);
     });
 
@@ -732,7 +756,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(datepicker.destroy).toHaveBeenCalledOnce();
-        expect(harness.table.navigatePrev).toHaveBeenCalledWith(harness.cell);
+        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
         expect(documentListeners).toHaveLength(0);
     });
@@ -751,7 +775,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(datepicker.destroy).toHaveBeenCalledOnce();
-        expect(harness.table.navigateNext).toHaveBeenCalledWith(harness.cell);
+        expect(harness.table.navigateNext).toHaveBeenCalledOnce();
         expect(documentListeners).toHaveLength(0);
     });
 
@@ -771,7 +795,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(datepicker.destroy).toHaveBeenCalledOnce();
-        expect(harness.table.navigatePrev).toHaveBeenCalledWith(harness.cell);
+        expect(harness.table.navigatePrev).toHaveBeenCalledOnce();
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
         expect(documentListeners).toHaveLength(0);
     });
@@ -850,7 +874,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(tabEvent.stopPropagation).toHaveBeenCalledOnce();
         expect(firstHarness.success).not.toHaveBeenCalled();
         expect(secondHarness.success).toHaveBeenCalledOnce();
-        expect(secondHarness.table.navigateNext).toHaveBeenCalledWith(secondHarness.cell);
+        expect(secondHarness.table.navigateNext).toHaveBeenCalledOnce();
     });
 
     test('pickerOnly changeDate commits without forced navigation', async () => {

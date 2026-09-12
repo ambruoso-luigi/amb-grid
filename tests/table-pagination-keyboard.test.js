@@ -455,6 +455,24 @@ describe('table pagination keyboard runtime', () => {
         expect(shiftKey ? previous.edit : next.edit).toHaveBeenCalledOnce();
     });
 
+    test('Shift+Tab focuses a large-text destination without opening its editor', () => {
+        const previous = createCandidate({ field: 'previous' });
+        const notes = createCandidate({ focusOnly: true, field: 'notes' });
+        const next = createCandidate({ field: 'next' });
+        const harness = createHarness({ cells: [previous, notes, next] });
+        globalThis.document.activeElement = next.getElement();
+
+        const event = harness.tableElement.dispatch({
+            key: 'Tab',
+            shiftKey: true,
+            target: next.getElement()
+        });
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(notes.getElement().focus).toHaveBeenCalledOnce();
+        expect(notes.edit).not.toHaveBeenCalled();
+    });
+
     test.each([
         ['ArrowUp', GRID_SHORTCUTS.previousRow],
         ['ArrowDown', GRID_SHORTCUTS.nextRow]

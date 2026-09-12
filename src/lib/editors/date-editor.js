@@ -10,7 +10,11 @@ import {
     normalizeDateInputChange,
     parseDateEditorValue
 } from './date-editor-utils.js';
-import { focusInput, getInitialValue } from './shared.js';
+import {
+    focusInput,
+    getInitialValue,
+    navigateEditableCellAfterClose
+} from './shared.js';
 
 const DATE_OPTION_FORMATS = [
     'dd/mm/yyyy',
@@ -281,41 +285,8 @@ export function date(options = {}) {
                 const navigateAfterClose = direction => {
                     if (navigationScheduled) return;
 
-                    const table = cell && cell.getTable && cell.getTable();
-
                     navigationScheduled = true;
-                    globalThis.setTimeout(() => {
-                        if (!table || !cell) return;
-
-                        const sameRowMethod = direction === 'prev'
-                            ? 'navigateLeft'
-                            : 'navigateRight';
-                        const wrappingMethod = direction === 'prev'
-                            ? 'navigatePrev'
-                            : 'navigateNext';
-                        const navigationCell = typeof cell._getSelf === 'function'
-                            ? cell._getSelf()
-                            : cell;
-
-                        if (typeof cell[sameRowMethod] === 'function') {
-                            const moved = cell[sameRowMethod]();
-                            if (moved) return;
-
-                            if (typeof cell[wrappingMethod] === 'function') {
-                                cell[wrappingMethod]();
-                                return;
-                            }
-                        }
-
-                        if (typeof table[sameRowMethod] === 'function'
-                            && table[sameRowMethod](navigationCell)) {
-                            return;
-                        }
-
-                        if (typeof table[wrappingMethod] === 'function') {
-                            table[wrappingMethod](navigationCell);
-                        }
-                    }, 0);
+                    navigateEditableCellAfterClose(cell, direction);
                 };
 
                 const commitFromTab = direction => {
@@ -631,39 +602,7 @@ export function date(options = {}) {
             };
 
             const navigateAfterClose = direction => {
-                globalThis.setTimeout(() => {
-                    const table = cell && cell.getTable && cell.getTable();
-                    if (!table) return;
-
-                    const sameRowMethod = direction === 'prev'
-                        ? 'navigateLeft'
-                        : 'navigateRight';
-                    const wrappingMethod = direction === 'prev'
-                        ? 'navigatePrev'
-                        : 'navigateNext';
-                    const navigationCell = typeof cell._getSelf === 'function'
-                        ? cell._getSelf()
-                        : cell;
-
-                    if (typeof cell[sameRowMethod] === 'function') {
-                        const moved = cell[sameRowMethod]();
-                        if (moved) return;
-
-                        if (typeof cell[wrappingMethod] === 'function') {
-                            cell[wrappingMethod]();
-                            return;
-                        }
-                    }
-
-                    if (typeof table[sameRowMethod] === 'function'
-                        && table[sameRowMethod](navigationCell)) {
-                        return;
-                    }
-
-                    if (typeof table[wrappingMethod] === 'function') {
-                        table[wrappingMethod](navigationCell);
-                    }
-                }, 0);
+                navigateEditableCellAfterClose(cell, direction);
             };
 
             input.addEventListener('input', sanitizeInput);

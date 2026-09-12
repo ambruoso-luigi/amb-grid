@@ -517,13 +517,18 @@ export const createPaginationKeyboardRuntime = ({
             const atPageBoundary = direction === 'prev'
                 ? currentIndex === 0
                 : currentIndex === candidates.length - 1;
+            const targetCandidate = candidates[currentIndex + (direction === 'prev' ? -1 : 1)];
+            const targetFocusOnly = targetCandidate
+                ?.getColumn?.()
+                ?.getDefinition?.()
+                ?._ambKeyboardFocusOnly === true;
 
             if (currentIndex === -1) return;
-            if (focusOnly && !atPageBoundary) {
+            if ((focusOnly || targetFocusOnly) && !atPageBoundary) {
                 event.preventDefault();
                 event.stopPropagation?.();
                 event.stopImmediatePropagation?.();
-                navigateToCandidate(candidates[currentIndex + (direction === 'prev' ? -1 : 1)]);
+                navigateToCandidate(targetCandidate);
                 return;
             }
             if (!atPageBoundary) return;
