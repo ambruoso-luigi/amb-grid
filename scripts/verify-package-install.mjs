@@ -343,6 +343,48 @@ grid.refreshFilter();
 const crudCallback = () => {};
 grid.offCrud('row-state-changed', crudCallback);
 
+const ajaxUrl: string = grid.getAjaxUrl();
+
+const setDataResult: unknown | Promise<unknown> | false = grid.setData([]);
+const replaceDataResult: unknown | Promise<unknown> | false = grid.replaceData([]);
+const importResult: Promise<unknown> | false = grid.import('csv', '.csv', 'text');
+const clearDataResult: unknown | Promise<unknown> | false = grid.clearData();
+
+const addDataResult: Promise<object[]> | false = grid.addData(
+    [{ id: 10, name: 'Bulk add' }],
+    false
+);
+
+const updateDataResult: Promise<void> | false = grid.updateData([
+    { id: 1, name: 'Bulk update' }
+]);
+
+const updateOrAddDataResult: Promise<object[]> | false = grid.updateOrAddData([
+    { id: 1, name: 'Upsert' }
+]);
+
+const updateOrAddRowResult: Promise<object | null> | false = grid.updateOrAddRow(
+    1,
+    { name: 'Upsert row' }
+);
+
+const searchedData: object[] = grid.searchData(
+    'name',
+    'like',
+    'Mario'
+);
+
+grid.recalc();
+
+const normalizedHeight: boolean = grid.normalizeRowHeight(1);
+const reformatted: boolean = grid.reformatRow(1);
+
+const scrollPromise: Promise<void> = grid.scrollToRow(
+    1,
+    'center',
+    true
+);
+
 const lookup = AMB.lookup({
     load: async () => []
 });
@@ -499,6 +541,19 @@ void nextPagePromise;
 void previousPagePromise;
 void rowPagePromise;
 void filters;
+void ajaxUrl;
+void setDataResult;
+void replaceDataResult;
+void importResult;
+void clearDataResult;
+void addDataResult;
+void updateDataResult;
+void updateOrAddDataResult;
+void updateOrAddRowResult;
+void searchedData;
+void normalizedHeight;
+void reformatted;
+void scrollPromise;
 void lookupEditor;
 void lookupInputEditor;
 void advancedLookupEditor;

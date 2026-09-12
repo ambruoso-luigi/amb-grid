@@ -337,6 +337,82 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @callback AMBGridGetAjaxUrl
+ * @returns {string}
+ */
+
+/**
+ * @callback AMBGridDataRebase
+ * @param {...unknown[]} args - Data-loading arguments forwarded to the engine.
+ * @returns {unknown|Promise<unknown>|false}
+ */
+
+/**
+ * @callback AMBGridImport
+ * @param {unknown} format - Import format.
+ * @param {unknown} accept - Accepted file types.
+ * @param {unknown} reader - File reader mode.
+ * @returns {Promise<unknown>|false}
+ */
+
+/**
+ * @callback AMBGridClearData
+ * @returns {unknown|Promise<unknown>|false}
+ */
+
+/**
+ * @callback AMBGridAddData
+ * @param {object[]} rowsData - Rows to add.
+ * @param {unknown} addToTop - Position flag forwarded to the engine.
+ * @param {unknown} [positionIdentifier] - Optional position identifier.
+ * @returns {Promise<object[]>|false}
+ */
+
+/**
+ * @callback AMBGridUpdateData
+ * @param {object[]} rowsData - Row patches to update.
+ * @returns {Promise<void>|false}
+ */
+
+/**
+ * @callback AMBGridUpdateOrAddData
+ * @param {object[]} rowsData - Rows to update or add.
+ * @returns {Promise<object[]>|false}
+ */
+
+/**
+ * @callback AMBGridUpdateOrAddRow
+ * @param {unknown} identifier - Row identifier.
+ * @param {object} rowData - Row data to update or add.
+ * @returns {Promise<object|null>|false}
+ */
+
+/**
+ * @callback AMBGridSearchData
+ * @param {...unknown[]} args - Engine-compatible filter arguments.
+ * @returns {object[]}
+ */
+
+/**
+ * @callback AMBGridRecalc
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridRowHeightOperation
+ * @param {unknown} identifier - Row identifier or lookup value.
+ * @returns {boolean}
+ */
+
+/**
+ * @callback AMBGridScrollToRow
+ * @param {unknown} identifier - Row identifier or lookup value.
+ * @param {'top'|'center'|'bottom'|'nearest'} [position] - Scroll position.
+ * @param {boolean} [scrollIfVisible] - Scroll even when already visible.
+ * @returns {Promise<void>}
+ */
+
+/**
  * @typedef {object} AMBTableController
  * @property {object} table - Internal table engine instance for advanced integrations. Prefer controller methods for normal usage.
  * @property {CrudHelper} crud - Advanced, compatible access to the CRUD layer. Prefer direct controller methods for normal reports and save payloads.
@@ -416,17 +492,17 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getSorters - Return the current grid sorter definitions.
  * @property {Function} setSort - Apply one or more grid sorters.
  * @property {Function} clearSort - Clear the current grid sorting.
- * @property {Function} getAjaxUrl - Return the current AJAX data URL.
+ * @property {AMBGridGetAjaxUrl} getAjaxUrl - Return the current AJAX data URL.
  * @property {AMBGridDataGetter} getData - Return the current grid row data.
  * @property {AMBGridDataCountGetter} getDataCount - Return the number of rows in the requested range.
- * @property {Function} setData - Replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
- * @property {Function} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
- * @property {Function} import - Import a local file and register the loaded rows as a new clean AMB Grid CRUD baseline.
- * @property {Function} addData - Add multiple managed rows through the AMB Grid CRUD lifecycle.
- * @property {Function} updateData - Partially update multiple managed rows through the AMB Grid CRUD lifecycle.
- * @property {Function} updateOrAddData - Update existing managed rows or add missing rows through the AMB Grid CRUD lifecycle.
- * @property {Function} clearData - Remove every runtime row and register an empty AMB Grid CRUD baseline.
- * @property {Function} searchData - Return row data matching a filter definition.
+ * @property {AMBGridDataRebase} setData - Replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {AMBGridDataRebase} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {AMBGridImport} import - Import a local file and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {AMBGridAddData} addData - Add multiple managed rows through the AMB Grid CRUD lifecycle.
+ * @property {AMBGridUpdateData} updateData - Partially update multiple managed rows through the AMB Grid CRUD lifecycle.
+ * @property {AMBGridUpdateOrAddData} updateOrAddData - Update existing managed rows or add missing rows through the AMB Grid CRUD lifecycle.
+ * @property {AMBGridClearData} clearData - Remove every runtime row and register an empty AMB Grid CRUD baseline.
+ * @property {AMBGridSearchData} searchData - Return row data matching a filter definition.
  * @property {Function} getSheetDefinitions - Return the current spreadsheet sheet definitions.
  * @property {Function} getSheets - Return the current spreadsheet Sheet Components.
  * @property {Function} getSheet - Return one spreadsheet Sheet Component.
@@ -455,7 +531,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {CrudHelper['getStateReport']} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
  * @property {CrudHelper.getSavePayload} getSavePayload - Generate the AMB save payload using the supported payload options.
  * @property {CrudHelper['addRow']} addRow - Add a row through the AMB lifecycle rather than directly through the engine.
- * @property {Function} updateOrAddRow - Update one existing managed row or add a missing row through the AMB Grid CRUD lifecycle.
+ * @property {AMBGridUpdateOrAddRow} updateOrAddRow - Update one existing managed row or add a missing row through the AMB Grid CRUD lifecycle.
  * @property {CrudHelper['updateRowFields']} updateRow - Patch a row through AMB tracking and validation rather than directly through the engine.
  * @property {CrudHelper['deleteRow']} deleteRow - Delete or mark one row deleted according to the AMB lifecycle.
  * @property {CrudHelper['rollbackRow']} rollbackRow - Restore or remove one row according to its AMB lifecycle state.
@@ -515,8 +591,8 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getCellData - Return runtime row data in the context of one cell.
  * @property {Function} getCellType - Return the runtime type for one cell.
  * @property {Function} checkCellHeight - Check the runtime height for one cell.
- * @property {Function} normalizeRowHeight - Normalize the runtime height of one row.
- * @property {Function} reformatRow - Reapply runtime formatting for one row.
+ * @property {AMBGridRowHeightOperation} normalizeRowHeight - Normalize the runtime height of one row.
+ * @property {AMBGridRowHeightOperation} reformatRow - Reapply runtime formatting for one row.
  * @property {Function} freezeRow - Freeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} unfreezeRow - Unfreeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} isRowFrozen - Return whether one row is currently frozen through the AMB Grid public API.
@@ -531,7 +607,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getRowPosition - Return the one-based position of a row.
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
  * @property {Function} moveRow - Move one managed row relative to another in a flat grid and realign technical row numbering.
- * @property {Function} scrollToRow - Scroll vertically to a grid row.
+ * @property {AMBGridScrollToRow} scrollToRow - Scroll vertically to a grid row.
  * @property {Function} searchRows - Return row components matching a filter definition.
  * @property {Function} navigatePrev - Move to the previous editable cell.
  * @property {Function} navigateNext - Move to the next editable cell.
@@ -586,7 +662,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getCalcElement - Return the runtime DOM element for one calculation row.
  * @property {Function} getCalcCells - Return runtime Cell Components for one calculation row.
  * @property {Function} getCalcCell - Return one runtime Cell Component from a calculation row.
- * @property {Function} recalc - Recalculate the configured column calculations.
+ * @property {AMBGridRecalc} recalc - Recalculate the configured column calculations.
  * @property {Function} setLocale - Change the locale used by the grid.
  * @property {Function} getLocale - Return the current resolved grid locale.
  * @property {Function} getLang - Return the current runtime language definition.
