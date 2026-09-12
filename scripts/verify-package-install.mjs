@@ -492,6 +492,136 @@ void [
             'utf8'
         );
         writeFileSync(
+            join(consumerSourceRoot, 'vue-consumer.ts'),
+            `import { AMB } from 'amb-grid';
+
+type Ref<T> = {
+    value: T;
+};
+
+declare function onMounted(
+    callback: () => void
+): void;
+
+declare function onBeforeUnmount(
+    callback: () => void
+): void;
+
+const gridElement: Ref<HTMLElement | null> = {
+    value: document.createElement('div')
+};
+
+let grid: ReturnType<typeof AMB.table> | null = null;
+
+onMounted(() => {
+    if (!gridElement.value) return;
+
+    grid = AMB.table({
+        selector: gridElement.value,
+        data: [
+            { id: 1, name: 'Mario' }
+        ],
+        columns: [
+            {
+                title: 'Name',
+                field: 'name',
+                editor: AMB.editors.text()
+            }
+        ],
+        layout: 'fitColumns'
+    });
+
+    const data: object[] = grid.getData();
+
+    const payload = grid.getSavePayload({
+        savePolicy: 'valid-only'
+    });
+
+    const unsubscribe = grid.onCrud(
+        'row-state-changed',
+        () => {}
+    );
+
+    unsubscribe();
+
+    void data;
+    void payload;
+});
+
+onBeforeUnmount(() => {
+    grid?.destroy();
+    grid = null;
+});
+`,
+            'utf8'
+        );
+        writeFileSync(
+            join(consumerSourceRoot, 'angular-consumer.ts'),
+            `import { AMB } from 'amb-grid';
+
+interface AfterViewInit {
+    ngAfterViewInit(): void;
+}
+
+interface OnDestroy {
+    ngOnDestroy(): void;
+}
+
+class ElementRef<T> {
+    constructor(public nativeElement: T) {}
+}
+
+class PeopleGridComponent implements AfterViewInit, OnDestroy {
+    private gridElement =
+        new ElementRef<HTMLElement>(
+            document.createElement('div')
+        );
+
+    private grid:
+        ReturnType<typeof AMB.table> | null = null;
+
+    ngAfterViewInit(): void {
+        this.grid = AMB.table({
+            selector: this.gridElement.nativeElement,
+            data: [
+                { id: 1, name: 'Mario' }
+            ],
+            columns: [
+                {
+                    title: 'Name',
+                    field: 'name',
+                    editor: AMB.editors.text()
+                }
+            ],
+            history: true
+        });
+
+        const currentPage:
+            number | false = this.grid.getPage();
+
+        this.grid.on(
+            'cellEdited',
+            () => {}
+        );
+
+        const report =
+            this.grid.getStateReport();
+
+        void currentPage;
+        void report;
+    }
+
+    ngOnDestroy(): void {
+        this.grid?.destroy();
+        this.grid = null;
+    }
+}
+
+void PeopleGridComponent;
+`,
+            'utf8'
+        );
+        writeFileSync(
             join(consumerRoot, 'tsconfig.json'),
             `${JSON.stringify({
                 compilerOptions: {
@@ -502,7 +632,11 @@ void [
                     moduleResolution: 'Bundler',
                     lib: ['ES2022', 'DOM']
                 },
-                files: ['src/typecheck.ts']
+                files: [
+                    'src/typecheck.ts',
+                    'src/vue-consumer.ts',
+                    'src/angular-consumer.ts'
+                ]
             }, null, 2)}\n`,
             'utf8'
         );
