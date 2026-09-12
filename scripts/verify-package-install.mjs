@@ -250,6 +250,62 @@ const engineOptionsGrid = AMB.table({
     movableColumns: true
 });
 
+const currentData: object[] = grid.getData();
+const currentDataCount: number = grid.getDataCount();
+
+const addedRow: object | Promise<object> = grid.addRow({
+    id: 2,
+    name: 'Added'
+});
+
+const updatedRow: object | null = grid.updateRow(1, {
+    name: 'Updated'
+});
+
+const deleted: boolean = grid.deleteRow(1);
+const rolledBack: boolean = grid.rollbackRow(1);
+
+const validationResult: {
+    isValid: boolean;
+    rows: object[];
+    errors: object[];
+} = grid.validate();
+
+const validationChangesResult: {
+    isValid: boolean;
+    rows: object[];
+    errors: object[];
+} = grid.validateChanges();
+
+const cellErrors: object[] = grid.getCellErrors();
+const hasErrors: boolean = grid.hasErrors();
+
+const changes = grid.getChanges();
+const insertedChanges: object[] = changes.inserted;
+const updatedChanges: object[] = changes.updated;
+const deletedChanges: object[] = changes.deleted;
+
+const stateReport = grid.getStateReport();
+const totalRows: number = stateReport.totalRows;
+const reportHasErrors: boolean = stateReport.hasErrors;
+
+const savePayload = grid.getSavePayload({
+    savePolicy: 'valid-only'
+});
+const canSave: boolean = savePayload.canSave;
+
+grid.on('cellEdited', () => {});
+grid.off('cellEdited');
+
+const unsubscribeCrud: () => void = grid.onCrud(
+    'row-state-changed',
+    () => {}
+);
+
+unsubscribeCrud();
+
+grid.destroy();
+
 const lookup = AMB.lookup({
     load: async () => []
 });
@@ -346,6 +402,22 @@ const searchFiltersResult = searchFiltersDialog.open({
 
 void grid;
 void engineOptionsGrid;
+void currentData;
+void currentDataCount;
+void addedRow;
+void updatedRow;
+void deleted;
+void rolledBack;
+void validationResult;
+void validationChangesResult;
+void cellErrors;
+void hasErrors;
+void insertedChanges;
+void updatedChanges;
+void deletedChanges;
+void totalRows;
+void reportHasErrors;
+void canSave;
 void lookupEditor;
 void lookupInputEditor;
 void advancedLookupEditor;
