@@ -26,8 +26,8 @@ const inventoryValue = (data: Record<string, unknown>) => numberValue(data.stock
 const stockFormatter = (cell: GridCell) => {
   const value = Math.max(0, numberValue(cell.getValue()));
   const percentage = Math.min(100, value / 1.5);
-  const tone = value < 15 ? 'low' : value > 80 ? 'high' : 'normal';
-  return `<div class="inventory-stock" data-tone="${tone}"><strong>${value}</strong><span class="inventory-stock__track"><i style="width:${percentage}%"></i></span></div>`;
+  const level = value < 15 ? 'critical' : value < 35 ? 'low' : value < 70 ? 'medium' : value < 100 ? 'good' : 'high';
+  return `<div class="inventory-stock" data-level="${level}"><div class="inventory-stock__top"><strong>${value}</strong><span>stock</span></div><span class="inventory-stock__track"><i style="width:${percentage}%"></i></span></div>`;
 };
 
 const statusFormatter = (cell: GridCell) => {

@@ -140,14 +140,15 @@ button, a { outline-offset: 3px; }
 .react-table-guide { border-color: #9dcfd9; border-radius: 11px; }.react-table-guide__trigger { background: #eef9fb; padding: 15px 16px; }.react-table-guide__trigger:hover { background: #e3f6f9; }.react-table-guide__trigger-copy { align-items: center; display: flex; gap: 11px; min-width: 0; }.react-table-guide__trigger-copy > span:last-child { display: grid; gap: 3px; min-width: 0; }.react-table-guide__trigger strong { color: #14304b; font-size: 16px; font-weight: 800; }.react-table-guide__trigger small { color: #587184; font-size: 13px; font-weight: 500; line-height: 1.35; }.react-table-guide__help-icon { align-items: center; background: #d4f2f7; border: 1px solid #a9dce6; border-radius: 7px; color: #087f98; display: inline-flex; flex: 0 0 auto; height: 30px; justify-content: center; width: 30px; }.react-table-guide__content { background: #fbfdfe; }.react-table-guide__content-inner { padding: 0 18px 20px; }.react-table-guide__overview { padding-top: 16px; }.react-table-guide__overview h3, .react-table-guide__columns > h3 { color: #163253; font-size: 16px; font-weight: 800; letter-spacing: -.01em; line-height: 1.3; margin: 0; }.react-table-guide__intro { margin-top: 6px; max-width: 760px; padding: 0; }
 .react-table-guide__operations { gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 18px; }.react-table-guide__operations article { background: #ffffff; border: 1px solid #d6e8ec; border-top: 2px solid #86d4e2; border-radius: 8px; min-width: 0; padding: 13px; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }.react-table-guide__operations article:hover { background: #f7fdfe; border-color: #9bd6e0; transform: translateY(-1px); }.react-table-guide__operations article > span { align-items: center; background: #e5f8fb; border-radius: 6px; color: #087f98; display: inline-flex; height: 30px; justify-content: center; margin-bottom: 10px; width: 30px; }.react-table-guide__operations h3 { font-size: 14px; font-weight: 800; }.react-table-guide__operations p { font-size: 13px; line-height: 1.48; }
 .react-table-guide__columns { margin-top: 20px; padding-top: 18px; }.react-table-guide__columns > p { color: #587184; font-size: 14px; line-height: 1.5; margin: 5px 0 0; }.react-table-guide__column-list { gap: 12px; margin-top: 14px; }.react-table-guide__column-list article { background: #ffffff; border: 1px solid #d6e8ec; border-radius: 8px; border-top: 3px solid #86d4e2; box-shadow: 0 2px 5px rgb(22 48 72 / 4%); min-width: 0; padding: 12px; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }.react-table-guide__column-list article:hover { background: #f7fdfe; border-color: #9bd6e0; transform: translateY(-1px); }.react-table-guide__column-list article > i { align-items: center; background: #e5f8fb; border-radius: 6px; color: #087f98; display: inline-flex; font-style: normal; height: 28px; justify-content: center; margin-bottom: 9px; width: 28px; }.react-table-guide__column-list article > div { align-items: flex-start; }.react-table-guide__column-list h4 { font-weight: 800; }.react-table-guide__column-list span { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-.react-demo-grid-shell { background: linear-gradient(145deg, #f9feff 0%, #eef8fb 100%); border: 1px solid #84c4d2; border-radius: 14px; box-shadow: 0 18px 36px rgb(19 67 91 / 14%), inset 0 1px 0 rgb(255 255 255 / 92%); min-height: 438px; margin-top: 18px; overflow: auto; padding: 2px; width: 100%; }
+.react-demo-grid-shell { background: linear-gradient(145deg, #e5f8fc 0%, #f8fdff 45%, #d9f2f7 100%); border: 2px solid #168fa8; border-radius: 14px; box-shadow: 0 2px 0 #ffffff inset, 0 0 0 1px rgb(22 143 168 / 14%), 0 12px 24px rgb(16 78 98 / 18%), 0 24px 55px rgb(16 78 98 / 13%); min-height: 438px; margin-top: 18px; overflow: auto; padding: 3px; width: 100%; }
 .react-demo-grid { min-width: 1080px; width: 100%; }
-.react-demo-grid .tabulator { background: #ffffff; border: 0; border-radius: 11px; color: #40556a; font-family: inherit; font-size: 13px; overflow: hidden; }
-.react-demo-grid .tabulator-header { background: linear-gradient(180deg, #dff6fa 0%, #c7eaf1 100%); border-bottom: 2px solid #72b7c7; box-shadow: inset 0 1px 0 rgb(255 255 255 / 78%), 0 3px 8px rgb(19 82 103 / 12%); color: #123e53; }
-.react-demo-grid .tabulator-col { background: transparent; border-right-color: rgb(92 158 175 / 30%); }
-.react-demo-grid .tabulator-col-content { padding: 15px 11px; }
-.react-demo-grid .tabulator-col-title { font-size: 13px; font-weight: 800; letter-spacing: .01em; text-shadow: 0 1px 0 rgb(255 255 255 / 72%); }
-.react-demo-grid .tabulator-row { border-bottom: 1px solid #e8eff2; color: #40556a; transition: background-color 140ms ease; }
+.react-demo-grid.tabulator { background: #ffffff; border: 0; border-radius: 10px; color: #344f61; font-family: inherit; font-size: 13px; overflow: hidden; }
+.react-demo-grid.tabulator .tabulator-header { background: linear-gradient(180deg, #bcecf5 0%, #91dce9 48%, #72c8d9 100%) !important; border-bottom: 2px solid #168fa8 !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 75%), inset 0 -1px 0 rgb(11 114 138 / 18%), 0 4px 10px rgb(18 92 112 / 18%); color: #103f50; }
+.react-demo-grid.tabulator .tabulator-header .tabulator-col { background: linear-gradient(180deg, #c6f1f8 0%, #98deea 50%, #7acbdc 100%) !important; border-right: 1px solid rgb(23 130 151 / 34%) !important; color: #103f50 !important; }
+.react-demo-grid.tabulator .tabulator-header .tabulator-col:hover { background: linear-gradient(180deg, #d7f7fb 0%, #aae7f0 50%, #8bd7e4 100%) !important; }
+.react-demo-grid.tabulator .tabulator-header .tabulator-col .tabulator-col-content { padding: 15px 11px; }
+.react-demo-grid.tabulator .tabulator-header .tabulator-col-title { color: #103f50; font-size: 13px; font-weight: 800; letter-spacing: .01em; text-shadow: 0 1px 0 rgb(255 255 255 / 72%); }
+.react-demo-grid .tabulator-row { border-bottom: 1px solid #dce9ed; color: #40556a; transition: background-color 140ms ease; }
 .react-demo-grid .tabulator-row:hover { background-color: #f5fafb; }
 .react-demo-grid .tabulator-row[data-state="new"] { background-color: #f0fbfc; box-shadow: inset 3px 0 0 #58b7c8; }
 .react-demo-grid .tabulator-row[data-state="new"]:hover { background-color: #eef9fa; }
@@ -160,42 +161,49 @@ button, a { outline-offset: 3px; }
 .react-demo-grid .tabulator-row[data-has-cell-error="true"]:hover { background-color: #fff8f7; }
 .react-demo-grid .tabulator-row[data-row-error="true"] { background-color: #fff7f6; box-shadow: inset 3px 0 0 #c56b62; }
 .react-demo-grid .tabulator-row[data-row-error="true"]:hover { background-color: #fff7f6; }
-.react-demo-grid .tabulator-cell { border-right-color: rgb(205 220 226 / 25%); line-height: 1.35; padding: 12px 11px; }
+.react-demo-grid .tabulator-cell { border-right: 1px solid rgb(188 211 218 / 30%); line-height: 1.35; padding: 12px 11px; }
 .react-demo-grid .tabulator-cell[tabulator-field="productName"] { color: #213c54; font-weight: 550; }
 .react-demo-grid .tabulator-cell[tabulator-field="itemCode"] { color: #496274; font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .react-demo-grid .tabulator-cell[tabulator-field="notes"] { color: #6f8291; font-weight: 400; }
 .react-demo-grid .tabulator-cell[tabulator-field="stockQuantity"], .react-demo-grid .tabulator-cell[tabulator-field="unitPrice"], .react-demo-grid .tabulator-cell[tabulator-field="inventoryValue"] { font-variant-numeric: tabular-nums; }
 .react-demo-grid .tabulator-cell[tabulator-field="inventoryValue"] { color: #24465d; font-weight: 600; }
 .react-demo-grid .tabulator-cell[data-cell-error="true"] { background-color: #fff5f4 !important; box-shadow: inset 0 0 0 1px rgb(190 72 62 / 32%), inset 0 -2px 0 #bb6259; }
-.react-demo-grid .tabulator-cell:focus, .react-demo-grid .tabulator-cell:focus-visible, .react-demo-grid .tabulator-cell.tabulator-selected { background-color: #f2fcfe; box-shadow: inset 0 0 0 2px #0a9bb6, 0 0 0 2px rgb(10 155 182 / 16%); outline: 0; position: relative; z-index: 1; }
-.react-demo-grid .tabulator-cell[data-cell-error="true"]:focus, .react-demo-grid .tabulator-cell[data-cell-error="true"]:focus-visible { box-shadow: inset 0 0 0 2px rgb(187 98 89 / 48%), inset 0 -2px 0 #bb6259; }
+.react-demo-grid .tabulator-row .tabulator-cell:focus, .react-demo-grid .tabulator-row .tabulator-cell:focus-visible { background-color: #e9faff !important; box-shadow: inset 0 0 0 2px #00a7c4, inset 0 0 0 4px rgb(255 255 255 / 72%), 0 0 0 2px rgb(0 167 196 / 20%) !important; outline: 0; position: relative; z-index: 3; }
+.react-demo-grid .tabulator-row .tabulator-cell[data-cell-error="true"]:focus, .react-demo-grid .tabulator-row .tabulator-cell[data-cell-error="true"]:focus-visible { background: #fff0ee !important; box-shadow: inset 0 0 0 2px #c65d54, inset 0 -3px 0 #a93f38 !important; }
 .react-demo-grid .tabulator-footer { border-top-color: #b8d3da; }
 .react-demo-grid .tabulator-calcs-holder { background: #edf6f8; border-top: 2px solid #b8d3da; color: #213f55; font-weight: 700; }
 .react-demo-grid .tabulator-calcs-holder .tabulator-cell { font-variant-numeric: tabular-nums; padding-bottom: 12px; padding-top: 12px; }
-.inventory-stock { display: grid; gap: 7px; min-width: 92px; }
-.inventory-stock > strong { color: #203f56; font-size: 12px; font-weight: 750; font-variant-numeric: tabular-nums; }
-.inventory-stock__track { background: linear-gradient(180deg, #d9e7eb 0%, #eef4f6 100%); border: 1px solid #c6d8de; border-radius: 999px; box-shadow: inset 0 1px 2px rgb(21 65 83 / 15%), 0 1px 0 rgb(255 255 255 / 85%); display: block; height: 8px; overflow: hidden; width: 100%; }
-.inventory-stock i { background: linear-gradient(180deg, #e8b64a 0%, #c68722 100%); border-radius: inherit; box-shadow: inset 0 1px 0 rgb(255 255 255 / 42%), 0 1px 2px rgb(139 91 10 / 22%); display: block; height: 100%; transition: width 180ms ease-out; }
-.inventory-stock[data-tone="low"] i { background: linear-gradient(180deg, #ef8b66 0%, #c94f39 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), 0 1px 2px rgb(151 49 33 / 24%); }
-.inventory-stock[data-tone="high"] i { background: linear-gradient(180deg, #8bd09b 0%, #3d9260 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 42%), 0 1px 2px rgb(39 111 67 / 24%); }
-.inventory-status { align-items: center; border: 1px solid; border-radius: 7px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 72%), 0 1px 2px rgb(25 61 76 / 9%); display: inline-flex; font-size: 11px; font-weight: 800; gap: 5px; letter-spacing: .025em; line-height: 1; padding: 6px 8px 6px 6px; }
-.inventory-status__icon { align-items: center; background: rgb(255 255 255 / 54%); border-radius: 4px; display: inline-flex; height: 16px; justify-content: center; width: 16px; }
-.inventory-status__icon svg { fill: none; height: 12px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 12px; }
-.inventory-status[data-status="active"] { background: linear-gradient(180deg, #f1fbf4 0%, #e1f3e7 100%); border-color: #bddfc9; color: #2d7750; }
-.inventory-status[data-status="review"] { background: linear-gradient(180deg, #fffbee 0%, #fff1cf 100%); border-color: #e6cf91; color: #87601a; }
-.inventory-status[data-status="hold"] { background: linear-gradient(180deg, #fff6f4 0%, #f9e5e1 100%); border-color: #e2c2bc; color: #985148; }
+.inventory-stock { display: grid; gap: 6px; min-width: 100px; }
+.inventory-stock__top { align-items: baseline; display: flex; gap: 8px; justify-content: space-between; }
+.inventory-stock__top strong { color: #183f54; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.inventory-stock__top span { color: #78909c; font-size: 9px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.inventory-stock__track { background: linear-gradient(180deg, #c8d9df 0%, #eaf2f4 48%, #becfd5 100%); border: 1px solid #a9c1c9; border-radius: 999px; box-shadow: inset 0 2px 3px rgb(28 67 82 / 22%), 0 1px 0 rgb(255 255 255 / 90%); display: block; height: 11px; overflow: hidden; width: 100%; }
+.inventory-stock__track > i { border-radius: 999px; box-shadow: inset 0 2px 0 rgb(255 255 255 / 35%), inset 0 -2px 0 rgb(0 0 0 / 10%), 0 1px 3px rgb(35 73 88 / 22%); display: block; height: 100%; min-width: 4px; transition: width 180ms ease-out; }
+.inventory-stock[data-level="critical"] .inventory-stock__track > i { background: linear-gradient(180deg, #ff8d7d 0%, #e95343 52%, #bd3028 100%); }
+.inventory-stock[data-level="low"] .inventory-stock__track > i { background: linear-gradient(180deg, #ffb16f 0%, #ef8434 52%, #cc631d 100%); }
+.inventory-stock[data-level="medium"] .inventory-stock__track > i { background: linear-gradient(180deg, #ffe17b 0%, #e8b83f 52%, #c89222 100%); }
+.inventory-stock[data-level="good"] .inventory-stock__track > i { background: linear-gradient(180deg, #9fdaa4 0%, #61b872 52%, #3b9151 100%); }
+.inventory-stock[data-level="high"] .inventory-stock__track > i { background: linear-gradient(180deg, #72d79a 0%, #2eb76d 52%, #16894d 100%); }
+.inventory-status { align-items: center; border: 1px solid; border-radius: 8px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 78%), inset 0 -1px 0 rgb(0 0 0 / 5%), 0 2px 5px rgb(28 65 80 / 13%); display: inline-flex; font-size: 11px; font-weight: 800; gap: 6px; letter-spacing: .025em; line-height: 1; min-height: 28px; padding: 5px 9px 5px 5px; }
+.inventory-status__icon { align-items: center; background: rgb(255 255 255 / 62%); border: 1px solid rgb(255 255 255 / 72%); border-radius: 6px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 86%), 0 1px 2px rgb(30 62 75 / 10%); display: inline-flex; flex: 0 0 auto; height: 20px; justify-content: center; width: 20px; }
+.inventory-status__icon svg { fill: none; height: 13px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; width: 13px; }
+.inventory-status[data-status="active"] { background: linear-gradient(180deg, #effbf3 0%, #d5f0df 100%); border-color: #91cda8; color: #236c47; }
+.inventory-status[data-status="review"] { background: linear-gradient(180deg, #fff9e7 0%, #fbe9b5 100%); border-color: #d8b65b; color: #805914; }
+.inventory-status[data-status="hold"] { background: linear-gradient(180deg, #fff2f0 0%, #f3d5d0 100%); border-color: #d59a91; color: #8c4038; }
 .react-demo-grid .tabulator-cell input[type="checkbox"] { accent-color: #0d91aa; height: 16px; width: 16px; }
 .react-demo-grid .tabulator-cell input[type="checkbox"]:focus-visible { outline: 2px solid rgb(13 145 170 / 35%); outline-offset: 2px; }
 .react-demo-grid .amb-row-actions { align-items: center; display: flex; height: 100%; justify-content: center; width: 100%; }
-.react-demo-grid .amb-row-action-button { align-items: center; background: #ffffff; border: 1px solid #d6e1e5; border-radius: 7px; box-shadow: 0 1px 2px rgb(20 48 65 / 6%); color: #526b7b; cursor: pointer; display: inline-flex; height: 30px; justify-content: center; padding: 0; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease; width: 30px; }
+.react-demo-grid .amb-row-action-button { align-items: center; background: #ffffff; border: 1px solid #d6e1e5; border-radius: 7px !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 78%), 0 2px 4px rgb(25 64 79 / 12%); color: #526b7b; cursor: pointer; display: inline-flex; height: 30px !important; justify-content: center; padding: 0; transition: background 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 140ms ease; width: 30px !important; }
 .react-demo-grid .amb-row-action-button svg { display: block; height: 16px; width: 16px; }
-.react-demo-grid .amb-row-action-button--delete { background: #fff7f6; border-color: #efd5d1; color: #a6554d; }
-.react-demo-grid .amb-row-action-button--delete:hover { background: #fcedea; border-color: #dfb5af; box-shadow: 0 3px 8px rgb(142 65 58 / 12%); color: #8e413a; transform: translateY(-1px); }
-.react-demo-grid .amb-row-action-button--rollback { background: #fffaf0; border-color: #ead9b5; color: #9a6a18; }
-.react-demo-grid .amb-row-action-button--rollback:hover { background: #fff3d9; border-color: #dfc27c; box-shadow: 0 3px 8px rgb(126 84 18 / 11%); color: #7e5412; transform: translateY(-1px); }
-.react-demo-grid .amb-row-action-button--remove-new { background: #f2f9fa; border-color: #c9dfe4; color: #367486; }
-.react-demo-grid .amb-row-action-button--remove-new:hover { background: #e8f5f7; border-color: #a9d0d8; box-shadow: 0 3px 8px rgb(23 102 122 / 10%); color: #17667a; transform: translateY(-1px); }
-.react-demo-grid .amb-row-action-button:active { box-shadow: 0 1px 2px rgb(20 48 65 / 8%); transform: scale(.97); }
+.react-demo-grid .amb-row-action-button__icon { height: 16px; width: 16px; }
+.react-demo-grid .amb-row-action-button--delete { background: linear-gradient(180deg, #fff5f3 0%, #f6dcd8 100%) !important; border-color: #d9958d !important; color: #a54037 !important; }
+.react-demo-grid .amb-row-action-button--delete:hover { background: linear-gradient(180deg, #ffe9e5 0%, #efc5bf 100%) !important; border-color: #c86f64 !important; color: #842f28 !important; }
+.react-demo-grid .amb-row-action-button--rollback { background: linear-gradient(180deg, #fff9e9 0%, #f4dfaa 100%) !important; border-color: #d4af54 !important; color: #835d14 !important; }
+.react-demo-grid .amb-row-action-button--rollback:hover { background: linear-gradient(180deg, #fff3ce 0%, #eacb7d 100%) !important; border-color: #bd9130 !important; color: #69470c !important; }
+.react-demo-grid .amb-row-action-button--remove-new { background: linear-gradient(180deg, #eefbfe 0%, #ccecf2 100%) !important; border-color: #74bccb !important; color: #176b7e !important; }
+.react-demo-grid .amb-row-action-button--remove-new:hover { background: linear-gradient(180deg, #dcf7fb 0%, #acdce6 100%) !important; border-color: #43a3b6 !important; color: #0d5667 !important; }
+.react-demo-grid .amb-row-action-button:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 80%), 0 4px 8px rgb(25 64 79 / 18%); transform: translateY(-1px); }
+.react-demo-grid .amb-row-action-button:active { transform: scale(.96); }
 .react-demo-grid .amb-row-action-button:focus-visible { outline: 2px solid rgb(8 127 152 / 48%); outline-offset: 2px; }
 @keyframes inventory-saved { 0% { background-color: #e8f7ed; } 100% { background-color: #ffffff; } }
 @media (max-width: 820px) { .react-table-guide__operations { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
