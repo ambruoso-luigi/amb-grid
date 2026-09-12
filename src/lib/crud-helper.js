@@ -65,6 +65,34 @@ const SUPPORTED_SAVE_POLICIES = Object.freeze([
  * @property {object[]} invalidChangedRows - Optional diagnostic invalid-change details.
  */
 
+/**
+ * One cell-level validation error included in a state report row.
+ *
+ * @typedef {object} StateReportCellError
+ * @property {string} field - Application field with an error.
+ * @property {string} message - Error message.
+ */
+
+/**
+ * Read-only row snapshot included in a CRUD state report.
+ *
+ * @typedef {object} StateReportRow
+ * @property {unknown} key - Current AMB row key, resolved from backend id or temporary id.
+ * @property {unknown} id - Current backend identifier value.
+ * @property {string|undefined} tempId - AMB temporary identifier when present.
+ * @property {number|null} rowNumber - Current AMB row number, or `null` when row numbering is disabled.
+ * @property {'clean'|'new'|'modified'|'deleted'|'saved'} state - Current CRUD lifecycle state.
+ * @property {boolean} hasChanges - Whether the row is pending insert, update, or deletion.
+ * @property {boolean} hasErrors - Whether the row has row-level or cell-level errors.
+ * @property {boolean} isValid - Whether the row has no tracked errors.
+ * @property {boolean} isSaveCandidate - Whether the row is changed and valid.
+ * @property {string|null} rowError - Current row-level error message.
+ * @property {StateReportCellError[]} cellErrors - Current field-level errors.
+ * @property {string[]} changedFields - Changed application fields relative to `before`.
+ * @property {object|null} before - Clean original application data, or `null` for new rows.
+ * @property {object} after - Clean current application data.
+ */
+
 const cloneData = (data) => {
     if (typeof structuredClone === 'function') {
         return structuredClone(data);
@@ -3124,10 +3152,10 @@ export class CrudHelper {
      *   errorRowsCount: number,
      *   validChangedRowsCount: number,
      *   invalidChangedRowsCount: number,
-     *   rows: object[],
-     *   changedRows: object[],
-     *   validChangedRows: object[],
-     *   invalidChangedRows: object[],
+     *   rows: StateReportRow[],
+     *   changedRows: StateReportRow[],
+     *   validChangedRows: StateReportRow[],
+     *   invalidChangedRows: StateReportRow[],
      *   changes: {inserted: object[], updated: object[], deleted: object[]},
      *   validChanges: {inserted: object[], updated: object[], deleted: object[]},
      *   errors: {hasErrors: boolean, rows: object[], cells: object[]}

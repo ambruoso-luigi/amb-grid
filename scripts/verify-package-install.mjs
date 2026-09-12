@@ -289,6 +289,18 @@ const stateReport = grid.getStateReport();
 const totalRows: number = stateReport.totalRows;
 const reportHasErrors: boolean = stateReport.hasErrors;
 
+stateReport.rows.forEach((row) => {
+    row.key;
+    row.state;
+    row.after;
+});
+
+stateReport.validChangedRows.forEach((row) => {
+    row.key;
+    row.tempId;
+    row.after;
+});
+
 const savePayload = grid.getSavePayload({
     savePolicy: 'valid-only'
 });
@@ -439,6 +451,26 @@ const rowValidation: object | null = grid.validateRow(1);
 
 const lookup = AMB.lookup({
     load: async () => []
+});
+
+const contextuallyTypedLookup = AMB.lookup({
+    keyField: 'id',
+    valueField: 'id',
+    labelField: 'description',
+    columns: [
+        { field: 'id', title: 'Code', visible: true }
+    ],
+    load: ({ query, rowData, field, context }) => {
+        query.toLowerCase();
+
+        void rowData;
+        void field;
+        void context;
+
+        return [
+            { id: 'ACTIVE', description: 'Active' }
+        ];
+    }
 });
 
 const dialog = new AMB.LookupDialog();
@@ -621,6 +653,7 @@ void clearedRowCellErrors;
 void clearedAllRowErrors;
 void rowValidation;
 void lookupEditor;
+void contextuallyTypedLookup;
 void lookupInputEditor;
 void advancedLookupEditor;
 void autocompleteEditor;

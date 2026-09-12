@@ -57,6 +57,24 @@ const normalizeRecordConfiguration = options => {
 };
 
 /**
+ * Normalized parameters passed to a lookup loader.
+ *
+ * @typedef {object} LookupLoadParams
+ * @property {string} query - Normalized lookup query. Missing, null, and undefined queries become an empty string.
+ * @property {object} [rowData] - Current grid row data when called by an editor.
+ * @property {string} [field] - Current grid field when called by an editor.
+ * @property {object} [context] - Per-call context or the configured default context.
+ */
+
+/**
+ * Load lookup suggestions synchronously or asynchronously.
+ *
+ * @callback LookupLoader
+ * @param {LookupLoadParams} params - Normalized lookup load parameters.
+ * @returns {Array.<object|string>|Promise<Array.<object|string>>} Lookup suggestions.
+ */
+
+/**
  * Create a data source for the specialized lookup editor.
  *
  * Results are cached by query unless disabled. Editor calls pass `query`,
@@ -71,7 +89,7 @@ const normalizeRecordConfiguration = options => {
  * @param {object} [options.mapToRow] - Mapping from grid row fields to lookup record fields.
  * @param {boolean} [options.caseSensitive=false] - Whether lookup editor matching preserves case. When `false`, matching ignores case but committed values still come from the matched record.
  * @param {object} [options.context] - Default context merged into load params.
- * @param {Function} [options.load] - Async or sync loader receiving `{ query, rowData, field, context }`.
+ * @param {LookupLoader} [options.load] - Async or sync loader receiving normalized parameters.
  * @param {object} [options.cache] - Cache options.
  * @param {boolean} [options.cache.enabled=true] - Enable in-memory caching.
  * @param {number} [options.cache.ttl] - Cache time to live in milliseconds.
