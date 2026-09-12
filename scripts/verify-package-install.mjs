@@ -419,6 +419,42 @@ const multifield = AMB.multifieldLookup({
     ]
 });
 
+const multifieldMasterColumn = multifield.masterColumn({
+    width: 220,
+    editorOptions: {
+        caseSensitive: true,
+        showDescription: false
+    }
+});
+
+const multifieldDependentColumn = multifield.dependentColumn(
+    'province',
+    {
+        width: 100,
+        title: 'Province'
+    }
+);
+
+const multifieldPatch: object | null = multifield.createPatch({
+    municipalityName: 'Ancona',
+    province: 'AN'
+});
+
+const multifieldClearPatch: object = multifield.createClearPatch({
+    includeMaster: true,
+    masterValue: ''
+});
+
+const multifieldValid: boolean = multifield.validateMasterValue(
+    'Ancona',
+    {
+        province: 'AN'
+    }
+);
+
+const multifieldId: string = multifield.id;
+const multifieldSearchFields: string[] = multifield.searchFields;
+
 const dateConfig = AMB.date.createConfig({
     emptyAs: null
 });
@@ -469,6 +505,13 @@ void advancedLookupEditor;
 void autocompleteEditor;
 void largeTextEditor;
 void multifield;
+void multifieldMasterColumn;
+void multifieldDependentColumn;
+void multifieldPatch;
+void multifieldClearPatch;
+void multifieldValid;
+void multifieldId;
+void multifieldSearchFields;
 void dateConfig;
 void legacyPickerDateConfig;
 void searchFiltersResult;

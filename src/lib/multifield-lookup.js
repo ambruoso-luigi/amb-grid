@@ -72,6 +72,150 @@ const mergeCssClass = (...classes) => {
 };
 
 /**
+ * @typedef {{open: Function}} AMBMultifieldDialog
+ */
+
+/**
+ * @typedef {{
+ *   field: string,
+ *   from: string,
+ *   title?: string,
+ *   required?: boolean,
+ *   autocomplete?: boolean,
+ *   dialog?: boolean,
+ *   [key: string]: unknown
+ * }} AMBMultifieldMasterField
+ */
+
+/**
+ * @typedef {{
+ *   field: string,
+ *   from: string,
+ *   title?: string,
+ *   required?: boolean,
+ *   visibleInGrid?: boolean,
+ *   visibleInLookup?: boolean,
+ *   searchable?: boolean,
+ *   readonly?: boolean,
+ *   [key: string]: unknown
+ * }} AMBMultifieldDependentField
+ */
+
+/**
+ * @typedef {{
+ *   caseSensitive?: boolean,
+ *   showDescription?: boolean,
+ *   [key: string]: unknown
+ * }} AMBMultifieldEditorOptions
+ */
+
+/**
+ * @typedef {{
+ *   width?: number|string,
+ *   title?: string,
+ *   dialog?: AMBMultifieldDialog|null,
+ *   editorOptions?: AMBMultifieldEditorOptions,
+ *   validation?: object,
+ *   validator?: unknown,
+ *   cssClass?: string,
+ *   [key: string]: unknown
+ * }} AMBMultifieldMasterColumnOptions
+ */
+
+/**
+ * @typedef {{
+ *   width?: number|string,
+ *   title?: string,
+ *   editable?: boolean,
+ *   editor?: unknown,
+ *   cssClass?: string,
+ *   validator?: unknown,
+ *   [key: string]: unknown
+ * }} AMBMultifieldDependentColumnOptions
+ */
+
+/**
+ * @typedef {{role: 'master'|'dependent', field: string, from: string}} AMBMultifieldMappingEntry
+ */
+
+/**
+ * @typedef {{[key: string]: string}} AMBMultifieldMapToRow
+ */
+
+/**
+ * @callback AMBMultifieldCreatePatch
+ * @param {object} record - Lookup record to map to a row patch.
+ * @returns {object|null}
+ */
+
+/**
+ * @callback AMBMultifieldCreateClearPatch
+ * @param {{includeMaster?: boolean, masterValue?: unknown}} [options] - Clear-patch options.
+ * @returns {object}
+ */
+
+/**
+ * @callback AMBMultifieldIsRecordValid
+ * @param {object} record - Lookup record to validate.
+ * @returns {boolean}
+ */
+
+/**
+ * @callback AMBMultifieldValidateMasterValue
+ * @param {unknown} value - Master field value.
+ * @param {object} rowData - Current row data.
+ * @returns {boolean}
+ */
+
+/**
+ * @callback AMBMultifieldMasterColumn
+ * @param {AMBMultifieldMasterColumnOptions} [columnOptions] - Master column overrides.
+ * @returns {object}
+ */
+
+/**
+ * @callback AMBMultifieldDependentColumn
+ * @param {string} field - Configured dependent field name.
+ * @param {AMBMultifieldDependentColumnOptions} [columnOptions] - Dependent column overrides.
+ * @returns {object}
+ */
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   lookup: object,
+ *   dialog?: AMBMultifieldDialog,
+ *   masterField: AMBMultifieldMasterField,
+ *   dependentFields?: AMBMultifieldDependentField[],
+ *   clearDependentsOnInvalidMaster?: boolean,
+ *   clearDependentsOnEmptyMaster?: boolean,
+ *   readonlyDependents?: boolean
+ * }} AMBMultifieldLookupOptions
+ */
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   lookup: object,
+ *   masterField: AMBMultifieldMasterField,
+ *   dependentFields: AMBMultifieldDependentField[],
+ *   clearDependentsOnInvalidMaster: boolean,
+ *   clearDependentsOnEmptyMaster: boolean,
+ *   readonlyDependents: boolean,
+ *   mapping: AMBMultifieldMappingEntry[],
+ *   mapToRow: AMBMultifieldMapToRow,
+ *   lookupColumns: object[],
+ *   searchFields: string[],
+ *   createPatch: AMBMultifieldCreatePatch,
+ *   createClearPatch: AMBMultifieldCreateClearPatch,
+ *   isRecordValid: AMBMultifieldIsRecordValid,
+ *   validateMasterValue: AMBMultifieldValidateMasterValue,
+ *   masterColumn: AMBMultifieldMasterColumn,
+ *   dependentColumn: AMBMultifieldDependentColumn
+ * }} AMBMultifieldLookupDefinition
+ */
+
+/**
  * Create a Multifield Lookup definition.
  *
  * `AMB.multifieldLookup(...)` links one editable master cell to a complete lookup record.
@@ -87,22 +231,8 @@ const mergeCssClass = (...classes) => {
  * Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
  * `masterColumn({ editorOptions: { caseSensitive } })` overrides it.
  *
- * @param {object} options - Multifield Lookup options.
- * @param {string} options.id - Non-empty Multifield Lookup identifier for diagnostics.
- * @param {object} options.lookup - Record-based `AMB.lookup(...)` instance.
- * @param {{open: Function}} [options.dialog] - Default dialog for the master field. `masterColumn({ dialog })` takes precedence.
- * @param {object} options.masterField - Master field definition.
- * @param {string} options.masterField.field - Row field updated by the master.
- * @param {string} options.masterField.from - Lookup record field mapped to the master.
- * @param {string} [options.masterField.title] - User-facing master column title.
- * @param {boolean} [options.masterField.required=false] - Require a value for the master field.
- * @param {boolean} [options.masterField.autocomplete=true] - Enable autocomplete for the master field.
- * @param {boolean} [options.masterField.dialog=true] - Create a lookup dialog when no dialog is configured.
- * @param {object[]} [options.dependentFields=[]] - Dependent readonly fields.
- * @param {boolean} [options.clearDependentsOnInvalidMaster=true] - Clear dependents when typed master is invalid.
- * @param {boolean} [options.clearDependentsOnEmptyMaster=true] - Clear dependents when master is empty.
- * @param {boolean} [options.readonlyDependents=true] - Make dependent columns readonly by default.
- * @returns {object} Multifield Lookup definition and column helpers.
+ * @param {AMBMultifieldLookupOptions} options - Multifield Lookup options.
+ * @returns {AMBMultifieldLookupDefinition} Multifield Lookup definition and column helpers.
  */
 export function createMultifieldLookup(options = {}) {
     const id = requireNonEmptyString(options.id, 'id');
