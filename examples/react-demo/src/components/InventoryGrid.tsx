@@ -27,12 +27,17 @@ const stockFormatter = (cell: GridCell) => {
   const value = Math.max(0, numberValue(cell.getValue()));
   const percentage = Math.min(100, value / 1.5);
   const tone = value < 15 ? 'low' : value > 80 ? 'high' : 'normal';
-  return `<div class="inventory-stock" data-tone="${tone}"><strong>${value}</strong><span><i style="width:${percentage}%"></i></span></div>`;
+  return `<div class="inventory-stock" data-tone="${tone}"><strong>${value}</strong><span class="inventory-stock__track"><i style="width:${percentage}%"></i></span></div>`;
 };
 
 const statusFormatter = (cell: GridCell) => {
   const status = String(cell.getValue() ?? '');
-  return `<span class="inventory-status" data-status="${status.toLowerCase()}">${status}</span>`;
+  const icons: Record<string, string> = {
+    ACTIVE: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 8.25 2.35 2.35L12.25 4.7"/></svg>',
+    REVIEW: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 4.1v4.3M8 11.5h.01"/><path d="M7.05 2.8 2.2 11.2a1.1 1.1 0 0 0 .95 1.65h9.7a1.1 1.1 0 0 0 .95-1.65L8.95 2.8a1.1 1.1 0 0 0-1.9 0Z"/></svg>',
+    HOLD: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.25 4.25v7.5M10.75 4.25v7.5"/></svg>',
+  };
+  return `<span class="inventory-status" data-status="${status.toLowerCase()}"><i class="inventory-status__icon">${icons[status] ?? ''}</i><span>${status}</span></span>`;
 };
 
 const inventoryValueFormatter = (cell: GridCell) => money.format(inventoryValue(cell.getRow().getData()));

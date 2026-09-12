@@ -140,13 +140,13 @@ button, a { outline-offset: 3px; }
 .react-table-guide { border-color: #9dcfd9; border-radius: 11px; }.react-table-guide__trigger { background: #eef9fb; padding: 15px 16px; }.react-table-guide__trigger:hover { background: #e3f6f9; }.react-table-guide__trigger-copy { align-items: center; display: flex; gap: 11px; min-width: 0; }.react-table-guide__trigger-copy > span:last-child { display: grid; gap: 3px; min-width: 0; }.react-table-guide__trigger strong { color: #14304b; font-size: 16px; font-weight: 800; }.react-table-guide__trigger small { color: #587184; font-size: 13px; font-weight: 500; line-height: 1.35; }.react-table-guide__help-icon { align-items: center; background: #d4f2f7; border: 1px solid #a9dce6; border-radius: 7px; color: #087f98; display: inline-flex; flex: 0 0 auto; height: 30px; justify-content: center; width: 30px; }.react-table-guide__content { background: #fbfdfe; }.react-table-guide__content-inner { padding: 0 18px 20px; }.react-table-guide__overview { padding-top: 16px; }.react-table-guide__overview h3, .react-table-guide__columns > h3 { color: #163253; font-size: 16px; font-weight: 800; letter-spacing: -.01em; line-height: 1.3; margin: 0; }.react-table-guide__intro { margin-top: 6px; max-width: 760px; padding: 0; }
 .react-table-guide__operations { gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 18px; }.react-table-guide__operations article { background: #ffffff; border: 1px solid #d6e8ec; border-top: 2px solid #86d4e2; border-radius: 8px; min-width: 0; padding: 13px; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }.react-table-guide__operations article:hover { background: #f7fdfe; border-color: #9bd6e0; transform: translateY(-1px); }.react-table-guide__operations article > span { align-items: center; background: #e5f8fb; border-radius: 6px; color: #087f98; display: inline-flex; height: 30px; justify-content: center; margin-bottom: 10px; width: 30px; }.react-table-guide__operations h3 { font-size: 14px; font-weight: 800; }.react-table-guide__operations p { font-size: 13px; line-height: 1.48; }
 .react-table-guide__columns { margin-top: 20px; padding-top: 18px; }.react-table-guide__columns > p { color: #587184; font-size: 14px; line-height: 1.5; margin: 5px 0 0; }.react-table-guide__column-list { gap: 12px; margin-top: 14px; }.react-table-guide__column-list article { background: #ffffff; border: 1px solid #d6e8ec; border-radius: 8px; border-top: 3px solid #86d4e2; box-shadow: 0 2px 5px rgb(22 48 72 / 4%); min-width: 0; padding: 12px; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }.react-table-guide__column-list article:hover { background: #f7fdfe; border-color: #9bd6e0; transform: translateY(-1px); }.react-table-guide__column-list article > i { align-items: center; background: #e5f8fb; border-radius: 6px; color: #087f98; display: inline-flex; font-style: normal; height: 28px; justify-content: center; margin-bottom: 9px; width: 28px; }.react-table-guide__column-list article > div { align-items: flex-start; }.react-table-guide__column-list h4 { font-weight: 800; }.react-table-guide__column-list span { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-.react-demo-grid-shell { background: #ffffff; border: 1px solid #d5e3e8; border-radius: 12px; box-shadow: 0 10px 30px rgb(25 59 84 / 8%); min-height: 438px; margin-top: 18px; overflow: auto; padding: 0; width: 100%; }
+.react-demo-grid-shell { background: linear-gradient(145deg, #f9feff 0%, #eef8fb 100%); border: 1px solid #84c4d2; border-radius: 14px; box-shadow: 0 18px 36px rgb(19 67 91 / 14%), inset 0 1px 0 rgb(255 255 255 / 92%); min-height: 438px; margin-top: 18px; overflow: auto; padding: 2px; width: 100%; }
 .react-demo-grid { min-width: 1080px; width: 100%; }
-.react-demo-grid .tabulator { background: #ffffff; border: 0; color: #40556a; font-family: inherit; font-size: 13px; overflow: hidden; }
-.react-demo-grid .tabulator-header { background: #edf6f8; border-bottom: 1px solid #bfd6dc; box-shadow: 0 2px 5px rgb(30 65 88 / 5%); color: #17344d; }
-.react-demo-grid .tabulator-col { background: transparent; border-right-color: rgb(173 198 207 / 35%); }
-.react-demo-grid .tabulator-col-content { padding: 14px 11px; }
-.react-demo-grid .tabulator-col-title { font-size: 13px; font-weight: 700; letter-spacing: -.005em; }
+.react-demo-grid .tabulator { background: #ffffff; border: 0; border-radius: 11px; color: #40556a; font-family: inherit; font-size: 13px; overflow: hidden; }
+.react-demo-grid .tabulator-header { background: linear-gradient(180deg, #dff6fa 0%, #c7eaf1 100%); border-bottom: 2px solid #72b7c7; box-shadow: inset 0 1px 0 rgb(255 255 255 / 78%), 0 3px 8px rgb(19 82 103 / 12%); color: #123e53; }
+.react-demo-grid .tabulator-col { background: transparent; border-right-color: rgb(92 158 175 / 30%); }
+.react-demo-grid .tabulator-col-content { padding: 15px 11px; }
+.react-demo-grid .tabulator-col-title { font-size: 13px; font-weight: 800; letter-spacing: .01em; text-shadow: 0 1px 0 rgb(255 255 255 / 72%); }
 .react-demo-grid .tabulator-row { border-bottom: 1px solid #e8eff2; color: #40556a; transition: background-color 140ms ease; }
 .react-demo-grid .tabulator-row:hover { background-color: #f5fafb; }
 .react-demo-grid .tabulator-row[data-state="new"] { background-color: #f0fbfc; box-shadow: inset 3px 0 0 #58b7c8; }
@@ -167,21 +167,23 @@ button, a { outline-offset: 3px; }
 .react-demo-grid .tabulator-cell[tabulator-field="stockQuantity"], .react-demo-grid .tabulator-cell[tabulator-field="unitPrice"], .react-demo-grid .tabulator-cell[tabulator-field="inventoryValue"] { font-variant-numeric: tabular-nums; }
 .react-demo-grid .tabulator-cell[tabulator-field="inventoryValue"] { color: #24465d; font-weight: 600; }
 .react-demo-grid .tabulator-cell[data-cell-error="true"] { background-color: #fff5f4 !important; box-shadow: inset 0 0 0 1px rgb(190 72 62 / 32%), inset 0 -2px 0 #bb6259; }
-.react-demo-grid .tabulator-cell:focus, .react-demo-grid .tabulator-cell:focus-visible { box-shadow: inset 0 0 0 2px rgb(8 127 152 / 45%); outline: 0; }
+.react-demo-grid .tabulator-cell:focus, .react-demo-grid .tabulator-cell:focus-visible, .react-demo-grid .tabulator-cell.tabulator-selected { background-color: #f2fcfe; box-shadow: inset 0 0 0 2px #0a9bb6, 0 0 0 2px rgb(10 155 182 / 16%); outline: 0; position: relative; z-index: 1; }
 .react-demo-grid .tabulator-cell[data-cell-error="true"]:focus, .react-demo-grid .tabulator-cell[data-cell-error="true"]:focus-visible { box-shadow: inset 0 0 0 2px rgb(187 98 89 / 48%), inset 0 -2px 0 #bb6259; }
 .react-demo-grid .tabulator-footer { border-top-color: #b8d3da; }
 .react-demo-grid .tabulator-calcs-holder { background: #edf6f8; border-top: 2px solid #b8d3da; color: #213f55; font-weight: 700; }
 .react-demo-grid .tabulator-calcs-holder .tabulator-cell { font-variant-numeric: tabular-nums; padding-bottom: 12px; padding-top: 12px; }
-.inventory-stock { display: grid; gap: 6px; min-width: 88px; }
-.inventory-stock > strong { color: #28465f; font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; }
-.inventory-stock > span { background: #e8eff2; border-radius: 999px; display: block; height: 4px; overflow: hidden; width: 100%; }
-.inventory-stock i { background: #19a3bd; border-radius: 999px; display: block; height: 100%; transition: width 180ms ease-out; }
-.inventory-stock[data-tone="low"] i { background: #d4a24c; }
-.inventory-stock[data-tone="high"] i { background: #65a980; }
-.inventory-status { align-items: center; border: 1px solid; border-radius: 6px; display: inline-flex; font-size: 10px; font-weight: 700; letter-spacing: .035em; line-height: 1; padding: 5px 7px; }
-.inventory-status[data-status="active"] { background: #edf8f1; border-color: #c8e4d1; color: #397654; }
-.inventory-status[data-status="review"] { background: #fff8e9; border-color: #ead9b4; color: #8d671e; }
-.inventory-status[data-status="hold"] { background: #fbf1f0; border-color: #e6cfcc; color: #8b514b; }
+.inventory-stock { display: grid; gap: 7px; min-width: 92px; }
+.inventory-stock > strong { color: #203f56; font-size: 12px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.inventory-stock__track { background: linear-gradient(180deg, #d9e7eb 0%, #eef4f6 100%); border: 1px solid #c6d8de; border-radius: 999px; box-shadow: inset 0 1px 2px rgb(21 65 83 / 15%), 0 1px 0 rgb(255 255 255 / 85%); display: block; height: 8px; overflow: hidden; width: 100%; }
+.inventory-stock i { background: linear-gradient(180deg, #e8b64a 0%, #c68722 100%); border-radius: inherit; box-shadow: inset 0 1px 0 rgb(255 255 255 / 42%), 0 1px 2px rgb(139 91 10 / 22%); display: block; height: 100%; transition: width 180ms ease-out; }
+.inventory-stock[data-tone="low"] i { background: linear-gradient(180deg, #ef8b66 0%, #c94f39 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), 0 1px 2px rgb(151 49 33 / 24%); }
+.inventory-stock[data-tone="high"] i { background: linear-gradient(180deg, #8bd09b 0%, #3d9260 100%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 42%), 0 1px 2px rgb(39 111 67 / 24%); }
+.inventory-status { align-items: center; border: 1px solid; border-radius: 7px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 72%), 0 1px 2px rgb(25 61 76 / 9%); display: inline-flex; font-size: 11px; font-weight: 800; gap: 5px; letter-spacing: .025em; line-height: 1; padding: 6px 8px 6px 6px; }
+.inventory-status__icon { align-items: center; background: rgb(255 255 255 / 54%); border-radius: 4px; display: inline-flex; height: 16px; justify-content: center; width: 16px; }
+.inventory-status__icon svg { fill: none; height: 12px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; width: 12px; }
+.inventory-status[data-status="active"] { background: linear-gradient(180deg, #f1fbf4 0%, #e1f3e7 100%); border-color: #bddfc9; color: #2d7750; }
+.inventory-status[data-status="review"] { background: linear-gradient(180deg, #fffbee 0%, #fff1cf 100%); border-color: #e6cf91; color: #87601a; }
+.inventory-status[data-status="hold"] { background: linear-gradient(180deg, #fff6f4 0%, #f9e5e1 100%); border-color: #e2c2bc; color: #985148; }
 .react-demo-grid .tabulator-cell input[type="checkbox"] { accent-color: #0d91aa; height: 16px; width: 16px; }
 .react-demo-grid .tabulator-cell input[type="checkbox"]:focus-visible { outline: 2px solid rgb(13 145 170 / 35%); outline-offset: 2px; }
 .react-demo-grid .amb-row-actions { align-items: center; display: flex; height: 100%; justify-content: center; width: 100%; }
