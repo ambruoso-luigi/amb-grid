@@ -26,7 +26,7 @@ const fields = [
 ] as const;
 
 export function TableGuideAccordion() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const cards = (items: typeof operations | typeof integration) => items.map(([title, description, Icon]) => (
     <article key={title}><span><Icon aria-hidden="true" size={18} /></span><h4>{title}</h4><p>{description}</p></article>

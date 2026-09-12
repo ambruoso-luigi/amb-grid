@@ -50,13 +50,13 @@ const statusLookup = AMB.lookup({
     { field: 'id', title: 'Code', visible: true, width: 90 },
     { field: 'description', title: 'Description', visible: true, width: 180 },
   ],
-  load: ({ query }: { query?: string }) => {
+  load: ({ query }) => {
     const statuses = [
       { id: 'ACTIVE', description: 'Active' },
       { id: 'HOLD', description: 'On hold' },
       { id: 'REVIEW', description: 'Review required' },
     ];
-    const normalizedQuery = query?.trim().toLowerCase() ?? '';
+    const normalizedQuery = query.trim().toLowerCase();
     return normalizedQuery ? statuses.filter(({ id, description }) => `${id} ${description}`.toLowerCase().includes(normalizedQuery)) : statuses;
   },
 });

@@ -8,24 +8,6 @@ import { PayloadSheet, type InventoryPayload } from './PayloadSheet';
 import { PartialSaveAlert } from './ui/alert-dialog';
 import type { InventoryRow } from '../data/inventory';
 
-type InventoryReportRow = {
-  key: string | number;
-  id?: number;
-  tempId?: string;
-  state: string;
-  after: Record<string, unknown>;
-};
-
-type InventoryReport = {
-  totalRows: number;
-  changedRowsCount: number;
-  errorRowsCount: number;
-  validChangedRowsCount: number;
-  invalidChangedRowsCount: number;
-  rows: InventoryReportRow[];
-  validChangedRows: InventoryReportRow[];
-};
-
 type SaveResponse = {
   insertedIds: { tempId?: string; id: number }[];
 };
@@ -49,6 +31,7 @@ const emptySnapshot: InventorySnapshot = {
 };
 
 const asNumber = (value: unknown) => typeof value === 'number' ? value : Number(value) || 0;
+const getObjectValue = (object: object, field: string) => Object.entries(object).find(([key]) => key === field)?.[1];
 const applyGridView = (controller: InventoryGridController, query: string, filters: InventoryFilters) => {
   const normalizedQuery = query.trim().toLocaleLowerCase();
   if (!normalizedQuery && !filters.status && !filters.inspection) {
@@ -79,6 +62,8 @@ export function InventoryShell() {
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
   const nextItemNumber = useRef(1009);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeGridRef = useRef<InventoryGridController | null>(null);
+  const loadAbortRef = useRef<AbortController | null>(null);
 
   const showFeedback = useCallback((tone: 'success' | 'error', text: string) => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
@@ -88,14 +73,17 @@ export function InventoryShell() {
 
   useEffect(() => () => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    loadAbortRef.current?.abort();
+    loadAbortRef.current = null;
+    activeGridRef.current = null;
   }, []);
 
   const syncFromGrid = useCallback((controller: InventoryGridController) => {
-    const report = controller.getStateReport() as InventoryReport;
+    const report = controller.getStateReport();
     const nextPayload = controller.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
     const totals = report.rows.reduce((current, row) => ({
-      stock: current.stock + asNumber(row.after.stockQuantity),
-      value: current.value + asNumber(row.after.stockQuantity) * asNumber(row.after.unitPrice),
+      stock: current.stock + asNumber(getObjectValue(row.after, 'stockQuantity')),
+      value: current.value + asNumber(getObjectValue(row.after, 'stockQuantity')) * asNumber(getObjectValue(row.after, 'unitPrice')),
     }), { stock: 0, value: 0 });
 
     setSnapshot({
@@ -110,21 +98,40 @@ export function InventoryShell() {
   }, []);
 
   const loadProducts = useCallback(async (controller: InventoryGridController) => {
+    loadAbortRef.current?.abort();
+    const abortController = new AbortController();
+    loadAbortRef.current = abortController;
     setBusy(true);
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch('/api/products', {
+        signal: abortController.signal,
+      });
       if (!response.ok) throw new Error(`GET /api/products failed with ${response.status}`);
       const body = await response.json() as { products: InventoryRow[] };
+      if (abortController.signal.aborted || activeGridRef.current !== controller) return;
       await Promise.resolve(controller.replaceData(body.products));
+      if (abortController.signal.aborted || activeGridRef.current !== controller) return;
       syncFromGrid(controller);
     } catch (error) {
+      if (abortController.signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) return;
+      if (activeGridRef.current !== controller) return;
       showFeedback('error', error instanceof Error ? error.message : 'Impossibile caricare i prodotti.');
     } finally {
-      setBusy(false);
+      if (loadAbortRef.current === abortController) {
+        loadAbortRef.current = null;
+        if (activeGridRef.current === controller) setBusy(false);
+      }
     }
   }, [showFeedback, syncFromGrid]);
 
   const handleGridReady = useCallback((controller: InventoryGridController | null) => {
+    if (!controller) {
+      loadAbortRef.current?.abort();
+      loadAbortRef.current = null;
+      activeGridRef.current = null;
+    } else {
+      activeGridRef.current = controller;
+    }
     setGrid(controller);
     if (controller) void loadProducts(controller);
   }, [loadProducts]);
@@ -149,7 +156,7 @@ export function InventoryShell() {
     if (!grid) return;
     await Promise.resolve(grid.validate());
     syncFromGrid(grid);
-    const report = grid.getStateReport() as InventoryReport;
+    const report = grid.getStateReport();
     const cellErrorCount = grid.getCellErrors().length;
     const cellLabel = cellErrorCount === 1 ? 'cella non valida' : 'celle non valide';
     const rowLabel = report.errorRowsCount === 1 ? 'riga' : 'righe';
@@ -159,7 +166,7 @@ export function InventoryShell() {
   const saveValidChanges = useCallback(async () => {
     if (!grid) return;
     const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-    const report = grid.getStateReport() as InventoryReport;
+    const report = grid.getStateReport();
     const savedCandidates = report.validChangedRows.map(({ key, tempId }) => ({ key, tempId }));
     setBusy(true);
     try {
@@ -176,7 +183,7 @@ export function InventoryShell() {
       const acknowledged = grid.markRowsSaved(identifiers);
       if (!acknowledged) throw new Error('Il backend ha risposto, ma AMB Grid non ha confermato tutte le righe.');
       syncFromGrid(grid);
-      const remaining = (grid.getStateReport() as InventoryReport).invalidChangedRowsCount;
+      const remaining = grid.getStateReport().invalidChangedRowsCount;
       showFeedback('success', remaining ? `${identifiers.length} modifiche salvate. ${remaining} righe restano da correggere.` : 'Modifiche salvate.');
     } catch (error) {
       showFeedback('error', error instanceof Error ? error.message : 'Salvataggio non riuscito.');
