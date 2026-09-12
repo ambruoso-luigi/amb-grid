@@ -248,6 +248,95 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {number|'first'|'prev'|'next'|'last'} AMBPageSelector
+ */
+
+/**
+ * @callback AMBGridGetPage
+ * @returns {number|false}
+ */
+
+/**
+ * @callback AMBGridGetPageSize
+ * @returns {number}
+ */
+
+/**
+ * @callback AMBGridSetPage
+ * @param {AMBPageSelector} page - Page to display.
+ * @returns {Promise<unknown>}
+ */
+
+/**
+ * @callback AMBGridChangePage
+ * @returns {Promise<unknown>}
+ */
+
+/**
+ * @callback AMBGridSetPageSize
+ * @param {number} size - Number of rows to display on each page.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridSetMaxPage
+ * @param {unknown} max - Maximum page value accepted by the runtime engine.
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridSetPageToRow
+ * @param {unknown} identifier - Row identifier or lookup value.
+ * @returns {Promise<unknown>}
+ */
+
+/**
+ * @callback AMBFilterCallback
+ * @param {object} data - Row data to evaluate.
+ * @param {object} [params] - Optional callback parameters.
+ * @returns {boolean}
+ */
+
+/**
+ * @typedef {object} AMBFilterDefinition
+ * @property {string} field - Field name to filter.
+ * @property {string} type - Filter comparison type.
+ * @property {unknown} value - Value to compare.
+ * @property {object} [params] - Optional filter parameters.
+ */
+
+/**
+ * @callback AMBGridGetFilters
+ * @param {...unknown[]} args - Engine-compatible filter read arguments.
+ * @returns {object[]}
+ */
+
+/**
+ * @callback AMBGridSetFilter
+ * @param {string|AMBFilterCallback|AMBFilterDefinition[]} filter - Field, custom callback, or filter definitions.
+ * @param {string|object} [typeOrParams] - Filter type for a field, or callback parameters.
+ * @param {unknown} [value] - Filter value for a field filter.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridFilterMutator
+ * @param {...unknown[]} args - Engine-compatible filter arguments.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridClearFilter
+ * @param {boolean} [includeHeaderFilters] - Also clear header filters.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridRefreshFilter
+ * @returns {void}
+ */
+
+/**
  * @typedef {object} AMBTableController
  * @property {object} table - Internal table engine instance for advanced integrations. Prefer controller methods for normal usage.
  * @property {CrudHelper} crud - Advanced, compatible access to the CRUD layer. Prefer direct controller methods for normal reports and save payloads.
@@ -318,12 +407,12 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} setHeaderFilterFocus - Move focus to a column header filter.
  * @property {Function} reloadHeaderFilter - Rebuild a column's runtime header filter and re-evaluate its editor parameters.
  * @property {Function} clearHeaderFilter - Clear all column header filters.
- * @property {Function} refreshFilter - Re-run the filters currently applied to the grid.
- * @property {Function} getFilters - Return the current developer-managed filters.
- * @property {Function} addFilter - Add a programmatic filter.
- * @property {Function} setFilter - Replace the developer-managed programmatic filters.
- * @property {Function} removeFilter - Remove a programmatic filter.
- * @property {Function} clearFilter - Clear developer-managed filters while preserving global search.
+ * @property {AMBGridRefreshFilter} refreshFilter - Re-run the filters currently applied to the grid.
+ * @property {AMBGridGetFilters} getFilters - Return the current developer-managed filters.
+ * @property {AMBGridFilterMutator} addFilter - Add a programmatic filter.
+ * @property {AMBGridSetFilter} setFilter - Replace the developer-managed programmatic filters.
+ * @property {AMBGridFilterMutator} removeFilter - Remove a programmatic filter.
+ * @property {AMBGridClearFilter} clearFilter - Clear developer-managed filters while preserving global search.
  * @property {Function} getSorters - Return the current grid sorter definitions.
  * @property {Function} setSort - Apply one or more grid sorters.
  * @property {Function} clearSort - Clear the current grid sorting.
@@ -385,7 +474,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} clearCellErrorsForRow - Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.
  * @property {Function} clearErrorsForRow - Clear every AMB application error for one row only, preserving native cell-validation markers.
  * @property {AMBGridOnCrud} onCrud - Subscribe to an AMB CRUD application event and return its unsubscribe function, distinct from engine `on`.
- * @property {Function} offCrud - Remove one specific AMB CRUD callback, distinct from engine `off`; remaining subscriptions are released on destroy.
+ * @property {(eventName: string, callback: AMBGridEventCallback) => void} offCrud - Remove one specific AMB CRUD callback, distinct from engine `off`; remaining subscriptions are released on destroy.
  * @property {Function} addCellValidator - Append a runtime AMB rule for a field without immediately validating data.
  * @property {Function} removeCellValidators - Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.
  * @property {CrudHelper['validateAll']} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
@@ -476,15 +565,15 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} clearHistory - Clear the native interaction history without changing AMB Grid CRUD state.
  * @property {Function} undo - Undo one interaction-history action and reconcile the affected AMB Grid CRUD state.
  * @property {Function} redo - Redo one interaction-history action and reconcile the affected AMB Grid CRUD state.
- * @property {Function} getPage - Return the current page number.
- * @property {Function} getPageMax - Return the maximum available page number.
- * @property {Function} getPageSize - Return the number of rows allowed per page.
- * @property {Function} setPage - Show a numbered or named pagination page.
- * @property {Function} nextPage - Show the next page.
- * @property {Function} previousPage - Show the previous page.
- * @property {Function} setPageSize - Change the number of rows displayed on each page.
- * @property {Function} setMaxPage - Change the maximum page available to the grid.
- * @property {Function} setPageToRow - Show the local pagination page containing a row.
+ * @property {AMBGridGetPage} getPage - Return the current page number.
+ * @property {AMBGridGetPage} getPageMax - Return the maximum available page number.
+ * @property {AMBGridGetPageSize} getPageSize - Return the number of rows allowed per page.
+ * @property {AMBGridSetPage} setPage - Show a numbered or named pagination page.
+ * @property {AMBGridChangePage} nextPage - Show the next page.
+ * @property {AMBGridChangePage} previousPage - Show the previous page.
+ * @property {AMBGridSetPageSize} setPageSize - Change the number of rows displayed on each page.
+ * @property {AMBGridSetMaxPage} setMaxPage - Change the maximum page available to the grid.
+ * @property {AMBGridSetPageToRow} setPageToRow - Show the local pagination page containing a row.
  * @property {Function} alert - Show a modal alert over the grid.
  * @property {Function} clearAlert - Clear the current modal grid alert.
  * @property {Function} getHtml - Return grid data as an HTML table string.

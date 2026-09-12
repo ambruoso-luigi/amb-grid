@@ -306,6 +306,43 @@ unsubscribeCrud();
 
 grid.destroy();
 
+const currentPage: number | false = grid.getPage();
+const maxPage: number | false = grid.getPageMax();
+const pageSize: number = grid.getPageSize();
+
+const pagePromise: Promise<unknown> = grid.setPage(2);
+const nextPagePromise: Promise<unknown> = grid.nextPage();
+const previousPagePromise: Promise<unknown> = grid.previousPage();
+const rowPagePromise: Promise<unknown> = grid.setPageToRow(1);
+
+grid.setPageSize(25);
+grid.setMaxPage(10);
+
+const filters: object[] = grid.getFilters();
+
+grid.setFilter('name', 'like', 'Luigi');
+grid.addFilter('status', '=', 'OPEN');
+grid.removeFilter('status', '=', 'OPEN');
+
+grid.setFilter((data: object) => {
+    return data !== null;
+});
+
+grid.setFilter([
+    {
+        field: 'status',
+        type: '=',
+        value: 'OPEN'
+    }
+]);
+
+grid.clearFilter();
+grid.clearFilter(true);
+grid.refreshFilter();
+
+const crudCallback = () => {};
+grid.offCrud('row-state-changed', crudCallback);
+
 const lookup = AMB.lookup({
     load: async () => []
 });
@@ -418,6 +455,14 @@ void deletedChanges;
 void totalRows;
 void reportHasErrors;
 void canSave;
+void currentPage;
+void maxPage;
+void pageSize;
+void pagePromise;
+void nextPagePromise;
+void previousPagePromise;
+void rowPagePromise;
+void filters;
 void lookupEditor;
 void lookupInputEditor;
 void advancedLookupEditor;
