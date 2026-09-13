@@ -190,8 +190,10 @@ button, a { outline-offset: 3px; }
 .react-demo-grid .amb-lookup-editor__button:hover, .react-demo-grid .amb-date-editor-picker-button:hover { background: #eaf7f9; border-color: #8fc6d0; color: #3f4d56; }
 .react-demo-grid .amb-lookup-editor__button:focus-visible, .react-demo-grid .amb-date-editor-picker-button:focus-visible { outline: 2px solid #0ea5b7; outline-offset: 1px; }
 .react-demo-grid .tabulator-footer { border-top-color: #b8d3da; }
-.react-demo-grid .tabulator-calcs-holder { background: #f2f8fa; border-top: 1px solid #bfd6dc; color: #213f55; font-weight: 700; }
-.react-demo-grid .tabulator-calcs-holder .tabulator-cell { font-variant-numeric: tabular-nums; padding-bottom: 12px; padding-top: 12px; }
+.react-demo-grid .tabulator-calcs-holder { background: linear-gradient(180deg, #f0f8fa 0%, #e9f4f6 100%); border-top: 2px solid #8fc6d0; color: #213f55; font-weight: 700; }
+.react-demo-grid .tabulator-calcs-holder .tabulator-cell { border-right-color: rgb(107 157 169 / 14%); color: #29485c; font-variant-numeric: tabular-nums; padding-bottom: 12px; padding-top: 12px; }
+.inventory-summary-label { align-items: center; color: #24475b; display: inline-flex; font-size: 12px; font-weight: 650; gap: 7px; }.inventory-summary-label > span { color: #0e91a8; font-size: 15px; font-weight: 700; }.inventory-summary-label strong { font-weight: 650; }
+.inventory-summary-number, .inventory-summary-inspections { align-items: baseline; display: inline-flex; gap: 4px; }.inventory-summary-number strong, .inventory-summary-inspections strong { color: #24475b; font-variant-numeric: tabular-nums; font-weight: 700; }.inventory-summary-number small, .inventory-summary-inspections small { color: #718996; font-size: 9px; font-weight: 650; }.inventory-summary-money { color: #183f54; font-variant-numeric: tabular-nums; font-weight: 750; letter-spacing: -0.01em; }
 .inventory-stock { display: grid; gap: 6px; min-width: 100px; }
 .inventory-stock__top { align-items: baseline; display: flex; gap: 8px; justify-content: space-between; }
 .inventory-stock__top strong { color: #183f54; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }

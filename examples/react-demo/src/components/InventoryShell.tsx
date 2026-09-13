@@ -79,20 +79,20 @@ export function InventoryShell() {
   }, []);
 
   const syncFromGrid = useCallback((controller: InventoryGridController) => {
+    controller.recalc();
     const report = controller.getStateReport();
     const nextPayload = controller.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-    const totals = report.rows.reduce((current, row) => ({
-      stock: current.stock + asNumber(getObjectValue(row.after, 'stockQuantity')),
-      value: current.value + asNumber(getObjectValue(row.after, 'stockQuantity')) * asNumber(getObjectValue(row.after, 'unitPrice')),
-    }), { stock: 0, value: 0 });
+    const calcResults = controller.getCalcResults();
+    const bottomValue = getObjectValue(calcResults, 'bottom');
+    const bottom = bottomValue && typeof bottomValue === 'object' ? bottomValue : {};
 
     setSnapshot({
       products: report.totalRows,
       modified: report.changedRowsCount,
       errors: controller.getCellErrors().length,
       pending: report.changedRowsCount,
-      totalStock: totals.stock,
-      inventoryValue: totals.value,
+      totalStock: asNumber(getObjectValue(bottom, 'stockQuantity')),
+      inventoryValue: asNumber(getObjectValue(bottom, 'inventoryValue')),
     });
     setPayload(nextPayload);
   }, []);

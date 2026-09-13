@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Braces, CalendarDays, CheckSquare2, ChevronDown, CircleHelp, Database, Gauge, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, SearchCheck, ShieldCheck, SlidersHorizontal, Warehouse } from 'lucide-react';
+import { Braces, Calculator, CalendarDays, CheckSquare2, ChevronDown, CircleHelp, Database, Gauge, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, SearchCheck, ShieldCheck, SlidersHorizontal, Warehouse } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
 const operations = [
@@ -12,6 +12,7 @@ const operations = [
 const integration = [
   ['Controlli esterni', 'La toolbar React richiama direttamente le API pubbliche AMB Grid.', SlidersHorizontal],
   ['KPI sincronizzati', 'Modifiche, errori e righe pending aggiornano la UI React.', Gauge],
+  ['Totali dinamici', 'La riga di riepilogo calcola stock, valore inventario e prodotti da ispezionare sui dati correnti della griglia. Gli stessi aggregati alimentano i KPI superiori.', Calculator],
   ['UI indipendente', 'shadcn/ui e Motion personalizzano l’esperienza senza cambiare il core.', PanelsTopLeft],
   ['Backend demo', 'MSW intercetta richieste HTTP reali e simula il backend.', Database],
 ] as const;
