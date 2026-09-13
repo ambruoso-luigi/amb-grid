@@ -223,7 +223,7 @@ export function InventoryShell() {
         </header>
 
         <InventoryKpis snapshot={snapshot} />
-        <InventoryToolbar busy={busy} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} onAdd={addProduct} onFiltersChange={updateFilters} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={() => grid && void loadProducts(grid)} onSave={() => void prepareSave()} onSearch={updateSearch} onValidate={() => void validate()} pending={snapshot.pending} searchQuery={searchQuery} />
+        <InventoryToolbar busy={busy} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} onAdd={addProduct} onFiltersChange={updateFilters} onFiltersClose={() => setFiltersOpen(false)} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={() => grid && void loadProducts(grid)} onSave={() => void prepareSave()} onSearch={updateSearch} onValidate={() => void validate()} pending={snapshot.pending} searchQuery={searchQuery} />
         {feedback && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-feedback" data-tone={feedback.tone} initial={shouldReduceMotion ? false : { opacity: 0, y: -4 }} role="status">{feedback.tone === 'success' ? <CheckCircle2 aria-hidden="true" size={16} /> : <CircleAlert aria-hidden="true" size={16} />}{feedback.text}</motion.div>}
         <div className="react-demo-grid-shell" aria-busy={busy}><InventoryGrid onReady={handleGridReady} onStateChange={syncFromGrid} /></div>
       </div>

@@ -230,3 +230,17 @@ button, a { outline-offset: 3px; }
 @keyframes inventory-saved { 0% { background-color: #e8f7ed; } 100% { background-color: #ffffff; } }
 @media (max-width: 820px) { .react-table-guide__operations { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .react-demo-intro h2 { font-size: clamp(28px, 9vw, 36px); }.react-table-guide__trigger { padding: 13px 14px; }.react-table-guide__trigger small { font-size: 12px; }.react-table-guide__content-inner { padding: 0 14px 16px; }.react-table-guide__operations { grid-template-columns: 1fr; }.react-table-guide__column-list { gap: 10px; }.react-table-guide__column-list article > div { flex-direction: row; }.react-demo-grid-shell { min-height: 438px; } }
+
+.inventory-toolbar__icon { color: #0ea5b7; height: 20px; stroke-width: 2; width: 20px; }
+.inventory-toolbar button:hover .inventory-toolbar__icon, .inventory-search:focus-within .inventory-toolbar__icon { color: #0891a6; }
+.inventory-toolbar__filter-control { position: relative; }
+.inventory-filters { z-index: 12; }
+.react-demo-grid .amb-row-action-button { background: #fbfdfe !important; border-color: #b9d7dd !important; color: #0ea5b7 !important; }
+.react-demo-grid .amb-row-action-button__icon { color: #0ea5b7; display: block; height: 20px; stroke-width: 1.75; width: 20px; }
+.react-demo-grid .amb-row-action-button--delete .amb-row-action-button__icon { display: none; }
+.react-demo-grid .amb-row-action-button--delete::before { background: currentColor; content: ""; display: block; height: 20px; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'/%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'/%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/%3E%3C/svg%3E") center / contain no-repeat; width: 20px; }
+.react-demo-grid .amb-row-action-button--delete { background: #fbfdfe !important; border-color: #b9d7dd !important; color: #0ea5b7 !important; }
+.react-demo-grid .amb-row-action-button--delete:hover, .react-demo-grid .amb-row-action-button--rollback:hover, .react-demo-grid .amb-row-action-button--remove-new:hover { background: #eef8fa !important; border-color: #76bdca !important; color: #0891a6 !important; }
+.react-demo-grid .amb-lookup-editor__button, .react-demo-grid .amb-date-editor-picker-button { color: #0ea5b7; }
+.react-demo-grid .amb-lookup-editor__button::before, .react-demo-grid .amb-date-editor-picker-button::before { height: 19px; width: 19px; }
+.react-demo-grid .amb-lookup-editor__button:hover, .react-demo-grid .amb-date-editor-picker-button:hover { color: #0891a6; }
