@@ -2,6 +2,7 @@ import {
     focusAdjacentOutsideGrid,
     getPageNavigationCoordinator
 } from '../table/page-navigation-coordinator.js';
+import { getAmbColumnMetadata } from '../table/column-metadata.js';
 
 export const getInitialValue = cell => {
     const value = cell.getValue();
@@ -37,10 +38,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
         && typeof candidate.getElement === 'function'
         ? candidate.getElement()
         : null;
-    const selector = definition && (
-        definition._ambFocusSelector
-        || definition._ambInteractiveSelector
-    );
+    const selector = getAmbColumnMetadata(definition).focusSelector;
     const selectedTarget = selector
         && cellElement
         && typeof cellElement.querySelector === 'function'
@@ -94,9 +92,11 @@ export const isEditableCandidate = candidate => {
         if (definition.editable(candidate) === false) return false;
     }
 
+    const metadata = getAmbColumnMetadata(definition);
+
     return Boolean(
-        definition._ambInteractive
-            ? definition.editor || definition._ambFocusSelector || definition._ambInteractiveSelector
+        metadata.interactive
+            ? definition.editor || metadata.focusSelector
             : definition.editor && typeof candidate.edit === 'function'
     );
 };
@@ -106,11 +106,13 @@ export const navigateToCandidate = candidate => {
 
     const definition = getCellDefinition(candidate);
 
-    if (definition._ambKeyboardFocusOnly === true) {
+    const metadata = getAmbColumnMetadata(definition);
+
+    if (metadata.keyboardFocusOnly === true) {
         return focusCellWithoutEditing(candidate);
     }
 
-    if (definition._ambInteractive) {
+    if (metadata.interactive) {
         if (definition.editor && typeof candidate.edit === 'function') {
             return candidate.edit() !== false;
         }

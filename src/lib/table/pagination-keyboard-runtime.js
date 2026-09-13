@@ -4,6 +4,7 @@ import {
     navigateToCandidate
 } from '../editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from './keyboard-shortcuts.js';
+import { getAmbColumnMetadata } from './column-metadata.js';
 import {
     focusAdjacentOutsideGrid,
     registerPageNavigationCoordinator
@@ -18,6 +19,13 @@ const nextFrame = () => new Promise(resolve => {
     Promise.resolve().then(resolve);
 });
 
+const isDataRowElement = element => {
+    if (!element?.classList?.contains?.('tabulator-row')) return false;
+
+    return !element.classList.contains('tabulator-calcs')
+        && !element.classList.contains('amb-calc-row');
+};
+
 const isCandidateActuallyActive = candidate => {
     const element = candidate?.getElement?.();
     const activeElement = globalThis.document?.activeElement;
@@ -25,11 +33,13 @@ const isCandidateActuallyActive = candidate => {
 
     if (!element) return false;
 
-    if (definition._ambKeyboardFocusOnly === true) {
+    const metadata = getAmbColumnMetadata(definition);
+
+    if (metadata.keyboardFocusOnly === true) {
         return activeElement === element || Boolean(element.contains?.(activeElement));
     }
 
-    if (definition._ambInteractive && !definition.editor) {
+    if (metadata.interactive && !definition.editor) {
         return activeElement === element || Boolean(element.contains?.(activeElement));
     }
 
@@ -90,9 +100,10 @@ export const createPaginationKeyboardRuntime = ({
         const rowElements = Array.from(
             tableElement.querySelectorAll?.('.tabulator-row') || []
         );
+        const dataRowElements = rowElements.filter(isDataRowElement);
         const orderedRows = destination === 'last'
-            ? rowElements.reverse()
-            : rowElements;
+            ? dataRowElements.reverse()
+            : dataRowElements;
 
         return orderedRows
             .map(rowElement => table.getRow?.(rowElement))
@@ -220,7 +231,9 @@ export const createPaginationKeyboardRuntime = ({
     const getCellFromElement = cellElement => {
         const rowElement = cellElement?.closest?.('.tabulator-row');
         const field = cellElement?.getAttribute?.('tabulator-field');
-        const row = rowElement && table.getRow?.(rowElement);
+        const row = isDataRowElement(rowElement)
+            ? table.getRow?.(rowElement)
+            : null;
 
         return row && field
             ? row.getCell?.(field) || row.getCells?.().find(cell => cell.getField?.() === field) || null
@@ -479,7 +492,7 @@ export const createPaginationKeyboardRuntime = ({
 
         const activeCell = getActiveNavigationCell();
         const activeDefinition = activeCell?.getColumn?.()?.getDefinition?.() || {};
-        const focusOnly = activeDefinition._ambKeyboardFocusOnly === true;
+        const focusOnly = getAmbColumnMetadata(activeDefinition).keyboardFocusOnly === true;
         const enter = event.key === 'Enter' && focusOnly;
 
         if (!isInsideTable || (!previous && !next && !verticalUp && !verticalDown && !isTab && !enter)) return;
@@ -518,10 +531,9 @@ export const createPaginationKeyboardRuntime = ({
                 ? currentIndex === 0
                 : currentIndex === candidates.length - 1;
             const targetCandidate = candidates[currentIndex + (direction === 'prev' ? -1 : 1)];
-            const targetFocusOnly = targetCandidate
-                ?.getColumn?.()
-                ?.getDefinition?.()
-                ?._ambKeyboardFocusOnly === true;
+            const targetFocusOnly = getAmbColumnMetadata(
+                targetCandidate?.getColumn?.()?.getDefinition?.()
+            ).keyboardFocusOnly === true;
 
             if (currentIndex === -1) return;
             if ((focusOnly || targetFocusOnly) && !atPageBoundary) {
@@ -575,7 +587,7 @@ export const createPaginationKeyboardRuntime = ({
         const definition = cell?.getColumn?.()?.getDefinition?.() || {};
         const isMarkedLargeText = cellElement?.classList?.contains?.('amb-cell--large-text');
 
-        if (definition._ambKeyboardFocusOnly !== true && !isMarkedLargeText) return;
+        if (getAmbColumnMetadata(definition).keyboardFocusOnly !== true && !isMarkedLargeText) return;
 
         event.preventDefault?.();
         event.stopPropagation?.();

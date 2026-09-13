@@ -12,5 +12,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(projectRoot, 'src')
     }
+  },
+  server: {
+    fs: {
+      allow: [path.resolve(projectRoot, '../..')]
+    }
   }
 });

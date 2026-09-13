@@ -79,6 +79,10 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
   useEffect(() => {
     if (!gridElementRef.current) return;
 
+    let destroyGrid = () => {};
+    const initializeGrid = window.setTimeout(() => {
+    if (!gridElementRef.current) return;
+
     const statusDialog = new AMB.LookupDialog();
     const tableOptions = {
       selector: gridElementRef.current,
@@ -120,7 +124,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
     onReady(grid);
     refresh();
 
-    return () => {
+    destroyGrid = () => {
       engineEvents.forEach((eventName) => grid.off(eventName, refresh));
       grid.off('cellEdited', refreshEditedRow);
       removeCrudListeners.forEach((removeListener) => removeListener());
@@ -128,6 +132,13 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
       statusDialog.destroy();
       gridRef.current = null;
       onReady(null);
+    };
+
+    }, 0);
+
+    return () => {
+      window.clearTimeout(initializeGrid);
+      destroyGrid();
     };
   }, [onReady, onStateChange]);
 

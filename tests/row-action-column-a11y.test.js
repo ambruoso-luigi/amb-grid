@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { isEditableCandidate, navigateEditableCellAfterClose } from '../src/lib/editors/shared.js';
 import { createRowActionColumn } from '../src/lib/table/row-action-column.js';
+import { getAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
 
 const createElementMock = tagName => {
     const element = {
@@ -73,6 +74,11 @@ const createElementMock = tagName => {
             nextElement.parentNode = this.parentNode;
             this.parentNode.children[index] = nextElement;
             this.parentNode = null;
+        },
+        replaceChildren(...children) {
+            this.children.forEach(child => { child.parentNode = null; });
+            this.children = [];
+            this.append(...children);
         },
         get tabIndex() {
             return this.tagName === 'BUTTON' ? 0 : -1;
@@ -177,8 +183,10 @@ describe('row action column accessibility', () => {
             { confirm: () => Promise.resolve(true) }
         );
 
-        expect(controller.column._ambInteractive).toBe(true);
-        expect(controller.column._ambFocusSelector).toBe('.amb-row-action-button');
+        expect(getAmbColumnMetadata(controller.column)).toMatchObject({
+            interactive: true,
+            focusSelector: '.amb-row-action-button'
+        });
         expect(controller.column.editor).toEqual(expect.any(Function));
         expect(controller.column.field).toBeUndefined();
     });

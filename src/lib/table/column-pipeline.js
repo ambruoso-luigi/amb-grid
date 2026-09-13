@@ -7,6 +7,7 @@ import {
     extractColumnValidators
 } from './validation-extraction.js';
 import { prepareColumnCalculations } from './column-calculation-runtime.js';
+import { setAmbColumnMetadata } from './column-metadata.js';
 
 const NUMERIC_EDITOR_TYPES = new Set(['integer', 'decimal']);
 const NUMERIC_FORMATTER_TYPES = new Set([
@@ -139,7 +140,7 @@ export const prepareLargeTextColumns = (columns = []) => {
 
         if (getAmbEditorType(nextColumn) !== 'largeText') return nextColumn;
 
-        nextColumn._ambKeyboardFocusOnly = true;
+        setAmbColumnMetadata(nextColumn, { keyboardFocusOnly: true });
         nextColumn.cssClass = appendCssClasses(nextColumn.cssClass, [
             'amb-cell--large-text',
             'amb-cell--keyboard-focus-only'

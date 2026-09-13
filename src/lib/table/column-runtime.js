@@ -6,6 +6,7 @@ import {
     bindLookupMetadataInitialization,
     prepareColumnPipeline
 } from './column-pipeline.js';
+import { getAmbColumnMetadata } from './column-metadata.js';
 
 const isObjectPatch = patch => {
     return patch
@@ -113,9 +114,10 @@ const getManagedColumnType = column => {
         && typeof column.getDefinition === 'function'
         ? column.getDefinition()
         : null;
+    const metadata = getAmbColumnMetadata(definition);
 
-    return definition && definition._ambManagedColumn
-        ? definition._ambManagedColumn
+    return metadata.managedColumn
+        ? metadata.managedColumn
         : null;
 };
 
@@ -192,7 +194,7 @@ const getCoherentRuntimeColumns = (
 
     const expectedManagedTypes = (managedDefinitions || [])
         .filter(Boolean)
-        .map(definition => definition._ambManagedColumn);
+        .map(definition => getAmbColumnMetadata(definition).managedColumn);
     const runtimeManagedTypes = runtimeColumns
         .map(getManagedColumnType)
         .filter(Boolean);

@@ -1,5 +1,6 @@
 import { navigateEditableCellAfterClose, navigateToCandidate } from '../editors/shared.js';
 import { ROW_STATE } from '../crud-helper.js';
+import { getAmbColumnMetadata, setAmbColumnMetadata } from './column-metadata.js';
 
 const ACTION_BUTTON_SELECTOR = '.amb-row-action-button';
 const PAGINATED_REMOVE_FOCUS_ATTEMPTS = 8;
@@ -168,7 +169,16 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
 
         if (!container) return;
 
-        container.replaceWith(createActionsContainer(getRowState(row)));
+        const nextContainer = createActionsContainer(getRowState(row));
+
+        if (typeof container.replaceChildren === 'function') {
+            container.replaceChildren(
+                ...Array.from(nextContainer.childNodes || nextContainer.children || [])
+            );
+            return;
+        }
+
+        container.replaceWith(nextContainer);
     };
 
     const buttonMatchesAction = (button, action) => {
@@ -191,7 +201,7 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
                 ? candidate.getElement()
                 : null;
 
-            return definition && definition._ambFocusSelector === ACTION_BUTTON_SELECTOR
+            return getAmbColumnMetadata(definition).focusSelector === ACTION_BUTTON_SELECTOR
                 || Boolean(cellElement && cellElement.querySelector(ACTION_BUTTON_SELECTOR));
         });
     };
@@ -514,14 +524,10 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
         return container;
     };
 
-    return {
-        column: {
+    const column = {
             width: rowActionColumn.width || 55,
             hozAlign: 'center',
             headerSort: false,
-            _ambInteractive: true,
-            _ambManagedColumn: 'rowAction',
-            _ambFocusSelector: ACTION_BUTTON_SELECTOR,
             editable: cell => {
                 const row = cell?.getRow?.();
 
@@ -544,7 +550,16 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
 
                 await executeAction({ action, row, event, cell });
             }
-        },
+        };
+
+    setAmbColumnMetadata(column, {
+        interactive: true,
+        managedColumn: 'rowAction',
+        focusSelector: ACTION_BUTTON_SELECTOR
+    });
+
+    return {
+        column,
         updateRowButton
     };
 };

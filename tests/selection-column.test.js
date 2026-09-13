@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import { navigateEditableCellAfterClose } from '../src/lib/editors/shared.js';
 import { createSelectionColumn } from '../src/lib/table/selection-column.js';
+import { getAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
 
 const createKeyboardEvent = (key, target = {}) => ({
     key,
@@ -43,8 +44,10 @@ describe('selection column keyboard access', () => {
     test('marks the selection column as an AMB interactive navigation target', () => {
         const controller = createSelectionColumn({ enabled: true });
 
-        expect(controller.column._ambInteractive).toBe(true);
-        expect(controller.column._ambFocusSelector).toBe('.amb-selection-column__input');
+        expect(getAmbColumnMetadata(controller.column)).toMatchObject({
+            interactive: true,
+            focusSelector: '.amb-selection-column__input'
+        });
     });
 
     test('multiple mode allows multiple selected rows', () => {

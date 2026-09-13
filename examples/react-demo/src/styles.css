@@ -104,7 +104,12 @@ button, a { outline-offset: 3px; }
 .payload-json__heading { align-items: center; display: flex; justify-content: space-between; margin: 20px 0 8px; }
 .payload-json__heading span { color: #18364f; font-size: 13px; font-weight: 800; }
 .payload-json__heading small { color: #778b9b; font-family: ui-monospace, monospace; font-size: 10px; }
-.payload-json { background: #10273b; border-radius: 10px; color: #d9f4f7; flex: 1; font: 11px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; margin: 0; overflow: auto; padding: 16px; white-space: pre-wrap; }
+.payload-json { background: linear-gradient(180deg, #142033 0%, #0f1726 100%); border: 1px solid #314766; border-radius: 8px; color: #e8f1ec; flex: 1; font-family: Consolas, "SFMono-Regular", "Courier New", monospace; font-size: 12px; line-height: 1.6; margin: 0; overflow: auto; padding: 16px; white-space: pre-wrap; }
+.payload-json__key { color: #8bd5ff; }
+.payload-json__string { color: #a9d6a5; }
+.payload-json__number { color: #d7b7f4; }
+.payload-json__boolean, .payload-json__null { color: #b9a7ee; }
+.payload-json__punctuation { color: #aab8c8; }
 
 .react-alert__content { animation: react-alert-in 200ms ease-out; background: #fff; border: 1px solid #d9e5e9; border-radius: 14px; box-shadow: 0 24px 70px rgb(12 35 53 / 25%); left: 50%; max-width: 470px; padding: 24px; position: fixed; top: 50%; transform: translate(-50%, -50%); width: calc(100% - 32px); z-index: 91; }
 .react-alert__icon { align-items: center; background: #fff4d9; border-radius: 9px; color: #a87312; display: inline-flex; height: 40px; justify-content: center; margin-bottom: 14px; width: 40px; }

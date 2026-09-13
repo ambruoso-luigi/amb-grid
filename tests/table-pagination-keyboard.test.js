@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createPaginationKeyboardRuntime } from '../src/lib/table/pagination-keyboard-runtime.js';
 import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
+import { setAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
 
 const flush = async () => {
     for (let index = 0; index < 8; index += 1) await Promise.resolve();
@@ -45,6 +46,8 @@ const createCandidate = ({ editable = true, activates = true, focusOnly = false,
         return true;
     });
 
+    const definition = { editable, editor: edit };
+    if (focusOnly) setAmbColumnMetadata(definition, { keyboardFocusOnly: true });
     const candidate = {
         edit,
         getField: () => field,
@@ -52,17 +55,19 @@ const createCandidate = ({ editable = true, activates = true, focusOnly = false,
         getElement: () => element,
         getColumn: () => ({
             isVisible: () => true,
-            getDefinition: () => ({ editable, editor: edit, _ambKeyboardFocusOnly: focusOnly })
+            getDefinition: () => definition
         })
     };
 
     return candidate;
 };
 
-const createHarness = ({ page = 1, max = 3, cells = [], row = null, enabled = true } = {}) => {
+const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements, enabled = true } = {}) => {
     const listeners = new Map();
     const keyListeners = new Map();
-    const rowElement = {};
+    const rowElement = {
+        classList: { contains: className => className === 'tabulator-row' }
+    };
     const previous = { title: '', setAttribute: vi.fn() };
     const next = { title: '', setAttribute: vi.fn() };
     const tableHolder = { scrollTop: 0 };
@@ -80,7 +85,9 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null, enabled = tr
         previous,
         next,
         contains: target => target?.inside === true,
-        querySelectorAll: selector => selector === '.tabulator-row' ? [rowElement] : [],
+        querySelectorAll: selector => selector === '.tabulator-row'
+            ? rowElements || [rowElement]
+            : [],
         querySelector: selector => selector.includes('.tabulator-editing')
             ? (editing ? editingElement : null)
             : selector === '.tabulator-tableholder' ? tableHolder
@@ -113,7 +120,7 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null, enabled = tr
     const runtime = createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled });
 
     return {
-        table, tableElement, tableHolder, paginationMethods, runtime,
+        table, tableElement, tableHolder, paginationMethods, runtime, rowElement,
         listenerCount: event => listeners.get(event)?.size || 0,
         setCells: value => {
             renderedCells = value;
@@ -432,6 +439,44 @@ describe('table pagination keyboard runtime', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(element.focus).toHaveBeenCalledOnce();
         expect(notes.edit).not.toHaveBeenCalled();
+    });
+
+    test('ignores calculation rows before resolving row or cell components', async () => {
+        const candidate = createCandidate();
+        const calculationRow = {
+            classList: {
+                contains: className => [
+                    'tabulator-row',
+                    'tabulator-calcs',
+                    'amb-calc-row'
+                ].includes(className)
+            }
+        };
+        const harness = createHarness({
+            cells: [candidate],
+            rowElements: [calculationRow]
+        });
+        const transition = harness.runtime.transitionPage({
+            direction: 'next',
+            destination: 'first'
+        });
+
+        harness.table.emit('renderComplete');
+        await transition;
+        expect(harness.table.getRow).not.toHaveBeenCalledWith(calculationRow);
+
+        const calculationCell = {
+            classList: { contains: className => className === 'amb-cell--large-text' },
+            closest: selector => selector === '.tabulator-row' ? calculationRow : null,
+            getAttribute: () => 'notes',
+            focus: vi.fn()
+        };
+        const event = harness.tableElement.dispatch({ target: {
+            closest: selector => selector === '.tabulator-cell' ? calculationCell : null
+        } }, 'mousedown');
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(harness.table.getRow).not.toHaveBeenCalledWith(calculationRow);
     });
 
     test.each([

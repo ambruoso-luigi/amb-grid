@@ -1,4 +1,5 @@
 import { navigateEditableCellAfterClose } from '../editors/shared.js';
+import { setAmbColumnMetadata } from './column-metadata.js';
 
 const CHECKED_KEYS = new Set(['1', 'y', 'Y', 's', 'S']);
 const UNCHECKED_KEYS = new Set(['0', 'n', 'N']);
@@ -189,22 +190,27 @@ export const createSelectionColumn = (selectionColumn = {}) => {
 
     const isMultiple = normalizedOptions.mode !== 'single';
 
+    const column = {
+        width: normalizedOptions.width,
+        hozAlign: 'center',
+        headerHozAlign: 'center',
+        headerSort: false,
+        cssClass: 'amb-selection-column',
+        editor: createSelectionEditor(isMultiple),
+        titleFormatter: isMultiple ? 'rowSelection' : () => '',
+        titleFormatterParams: isMultiple ? { rowRange: 'active' } : undefined,
+        formatter: createSelectionFormatter(isMultiple)
+    };
+
+    setAmbColumnMetadata(column, {
+        interactive: true,
+        managedColumn: 'selection',
+        focusSelector: SELECTION_INPUT_SELECTOR
+    });
+
     return {
         mode: normalizedOptions.mode,
-        column: {
-            width: normalizedOptions.width,
-            hozAlign: 'center',
-            headerHozAlign: 'center',
-            headerSort: false,
-            cssClass: 'amb-selection-column',
-            _ambInteractive: true,
-            _ambManagedColumn: 'selection',
-            _ambFocusSelector: SELECTION_INPUT_SELECTOR,
-            editor: createSelectionEditor(isMultiple),
-            titleFormatter: isMultiple ? 'rowSelection' : () => '',
-            titleFormatterParams: isMultiple ? { rowRange: 'active' } : undefined,
-            formatter: createSelectionFormatter(isMultiple)
-        },
+        column,
         selectableRows: 'highlight',
         bind(table) {
             if (!table || typeof table.on !== 'function') return () => {};

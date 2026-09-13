@@ -5,6 +5,7 @@ import {
     prepareLargeTextColumns
 } from '../src/lib/table/column-pipeline.js';
 import { decimal as createDecimalEditor } from '../src/lib/editors/number-editors.js';
+import { getAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
 
 const createEditor = (type, metadata = {}) => {
     const editor = vi.fn();
@@ -90,7 +91,7 @@ describe('AMB Grid column preparation pipeline', () => {
         });
         const [notes] = pipeline.preparedDataColumns;
 
-        expect(notes._ambKeyboardFocusOnly).toBe(true);
+        expect(getAmbColumnMetadata(notes).keyboardFocusOnly).toBe(true);
         expect(notes.cssClass).toBe(
             'application-notes amb-cell--large-text amb-cell--keyboard-focus-only'
         );
@@ -107,6 +108,31 @@ describe('AMB Grid column preparation pipeline', () => {
         expect(notes.cssClass).toBe(
             'application-notes amb-cell--large-text amb-cell--keyboard-focus-only'
         );
+    });
+
+    test('keeps all AMB metadata out of runtime column definitions', () => {
+        const largeTextEditor = createEditor('largeText');
+        const selectionEditor = createEditor('selection');
+        const actionEditor = createEditor('action');
+        const selectionColumn = { editor: selectionEditor };
+        const rowActionColumn = { editor: actionEditor };
+        const pipeline = prepareColumnPipeline({
+            columns: [{ field: 'notes', editor: largeTextEditor }],
+            selectionColumn,
+            rowActionColumn
+        });
+
+        const definitions = [
+            ...pipeline.runtimeColumns,
+            ...pipeline.preparedDataColumns
+        ];
+
+        definitions.forEach(definition => {
+            expect(Object.keys(definition)).not.toContain('_ambInteractive');
+            expect(Object.keys(definition)).not.toContain('_ambManagedColumn');
+            expect(Object.keys(definition)).not.toContain('_ambFocusSelector');
+            expect(Object.keys(definition)).not.toContain('_ambKeyboardFocusOnly');
+        });
     });
 
     test('adds a decimal formatter from editor metadata while preserving explicit formatters', () => {
