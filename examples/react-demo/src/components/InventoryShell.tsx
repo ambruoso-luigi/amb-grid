@@ -79,7 +79,6 @@ export function InventoryShell() {
   }, []);
 
   const syncFromGrid = useCallback((controller: InventoryGridController) => {
-    controller.recalc();
     const report = controller.getStateReport();
     const nextPayload = controller.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
     const calcResults = controller.getCalcResults();
