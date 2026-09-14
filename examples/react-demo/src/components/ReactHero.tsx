@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Home } from 'lucide-react';
 
@@ -41,10 +40,14 @@ const YouTubeMark = () => (
   </svg>
 );
 
-export function ReactHero() {
+type ReactHeroProps = {
+  language: Language;
+  onLanguageChange: (language: Language) => void;
+};
+
+export function ReactHero({ language, onLanguageChange }: ReactHeroProps) {
   const shouldReduceMotion = useReducedMotion();
   const enter = shouldReduceMotion ? undefined : { opacity: 0, y: 14 };
-  const [language, setLanguage] = useState<Language>('it');
   const text = copy[language];
 
   return (
@@ -54,8 +57,8 @@ export function ReactHero() {
           <img alt="AMB Grid" src={ambGridLogo} />
         </a>
         <div aria-label="Select language" className="react-demo-language" role="group">
-          <button aria-pressed={language === 'it'} className="react-demo-language__label" onClick={() => setLanguage('it')} type="button">IT</button>
-          <button aria-pressed={language === 'en'} className="react-demo-language__label" onClick={() => setLanguage('en')} type="button">EN</button>
+          <button aria-pressed={language === 'it'} className="react-demo-language__label" onClick={() => onLanguageChange('it')} type="button">IT</button>
+          <button aria-pressed={language === 'en'} className="react-demo-language__label" onClick={() => onLanguageChange('en')} type="button">EN</button>
         </div>
       </nav>
 

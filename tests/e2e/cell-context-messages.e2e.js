@@ -228,4 +228,30 @@ test.describe('React supplier lookup messages and status select', () => {
         await editedRow.locator('.amb-row-action-button--rollback').click();
         await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'active');
     });
+
+    test('updates React-owned copy without losing a pending grid change', async ({ page }) => {
+        const row = reactRow(page, 'ITM-1002');
+        const status = reactCell(page, 'ITM-1002', 'status');
+
+        await status.dblclick();
+        await status.locator('select.amb-cell-editor--select').selectOption('HOLD');
+        await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
+
+        await page.locator('.react-demo-language__label').filter({ hasText: 'EN' }).click();
+        await expect(page.locator('.react-demo-language__label').filter({ hasText: 'EN' }))
+            .toHaveAttribute('aria-pressed', 'true');
+        await expect(page.getByRole('heading', { name: 'Inventory Operations' })).toBeVisible();
+        await page.locator('.react-table-guide__trigger').click();
+        await expect(page.locator('.react-table-guide__column-list')).toContainText(
+            'Search a supplier by code, name, or city'
+        );
+        await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
+        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'hold');
+
+        await page.locator('.react-demo-language__label').filter({ hasText: 'IT' }).click();
+        await expect(page.getByRole('heading', { name: 'Operazioni inventario' })).toBeVisible();
+        await expect(page.locator('.react-table-guide__column-list')).toContainText('Fornitore');
+        await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
+        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'hold');
+    });
 });

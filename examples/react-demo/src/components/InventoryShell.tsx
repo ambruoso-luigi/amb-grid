@@ -12,6 +12,22 @@ type SaveResponse = {
   insertedIds: { tempId?: string; id: number }[];
 };
 
+type Language = 'it' | 'en';
+type InventoryShellProps = { language: Language };
+
+const copy = {
+  it: {
+    workspace: 'Area operativa',
+    title: 'Operazioni inventario',
+    description: 'Gestione prodotti, stato modifiche e flusso operativo della tabella.',
+  },
+  en: {
+    workspace: 'Live workspace',
+    title: 'Inventory Operations',
+    description: 'Manage products, change status and the table workflow.',
+  },
+} as const;
+
 const emptyPayload: InventoryPayload = {
   canSave: false,
   hasChanges: false,
@@ -48,8 +64,9 @@ const applyGridView = (controller: InventoryGridController, query: string, filte
   });
 };
 
-export function InventoryShell() {
+export function InventoryShell({ language }: InventoryShellProps) {
   const shouldReduceMotion = useReducedMotion();
+  const text = copy[language];
   const [grid, setGrid] = useState<InventoryGridController | null>(null);
   const [snapshot, setSnapshot] = useState(emptySnapshot);
   const [payload, setPayload] = useState<InventoryPayload>(emptyPayload);
@@ -219,7 +236,7 @@ export function InventoryShell() {
     <motion.section animate={{ opacity: 1, y: 0 }} className="inventory-operations" id="inventory-operations" initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }} transition={{ duration: 0.45, ease: 'easeOut' }}>
       <div className="inventory-workspace">
         <header className="inventory-workspace__header">
-          <div><span className="inventory-workspace__eyebrow"><Activity aria-hidden="true" size={14} /> Live workspace</span><h2>Inventory Operations</h2><p>Gestione prodotti, stato modifiche e flusso operativo della tabella.</p></div>
+          <div><span className="inventory-workspace__eyebrow"><Activity aria-hidden="true" size={14} /> {text.workspace}</span><h2>{text.title}</h2><p>{text.description}</p></div>
           <span className="inventory-workspace__tag">React + TypeScript</span>
         </header>
 

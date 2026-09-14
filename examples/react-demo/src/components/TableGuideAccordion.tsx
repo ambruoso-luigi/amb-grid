@@ -17,9 +17,15 @@ const integration = [
   ['Backend demo', 'MSW intercetta richieste HTTP reali e simula il backend.', Database],
 ] as const;
 
-const fields = [
-  ['Supplier', 'LOOKUP', 'Ricerca un fornitore tramite codice, nome o città e aggiorna più dati della riga con mapToRow.', Building2],
-  ['Status', 'SELECT', 'Un insieme ristretto di stati usa un select; badge e icone restano nel formatter.', ListChecks],
+type Language = 'it' | 'en';
+
+const fields = (language: Language) => [
+  [language === 'it' ? 'Fornitore' : 'Supplier', 'LOOKUP', language === 'it'
+    ? 'Ricerca un fornitore tramite codice, nome o città e aggiorna più dati della riga con mapToRow.'
+    : 'Search a supplier by code, name, or city and update multiple row fields with mapToRow.', Building2],
+  ['Status', 'SELECT', language === 'it'
+    ? 'Un insieme ristretto di stati usa un select; badge e icone restano nel formatter.'
+    : 'A small closed set of states uses a select while badges and icons stay in the formatter.', ListChecks],
   ['Stock quantity', 'INTEGER + VISUAL BAR', 'Numero editabile con indicatore visuale.', ListFilter],
   ['Inventory value', 'CALCULATED', 'Valore calcolato da quantità disponibile e prezzo unitario.', Calculator],
   ['Requires inspection', 'BOOLEAN', 'Checkbox realmente editabile.', CheckSquare2],
@@ -27,7 +33,9 @@ const fields = [
   ['Notes', 'LONG TEXT', 'Editor ampio per annotazioni operative.', NotepadText],
 ] as const;
 
-export function TableGuideAccordion() {
+type TableGuideAccordionProps = { language: Language };
+
+export function TableGuideAccordion({ language }: TableGuideAccordionProps) {
   const [open, setOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const cards = (items: typeof operations | typeof integration) => items.map(([title, description, Icon]) => (
@@ -47,7 +55,7 @@ export function TableGuideAccordion() {
           <section className="react-table-guide__columns" aria-labelledby="react-table-guide-columns-title">
             <h3 id="react-table-guide-columns-title">Campi dimostrati</h3>
             <div className="react-table-guide__column-list">
-              {fields.map(([name, badge, description, Icon]) => <article key={name}><i><Icon aria-hidden="true" size={16} /></i><div><h4>{name}</h4><span>{badge}</span></div><p>{description}</p></article>)}
+              {fields(language).map(([name, badge, description, Icon]) => <article key={name}><i><Icon aria-hidden="true" size={16} /></i><div><h4>{name}</h4><span>{badge}</span></div><p>{description}</p></article>)}
             </div>
           </section>
         </div>
