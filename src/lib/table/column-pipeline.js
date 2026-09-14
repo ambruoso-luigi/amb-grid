@@ -347,6 +347,17 @@ export const initializeLookupMetadataForRows = async (
     }));
 };
 
+/**
+ * Keeps lookup metadata synchronized with table lifecycle and data changes,
+ * then notifies contextual-message rendering after asynchronous metadata
+ * initialization completes.
+ *
+ * @param {object} table - Internal table engine.
+ * @param {object[]} [lookupColumns=[]] - Prepared lookup column descriptors.
+ * @returns {Function} Unsubscribe callback.
+ * @private
+ * @internal
+ */
 export const bindLookupMetadataInitialization = (table, lookupColumns = []) => {
     if (
         !table

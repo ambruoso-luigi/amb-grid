@@ -224,7 +224,8 @@ export const prepareColumnCalculations = (
 };
 
 /**
- * Recalculates table and group calculations when a row enters or leaves deleted state.
+ * Recalculates table and group calculations when CRUD deletion state changes
+ * and after committed cell edits.
  *
  * @param {object} table - Internal table engine.
  * @param {object} crud - AMB CRUD helper.

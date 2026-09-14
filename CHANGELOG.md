@@ -11,6 +11,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Kept column calculations synchronized after committed cell edits and CRUD delete/rollback state transitions.
+- Stabilized contextual lookup descriptions during pointer movement and after asynchronous lookup metadata refreshes such as `replaceData`.
 - Preserved the full AMB validation context for child validators in `anyOf` and `allOf`.
 - Made pattern validation deterministic for global and sticky `RegExp` values.
 - Prevented normal cell interaction from changing row selection when the managed selection column is enabled.
