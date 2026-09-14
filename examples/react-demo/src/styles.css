@@ -211,9 +211,9 @@ button, a { outline-offset: 3px; }
 .inventory-status[data-status="active"] { background: #edf8f1; border-color: #b8ddc6; color: #2e704d; }
 .inventory-status[data-status="review"] { background: #fff8e7; border-color: #e4cf96; color: #80601e; }
 .inventory-status[data-status="hold"] { background: #fbf0ee; border-color: #e0c2bd; color: #8a4b44; }
-.inventory-supplier { display: flex; flex-direction: column; gap: 3px; line-height: 1.2; }
-.inventory-supplier strong { color: #213c54; font-size: 12px; font-weight: 650; }
-.inventory-supplier small { color: #6f8291; font-size: 11px; }
+.inventory-supplier { display: inline-grid; gap: 2px; line-height: 1.15; max-width: 100%; }
+.inventory-supplier strong { color: #213c54; display: block; font-size: 12px; font-weight: 720; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inventory-supplier small { color: #6f8291; font-size: 10px; font-weight: 600; letter-spacing: .015em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .inventory-status[data-status="active"]:hover { background: #e7f5ec; border-color: #a8d3b8; }
 .inventory-status[data-status="review"]:hover { background: #fff3d5; border-color: #d9bf78; }
 .inventory-status[data-status="hold"]:hover { background: #f8e8e5; border-color: #d6aea7; }
@@ -251,3 +251,8 @@ button, a { outline-offset: 3px; }
 .react-demo-grid .amb-lookup-editor__button, .react-demo-grid .amb-date-editor-picker-button { color: #0ea5b7; }
 .react-demo-grid .amb-lookup-editor__button::before, .react-demo-grid .amb-date-editor-picker-button::before { height: 19px; width: 19px; }
 .react-demo-grid .amb-lookup-editor__button:hover, .react-demo-grid .amb-date-editor-picker-button:hover { color: #0891a6; }
+.react-demo-grid .amb-cell-editor--select { appearance: none; background-color: #f9fdfe; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%230ea5b7' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E"); background-position: right 10px center; background-repeat: no-repeat; background-size: 15px; border: 1px solid #9bcfd8; border-radius: 6px; color: #213c54; font-size: 12px; height: 100%; min-height: 30px; padding: 4px 32px 4px 10px; }
+.react-demo-grid .amb-cell-editor--select:focus, .react-demo-grid .amb-cell-editor--select:focus-visible { border-color: #0ea5b7; box-shadow: 0 0 0 2px rgb(14 165 183 / 16%); outline: none; }
+body.amb-react-demo-active .teh-floating-message--info { background: #effbfc; border-color: #b3dfe6; border-left-color: #0ea5b7; border-radius: 8px; box-shadow: 0 8px 20px rgb(20 92 108 / 14%); color: #21485e; max-width: 300px; }
+body.amb-react-demo-active .teh-floating-message--info .teh-floating-message__title { display: none; }
+body.amb-react-demo-active .teh-floating-message--info .teh-floating-message__body { padding: 9px 11px; }

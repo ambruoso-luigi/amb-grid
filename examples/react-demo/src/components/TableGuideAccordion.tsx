@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Braces, Calculator, CalendarDays, CheckSquare2, ChevronDown, CircleHelp, Database, Factory, Gauge, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, SearchCheck, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { Braces, Building2, Calculator, CalendarDays, CheckSquare2, ChevronDown, CircleHelp, Database, Gauge, ListChecks, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
 const operations = [
@@ -18,12 +18,13 @@ const integration = [
 ] as const;
 
 const fields = [
-  ['Supplier', 'LOOKUP', 'Ricerca fornitori con dialog e mapping automatico dei campi collegati.', Factory],
-  ['Status', 'SELECT', 'Scelta immediata da un dominio operativo chiuso.', SearchCheck],
-  ['Last check date', 'DATE', 'Data con picker e formato controllato.', CalendarDays],
-  ['Requires inspection', 'BOOLEAN', 'Checkbox realmente editabile.', CheckSquare2],
-  ['Notes', 'LONG TEXT', 'Editor ampio per annotazioni operative.', NotepadText],
+  ['Supplier', 'LOOKUP', 'Ricerca un fornitore tramite codice, nome o città e aggiorna più dati della riga con mapToRow.', Building2],
+  ['Status', 'SELECT', 'Un insieme ristretto di stati usa un select; badge e icone restano nel formatter.', ListChecks],
   ['Stock quantity', 'INTEGER + VISUAL BAR', 'Numero editabile con indicatore visuale.', ListFilter],
+  ['Inventory value', 'CALCULATED', 'Valore calcolato da quantità disponibile e prezzo unitario.', Calculator],
+  ['Requires inspection', 'BOOLEAN', 'Checkbox realmente editabile.', CheckSquare2],
+  ['Last check date', 'DATE', 'Data con picker e formato controllato.', CalendarDays],
+  ['Notes', 'LONG TEXT', 'Editor ampio per annotazioni operative.', NotepadText],
 ] as const;
 
 export function TableGuideAccordion() {

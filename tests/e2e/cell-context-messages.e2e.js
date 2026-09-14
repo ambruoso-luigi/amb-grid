@@ -149,9 +149,11 @@ test.describe('React supplier lookup messages and status select', () => {
     test('shows stable supplier descriptions and keeps Status outside the lookup system', async ({ page }) => {
         const active = reactCell(page, 'ITM-1001', 'supplierCode');
 
+        await expect(page.locator('body')).toHaveClass(/amb-react-demo-active/);
         await active.hover();
         await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
         await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
+        await expect(message(page).locator('.teh-floating-message__title')).toBeHidden();
 
         const box = await active.boundingBox();
         expect(box).not.toBeNull();

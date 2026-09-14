@@ -1,8 +1,15 @@
+import { useEffect } from 'react';
 import { InventoryShell } from './components/InventoryShell';
 import { ReactHero } from './components/ReactHero';
 import { TableGuideAccordion } from './components/TableGuideAccordion';
 
 export default function App() {
+  useEffect(() => {
+    document.body.classList.add('amb-react-demo-active');
+
+    return () => document.body.classList.remove('amb-react-demo-active');
+  }, []);
+
   return (
     <main className="react-demo-page">
       <ReactHero />
