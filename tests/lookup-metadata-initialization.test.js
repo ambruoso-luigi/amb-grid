@@ -1,7 +1,11 @@
 import { describe, expect, test, vi } from 'vitest';
 import { createLookup } from '../src/lib/lookup.js';
 import { lookup as createLookupEditor } from '../src/lib/editors/lookup-editor.js';
-import { getLookupMetadata, setLookupMetadata } from '../src/lib/lookup-metadata.js';
+import {
+    getLookupMetadata,
+    rollbackLookupMetadata,
+    setLookupMetadata
+} from '../src/lib/lookup-metadata.js';
 import {
     bindLookupMetadataInitialization,
     collectLookupColumns,
@@ -462,11 +466,101 @@ describe('lookup metadata initialization', () => {
             value: 'A001',
             description: 'Available for standard warehouse picking'
         });
+        expect(getLookupMetadata(replacedRow, 'status').initial).toEqual(
+            getLookupMetadata(replacedRow, 'status').current
+        );
 
         unsubscribe();
         expect(table.off).toHaveBeenCalledWith('tableBuilt', expect.any(Function));
         expect(table.off).toHaveBeenCalledWith('dataLoaded', expect.any(Function));
         expect(table.off).toHaveBeenCalledWith('dataChanged', expect.any(Function));
+    });
+
+    test('preserves rollback metadata when dataChanged follows a lookup editor edit', async () => {
+        const loadFn = vi.fn(({ query }) => statuses.filter(status => status.code === query));
+        const lookupColumns = collectPreparedLookupColumns([
+            createLookupColumn(createStatusLookup(loadFn))
+        ]);
+        const handlers = new Map();
+        const rowData = { status: 'A001' };
+        const table = {
+            getRows: () => [createRow(rowData)],
+            on: (eventName, handler) => handlers.set(eventName, handler),
+            off: vi.fn()
+        };
+        const unsubscribe = bindLookupMetadataInitialization(table, lookupColumns);
+
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(getLookupMetadata(rowData, 'status')).toEqual({
+            initial: {
+                value: 'A001',
+                description: 'Available for standard warehouse picking'
+            },
+            current: {
+                value: 'A001',
+                description: 'Available for standard warehouse picking'
+            }
+        });
+
+        rowData.status = 'B120';
+        setLookupMetadata(
+            rowData,
+            'status',
+            'B120',
+            'Reserved for internal maintenance order'
+        );
+        handlers.get('dataChanged')();
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        expect(loadFn).toHaveBeenCalledTimes(1);
+        expect(getLookupMetadata(rowData, 'status')).toEqual({
+            initial: {
+                value: 'A001',
+                description: 'Available for standard warehouse picking'
+            },
+            current: {
+                value: 'B120',
+                description: 'Reserved for internal maintenance order'
+            }
+        });
+
+        rollbackLookupMetadata(rowData);
+        expect(getLookupMetadata(rowData, 'status').current).toEqual({
+            value: 'A001',
+            description: 'Available for standard warehouse picking'
+        });
+        unsubscribe();
+    });
+
+    test('updates current metadata for programmatic lookup changes without replacing the baseline', async () => {
+        const lookupColumns = collectPreparedLookupColumns([
+            createLookupColumn()
+        ]);
+        const handlers = new Map();
+        const rowData = { status: 'A001' };
+        const table = {
+            getRows: () => [createRow(rowData)],
+            on: (eventName, handler) => handlers.set(eventName, handler),
+            off: vi.fn()
+        };
+        const unsubscribe = bindLookupMetadataInitialization(table, lookupColumns);
+
+        await new Promise(resolve => setTimeout(resolve, 0));
+        rowData.status = 'B120';
+        handlers.get('dataChanged')();
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        expect(getLookupMetadata(rowData, 'status')).toEqual({
+            initial: {
+                value: 'A001',
+                description: 'Available for standard warehouse picking'
+            },
+            current: {
+                value: 'B120',
+                description: 'Reserved for internal maintenance order'
+            }
+        });
+        unsubscribe();
     });
 
     test('does not add lookup formatters to non-lookup columns', () => {

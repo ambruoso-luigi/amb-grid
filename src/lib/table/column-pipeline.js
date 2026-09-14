@@ -253,10 +253,10 @@ const getRowData = row => {
     return row;
 };
 
-const hasInitialLookupMetadata = (rowData, field, value) => {
+const hasCurrentLookupMetadata = (rowData, field, value) => {
     const metadata = getLookupMetadata(rowData, field);
 
-    return Boolean(metadata && metadata.initial && metadata.initial.value === value);
+    return Boolean(metadata && metadata.current && metadata.current.value === value);
 };
 
 export const initializeLookupMetadataForRows = async (
@@ -277,7 +277,7 @@ export const initializeLookupMetadataForRows = async (
                 : String(rawValue ?? '');
 
             if (!value) return;
-            if (hasInitialLookupMetadata(rowData, column.field, value)) return;
+            if (hasCurrentLookupMetadata(rowData, column.field, value)) return;
 
             const requestKey = `${column.field}\u0000${value}`;
             const request = lookupRequests.get(requestKey) || {
@@ -336,21 +336,24 @@ export const initializeLookupMetadataForRows = async (
         }
 
         targets.forEach(targetRowData => {
+            const metadata = getLookupMetadata(targetRowData, column.field);
+
             setLookupMetadata(
                 targetRowData,
                 column.field,
                 value,
                 description,
-                { setInitial: true }
+                { setInitial: !metadata?.initial }
             );
         });
     }));
 };
 
 /**
- * Keeps lookup metadata synchronized with table lifecycle and data changes,
- * then notifies contextual-message rendering after asynchronous metadata
- * initialization completes.
+ * Keeps current lookup metadata synchronized with table lifecycle and data
+ * changes while preserving the initial metadata used by rollback, then
+ * notifies contextual-message rendering after asynchronous initialization
+ * completes.
  *
  * @param {object} table - Internal table engine.
  * @param {object[]} [lookupColumns=[]] - Prepared lookup column descriptors.
