@@ -19,6 +19,12 @@ type GridCell = {
   };
 };
 
+const isGridCell = (value: unknown): value is GridCell => {
+  if (!value || typeof value !== 'object') return false;
+
+  return ['getField', 'getElement', 'getValue', 'getRow'].every((method) => typeof Reflect.get(value, method) === 'function');
+};
+
 const money = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: true });
 const numberValue = (value: unknown) => typeof value === 'number' ? value : Number(value) || 0;
 const inventoryValue = (data: Record<string, unknown>) => numberValue(data.stockQuantity) * numberValue(data.unitPrice);
@@ -116,28 +122,38 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
     const refresh = () => queueMicrotask(() => {
       if (isActive) onStateChange(grid);
     });
-    const refreshEditedRow = (cell: GridCell) => requestAnimationFrame(() => {
-      if (!isActive) return;
-      if (cell.getField() === 'stockQuantity' || cell.getField() === 'unitPrice') {
-        const valueCell = cell.getRow().getCell('inventoryValue');
-        if (valueCell) valueCell.getElement().textContent = inventoryValueFormatter(valueCell);
-      }
-      onStateChange(grid);
-    });
+    const refreshEditedRow = (...args: unknown[]) => {
+      const cell = args[0];
+      if (!isGridCell(cell)) return;
+
+      requestAnimationFrame(() => {
+        if (!isActive) return;
+        if (cell.getField() === 'stockQuantity' || cell.getField() === 'unitPrice') {
+          const valueCell = cell.getRow().getCell('inventoryValue');
+          if (valueCell) valueCell.getElement().textContent = inventoryValueFormatter(valueCell);
+        }
+        onStateChange(grid);
+      });
+    };
     const engineEvents = ['rowAdded', 'rowDeleted', 'dataChanged', 'dataFiltered'];
     const crudEvents = ['row-state-changed', 'cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared', 'row-saved'];
     const removeCrudListeners = crudEvents.map((eventName) => grid.onCrud(eventName, refresh));
     engineEvents.forEach((eventName) => grid.on(eventName, refresh));
     grid.on('cellEdited', refreshEditedRow);
 
-    gridRef.current = grid;
-    onReady(grid);
-    refresh();
+    const handleTableBuilt = () => {
+      if (!isActive) return;
+      gridRef.current = grid;
+      onReady(grid);
+      refresh();
+    };
+    grid.on('tableBuilt', handleTableBuilt);
 
     destroyGrid = () => {
       isActive = false;
       engineEvents.forEach((eventName) => grid.off(eventName, refresh));
       grid.off('cellEdited', refreshEditedRow);
+      grid.off('tableBuilt', handleTableBuilt);
       removeCrudListeners.forEach((removeListener) => removeListener());
       gridRef.current?.destroy();
       statusDialog.destroy();

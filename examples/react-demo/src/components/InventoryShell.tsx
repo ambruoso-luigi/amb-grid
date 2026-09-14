@@ -39,11 +39,11 @@ const applyGridView = (controller: InventoryGridController, query: string, filte
     return;
   }
 
-  controller.setFilter((row: Record<string, unknown>) => {
-    const searchable = [row.itemCode, row.productName, row.warehouse, row.status, row.notes].join(' ').toLocaleLowerCase();
+  controller.setFilter((row: object) => {
+    const searchable = ['itemCode', 'productName', 'warehouse', 'status', 'notes'].map((field) => String(getObjectValue(row, field) ?? '')).join(' ').toLocaleLowerCase();
     const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
-    const matchesStatus = !filters.status || row.status === filters.status;
-    const matchesInspection = !filters.inspection || row.requiresInspection === (filters.inspection === 'true');
+    const matchesStatus = !filters.status || getObjectValue(row, 'status') === filters.status;
+    const matchesInspection = !filters.inspection || getObjectValue(row, 'requiresInspection') === (filters.inspection === 'true');
     return matchesQuery && matchesStatus && matchesInspection;
   });
 };
@@ -177,7 +177,7 @@ export function InventoryShell() {
       if (!response.ok) throw new Error(`POST /api/products/save failed with ${response.status}`);
       const result = await response.json() as SaveResponse;
       const idByTempId = new Map(result.insertedIds.filter(({ tempId }) => Boolean(tempId)).map(({ tempId, id }) => [tempId as string, id]));
-      grid.applyBackendIds(result.insertedIds);
+      grid.applyBackendIds(result.insertedIds.filter((mapping): mapping is { tempId: string; id: number } => typeof mapping.tempId === 'string'));
       const identifiers = savedCandidates.map(({ key, tempId }) => tempId ? idByTempId.get(tempId) ?? key : key);
       const acknowledged = grid.markRowsSaved(identifiers);
       if (!acknowledged) throw new Error('Il backend ha risposto, ma AMB Grid non ha confermato tutte le righe.');

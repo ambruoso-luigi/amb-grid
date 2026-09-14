@@ -728,6 +728,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
 /**
  * @typedef {object} AMBRowActionColumnOptions
  * @property {boolean} [enabled=false] - Add the managed row action column.
+ * @property {number} [width=55] - Row action column width.
  * @property {AMBRowActionColumnActions} [actions] - Action visibility flags.
  * @property {AMBRowActionColumnIcons} [icons] - Custom action button text or icon overrides.
  * @property {AMBRowActionColumnLabels} [labels] - Action button aria-label overrides.

@@ -15,7 +15,9 @@ const createRuntime = (calculations = {}) => {
 
     return {
         modules: { columnCalcs },
-        recalc: vi.fn()
+        recalc: vi.fn(),
+        on: vi.fn(),
+        off: vi.fn()
     };
 };
 
@@ -266,7 +268,11 @@ describe('CRUD-aware column calculation runtime', () => {
         listener({ previousState: 'new', nextState: 'saved' });
 
         expect(table.recalc).toHaveBeenCalledTimes(2);
+        const cellEditedCallback = table.on.mock.calls.find(([eventName]) => eventName === 'cellEdited')[1];
+        cellEditedCallback();
+        expect(table.recalc).toHaveBeenCalledTimes(3);
         release();
         expect(unsubscribe).toHaveBeenCalledOnce();
+        expect(table.off).toHaveBeenCalledWith('cellEdited', cellEditedCallback);
     });
 });

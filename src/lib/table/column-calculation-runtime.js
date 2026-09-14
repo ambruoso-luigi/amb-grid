@@ -235,13 +235,23 @@ export const prepareColumnCalculations = (
 export const bindDeletedRowCalculationRecalc = (table, crud) => {
     if (!crud || typeof crud.on !== 'function') return () => {};
 
-    return crud.on('row-state-changed', ({ previousState, nextState }) => {
+    const recalculate = () => {
+        if (table && typeof table.recalc === 'function') table.recalc();
+    };
+    const unsubscribe = crud.on('row-state-changed', ({ previousState, nextState }) => {
         const wasDeleted = previousState === ROW_STATE.DELETED;
         const isDeleted = nextState === ROW_STATE.DELETED;
 
         if (wasDeleted === isDeleted) return;
-        if (!table || typeof table.recalc !== 'function') return;
-
-        table.recalc();
+        recalculate();
     });
+
+    if (table && typeof table.on === 'function') {
+        table.on('cellEdited', recalculate);
+    }
+
+    return () => {
+        unsubscribe();
+        if (table && typeof table.off === 'function') table.off('cellEdited', recalculate);
+    };
 };

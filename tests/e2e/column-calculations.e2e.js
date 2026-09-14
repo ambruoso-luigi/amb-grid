@@ -83,6 +83,8 @@ const openCalculationsPage = async page => {
 };
 
 test('calculation pagination, filtering, sorting and public APIs stay coherent', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
     await openCalculationsPage(page);
     await expectTopCalculationClasses(page);
     await expectAverageFormatterClasses(page);
@@ -147,6 +149,7 @@ test('calculation pagination, filtering, sorting and public APIs stay coherent',
     await expectOrderIndependentCalculations(page);
     await expectTopCalculationClasses(page);
     await expectAverageFormatterClasses(page);
+    expect(pageErrors).toEqual([]);
 });
 
 test('delete and rollback on page three update the complete calculation dataset', async ({ page }) => {
