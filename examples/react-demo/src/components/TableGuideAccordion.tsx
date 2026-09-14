@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Braces, Calculator, CalendarDays, CheckSquare2, ChevronDown, CircleHelp, Database, Gauge, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, SearchCheck, ShieldCheck, SlidersHorizontal, Warehouse } from 'lucide-react';
+import { Braces, Calculator, CalendarDays, CheckSquare2, ChevronDown, CircleHelp, Database, Factory, Gauge, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, SearchCheck, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
 const operations = [
@@ -18,8 +18,8 @@ const integration = [
 ] as const;
 
 const fields = [
-  ['Warehouse', 'AUTOCOMPLETE', 'Selezione con suggerimenti controllati.', Warehouse],
-  ['Status', 'LOOKUP', 'Valori gestiti tramite lookup.', SearchCheck],
+  ['Supplier', 'LOOKUP', 'Ricerca fornitori con dialog e mapping automatico dei campi collegati.', Factory],
+  ['Status', 'SELECT', 'Scelta immediata da un dominio operativo chiuso.', SearchCheck],
   ['Last check date', 'DATE', 'Data con picker e formato controllato.', CalendarDays],
   ['Requires inspection', 'BOOLEAN', 'Checkbox realmente editabile.', CheckSquare2],
   ['Notes', 'LONG TEXT', 'Editor ampio per annotazioni operative.', NotepadText],

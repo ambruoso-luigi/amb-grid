@@ -40,7 +40,7 @@ const applyGridView = (controller: InventoryGridController, query: string, filte
   }
 
   controller.setFilter((row: object) => {
-    const searchable = ['itemCode', 'productName', 'warehouse', 'status', 'notes'].map((field) => String(getObjectValue(row, field) ?? '')).join(' ').toLocaleLowerCase();
+    const searchable = ['itemCode', 'productName', 'supplierCode', 'supplierName', 'supplierCity', 'status', 'notes'].map((field) => String(getObjectValue(row, field) ?? '')).join(' ').toLocaleLowerCase();
     const matchesQuery = !normalizedQuery || searchable.includes(normalizedQuery);
     const matchesStatus = !filters.status || getObjectValue(row, 'status') === filters.status;
     const matchesInspection = !filters.inspection || getObjectValue(row, 'requiresInspection') === (filters.inspection === 'true');
@@ -141,7 +141,9 @@ export function InventoryShell() {
     void Promise.resolve(grid.addRow({
       itemCode,
       productName: '',
-      warehouse: 'Ancona',
+      supplierCode: 'SUP-001',
+      supplierName: 'Adriatica Components',
+      supplierCity: 'Ancona',
       stockQuantity: 0,
       unitPrice: 0,
       status: 'ACTIVE',

@@ -140,18 +140,18 @@ test.describe('contextual cell messages and large-text focus', () => {
     });
 });
 
-test.describe('React contextual lookup messages', () => {
+test.describe('React supplier lookup messages and status select', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/#getting-started-react');
         await expect(reactRow(page, 'ITM-1001')).toBeVisible();
     });
 
-    test('shows stable descriptions for pointer movement, row changes and keyboard focus', async ({ page }) => {
-        const active = reactCell(page, 'ITM-1001', 'status');
+    test('shows stable supplier descriptions and keeps Status outside the lookup system', async ({ page }) => {
+        const active = reactCell(page, 'ITM-1001', 'supplierCode');
 
         await active.hover();
         await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
-        await expect(messageBody(page)).toHaveText('Active');
+        await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
 
         const box = await active.boundingBox();
         expect(box).not.toBeNull();
@@ -160,16 +160,70 @@ test.describe('React contextual lookup messages', () => {
             await page.waitForTimeout(85);
         }
         await expect(message(page)).toHaveClass(/teh-floating-message--visible/, { timeout: 100 });
-        await expect(messageBody(page)).toHaveText('Active');
+        await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
 
-        await reactCell(page, 'ITM-1003', 'status').hover();
-        await expect(messageBody(page)).toHaveText('Review required');
-        await reactCell(page, 'ITM-1005', 'status').hover();
-        await expect(messageBody(page)).toHaveText('On hold');
+        await reactCell(page, 'ITM-1003', 'supplierCode').hover();
+        await expect(messageBody(page)).toContainText('Lombarda Industrial · Milano');
+        await reactCell(page, 'ITM-1005', 'supplierCode').hover();
+        await expect(messageBody(page)).toContainText('Roma Handling Systems · Roma');
 
         await active.focus();
         await expect(active).toBeFocused();
         await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
-        await expect(messageBody(page)).toHaveText('Active');
+        await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
+
+        const status = reactCell(page, 'ITM-1001', 'status');
+        await expect(status).not.toHaveAttribute('data-lookup-field');
+        await status.hover();
+        await expect(message(page)).not.toHaveClass(/teh-floating-message--visible/);
+        await status.dblclick();
+        await expect(status.locator('select.amb-cell-editor--select')).toBeVisible();
+        await expect(status.locator('.amb-lookup-editor__input')).toHaveCount(0);
+    });
+
+    test('maps a supplier dialog selection into the row and restores it through rollback', async ({ page }) => {
+        const initialSupplier = reactCell(page, 'ITM-1001', 'supplierCode');
+        const editedRow = reactRow(page, 'ITM-1002');
+        const supplier = reactCell(page, 'ITM-1002', 'supplierCode');
+
+        await initialSupplier.hover();
+        await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
+        await initialSupplier.click();
+        await page.keyboard.press('Alt+ArrowDown');
+        await expect(supplier.locator('.amb-lookup-editor__input')).toBeFocused();
+        await page.keyboard.press('Enter');
+
+        const dialog = page.locator('.amb-lookup-dialog');
+        await expect(dialog).toBeVisible();
+        await expect(dialog.getByRole('columnheader', { name: 'Code' })).toBeVisible();
+        await expect(dialog.getByRole('columnheader', { name: 'Supplier' })).toBeVisible();
+        await expect(dialog.getByRole('columnheader', { name: 'City' })).toBeVisible();
+        await expect(dialog.getByRole('columnheader', { name: 'Category' })).toBeVisible();
+        const search = dialog.locator('.amb-lookup-dialog__search');
+        await search.fill('SUP-003');
+        await expect(dialog.locator('tbody tr')).toContainText('Lombarda Industrial');
+        await search.fill('lomb');
+        await expect(dialog.locator('tbody tr')).toContainText('Lombarda Industrial');
+        await search.fill('milano');
+        await expect(dialog.locator('tbody tr')).toContainText('Lombarda Industrial');
+        await dialog.locator('tbody tr').filter({ hasText: 'SUP-003' }).click();
+        await dialog.locator('.amb-lookup-dialog__button--primary').click();
+        await page.keyboard.press('Escape');
+
+        await expect(supplier).toContainText('Lombarda Industrial');
+        await expect(supplier).toContainText('SUP-003 · Milano');
+        await expect(editedRow.locator('.amb-row-action-button--rollback')).toBeVisible();
+
+        await editedRow.locator('.amb-row-action-button--rollback').click();
+        await expect(supplier).toContainText('Emilia Tech Supplies');
+        await expect(supplier).toContainText('SUP-002 · Bologna');
+
+        const status = reactCell(page, 'ITM-1002', 'status');
+        await status.dblclick();
+        await status.locator('select.amb-cell-editor--select').selectOption('HOLD');
+        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'hold');
+        await expect(editedRow.locator('.amb-row-action-button--rollback')).toBeVisible();
+        await editedRow.locator('.amb-row-action-button--rollback').click();
+        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'active');
     });
 });

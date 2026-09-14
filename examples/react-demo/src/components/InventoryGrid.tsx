@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { AMB } from '../lib/amb-grid';
-import { warehouseOptions } from '../data/inventory';
+import type { Supplier } from '../data/inventory';
 
 export type InventoryGridController = ReturnType<typeof AMB.table>;
 
@@ -52,6 +52,20 @@ const statusFormatter = (cell: GridCell) => {
   return `<span class="inventory-status" data-status="${status.toLowerCase()}"><i class="inventory-status__icon">${icons[status] ?? ''}</i><span>${status}</span></span>`;
 };
 
+const escapeHtml = (value: unknown) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  "'": '&#39;',
+  '"': '&quot;',
+})[character] ?? character);
+
+const supplierFormatter = (cell: GridCell) => {
+  const { supplierCity, supplierCode, supplierName } = cell.getRow().getData();
+
+  return `<span class="inventory-supplier"><strong>${escapeHtml(supplierName)}</strong><small>${escapeHtml(supplierCode)} · ${escapeHtml(supplierCity)}</small></span>`;
+};
+
 const inventoryValueFormatter = (cell: GridCell) => money.format(inventoryValue(cell.getRow().getData()));
 const sumNumbers = (values: unknown[]) => values.reduce<number>((total, value) => total + numberValue(value), 0);
 const sumInventoryValue = (_values: unknown[], rows: Record<string, unknown>[]) => rows.reduce((total, row) => total + inventoryValue(row), 0);
@@ -66,22 +80,30 @@ const inspectionCalculationFormatter = (cell: GridCell) => {
   return `<span class="inventory-summary-inspections"><strong>${count}</strong><small>${label}</small></span>`;
 };
 
-const statusLookup = AMB.lookup({
+const supplierLookup = AMB.lookup({
   keyField: 'id',
-  valueField: 'id',
+  valueField: 'code',
   labelField: 'description',
   columns: [
-    { field: 'id', title: 'Code', visible: true, width: 90 },
-    { field: 'description', title: 'Description', visible: true, width: 180 },
+    { field: 'code', title: 'Code', visible: true, width: 92 },
+    { field: 'name', title: 'Supplier', visible: true, width: 200 },
+    { field: 'city', title: 'City', visible: true, width: 120 },
+    { field: 'category', title: 'Category', visible: true, width: 170 },
   ],
-  load: ({ query }) => {
-    const statuses = [
-      { id: 'ACTIVE', description: 'Active' },
-      { id: 'HOLD', description: 'On hold' },
-      { id: 'REVIEW', description: 'Review required' },
-    ];
-    const normalizedQuery = query.trim().toLowerCase();
-    return normalizedQuery ? statuses.filter(({ id, description }) => `${id} ${description}`.toLowerCase().includes(normalizedQuery)) : statuses;
+  search: {
+    fields: ['code', 'name', 'city'],
+  },
+  mapToRow: {
+    supplierCode: 'code',
+    supplierName: 'name',
+    supplierCity: 'city',
+  },
+  load: async ({ query }) => {
+    const response = await fetch(`/api/suppliers?query=${encodeURIComponent(query)}`);
+    if (!response.ok) throw new Error(`GET /api/suppliers failed with ${response.status}`);
+
+    const body = await response.json() as { suppliers: Supplier[] };
+    return body.suppliers;
   },
 });
 
@@ -96,7 +118,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
     const initializeGrid = window.setTimeout(() => {
     if (!gridElementRef.current) return;
 
-    const statusDialog = new AMB.LookupDialog();
+    const supplierDialog = new AMB.LookupDialog();
     const tableOptions = {
       selector: gridElementRef.current,
       data: [],
@@ -107,11 +129,11 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
       columns: [
         { title: 'Item code', field: 'itemCode', minWidth: 118, editor: AMB.editors.text({ uppercase: true, trim: true }), required: true, validation: { pattern: { regex: /^ITM-[A-Z0-9]{4}$/, message: 'Use ITM-1001 format' }, unique: { caseSensitive: false, message: 'Item code must be unique' } } },
         { title: 'Product name', field: 'productName', minWidth: 210, editor: AMB.editors.text({ trim: true }), bottomCalc: () => 'Totali correnti', bottomCalcFormatter: summaryLabelFormatter, required: true, validation: { minLength: { value: 3, message: 'Enter at least 3 characters' } } },
-        { title: 'Warehouse', field: 'warehouse', minWidth: 145, editor: AMB.editors.autocomplete(warehouseOptions, { allowEmpty: false, allowCustomValue: false, placeholder: 'Choose warehouse...' }), required: true, validation: { allowedValues: { values: warehouseOptions, message: 'Choose a known warehouse' } } },
+        { title: 'Supplier', field: 'supplierCode', minWidth: 210, formatter: supplierFormatter, editor: AMB.editors.lookup(supplierLookup, { allowEmpty: false, dialog: supplierDialog, dialogTitle: 'Search supplier', searchPlaceholder: 'Search supplier...', invalidMessage: 'Unknown supplier code', autoComplete: false, showDescription: true, dialogOptions: { closeOnBackdropClick: false, destroyOnClose: true } }), required: true },
         { title: 'Stock quantity', field: 'stockQuantity', minWidth: 142, editor: AMB.editors.integer({ allowEmpty: false }), formatter: stockFormatter, bottomCalc: sumNumbers, bottomCalcFormatter: stockCalculationFormatter, required: true, validation: { integer: true, min: { value: 0, message: 'Cannot be negative' } } },
         { title: 'Unit price', field: 'unitPrice', minWidth: 118, editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }), formatter: AMB.formatters.currency(), required: true, validation: { decimal: { integerDigits: 7, decimalDigits: 2, allowNegative: false, message: 'Enter a valid price' } } },
         { title: 'Inventory value', field: 'inventoryValue', minWidth: 142, editable: false, formatter: inventoryValueFormatter, bottomCalc: sumInventoryValue, bottomCalcFormatter: inventoryValueCalculationFormatter },
-        { title: 'Status', field: 'status', minWidth: 112, editor: AMB.editors.lookup(statusLookup, { allowEmpty: false, dialog: statusDialog, dialogTitle: 'Search status', invalidMessage: 'Unknown status code', autoComplete: true, autoCompleteMinChars: 1, autoCompleteOnTab: true, showDescription: true, dialogOptions: { closeOnBackdropClick: false, destroyOnClose: true } }), formatter: statusFormatter, required: true },
+        { title: 'Status', field: 'status', minWidth: 112, editor: AMB.editors.select({ options: [{ value: 'ACTIVE', label: 'Active' }, { value: 'REVIEW', label: 'Review' }, { value: 'HOLD', label: 'On hold' }], allowEmpty: false }), formatter: statusFormatter, required: true },
         { title: 'Requires inspection', field: 'requiresInspection', minWidth: 150, hozAlign: 'center', formatter: inspectionCheckboxFormatter, editor: AMB.editors.checkbox(), bottomCalc: countInspections, bottomCalcFormatter: inspectionCalculationFormatter },
         { title: 'Last check date', field: 'lastCheckDate', minWidth: 132, editor: AMB.editors.date({ format: 'yyyy-mm-dd', allowEmpty: false, picker: true }), formatter: AMB.formatters.date('yyyy-mm-dd'), required: true, validation: { date: { format: 'yyyy-mm-dd', allowEmpty: false, message: 'Enter a valid date' } } },
         { title: 'Notes', field: 'notes', minWidth: 210, formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }), editor: AMB.editors.largeText({ title: 'Edit inventory notes', rows: 8 }) },
@@ -156,7 +178,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
       grid.off('tableBuilt', handleTableBuilt);
       removeCrudListeners.forEach((removeListener) => removeListener());
       gridRef.current?.destroy();
-      statusDialog.destroy();
+      supplierDialog.destroy();
       gridRef.current = null;
       onReady(null);
     };

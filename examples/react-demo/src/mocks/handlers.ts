@@ -1,5 +1,5 @@
 import { delay, http, HttpResponse } from 'msw';
-import { inventoryRows, type InventoryRow } from '../data/inventory';
+import { inventoryRows, suppliers, type InventoryRow } from '../data/inventory';
 
 type InsertedProduct = Omit<InventoryRow, 'id'> & { id?: number; _ambTempId?: string };
 type UpdatedProduct = { id: number; after: InventoryRow };
@@ -19,6 +19,17 @@ const cleanInsertedProduct = (product: InsertedProduct, id: number): InventoryRo
 };
 
 export const handlers = [
+  http.get('/api/suppliers', async ({ request }) => {
+    const query = new URL(request.url).searchParams.get('query')?.trim().toLocaleLowerCase() ?? '';
+    const results = !query
+      ? suppliers
+      : suppliers.filter(({ code, name, city }) => [code, name, city]
+        .some((value) => value.toLocaleLowerCase().includes(query)));
+
+    await delay(120);
+    return HttpResponse.json({ suppliers: results.map((supplier) => ({ ...supplier })) });
+  }),
+
   http.get('/api/products', async () => {
     await delay(140);
     return HttpResponse.json({ products: products.map((row) => ({ ...row })) });

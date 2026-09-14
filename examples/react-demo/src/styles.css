@@ -211,6 +211,9 @@ button, a { outline-offset: 3px; }
 .inventory-status[data-status="active"] { background: #edf8f1; border-color: #b8ddc6; color: #2e704d; }
 .inventory-status[data-status="review"] { background: #fff8e7; border-color: #e4cf96; color: #80601e; }
 .inventory-status[data-status="hold"] { background: #fbf0ee; border-color: #e0c2bd; color: #8a4b44; }
+.inventory-supplier { display: flex; flex-direction: column; gap: 3px; line-height: 1.2; }
+.inventory-supplier strong { color: #213c54; font-size: 12px; font-weight: 650; }
+.inventory-supplier small { color: #6f8291; font-size: 11px; }
 .inventory-status[data-status="active"]:hover { background: #e7f5ec; border-color: #a8d3b8; }
 .inventory-status[data-status="review"]:hover { background: #fff3d5; border-color: #d9bf78; }
 .inventory-status[data-status="hold"]:hover { background: #f8e8e5; border-color: #d6aea7; }
