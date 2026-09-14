@@ -127,6 +127,56 @@ describe('CellMessageBinder', () => {
         );
     });
 
+    test('does not restart the lookup hover delay for pointer movement within one cell', () => {
+        const harness = createHarness();
+        const target = harness.makeCell({ status: 'A' }, { lookupField: 'status' });
+        setLookupMetadata(target.row.getData(), 'status', 'A', 'Description A');
+
+        harness.tableElement.dispatch('pointermove', { target: target.cellElement });
+        harness.tableElement.dispatch('pointermove', { target: target.cellElement });
+        harness.tableElement.dispatch('pointermove', { target: target.cellElement });
+
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenCalledTimes(1);
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenCalledWith(
+            target.cellElement,
+            expect.objectContaining({ message: 'Description A' })
+        );
+    });
+
+    test('schedules once per lookup cell when the pointer changes cells', () => {
+        const harness = createHarness();
+        const a = harness.makeCell({ status: 'A' }, { lookupField: 'status' });
+        const b = harness.makeCell({ status: 'B' }, { lookupField: 'status' });
+        setLookupMetadata(a.row.getData(), 'status', 'A', 'Description A');
+        setLookupMetadata(b.row.getData(), 'status', 'B', 'Description B');
+
+        harness.tableElement.dispatch('pointermove', { target: a.cellElement });
+        harness.tableElement.dispatch('pointermove', { target: a.cellElement });
+        harness.tableElement.dispatch('pointermove', { target: b.cellElement });
+
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenCalledTimes(2);
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenLastCalledWith(
+            b.cellElement,
+            expect.objectContaining({ message: 'Description B' })
+        );
+    });
+
+    test('refreshes the active lookup cell when its metadata becomes available', () => {
+        const harness = createHarness();
+        const target = harness.makeCell({ status: 'A' }, { lookupField: 'status' });
+
+        harness.tableElement.dispatch('pointermove', { target: target.cellElement });
+        expect(harness.floatingMessage.scheduleShow).not.toHaveBeenCalled();
+
+        setLookupMetadata(target.row.getData(), 'status', 'A', 'Description A');
+        harness.binder._handleLookupMetadataInitialized();
+
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenCalledWith(
+            target.cellElement,
+            expect.objectContaining({ message: 'Description A' })
+        );
+    });
+
     test('focus without a provider hides stale content and focusout falls back to pointer', () => {
         const harness = createHarness();
         const pointer = harness.makeCell({ status: 'A' }, { lookupField: 'status' });

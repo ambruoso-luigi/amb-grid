@@ -427,7 +427,7 @@ describe('lookup metadata initialization', () => {
         expect(cellElement.dataset.lookupField).toBe('status');
     });
 
-    test('initializes lookup metadata again after dataLoaded from setData or reload', async () => {
+    test('initializes lookup metadata again after dataLoaded or dataChanged from setData, reload or replaceData', async () => {
         const lookupColumns = collectPreparedLookupColumns([
             createLookupColumn()
         ]);
@@ -453,9 +453,20 @@ describe('lookup metadata initialization', () => {
             description: 'Reserved for internal maintenance order'
         });
 
+        const replacedRow = { status: 'A001' };
+        currentRows = [createRow(replacedRow)];
+        handlers.get('dataChanged')();
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        expect(getLookupMetadata(replacedRow, 'status').current).toEqual({
+            value: 'A001',
+            description: 'Available for standard warehouse picking'
+        });
+
         unsubscribe();
         expect(table.off).toHaveBeenCalledWith('tableBuilt', expect.any(Function));
         expect(table.off).toHaveBeenCalledWith('dataLoaded', expect.any(Function));
+        expect(table.off).toHaveBeenCalledWith('dataChanged', expect.any(Function));
     });
 
     test('does not add lookup formatters to non-lookup columns', () => {

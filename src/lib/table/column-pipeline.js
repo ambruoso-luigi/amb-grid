@@ -356,13 +356,19 @@ export const bindLookupMetadataInitialization = (table, lookupColumns = []) => {
         return () => {};
     }
 
+    let active = true;
     const initialize = () => {
         initializeLookupMetadataForRows(table.getRows(), lookupColumns)
+            .then(() => {
+                if (!active || typeof table.element?.dispatchEvent !== 'function') return;
+
+                table.element.dispatchEvent(new CustomEvent('amb:lookup-metadata-initialized'));
+            })
             .catch(error => {
                 console.error('Lookup metadata initialization failed', error);
             });
     };
-    const eventNames = ['tableBuilt', 'dataLoaded'];
+    const eventNames = ['tableBuilt', 'dataLoaded', 'dataChanged'];
 
     initialize();
 
@@ -371,6 +377,7 @@ export const bindLookupMetadataInitialization = (table, lookupColumns = []) => {
     }
 
     return () => {
+        active = false;
         if (typeof table.off !== 'function') return;
 
         eventNames.forEach(eventName => table.off(eventName, initialize));

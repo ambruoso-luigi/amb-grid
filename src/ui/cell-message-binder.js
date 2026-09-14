@@ -21,6 +21,7 @@ export class CellMessageBinder {
         };
         this.validationMessages = new WeakMap();
         this.pointerCell = null;
+        this.pointerMessageKey = null;
         this.focusCell = null;
         this.activeSource = null;
         this.suspended = false;
@@ -29,11 +30,13 @@ export class CellMessageBinder {
         this.handleFocusIn = event => this._handleFocusIn(event);
         this.handleFocusOut = event => this._handleFocusOut(event);
         this.handleDocumentFocusIn = event => this._handleDocumentFocusIn(event);
+        this.handleLookupMetadataInitialized = () => this._handleLookupMetadataInitialized();
 
         this.tableElement?.addEventListener?.('pointermove', this.handlePointerMove);
         this.tableElement?.addEventListener?.('pointerleave', this.handlePointerLeave);
         this.tableElement?.addEventListener?.('focusin', this.handleFocusIn);
         this.tableElement?.addEventListener?.('focusout', this.handleFocusOut);
+        this.tableElement?.addEventListener?.('amb:lookup-metadata-initialized', this.handleLookupMetadataInitialized);
         globalThis.document?.addEventListener?.('focusin', this.handleDocumentFocusIn);
         this.unsubscribeHandlers = [
             this.crudHelper?.on?.('cell-error', payload => this._handleCellError(payload)),
@@ -93,7 +96,7 @@ export class CellMessageBinder {
     _render(cellElement, immediate) {
         if (this.suspended || !cellElement) {
             this.floatingMessage?.hide?.();
-            return;
+            return null;
         }
 
         const message = this.resolveCellMessage(cellElement);
@@ -105,16 +108,40 @@ export class CellMessageBinder {
         } else {
             this.floatingMessage?.scheduleShow?.(cellElement, message);
         }
+
+        return message;
     }
 
     _renderActive() {
-        if (this.activeSource === 'keyboard') this._render(this.focusCell, true);
-        else if (this.activeSource === 'mouse') this._render(this.pointerCell, false);
-        else this.floatingMessage?.hide?.();
+        if (this.activeSource === 'keyboard') {
+            this._render(this.focusCell, true);
+        } else if (this.activeSource === 'mouse') {
+            const message = this._render(this.pointerCell, false);
+
+            this.pointerMessageKey = this._getMessageKey(message);
+        } else {
+            this.pointerMessageKey = null;
+            this.floatingMessage?.hide?.();
+        }
+    }
+
+    _getMessageKey(message) {
+        return message
+            ? `${message.type}\u0000${message.title}\u0000${message.message}`
+            : null;
     }
 
     _handlePointerMove(event) {
         const cellElement = this._findCell(event.target);
+
+        if (
+            cellElement === this.pointerCell
+            && this.activeSource === 'mouse'
+            && !this.suspended
+            && this._getMessageKey(this.resolveCellMessage(cellElement)) === this.pointerMessageKey
+        ) {
+            return;
+        }
 
         this.pointerCell = cellElement;
         this.activeSource = cellElement ? 'mouse' : null;
@@ -124,6 +151,7 @@ export class CellMessageBinder {
 
     _handlePointerLeave() {
         this.pointerCell = null;
+        this.pointerMessageKey = null;
         if (this.activeSource !== 'mouse') return;
 
         this.activeSource = this.focusCell ? 'keyboard' : null;
@@ -163,6 +191,10 @@ export class CellMessageBinder {
         this.floatingMessage?.hide?.();
     }
 
+    _handleLookupMetadataInitialized() {
+        if (this.activeSource) this._renderActive();
+    }
+
     _handleCellError({ cell, message } = {}) {
         const cellElement = cell?.getElement?.();
 
@@ -189,8 +221,10 @@ export class CellMessageBinder {
         this.tableElement?.removeEventListener?.('pointerleave', this.handlePointerLeave);
         this.tableElement?.removeEventListener?.('focusin', this.handleFocusIn);
         this.tableElement?.removeEventListener?.('focusout', this.handleFocusOut);
+        this.tableElement?.removeEventListener?.('amb:lookup-metadata-initialized', this.handleLookupMetadataInitialized);
         globalThis.document?.removeEventListener?.('focusin', this.handleDocumentFocusIn);
         this.pointerCell = null;
+        this.pointerMessageKey = null;
         this.focusCell = null;
         this.activeSource = null;
         this.floatingMessage?.hide?.();

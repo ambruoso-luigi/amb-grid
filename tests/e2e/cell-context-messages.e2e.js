@@ -14,6 +14,9 @@ const hasFocusIndicator = target => target.evaluate(element => {
 const expectFocusIndicator = async target => {
     await expect.poll(() => hasFocusIndicator(target)).toBe(true);
 };
+const reactRow = (page, code) => page.locator('.react-demo-grid .tabulator-row').filter({ hasText: code });
+const reactCell = (page, code, field) => reactRow(page, code)
+    .locator(`.tabulator-cell[tabulator-field="${field}"]`);
 
 test.describe('contextual cell messages and large-text focus', () => {
     test.beforeEach(async ({ page }) => {
@@ -45,6 +48,22 @@ test.describe('contextual cell messages and large-text focus', () => {
 
         await cell(page, 'PRD-B004', 'status').hover();
         await expect(messageBody(page)).not.toHaveText(keyboardDescription);
+    });
+
+    test('keeps the lookup hover delay from the first movement within a status cell', async ({ page }) => {
+        const status = cell(page, 'PRD-A001', 'status');
+
+        await status.hover();
+        const box = await status.boundingBox();
+        expect(box).not.toBeNull();
+
+        for (let step = 0; step < 6; step += 1) {
+            await page.mouse.move(box.x + 12 + step, box.y + box.height / 2);
+            await page.waitForTimeout(85);
+        }
+
+        await expect(message(page)).toHaveClass(/teh-floating-message--visible/, { timeout: 100 });
+        await expect(message(page).locator('.teh-floating-message__title')).toHaveText('Description');
     });
 
     test('large-text focus, dialog trap, save and cancel preserve the focus-first contract', async ({ page }) => {
@@ -118,5 +137,39 @@ test.describe('contextual cell messages and large-text focus', () => {
         await expect.poll(() => notes.evaluate(element => (
             getComputedStyle(element).backgroundColor !== 'rgba(0, 0, 0, 0)'
         ))).toBe(true);
+    });
+});
+
+test.describe('React contextual lookup messages', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto('/#getting-started-react');
+        await expect(reactRow(page, 'ITM-1001')).toBeVisible();
+    });
+
+    test('shows stable descriptions for pointer movement, row changes and keyboard focus', async ({ page }) => {
+        const active = reactCell(page, 'ITM-1001', 'status');
+
+        await active.hover();
+        await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
+        await expect(messageBody(page)).toHaveText('Active');
+
+        const box = await active.boundingBox();
+        expect(box).not.toBeNull();
+        for (let step = 0; step < 6; step += 1) {
+            await page.mouse.move(box.x + 12 + step, box.y + box.height / 2);
+            await page.waitForTimeout(85);
+        }
+        await expect(message(page)).toHaveClass(/teh-floating-message--visible/, { timeout: 100 });
+        await expect(messageBody(page)).toHaveText('Active');
+
+        await reactCell(page, 'ITM-1003', 'status').hover();
+        await expect(messageBody(page)).toHaveText('Review required');
+        await reactCell(page, 'ITM-1005', 'status').hover();
+        await expect(messageBody(page)).toHaveText('On hold');
+
+        await active.focus();
+        await expect(active).toBeFocused();
+        await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
+        await expect(messageBody(page)).toHaveText('Active');
     });
 });
