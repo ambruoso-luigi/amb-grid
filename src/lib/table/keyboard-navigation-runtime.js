@@ -503,13 +503,17 @@ export const createKeyboardNavigationRuntime = ({
             || tableElement.contains?.(event.target);
         const previous = matchesShortcut(event, GRID_SHORTCUTS.previousPage);
         const next = matchesShortcut(event, GRID_SHORTCUTS.nextPage);
-        const action = navigationEnabled
+        const configuredAction = navigationEnabled
             ? ['up', 'down', 'left', 'right', 'edit', 'next', 'previous'].find(candidate => (
                 matchesKeyboardBinding(event, navigationOptions.bindings[candidate])
             ))
-            : ['next', 'previous'].find(candidate => (
+            : null;
+        const legacySequentialAction = !navigationEnabled
+            ? ['next', 'previous'].find(candidate => (
                 matchesKeyboardBinding(event, normalizeKeyboardNavigationOptions().bindings[candidate])
-            ));
+            ))
+            : null;
+        const action = configuredAction || legacySequentialAction;
         const isTab = action === 'next' || action === 'previous';
 
         const activeCell = getActiveNavigationCell();
@@ -524,7 +528,7 @@ export const createKeyboardNavigationRuntime = ({
         if (state === 'editing' && (enter || ['up', 'down', 'left', 'right'].includes(action))) return;
         if (enter && isManagedControlTarget(event, activeCell, activeDefinition)) return;
 
-        if (action) {
+        if (configuredAction) {
             const hookContext = {
                 action,
                 event,

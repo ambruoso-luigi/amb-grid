@@ -9,10 +9,6 @@ All notable changes to AMB Grid are documented in this file.
 - Configurable `keyboardNavigation` with four-direction spatial cell navigation.
 - Arrow navigation focuses cells without opening editors and reaches visible read-only data cells.
 
-### Changed
-
-- Default `Alt+ArrowUp`/`Alt+ArrowDown` row navigation was removed; configure those bindings explicitly when needed.
-
 ### Fixed
 
 - Kept column calculations synchronized after committed cell edits and CRUD delete/rollback state transitions.
@@ -30,6 +26,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Changed
 
+- Default `Alt+ArrowUp`/`Alt+ArrowDown` row navigation was removed; configure those bindings explicitly when needed.
 - Documented declarative `validation: { ... }` as the recommended syntax for ordinary column validation, and updated the Parser and Validation demos to use the public table controller rather than direct CRUD-layer access.
 - Renamed the managed row action configuration from `deleteColumn` to `rowActionColumn` (breaking, no compatibility alias); the removed configuration name now fails fast with a migration error. The separate `grid.deleteColumn(...)` controller method for application data columns is unchanged.
 - Extended `Tab` and `Shift+Tab` navigation across local page boundaries with predictable focus exit at absolute boundaries.

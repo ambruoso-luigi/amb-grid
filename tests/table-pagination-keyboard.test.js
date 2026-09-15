@@ -63,7 +63,7 @@ const createCandidate = ({ editable = true, activates = true, focusOnly = false,
     return candidate;
 };
 
-const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements, enabled = true } = {}) => {
+const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements, enabled = true, keyboardNavigation } = {}) => {
     const listeners = new Map();
     const keyListeners = new Map();
     const rowElement = {
@@ -118,7 +118,7 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements,
         nextPage: vi.fn(() => { currentPage += 1; return Promise.resolve(); }),
         previousPage: vi.fn(() => { currentPage -= 1; return Promise.resolve(); })
     };
-    const runtime = createKeyboardNavigationRuntime({ table, tableElement, paginationMethods, enabled });
+    const runtime = createKeyboardNavigationRuntime({ table, tableElement, paginationMethods, enabled, keyboardNavigation });
 
     return {
         table, tableElement, tableHolder, paginationMethods, runtime, rowElement,
@@ -423,7 +423,7 @@ describe('table pagination keyboard runtime', () => {
     });
 
     test('moves spatially without opening the destination editor', () => {
-        const first = createCandidate({ field: 'first' });
+        const first = createCandidate({ field: 'first', focusOnly: true });
         const readonly = createCandidate({ editable: false, field: 'readonly' });
         const last = createCandidate({ field: 'last' });
         const harness = createHarness({ cells: [first, readonly, last] });
@@ -453,6 +453,35 @@ describe('table pagination keyboard runtime', () => {
         expect(shouldHandle).not.toHaveBeenCalled();
         expect(harness.paginationMethods.nextPage).toHaveBeenCalledOnce();
         runtime.destroy();
+    });
+
+    test('keeps legacy Tab and page shortcuts isolated from disabled navigation hooks', () => {
+        const first = createCandidate({ field: 'first', focusOnly: true });
+        const second = createCandidate({ field: 'second' });
+        const shouldHandle = vi.fn(() => false);
+        const harness = createHarness({
+            cells: [first, second],
+            keyboardNavigation: normalizeKeyboardNavigationOptions({
+                enabled: false,
+                shouldHandle,
+                bindings: { next: 'Ctrl+ArrowRight', previous: 'Ctrl+ArrowLeft' }
+            })
+        });
+        globalThis.document.activeElement = first.getElement();
+
+        const tab = harness.tableElement.dispatch({ key: 'Tab', target: first.getElement() });
+        const custom = harness.tableElement.dispatch({ key: 'ArrowRight', ctrlKey: true, target: first.getElement() });
+        const arrow = harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
+        const enter = harness.tableElement.dispatch({ key: 'Enter', target: first.getElement() });
+        shortcut(harness, 'PageDown');
+
+        expect(tab.preventDefault).toHaveBeenCalledOnce();
+        expect(second.edit).toHaveBeenCalledOnce();
+        expect(custom.preventDefault).not.toHaveBeenCalled();
+        expect(arrow.preventDefault).not.toHaveBeenCalled();
+        expect(enter.preventDefault).not.toHaveBeenCalled();
+        expect(shouldHandle).not.toHaveBeenCalled();
+        expect(harness.paginationMethods.nextPage).toHaveBeenCalledOnce();
     });
 
     test('focus-only keyboard behavior remains active without pagination', () => {

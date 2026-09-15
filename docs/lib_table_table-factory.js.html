@@ -73,7 +73,8 @@ import { createFilterMethods } from './controller/filter-methods.js';
 import { createSearchMethods } from './controller/search-methods.js';
 import { createSortMethods } from './controller/sort-methods.js';
 import { createValidationMethods } from './controller/validation-methods.js';
-import { createPaginationKeyboardRuntime } from './pagination-keyboard-runtime.js';
+import { createKeyboardNavigationRuntime } from './keyboard-navigation-runtime.js';
+import { normalizeKeyboardNavigationOptions } from './keyboard-bindings.js';
 
 export {
     applyDefaultColumnAlignments,
@@ -227,6 +228,237 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * bindings, lookup and large-text helpers, search helpers, floating messages,
  * dialogs, the CRUD layer and the internally managed table engine.
  *
+ * @callback AMBGridDataGetter
+ * @param {...unknown[]} args - Engine-compatible range arguments.
+ * @returns {object[]} Current row data.
+ */
+
+/**
+ * @callback AMBGridDataCountGetter
+ * @param {...unknown[]} args - Engine-compatible range arguments.
+ * @returns {number} Number of rows in the requested range.
+ */
+
+/**
+ * @callback AMBGridEventCallback
+ * @param {...unknown[]} args - Event-specific payload.
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridOn
+ * @param {string} eventName - Public grid event name.
+ * @param {AMBGridEventCallback} callback - Event callback.
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridOff
+ * @param {string} eventName - Public grid event name.
+ * @param {AMBGridEventCallback} [callback] - Specific callback to remove.
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridCrudUnsubscribe
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridOnCrud
+ * @param {string} eventName - AMB CRUD event name.
+ * @param {AMBGridEventCallback} callback - CRUD event callback.
+ * @returns {AMBGridCrudUnsubscribe} Unsubscribe function.
+ */
+
+/**
+ * @callback AMBGridDestroy
+ * @returns {void}
+ */
+
+/**
+ * @typedef {number|'first'|'prev'|'next'|'last'} AMBPageSelector
+ */
+
+/**
+ * @callback AMBGridGetPage
+ * @returns {number|false}
+ */
+
+/**
+ * @callback AMBGridGetPageSize
+ * @returns {number}
+ */
+
+/**
+ * @callback AMBGridSetPage
+ * @param {AMBPageSelector} page - Page to display.
+ * @returns {Promise&lt;unknown>}
+ */
+
+/**
+ * @callback AMBGridChangePage
+ * @returns {Promise&lt;unknown>}
+ */
+
+/**
+ * @callback AMBGridSetPageSize
+ * @param {number} size - Number of rows to display on each page.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridSetMaxPage
+ * @param {unknown} max - Maximum page value accepted by the runtime engine.
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridSetPageToRow
+ * @param {unknown} identifier - Row identifier or lookup value.
+ * @returns {Promise&lt;unknown>}
+ */
+
+/**
+ * @callback AMBFilterCallback
+ * @param {object} data - Row data to evaluate.
+ * @param {object} [params] - Optional callback parameters.
+ * @returns {boolean}
+ */
+
+/**
+ * @typedef {object} AMBFilterDefinition
+ * @property {string} field - Field name to filter.
+ * @property {string} type - Filter comparison type.
+ * @property {unknown} value - Value to compare.
+ * @property {object} [params] - Optional filter parameters.
+ */
+
+/**
+ * @callback AMBGridGetFilters
+ * @param {...unknown[]} args - Engine-compatible filter read arguments.
+ * @returns {object[]}
+ */
+
+/**
+ * @callback AMBGridSetFilter
+ * @param {string|AMBFilterCallback|AMBFilterDefinition[]} filter - Field, custom callback, or filter definitions.
+ * @param {string|object} [typeOrParams] - Filter type for a field, or callback parameters.
+ * @param {unknown} [value] - Filter value for a field filter.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridFilterMutator
+ * @param {...unknown[]} args - Engine-compatible filter arguments.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridClearFilter
+ * @param {boolean} [includeHeaderFilters] - Also clear header filters.
+ * @returns {unknown}
+ */
+
+/**
+ * @callback AMBGridRefreshFilter
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridGetAjaxUrl
+ * @returns {string}
+ */
+
+/**
+ * @callback AMBGridDataRebase
+ * @param {...unknown[]} args - Data-loading arguments forwarded to the engine.
+ * @returns {unknown|Promise&lt;unknown>|false}
+ */
+
+/**
+ * @callback AMBGridImport
+ * @param {unknown} format - Import format.
+ * @param {unknown} accept - Accepted file types.
+ * @param {unknown} reader - File reader mode.
+ * @returns {Promise&lt;unknown>|false}
+ */
+
+/**
+ * @callback AMBGridClearData
+ * @returns {unknown|Promise&lt;unknown>|false}
+ */
+
+/**
+ * @callback AMBGridAddData
+ * @param {object[]} rowsData - Rows to add.
+ * @param {unknown} addToTop - Position flag forwarded to the engine.
+ * @param {unknown} [positionIdentifier] - Optional position identifier.
+ * @returns {Promise&lt;object[]>|false}
+ */
+
+/**
+ * @callback AMBGridUpdateData
+ * @param {object[]} rowsData - Row patches to update.
+ * @returns {Promise&lt;void>|false}
+ */
+
+/**
+ * @callback AMBGridUpdateOrAddData
+ * @param {object[]} rowsData - Rows to update or add.
+ * @returns {Promise&lt;object[]>|false}
+ */
+
+/**
+ * @callback AMBGridUpdateOrAddRow
+ * @param {unknown} identifier - Row identifier.
+ * @param {object} rowData - Row data to update or add.
+ * @returns {Promise&lt;object|null>|false}
+ */
+
+/**
+ * @callback AMBGridSearchData
+ * @param {...unknown[]} args - Engine-compatible filter arguments.
+ * @returns {object[]}
+ */
+
+/**
+ * @callback AMBGridRecalc
+ * @returns {void}
+ */
+
+/**
+ * @callback AMBGridRowHeightOperation
+ * @param {unknown} identifier - Row identifier or lookup value.
+ * @returns {boolean}
+ */
+
+/**
+ * @callback AMBGridScrollToRow
+ * @param {unknown} identifier - Row identifier or lookup value.
+ * @param {'top'|'center'|'bottom'|'nearest'} [position] - Scroll position.
+ * @param {boolean} [scrollIfVisible] - Scroll even when already visible.
+ * @returns {Promise&lt;void>}
+ */
+
+/**
+ * @callback AMBGridCellValidator
+ * @param {unknown} value - Cell value to validate.
+ * @param {object} rowData - Current row data.
+ * @param {unknown} cell - Runtime cell component.
+ * @param {CrudHelper} helper - AMB CRUD helper instance.
+ * @returns {boolean} Whether the value is valid.
+ */
+
+/**
+ * @callback AMBGridAddCellValidator
+ * @param {string} field - Cell field name.
+ * @param {string} message - Error message used when validation fails.
+ * @param {AMBGridCellValidator} validateFn - Validator callback.
+ * @returns {void}
+ */
+
+/**
  * @typedef {object} AMBTableController
  * @property {object} table - Internal table engine instance for advanced integrations. Prefer controller methods for normal usage.
  * @property {CrudHelper} crud - Advanced, compatible access to the CRUD layer. Prefer direct controller methods for normal reports and save payloads.
@@ -297,26 +529,26 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} setHeaderFilterFocus - Move focus to a column header filter.
  * @property {Function} reloadHeaderFilter - Rebuild a column's runtime header filter and re-evaluate its editor parameters.
  * @property {Function} clearHeaderFilter - Clear all column header filters.
- * @property {Function} refreshFilter - Re-run the filters currently applied to the grid.
- * @property {Function} getFilters - Return the current developer-managed filters.
- * @property {Function} addFilter - Add a programmatic filter.
- * @property {Function} setFilter - Replace the developer-managed programmatic filters.
- * @property {Function} removeFilter - Remove a programmatic filter.
- * @property {Function} clearFilter - Clear developer-managed filters while preserving global search.
+ * @property {AMBGridRefreshFilter} refreshFilter - Re-run the filters currently applied to the grid.
+ * @property {AMBGridGetFilters} getFilters - Return the current developer-managed filters.
+ * @property {AMBGridFilterMutator} addFilter - Add a programmatic filter.
+ * @property {AMBGridSetFilter} setFilter - Replace the developer-managed programmatic filters.
+ * @property {AMBGridFilterMutator} removeFilter - Remove a programmatic filter.
+ * @property {AMBGridClearFilter} clearFilter - Clear developer-managed filters while preserving global search.
  * @property {Function} getSorters - Return the current grid sorter definitions.
  * @property {Function} setSort - Apply one or more grid sorters.
  * @property {Function} clearSort - Clear the current grid sorting.
- * @property {Function} getAjaxUrl - Return the current AJAX data URL.
- * @property {Function} getData - Return the current grid row data.
- * @property {Function} getDataCount - Return the number of rows in the requested range.
- * @property {Function} setData - Replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
- * @property {Function} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
- * @property {Function} import - Import a local file and register the loaded rows as a new clean AMB Grid CRUD baseline.
- * @property {Function} addData - Add multiple managed rows through the AMB Grid CRUD lifecycle.
- * @property {Function} updateData - Partially update multiple managed rows through the AMB Grid CRUD lifecycle.
- * @property {Function} updateOrAddData - Update existing managed rows or add missing rows through the AMB Grid CRUD lifecycle.
- * @property {Function} clearData - Remove every runtime row and register an empty AMB Grid CRUD baseline.
- * @property {Function} searchData - Return row data matching a filter definition.
+ * @property {AMBGridGetAjaxUrl} getAjaxUrl - Return the current AJAX data URL.
+ * @property {AMBGridDataGetter} getData - Return the current grid row data.
+ * @property {AMBGridDataCountGetter} getDataCount - Return the number of rows in the requested range.
+ * @property {AMBGridDataRebase} setData - Replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {AMBGridDataRebase} replaceData - Silently replace the current dataset and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {AMBGridImport} import - Import a local file and register the loaded rows as a new clean AMB Grid CRUD baseline.
+ * @property {AMBGridAddData} addData - Add multiple managed rows through the AMB Grid CRUD lifecycle.
+ * @property {AMBGridUpdateData} updateData - Partially update multiple managed rows through the AMB Grid CRUD lifecycle.
+ * @property {AMBGridUpdateOrAddData} updateOrAddData - Update existing managed rows or add missing rows through the AMB Grid CRUD lifecycle.
+ * @property {AMBGridClearData} clearData - Remove every runtime row and register an empty AMB Grid CRUD baseline.
+ * @property {AMBGridSearchData} searchData - Return row data matching a filter definition.
  * @property {Function} getSheetDefinitions - Return the current spreadsheet sheet definitions.
  * @property {Function} getSheets - Return the current spreadsheet Sheet Components.
  * @property {Function} getSheet - Return one spreadsheet Sheet Component.
@@ -341,35 +573,35 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getInvalidCells - Return cells marked as invalid by the grid.
  * @property {Function} isCellEdited - Read a native edited marker independently from CRUD state and save payloads.
  * @property {Function} isCellValid - Read native runtime validation state independently from AMB Grid validation.
- * @property {Function} getChanges - Read changes currently classified by the AMB CRUD lifecycle.
- * @property {Function} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
- * @property {Function} getSavePayload - Generate the AMB save payload using the supported payload options.
- * @property {Function} addRow - Add a row through the AMB lifecycle rather than directly through the engine.
- * @property {Function} updateOrAddRow - Update one existing managed row or add a missing row through the AMB Grid CRUD lifecycle.
- * @property {Function} updateRow - Patch a row through AMB tracking and validation rather than directly through the engine.
- * @property {Function} deleteRow - Delete or mark one row deleted according to the AMB lifecycle.
- * @property {Function} rollbackRow - Restore or remove one row according to its AMB lifecycle state.
- * @property {Function} applyBackendIds - Reconcile temporary and backend ids without sending data to the backend.
- * @property {Function} markRowSaved - Confirm one row as saved without sending data to the backend.
- * @property {Function} markRowsSaved - Confirm an explicit row list as saved without sending data to the backend.
- * @property {Function} markValidChangesSaved - Confirm valid changes and return saved/skipped rows without sending data to the backend.
- * @property {Function} hasErrors - Return whether AMB CRUD currently tracks row or cell-field application errors.
- * @property {Function} getErrors - Return the grouped AMB CRUD error summary without reading native cell-validation markers.
- * @property {Function} getRowErrors - Return the currently registered AMB row-level errors.
- * @property {Function} getCellErrors - Return the currently registered AMB cell-field errors, not native Cell Components.
- * @property {Function} markCellError - Register an AMB application error for a row field without changing lifecycle state or native cell-validation markers.
- * @property {Function} clearCellError - Clear one AMB row-field error without clearing native Cell Component validation state.
- * @property {Function} markRowError - Register an AMB application error for an entire row without changing its lifecycle state.
- * @property {Function} clearRowError - Clear only an AMB row-level error, preserving cell-field errors and lifecycle state.
- * @property {Function} clearCellErrorsForRow - Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.
- * @property {Function} clearErrorsForRow - Clear every AMB application error for one row only, preserving native cell-validation markers.
- * @property {Function} onCrud - Subscribe to an AMB CRUD application event and return its unsubscribe function, distinct from engine `on`.
- * @property {Function} offCrud - Remove one specific AMB CRUD callback, distinct from engine `off`; remaining subscriptions are released on destroy.
- * @property {Function} addCellValidator - Append a runtime AMB rule for a field without immediately validating data.
- * @property {Function} removeCellValidators - Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.
- * @property {Function} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
- * @property {Function} validateChanges - Validate AMB rows with pending insert or update changes.
- * @property {Function} validateRow - Validate one AMB-managed row by backend or temporary identifier.
+ * @property {CrudHelper['getChanges']} getChanges - Read changes currently classified by the AMB CRUD lifecycle.
+ * @property {CrudHelper['getStateReport']} getStateReport - Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.
+ * @property {CrudHelper.getSavePayload} getSavePayload - Generate the AMB save payload using the supported payload options.
+ * @property {CrudHelper['addRow']} addRow - Add a row through the AMB lifecycle rather than directly through the engine.
+ * @property {AMBGridUpdateOrAddRow} updateOrAddRow - Update one existing managed row or add a missing row through the AMB Grid CRUD lifecycle.
+ * @property {CrudHelper['updateRowFields']} updateRow - Patch a row through AMB tracking and validation rather than directly through the engine.
+ * @property {CrudHelper['deleteRow']} deleteRow - Delete or mark one row deleted according to the AMB lifecycle.
+ * @property {CrudHelper['rollbackRow']} rollbackRow - Restore or remove one row according to its AMB lifecycle state.
+ * @property {CrudHelper['applyBackendIds']} applyBackendIds - Reconcile temporary and backend ids without sending data to the backend.
+ * @property {CrudHelper['markRowSaved']} markRowSaved - Confirm one row as saved without sending data to the backend.
+ * @property {CrudHelper['markRowsSaved']} markRowsSaved - Confirm an explicit row list as saved without sending data to the backend.
+ * @property {CrudHelper['markValidChangesSaved']} markValidChangesSaved - Confirm valid changes and return saved/skipped rows without sending data to the backend.
+ * @property {CrudHelper['hasErrors']} hasErrors - Return whether AMB CRUD currently tracks row or cell-field application errors.
+ * @property {CrudHelper['getErrors']} getErrors - Return the grouped AMB CRUD error summary without reading native cell-validation markers.
+ * @property {CrudHelper['getRowErrors']} getRowErrors - Return the currently registered AMB row-level errors.
+ * @property {CrudHelper['getCellErrors']} getCellErrors - Return the currently registered AMB cell-field errors, not native Cell Components.
+ * @property {CrudHelper['markCellError']} markCellError - Register an AMB application error for a row field without changing lifecycle state or native cell-validation markers.
+ * @property {CrudHelper['clearCellError']} clearCellError - Clear one AMB row-field error without clearing native Cell Component validation state.
+ * @property {CrudHelper['markRowError']} markRowError - Register an AMB application error for an entire row without changing its lifecycle state.
+ * @property {CrudHelper['clearRowError']} clearRowError - Clear only an AMB row-level error, preserving cell-field errors and lifecycle state.
+ * @property {CrudHelper['clearRowErrors']} clearCellErrorsForRow - Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.
+ * @property {CrudHelper['clearAllErrors']} clearErrorsForRow - Clear every AMB application error for one row only, preserving native cell-validation markers.
+ * @property {AMBGridOnCrud} onCrud - Subscribe to an AMB CRUD application event and return its unsubscribe function, distinct from engine `on`.
+ * @property {(eventName: string, callback: AMBGridEventCallback) => void} offCrud - Remove one specific AMB CRUD callback, distinct from engine `off`; remaining subscriptions are released on destroy.
+ * @property {AMBGridAddCellValidator} addCellValidator - Append a runtime AMB rule for a field without immediately validating data.
+ * @property {CrudHelper['removeCellValidator']} removeCellValidators - Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.
+ * @property {CrudHelper['validateAll']} validate - Validate AMB-managed rows and return the structured AMB Grid validation report.
+ * @property {CrudHelper['validateChanges']} validateChanges - Validate AMB rows with pending insert or update changes.
+ * @property {CrudHelper['validateRow']} validateRow - Validate one AMB-managed row by backend or temporary identifier.
  * @property {Function} getRows - Return row components in the requested range.
  * @property {Function} getRow - Return a row component by backend id, AMB temporary id, or supported lookup value.
  * @property {Function} getRowGroup - Return the row's runtime Group Component, or `false`.
@@ -405,8 +637,8 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getCellData - Return runtime row data in the context of one cell.
  * @property {Function} getCellType - Return the runtime type for one cell.
  * @property {Function} checkCellHeight - Check the runtime height for one cell.
- * @property {Function} normalizeRowHeight - Normalize the runtime height of one row.
- * @property {Function} reformatRow - Reapply runtime formatting for one row.
+ * @property {AMBGridRowHeightOperation} normalizeRowHeight - Normalize the runtime height of one row.
+ * @property {AMBGridRowHeightOperation} reformatRow - Reapply runtime formatting for one row.
  * @property {Function} freezeRow - Freeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} unfreezeRow - Unfreeze one row through the AMB Grid public API, changing only its runtime row position.
  * @property {Function} isRowFrozen - Return whether one row is currently frozen through the AMB Grid public API.
@@ -421,7 +653,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getRowPosition - Return the one-based position of a row.
  * @property {Function} getRowFromPosition - Return the row component at a numerical position.
  * @property {Function} moveRow - Move one managed row relative to another in a flat grid and realign technical row numbering.
- * @property {Function} scrollToRow - Scroll vertically to a grid row.
+ * @property {AMBGridScrollToRow} scrollToRow - Scroll vertically to a grid row.
  * @property {Function} searchRows - Return row components matching a filter definition.
  * @property {Function} navigatePrev - Move to the previous editable cell.
  * @property {Function} navigateNext - Move to the next editable cell.
@@ -455,15 +687,15 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} clearHistory - Clear the native interaction history without changing AMB Grid CRUD state.
  * @property {Function} undo - Undo one interaction-history action and reconcile the affected AMB Grid CRUD state.
  * @property {Function} redo - Redo one interaction-history action and reconcile the affected AMB Grid CRUD state.
- * @property {Function} getPage - Return the current page number.
- * @property {Function} getPageMax - Return the maximum available page number.
- * @property {Function} getPageSize - Return the number of rows allowed per page.
- * @property {Function} setPage - Show a numbered or named pagination page.
- * @property {Function} nextPage - Show the next page.
- * @property {Function} previousPage - Show the previous page.
- * @property {Function} setPageSize - Change the number of rows displayed on each page.
- * @property {Function} setMaxPage - Change the maximum page available to the grid.
- * @property {Function} setPageToRow - Show the local pagination page containing a row.
+ * @property {AMBGridGetPage} getPage - Return the current page number.
+ * @property {AMBGridGetPage} getPageMax - Return the maximum available page number.
+ * @property {AMBGridGetPageSize} getPageSize - Return the number of rows allowed per page.
+ * @property {AMBGridSetPage} setPage - Show a numbered or named pagination page.
+ * @property {AMBGridChangePage} nextPage - Show the next page.
+ * @property {AMBGridChangePage} previousPage - Show the previous page.
+ * @property {AMBGridSetPageSize} setPageSize - Change the number of rows displayed on each page.
+ * @property {AMBGridSetMaxPage} setMaxPage - Change the maximum page available to the grid.
+ * @property {AMBGridSetPageToRow} setPageToRow - Show the local pagination page containing a row.
  * @property {Function} alert - Show a modal alert over the grid.
  * @property {Function} clearAlert - Clear the current modal grid alert.
  * @property {Function} getHtml - Return grid data as an HTML table string.
@@ -476,7 +708,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} getCalcElement - Return the runtime DOM element for one calculation row.
  * @property {Function} getCalcCells - Return runtime Cell Components for one calculation row.
  * @property {Function} getCalcCell - Return one runtime Cell Component from a calculation row.
- * @property {Function} recalc - Recalculate the configured column calculations.
+ * @property {AMBGridRecalc} recalc - Recalculate the configured column calculations.
  * @property {Function} setLocale - Change the locale used by the grid.
  * @property {Function} getLocale - Return the current resolved grid locale.
  * @property {Function} getLang - Return the current runtime language definition.
@@ -488,9 +720,176 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {Function} restoreRedraw - Restore automatic redraws.
  * @property {object|null} toolbar - Optional AMB CRUD toolbar controller.
  * @property {FeedbackRegion} feedback - Accessible grid status region.
- * @property {Function} on - Subscribe an application callback to a public grid event.
- * @property {Function} off - Remove application listeners while preserving AMB Grid internal bindings.
- * @property {Function} destroy - Destroy the complete AMB-managed grid and its internally managed resources.
+ * @property {AMBGridOn} on - Subscribe an application callback to a public grid event.
+ * @property {AMBGridOff} off - Remove application listeners while preserving AMB Grid internal bindings.
+ * @property {AMBGridDestroy} destroy - Destroy the complete AMB-managed grid and its internally managed resources.
+ */
+
+/**
+ * @typedef {object} AMBPaginationOptions
+ * @property {boolean} [enabled=true] - Enable AMB object-style pagination.
+ * @property {'local'|'remote'} [mode='local'] - Engine pagination mode.
+ * @property {number} [pageSize=10] - Engine page size.
+ * @property {number[]} [pageSizeSelector] - Engine page-size choices.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnActions
+ * @property {boolean} [delete=true] - Show delete for clean and saved rows.
+ * @property {boolean} [rollback=true] - Show rollback for modified and deleted rows.
+ * @property {boolean} [removeNew=true] - Show remove for new rows.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnIcons
+ * @property {string} [delete] - Custom delete button text or icon.
+ * @property {string} [rollback] - Custom rollback button text or icon.
+ * @property {string} [removeNew] - Custom remove-new button text or icon.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnLabels
+ * @property {string} [delete='Delete row'] - Delete button label.
+ * @property {string} [rollback='Rollback row'] - Rollback button label.
+ * @property {string} [removeNew='Remove new row'] - Remove-new button label.
+ */
+
+/**
+ * @typedef {object} AMBRowActionColumnOptions
+ * @property {boolean} [enabled=false] - Add the managed row action column.
+ * @property {number} [width=55] - Row action column width.
+ * @property {AMBRowActionColumnActions} [actions] - Action visibility flags.
+ * @property {AMBRowActionColumnIcons} [icons] - Custom action button text or icon overrides.
+ * @property {AMBRowActionColumnLabels} [labels] - Action button aria-label overrides.
+ * @property {string} [confirmDeleteMessage] - Confirmation text before deleting a clean row.
+ * @property {string} [confirmRollbackMessage] - Confirmation text before rolling back a changed row.
+ * @property {string} [confirmRemoveNewMessage] - Confirmation text before removing an unsaved row.
+ * @property {Function} [confirmProvider] - Custom async confirmation function.
+ */
+
+/**
+ * @typedef {object} AMBSelectionColumnOptions
+ * @property {boolean} [enabled=false] - Add a row selection column.
+ * @property {'single'|'multiple'} [mode='multiple'] - Selection mode.
+ * @property {number} [width=45] - Selection column width.
+ */
+
+/**
+ * @typedef {object} AMBSearchFilterOptions
+ * @property {boolean} [enabled=false] - Show the filters button.
+ */
+
+/**
+ * @typedef {object} AMBSearchOptions
+ * @property {boolean} [enabled=false] - Show the search toolbar.
+ * @property {string} [placeholder='Search...'] - Search input placeholder.
+ * @property {boolean} [caseSensitive=false] - Match search text with case sensitivity.
+ * @property {boolean} [wholeWord=false] - Match the query as a complete word or phrase.
+ * @property {AMBSearchFilterOptions} [filters] - Search field filter options.
+ */
+
+/**
+ * @typedef {object} AMBFloatingMessagesOptions
+ * @property {boolean} [enabled=true] - Enable all floating message channels.
+ * @property {boolean} [lookupDescriptions=true] - Show lookup descriptions for pointer or keyboard focus.
+ * @property {boolean} [validationErrors=true] - Show validation errors for pointer or keyboard focus.
+ * @property {boolean} [largeTextPreviews=true] - Show large-text previews for pointer or keyboard focus.
+ * @property {boolean} [searchFilterStatus=true] - Show search filter status hover messages.
+ */
+
+/**
+ * @typedef {object} AMBToolbarOptions
+ * @property {boolean} [enabled=true] - Render the toolbar.
+ * @property {Array.&lt;string|object>} [buttons=['add','reload','save']] - Built-in ids or simple custom button definitions.
+ * @property {Function} [onAdd] - Developer callback receiving `{ grid, event }`.
+ * @property {Function} [onSave] - Developer callback receiving `{ grid, payload, event }`.
+ * @property {Function} [onReload] - Developer callback receiving `{ grid, event }`.
+ * @property {Function} [onValidate] - Developer callback receiving `{ grid, event }`.
+ * @property {Function} [onPayload] - Developer callback receiving `{ grid, payload, event }`.
+ */
+
+/**
+ * @typedef {object} AMBTableMessages
+ * @property {string} [required='This field is required'] - Default required message.
+ */
+
+/**
+ * @typedef {object} AMBErrorStyleOptions
+ * @property {boolean} [highlightRowOnCellError=false] - Mark a row when one of its cells has an error.
+ */
+
+/**
+ * @callback AMBGroupByFunction
+ * @param {object} data - Row data.
+ * @returns {unknown} Group key.
+ */
+
+/**
+ * @typedef {{[key: string]: unknown}} AMBTablePassthroughOptions
+ */
+
+/**
+ * @typedef {object} AMBKeyboardNavigationBindings
+ * @property {string} [up='ArrowUp']
+ * @property {string} [down='ArrowDown']
+ * @property {string} [left='ArrowLeft']
+ * @property {string} [right='ArrowRight']
+ * @property {string} [edit='Enter']
+ * @property {string} [next='Tab']
+ * @property {string} [previous='Shift+Tab']
+ */
+
+/** @typedef {'up'|'down'|'left'|'right'|'edit'|'next'|'previous'} AMBKeyboardNavigationAction */
+/** @typedef {'navigation'|'editing'|'auxiliary'} AMBKeyboardNavigationState */
+/**
+ * @typedef {object} AMBKeyboardNavigationContext
+ * @property {AMBKeyboardNavigationAction} action
+ * @property {KeyboardEvent} event
+ * @property {AMBKeyboardNavigationState} state
+ * @property {object} cell
+ * @property {object} row
+ * @property {object} column
+ * @property {AMBTableController} grid
+ */
+
+/**
+ * @typedef {object} AMBKeyboardNavigationOptions
+ * @property {boolean} [enabled=true] Enables configurable spatial navigation and edit bindings. When false, historical Tab/Shift+Tab and Alt+Page shortcuts remain, while custom bindings and hooks are disabled.
+ * @property {AMBKeyboardNavigationBindings} [bindings] Exact key bindings.
+ * @property {(context: AMBKeyboardNavigationContext) => boolean} [shouldHandle] Called only while enabled for configurable actions; false leaves the event untouched. It is not called for page shortcuts or legacy Tab flow.
+ * @property {(context: AMBKeyboardNavigationContext &amp; {direction: 'up'|'down'|'left'|'right'}) => object|undefined|null} [resolveNavigation] Supplies a same-grid directional destination. Null or invalid cells use geometry; thrown errors propagate.
+ */
+
+/**
+ * Public options accepted by `AMB.table(...)`.
+ *
+ * Known AMB Grid options remain typed. Additional options are passed through
+ * to the internal table engine as `unknown`, keeping that implementation an
+ * internal detail of the AMB Grid public API.
+ *
+ * @typedef {AMBTablePassthroughOptions &amp; {
+ *   selector: string|HTMLElement,
+ *   data?: object[],
+ *   columns?: object[],
+ *   pagination?: boolean|AMBPaginationOptions,
+ *   keyboardNavigation?: AMBKeyboardNavigationOptions,
+ *   rowActionColumn?: AMBRowActionColumnOptions,
+ *   selectionColumn?: AMBSelectionColumnOptions,
+ *   search?: AMBSearchOptions,
+ *   floatingMessages?: boolean|AMBFloatingMessagesOptions,
+ *   toolbar?: boolean|AMBToolbarOptions,
+ *   messages?: AMBTableMessages,
+ *   errorStyle?: AMBErrorStyleOptions,
+ *   layout?: 'fitData'|'fitColumns'|'fitDataFill'|'fitDataStretch'|'fitDataTable',
+ *   height?: string|number|false,
+ *   history?: boolean,
+ *   groupBy?: string|string[]|AMBGroupByFunction|Array.&lt;string|AMBGroupByFunction>,
+ *   responsiveLayout?: boolean|'hide'|'collapse',
+ *   movableColumns?: boolean,
+ *   paginationMode?: 'local'|'remote',
+ *   paginationSize?: number|true,
+ *   paginationSizeSelector?: true|number[]
+ * }} AMBTableOptions
  */
 
 /**
@@ -542,60 +941,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * to focus the first editable visible data cell. Action columns are not
  * candidates for automatic focus.
  *
- * @param {object} options - AMB Grid options, including supported internal-engine configuration.
- * @param {string|HTMLElement} options.selector - CSS selector or element used to mount the grid.
- * @param {object[]} [options.data] - Initial row data.
- * @param {object[]} [options.columns] - Grid column definitions. For normal AMB rules, use the recommended `validation` configuration; legacy `required`/`requiredMessage` and direct `validator` composition remain supported.
- * @param {boolean|object} [options.pagination] - Boolean pagination configuration or AMB object-style pagination convenience.
- * @param {boolean} [options.pagination.enabled=true] - Enable pagination when using AMB object-style pagination.
- * @param {'local'|'remote'} [options.pagination.mode='local'] - Pagination mode delegated to the underlying table engine as `paginationMode`.
- * @param {number} [options.pagination.pageSize=10] - Page size delegated to the underlying table engine as `paginationSize`.
- * @param {number[]} [options.pagination.pageSizeSelector] - Page size options delegated to the underlying table engine as `paginationSizeSelector`.
- * @param {object} [options.rowActionColumn] - Optional managed row action column.
- * @param {boolean} [options.rowActionColumn.enabled=false] - Add the managed row action column.
- * @param {object} [options.rowActionColumn.actions] - Action visibility flags.
- * @param {boolean} [options.rowActionColumn.actions.delete=true] - Show delete for clean/saved rows.
- * @param {boolean} [options.rowActionColumn.actions.rollback=true] - Show rollback for modified/deleted rows.
- * @param {boolean} [options.rowActionColumn.actions.removeNew=true] - Show remove for new rows.
- * @param {object} [options.rowActionColumn.icons] - Optional custom action button text/icon overrides; without an override AMB renders built-in SVG icons.
- * @param {string} [options.rowActionColumn.icons.delete] - Custom delete button text/icon.
- * @param {string} [options.rowActionColumn.icons.rollback] - Custom rollback button text/icon.
- * @param {string} [options.rowActionColumn.icons.removeNew] - Custom remove new-row button text/icon.
- * @param {object} [options.rowActionColumn.labels] - Action button aria-label overrides.
- * @param {string} [options.rowActionColumn.labels.delete='Delete row'] - Delete button aria-label.
- * @param {string} [options.rowActionColumn.labels.rollback='Rollback row'] - Rollback button aria-label.
- * @param {string} [options.rowActionColumn.labels.removeNew='Remove new row'] - Remove new-row button aria-label.
- * @param {string} [options.rowActionColumn.confirmDeleteMessage] - Confirmation text before deleting a clean row.
- * @param {string} [options.rowActionColumn.confirmRollbackMessage] - Confirmation text before rolling back a changed row.
- * @param {string} [options.rowActionColumn.confirmRemoveNewMessage] - Confirmation text before removing an unsaved row.
- * @param {Function} [options.rowActionColumn.confirmProvider] - Custom async confirmation function.
- * @param {object} [options.selectionColumn] - Optional row selection column.
- * @param {boolean} [options.selectionColumn.enabled=false] - Add a row selection column.
- * @param {'single'|'multiple'} [options.selectionColumn.mode='multiple'] - Selection mode.
- * @param {number} [options.selectionColumn.width=45] - Selection column width.
- * @param {object} [options.search] - Optional client-side search toolbar.
- * @param {boolean} [options.search.enabled=false] - Show the search toolbar.
- * @param {string} [options.search.placeholder='Search...'] - Search input placeholder.
- * @param {boolean} [options.search.caseSensitive=false] - Match search text with case sensitivity.
- * @param {boolean} [options.search.wholeWord=false] - Match the query as a complete word or phrase.
- * @param {object} [options.search.filters] - Search field filter options.
- * @param {boolean} [options.search.filters.enabled=false] - Show the filters button.
- * @param {boolean|object} [options.floatingMessages] - Contextual cell message options. Set `false` to disable all `teh-floating-message` output.
- * @param {boolean} [options.floatingMessages.enabled=true] - Enable all floating message channels.
- * @param {boolean} [options.floatingMessages.lookupDescriptions=true] - Show lookup descriptions for pointer or keyboard focus.
- * @param {boolean} [options.floatingMessages.validationErrors=true] - Show validation errors for pointer or keyboard focus.
- * @param {boolean} [options.floatingMessages.largeTextPreviews=true] - Show large-text previews for pointer or keyboard focus.
- * @param {boolean} [options.floatingMessages.searchFilterStatus=true] - Show search filter status hover messages.
- * @param {boolean|object} [options.toolbar=true] - Backend-agnostic CRUD toolbar. Set `false` to disable.
- * @param {boolean} [options.toolbar.enabled=true] - Render the toolbar.
- * @param {Array.&lt;string|object>} [options.toolbar.buttons=['add','reload','save']] - Built-in ids or simple custom button definitions.
- * @param {Function} [options.toolbar.onAdd] - Developer callback receiving `{ grid, event }`.
- * @param {Function} [options.toolbar.onSave] - Developer callback receiving `{ grid, payload, event }`.
- * @param {Function} [options.toolbar.onReload] - Developer callback receiving `{ grid, event }`.
- * @param {Function} [options.toolbar.onValidate] - Developer callback receiving `{ grid, event }`.
- * @param {Function} [options.toolbar.onPayload] - Developer callback receiving `{ grid, payload, event }`.
- * @param {object} [options.messages] - Shared UI and validation messages.
- * @param {string} [options.messages.required='This field is required'] - Default required message.
+ * @param {AMBTableOptions} options - AMB Grid options and supported internal-engine passthrough configuration.
  * @returns {AMBTableController} AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.
  *
  * Underscored fields on the returned controller are internal integration
@@ -629,6 +975,7 @@ export function createTable(options = {}) {
         toolbar,
         floatingMessages,
         errorStyle,
+        keyboardNavigation,
         ...tabulatorOptions
     } = options;
     const normalizedFloatingMessages = normalizeFloatingMessageOptions(floatingMessages);
@@ -637,6 +984,7 @@ export function createTable(options = {}) {
         ...messages
     };
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
+    const normalizedKeyboardNavigation = normalizeKeyboardNavigationOptions(keyboardNavigation);
     let crud = null;
     let controller = null;
     let table = null;
@@ -671,7 +1019,7 @@ export function createTable(options = {}) {
         historyRuntime: null,
         searchController: null,
         feedback: null,
-        paginationKeyboardRuntime: null
+        keyboardNavigationRuntime: null
     };
 
     if (selectionColumnController) {
@@ -745,11 +1093,13 @@ export function createTable(options = {}) {
         columnMethods
     });
     const paginationMethods = createPaginationMethods({ table, crud });
-    lifecycleResources.paginationKeyboardRuntime = createPaginationKeyboardRuntime({
+    lifecycleResources.keyboardNavigationRuntime = createKeyboardNavigationRuntime({
         table,
         tableElement,
         paginationMethods,
-        enabled: normalizedOptions.pagination === true
+        enabled: normalizedOptions.pagination === true,
+        keyboardNavigation: normalizedKeyboardNavigation,
+        getGrid: () => controller
     });
     const selectionMethods = createSelectionMethods({
         table,
@@ -893,13 +1243,13 @@ export function createTable(options = {}) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addColumn">addColumn</a></li><li><a href="global.html#addData">addData</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#addTreeChild">addTreeChild</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearData">clearData</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createRowActionColumn">createRowActionColumn</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteColumn">deleteColumn</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#import">import</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#moveRow">moveRow</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redo">redo</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#replaceData">replaceData</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setColumns">setColumns</a></li><li><a href="global.html#setData">setData</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#undo">undo</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateColumnDefinition">updateColumnDefinition</a></li><li><a href="global.html#updateData">updateData</a></li><li><a href="global.html#updateOrAddData">updateOrAddData</a></li><li><a href="global.html#updateOrAddRow">updateOrAddRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addColumn">addColumn</a></li><li><a href="global.html#addData">addData</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#addTreeChild">addTreeChild</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearData">clearData</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createRowActionColumn">createRowActionColumn</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteColumn">deleteColumn</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#focusNavigationCandidate">focusNavigationCandidate</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#import">import</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#moveRow">moveRow</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeKeyboardNavigationOptions">normalizeKeyboardNavigationOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redo">redo</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#replaceData">replaceData</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setColumns">setColumns</a></li><li><a href="global.html#setData">setData</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#undo">undo</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateColumnDefinition">updateColumnDefinition</a></li><li><a href="global.html#updateData">updateData</a></li><li><a href="global.html#updateOrAddData">updateOrAddData</a></li><li><a href="global.html#updateOrAddRow">updateOrAddRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Sep 08 2026 17:57:49 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Sep 15 2026 22:57:18 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

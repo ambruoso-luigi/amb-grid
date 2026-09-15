@@ -349,6 +349,9 @@ popup/action cells, and non-data interactive columns:
 * `keyboardNavigation.shouldHandle(context)` can return `false` to leave an
   action untouched. `resolveNavigation(context)` may supply a directional
   destination; invalid results fall back to normal geometry.
+* Set `keyboardNavigation.enabled` to `false` to disable configurable arrows,
+  edit bindings, custom sequential bindings and hooks while retaining the
+  historical `Tab`/`Shift+Tab` flow and `Alt+PageUp`/`Alt+PageDown` shortcuts.
 * The standard selection column participates in cell navigation. `Enter` and
   `Space` toggle row selection; `1`/`S`/`Y` select and `0`/`N` deselect. When
   enabled, row selection is available exclusively through its checkbox, so

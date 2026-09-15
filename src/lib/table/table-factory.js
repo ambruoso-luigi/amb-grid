@@ -801,11 +801,35 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {object} AMBKeyboardNavigationBindings
+ * @property {string} [up='ArrowUp']
+ * @property {string} [down='ArrowDown']
+ * @property {string} [left='ArrowLeft']
+ * @property {string} [right='ArrowRight']
+ * @property {string} [edit='Enter']
+ * @property {string} [next='Tab']
+ * @property {string} [previous='Shift+Tab']
+ */
+
+/** @typedef {'up'|'down'|'left'|'right'|'edit'|'next'|'previous'} AMBKeyboardNavigationAction */
+/** @typedef {'navigation'|'editing'|'auxiliary'} AMBKeyboardNavigationState */
+/**
+ * @typedef {object} AMBKeyboardNavigationContext
+ * @property {AMBKeyboardNavigationAction} action
+ * @property {KeyboardEvent} event
+ * @property {AMBKeyboardNavigationState} state
+ * @property {object} cell
+ * @property {object} row
+ * @property {object} column
+ * @property {AMBTableController} grid
+ */
+
+/**
  * @typedef {object} AMBKeyboardNavigationOptions
- * @property {boolean} [enabled=true] Enables AMB directional navigation.
- * @property {{up?: string, down?: string, left?: string, right?: string, edit?: string, next?: string, previous?: string}} [bindings] Exact key bindings.
- * @property {(context: {action: string, event: KeyboardEvent, state: 'navigation'|'editing'|'auxiliary', cell: object, row: object, column: object, grid: object}) => boolean} [shouldHandle] Returns false to leave a matching key untouched.
- * @property {(context: {direction: 'up'|'down'|'left'|'right', cell: object, row: object, column: object, grid: object}) => object|undefined|null} [resolveNavigation] Optionally returns a destination cell.
+ * @property {boolean} [enabled=true] Enables configurable spatial navigation and edit bindings. When false, historical Tab/Shift+Tab and Alt+Page shortcuts remain, while custom bindings and hooks are disabled.
+ * @property {AMBKeyboardNavigationBindings} [bindings] Exact key bindings.
+ * @property {(context: AMBKeyboardNavigationContext) => boolean} [shouldHandle] Called only while enabled for configurable actions; false leaves the event untouched. It is not called for page shortcuts or legacy Tab flow.
+ * @property {(context: AMBKeyboardNavigationContext & {direction: 'up'|'down'|'left'|'right'}) => object|undefined|null} [resolveNavigation] Supplies a same-grid directional destination. Null or invalid cells use geometry; thrown errors propagate.
  */
 
 /**
