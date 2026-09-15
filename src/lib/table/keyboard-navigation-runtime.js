@@ -1,9 +1,11 @@
 import {
     focusCellWithoutEditing,
+    focusNavigationCandidate,
     isEditableCandidate,
     navigateToCandidate
 } from '../editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from './keyboard-shortcuts.js';
+import { matchesKeyboardBinding, normalizeKeyboardNavigationOptions } from './keyboard-bindings.js';
 import { getAmbColumnMetadata } from './column-metadata.js';
 import {
     focusAdjacentOutsideGrid,
@@ -56,7 +58,7 @@ const isCandidateActuallyActive = candidate => {
 };
 
 /**
- * Coordinates global keyboard navigation for a paginated grid.
+ * Coordinates all AMB Grid keyboard navigation for a paginated grid.
  *
  * Page transitions wait for both the page Promise and the new-page render,
  * stabilize virtual rows, activate the requested destination, and release all
@@ -73,15 +75,19 @@ const isCandidateActuallyActive = candidate => {
  * @private
  * @internal
  */
-export const createPaginationKeyboardRuntime = ({
+export const createKeyboardNavigationRuntime = ({
     tableElement,
     table,
     paginationMethods,
-    enabled
+    enabled,
+    keyboardNavigation,
+    getGrid = () => null
 }) => {
     if (!tableElement) return { destroy() {} };
 
     const paginationEnabled = enabled === true;
+    const navigationOptions = keyboardNavigation || normalizeKeyboardNavigationOptions();
+    const navigationEnabled = navigationOptions.enabled !== false;
 
     let transitionInProgress = false;
     let verticalNavigationInProgress = false;
@@ -218,6 +224,24 @@ export const createPaginationKeyboardRuntime = ({
         }
 
         return rows.slice((page - 1) * pageSize, page * pageSize);
+    };
+
+    const isNavigationCandidate = candidate => {
+        const element = candidate?.getElement?.();
+        const rowElement = element?.closest?.('.tabulator-row');
+        const definition = candidate?.getColumn?.()?.getDefinition?.() || {};
+        const metadata = getAmbColumnMetadata(definition);
+        if (!element || !isDataRowElement(rowElement)) return false;
+        if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
+        if (metadata.interactive) {
+            return Boolean(definition.editor || (metadata.focusSelector && element.querySelector?.(metadata.focusSelector)));
+        }
+        return true;
+    };
+
+    const isValidNavigationCell = candidate => {
+        if (!isNavigationCandidate(candidate)) return false;
+        return candidate?.getElement?.()?.closest?.('.tabulator') === tableElement;
     };
 
     const getEditingCell = editingElement => {
@@ -419,85 +443,79 @@ export const createPaginationKeyboardRuntime = ({
         }
     };
 
-    const navigateVertical = ({ cell: currentCell, direction }) => {
-        if (!currentCell || destroyed) return false;
-
-        const field = currentCell.getField?.();
-        const currentRow = currentCell.getRow?.();
+    const getSpatialDestination = (currentCell, direction) => {
+        const row = currentCell?.getRow?.();
+        const cells = row?.getCells?.() || [];
+        const cellIndex = cells.indexOf(currentCell);
+        if (cellIndex === -1) return null;
+        if (direction === 'left' || direction === 'right') {
+            const step = direction === 'left' ? -1 : 1;
+            return cells[cellIndex + step] || null;
+        }
         const pageRows = getCurrentPageRows();
-        const rowIndex = pageRows.indexOf(currentRow);
+        const rowIndex = pageRows.indexOf(row);
+        const targetRow = pageRows[rowIndex + (direction === 'up' ? -1 : 1)];
+        if (!targetRow) return null;
+        const field = currentCell.getField?.();
+        return targetRow.getCell?.(field) || targetRow.getCells?.().find(cell => cell.getField?.() === field) || null;
+    };
 
-        if (!field || rowIndex === -1) return false;
-        if (verticalNavigationInProgress) return true;
-
-        const step = direction === 'prev' ? -1 : 1;
-        const targetRow = pageRows[rowIndex + step];
-
-        if (targetRow) {
-            const targetCell = targetRow.getCell?.(field)
-                || targetRow.getCells?.().find(cell => cell.getField?.() === field);
-
-            if (!isEditableCandidate(targetCell)) return true;
-            verticalNavigationInProgress = true;
-            const currentElement = currentCell.getElement?.();
-            const closeSourceEditor = currentElement?.classList?.contains?.('tabulator-editing')
-                ? () => closeActiveEditorAndWait(currentCell)
-                : () => Promise.resolve(true);
-            void closeSourceEditor()
-                .then(async closed => {
-                    if (!closed || destroyed) return;
-
-                    await activateCandidate(targetCell);
-                })
-                .finally(() => { verticalNavigationInProgress = false; });
-            return true;
-        }
-
-        const page = paginationMethods.getPage();
-        const pageMax = paginationMethods.getPageMax();
-        const canChangePage = direction === 'prev' ? page > 1 : page < pageMax;
-
-        if (canChangePage) {
-            void transitionPage({
-                direction,
-                destination: {
-                    edge: direction === 'prev' ? 'last' : 'first',
-                    field
-                }
-            });
-        }
-
+    const navigateSpatially = (currentCell, direction) => {
+        if (!currentCell || destroyed) return false;
+        const context = {
+            direction,
+            cell: currentCell,
+            row: currentCell.getRow?.(),
+            column: currentCell.getColumn?.(),
+            grid: getGrid()
+        };
+        let destination;
+        try { destination = navigationOptions.resolveNavigation?.(context); } catch { destination = null; }
+        if (!isValidNavigationCell(destination)) destination = getSpatialDestination(currentCell, direction);
+        if (!isNavigationCandidate(destination)) return true;
+        focusNavigationCandidate(destination);
         return true;
     };
 
     const unregisterCoordinator = registerPageNavigationCoordinator(table, { transitionPage });
 
-    const handleVerticalNavigation = direction => {
-        const currentCell = getActiveNavigationCell();
-
-        return navigateVertical({ cell: currentCell, direction });
-    };
 
     const handleKeydown = event => {
         const isInsideTable = event.target === tableElement
             || tableElement.contains?.(event.target);
         const previous = matchesShortcut(event, GRID_SHORTCUTS.previousPage);
         const next = matchesShortcut(event, GRID_SHORTCUTS.nextPage);
-        const verticalUp = matchesShortcut(event, GRID_SHORTCUTS.previousRow);
-        const verticalDown = matchesShortcut(event, GRID_SHORTCUTS.nextRow);
-        const isTab = event.key === 'Tab'
-            && !event.altKey
-            && !event.ctrlKey
-            && !event.metaKey;
+        const action = navigationEnabled
+            ? ['up', 'down', 'left', 'right', 'edit', 'next', 'previous'].find(candidate => (
+                matchesKeyboardBinding(event, navigationOptions.bindings[candidate])
+            ))
+            : null;
+        const isTab = action === 'next' || action === 'previous';
 
         const activeCell = getActiveNavigationCell();
         const activeDefinition = activeCell?.getColumn?.()?.getDefinition?.() || {};
         const focusOnly = getAmbColumnMetadata(activeDefinition).keyboardFocusOnly === true;
-        const enter = event.key === 'Enter' && focusOnly;
+        const enter = action === 'edit';
 
-        if (!isInsideTable || (!previous && !next && !verticalUp && !verticalDown && !isTab && !enter)) return;
+        if (!isInsideTable || (!previous && !next && !action)) return;
+
+        const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
+        const state = editingElement ? 'editing' : 'navigation';
+        const hookContext = {
+            action,
+            event,
+            state,
+            cell: activeCell,
+            row: activeCell?.getRow?.(),
+            column: activeCell?.getColumn?.(),
+            grid: getGrid()
+        };
+        if (navigationOptions.shouldHandle?.(hookContext) === false) return;
+
+        if (state === 'editing' && ['up', 'down', 'left', 'right'].includes(action)) return;
 
         if (enter) {
+            if (!activeCell || !isEditableCandidate(activeCell)) return;
             event.preventDefault();
             event.stopPropagation?.();
             event.stopImmediatePropagation?.();
@@ -505,8 +523,8 @@ export const createPaginationKeyboardRuntime = ({
             return;
         }
 
-        if (verticalUp || verticalDown) {
-            const handled = handleVerticalNavigation(verticalUp ? 'prev' : 'next');
+        if (['up', 'down', 'left', 'right'].includes(action)) {
+            const handled = navigateSpatially(activeCell, action);
 
             if (!handled) return;
 
@@ -517,7 +535,6 @@ export const createPaginationKeyboardRuntime = ({
         }
 
         if (isTab) {
-            const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
             const candidates = getRenderedRows('first')
                 .flatMap(row => row.getCells())
                 .filter(isEditableCandidate);
@@ -526,7 +543,7 @@ export const createPaginationKeyboardRuntime = ({
                 || candidate.getElement?.() === editingElement
                 || candidate.getElement?.() === activeCell?.getElement?.()
             ));
-            const direction = event.shiftKey ? 'prev' : 'next';
+            const direction = action === 'previous' ? 'prev' : 'next';
             const atPageBoundary = direction === 'prev'
                 ? currentIndex === 0
                 : currentIndex === candidates.length - 1;

@@ -6,6 +6,15 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Added
 
+- Configurable `keyboardNavigation` with four-direction spatial cell navigation.
+- Arrow navigation focuses cells without opening editors and reaches visible read-only data cells.
+
+### Changed
+
+- Default `Alt+ArrowUp`/`Alt+ArrowDown` row navigation was removed; configure those bindings explicitly when needed.
+
+### Added
+
 - Added global keyboard shortcuts for page navigation and same-column vertical navigation.
 - Added contextual cell messages that follow both pointer movement and keyboard focus, with validation errors taking priority over descriptions and previews.
 

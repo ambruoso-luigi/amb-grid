@@ -45,7 +45,8 @@ import { createFilterMethods } from './controller/filter-methods.js';
 import { createSearchMethods } from './controller/search-methods.js';
 import { createSortMethods } from './controller/sort-methods.js';
 import { createValidationMethods } from './controller/validation-methods.js';
-import { createPaginationKeyboardRuntime } from './pagination-keyboard-runtime.js';
+import { createKeyboardNavigationRuntime } from './keyboard-navigation-runtime.js';
+import { normalizeKeyboardNavigationOptions } from './keyboard-bindings.js';
 
 export {
     applyDefaultColumnAlignments,
@@ -800,6 +801,14 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {object} AMBKeyboardNavigationOptions
+ * @property {boolean} [enabled=true] Enables AMB directional navigation.
+ * @property {{up?: string, down?: string, left?: string, right?: string, edit?: string, next?: string, previous?: string}} [bindings] Exact key bindings.
+ * @property {(context: {action: string, event: KeyboardEvent, state: 'navigation'|'editing'|'auxiliary', cell: object, row: object, column: object, grid: object}) => boolean} [shouldHandle] Returns false to leave a matching key untouched.
+ * @property {(context: {direction: 'up'|'down'|'left'|'right', cell: object, row: object, column: object, grid: object}) => object|undefined|null} [resolveNavigation] Optionally returns a destination cell.
+ */
+
+/**
  * Public options accepted by `AMB.table(...)`.
  *
  * Known AMB Grid options remain typed. Additional options are passed through
@@ -811,6 +820,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  *   data?: object[],
  *   columns?: object[],
  *   pagination?: boolean|AMBPaginationOptions,
+ *   keyboardNavigation?: AMBKeyboardNavigationOptions,
  *   rowActionColumn?: AMBRowActionColumnOptions,
  *   selectionColumn?: AMBSelectionColumnOptions,
  *   search?: AMBSearchOptions,
@@ -913,6 +923,7 @@ export function createTable(options = {}) {
         toolbar,
         floatingMessages,
         errorStyle,
+        keyboardNavigation,
         ...tabulatorOptions
     } = options;
     const normalizedFloatingMessages = normalizeFloatingMessageOptions(floatingMessages);
@@ -921,6 +932,7 @@ export function createTable(options = {}) {
         ...messages
     };
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
+    const normalizedKeyboardNavigation = normalizeKeyboardNavigationOptions(keyboardNavigation);
     let crud = null;
     let controller = null;
     let table = null;
@@ -955,7 +967,7 @@ export function createTable(options = {}) {
         historyRuntime: null,
         searchController: null,
         feedback: null,
-        paginationKeyboardRuntime: null
+        keyboardNavigationRuntime: null
     };
 
     if (selectionColumnController) {
@@ -1029,11 +1041,13 @@ export function createTable(options = {}) {
         columnMethods
     });
     const paginationMethods = createPaginationMethods({ table, crud });
-    lifecycleResources.paginationKeyboardRuntime = createPaginationKeyboardRuntime({
+    lifecycleResources.keyboardNavigationRuntime = createKeyboardNavigationRuntime({
         table,
         tableElement,
         paginationMethods,
-        enabled: normalizedOptions.pagination === true
+        enabled: normalizedOptions.pagination === true,
+        keyboardNavigation: normalizedKeyboardNavigation,
+        getGrid: () => controller
     });
     const selectionMethods = createSelectionMethods({
         table,

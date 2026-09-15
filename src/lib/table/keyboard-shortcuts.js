@@ -7,9 +7,7 @@
  */
 export const GRID_SHORTCUTS = Object.freeze({
     previousPage: Object.freeze({ key: 'PageUp', altKey: true, label: 'Alt+PageUp' }),
-    nextPage: Object.freeze({ key: 'PageDown', altKey: true, label: 'Alt+PageDown' }),
-    previousRow: Object.freeze({ key: 'ArrowUp', altKey: true, label: 'Alt+ArrowUp' }),
-    nextRow: Object.freeze({ key: 'ArrowDown', altKey: true, label: 'Alt+ArrowDown' })
+    nextPage: Object.freeze({ key: 'PageDown', altKey: true, label: 'Alt+PageDown' })
 });
 
 /**

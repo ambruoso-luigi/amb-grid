@@ -79,9 +79,9 @@ export const createLifecycleMethods = ({
             resources.searchController = null;
         }
 
-        if (resources.paginationKeyboardRuntime) {
-            resources.paginationKeyboardRuntime.destroy();
-            resources.paginationKeyboardRuntime = null;
+        if (resources.keyboardNavigationRuntime) {
+            resources.keyboardNavigationRuntime.destroy();
+            resources.keyboardNavigationRuntime = null;
         }
 
         if (resources.feedback) {

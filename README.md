@@ -340,9 +340,15 @@ popup/action cells, and non-data interactive columns:
   grid in the corresponding direction.
 * `Alt+PageDown` opens the next page and its first editable cell.
   `Alt+PageUp` opens the previous page and its first editable cell.
-* `Alt+ArrowDown` and `Alt+ArrowUp` move to the next or previous row while
-  preserving the current column. At a page edge they continue on the first or
-  last row of the adjacent page; at an absolute boundary they do nothing.
+* Arrow keys move focus geometrically between visible cells without opening an
+  editor. They may focus ordinary read-only cells; `Enter` on such a cell does
+  nothing. Arrow navigation never wraps or changes page.
+* `Enter` opens the editor of the focused editable cell. `Alt+ArrowUp` and
+  `Alt+ArrowDown` are no longer defaults, but can be restored explicitly with
+  `keyboardNavigation: { bindings: { up: 'Alt+ArrowUp', down: 'Alt+ArrowDown' } }`.
+* `keyboardNavigation.shouldHandle(context)` can return `false` to leave an
+  action untouched. `resolveNavigation(context)` may supply a directional
+  destination; invalid results fall back to normal geometry.
 * The standard selection column participates in cell navigation. `Enter` and
   `Space` toggle row selection; `1`/`S`/`Y` select and `0`/`N` deselect. When
   enabled, row selection is available exclusively through its checkbox, so
@@ -375,8 +381,8 @@ popup/action cells, and non-data interactive columns:
   press `Enter` to open the dialog. Text is selectable and editable only in
   the dialog, which traps `Tab`/`Shift+Tab`. `Ctrl+Enter` saves and `Escape`
   cancels; Save and Cancel both return focus to the source cell. Same-column
-  `Alt+ArrowUp`/`Alt+ArrowDown` navigation applies to the focused cell while
-  the dialog is closed.
+  directional arrow navigation applies to the focused cell while the dialog is
+  closed.
 
 ### Formatters
 

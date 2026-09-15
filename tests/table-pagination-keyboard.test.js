@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { createPaginationKeyboardRuntime } from '../src/lib/table/pagination-keyboard-runtime.js';
+import { createKeyboardNavigationRuntime } from '../src/lib/table/keyboard-navigation-runtime.js';
 import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
 import { setAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
 
@@ -117,7 +117,7 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements,
         nextPage: vi.fn(() => { currentPage += 1; return Promise.resolve(); }),
         previousPage: vi.fn(() => { currentPage -= 1; return Promise.resolve(); })
     };
-    const runtime = createPaginationKeyboardRuntime({ table, tableElement, paginationMethods, enabled });
+    const runtime = createKeyboardNavigationRuntime({ table, tableElement, paginationMethods, enabled });
 
     return {
         table, tableElement, tableHolder, paginationMethods, runtime, rowElement,
@@ -516,16 +516,6 @@ describe('table pagination keyboard runtime', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(notes.getElement().focus).toHaveBeenCalledOnce();
         expect(notes.edit).not.toHaveBeenCalled();
-    });
-
-    test.each([
-        ['ArrowUp', GRID_SHORTCUTS.previousRow],
-        ['ArrowDown', GRID_SHORTCUTS.nextRow]
-    ])('recognizes Alt+%s as vertical navigation', (key, shortcutDefinition) => {
-        expect(matchesShortcut({ key, altKey: true }, shortcutDefinition)).toBe(true);
-        expect(matchesShortcut({ key }, shortcutDefinition)).toBe(false);
-        expect(matchesShortcut({ key, ctrlKey: true }, shortcutDefinition)).toBe(false);
-        expect(matchesShortcut({ key, metaKey: true }, shortcutDefinition)).toBe(false);
     });
 
     test('keeps page shortcuts recognized', () => {

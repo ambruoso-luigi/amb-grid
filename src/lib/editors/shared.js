@@ -79,6 +79,14 @@ export const focusCellWithoutEditing = cell => {
     return true;
 };
 
+/** Focuses a spatial keyboard-navigation destination without opening an editor. */
+export const focusNavigationCandidate = candidate => {
+    const definition = getCellDefinition(candidate);
+    if (!definition || !columnIsVisible(candidate?.getColumn?.())) return false;
+    const metadata = getAmbColumnMetadata(definition);
+    return metadata.interactive ? focusInteractiveCandidate(candidate, definition) : focusCellWithoutEditing(candidate);
+};
+
 export const isEditableCandidate = candidate => {
     if (!candidate) return false;
 
