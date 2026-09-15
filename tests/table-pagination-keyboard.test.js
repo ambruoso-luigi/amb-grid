@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createKeyboardNavigationRuntime } from '../src/lib/table/keyboard-navigation-runtime.js';
 import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
 import { setAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
+import { normalizeKeyboardNavigationOptions } from '../src/lib/table/keyboard-bindings.js';
 
 const flush = async () => {
     for (let index = 0; index < 8; index += 1) await Promise.resolve();
@@ -402,6 +403,56 @@ describe('table pagination keyboard runtime', () => {
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(notes.edit).toHaveBeenCalledOnce();
+    });
+
+    test('leaves Enter to an active editor', () => {
+        const cell = createCandidate();
+        const harness = createHarness({ cells: [cell] });
+        harness.setEditing(true, cell);
+        globalThis.document.activeElement = cell.getElement().editor;
+
+        const event = harness.tableElement.dispatch({
+            key: 'Enter',
+            target: cell.getElement().editor
+        });
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
+        expect(event.stopImmediatePropagation).not.toHaveBeenCalled();
+        expect(cell.edit).not.toHaveBeenCalled();
+    });
+
+    test('moves spatially without opening the destination editor', () => {
+        const first = createCandidate({ field: 'first' });
+        const readonly = createCandidate({ editable: false, field: 'readonly' });
+        const last = createCandidate({ field: 'last' });
+        const harness = createHarness({ cells: [first, readonly, last] });
+        globalThis.document.activeElement = first.getElement();
+
+        const event = harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(readonly.getElement().focus).toHaveBeenCalledOnce();
+        expect(readonly.edit).not.toHaveBeenCalled();
+    });
+
+    test('does not call shouldHandle for dedicated page shortcuts', () => {
+        const shouldHandle = vi.fn(() => true);
+        const harness = createHarness({});
+        harness.runtime.destroy();
+        const runtime = createKeyboardNavigationRuntime({
+            table: harness.table,
+            tableElement: harness.tableElement,
+            paginationMethods: harness.paginationMethods,
+            enabled: true,
+            keyboardNavigation: normalizeKeyboardNavigationOptions({ shouldHandle })
+        });
+
+        shortcut(harness, 'PageDown');
+
+        expect(shouldHandle).not.toHaveBeenCalled();
+        expect(harness.paginationMethods.nextPage).toHaveBeenCalledOnce();
+        runtime.destroy();
     });
 
     test('focus-only keyboard behavior remains active without pagination', () => {

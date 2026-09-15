@@ -13,11 +13,6 @@ All notable changes to AMB Grid are documented in this file.
 
 - Default `Alt+ArrowUp`/`Alt+ArrowDown` row navigation was removed; configure those bindings explicitly when needed.
 
-### Added
-
-- Added global keyboard shortcuts for page navigation and same-column vertical navigation.
-- Added contextual cell messages that follow both pointer movement and keyboard focus, with validation errors taking priority over descriptions and previews.
-
 ### Fixed
 
 - Kept column calculations synchronized after committed cell edits and CRUD delete/rollback state transitions.

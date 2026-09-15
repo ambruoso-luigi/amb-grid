@@ -44,6 +44,7 @@ const focusInteractiveCandidate = (candidate, definition) => {
         && typeof cellElement.querySelector === 'function'
         ? cellElement.querySelector(selector)
         : null;
+    if (selector && !selectedTarget) return false;
     const focusTarget = selectedTarget || cellElement;
 
     if (!focusTarget || typeof focusTarget.focus !== 'function') return false;

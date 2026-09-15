@@ -90,7 +90,6 @@ export const createKeyboardNavigationRuntime = ({
     const navigationEnabled = navigationOptions.enabled !== false;
 
     let transitionInProgress = false;
-    let verticalNavigationInProgress = false;
     let activeFinalizer = null;
     let destroyed = false;
     const pendingEditorCloseFinalizers = new Set();
@@ -234,7 +233,10 @@ export const createKeyboardNavigationRuntime = ({
         if (!element || !isDataRowElement(rowElement)) return false;
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
         if (metadata.interactive) {
-            return Boolean(definition.editor || (metadata.focusSelector && element.querySelector?.(metadata.focusSelector)));
+            if (metadata.focusSelector) {
+                return Boolean(element.querySelector?.(metadata.focusSelector));
+            }
+            return Boolean(definition.editor);
         }
         return true;
     };
@@ -259,9 +261,12 @@ export const createKeyboardNavigationRuntime = ({
             ? table.getRow?.(rowElement)
             : null;
 
-        return row && field
-            ? row.getCell?.(field) || row.getCells?.().find(cell => cell.getField?.() === field) || null
-            : null;
+        if (!row) return null;
+        return row.getCells?.().find(cell => cell.getElement?.() === cellElement)
+            || (field
+                ? row.getCell?.(field) || row.getCells?.().find(cell => cell.getField?.() === field)
+                : null)
+            || null;
     };
 
     const getActiveNavigationCell = () => {
@@ -450,14 +455,22 @@ export const createKeyboardNavigationRuntime = ({
         if (cellIndex === -1) return null;
         if (direction === 'left' || direction === 'right') {
             const step = direction === 'left' ? -1 : 1;
-            return cells[cellIndex + step] || null;
+            for (let index = cellIndex + step; index >= 0 && index < cells.length; index += step) {
+                if (isNavigationCandidate(cells[index])) return cells[index];
+            }
+            return null;
         }
         const pageRows = getCurrentPageRows();
         const rowIndex = pageRows.indexOf(row);
         const targetRow = pageRows[rowIndex + (direction === 'up' ? -1 : 1)];
         if (!targetRow) return null;
+        const column = currentCell.getColumn?.();
+        const sameColumn = targetRow.getCells?.().find(cell => cell.getColumn?.() === column);
+        if (sameColumn) return sameColumn;
         const field = currentCell.getField?.();
-        return targetRow.getCell?.(field) || targetRow.getCells?.().find(cell => cell.getField?.() === field) || null;
+        return field
+            ? targetRow.getCell?.(field) || targetRow.getCells?.().find(cell => cell.getField?.() === field) || null
+            : null;
     };
 
     const navigateSpatially = (currentCell, direction) => {
@@ -469,8 +482,7 @@ export const createKeyboardNavigationRuntime = ({
             column: currentCell.getColumn?.(),
             grid: getGrid()
         };
-        let destination;
-        try { destination = navigationOptions.resolveNavigation?.(context); } catch { destination = null; }
+        let destination = navigationOptions.resolveNavigation?.(context);
         if (!isValidNavigationCell(destination)) destination = getSpatialDestination(currentCell, direction);
         if (!isNavigationCandidate(destination)) return true;
         focusNavigationCandidate(destination);
@@ -479,6 +491,12 @@ export const createKeyboardNavigationRuntime = ({
 
     const unregisterCoordinator = registerPageNavigationCoordinator(table, { transitionPage });
 
+    const isManagedControlTarget = (event, cell, definition) => {
+        const selector = getAmbColumnMetadata(definition).focusSelector;
+        if (!selector) return false;
+        const target = event.target;
+        return Boolean(target?.matches?.(selector) || target?.closest?.(selector));
+    };
 
     const handleKeydown = event => {
         const isInsideTable = event.target === tableElement
@@ -489,7 +507,9 @@ export const createKeyboardNavigationRuntime = ({
             ? ['up', 'down', 'left', 'right', 'edit', 'next', 'previous'].find(candidate => (
                 matchesKeyboardBinding(event, navigationOptions.bindings[candidate])
             ))
-            : null;
+            : ['next', 'previous'].find(candidate => (
+                matchesKeyboardBinding(event, normalizeKeyboardNavigationOptions().bindings[candidate])
+            ));
         const isTab = action === 'next' || action === 'previous';
 
         const activeCell = getActiveNavigationCell();
@@ -501,18 +521,21 @@ export const createKeyboardNavigationRuntime = ({
 
         const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
         const state = editingElement ? 'editing' : 'navigation';
-        const hookContext = {
-            action,
-            event,
-            state,
-            cell: activeCell,
-            row: activeCell?.getRow?.(),
-            column: activeCell?.getColumn?.(),
-            grid: getGrid()
-        };
-        if (navigationOptions.shouldHandle?.(hookContext) === false) return;
+        if (state === 'editing' && (enter || ['up', 'down', 'left', 'right'].includes(action))) return;
+        if (enter && isManagedControlTarget(event, activeCell, activeDefinition)) return;
 
-        if (state === 'editing' && ['up', 'down', 'left', 'right'].includes(action)) return;
+        if (action) {
+            const hookContext = {
+                action,
+                event,
+                state,
+                cell: activeCell,
+                row: activeCell?.getRow?.(),
+                column: activeCell?.getColumn?.(),
+                grid: getGrid()
+            };
+            if (navigationOptions.shouldHandle?.(hookContext) === false) return;
+        }
 
         if (enter) {
             if (!activeCell || !isEditableCandidate(activeCell)) return;
