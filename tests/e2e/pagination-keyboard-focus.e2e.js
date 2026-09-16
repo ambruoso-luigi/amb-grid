@@ -99,7 +99,27 @@ test.describe('keyboard pagination focus', () => {
         await expectFocusOutsideGrid(page);
     });
 
-    test('restores lookup editing after a dialog selection and preserves Tab', async ({ page }) => {
+    test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {
+        const status = rowCell(page, 'PRD-AB02', 'status');
+        await status.click();
+        await status.dblclick({ delay: 100 });
+        await expectLookupEditor(page, 'PRD-AB02');
+        const currentValue = await status.locator('.amb-lookup-editor__input').inputValue();
+
+        await selectStatusDialogResult(page, currentValue);
+        await expectLookupEditor(page, 'PRD-AB02');
+        await expect(status.locator('.amb-lookup-editor__input')).toHaveValue(currentValue);
+        await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+
+        await page.keyboard.press('Enter');
+        const dialog = page.locator('.amb-lookup-dialog');
+        await expect(dialog).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        await expectLookupEditor(page, 'PRD-AB02');
+    });
+
+    test('preserves sequential navigation after a real lookup selection', async ({ page }) => {
         const status = rowCell(page, 'PRD-AB02', 'status');
         await status.click();
         await status.dblclick({ delay: 100 });
@@ -108,6 +128,15 @@ test.describe('keyboard pagination focus', () => {
         await expectLookupEditor(page, 'PRD-AB02');
         await page.keyboard.press('Shift+Tab');
         await expect(rowCell(page, 'PRD-AB02', 'lastCheckDate')).toHaveClass(/tabulator-editing/);
+
+        await page.keyboard.press('Escape');
+        await status.click();
+        await status.dblclick({ delay: 100 });
+        await expectLookupEditor(page, 'PRD-AB02');
+        await selectStatusDialogResult(page, 'AB03');
+        await expectLookupEditor(page, 'PRD-AB02');
+        await page.keyboard.press('Tab');
+        await expect(rowCell(page, 'PRD-AB02', 'requiresInspection')).toHaveClass(/tabulator-editing/);
     });
 
     test('waits for lookup lifecycle across page shortcuts', async ({ page }) => {
