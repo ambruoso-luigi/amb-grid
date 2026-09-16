@@ -106,11 +106,11 @@ const translations = {
         'cycle.detail.keyboard.pageDown': 'Alt+PageDown',
         'cycle.detail.keyboard.space': 'Space',
         'cycle.detail.keyboard.enter': 'Enter',
-        'cycle.detail.keyboard.vertical': 'Alt+↑ / Alt+↓',
+        'cycle.detail.keyboard.vertical': '↑ / ↓ / ← / →',
         'cycle.detail.keyboard.group1Title': 'Navigazione continua',
         'cycle.detail.keyboard.group1Text': 'Tab e Shift+Tab attraversano le celle editabili e continuano automaticamente tra le pagine. Alt+PageUp e Alt+PageDown permettono di cambiare pagina direttamente da tastiera.',
-        'cycle.detail.keyboard.group2Title': 'Navigazione verticale',
-        'cycle.detail.keyboard.group2Text': 'Alt+↑ e Alt+↓ cambiano riga mantenendo la stessa colonna e continuano anche oltre il bordo della pagina.',
+        'cycle.detail.keyboard.group2Title': 'Navigazione geometrica',
+        'cycle.detail.keyboard.group2Text': 'Le frecce spostano il focus tra celle visibili senza aprire editor e restano nella pagina corrente.',
         'cycle.detail.keyboard.group3Title': 'Controlli e azioni',
         'cycle.detail.keyboard.group3Text': 'Checkbox, selezione di riga e azioni CRUD possono essere gestite senza mouse. Space ed Enter attivano i controlli, mentre 0 e 1 consentono impostazioni esplicite dove previste.',
         'cycle.detail.keyboard.group4Title': 'Editor e dialog',
@@ -289,11 +289,11 @@ const translations = {
         'cycle.detail.keyboard.pageDown': 'Alt+PageDown',
         'cycle.detail.keyboard.space': 'Space',
         'cycle.detail.keyboard.enter': 'Enter',
-        'cycle.detail.keyboard.vertical': 'Alt+↑ / Alt+↓',
+        'cycle.detail.keyboard.vertical': '↑ / ↓ / ← / →',
         'cycle.detail.keyboard.group1Title': 'Continuous navigation',
         'cycle.detail.keyboard.group1Text': 'Tab and Shift+Tab move through editable cells and continue automatically across pages. Alt+PageUp and Alt+PageDown switch pages directly from the keyboard.',
-        'cycle.detail.keyboard.group2Title': 'Vertical navigation',
-        'cycle.detail.keyboard.group2Text': 'Alt+↑ and Alt+↓ move between rows while keeping the same column and continue across page boundaries.',
+        'cycle.detail.keyboard.group2Title': 'Spatial navigation',
+        'cycle.detail.keyboard.group2Text': 'Arrow keys move focus between visible cells without opening editors and remain on the current page.',
         'cycle.detail.keyboard.group3Title': 'Controls and actions',
         'cycle.detail.keyboard.group3Text': 'Checkboxes, row selection and CRUD actions can be managed without a mouse. Space and Enter activate controls, while 0 and 1 provide explicit values where supported.',
         'cycle.detail.keyboard.group4Title': 'Editors and dialogs',
@@ -445,8 +445,8 @@ const cycleDetailBodies = {
             </div>
             <div>
                 <h4 data-i18n="cycle.detail.keyboard.group2Title">Navigazione verticale</h4>
-                <div class="demo-cycle-detail__keycaps"><kbd>Alt+↑</kbd><kbd>Alt+↓</kbd></div>
-                <p data-i18n="cycle.detail.keyboard.group2Text">Alt+↑ e Alt+↓ cambiano riga mantenendo la stessa colonna e continuano anche oltre il bordo della pagina.</p>
+                <div class="demo-cycle-detail__keycaps"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></div>
+                <p data-i18n="cycle.detail.keyboard.group2Text">Le frecce spostano il focus tra celle visibili senza aprire editor e restano nella pagina corrente.</p>
             </div>
             <div>
                 <h4 data-i18n="cycle.detail.keyboard.group3Title">Controlli e azioni</h4>
