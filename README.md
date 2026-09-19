@@ -342,7 +342,9 @@ popup/action cells, and non-data interactive columns:
   `Alt+PageUp` opens the previous page and its first editable cell.
 * Arrow keys move focus geometrically between visible cells without opening an
   editor. They may focus ordinary read-only cells; `Enter` on such a cell does
-  nothing. Arrow navigation never wraps or changes page.
+  nothing. Left/Right navigation never wraps; Up/Down retain the column and
+  cross to an adjacent page when one exists. Directional navigation only
+  focuses cells and never opens their editors.
 * `Enter` opens the editor of the focused editable cell. `Alt+ArrowUp` and
   `Alt+ArrowDown` are no longer defaults, but can be restored explicitly with
   `keyboardNavigation: { bindings: { up: 'Alt+ArrowUp', down: 'Alt+ArrowDown' } }`.

@@ -107,8 +107,13 @@ export const createKeyboardNavigationRuntime = ({
 
     const normalizeDestination = destination => (
         typeof destination === 'string'
-            ? { edge: destination, field: null }
-            : { edge: destination?.edge || 'first', field: destination?.field || null }
+            ? { edge: destination, field: null, column: null, activation: 'edit' }
+            : {
+                edge: destination?.edge || 'first',
+                field: destination?.field || null,
+                column: destination?.column || null,
+                activation: destination?.activation || 'edit'
+            }
     );
 
     const getRenderedRows = destination => {
@@ -141,12 +146,13 @@ export const createKeyboardNavigationRuntime = ({
     };
 
     const getDestinationCandidates = destination => {
-        const { edge, field } = normalizeDestination(destination);
+        const { edge, field, column } = normalizeDestination(destination);
         const rows = getRenderedRows(edge);
 
-        if (field) {
+        if (column || field) {
             const row = rows[0];
-            const candidate = row?.getCell?.(field)
+            const candidate = (column && row?.getCells?.().find(cell => cell.getColumn?.() === column))
+                || row?.getCell?.(field)
                 || row?.getCells?.().find(cell => cell.getField?.() === field);
             return candidate ? [candidate] : [];
         }
@@ -157,8 +163,9 @@ export const createKeyboardNavigationRuntime = ({
         });
     };
 
-    const activateCandidate = async candidate => {
-        const result = navigateToCandidate(candidate);
+    const activateCandidate = async (candidate, destination) => {
+        const focusOnly = normalizeDestination(destination).activation === 'focus';
+        const result = focusOnly ? focusNavigationCandidate(candidate) : navigateToCandidate(candidate);
         const activeImmediately = isCandidateActuallyActive(candidate);
         if (!result) return { active: false, activeImmediately };
 
@@ -167,14 +174,14 @@ export const createKeyboardNavigationRuntime = ({
         await nextFrame();
 
         return {
-            active: isCandidateActuallyActive(candidate),
+            active: focusOnly || isCandidateActuallyActive(candidate),
             activeImmediately
         };
     };
 
     const activateRenderedCandidate = async (destination, allowRenderRecovery) => {
         for (const candidate of getDestinationCandidates(destination)) {
-            const { active, activeImmediately } = await activateCandidate(candidate);
+            const { active, activeImmediately } = await activateCandidate(candidate, destination);
 
             if (active) return true;
             if (activeImmediately && allowRenderRecovery) {
@@ -493,8 +500,32 @@ export const createKeyboardNavigationRuntime = ({
             grid: getGrid()
         };
         let destination = navigationOptions.resolveNavigation?.(context);
-        if (!isValidNavigationCell(destination)) destination = getSpatialDestination(currentCell, direction);
-        if (!isNavigationCandidate(destination)) return true;
+        const customDestination = isValidNavigationCell(destination);
+        if (!customDestination) destination = getSpatialDestination(currentCell, direction);
+        if (!isNavigationCandidate(destination)) {
+            if (!customDestination && (direction === 'up' || direction === 'down')) {
+                const pageRows = getCurrentPageRows();
+                const rowIndex = pageRows.indexOf(currentCell.getRow?.());
+                const atEdge = direction === 'up'
+                    ? rowIndex === 0
+                    : rowIndex === pageRows.length - 1;
+                const page = paginationMethods.getPage();
+                const pageMax = paginationMethods.getPageMax();
+                const canChangePage = direction === 'up' ? page > 1 : page < pageMax;
+                if (atEdge && canChangePage) {
+                    void transitionPage({
+                        direction: direction === 'up' ? 'prev' : 'next',
+                        destination: {
+                            edge: direction === 'up' ? 'last' : 'first',
+                            column: currentCell.getColumn?.(),
+                            field: currentCell.getField?.(),
+                            activation: 'focus'
+                        }
+                    });
+                }
+            }
+            return true;
+        }
         focusNavigationCandidate(destination);
         return true;
     };

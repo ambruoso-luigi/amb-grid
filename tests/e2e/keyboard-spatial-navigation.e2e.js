@@ -55,7 +55,7 @@ test.describe('keyboard spatial navigation', () => {
         await expectNavigationFocus(last);
     });
 
-    test('keeps directional movement on its page at vertical boundaries', async ({ page }) => {
+    test('crosses adjacent pages vertically while preserving focus-only navigation', async ({ page }) => {
         const first = rowCell(page, 'PRD-A001', 'itemCode');
         const last = rowCell(page, 'PRD-H010', 'itemCode');
         await focusNavigationCell(first);
@@ -64,10 +64,12 @@ test.describe('keyboard spatial navigation', () => {
         await expect(await currentPage(page)).toBe(1);
         await focusNavigationCell(last);
         await page.keyboard.press('ArrowDown');
-        await expectNavigationFocus(last);
-        await expect(await currentPage(page)).toBe(1);
-        await page.keyboard.press('Alt+PageDown');
         await expect(await currentPage(page)).toBe(2);
+        const nextFirst = rowCell(page, 'PRD-I011', 'itemCode');
+        await expectNavigationFocus(nextFirst);
+        await page.keyboard.press('ArrowUp');
+        await expect(await currentPage(page)).toBe(1);
+        await expectNavigationFocus(last);
     });
 
     test('Enter opens an editor while editor arrows stay in the input', async ({ page }) => {

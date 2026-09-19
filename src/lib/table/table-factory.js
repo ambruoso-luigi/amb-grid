@@ -959,6 +959,9 @@ export function createTable(options = {}) {
     };
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     const normalizedKeyboardNavigation = normalizeKeyboardNavigationOptions(keyboardNavigation);
+    if (normalizedKeyboardNavigation.enabled && normalizedOptions.editTriggerEvent === undefined) {
+        normalizedOptions.editTriggerEvent = 'click';
+    }
     let crud = null;
     let controller = null;
     let table = null;

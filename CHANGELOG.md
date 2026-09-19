@@ -12,6 +12,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Prevented spatial keyboard focus from activating editable cells while moving with directional arrows.
 - Kept column calculations synchronized after committed cell edits and CRUD delete/rollback state transitions.
 - Stabilized contextual lookup descriptions during pointer movement and asynchronous metadata refreshes while preserving lookup rollback metadata across ordinary data changes.
 - Preserved the full AMB validation context for child validators in `anyOf` and `allOf`.
@@ -27,6 +28,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Changed
 
+- ArrowUp/ArrowDown spatial navigation now continues across adjacent pages while preserving the current column.
 - Standard inline editors return focus to the source cell after keyboard commit or cancel.
 - Default `Alt+ArrowUp`/`Alt+ArrowDown` row navigation was removed; configure those bindings explicitly when needed.
 - Documented declarative `validation: { ... }` as the recommended syntax for ordinary column validation, and updated the Parser and Validation demos to use the public table controller rather than direct CRUD-layer access.
