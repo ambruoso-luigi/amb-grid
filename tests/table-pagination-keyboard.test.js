@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createKeyboardNavigationRuntime } from '../src/lib/table/keyboard-navigation-runtime.js';
+import { focusCellWithoutEditing } from '../src/lib/editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
 import { setAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
 import { normalizeKeyboardNavigationOptions } from '../src/lib/table/keyboard-bindings.js';
@@ -10,6 +11,7 @@ const flush = async () => {
 
 const createElement = () => {
     const classes = new Set();
+    const attributes = new Map();
     const editor = { editor: true, inside: true };
     const element = {
         editor,
@@ -25,7 +27,11 @@ const createElement = () => {
         closest: selector => selector === '.tabulator-cell'
             ? element
             : selector === '.tabulator-row' ? element.rowElement : null,
-        getAttribute: name => name === 'tabulator-field' ? element.field : null,
+        getAttribute: name => name === 'tabulator-field'
+            ? element.field
+            : attributes.get(name) || null,
+        hasAttribute: name => attributes.has(name),
+        setAttribute: (name, value) => attributes.set(name, String(value)),
         focus: vi.fn(() => { globalThis.document.activeElement = element; })
     };
 
@@ -458,7 +464,45 @@ describe('table pagination keyboard runtime', () => {
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(readonly.getElement().focus).toHaveBeenCalledOnce();
+        expect(globalThis.document.activeElement).toBe(readonly.getElement());
+        expect(readonly.getElement().getAttribute('tabindex')).toBe('-1');
         expect(readonly.edit).not.toHaveBeenCalled();
+    });
+
+    test('makes an unfocusable cell programmatically focusable without changing existing tabindex', () => {
+        const unfocusable = createCandidate({ editable: false });
+        const preserved = createCandidate({ editable: false });
+        preserved.getElement().setAttribute('tabindex', '0');
+
+        expect(focusCellWithoutEditing(unfocusable)).toBe(true);
+        expect(unfocusable.getElement().getAttribute('tabindex')).toBe('-1');
+        expect(globalThis.document.activeElement).toBe(unfocusable.getElement());
+
+        expect(focusCellWithoutEditing(preserved)).toBe(true);
+        expect(preserved.getElement().getAttribute('tabindex')).toBe('0');
+        expect(globalThis.document.activeElement).toBe(preserved.getElement());
+    });
+
+    test('crosses consecutive readonly cells with arrows while Tab remains editable-only', () => {
+        const first = createCandidate({ field: 'first' });
+        const readonlyOne = createCandidate({ editable: false, field: 'readonlyOne' });
+        const readonlyTwo = createCandidate({ editable: false, field: 'readonlyTwo' });
+        const last = createCandidate({ field: 'last' });
+        const harness = createHarness({ cells: [first, readonlyOne, readonlyTwo, last] });
+        globalThis.document.activeElement = first.getElement();
+
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
+        expect(globalThis.document.activeElement).toBe(readonlyOne.getElement());
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonlyOne.getElement() });
+        expect(globalThis.document.activeElement).toBe(readonlyTwo.getElement());
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonlyTwo.getElement() });
+        expect(globalThis.document.activeElement).toBe(last.getElement());
+        expect(readonlyOne.edit).not.toHaveBeenCalled();
+        expect(readonlyTwo.edit).not.toHaveBeenCalled();
+        expect(last.edit).not.toHaveBeenCalled();
+
+        harness.tableElement.dispatch({ key: 'Enter', target: last.getElement() });
+        expect(last.edit).toHaveBeenCalledOnce();
     });
 
     test('does not call shouldHandle for dedicated page shortcuts', () => {

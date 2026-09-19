@@ -28,6 +28,13 @@ const expectNavigationFocus = async target => {
     await expect(target.locator('input.amb-cell-editor')).toHaveCount(0);
 };
 
+const activeCellField = page => page.evaluate(() => {
+    const active = document.activeElement;
+    const cell = active?.closest?.('.tabulator-cell');
+
+    return cell?.getAttribute('tabulator-field') || null;
+});
+
 test.describe('keyboard spatial navigation', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/#getting-started-javascript');
@@ -167,5 +174,37 @@ test.describe('keyboard spatial navigation', () => {
         await page.keyboard.press('Alt+ArrowUp');
         await expect(previous).not.toBeFocused();
         await expect(previous).not.toHaveClass(/tabulator-editing/);
+    });
+
+    test('crosses Basic CRUD readonly cells with real DOM focus', async ({ page }) => {
+        await page.goto('/src/demo/index.html#feature-examples');
+        const basicTable = page.locator('#basic-table');
+        const row = basicTable.locator('.tabulator-row').first();
+        const title = row.locator('.tabulator-cell[tabulator-field="title"]');
+        await expect(title).toBeVisible();
+        await focusNavigationCell(title);
+
+        for (const field of ['_state', '_ambRowNumber', '_ambTempId', 'id']) {
+            await page.keyboard.press('ArrowLeft');
+            await expect.poll(() => activeCellField(page)).toBe(field);
+            await expect(row.locator(`.tabulator-cell[tabulator-field="${field}"]`))
+                .not.toHaveClass(/tabulator-editing/);
+        }
+
+        await page.keyboard.press('Enter');
+        await expect.poll(() => activeCellField(page)).toBe('id');
+        await expect(row.locator('.tabulator-cell[tabulator-field="id"]'))
+            .not.toHaveClass(/tabulator-editing/);
+
+        for (const field of ['_ambTempId', '_ambRowNumber', '_state', 'title']) {
+            await page.keyboard.press('ArrowRight');
+            await expect.poll(() => activeCellField(page)).toBe(field);
+            await expect(row.locator(`.tabulator-cell[tabulator-field="${field}"]`))
+                .not.toHaveClass(/tabulator-editing/);
+        }
+
+        await page.keyboard.press('Enter');
+        await expect(title).toHaveClass(/tabulator-editing/);
+        await expect(title.locator('input.amb-cell-editor')).toBeFocused();
     });
 });

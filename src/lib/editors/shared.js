@@ -71,6 +71,21 @@ export const focusCellWithoutEditing = cell => {
 
     if (!cellElement || typeof cellElement.focus !== 'function') return false;
 
+    // Tabulator does not make every normal readonly cell focusable. Give only
+    // those cells a programmatic target, without placing them in browser Tab
+    // order or replacing a tabindex already managed by the table/control.
+    const hasTabindex = typeof cellElement.hasAttribute === 'function'
+        ? cellElement.hasAttribute('tabindex')
+        : cellElement.getAttribute?.('tabindex') !== null
+            && cellElement.getAttribute?.('tabindex') !== undefined;
+    if (!hasTabindex) {
+        if (typeof cellElement.setAttribute === 'function') {
+            cellElement.setAttribute('tabindex', '-1');
+        } else {
+            cellElement.tabIndex = -1;
+        }
+    }
+
     const blockEditFocus = event => event.stopImmediatePropagation?.();
 
     cellElement.addEventListener?.('focus', blockEditFocus, true);
