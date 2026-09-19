@@ -15,7 +15,7 @@ import {
     focusAdjacentOutsideGrid,
     registerPageNavigationCoordinator
 } from './page-navigation-coordinator.js';
-import { queueCellAuxiliaryAction } from './keyboard-auxiliary.js';
+import { invokeCellAuxiliaryAction, queueCellAuxiliaryAction } from './keyboard-auxiliary.js';
 
 const nextFrame = () => new Promise(resolve => {
     if (typeof globalThis.requestAnimationFrame === 'function') {
@@ -598,9 +598,13 @@ export const createKeyboardNavigationRuntime = ({
         }
 
         if (auxiliary) {
-            // The active editor owns its auxiliary control; do not consume its
-            // keydown before the editor can open the dialog.
-            if (state === 'editing') return;
+            if (state === 'editing') {
+                if (!invokeCellAuxiliaryAction(activeCell, { event })) return;
+                event.preventDefault();
+                event.stopPropagation?.();
+                event.stopImmediatePropagation?.();
+                return;
+            }
             event.preventDefault();
             event.stopPropagation?.();
             event.stopImmediatePropagation?.();

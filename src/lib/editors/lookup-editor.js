@@ -1,7 +1,7 @@
 import { LookupDialog } from '../../ui/lookup-dialog.js';
-import { consumeCellAuxiliaryAction } from '../table/keyboard-auxiliary.js';
+import { consumeCellAuxiliaryAction, registerCellAuxiliaryAction } from '../table/keyboard-auxiliary.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
-import { getInitialValue, getLookupOptionValue, navigateToCandidate } from './shared.js';
+import { getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateToCandidate } from './shared.js';
 
 /**
  * @callback LookupSuccessHandler
@@ -169,6 +169,7 @@ export function lookup(lookupInstance, options = {}) {
             let manualAutoCompleteTypedValue = '';
             let tabCommitInProgress = false;
             let navigationScheduled = false;
+            let unregisterAuxiliary = () => {};
 
             container.className = 'amb-lookup-editor';
             input.className = 'amb-lookup-editor__input';
@@ -190,6 +191,7 @@ export function lookup(lookupInstance, options = {}) {
                 if (closed) return;
 
                 closed = true;
+                unregisterAuxiliary();
                 success(value);
             };
 
@@ -197,6 +199,7 @@ export function lookup(lookupInstance, options = {}) {
                 if (closed) return;
 
                 closed = true;
+                unregisterAuxiliary();
                 cancel();
             };
 
@@ -828,13 +831,7 @@ export function lookup(lookupInstance, options = {}) {
                     return commitFromTab(event.shiftKey ? 'prev' : 'next');
                 }
 
-                if (event.key === 'Enter') return commit();
-
-                if (event.key === 'F2') return openDialog(event);
-
-                if (event.key === 'Escape') {
-                    closeWithCancel();
-                }
+                handleEditorCommitCancelKeydown({ cell, event, onCommit: commit, onCancel: closeWithCancel });
             });
             input.addEventListener('blur', () => {
                 if (dialogOpen || tabCommitInProgress) return;
@@ -862,6 +859,7 @@ export function lookup(lookupInstance, options = {}) {
                 }
 
                 initializeLookupMetadata();
+                unregisterAuxiliary = registerCellAuxiliaryAction(cell, () => void openDialog());
                 if (consumeCellAuxiliaryAction(cell)) void openDialog();
             });
 
