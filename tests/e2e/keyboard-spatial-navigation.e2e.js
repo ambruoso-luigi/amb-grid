@@ -87,6 +87,35 @@ test.describe('keyboard spatial navigation', () => {
         await expect(input).toBeFocused();
     });
 
+    test('commits a text editor with Enter and restores navigation focus to its source cell', async ({ page }) => {
+        const target = rowCell(page, 'PRD-AB02', 'productName');
+        const adjacent = rowCell(page, 'PRD-AB02', 'warehouse');
+        await focusNavigationCell(target);
+        await page.keyboard.press('Enter');
+        const input = target.locator('input.amb-cell-editor');
+        await expect(input).toBeFocused();
+        await input.fill('Keyboard commit test');
+        await page.keyboard.press('Enter');
+        await expectNavigationFocus(target);
+        await expect(target).toContainText('Keyboard commit test');
+        await expect(adjacent).not.toBeFocused();
+        await expectFocusIndicator(target);
+    });
+
+    test('cancels a text editor with Escape and restores navigation focus to its source cell', async ({ page }) => {
+        const target = rowCell(page, 'PRD-AB02', 'productName');
+        const original = await target.textContent();
+        await focusNavigationCell(target);
+        await page.keyboard.press('Enter');
+        const input = target.locator('input.amb-cell-editor');
+        await input.fill('DO NOT SAVE THIS');
+        await page.keyboard.press('Escape');
+        await expectNavigationFocus(target);
+        await expect(target).toContainText(original || '');
+        await expect(target).not.toContainText('DO NOT SAVE THIS');
+        await expectFocusIndicator(target);
+    });
+
     test('keeps autocomplete ArrowDown in its dropdown', async ({ page }) => {
         const warehouse = rowCell(page, 'PRD-AB02', 'warehouse');
         await warehouse.dblclick({ delay: 100 });

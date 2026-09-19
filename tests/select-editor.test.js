@@ -62,4 +62,13 @@ describe('select editor keyboard close actions', () => {
         expect(cancel).toHaveBeenCalledTimes(1);
         expect(success).not.toHaveBeenCalled();
     });
+
+    test('change commits exactly once even when followed by blur', () => {
+        const { control, success } = createHarness();
+        control.value = 'two';
+        control.dispatch('change');
+        control.dispatch('blur');
+        expect(success).toHaveBeenCalledOnce();
+        expect(success).toHaveBeenCalledWith('two');
+    });
 });

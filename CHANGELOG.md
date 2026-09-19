@@ -4,11 +4,9 @@ All notable changes to AMB Grid are documented in this file.
 
 ## [Unreleased]
 
-- Added configurable commit/cancel keyboard bindings for standard inline editors.
-- Standard inline editors return focus to the source cell after keyboard commit or cancel.
-
 ### Added
 
+- Added configurable commit/cancel keyboard bindings for standard inline editors.
 - Configurable `keyboardNavigation` with four-direction spatial cell navigation.
 - Arrow navigation focuses cells without opening editors and reaches visible read-only data cells.
 
@@ -29,6 +27,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Changed
 
+- Standard inline editors return focus to the source cell after keyboard commit or cancel.
 - Default `Alt+ArrowUp`/`Alt+ArrowDown` row navigation was removed; configure those bindings explicitly when needed.
 - Documented declarative `validation: { ... }` as the recommended syntax for ordinary column validation, and updated the Parser and Validation demos to use the public table controller rather than direct CRUD-layer access.
 - Renamed the managed row action configuration from `deleteColumn` to `rowActionColumn` (breaking, no compatibility alias); the removed configuration name now fails fast with a migration error. The separate `grid.deleteColumn(...)` controller method for application data columns is unchanged.
