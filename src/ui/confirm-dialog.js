@@ -48,6 +48,14 @@ export class ConfirmDialog {
 
             event.preventDefault();
             this._clearTextSelection();
+            const direction = ['ArrowLeft', 'ArrowUp'].includes(event.key)
+                ? -1
+                : ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : 0;
+            if (!direction) return;
+
+            const buttons = [this.cancelButton, this.confirmButton];
+            const currentIndex = buttons.indexOf(event.target);
+            buttons[(currentIndex + direction + buttons.length) % buttons.length]?.focus();
         };
         this.handleKeyDown = event => {
             if (event.key === 'Escape') {

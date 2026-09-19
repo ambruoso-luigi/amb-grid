@@ -178,21 +178,30 @@ describe('ConfirmDialog focus management', () => {
         expect(harness.removeAllRanges).toHaveBeenCalled();
     });
 
-    test.each([
-        'ArrowLeft',
-        'ArrowRight',
-        'ArrowUp',
-        'ArrowDown',
-        'Home',
-        'End'
-    ])('prevents %s from moving a caret inside dialog button text', key => {
+    test.each(['ArrowRight', 'ArrowDown'])('%s moves from cancel to confirm', key => {
         const dialog = new ConfirmDialog();
 
         dialog.confirm({ message: 'Delete row?' });
-        const event = dialog.confirmButton.dispatch('keydown', { key });
+        const event = dialog.cancelButton.dispatch('keydown', { key });
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(harness.removeAllRanges).toHaveBeenCalled();
+        expect(harness.documentMock.activeElement).toBe(dialog.confirmButton);
+    });
+
+    test.each(['ArrowLeft', 'ArrowUp'])('%s wraps from cancel to confirm', key => {
+        const dialog = new ConfirmDialog();
+        dialog.confirm({ message: 'Delete row?' });
+        dialog.cancelButton.dispatch('keydown', { key });
+        expect(harness.documentMock.activeElement).toBe(dialog.confirmButton);
+    });
+
+    test.each(['Home', 'End'])('%s keeps focus while preventing text selection', key => {
+        const dialog = new ConfirmDialog();
+        dialog.confirm({ message: 'Delete row?' });
+        const event = dialog.cancelButton.dispatch('keydown', { key });
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(harness.documentMock.activeElement).toBe(dialog.cancelButton);
     });
 
     test('Escape cancels and restores focus to the opener', async () => {
