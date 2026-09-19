@@ -1,4 +1,5 @@
 import {
+    containEditorSpatialNavigation,
     createSelectOption,
     getInitialValue,
     handleEditorCommitCancelKeydown,
@@ -62,6 +63,7 @@ export function select(options = {}) {
             select.addEventListener('change', commit);
             select.addEventListener('blur', commit);
             select.addEventListener('keydown', event => {
+                containEditorSpatialNavigation(event);
                 handleEditorCommitCancelKeydown({
                     cell,
                     event,

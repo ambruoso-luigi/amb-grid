@@ -140,6 +140,14 @@ export const handleEditorCommitCancelKeydown = ({ cell, event, onCommit, onCance
     return true;
 };
 
+/** Keeps spatial keys inside an editor without cancelling their native behavior. */
+export const containEditorSpatialNavigation = event => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return false;
+
+    event.stopPropagation?.();
+    return true;
+};
+
 /** Focuses a spatial keyboard-navigation destination without opening an editor. */
 export const focusNavigationCandidate = candidate => {
     const definition = getCellDefinition(candidate);

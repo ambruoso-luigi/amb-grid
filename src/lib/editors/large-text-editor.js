@@ -1,4 +1,4 @@
-import { focusCellWithoutEditing, getInitialValue, toCssSize } from './shared.js';
+import { containEditorSpatialNavigation, focusCellWithoutEditing, getInitialValue, toCssSize } from './shared.js';
 import { createFocusTrap } from '../../ui/focus-trap.js';
 
 let dialogSequence = 0;
@@ -149,6 +149,7 @@ export function largeText(options = {}) {
             };
 
             cancelButton.addEventListener('click', closeWithCancel);
+            textarea.addEventListener('keydown', containEditorSpatialNavigation);
             saveButton.addEventListener('click', closeWithSuccess);
             overlay.addEventListener('mousedown', event => {
                 if (event.target !== overlay) return;

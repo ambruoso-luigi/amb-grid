@@ -1,4 +1,4 @@
-import { focusInput, getInitialValue, handleEditorCommitCancelKeydown } from './shared.js';
+import { containEditorSpatialNavigation, focusInput, getInitialValue, handleEditorCommitCancelKeydown } from './shared.js';
 
     /**
      * Single-line text editor. While keyboard navigation is enabled, commit/cancel
@@ -52,6 +52,7 @@ export function text(options = {}) {
 
             input.addEventListener('input', normalizeInputValue);
             input.addEventListener('keydown', event => {
+                containEditorSpatialNavigation(event);
                 handleEditorCommitCancelKeydown({
                     cell,
                     event,

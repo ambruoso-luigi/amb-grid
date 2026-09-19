@@ -1,7 +1,7 @@
 import { LookupDialog } from '../../ui/lookup-dialog.js';
 import { consumeCellAuxiliaryAction, registerCellAuxiliaryAction } from '../table/keyboard-auxiliary.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
-import { getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateToCandidate } from './shared.js';
+import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateToCandidate } from './shared.js';
 
 /**
  * @callback LookupSuccessHandler
@@ -820,6 +820,7 @@ export function lookup(lookupInstance, options = {}) {
                 applyManualAutoComplete();
             });
             input.addEventListener('keydown', event => {
+                containEditorSpatialNavigation(event);
                 if (event.key === 'Backspace' || event.key === 'Delete') {
                     invalidateManualAutoComplete();
                     return;

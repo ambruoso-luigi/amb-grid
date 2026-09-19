@@ -422,6 +422,31 @@ describe('table pagination keyboard runtime', () => {
         expect(cell.edit).not.toHaveBeenCalled();
     });
 
+    test('leaves Enter to an editing checkbox while retaining its arrow capability', () => {
+        const checkbox = createCandidate();
+        setAmbColumnMetadata(checkbox.getColumn().getDefinition(), {
+            spatialNavigationWhileEditing: true
+        });
+        const harness = createHarness({ cells: [checkbox] });
+        harness.setEditing(true, checkbox);
+        globalThis.document.activeElement = checkbox.getElement().editor;
+
+        const enter = harness.tableElement.dispatch({
+            key: 'Enter',
+            target: checkbox.getElement().editor
+        });
+        const arrow = harness.tableElement.dispatch({
+            key: 'ArrowDown',
+            target: checkbox.getElement().editor
+        });
+
+        expect(enter.preventDefault).not.toHaveBeenCalled();
+        expect(checkbox.edit).not.toHaveBeenCalled();
+        // ArrowDown still reaches and is handled by the spatial-navigation
+        // branch, unlike Enter.
+        expect(arrow.stopPropagation).toHaveBeenCalledOnce();
+    });
+
     test('moves spatially without opening the destination editor', () => {
         const first = createCandidate({ field: 'first', focusOnly: true });
         const readonly = createCandidate({ editable: false, field: 'readonly' });

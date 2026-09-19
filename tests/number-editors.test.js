@@ -80,6 +80,17 @@ describe('numeric editors emptyValue option', () => {
         vi.restoreAllMocks();
     });
 
+    test.each([createIntegerEditor, createDecimalEditor])(
+        'contains ArrowDown without preventing its native behavior',
+        editorFactory => {
+            const harness = createHarness({ editorFactory });
+            const event = harness.input.dispatch('keydown', { key: 'ArrowDown' });
+
+            expect(event.stopPropagation).toHaveBeenCalledOnce();
+            expect(event.preventDefault).not.toHaveBeenCalled();
+        }
+    );
+
     test('integer with emptyValue 0 saves 0 when the field is cleared', () => {
         const harness = createHarness({
             editorFactory: createIntegerEditor,

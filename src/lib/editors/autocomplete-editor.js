@@ -10,6 +10,7 @@ import {
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
 import {
+    containEditorSpatialNavigation,
     getInitialValue,
     handleEditorCommitCancelKeydown,
     navigateEditableCellAfterClose
@@ -323,6 +324,10 @@ export function autocomplete(values, options = {}) {
             if (closed) return;
 
             const action = getAutocompleteKeyAction(event.key);
+
+            // Suggestion arrows already contain propagation below; left/right
+            // need containment too, while keeping native input caret movement.
+            if (action.action !== 'suggestions') containEditorSpatialNavigation(event);
 
             if (action.action === 'commit' && event.key === 'Tab') {
                 const direction = event.shiftKey ? 'prev' : 'next';

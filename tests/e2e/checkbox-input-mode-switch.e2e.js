@@ -139,6 +139,15 @@ test.describe('checkbox input mode switch regression', () => {
         await expect(checkboxInput(page)).toBeFocused();
         await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);
         await expectNoOtherEditor(page);
+
+        await page.keyboard.press('Enter');
+        await expect(checkboxInput(page)).toBeChecked({ checked: initialChecked });
+        await expect(checkboxInput(page)).toBeFocused();
+        await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);
+
+        await page.keyboard.press('Space');
+        await expect(checkboxInput(page)).toBeChecked({ checked: !initialChecked });
+        await expect(checkboxInput(page)).toBeFocused();
     });
 
     test('Tab -> click empty checkbox cell toggles and keeps focus there', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { focusInput, getInitialValue, handleEditorCommitCancelKeydown } from './shared.js';
+import { containEditorSpatialNavigation, focusInput, getInitialValue, handleEditorCommitCancelKeydown } from './shared.js';
 
 const normalizeIntegerInput = (value, options = {}) => {
     const allowNegative = options.allowNegative === true;
@@ -187,6 +187,7 @@ export function integer(options = {}) {
 
             input.addEventListener('input', sanitizeInput);
             input.addEventListener('keydown', event => {
+                containEditorSpatialNavigation(event);
                 handleEditorCommitCancelKeydown({
                     cell,
                     event,
@@ -319,6 +320,7 @@ export function decimal(options = {}) {
 
             input.addEventListener('input', sanitizeInput);
             input.addEventListener('keydown', event => {
+                containEditorSpatialNavigation(event);
                 handleEditorCommitCancelKeydown({
                     cell,
                     event,

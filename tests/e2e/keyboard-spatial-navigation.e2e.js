@@ -75,6 +75,7 @@ test.describe('keyboard spatial navigation', () => {
     test('Enter opens an editor while editor arrows stay in the input', async ({ page }) => {
         const start = rowCell(page, 'PRD-AB02', 'itemCode');
         const target = rowCell(page, 'PRD-AB02', 'productName');
+        const below = rowCell(page, 'PRD-A003', 'productName');
         await focusNavigationCell(start);
         await page.keyboard.press('ArrowRight');
         await expectNavigationFocus(target);
@@ -87,6 +88,13 @@ test.describe('keyboard spatial navigation', () => {
         await expect(target).toHaveClass(/tabulator-editing/);
         await page.keyboard.press('ArrowRight');
         await expect(input).toBeFocused();
+        await page.keyboard.press('ArrowDown');
+        await expect(input).toBeFocused();
+        await expect(target).toHaveClass(/tabulator-editing/);
+        await expect(below).not.toHaveClass(/tabulator-editing/);
+        await page.keyboard.press('ArrowUp');
+        await expect(input).toBeFocused();
+        await expect(target).toHaveClass(/tabulator-editing/);
     });
 
     test('commits a text editor with Enter and restores navigation focus to its source cell', async ({ page }) => {

@@ -11,6 +11,7 @@ import {
     parseDateEditorValue
 } from './date-editor-utils.js';
 import {
+    containEditorSpatialNavigation,
     focusInput,
     getInitialValue,
     navigateEditableCellAfterClose
@@ -522,6 +523,7 @@ export function date(options = {}) {
 
                 if (editorBehavior.hasManualInput) {
                     input.addEventListener('keydown', event => {
+                        containEditorSpatialNavigation(event);
                         if (!isAllowedDateInputKey(event, normalizedOptions.format)) {
                             event.preventDefault();
                             return;
@@ -607,6 +609,7 @@ export function date(options = {}) {
 
             input.addEventListener('input', sanitizeInput);
             input.addEventListener('keydown', event => {
+                containEditorSpatialNavigation(event);
                 if (!isAllowedDateInputKey(event, normalizedOptions.format)) {
                     event.preventDefault();
                     return;

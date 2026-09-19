@@ -588,10 +588,15 @@ export const createKeyboardNavigationRuntime = ({
 
         const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
         const state = editingElement ? 'editing' : 'navigation';
-        if (state === 'editing' && !getAmbColumnMetadata(activeDefinition).spatialNavigationWhileEditing && (
-            enter
-            || ['up', 'down', 'left', 'right', 'commit', 'cancel'].includes(action)
-        )) return;
+        if (state === 'editing') {
+            const spatialAction = ['up', 'down', 'left', 'right'].includes(action);
+
+            // Editors own their close keys while they are open. The checkbox is
+            // the only editor that opts into spatial navigation while editing;
+            // that opt-in applies to arrows only, never Enter.
+            if (enter || ['commit', 'cancel'].includes(action)) return;
+            if (spatialAction && !getAmbColumnMetadata(activeDefinition).spatialNavigationWhileEditing) return;
+        }
         if (auxiliary && getAmbColumnMetadata(activeDefinition).auxiliaryAction !== true) return;
         if (enter && isManagedControlTarget(event, activeCell, activeDefinition)) return;
 

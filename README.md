@@ -374,9 +374,11 @@ popup/action cells, and non-data interactive columns:
   Delete confirmation traps `Tab`/`Shift+Tab` inside the dialog; after delete
   focus returns to Rollback, after Rollback focus returns to Delete, and
   Remove new falls back to the next or previous valid visible destination.
-* Checkbox editors use `Space` and configured toggle keys to change value.
-  `Enter` confirms. `Tab`/`Shift+Tab` confirm and navigate without an
-  accidental extra toggle.
+* Checkbox editors use `Enter`, `Space`, and configured toggle keys to change
+  value while they remain open. Their arrow keys are the deliberate exception:
+  they commit the current checkbox lifecycle and continue geometric grid
+  navigation. `Tab`/`Shift+Tab` confirm and navigate without an accidental
+  extra toggle.
 * Lookup editors use `Enter` to open the lookup dialog when one is configured.
   While the dialog is open, `Tab`/`Shift+Tab` stay inside it, arrow keys move
   lookup selection, `Enter` selects, and `Escape` cancels. Record-based

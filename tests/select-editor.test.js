@@ -71,4 +71,12 @@ describe('select editor keyboard close actions', () => {
         expect(success).toHaveBeenCalledOnce();
         expect(success).toHaveBeenCalledWith('two');
     });
+
+    test('contains ArrowDown without preventing the native select behavior', () => {
+        const { control } = createHarness();
+        const event = control.dispatch('keydown', { key: 'ArrowDown' });
+
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.preventDefault).not.toHaveBeenCalled();
+    });
 });
