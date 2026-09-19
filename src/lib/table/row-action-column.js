@@ -487,6 +487,20 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
         return true;
     };
 
+    const handleActionButtonKeydown = ({ event, cell, row, closeEditor = null }) => {
+        if (event.key === 'Tab') return false;
+        if (event.key !== 'Enter' && event.key !== ' ') return false;
+        stopActionEvent(event);
+        closeEditor?.();
+        void executeAction({
+            action: event.currentTarget?.dataset?.action,
+            row,
+            event,
+            cell
+        });
+        return true;
+    };
+
     const createActionEditor = (cell, onRendered, _success, cancel) => {
         const row = cell.getRow();
         const state = getRowState(row);
@@ -508,6 +522,7 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
                 await executeAction({ action, row, event, cell });
             },
             onButtonKeydown: event => {
+                if (handleActionButtonKeydown({ event, cell, row, closeEditor })) return;
                 if (event.key !== 'Tab') return;
 
                 stopActionEvent(event);
@@ -544,7 +559,10 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
             },
             editor: createActionEditor,
             formatter: cell => {
-                return createActionsContainer(getRowState(cell.getRow()));
+                const row = cell.getRow();
+                return createActionsContainer(getRowState(row), {
+                    onButtonKeydown: event => handleActionButtonKeydown({ event, cell, row })
+                });
             },
             cellClick: async (event, cell) => {
                 const target = event.target;
