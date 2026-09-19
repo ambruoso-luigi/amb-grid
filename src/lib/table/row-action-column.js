@@ -169,7 +169,14 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
 
         if (!container) return;
 
-        const nextContainer = createActionsContainer(getRowState(row));
+        const actionCell = getActionCell(row);
+        const nextContainer = createActionsContainer(getRowState(row), {
+            onButtonKeydown: event => handleActionButtonKeydown({
+                event,
+                cell: actionCell,
+                row
+            })
+        });
 
         if (typeof container.replaceChildren === 'function') {
             container.replaceChildren(
