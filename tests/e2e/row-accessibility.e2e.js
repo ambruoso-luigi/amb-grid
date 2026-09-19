@@ -101,7 +101,16 @@ test.describe('row controls accessibility', () => {
         await deleteButton.focus();
         await page.keyboard.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
-        await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
+        const cancelConfirmation = page.locator('.teh-confirm-dialog__button--cancel');
+        const confirmConfirmation = page.locator('.teh-confirm-dialog__button--confirm');
+        await expect(cancelConfirmation).toBeFocused();
+        await page.keyboard.press('ArrowRight');
+        await expect(confirmConfirmation).toBeFocused();
+        await page.keyboard.press('ArrowLeft');
+        await expect(cancelConfirmation).toBeFocused();
+        await page.keyboard.press('ArrowDown');
+        await expect(confirmConfirmation).toBeFocused();
+        await page.keyboard.press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'deleted');
 
         await focusNextActionButton(page, rollbackButtonSelector);
