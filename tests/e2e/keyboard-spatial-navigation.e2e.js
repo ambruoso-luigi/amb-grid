@@ -176,7 +176,7 @@ test.describe('keyboard spatial navigation', () => {
         await expect(previous).not.toHaveClass(/tabulator-editing/);
     });
 
-    test('crosses Basic CRUD readonly cells with real DOM focus', async ({ page }) => {
+    test('skips Basic CRUD readonly cells with geometric operational focus', async ({ page }) => {
         await page.goto('/src/demo/index.html#feature-examples');
         const basicTable = page.locator('#basic-table');
         const row = basicTable.locator('.tabulator-row').first();
@@ -184,24 +184,15 @@ test.describe('keyboard spatial navigation', () => {
         await expect(title).toBeVisible();
         await focusNavigationCell(title);
 
-        for (const field of ['_state', '_ambRowNumber', '_ambTempId', 'id']) {
-            await page.keyboard.press('ArrowLeft');
-            await expect.poll(() => activeCellField(page)).toBe(field);
-            await expect(row.locator(`.tabulator-cell[tabulator-field="${field}"]`))
-                .not.toHaveClass(/tabulator-editing/);
-        }
+        await page.keyboard.press('ArrowLeft');
+        await expect.poll(async () => ['id', '_ambTempId', '_ambRowNumber', '_state']
+            .includes(await activeCellField(page))).toBe(false);
+        await expect.poll(() => page.evaluate(() => document.activeElement?.matches('.amb-row-action-button')))
+            .toBe(true);
 
-        await page.keyboard.press('Enter');
-        await expect.poll(() => activeCellField(page)).toBe('id');
-        await expect(row.locator('.tabulator-cell[tabulator-field="id"]'))
-            .not.toHaveClass(/tabulator-editing/);
-
-        for (const field of ['_ambTempId', '_ambRowNumber', '_state', 'title']) {
-            await page.keyboard.press('ArrowRight');
-            await expect.poll(() => activeCellField(page)).toBe(field);
-            await expect(row.locator(`.tabulator-cell[tabulator-field="${field}"]`))
-                .not.toHaveClass(/tabulator-editing/);
-        }
+        await page.keyboard.press('ArrowRight');
+        await expect.poll(() => activeCellField(page)).toBe('title');
+        await expect(title).not.toHaveClass(/tabulator-editing/);
 
         await page.keyboard.press('Enter');
         await expect(title).toHaveClass(/tabulator-editing/);

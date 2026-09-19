@@ -169,7 +169,7 @@ export const createKeyboardNavigationRuntime = ({
                 const candidate = (column && row?.getCells?.().find(cell => cell.getColumn?.() === column))
                     || row?.getCell?.(field)
                     || row?.getCells?.().find(cell => cell.getField?.() === field);
-                if (candidate && isNavigationCandidate(candidate)) return [candidate];
+                if (candidate && isKeyboardOperationalCandidate(candidate)) return [candidate];
             }
             return [];
         }
@@ -259,25 +259,18 @@ export const createKeyboardNavigationRuntime = ({
         return rows.slice((page - 1) * pageSize, page * pageSize);
     };
 
-    const isNavigationCandidate = candidate => {
+    const isKeyboardOperationalCandidate = candidate => {
         const element = candidate?.getElement?.();
         const rowElement = element?.closest?.('.tabulator-row');
         const definition = candidate?.getColumn?.()?.getDefinition?.() || {};
-        const metadata = getAmbColumnMetadata(definition);
         if (!element || !isDataRowElement(rowElement)) return false;
         if (!isAllowedByRowState(candidate)) return false;
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
-        if (metadata.interactive) {
-            if (metadata.focusSelector) {
-                return Boolean(element.querySelector?.(metadata.focusSelector));
-            }
-            return Boolean(definition.editor);
-        }
-        return true;
+        return isEditableCandidate(candidate);
     };
 
     const isValidNavigationCell = candidate => {
-        if (!isNavigationCandidate(candidate)) return false;
+        if (!isKeyboardOperationalCandidate(candidate)) return false;
         return candidate?.getElement?.()?.closest?.('.tabulator') === tableElement;
     };
 
@@ -491,7 +484,7 @@ export const createKeyboardNavigationRuntime = ({
         if (direction === 'left' || direction === 'right') {
             const step = direction === 'left' ? -1 : 1;
             for (let index = cellIndex + step; index >= 0 && index < cells.length; index += step) {
-                if (isNavigationCandidate(cells[index])) return cells[index];
+                if (isKeyboardOperationalCandidate(cells[index])) return cells[index];
             }
             return null;
         }
@@ -504,7 +497,7 @@ export const createKeyboardNavigationRuntime = ({
             const targetRow = pageRows[index];
             const sameColumn = targetRow.getCells?.().find(cell => cell.getColumn?.() === column)
                 || (field ? targetRow.getCell?.(field) || targetRow.getCells?.().find(cell => cell.getField?.() === field) : null);
-            if (isNavigationCandidate(sameColumn)) return sameColumn;
+            if (isKeyboardOperationalCandidate(sameColumn)) return sameColumn;
         }
         return null;
     };
@@ -521,7 +514,7 @@ export const createKeyboardNavigationRuntime = ({
         let destination = navigationOptions.resolveNavigation?.(context);
         const customDestination = isValidNavigationCell(destination);
         if (!customDestination) destination = getSpatialDestination(currentCell, direction);
-        if (!isNavigationCandidate(destination)) {
+        if (!isKeyboardOperationalCandidate(destination)) {
             if (!customDestination && (direction === 'up' || direction === 'down')) {
                 const pageRows = getCurrentPageRows();
                 const rowIndex = pageRows.indexOf(currentCell.getRow?.());
@@ -654,7 +647,7 @@ export const createKeyboardNavigationRuntime = ({
         if (isTab) {
             const candidates = getRenderedRows('first')
                 .flatMap(row => row.getCells())
-                .filter(candidate => isEditableCandidate(candidate) && isAllowedByRowState(candidate));
+                .filter(isKeyboardOperationalCandidate);
             const currentIndex = candidates.findIndex(candidate => (
                 candidate === activeCell
                 || candidate.getElement?.() === editingElement

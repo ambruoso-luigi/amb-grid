@@ -463,10 +463,10 @@ describe('table pagination keyboard runtime', () => {
         const event = harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
-        expect(readonly.getElement().focus).toHaveBeenCalledOnce();
-        expect(globalThis.document.activeElement).toBe(readonly.getElement());
-        expect(readonly.getElement().getAttribute('tabindex')).toBe('-1');
+        expect(last.getElement().focus).toHaveBeenCalledOnce();
+        expect(globalThis.document.activeElement).toBe(last.getElement());
         expect(readonly.edit).not.toHaveBeenCalled();
+        expect(last.edit).not.toHaveBeenCalled();
     });
 
     test('makes an unfocusable cell programmatically focusable without changing existing tabindex', () => {
@@ -483,7 +483,7 @@ describe('table pagination keyboard runtime', () => {
         expect(globalThis.document.activeElement).toBe(preserved.getElement());
     });
 
-    test('crosses consecutive readonly cells with arrows while Tab remains editable-only', () => {
+    test('skips consecutive readonly cells with arrows while retaining focus-only activation', () => {
         const first = createCandidate({ field: 'first' });
         const readonlyOne = createCandidate({ editable: false, field: 'readonlyOne' });
         const readonlyTwo = createCandidate({ editable: false, field: 'readonlyTwo' });
@@ -492,17 +492,48 @@ describe('table pagination keyboard runtime', () => {
         globalThis.document.activeElement = first.getElement();
 
         harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
-        expect(globalThis.document.activeElement).toBe(readonlyOne.getElement());
-        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonlyOne.getElement() });
-        expect(globalThis.document.activeElement).toBe(readonlyTwo.getElement());
-        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonlyTwo.getElement() });
         expect(globalThis.document.activeElement).toBe(last.getElement());
+        expect(globalThis.document.activeElement).not.toBe(readonlyOne.getElement());
+        expect(globalThis.document.activeElement).not.toBe(readonlyTwo.getElement());
         expect(readonlyOne.edit).not.toHaveBeenCalled();
         expect(readonlyTwo.edit).not.toHaveBeenCalled();
         expect(last.edit).not.toHaveBeenCalled();
 
         harness.tableElement.dispatch({ key: 'Enter', target: last.getElement() });
         expect(last.edit).toHaveBeenCalledOnce();
+
+        harness.setEditing(false, last);
+        globalThis.document.activeElement = last.getElement();
+        harness.tableElement.dispatch({ key: 'ArrowLeft', target: last.getElement() });
+        expect(globalThis.document.activeElement).toBe(first.getElement());
+    });
+
+    test('skips a vertically aligned cell whose editable callback returns false', () => {
+        const first = createCandidate({ field: 'name' });
+        const unavailable = createCandidate({ field: 'name' });
+        const last = createCandidate({ field: 'name' });
+        unavailable.getColumn().getDefinition().editable = () => false;
+        const rows = [[first], [unavailable], [last]].map(cells => {
+            const row = {
+                getCells: () => cells,
+                getCell: field => cells.find(cell => cell.getField() === field)
+            };
+            cells.forEach(cell => { cell.row = row; });
+            return row;
+        });
+        const harness = createHarness({ cells: [first] });
+        harness.table.getRows = () => rows;
+        [first, unavailable, last].forEach((cell, index) => {
+            cell.row = rows[index];
+            cell.getElement().rowElement = harness.rowElement;
+        });
+        globalThis.document.activeElement = first.getElement();
+
+        harness.tableElement.dispatch({ key: 'ArrowDown', target: first.getElement() });
+
+        expect(globalThis.document.activeElement).toBe(last.getElement());
+        expect(unavailable.edit).not.toHaveBeenCalled();
+        expect(last.edit).not.toHaveBeenCalled();
     });
 
     test('does not call shouldHandle for dedicated page shortcuts', () => {
