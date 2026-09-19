@@ -209,7 +209,7 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
     const focusRowActionButton = (row, expectedAction = null) => {
         const actionCell = getActionCell(row);
 
-        if (actionCell && navigateToCandidate(actionCell)) return true;
+        if (actionCell && !expectedAction && navigateToCandidate(actionCell)) return true;
 
         const cellElement = actionCell && typeof actionCell.getElement === 'function'
             ? actionCell.getElement()
@@ -361,6 +361,10 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
             const actionCell = getActionCell(row);
             const expectedConfig = getActionConfig(getRowState(row));
 
+            if (expectedConfig?.action === expectedAction && focusRowActionButton(row, expectedAction)) {
+                return;
+            }
+
             if (!actionCell && expectedConfig) {
                 updateRowButton(row);
                 restoreActionFocus(row, null, { expectedAction });
@@ -375,6 +379,11 @@ export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) =
             ) return;
 
             updateRowButton(row);
+            if (expectedAction === 'rollback') {
+                // A deleted row must never fall back into one of its data cells.
+                restoreActionFocus(row, null, { expectedAction });
+                return;
+            }
             navigateEditableCellAfterClose(actionCell || cell);
         }, 0);
     };
