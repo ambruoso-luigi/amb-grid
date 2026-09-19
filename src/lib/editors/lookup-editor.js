@@ -1,4 +1,5 @@
 import { LookupDialog } from '../../ui/lookup-dialog.js';
+import { consumeCellAuxiliaryAction } from '../table/keyboard-auxiliary.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
 import { getInitialValue, getLookupOptionValue, navigateToCandidate } from './shared.js';
 
@@ -827,9 +828,9 @@ export function lookup(lookupInstance, options = {}) {
                     return commitFromTab(event.shiftKey ? 'prev' : 'next');
                 }
 
-                if (event.key === 'Enter') {
-                    return openDialog(event);
-                }
+                if (event.key === 'Enter') return commit();
+
+                if (event.key === 'F2') return openDialog(event);
 
                 if (event.key === 'Escape') {
                     closeWithCancel();
@@ -861,12 +862,19 @@ export function lookup(lookupInstance, options = {}) {
                 }
 
                 initializeLookupMetadata();
+                if (consumeCellAuxiliaryAction(cell)) void openDialog();
             });
 
             return container;
         };
 
         editor._ambEditorType = 'lookup';
+        editor._ambCapabilities = {
+            auxiliary: Boolean(
+                typeof normalizedOptions.onOpenDialog === 'function'
+                || typeof normalizedOptions.dialog?.open === 'function'
+            )
+        };
         editor._ambLookupConfig = {
             lookupInstance,
             valueField,

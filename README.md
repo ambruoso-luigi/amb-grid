@@ -354,6 +354,9 @@ popup/action cells, and non-data interactive columns:
   `keyboardNavigation: { bindings: { commit: 'Ctrl+Enter', cancel: 'Escape' } }`.
   Lookup, date, checkbox, and large-text editors retain their dedicated
   keyboard semantics.
+* `F2` activates an auxiliary control when the focused cell supports one;
+  Lookup editors use it to open their search dialog. Lookup `Enter` edits or
+  commits the manual value instead of opening the dialog.
 * `keyboardNavigation.shouldHandle(context)` can return `false` to leave an
   action untouched. `resolveNavigation(context)` may supply a directional
   destination; invalid results fall back to normal geometry.

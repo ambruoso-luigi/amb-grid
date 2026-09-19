@@ -6,15 +6,16 @@ const DEFAULT_BINDINGS = Object.freeze({
     edit: 'Enter',
     commit: 'Enter',
     cancel: 'Escape',
+    auxiliary: 'F2',
     next: 'Tab',
     previous: 'Shift+Tab'
 });
 
-const ACTIONS = Object.freeze(['up', 'down', 'left', 'right', 'edit', 'commit', 'cancel', 'next', 'previous']);
+const ACTIONS = Object.freeze(['up', 'down', 'left', 'right', 'edit', 'commit', 'cancel', 'auxiliary', 'next', 'previous']);
 const keyboardContexts = new WeakMap();
 const KEY_NAMES = new Set([
     'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Tab',
-    'F2', 'Escape', 'Space', 'PageUp', 'PageDown'
+    'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'Escape', 'Space', 'PageUp', 'PageDown'
 ]);
 const MODIFIERS = new Map([
     ['ctrl', 'ctrlKey'], ['control', 'ctrlKey'], ['alt', 'altKey'],

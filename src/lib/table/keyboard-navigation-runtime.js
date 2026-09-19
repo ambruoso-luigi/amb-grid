@@ -15,6 +15,7 @@ import {
     focusAdjacentOutsideGrid,
     registerPageNavigationCoordinator
 } from './page-navigation-coordinator.js';
+import { queueCellAuxiliaryAction } from './keyboard-auxiliary.js';
 
 const nextFrame = () => new Promise(resolve => {
     if (typeof globalThis.requestAnimationFrame === 'function') {
@@ -545,7 +546,7 @@ export const createKeyboardNavigationRuntime = ({
         const previous = matchesShortcut(event, GRID_SHORTCUTS.previousPage);
         const next = matchesShortcut(event, GRID_SHORTCUTS.nextPage);
         const configuredAction = navigationEnabled
-            ? ['up', 'down', 'left', 'right', 'edit', 'next', 'previous'].find(candidate => (
+            ? ['up', 'down', 'left', 'right', 'edit', 'auxiliary', 'next', 'previous'].find(candidate => (
                 matchesKeyboardBinding(event, navigationOptions.bindings[candidate])
             ))
             : null;
@@ -561,6 +562,7 @@ export const createKeyboardNavigationRuntime = ({
         const activeDefinition = activeCell?.getColumn?.()?.getDefinition?.() || {};
         const focusOnly = getAmbColumnMetadata(activeDefinition).keyboardFocusOnly === true;
         const enter = action === 'edit';
+        const auxiliary = action === 'auxiliary';
 
         if (!isInsideTable || (!previous && !next && !action)) return;
 
@@ -570,6 +572,7 @@ export const createKeyboardNavigationRuntime = ({
             enter
             || ['up', 'down', 'left', 'right', 'commit', 'cancel'].includes(action)
         )) return;
+        if (auxiliary && getAmbColumnMetadata(activeDefinition).auxiliaryAction !== true) return;
         if (enter && isManagedControlTarget(event, activeCell, activeDefinition)) return;
 
         if (configuredAction) {
@@ -591,6 +594,20 @@ export const createKeyboardNavigationRuntime = ({
             event.stopPropagation?.();
             event.stopImmediatePropagation?.();
             activeCell.edit?.();
+            return;
+        }
+
+        if (auxiliary) {
+            // The active editor owns its auxiliary control; do not consume its
+            // keydown before the editor can open the dialog.
+            if (state === 'editing') return;
+            event.preventDefault();
+            event.stopPropagation?.();
+            event.stopImmediatePropagation?.();
+            if (state === 'navigation') {
+                queueCellAuxiliaryAction(activeCell);
+                activeCell.edit?.();
+            }
             return;
         }
 

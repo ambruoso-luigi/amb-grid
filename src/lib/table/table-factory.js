@@ -809,11 +809,12 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {string} [edit='Enter']
  * @property {string} [commit='Enter']
  * @property {string} [cancel='Escape']
+ * @property {string} [auxiliary='F2'] Activates an auxiliary cell control, such as a Lookup dialog.
  * @property {string} [next='Tab']
  * @property {string} [previous='Shift+Tab']
  */
 
-/** @typedef {'up'|'down'|'left'|'right'|'edit'|'commit'|'cancel'|'next'|'previous'} AMBKeyboardNavigationAction */
+/** @typedef {'up'|'down'|'left'|'right'|'edit'|'commit'|'cancel'|'auxiliary'|'next'|'previous'} AMBKeyboardNavigationAction */
 /** @typedef {'navigation'|'editing'|'auxiliary'} AMBKeyboardNavigationState */
 /**
  * @typedef {object} AMBKeyboardNavigationContext

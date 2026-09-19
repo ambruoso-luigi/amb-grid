@@ -6,6 +6,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Added
 
+- Added configurable F2 auxiliary actions for AMB Grid cells, initially supported by Lookup editors.
 - Added configurable commit/cancel keyboard bindings for standard inline editors.
 - Configurable `keyboardNavigation` with four-direction spatial cell navigation.
 - Arrow navigation focuses cells without opening editors and reaches visible read-only data cells.
@@ -28,6 +29,7 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Changed
 
+- Lookup keyboard behavior now uses Enter for manual commit and F2 for opening the search dialog.
 - ArrowUp/ArrowDown spatial navigation now continues across adjacent pages while preserving the current column.
 - Standard inline editors return focus to the source cell after keyboard commit or cancel.
 - Default `Alt+ArrowUp`/`Alt+ArrowDown` row navigation was removed; configure those bindings explicitly when needed.
