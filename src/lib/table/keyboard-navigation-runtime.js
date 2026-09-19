@@ -16,6 +16,7 @@ import {
     registerPageNavigationCoordinator
 } from './page-navigation-coordinator.js';
 import { invokeCellAuxiliaryAction, queueCellAuxiliaryAction } from './keyboard-auxiliary.js';
+import { ROW_STATE } from '../crud-helper.js';
 
 const nextFrame = () => new Promise(resolve => {
     if (typeof globalThis.requestAnimationFrame === 'function') {
@@ -86,7 +87,8 @@ export const createKeyboardNavigationRuntime = ({
     paginationMethods,
     enabled,
     keyboardNavigation,
-    getGrid = () => null
+    getGrid = () => null,
+    getCrud = () => null
 }) => {
     const paginationEnabled = enabled === true;
     const navigationOptions = keyboardNavigation || normalizeKeyboardNavigationOptions();
@@ -249,6 +251,12 @@ export const createKeyboardNavigationRuntime = ({
         const definition = candidate?.getColumn?.()?.getDefinition?.() || {};
         const metadata = getAmbColumnMetadata(definition);
         if (!element || !isDataRowElement(rowElement)) return false;
+        const data = candidate.getRow?.()?.getData?.() || {};
+        const stateField = getCrud()?.options?.stateField || '_state';
+        if (data[stateField] === ROW_STATE.DELETED) {
+            return metadata.managedColumn === 'rowAction'
+                && Boolean(element.querySelector?.('.amb-row-action-button[data-action="rollback"]'));
+        }
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
         if (metadata.interactive) {
             if (metadata.focusSelector) {
@@ -480,15 +488,16 @@ export const createKeyboardNavigationRuntime = ({
         }
         const pageRows = getCurrentPageRows();
         const rowIndex = pageRows.indexOf(row);
-        const targetRow = pageRows[rowIndex + (direction === 'up' ? -1 : 1)];
-        if (!targetRow) return null;
         const column = currentCell.getColumn?.();
-        const sameColumn = targetRow.getCells?.().find(cell => cell.getColumn?.() === column);
-        if (sameColumn) return sameColumn;
         const field = currentCell.getField?.();
-        return field
-            ? targetRow.getCell?.(field) || targetRow.getCells?.().find(cell => cell.getField?.() === field) || null
-            : null;
+        const step = direction === 'up' ? -1 : 1;
+        for (let index = rowIndex + step; index >= 0 && index < pageRows.length; index += step) {
+            const targetRow = pageRows[index];
+            const sameColumn = targetRow.getCells?.().find(cell => cell.getColumn?.() === column)
+                || (field ? targetRow.getCell?.(field) || targetRow.getCells?.().find(cell => cell.getField?.() === field) : null);
+            if (isNavigationCandidate(sameColumn)) return sameColumn;
+        }
+        return null;
     };
 
     const navigateSpatially = (currentCell, direction) => {
@@ -528,7 +537,7 @@ export const createKeyboardNavigationRuntime = ({
             return true;
         }
         if (getAmbColumnMetadata(destination.getColumn?.().getDefinition?.()).activateOnNavigationFocus) {
-            destination.edit?.() || focusNavigationCandidate(destination);
+            if (destination.edit?.() === false) focusNavigationCandidate(destination);
         } else focusNavigationCandidate(destination);
         return true;
     };

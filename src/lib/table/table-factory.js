@@ -1077,7 +1077,8 @@ export function createTable(options = {}) {
         paginationMethods,
         enabled: normalizedOptions.pagination === true,
         keyboardNavigation: normalizedKeyboardNavigation,
-        getGrid: () => controller
+        getGrid: () => controller,
+        getCrud: () => crud
     });
     const selectionMethods = createSelectionMethods({
         table,
