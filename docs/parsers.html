@@ -19,7 +19,7 @@
 
     <h1 class="page-title">Namespace: parsers</h1>
 
-
+    
 
 
 
@@ -27,100 +27,94 @@
 <section>
 
 <header>
-
+    
         <h2>parsers</h2>
-
-
+        
+    
 </header>
 
 <article>
     <div class="container-overview">
+    
+        
+            <div class="description">Parser factories used to normalize values before payload/backend submission.Formatters display values, editors let users modify values, validators checkwhether values are acceptable, and parsers transform values into predictablebackend-oriented shapes. Parsers may perform small syntactic checks to avoidincoherent transformations, but they do not replace validators, businessrules, permissions, or backend validation.</div>
+        
 
-
-            <div class="description">Parser factories used to normalize values before payload/backend submission.
-
-Formatters display values, editors let users modify values, validators check
-whether values are acceptable, and parsers transform values into predictable
-backend-oriented shapes. Parsers may perform small syntactic checks to avoid
-incoherent transformations, but they do not replace validators, business
-rules, permissions, or backend validation.</div>
-
-
-
+        
 
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line242">line 242</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
-
-
+        
+    
     </div>
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
         <h3 class="subsection-title">Methods</h3>
 
+        
+            
 
+    
 
-
-
-
-
+    
     <h4 class="name" id=".booleanToPayload"><span class="type-signature">(static) </span>booleanToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
@@ -137,248 +131,248 @@ rules, permissions, or backend validation.</div>
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last">Boolean payload normalization options.
                 <h6>Properties</h6>
-
+                
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
         <th>Default</th>
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>trueValue</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">*</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Payload value for `true`.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>falseValue</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">*</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     false
-
+                
                 </td>
-
+            
 
             <td class="description last">Payload value for `false`.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowEmpty</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>emptyAs</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">*</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     ''
-
+                
                 </td>
-
+            
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
             </td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -389,42 +383,42 @@ rules, permissions, or backend validation.</div>
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line528">line 528</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -443,7 +437,7 @@ rules, permissions, or backend validation.</div>
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -455,37 +449,34 @@ rules, permissions, or backend validation.</div>
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".custom"><span class="type-signature">(static) </span>custom<span class="signature">(parseFn)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
 <div class="description">
-    Create an application-defined parser for a domain-specific payload rule.
-
-The callback result is returned unchanged and callback errors propagate
-to the caller.
+    Create an application-defined parser for a domain-specific payload rule.The callback result is returned unchanged and callback errors propagateto the caller.
 </div>
 
 
@@ -497,50 +488,50 @@ to the caller.
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>parseFn</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">function</span>
 
 
-
+            
             </td>
 
+            
 
-
-
+            
 
             <td class="description last">Application callback receiving the input value.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -551,42 +542,42 @@ to the caller.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line558">line 558</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -603,7 +594,7 @@ to the caller.
 
 <h5>Throws:</h5>
 
-
+        
 
 <dl>
     <dt>
@@ -618,7 +609,7 @@ to the caller.
                 Type
             </dt>
             <dd>
-
+                
 <span class="param-type">TypeError</span>
 
 
@@ -629,12 +620,12 @@ to the caller.
 </dl>
 
 
-
+    
 
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -646,38 +637,34 @@ to the caller.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".date"><span class="type-signature">(static) </span>date<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
 <div class="description">
-    Create a strict date parser.Supports `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, `mm/dd/yyyy`,
-`mm-dd-yyyy`, `yyyy-mm-dd`, `yyyy/mm/dd`, `yyyymmdd`, `Date`, and the
-`it`, `iso`, and `legacy` aliases. Separated formats accept one or two
-digits for day/month; compact `yyyymmdd` stays strictly eight digits.
-Invalid dates return `null`; empty values follow `allowEmpty`.
+    Create a strict date parser.Supports `dd/mm/yyyy`, `dd-mm-yyyy`, `dd.mm.yyyy`, `mm/dd/yyyy`,`mm-dd-yyyy`, `yyyy-mm-dd`, `yyyy/mm/dd`, `yyyymmdd`, `Date`, and the`it`, `iso`, and `legacy` aliases. Separated formats accept one or twodigits for day/month; compact `yyyymmdd` stays strictly eight digits.Invalid dates return `null`; empty values follow `allowEmpty`.
 </div>
 
 
@@ -689,94 +676,94 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last">Date parser options.
                 <h6>Properties</h6>
-
+                
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
         <th>Default</th>
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>inputFormat</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">'dd/mm/yyyy'</span>
 |
 
@@ -816,42 +803,42 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 <span class="param-type">string</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     'dd/mm/yyyy'
-
+                
                 </td>
-
+            
 
             <td class="description last">Expected input format.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>outputFormat</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">'dd/mm/yyyy'</span>
 |
 
@@ -888,79 +875,79 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 <span class="param-type">'Date'</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     'yyyy-mm-dd'
-
+                
                 </td>
-
+            
 
             <td class="description last">Returned format.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowEmpty</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Whether empty values parse as an empty string.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
             </td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -971,42 +958,42 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line269">line 269</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -1025,7 +1012,7 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -1037,37 +1024,34 @@ Invalid dates return `null`; empty values follow `allowEmpty`.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".dateTimeToPayload"><span class="type-signature">(static) </span>dateTimeToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
 <div class="description">
-    Normalize supported AMB Grid date formats plus time to canonical payload `YYYY-MM-DD HH:MM:SS`.
-
-Timezone and Unix timestamp parsing are intentionally out of scope for
-this parser. Timestamp-oriented parsers may be added later.
+    Normalize supported AMB Grid date formats plus time to canonical payload `YYYY-MM-DD HH:MM:SS`.Timezone and Unix timestamp parsing are intentionally out of scope forthis parser. Timestamp-oriented parsers may be added later.
 </div>
 
 
@@ -1079,210 +1063,210 @@ this parser. Timestamp-oriented parsers may be added later.
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last">DateTime payload normalization options.
                 <h6>Properties</h6>
-
+                
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
         <th>Default</th>
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>inputFormats</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Array.&lt;(string|Date)></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                 </td>
-
+            
 
             <td class="description last">Accepted date input formats, in priority order.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowEmpty</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>emptyAs</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     ''
-
+                
                 </td>
-
+            
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
             </td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -1293,42 +1277,42 @@ this parser. Timestamp-oriented parsers may be added later.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line451">line 451</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -1347,7 +1331,7 @@ this parser. Timestamp-oriented parsers may be added later.
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -1359,38 +1343,34 @@ this parser. Timestamp-oriented parsers may be added later.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".dateToPayload"><span class="type-signature">(static) </span>dateToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
 <div class="description">
-    Normalize supported AMB Grid date formats to canonical payload `YYYY-MM-DD`.
-
-Ambiguous values are parsed using the configured `inputFormats` order.
-Parsers do not guess user intent; configure `inputFormats` explicitly
-when a data source can be ambiguous.
+    Normalize supported AMB Grid date formats to canonical payload `YYYY-MM-DD`.Ambiguous values are parsed using the configured `inputFormats` order.Parsers do not guess user intent; configure `inputFormats` explicitlywhen a data source can be ambiguous.
 </div>
 
 
@@ -1402,210 +1382,210 @@ when a data source can be ambiguous.
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last">Date payload normalization options.
                 <h6>Properties</h6>
-
+                
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
         <th>Default</th>
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>inputFormats</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Array.&lt;(string|Date)></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                 </td>
-
+            
 
             <td class="description last">Accepted input formats, in priority order.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowEmpty</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>emptyAs</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     ''
-
+                
                 </td>
-
+            
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
             </td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -1616,42 +1596,42 @@ when a data source can be ambiguous.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line417">line 417</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -1670,7 +1650,7 @@ when a data source can be ambiguous.
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -1682,39 +1662,34 @@ when a data source can be ambiguous.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".decimalToPayload"><span class="type-signature">(static) </span>decimalToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
 <div class="description">
-    Normalize a visual decimal value to a payload-oriented decimal string.
-
-The parser returns strings instead of JavaScript numbers to avoid
-precision surprises with decimal and monetary values. It performs
-syntactic checks only and does not replace decimal validators or backend
-validation.
+    Normalize a visual decimal value to a payload-oriented decimal string.The parser returns strings instead of JavaScript numbers to avoidprecision surprises with decimal and monetary values. It performssyntactic checks only and does not replace decimal validators or backendvalidation.
 </div>
 
 
@@ -1726,407 +1701,407 @@ validation.
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last">Decimal normalization options.
                 <h6>Properties</h6>
-
+                
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
         <th>Default</th>
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>decimalSeparator</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">string</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     ','
-
+                
                 </td>
-
+            
 
             <td class="description last">Visual decimal separator.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>thousandSeparator</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">string</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     '.'
-
+                
                 </td>
-
+            
 
             <td class="description last">Visual thousands separator.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowThousands</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow grouped thousands.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowNegative</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow negative values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowEmpty</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>emptyAs</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     ''
-
+                
                 </td>
-
+            
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>strictThousands</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Require coherent thousands grouping.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowNormalized</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Accept already normalized `123.45` values.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
             </td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -2137,42 +2112,42 @@ validation.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line310">line 310</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -2191,7 +2166,7 @@ validation.
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -2203,29 +2178,29 @@ validation.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".emptyToNull"><span class="type-signature">(static) </span>emptyToNull<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
@@ -2247,42 +2222,42 @@ validation.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line575">line 575</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -2301,7 +2276,7 @@ validation.
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -2313,38 +2288,34 @@ validation.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".integerToPayload"><span class="type-signature">(static) </span>integerToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
 <div class="description">
-    Normalize a visual integer value to a payload-oriented integer string.
-
-Do not use this parser for codes with leading zeroes. Identifiers and
-codes should remain application strings instead of being normalized as
-numeric payload values.
+    Normalize a visual integer value to a payload-oriented integer string.Do not use this parser for codes with leading zeroes. Identifiers andcodes should remain application strings instead of being normalized asnumeric payload values.
 </div>
 
 
@@ -2356,329 +2327,329 @@ numeric payload values.
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last">Integer normalization options.
                 <h6>Properties</h6>
-
+                
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
         <th>Default</th>
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>thousandSeparator</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">string</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     '.'
-
+                
                 </td>
-
+            
 
             <td class="description last">Visual thousands separator.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowThousands</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow grouped thousands.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowNegative</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow negative values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowEmpty</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>emptyAs</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     ''
-
+                
                 </td>
-
+            
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>strictThousands</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Require coherent thousands grouping.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
             </td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -2689,42 +2660,42 @@ numeric payload values.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line378">line 378</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -2743,7 +2714,7 @@ numeric payload values.
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -2755,29 +2726,29 @@ numeric payload values.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+            
 
+    
 
-
-
-
-
-
+    
     <h4 class="name" id=".timeToPayload"><span class="type-signature">(static) </span>timeToPayload<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
 
-
-
+    
 
 
 
@@ -2794,173 +2765,173 @@ numeric payload values.
 
 
     <h5>Parameters:</h5>
-
+    
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last">Time payload normalization options.
                 <h6>Properties</h6>
-
+                
 
 <table class="params">
     <thead>
     <tr>
-
+        
         <th>Name</th>
-
+        
 
         <th>Type</th>
 
-
+        
         <th>Attributes</th>
+        
 
-
-
+        
         <th>Default</th>
-
+        
 
         <th class="last">Description</th>
     </tr>
     </thead>
 
     <tbody>
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>allowEmpty</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">boolean</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     true
-
+                
                 </td>
-
+            
 
             <td class="description last">Allow empty values.</td>
         </tr>
 
-
+    
 
         <tr>
-
+            
                 <td class="name"><code>emptyAs</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">''</span>
 |
 
 <span class="param-type">null</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
                 <td class="default">
-
+                
                     ''
-
+                
                 </td>
-
+            
 
             <td class="description last">Returned value for empty input.</td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
             </td>
         </tr>
 
-
+    
     </tbody>
 </table>
 
@@ -2971,42 +2942,42 @@ numeric payload values.
 
 <dl class="details">
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_parsers.js.html">lib/parsers.js</a>, <a href="lib_parsers.js.html#line492">line 492</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
@@ -3025,7 +2996,7 @@ numeric payload values.
 
 <h5>Returns:</h5>
 
-
+        
 <div class="param-desc">
     Parser object with a `parse(value)` method.
 </div>
@@ -3037,25 +3008,25 @@ numeric payload values.
         Type
     </dt>
     <dd>
-
+        
 <span class="param-type">Object</span>
 
 
     </dd>
 </dl>
 
+    
 
 
 
 
 
+        
+    
 
+    
 
-
-
-
-
-
+    
 </article>
 
 </section>
@@ -3066,13 +3037,13 @@ numeric payload values.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addColumn">addColumn</a></li><li><a href="global.html#addData">addData</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#addTreeChild">addTreeChild</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearData">clearData</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createDeleteColumn">createDeleteColumn</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteColumn">deleteColumn</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#import">import</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#moveRow">moveRow</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redo">redo</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#replaceData">replaceData</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setColumns">setColumns</a></li><li><a href="global.html#setData">setData</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#undo">undo</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateColumnDefinition">updateColumnDefinition</a></li><li><a href="global.html#updateData">updateData</a></li><li><a href="global.html#updateOrAddData">updateOrAddData</a></li><li><a href="global.html#updateOrAddRow">updateOrAddRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addColumn">addColumn</a></li><li><a href="global.html#addData">addData</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#addTreeChild">addTreeChild</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearData">clearData</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createRowActionColumn">createRowActionColumn</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteColumn">deleteColumn</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#focusNavigationCandidate">focusNavigationCandidate</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#import">import</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#moveRow">moveRow</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeKeyboardNavigationOptions">normalizeKeyboardNavigationOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redo">redo</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#replaceData">replaceData</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setColumns">setColumns</a></li><li><a href="global.html#setData">setData</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#undo">undo</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateColumnDefinition">updateColumnDefinition</a></li><li><a href="global.html#updateData">updateData</a></li><li><a href="global.html#updateOrAddData">updateOrAddData</a></li><li><a href="global.html#updateOrAddRow">updateOrAddRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Aug 21 2026 13:24:47 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Sep 19 2026 10:36:37 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

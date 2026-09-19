@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: lib/table/controller/search-methods.js</title>
+    <title>JSDoc: Source: lib/editors/shared.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: lib/table/controller/search-methods.js</h1>
+    <h1 class="page-title">Source: lib/editors/shared.js</h1>
 
     
 
@@ -26,107 +26,320 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Creates the global-search methods exposed by the AMB Grid controller.
+            <pre class="prettyprint source linenums"><code>import {
+    focusAdjacentOutsideGrid,
+    getPageNavigationCoordinator
+} from '../table/page-navigation-coordinator.js';
+import { getAmbColumnMetadata } from '../table/column-metadata.js';
+import {
+    getKeyboardNavigationContext,
+    matchesKeyboardBinding,
+    normalizeKeyboardNavigationOptions
+} from '../table/keyboard-bindings.js';
+
+export const getInitialValue = cell => {
+    const value = cell.getValue();
+
+    if (value === null || value === undefined) return '';
+
+    return String(value);
+};
+
+const columnIsVisible = column => {
+    if (column &amp;&amp; typeof column.isVisible === 'function') {
+        return column.isVisible() !== false;
+    }
+
+    const definition = column
+        &amp;&amp; typeof column.getDefinition === 'function'
+        ? column.getDefinition()
+        : null;
+
+    return !definition || definition.visible !== false;
+};
+
+const getCellDefinition = cell => {
+    const column = cell &amp;&amp; cell.getColumn &amp;&amp; cell.getColumn();
+
+    return column &amp;&amp; typeof column.getDefinition === 'function'
+        ? column.getDefinition()
+        : null;
+};
+
+const focusInteractiveCandidate = (candidate, definition) => {
+    const cellElement = candidate
+        &amp;&amp; typeof candidate.getElement === 'function'
+        ? candidate.getElement()
+        : null;
+    const selector = getAmbColumnMetadata(definition).focusSelector;
+    const selectedTarget = selector
+        &amp;&amp; cellElement
+        &amp;&amp; typeof cellElement.querySelector === 'function'
+        ? cellElement.querySelector(selector)
+        : null;
+    if (selector &amp;&amp; !selectedTarget) return false;
+    const focusTarget = selectedTarget || cellElement;
+
+    if (!focusTarget || typeof focusTarget.focus !== 'function') return false;
+
+    focusTarget.focus();
+    return true;
+};
+
+/**
+ * Focuses a cell while suppressing the table engine's focus-to-edit behavior.
  *
- * @param {object} context - Required method dependencies.
- * @param {object|null} context.searchController - Optional global-search controller.
- * @returns {object} Search methods for the flat controller API.
+ * @param {object} cell - Cell component to focus.
+ * @returns {boolean} Whether focus was requested.
  * @private
  * @internal
  */
-export const createSearchMethods = ({ searchController }) => ({
-    /**
-     * Sets the AMB Grid global search query.
-     *
-     * The configured search fields and options are reused. Applying a query may
-     * change which rows are active or visible, but it does not directly modify
-     * row data or CRUD state.
-     *
-     * @param {*} query - Search value.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
-     */
-    setSearchQuery(query) {
-        if (!searchController) return false;
+export const focusCellWithoutEditing = cell => {
+    const cellElement = cell?.getElement?.();
 
-        searchController.setSearchQuery(query);
-        return true;
-    },
+    if (!cellElement || typeof cellElement.focus !== 'function') return false;
 
-    /**
-     * Clears the AMB Grid global search query.
-     *
-     * Header filters and developer-managed programmatic filters remain separate.
-     * Clearing search may change which rows are active or visible, but it does
-     * not directly modify row data or CRUD state.
-     *
-     * @returns {boolean} `true` when search is available, otherwise `false`.
-     */
-    clearSearch() {
-        if (!searchController) return false;
+    const blockEditFocus = event => event.stopImmediatePropagation?.();
 
-        searchController.clearSearch();
-        return true;
-    },
+    cellElement.addEventListener?.('focus', blockEditFocus, true);
+    try {
+        cellElement.focus({ preventScroll: true });
+    } catch {
+        cellElement.focus();
+    } finally {
+        cellElement.removeEventListener?.('focus', blockEditFocus, true);
+    }
 
-    /**
-     * Returns the AMB Grid global search state.
-     *
-     * The returned state contains the current `query`, `selectedFields`,
-     * `caseSensitive`, and `wholeWord` values. When global search is not
-     * configured, a new empty state object with a new `selectedFields` array is
-     * returned.
-     *
-     * @returns {object} Current global search state.
-     */
-    getSearchState() {
-        if (!searchController) {
-            return {
-                query: '',
-                selectedFields: [],
-                caseSensitive: false,
-                wholeWord: false
-            };
+    return true;
+};
+
+const scheduleNavigationFocusRestore = cell => {
+    const restore = () => focusCellWithoutEditing(cell);
+    if (typeof globalThis.requestAnimationFrame === 'function') {
+        globalThis.requestAnimationFrame(restore);
+        return;
+    }
+    Promise.resolve().then(restore);
+};
+
+/**
+ * Handles the configurable keyboard close actions used by standard inline editors.
+ *
+ * @private
+ * @internal
+ */
+export const handleEditorCommitCancelKeydown = ({ cell, event, onCommit, onCancel }) => {
+    const table = cell?.getTable?.();
+    const context = getKeyboardNavigationContext(table);
+    const options = context?.keyboardNavigationOptions;
+    const enabled = Boolean(context &amp;&amp; options?.enabled !== false);
+    const bindings = enabled
+        ? options?.bindings
+        : normalizeKeyboardNavigationOptions().bindings;
+
+    // Sequential navigation owns Tab and Shift+Tab even if a close binding is
+    // configured with the same shortcut.
+    if (
+        matchesKeyboardBinding(event, bindings.next)
+        || matchesKeyboardBinding(event, bindings.previous)
+    ) return false;
+
+    const action = ['commit', 'cancel'].find(candidate => (
+        matchesKeyboardBinding(event, bindings[candidate])
+    ));
+    if (!action) return false;
+
+    if (enabled &amp;&amp; options?.shouldHandle?.({
+        action,
+        event,
+        state: 'editing',
+        cell,
+        row: cell?.getRow?.(),
+        column: cell?.getColumn?.(),
+        grid: context.getGrid?.()
+    }) === false) return false;
+
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    event.stopImmediatePropagation?.();
+    if (action === 'commit') onCommit();
+    else onCancel();
+    scheduleNavigationFocusRestore(cell);
+    return true;
+};
+
+/** Focuses a spatial keyboard-navigation destination without opening an editor. */
+export const focusNavigationCandidate = candidate => {
+    const definition = getCellDefinition(candidate);
+    if (!definition || !columnIsVisible(candidate?.getColumn?.())) return false;
+    const metadata = getAmbColumnMetadata(definition);
+    return metadata.interactive ? focusInteractiveCandidate(candidate, definition) : focusCellWithoutEditing(candidate);
+};
+
+export const isEditableCandidate = candidate => {
+    if (!candidate) return false;
+
+    const column = candidate.getColumn &amp;&amp; candidate.getColumn();
+    const definition = getCellDefinition(candidate);
+
+    if (!columnIsVisible(column)) return false;
+    if (!definition) return false;
+    if (definition.editable === false) return false;
+    if (typeof definition.editable === 'function') {
+        if (definition.editable(candidate) === false) return false;
+    }
+
+    const metadata = getAmbColumnMetadata(definition);
+
+    return Boolean(
+        metadata.interactive
+            ? definition.editor || metadata.focusSelector
+            : definition.editor &amp;&amp; typeof candidate.edit === 'function'
+    );
+};
+
+export const navigateToCandidate = candidate => {
+    if (!isEditableCandidate(candidate)) return false;
+
+    const definition = getCellDefinition(candidate);
+
+    const metadata = getAmbColumnMetadata(definition);
+
+    if (metadata.keyboardFocusOnly === true) {
+        return focusCellWithoutEditing(candidate);
+    }
+
+    if (metadata.interactive) {
+        if (definition.editor &amp;&amp; typeof candidate.edit === 'function') {
+            return candidate.edit() !== false;
         }
 
-        return searchController.getSearchState();
-    },
-
-    /**
-     * Sets the fields used by AMB Grid global search.
-     *
-     * Field validation and normalization are handled by the configured search
-     * system. Updating the fields may immediately change which rows are active
-     * or visible.
-     *
-     * @param {string[]} fields - Field names to search.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
-     */
-    setSearchFields(fields) {
-        if (!searchController) return false;
-
-        searchController.setSearchFields(fields);
-        return true;
-    },
-
-    /**
-     * Sets AMB Grid global search options.
-     *
-     * Supported options include `caseSensitive` and `wholeWord`. Updating these
-     * options may immediately change which rows are active or visible.
-     *
-     * @param {object} options - Search options.
-     * @param {boolean} [options.caseSensitive] - Match letter case.
-     * @param {boolean} [options.wholeWord] - Match whole words.
-     * @returns {boolean} `true` when search is available, otherwise `false`.
-     */
-    setSearchOptions(options) {
-        if (!searchController) return false;
-
-        searchController.setSearchOptions(options);
-        return true;
+        return focusInteractiveCandidate(candidate, definition);
     }
-});
+
+    return candidate.edit() !== false;
+};
+
+export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
+    globalThis.setTimeout(() => {
+        const row = cell &amp;&amp; cell.getRow &amp;&amp; cell.getRow();
+        const cells = row &amp;&amp; typeof row.getCells === 'function'
+            ? row.getCells()
+            : [];
+        const currentIndex = cells.indexOf(cell);
+        const step = direction === 'prev' ? -1 : 1;
+
+        if (currentIndex !== -1) {
+            for (
+                let index = currentIndex + step;
+                index >= 0 &amp;&amp; index &lt; cells.length;
+                index += step
+            ) {
+                const candidate = cells[index];
+
+                if (navigateToCandidate(candidate)) return;
+            }
+        }
+
+        const navigate = direction === 'prev' ? cell?.navigatePrev : cell?.navigateNext;
+
+        if (typeof navigate === 'function' &amp;&amp; navigate.call(cell)) return;
+
+        const table = cell &amp;&amp; cell.getTable &amp;&amp; cell.getTable();
+        const tableNavigate = direction === 'prev'
+            ? table?.navigatePrev
+            : table?.navigateNext;
+
+        if (typeof tableNavigate === 'function' &amp;&amp; tableNavigate.call(table)) return;
+
+        const currentPage = table &amp;&amp; typeof table.getPage === 'function'
+            ? table.getPage()
+            : false;
+        const pageMax = table &amp;&amp; typeof table.getPageMax === 'function'
+            ? table.getPageMax()
+            : false;
+        const canChangePage = direction === 'prev'
+            ? currentPage > 1
+            : currentPage &lt; pageMax;
+        const coordinator = getPageNavigationCoordinator(table);
+
+        if (canChangePage &amp;&amp; coordinator) {
+            coordinator.transitionPage({
+                direction,
+                destination: direction === 'prev' ? 'last' : 'first'
+            });
+            return;
+        }
+
+        const grid = cell?.getElement?.()?.closest?.('.tabulator');
+
+        if (!focusAdjacentOutsideGrid(grid, direction)) {
+            globalThis.document?.activeElement?.blur?.();
+        }
+
+    }, 0);
+};
+
+export const focusInput = (input, onRendered, options = {}) => {
+    onRendered(() => {
+        const cursorPosition = input.value.length;
+
+        input.focus();
+
+        if (options.selectOnFocus === true) {
+            input.select();
+            return;
+        }
+
+        input.setSelectionRange(cursorPosition, cursorPosition);
+    });
+};
+
+export const createSelectOption = ({ value, label }) => {
+    const option = document.createElement('option');
+
+    option.value = value;
+    option.textContent = label;
+
+    return option;
+};
+
+export const normalizeSelectOption = (option, options) => {
+    if (typeof option === 'string') {
+        return {
+            value: option,
+            label: option
+        };
+    }
+
+    const value = option &amp;&amp; option[options.valueField];
+    const label = option &amp;&amp; option[options.labelField];
+
+    return {
+        value: value === null || value === undefined ? '' : String(value),
+        label: label === null || label === undefined ? String(value ?? '') : String(label)
+    };
+};
+
+export const getLookupOptionValue = (item, valueField) => {
+    const value = item &amp;&amp; item[valueField];
+
+    return value === null || value === undefined ? '' : String(value);
+};
+
+export const createLookupOption = (value, label, valueField, labelField) => {
+    return {
+        [valueField]: value,
+        [labelField]: label
+    };
+};
+
+export const toCssSize = value => {
+    if (typeof value === 'number') return `${value}px`;
+    if (value === null || value === undefined || value === '') return '';
+
+    return String(value);
+};
 </code></pre>
         </article>
     </section>
