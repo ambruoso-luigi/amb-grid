@@ -25,6 +25,19 @@ describe('keyboard bindings', () => {
         expect(matchesKeyboardBinding({ key: 'ArrowRight' }, options.bindings.right)).toBe(true);
     });
 
+    test('uses default commit/cancel bindings and supports partial overrides', () => {
+        const defaults = normalizeKeyboardNavigationOptions();
+        const custom = normalizeKeyboardNavigationOptions({
+            bindings: { commit: 'Ctrl+Enter' }
+        });
+
+        expect(matchesKeyboardBinding({ key: 'Enter' }, defaults.bindings.commit)).toBe(true);
+        expect(matchesKeyboardBinding({ key: 'Escape' }, defaults.bindings.cancel)).toBe(true);
+        expect(matchesKeyboardBinding({ key: 'Enter' }, custom.bindings.commit)).toBe(false);
+        expect(matchesKeyboardBinding({ key: 'Enter', ctrlKey: true }, custom.bindings.commit)).toBe(true);
+        expect(matchesKeyboardBinding({ key: 'Escape' }, custom.bindings.cancel)).toBe(true);
+    });
+
     test('rejects invalid bindings and callbacks', () => {
         expect(() => normalizeKeyboardNavigationOptions({ bindings: { up: '' } })).toThrow(TypeError);
         expect(() => normalizeKeyboardNavigationOptions({ shouldHandle: true })).toThrow(TypeError);

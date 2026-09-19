@@ -9,7 +9,11 @@ import {
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from './autocomplete-editor-utils.js';
-import { getInitialValue, navigateEditableCellAfterClose } from './shared.js';
+import {
+    getInitialValue,
+    handleEditorCommitCancelKeydown,
+    navigateEditableCellAfterClose
+} from './shared.js';
 
 const VIEWPORT_MARGIN = 8;
 const DEFAULT_DROPDOWN_Z_INDEX = 10050;
@@ -318,11 +322,20 @@ export function autocomplete(values, options = {}) {
 
             const action = getAutocompleteKeyAction(event.key);
 
-            if (action.preventDefault) {
+            if (action.action === 'commit' && event.key === 'Tab') {
+                const direction = event.shiftKey ? 'prev' : 'next';
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation?.();
+                commit(undefined, direction);
+                return;
+            }
+
+            if (action.action === 'suggestions' && action.preventDefault) {
                 event.preventDefault();
             }
 
-            if (action.stopPropagation) {
+            if (action.action === 'suggestions' && action.stopPropagation) {
                 event.stopPropagation();
 
                 if (typeof event.stopImmediatePropagation === 'function') {
@@ -345,25 +358,22 @@ export function autocomplete(values, options = {}) {
             }
 
             if (action.action === 'commit') {
-                const direction = event.key === 'Tab'
-                    ? (event.shiftKey ? 'prev' : 'next')
-                    : null;
-
-                if (direction) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    if (typeof event.stopImmediatePropagation === 'function') {
-                        event.stopImmediatePropagation();
-                    }
-                }
-
-                commit(undefined, direction);
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: () => commit(),
+                    onCancel: closeWithCancel
+                });
                 return;
             }
 
             if (action.action === 'cancel') {
-                closeWithCancel();
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: () => commit(),
+                    onCancel: closeWithCancel
+                });
             }
         };
 

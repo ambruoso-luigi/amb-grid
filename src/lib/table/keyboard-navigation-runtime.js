@@ -5,7 +5,11 @@ import {
     navigateToCandidate
 } from '../editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from './keyboard-shortcuts.js';
-import { matchesKeyboardBinding, normalizeKeyboardNavigationOptions } from './keyboard-bindings.js';
+import {
+    matchesKeyboardBinding,
+    normalizeKeyboardNavigationOptions,
+    registerKeyboardNavigationContext
+} from './keyboard-bindings.js';
 import { getAmbColumnMetadata } from './column-metadata.js';
 import {
     focusAdjacentOutsideGrid,
@@ -83,11 +87,17 @@ export const createKeyboardNavigationRuntime = ({
     keyboardNavigation,
     getGrid = () => null
 }) => {
-    if (!tableElement) return { destroy() {} };
-
     const paginationEnabled = enabled === true;
     const navigationOptions = keyboardNavigation || normalizeKeyboardNavigationOptions();
     const navigationEnabled = navigationOptions.enabled !== false;
+    const unregisterKeyboardContext = registerKeyboardNavigationContext(table, {
+        keyboardNavigationOptions: navigationOptions,
+        getGrid
+    });
+
+    if (!tableElement) {
+        return { destroy: unregisterKeyboardContext };
+    }
 
     let transitionInProgress = false;
     let activeFinalizer = null;
@@ -525,7 +535,10 @@ export const createKeyboardNavigationRuntime = ({
 
         const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
         const state = editingElement ? 'editing' : 'navigation';
-        if (state === 'editing' && (enter || ['up', 'down', 'left', 'right'].includes(action))) return;
+        if (state === 'editing' && (
+            enter
+            || ['up', 'down', 'left', 'right', 'commit', 'cancel'].includes(action)
+        )) return;
         if (enter && isManagedControlTarget(event, activeCell, activeDefinition)) return;
 
         if (configuredAction) {
@@ -697,6 +710,7 @@ export const createKeyboardNavigationRuntime = ({
             for (const finalize of [...pendingRenderWaitFinalizers]) finalize();
             activeFinalizer?.();
             unregisterCoordinator();
+            unregisterKeyboardContext();
             if (listenerAttached) {
                 tableElement.removeEventListener('keydown', handleKeydown, true);
                 tableElement.removeEventListener('mousedown', handleFocusOnlyPointerActivation, true);

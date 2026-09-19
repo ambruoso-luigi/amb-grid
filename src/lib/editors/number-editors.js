@@ -1,4 +1,4 @@
-import { focusInput, getInitialValue } from './shared.js';
+import { focusInput, getInitialValue, handleEditorCommitCancelKeydown } from './shared.js';
 
 const normalizeIntegerInput = (value, options = {}) => {
     const allowNegative = options.allowNegative === true;
@@ -123,6 +123,17 @@ export function integer(options = {}) {
             if (normalizedOptions.maxLength !== undefined) {
                 input.maxLength = normalizedOptions.maxLength;
             }
+            let closed = false;
+            const closeWithSuccess = value => {
+                if (closed) return;
+                closed = true;
+                success(value);
+            };
+            const closeWithCancel = () => {
+                if (closed) return;
+                closed = true;
+                cancel();
+            };
 
             const sanitizeInput = () => {
                 const previousValue = input.value;
@@ -140,49 +151,47 @@ export function integer(options = {}) {
 
                 if (value === '' || value === '-') {
                     if (normalizedOptions.emptyValue !== undefined) {
-                        success(normalizedOptions.emptyValue);
+                        closeWithSuccess(normalizedOptions.emptyValue);
                         return;
                     }
 
                     if (normalizedOptions.allowEmpty) {
-                        success('');
+                        closeWithSuccess('');
                         return;
                     }
 
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
                 const numberValue = Number(value);
 
                 if (!Number.isFinite(numberValue)) {
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
                 if (normalizedOptions.min !== undefined && numberValue < normalizedOptions.min) {
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
                 if (normalizedOptions.max !== undefined && numberValue > normalizedOptions.max) {
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
-                success(numberValue);
+                closeWithSuccess(numberValue);
             };
 
             input.addEventListener('input', sanitizeInput);
             input.addEventListener('keydown', event => {
-                if (event.key === 'Enter') {
-                    commit();
-                    return;
-                }
-
-                if (event.key === 'Escape') {
-                    cancel();
-                }
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: commit,
+                    onCancel: closeWithCancel
+                });
             });
             input.addEventListener('blur', commit);
 
@@ -239,6 +248,17 @@ export function decimal(options = {}) {
                     : initialValue,
                 normalizedOptions
             );
+            let closed = false;
+            const closeWithSuccess = value => {
+                if (closed) return;
+                closed = true;
+                success(value);
+            };
+            const closeWithCancel = () => {
+                if (closed) return;
+                closed = true;
+                cancel();
+            };
 
             const sanitizeInput = () => {
                 const previousValue = input.value;
@@ -262,49 +282,47 @@ export function decimal(options = {}) {
 
                 if (emptyValues.includes(value)) {
                     if (normalizedOptions.emptyValue !== undefined) {
-                        success(normalizedOptions.emptyValue);
+                        closeWithSuccess(normalizedOptions.emptyValue);
                         return;
                     }
 
                     if (normalizedOptions.allowEmpty) {
-                        success('');
+                        closeWithSuccess('');
                         return;
                     }
 
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
                 const numberValue = parseDecimalValue(value, normalizedOptions.decimalSeparator);
 
                 if (!Number.isFinite(numberValue)) {
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
                 if (normalizedOptions.min !== undefined && numberValue < normalizedOptions.min) {
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
                 if (normalizedOptions.max !== undefined && numberValue > normalizedOptions.max) {
-                    cancel();
+                    closeWithCancel();
                     return;
                 }
 
-                success(numberValue);
+                closeWithSuccess(numberValue);
             };
 
             input.addEventListener('input', sanitizeInput);
             input.addEventListener('keydown', event => {
-                if (event.key === 'Enter') {
-                    commit();
-                    return;
-                }
-
-                if (event.key === 'Escape') {
-                    cancel();
-                }
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: commit,
+                    onCancel: closeWithCancel
+                });
             });
             input.addEventListener('blur', commit);
 

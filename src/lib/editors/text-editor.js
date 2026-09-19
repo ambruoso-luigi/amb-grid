@@ -1,4 +1,4 @@
-import { focusInput, getInitialValue } from './shared.js';
+import { focusInput, getInitialValue, handleEditorCommitCancelKeydown } from './shared.js';
 
     /**
      * Single-line text editor. Saves a string; Enter/blur commit and Escape cancels.
@@ -37,19 +37,29 @@ export function text(options = {}) {
                 return options.trim ? input.value.trim() : input.value;
             };
 
+            let closed = false;
+            const closeWithSuccess = () => {
+                if (closed) return;
+                closed = true;
+                success(getValue());
+            };
+            const closeWithCancel = () => {
+                if (closed) return;
+                closed = true;
+                cancel();
+            };
+
             input.addEventListener('input', normalizeInputValue);
             input.addEventListener('keydown', event => {
-                if (event.key === 'Enter') {
-                    success(getValue());
-                    return;
-                }
-
-                if (event.key === 'Escape') {
-                    cancel();
-                }
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: closeWithSuccess,
+                    onCancel: closeWithCancel
+                });
             });
             input.addEventListener('blur', () => {
-                success(getValue());
+                closeWithSuccess();
             });
 
             focusInput(input, onRendered, {

@@ -1,4 +1,9 @@
-import { createSelectOption, getInitialValue, normalizeSelectOption } from './shared.js';
+import {
+    createSelectOption,
+    getInitialValue,
+    handleEditorCommitCancelKeydown,
+    normalizeSelectOption
+} from './shared.js';
 
     /**
      * Native select editor. Saves the selected option value as a string.
@@ -41,16 +46,27 @@ export function select(options = {}) {
 
             select.value = getInitialValue(cell);
 
+            let closed = false;
             const commit = () => {
+                if (closed) return;
+                closed = true;
                 success(select.value);
+            };
+            const closeWithCancel = () => {
+                if (closed) return;
+                closed = true;
+                cancel();
             };
 
             select.addEventListener('change', commit);
             select.addEventListener('blur', commit);
             select.addEventListener('keydown', event => {
-                if (event.key === 'Escape') {
-                    cancel();
-                }
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: commit,
+                    onCancel: closeWithCancel
+                });
             });
 
             onRendered(() => {

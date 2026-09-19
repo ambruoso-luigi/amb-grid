@@ -346,6 +346,12 @@ popup/action cells, and non-data interactive columns:
 * `Enter` opens the editor of the focused editable cell. `Alt+ArrowUp` and
   `Alt+ArrowDown` are no longer defaults, but can be restored explicitly with
   `keyboardNavigation: { bindings: { up: 'Alt+ArrowUp', down: 'Alt+ArrowDown' } }`.
+* In standard inline editors, arrow keys remain with the editor; `Enter`
+  commits and `Escape` cancels, returning focus to the same cell. These
+  bindings can be customized, for example
+  `keyboardNavigation: { bindings: { commit: 'Ctrl+Enter', cancel: 'Escape' } }`.
+  Lookup, date, checkbox, and large-text editors retain their dedicated
+  keyboard semantics.
 * `keyboardNavigation.shouldHandle(context)` can return `false` to leave an
   action untouched. `resolveNavigation(context)` may supply a directional
   destination; invalid results fall back to normal geometry.
@@ -913,7 +919,8 @@ Selected and typed values are trimmed only on commit by default with
 `trimInput: true`; set `trimInput: false` to preserve surrounding whitespace.
 Backspace and Delete retain native input behavior. Arrow keys navigate
 suggestions, Enter commits, Escape cancels, and Tab commits without blocking
-grid navigation. At commit, `allowEmpty` and `invalidBehavior` determine
+grid navigation. While `keyboardNavigation` is enabled, Enter and Escape use
+the table commit/cancel bindings (Enter/Escape by default). At commit, `allowEmpty` and `invalidBehavior` determine
 whether an empty string is saved or the edit is cancelled.
 
 `allowedValues` is synchronous and intended for static lists. Async validation is not included at this stage.

@@ -4,11 +4,14 @@ const DEFAULT_BINDINGS = Object.freeze({
     left: 'ArrowLeft',
     right: 'ArrowRight',
     edit: 'Enter',
+    commit: 'Enter',
+    cancel: 'Escape',
     next: 'Tab',
     previous: 'Shift+Tab'
 });
 
-const ACTIONS = Object.freeze(['up', 'down', 'left', 'right', 'edit', 'next', 'previous']);
+const ACTIONS = Object.freeze(['up', 'down', 'left', 'right', 'edit', 'commit', 'cancel', 'next', 'previous']);
+const keyboardContexts = new WeakMap();
 const KEY_NAMES = new Set([
     'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Tab',
     'F2', 'Escape', 'Space', 'PageUp', 'PageDown'
@@ -58,6 +61,22 @@ export const matchesKeyboardBinding = (event, binding) => {
         && Boolean(event?.shiftKey) === binding.shiftKey
         && Boolean(event?.metaKey) === binding.metaKey;
 };
+
+/**
+ * @private
+ * @internal
+ */
+export const registerKeyboardNavigationContext = (table, context) => {
+    if (!table) return () => {};
+    keyboardContexts.set(table, context);
+    return () => keyboardContexts.delete(table);
+};
+
+/**
+ * @private
+ * @internal
+ */
+export const getKeyboardNavigationContext = table => keyboardContexts.get(table);
 
 /** Normalizes the public AMB Grid keyboard navigation configuration. */
 export const normalizeKeyboardNavigationOptions = (keyboardNavigation = undefined) => {

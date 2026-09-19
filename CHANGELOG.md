@@ -4,6 +4,9 @@ All notable changes to AMB Grid are documented in this file.
 
 ## [Unreleased]
 
+- Added configurable commit/cancel keyboard bindings for standard inline editors.
+- Standard inline editors return focus to the source cell after keyboard commit or cancel.
+
 ### Added
 
 - Configurable `keyboardNavigation` with four-direction spatial cell navigation.

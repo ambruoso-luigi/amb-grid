@@ -3,6 +3,11 @@ import {
     getPageNavigationCoordinator
 } from '../table/page-navigation-coordinator.js';
 import { getAmbColumnMetadata } from '../table/column-metadata.js';
+import {
+    getKeyboardNavigationContext,
+    matchesKeyboardBinding,
+    normalizeKeyboardNavigationOptions
+} from '../table/keyboard-bindings.js';
 
 export const getInitialValue = cell => {
     const value = cell.getValue();
@@ -77,6 +82,61 @@ export const focusCellWithoutEditing = cell => {
         cellElement.removeEventListener?.('focus', blockEditFocus, true);
     }
 
+    return true;
+};
+
+const scheduleNavigationFocusRestore = cell => {
+    const restore = () => focusCellWithoutEditing(cell);
+    if (typeof globalThis.requestAnimationFrame === 'function') {
+        globalThis.requestAnimationFrame(restore);
+        return;
+    }
+    Promise.resolve().then(restore);
+};
+
+/**
+ * Handles the configurable keyboard close actions used by standard inline editors.
+ *
+ * @private
+ * @internal
+ */
+export const handleEditorCommitCancelKeydown = ({ cell, event, onCommit, onCancel }) => {
+    const table = cell?.getTable?.();
+    const context = getKeyboardNavigationContext(table);
+    const options = context?.keyboardNavigationOptions;
+    const enabled = Boolean(context && options?.enabled !== false);
+    const bindings = enabled
+        ? options?.bindings
+        : normalizeKeyboardNavigationOptions().bindings;
+
+    // Sequential navigation owns Tab and Shift+Tab even if a close binding is
+    // configured with the same shortcut.
+    if (
+        matchesKeyboardBinding(event, bindings.next)
+        || matchesKeyboardBinding(event, bindings.previous)
+    ) return false;
+
+    const action = ['commit', 'cancel'].find(candidate => (
+        matchesKeyboardBinding(event, bindings[candidate])
+    ));
+    if (!action) return false;
+
+    if (enabled && options?.shouldHandle?.({
+        action,
+        event,
+        state: 'editing',
+        cell,
+        row: cell?.getRow?.(),
+        column: cell?.getColumn?.(),
+        grid: context.getGrid?.()
+    }) === false) return false;
+
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    event.stopImmediatePropagation?.();
+    if (action === 'commit') onCommit();
+    else onCancel();
+    scheduleNavigationFocusRestore(cell);
     return true;
 };
 
