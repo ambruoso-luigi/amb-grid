@@ -48,25 +48,51 @@ export class ConfirmDialog {
 
             event.preventDefault();
             this._clearTextSelection();
-            const direction = ['ArrowLeft', 'ArrowUp'].includes(event.key)
-                ? -1
+            const direction = ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1
                 : ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : 0;
             if (!direction) return;
-
             const buttons = [this.cancelButton, this.confirmButton];
-            const currentIndex = buttons.indexOf(event.target);
-            buttons[(currentIndex + direction + buttons.length) % buttons.length]?.focus();
+            const index = buttons.indexOf(event.target);
+            buttons[((index < 0 ? 0 : index) + direction + buttons.length) % buttons.length]?.focus();
         };
         this.handleKeyDown = event => {
+            if (!this.resolveCurrent) return;
+            const target = event.target || document.activeElement;
+            const inside = this.panelElement?.contains?.(target);
             if (event.key === 'Escape') {
                 event.preventDefault();
+                event.stopPropagation?.();
+                event.stopImmediatePropagation?.();
                 this._close(false);
+                return;
+            }
+
+            if (!inside) {
+                event.preventDefault();
+                event.stopPropagation?.();
+                event.stopImmediatePropagation?.();
+                this._focusInitialElement();
+                return;
+            }
+
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+                event.preventDefault();
+                event.stopPropagation?.();
+                event.stopImmediatePropagation?.();
+                this._clearTextSelection();
+                const buttons = [this.cancelButton, this.confirmButton];
+                const index = buttons.indexOf(target);
+                const direction = ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 1;
+                buttons[((index < 0 ? 0 : index) + direction + buttons.length) % buttons.length]?.focus();
                 return;
             }
 
             if (event.key === 'Tab') {
                 this.focusTrap?.handleKeydown(event);
             }
+        };
+        this.handleFocusIn = event => {
+            if (this.resolveCurrent && !this.panelElement?.contains?.(event.target)) this._focusInitialElement();
         };
     }
 
@@ -154,7 +180,8 @@ export class ConfirmDialog {
         const resolve = this.resolveCurrent;
 
         this.resolveCurrent = null;
-        document.removeEventListener('keydown', this.handleKeyDown);
+        document.removeEventListener('keydown', this.handleKeyDown, true);
+        document.removeEventListener('focusin', this.handleFocusIn, true);
 
         if (this.element) {
             this.element.classList.remove('teh-confirm-dialog--visible');
@@ -192,7 +219,8 @@ export class ConfirmDialog {
         this.confirmButton.textContent = dialogOptions.confirmText;
         this.cancelButton.textContent = dialogOptions.cancelText;
         this.element.classList.add('teh-confirm-dialog--visible');
-        document.addEventListener('keydown', this.handleKeyDown);
+        document.addEventListener('keydown', this.handleKeyDown, true);
+        document.addEventListener('focusin', this.handleFocusIn, true);
 
         return new Promise(resolve => {
             this.resolveCurrent = resolve;
