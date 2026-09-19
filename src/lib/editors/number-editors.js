@@ -93,7 +93,8 @@ const getDecimalInitialValue = (cell, options) => {
 };
 
     /**
-     * Integer editor. Saves a number, or an empty string when allowed.
+     * Integer editor. Saves a number, or an empty string when allowed. While
+     * keyboard navigation is enabled, commit/cancel use table bindings.
      *
      * @param {object} [options] - Integer editor options.
      * @param {boolean} [options.allowEmpty=true] - Save an empty string for empty input.
@@ -207,7 +208,8 @@ export function integer(options = {}) {
 }
 
     /**
-     * Decimal editor. Saves a number, or an empty string when allowed.
+     * Decimal editor. Saves a number, or an empty string when allowed. While
+     * keyboard navigation is enabled, commit/cancel use table bindings.
      *
      * @param {object} [options] - Decimal editor options.
      * @param {number} [options.decimalDigits=2] - Maximum digits after the separator.

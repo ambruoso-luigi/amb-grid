@@ -1,7 +1,8 @@
 import { focusInput, getInitialValue, handleEditorCommitCancelKeydown } from './shared.js';
 
     /**
-     * Single-line text editor. Saves a string; Enter/blur commit and Escape cancels.
+     * Single-line text editor. While keyboard navigation is enabled, commit/cancel
+     * use the table bindings (Enter/Escape by default); otherwise legacy behavior applies.
      *
      * @param {object} [options] - Text editor options.
      * @param {boolean} [options.trim=false] - Trim leading and trailing whitespace before saving.

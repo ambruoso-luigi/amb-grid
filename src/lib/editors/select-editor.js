@@ -6,7 +6,8 @@ import {
 } from './shared.js';
 
     /**
-     * Native select editor. Saves the selected option value as a string.
+     * Native select editor. Saves the selected option value as a string. While
+     * keyboard navigation is enabled, commit/cancel use table bindings.
      *
      * @param {object} [options] - Select editor options.
      * @param {Array<string|object>} [options.options=[]] - Available options.

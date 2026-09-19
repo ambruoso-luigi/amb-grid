@@ -190,6 +190,8 @@ const createFloatingAutocomplete = ({
  * internal suggestion widget handles suggestion rendering and keyboard
  * selection. Suggestions have no separate hidden associated data, and this
  * editor does not perform remote lookup or asynchronous validation.
+ * While keyboard navigation is enabled, commit/cancel use table bindings
+ * (Enter/Escape by default); Tab continues its dedicated commit/navigation flow.
  * The suggestion list is rendered as a floating overlay under `document.body`
  * and positioned from the active input, so it is not clipped by the internal
  * table engine scroll area and does not change grid layout.
