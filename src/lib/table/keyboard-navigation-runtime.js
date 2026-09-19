@@ -148,16 +148,30 @@ export const createKeyboardNavigationRuntime = ({
         return pageRows[pageRows.length - 1] || null;
     };
 
+    const isAllowedByRowState = candidate => {
+        const element = candidate?.getElement?.();
+        const definition = candidate?.getColumn?.()?.getDefinition?.() || {};
+        const metadata = getAmbColumnMetadata(definition);
+        const data = candidate?.getRow?.()?.getData?.() || {};
+        const stateField = getCrud()?.options?.stateField || '_state';
+        return data[stateField] !== ROW_STATE.DELETED || (
+            metadata.managedColumn === 'rowAction'
+            && Boolean(element?.querySelector?.('.amb-row-action-button[data-action="rollback"]'))
+        );
+    };
+
     const getDestinationCandidates = destination => {
         const { edge, field, column } = normalizeDestination(destination);
         const rows = getRenderedRows(edge);
 
         if (column || field) {
-            const row = rows[0];
-            const candidate = (column && row?.getCells?.().find(cell => cell.getColumn?.() === column))
-                || row?.getCell?.(field)
-                || row?.getCells?.().find(cell => cell.getField?.() === field);
-            return candidate ? [candidate] : [];
+            for (const row of rows) {
+                const candidate = (column && row?.getCells?.().find(cell => cell.getColumn?.() === column))
+                    || row?.getCell?.(field)
+                    || row?.getCells?.().find(cell => cell.getField?.() === field);
+                if (candidate && isNavigationCandidate(candidate)) return [candidate];
+            }
+            return [];
         }
 
         return rows.flatMap(row => {
@@ -251,12 +265,7 @@ export const createKeyboardNavigationRuntime = ({
         const definition = candidate?.getColumn?.()?.getDefinition?.() || {};
         const metadata = getAmbColumnMetadata(definition);
         if (!element || !isDataRowElement(rowElement)) return false;
-        const data = candidate.getRow?.()?.getData?.() || {};
-        const stateField = getCrud()?.options?.stateField || '_state';
-        if (data[stateField] === ROW_STATE.DELETED) {
-            return metadata.managedColumn === 'rowAction'
-                && Boolean(element.querySelector?.('.amb-row-action-button[data-action="rollback"]'));
-        }
+        if (!isAllowedByRowState(candidate)) return false;
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
         if (metadata.interactive) {
             if (metadata.focusSelector) {
@@ -640,7 +649,7 @@ export const createKeyboardNavigationRuntime = ({
         if (isTab) {
             const candidates = getRenderedRows('first')
                 .flatMap(row => row.getCells())
-                .filter(isEditableCandidate);
+                .filter(candidate => isEditableCandidate(candidate) && isAllowedByRowState(candidate));
             const currentIndex = candidates.findIndex(candidate => (
                 candidate === activeCell
                 || candidate.getElement?.() === editingElement
