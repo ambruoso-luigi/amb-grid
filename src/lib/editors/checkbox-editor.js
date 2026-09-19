@@ -203,6 +203,10 @@ export function checkbox(options = {}) {
             return container;
         };
         editor._ambEditorType = 'checkbox';
+        editor._ambCapabilities = {
+            activateOnNavigationFocus: true,
+            spatialNavigationWhileEditing: true
+        };
         editor._ambCheckboxConfig = {
             checkedValue: normalizedOptions.checkedValue,
             uncheckedValue: normalizedOptions.uncheckedValue,

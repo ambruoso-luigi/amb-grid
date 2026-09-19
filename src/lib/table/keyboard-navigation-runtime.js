@@ -527,7 +527,9 @@ export const createKeyboardNavigationRuntime = ({
             }
             return true;
         }
-        focusNavigationCandidate(destination);
+        if (getAmbColumnMetadata(destination.getColumn?.().getDefinition?.()).activateOnNavigationFocus) {
+            destination.edit?.() || focusNavigationCandidate(destination);
+        } else focusNavigationCandidate(destination);
         return true;
     };
 
@@ -568,7 +570,7 @@ export const createKeyboardNavigationRuntime = ({
 
         const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
         const state = editingElement ? 'editing' : 'navigation';
-        if (state === 'editing' && (
+        if (state === 'editing' && !getAmbColumnMetadata(activeDefinition).spatialNavigationWhileEditing && (
             enter
             || ['up', 'down', 'left', 'right', 'commit', 'cancel'].includes(action)
         )) return;

@@ -52,6 +52,8 @@ export const getAmbColumnMetadata = definition => {
         focusSelector: definition?._ambFocusSelector
             || definition?._ambInteractiveSelector,
         keyboardFocusOnly: definition?._ambKeyboardFocusOnly === true,
-        auxiliaryAction: definition?.editor?._ambCapabilities?.auxiliary === true
+        auxiliaryAction: definition?.editor?._ambCapabilities?.auxiliary === true,
+        activateOnNavigationFocus: definition?.editor?._ambCapabilities?.activateOnNavigationFocus === true,
+        spatialNavigationWhileEditing: definition?.editor?._ambCapabilities?.spatialNavigationWhileEditing === true
     };
 };
