@@ -11,7 +11,8 @@ All notable changes to AMB Grid are documented in this file.
   Enter for commit, while picker-only accepts Enter or F2.
 - Added configurable commit/cancel keyboard bindings for standard inline editors.
 - Configurable `keyboardNavigation` with four-direction spatial cell navigation.
-- Arrow navigation focuses cells without opening editors and reaches visible read-only data cells.
+- Arrow navigation focuses operational editable or interactive cells without
+  opening ordinary editors, skipping read-only and unavailable cells.
 
 ### Fixed
 

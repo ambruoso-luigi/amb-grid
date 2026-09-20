@@ -74,6 +74,13 @@ class ElementMock {
     getAttribute(name) {
         return this.attributes[name] ?? null;
     }
+
+    contains(target) {
+        for (let current = target; current; current = current.parentNode) {
+            if (current === this) return true;
+        }
+        return false;
+    }
 }
 
 const createHarness = () => {

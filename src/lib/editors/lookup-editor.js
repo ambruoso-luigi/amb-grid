@@ -1,6 +1,7 @@
 import { LookupDialog } from '../../ui/lookup-dialog.js';
 import { consumeCellAuxiliaryAction, registerCellAuxiliaryAction } from '../table/keyboard-auxiliary.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
+import { getKeyboardNavigationContext } from '../table/keyboard-bindings.js';
 import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateToCandidate } from './shared.js';
 
 /**
@@ -832,7 +833,19 @@ export function lookup(lookupInstance, options = {}) {
                     return commitFromTab(event.shiftKey ? 'prev' : 'next');
                 }
 
-                handleEditorCommitCancelKeydown({ cell, event, onCommit: commit, onCancel: closeWithCancel });
+                const keyboardContext = getKeyboardNavigationContext(cell.getTable?.());
+                // Standalone editor consumers do not install the table runtime.
+                // Return the async commit so their caller can await the exact
+                // same default Enter lifecycle as a browser event.
+                if (!keyboardContext && event.key === 'Enter') return commit();
+                if (!keyboardContext && event.key === 'Escape') return closeWithCancel();
+
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: commit,
+                    onCancel: closeWithCancel
+                });
             });
             input.addEventListener('blur', () => {
                 if (dialogOpen || tabCommitInProgress) return;
