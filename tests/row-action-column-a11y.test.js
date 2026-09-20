@@ -128,6 +128,12 @@ const flushActionFocus = async () => {
     await flushDeferred();
 };
 
+const flushFallbackFocus = async () => {
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+        await flushDeferred();
+    }
+};
+
 const clickButton = button => {
     return button.listeners.click({
         currentTarget: button,
@@ -586,13 +592,21 @@ describe('row action column accessibility', () => {
             () => crud,
             { confirm: () => Promise.resolve(true) }
         );
+        const tableElement = globalThis.document.createElement('div');
         const rowElement = globalThis.document.createElement('div');
-        const nextCell = createEditableCell();
+        const nextCellElement = globalThis.document.createElement('div');
+        const nextCell = {
+            ...createEditableCell(),
+            getElement: () => nextCellElement
+        };
         let actionCell;
         const row = {
             getData: () => data,
             getElement: () => rowElement,
-            getCells: () => [actionCell, nextCell]
+            getCells: () => [actionCell, nextCell],
+            getTable: () => ({
+                getElement: () => tableElement
+            })
         };
 
         actionCell = { getRow: () => row };
@@ -605,10 +619,12 @@ describe('row action column accessibility', () => {
         rowElement.append(container);
 
         await clickButton(container.querySelector('.amb-row-action-button'));
-        await flushActionFocus();
+        await flushFallbackFocus();
 
         expect(rowElement.querySelector('.amb-row-action-button')).toBeNull();
         expect(nextCell.edit).not.toHaveBeenCalled();
+        expect(nextCellElement.focus).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(tableElement);
     });
 
     test('after remove-new, focus moves to the next row action cell when available', async () => {
