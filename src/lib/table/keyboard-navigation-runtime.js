@@ -1,4 +1,5 @@
 import {
+    cancelScheduledNavigationFocusRestore,
     focusCellWithoutEditing,
     focusNavigationCandidate,
     isEditableCandidate,
@@ -592,7 +593,13 @@ export const createKeyboardNavigationRuntime = ({
             if (spatialAction && !getAmbColumnMetadata(activeDefinition).spatialNavigationWhileEditing) return;
         }
         if (auxiliary && getAmbColumnMetadata(activeDefinition).auxiliaryAction !== true) return;
-        if (enter && isManagedControlTarget(event, activeCell, activeDefinition)) return;
+        if (
+            enter
+            && (
+                isManagedControlTarget(event, activeCell, activeDefinition)
+                || getAmbColumnMetadata(activeDefinition).activateOnNavigationFocus
+            )
+        ) return;
 
         if (configuredAction) {
             const hookContext = {
@@ -712,6 +719,7 @@ export const createKeyboardNavigationRuntime = ({
     const handlePointerActivation = event => {
         const cellElement = event.target?.closest?.('.tabulator-cell');
         const cell = getCellFromElement(cellElement);
+        if (cell) cancelScheduledNavigationFocusRestore();
         const definition = cell?.getColumn?.()?.getDefinition?.() || {};
         const metadata = getAmbColumnMetadata(definition);
         const isMarkedLargeText = cellElement?.classList?.contains?.('amb-cell--large-text');
@@ -719,22 +727,30 @@ export const createKeyboardNavigationRuntime = ({
         const focusOnly = metadata.keyboardFocusOnly === true || isMarkedLargeText;
 
         if (focusOnly) {
+            // Let the engine observe the second half of a double click. The
+            // first click remains navigation-only; a completed double click
+            // keeps the editor as the sole owner of primary activation.
+            if (event.type === 'mousedown') {
+                if (cell || event.detail > 1) return;
+
+                event.preventDefault?.();
+                event.stopPropagation?.();
+                event.stopImmediatePropagation?.();
+                return;
+            }
+            if (event.detail > 1) return;
+
             event.preventDefault?.();
             event.stopPropagation?.();
             event.stopImmediatePropagation?.();
-            if (event.type === 'click') {
-                void nextFrame().then(nextFrame).then(() => {
-                    if (destroyed) return;
+            void nextFrame().then(nextFrame).then(() => {
+                if (destroyed) return;
 
-                    const currentElement = cell?.getElement?.() || cellElement;
-                    focusCellWithoutEditing({ getElement: () => currentElement });
-                });
-                return;
-            }
+                const currentElement = cell?.getElement?.() || cellElement;
+                if (currentElement?.classList?.contains?.('tabulator-editing')) return;
 
-            if (!navigateToCandidate(cell) && isMarkedLargeText) {
-                focusCellWithoutEditing({ getElement: () => cellElement });
-            }
+                focusCellWithoutEditing({ getElement: () => currentElement });
+            });
             return;
         }
 

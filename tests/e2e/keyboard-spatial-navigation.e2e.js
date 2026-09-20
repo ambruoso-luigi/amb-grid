@@ -100,6 +100,23 @@ test.describe('keyboard spatial navigation', () => {
         expect(original).not.toBeNull();
     });
 
+    test('uses the latest pointer destination after an editor blur', async ({ page }) => {
+        const source = rowCell(page, 'PRD-AB02', 'productName');
+        const destination = rowCell(page, 'PRD-AB02', 'warehouse');
+
+        await source.dblclick({ delay: 100 });
+        await source.locator('input.amb-cell-editor').fill('Pointer source commit');
+        await destination.click();
+        await expectNavigationFocus(destination);
+        await expect(source).not.toHaveClass(/tabulator-editing/);
+        await expect(source).toContainText('Pointer source commit');
+
+        await destination.dblclick({ delay: 100 });
+        await expect(destination).toHaveClass(/tabulator-editing/);
+        await expect(destination.locator('input.amb-autocomplete-editor')).toBeFocused();
+        await expect(source).not.toHaveClass(/tabulator-editing/);
+    });
+
     test('crosses adjacent pages vertically while preserving focus-only navigation', async ({ page }) => {
         const first = rowCell(page, 'PRD-A001', 'itemCode');
         const last = rowCell(page, 'PRD-H010', 'itemCode');

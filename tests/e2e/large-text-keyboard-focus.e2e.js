@@ -9,7 +9,7 @@ const cell = (page, field) => firstRow(page).locator(
 const focusCheckboxEditor = async page => {
     const itemCode = cell(page, 'itemCode');
 
-    await itemCode.click();
+    await itemCode.dblclick({ delay: 100 });
     await expect(itemCode.locator('input')).toBeFocused();
 
     for (const field of [
@@ -33,6 +33,20 @@ const expectNotesFocused = async page => {
 };
 
 test.describe('large-text keyboard focus regression', () => {
+    test('single click focuses Notes while double click keeps its primary dialog activation', async ({ page }) => {
+        await page.goto('/test/');
+        await expect(firstRow(page)).toBeVisible();
+
+        const notes = cell(page, 'notes');
+        await notes.click();
+        await expectNotesFocused(page);
+
+        await notes.dblclick({ delay: 100 });
+        const dialog = page.locator('.amb-large-text-editor');
+        await expect(dialog).toBeVisible();
+        await expect(dialog.locator('.amb-large-text-editor__textarea')).toBeFocused();
+    });
+
     test('Tab and Shift+Tab focus Notes without opening its dialog; Enter opens and restores focus', async ({ page }) => {
         await page.goto('/test/');
         await expect(firstRow(page)).toBeVisible();

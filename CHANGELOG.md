@@ -18,6 +18,10 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Kept special AMB controls as the owner of their immediate pointer actions,
+  while normal cells retain click-to-focus and double-click-to-edit behavior.
+- Preserved the most recent pointer focus destination when a keyboard-close
+  focus restoration is still pending.
 - Prevented spatial keyboard focus from activating editable cells while moving with directional arrows.
 - Kept column calculations synchronized after committed cell edits and CRUD delete/rollback state transitions.
 - Stabilized contextual lookup descriptions during pointer movement and asynchronous metadata refreshes while preserving lookup rollback metadata across ordinary data changes.

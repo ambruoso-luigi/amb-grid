@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createKeyboardNavigationRuntime } from '../src/lib/table/keyboard-navigation-runtime.js';
-import { focusCellWithoutEditing } from '../src/lib/editors/shared.js';
+import {
+    focusCellWithoutEditing,
+    handleEditorCommitCancelKeydown
+} from '../src/lib/editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
 import { setAmbColumnMetadata } from '../src/lib/table/column-metadata.js';
 import { normalizeKeyboardNavigationOptions } from '../src/lib/table/keyboard-bindings.js';
@@ -453,6 +456,23 @@ describe('table pagination keyboard runtime', () => {
         expect(arrow.stopPropagation).toHaveBeenCalledOnce();
     });
 
+    test('leaves Enter on a focused checkbox cell to its direct toggle handler', () => {
+        const checkbox = createCandidate();
+        setAmbColumnMetadata(checkbox.getColumn().getDefinition(), {
+            activateOnNavigationFocus: true
+        });
+        const harness = createHarness({ cells: [checkbox] });
+        globalThis.document.activeElement = checkbox.getElement();
+
+        const event = harness.tableElement.dispatch({
+            key: 'Enter',
+            target: checkbox.getElement()
+        });
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(checkbox.edit).not.toHaveBeenCalled();
+    });
+
     test('moves spatially without opening the destination editor', () => {
         const first = createCandidate({ field: 'first', focusOnly: true });
         const readonly = createCandidate({ editable: false, field: 'readonly' });
@@ -632,18 +652,82 @@ describe('table pagination keyboard runtime', () => {
         expect(title.edit).not.toHaveBeenCalled();
     });
 
-    test('click uses the large-text marker while a virtual row component is unavailable', () => {
+    test('click uses the large-text marker while a virtual row component is unavailable', async () => {
         const notes = createCandidate({ focusOnly: true, field: 'notes' });
         const harness = createHarness({ cells: [notes] });
         const element = notes.getElement();
         element.classList.add('amb-cell--large-text');
         harness.table.getRow.mockReturnValue(null);
 
-        const event = harness.tableElement.dispatch({ target: element }, 'mousedown');
+        const event = harness.tableElement.dispatch({ target: element }, 'click');
+        await flush();
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(element.focus).toHaveBeenCalledOnce();
         expect(notes.edit).not.toHaveBeenCalled();
+    });
+
+    test('leaves a large-text double click to its primary editor activation', () => {
+        const notes = createCandidate({ focusOnly: true, field: 'notes' });
+        const harness = createHarness({ cells: [notes] });
+
+        const event = harness.tableElement.dispatch({
+            target: notes.getElement(),
+            detail: 2
+        }, 'click');
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(notes.getElement().focus).not.toHaveBeenCalled();
+        expect(notes.edit).not.toHaveBeenCalled();
+    });
+
+    test.each([
+        ['checkbox', { activateOnNavigationFocus: true }],
+        ['selection', { interactive: true, focusSelector: '.amb-selection-column__input' }],
+        ['row action', { interactive: true, focusSelector: '.amb-row-action-button' }]
+    ])('leaves %s pointer clicks to their managed control', async (_name, metadata) => {
+        const control = createCandidate({ field: 'control' });
+        setAmbColumnMetadata(control.getColumn().getDefinition(), metadata);
+        const harness = createHarness({ cells: [control] });
+
+        const event = harness.tableElement.dispatch({ target: control.getElement() }, 'click');
+        await flush();
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(control.getElement().focus).not.toHaveBeenCalled();
+        expect(control.edit).not.toHaveBeenCalled();
+    });
+
+    test('a pointer destination cancels a pending keyboard-close focus restoration', async () => {
+        const source = createCandidate({ field: 'source' });
+        const destination = createCandidate({ field: 'destination' });
+        const frames = [];
+        globalThis.requestAnimationFrame = callback => {
+            frames.push(callback);
+            return frames.length;
+        };
+        const harness = createHarness({ cells: [source, destination] });
+        const event = {
+            key: 'Enter',
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn(),
+            stopImmediatePropagation: vi.fn()
+        };
+
+        handleEditorCommitCancelKeydown({
+            cell: { ...source, getTable: () => harness.table },
+            event,
+            onCommit: vi.fn(),
+            onCancel: vi.fn()
+        });
+        harness.tableElement.dispatch({ target: destination.getElement() }, 'click');
+        frames.splice(0).forEach(callback => callback());
+        await Promise.resolve();
+        frames.splice(0).forEach(callback => callback());
+        await Promise.resolve();
+        frames.splice(0).forEach(callback => callback());
+
+        expect(source.getElement().focus).not.toHaveBeenCalled();
     });
 
     test('ignores calculation rows before resolving row or cell components', async () => {

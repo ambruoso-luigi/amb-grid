@@ -100,8 +100,27 @@ export const focusCellWithoutEditing = cell => {
     return true;
 };
 
+let navigationFocusRestoreVersion = 0;
+
+/**
+ * Cancels a pending keyboard-close focus restoration when a pointer action
+ * expresses a newer focus destination.
+ *
+ * @returns {void}
+ * @private
+ * @internal
+ */
+export const cancelScheduledNavigationFocusRestore = () => {
+    navigationFocusRestoreVersion += 1;
+};
+
 const scheduleNavigationFocusRestore = cell => {
-    const restore = () => focusCellWithoutEditing(cell);
+    const version = navigationFocusRestoreVersion;
+    const restore = () => {
+        if (version !== navigationFocusRestoreVersion) return;
+
+        focusCellWithoutEditing(cell);
+    };
     if (typeof globalThis.requestAnimationFrame === 'function') {
         globalThis.requestAnimationFrame(restore);
         return;

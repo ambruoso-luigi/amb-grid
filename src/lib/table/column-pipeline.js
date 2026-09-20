@@ -1,6 +1,6 @@
 import { ROW_STATE } from '../crud-helper.js';
 import { escapeHtmlText, formatters } from '../formatters.js';
-import { getLookupOptionValue } from '../editors/shared.js';
+import { focusCellWithoutEditing, getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
 import {
     DEFAULT_MESSAGES,
@@ -546,23 +546,7 @@ const stopEvent = event => {
     }
 };
 
-const focusCheckboxCell = cell => {
-    const cellElement = getCellElement(cell);
-
-    if (
-        !cellElement
-        || typeof cellElement.focus !== 'function'
-        || typeof cellElement.addEventListener !== 'function'
-    ) return;
-
-    const blockEditFocus = event => {
-        event.stopImmediatePropagation();
-    };
-
-    cellElement.addEventListener('focus', blockEditFocus, true);
-    cellElement.focus({ preventScroll: true });
-    cellElement.removeEventListener('focus', blockEditFocus, true);
-};
+const focusCheckboxCell = cell => focusCellWithoutEditing(cell);
 
 const dispatchCheckboxChange = input => {
     if (!input || typeof input.dispatchEvent !== 'function') return;

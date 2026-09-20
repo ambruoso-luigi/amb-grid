@@ -377,18 +377,19 @@ cellEditing: { mouseTrigger: 'single-click' }
   Lookup, date, checkbox, and large-text editors retain their dedicated
   keyboard semantics.
 * `F2` activates an auxiliary control when the focused cell supports one;
-  Lookup editors use it to open their search dialog. Lookup `Enter` edits or
-  commits the manual value instead of opening the dialog.
+  Lookup editors use it to open their search dialog. Lookup double click or
+  `Enter` edits or commits the manual value instead of opening the dialog.
 * `keyboardNavigation.shouldHandle(context)` can return `false` to leave an
   action untouched. `resolveNavigation(context)` may supply a directional
   destination; invalid results fall back to normal geometry.
 * Set `keyboardNavigation.enabled` to `false` to disable configurable arrows,
   edit bindings, custom sequential bindings and hooks while retaining the
   historical `Tab`/`Shift+Tab` flow and `Alt+PageUp`/`Alt+PageDown` shortcuts.
-* The standard selection column participates in cell navigation. `Enter` and
-  `Space` toggle row selection; `1`/`S`/`Y` select and `0`/`N` deselect. When
-  enabled, row selection is available exclusively through its checkbox, so
-  navigating, clicking, or editing other cells never changes row selection.
+* The standard selection column participates in cell navigation. Clicking its
+  checkbox, `Enter`, or `Space` toggles row selection; `1`/`S`/`Y` select and
+  `0`/`N` deselect. When enabled, row selection is available exclusively
+  through its checkbox, so navigating, clicking, or editing other cells never
+  changes row selection.
 * `rowActionColumn` is the managed row action column. Clean and saved rows expose
   Delete; modified and deleted rows expose Rollback; new rows expose Remove
   new. An action cell participates in keyboard navigation only when its action
@@ -396,28 +397,31 @@ cellEditing: { mouseTrigger: 'single-click' }
   Delete confirmation traps `Tab`/`Shift+Tab` inside the dialog; after delete
   focus returns to Rollback, after Rollback focus returns to Delete, and
   Remove new falls back to the next or previous valid visible destination.
-* Checkbox editors use `Enter`, `Space`, and configured toggle keys to change
-  value while they remain open. Their arrow keys are the deliberate exception:
-  they commit the current checkbox lifecycle and continue geometric grid
-  navigation. `Tab`/`Shift+Tab` confirm and navigate without an accidental
-  extra toggle.
-* Lookup editors use `Enter` to edit or commit a manual value; `F2` opens the
-  lookup dialog when one is configured.
+* Checkbox editors toggle immediately when their checkbox is clicked, and use
+  `Enter`, `Space`, and configured toggle keys to change value from the
+  keyboard. Their arrow keys are the deliberate exception: they commit the
+  current checkbox lifecycle and continue geometric grid navigation.
+  `Tab`/`Shift+Tab` confirm and navigate without an accidental extra toggle.
+* Row action buttons run their action immediately when clicked and on `Enter`
+  or `Space` when focused.
+* Lookup editors use double click or `Enter` to edit or commit a manual value;
+  `F2` opens the lookup dialog when one is configured.
   While the dialog is open, `Tab`/`Shift+Tab` stay inside it, arrow keys move
   lookup selection, `Enter` selects, and `Escape` cancels. Record-based
   lookups can update multiple row fields through `mapToRow`.
-* Date editors in manual mode use `Enter` to edit/commit and `Escape` to
-  cancel. `manualWithPickerButton` uses `F2` (or its calendar button) to open
-  the calendar; choosing a date returns to the manual input and requires
-  `Enter` to commit. `pickerOnly` opens its calendar on `Enter` or `F2`.
+* Date editors in manual mode use double click or `Enter` to edit/commit and
+  `Escape` to cancel. `manualWithPickerButton` uses `F2` (or its calendar
+  button) to open the calendar; choosing a date returns to the manual input
+  and requires `Enter` to commit. `pickerOnly` opens its calendar on double
+  click, `Enter`, or `F2`.
   `Tab`/`Shift+Tab` preserve sequential commit/navigation, and datepicker
   arrows remain local to the calendar.
-* Keyboard navigation focuses a large-text cell without opening its editor;
-  press `Enter` to open the dialog. Text is selectable and editable only in
-  the dialog, which traps `Tab`/`Shift+Tab`. `Ctrl+Enter` saves and `Escape`
-  cancels; Save and Cancel both return focus to the source cell. Same-column
-  directional arrow navigation applies to the focused cell while the dialog is
-  closed.
+* A single click or keyboard navigation focuses a large-text cell without
+  opening its editor; double click or `Enter` opens the dialog. Text is
+  selectable and editable only in the dialog, which traps `Tab`/`Shift+Tab`.
+  `Ctrl+Enter` saves and `Escape` cancels; Save and Cancel both return focus to
+  the source cell. Same-column directional arrow navigation applies to the
+  focused cell while the dialog is closed.
 
 ### Formatters
 
