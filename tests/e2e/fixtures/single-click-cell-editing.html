@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>AMB Grid single-click editing fixture</title>
+    <link rel="stylesheet" href="/node_modules/tabulator-tables/dist/css/tabulator.min.css">
+    <link rel="stylesheet" href="/src/amb-grid.css">
+</head>
+<body>
+    <div id="fixture-table"></div>
+    <script type="module">
+        import { AMB } from '/src/index.js';
+
+        AMB.table({
+            selector: '#fixture-table',
+            cellEditing: { mouseTrigger: 'single-click' },
+            data: [{ id: 1, title: 'Single click editor' }],
+            columns: [
+                { title: 'ID', field: 'id' },
+                { title: 'Title', field: 'title', editor: AMB.editors.text() }
+            ],
+            toolbar: false
+        });
+    </script>
+</body>
+</html>

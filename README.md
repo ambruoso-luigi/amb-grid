@@ -896,11 +896,12 @@ AMB.table({
 });
 ```
 
-The municipality demo is dialog-only: clicking the Municipality cell opens the
-lookup without creating a text input or an in-cell lookup button. Province,
-Region, Postal Code, ISTAT Code, and Cadastral Code are read-only derived
-fields. Selecting a record updates every mapped field atomically through the
-AMB CRUD lifecycle; canceling the dialog leaves the row untouched.
+The municipality demo follows the standard lookup interaction contract: a
+single click focuses Municipality for navigation, a double click or `Enter`
+opens its manual lookup editor, and `F2` opens the complete lookup dialog.
+Province, Region, Postal Code, ISTAT Code, and Cadastral Code are read-only
+derived fields. Selecting a record updates every mapped field atomically
+through the AMB CRUD lifecycle; canceling the dialog leaves the row untouched.
 
 The municipality demo loads its JSON as a separate static demo asset, so the
 dataset is not imported by the library core or included in the AMB Grid runtime

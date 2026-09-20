@@ -169,7 +169,7 @@ export default async function multifieldLookup(app) {
             summary: 'Multifield lookup behavior',
             summaryKey: 'examples.multifieldLookup.detailsTitle',
             points: [
-                { title: 'Select a record', titleKey: 'examples.multifieldLookup.point1Title', description: 'Click Municipality and choose one complete record from the lookup.', descriptionKey: 'examples.multifieldLookup.detail1' },
+                { title: 'Select a record', titleKey: 'examples.multifieldLookup.point1Title', description: 'Edit Municipality to type for autocomplete or use its search button for the complete lookup.', descriptionKey: 'examples.multifieldLookup.detail1' },
                 { title: 'Master field', titleKey: 'examples.multifieldLookup.point2Title', description: 'Municipality is the actionable master field; dependent fields remain readonly.', descriptionKey: 'examples.multifieldLookup.detail2' },
                 { title: 'Dependent fields', titleKey: 'examples.multifieldLookup.point3Title', description: 'Province, Region, Postal Code, ISTAT Code, and Cadastral Code update together.', descriptionKey: 'examples.multifieldLookup.detail3' },
                 { title: 'Search', titleKey: 'examples.multifieldLookup.point4Title', description: 'Search the lookup dataset to narrow the available municipalities before selection.', descriptionKey: 'examples.multifieldLookup.detail4' },
