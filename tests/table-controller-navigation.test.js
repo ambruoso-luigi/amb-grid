@@ -294,6 +294,28 @@ const expectOnlyNavigationCalled = (table, activeName, count) => {
 };
 
 describe('AMB table controller editable-cell navigation API', () => {
+    test('maps public cell editing options once while preserving an explicit advanced trigger', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const create = options => {
+                createTable({ selector: harness.mount, columns: [], toolbar: false, ...options });
+                return tabulatorMock.instances.at(-1).options.editTriggerEvent;
+            };
+
+            expect(create({})).toBe('dblclick');
+            expect(create({ keyboardNavigation: { enabled: false } })).toBe('dblclick');
+            expect(create({ cellEditing: { mouseTrigger: 'single-click' } })).toBe('click');
+            expect(create({ editTriggerEvent: 'custom-engine-trigger' })).toBe('custom-engine-trigger');
+            expect(create({
+                editTriggerEvent: 'custom-engine-trigger',
+                cellEditing: { mouseTrigger: 'double-click' }
+            })).toBe('dblclick');
+        } finally {
+            harness.restore();
+        }
+    });
+
     test('exposes flat navigation methods and delegates without public arguments', () => {
         const harness = createDocumentHarness();
 

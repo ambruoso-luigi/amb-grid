@@ -6,6 +6,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Added
 
+- Added public `cellEditing.mouseTrigger`, with default single-click focus and
+  double-click editing plus explicit `single-click` compatibility mode.
 - Added configurable F2 auxiliary actions for AMB Grid cells, initially supported by Lookup editors.
 - Added F2 calendar actions for Date editors with a picker; manual Date keeps
   Enter for commit, while picker-only accepts Enter or F2.

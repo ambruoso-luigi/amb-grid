@@ -69,7 +69,7 @@ const createCandidate = ({ editable = true, activates = true, focusOnly = false,
     return candidate;
 };
 
-const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements, enabled = true, keyboardNavigation } = {}) => {
+const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements, enabled = true, keyboardNavigation, cellEditing } = {}) => {
     const listeners = new Map();
     const keyListeners = new Map();
     const rowElement = {
@@ -124,7 +124,7 @@ const createHarness = ({ page = 1, max = 3, cells = [], row = null, rowElements,
         nextPage: vi.fn(() => { currentPage += 1; return Promise.resolve(); }),
         previousPage: vi.fn(() => { currentPage -= 1; return Promise.resolve(); })
     };
-    const runtime = createKeyboardNavigationRuntime({ table, tableElement, paginationMethods, enabled, keyboardNavigation });
+    const runtime = createKeyboardNavigationRuntime({ table, tableElement, paginationMethods, enabled, keyboardNavigation, cellEditing });
 
     return {
         table, tableElement, tableHolder, paginationMethods, runtime, rowElement,
@@ -605,6 +605,31 @@ describe('table pagination keyboard runtime', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(notes.getElement().focus).toHaveBeenCalledOnce();
         expect(notes.edit).not.toHaveBeenCalled();
+    });
+
+    test('default pointer click focuses an editable cell without opening its editor', async () => {
+        const title = createCandidate({ field: 'title' });
+        const harness = createHarness({ cells: [title] });
+
+        const event = harness.tableElement.dispatch({ target: title.getElement() }, 'click');
+        await flush();
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(title.getElement());
+        expect(title.edit).not.toHaveBeenCalled();
+    });
+
+    test('single-click editing mode leaves normal pointer editing to the engine', () => {
+        const title = createCandidate({ field: 'title' });
+        const harness = createHarness({
+            cells: [title],
+            cellEditing: { mouseTrigger: 'single-click' }
+        });
+
+        const event = harness.tableElement.dispatch({ target: title.getElement() }, 'click');
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(title.edit).not.toHaveBeenCalled();
     });
 
     test('click uses the large-text marker while a virtual row component is unavailable', () => {

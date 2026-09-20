@@ -47,6 +47,7 @@ import { createSortMethods } from './controller/sort-methods.js';
 import { createValidationMethods } from './controller/validation-methods.js';
 import { createKeyboardNavigationRuntime } from './keyboard-navigation-runtime.js';
 import { normalizeKeyboardNavigationOptions } from './keyboard-bindings.js';
+import { normalizeCellEditingOptions } from './cell-editing-options.js';
 
 export {
     applyDefaultColumnAlignments,
@@ -835,6 +836,12 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {(context: AMBKeyboardNavigationContext & {direction: 'up'|'down'|'left'|'right'}) => object|undefined|null} [resolveNavigation] Supplies a same-grid directional destination. Null or invalid cells use geometry; thrown errors propagate.
  */
 
+/** @typedef {'double-click'|'single-click'} AMBMouseEditTrigger */
+/**
+ * @typedef {object} AMBCellEditingOptions
+ * @property {AMBMouseEditTrigger} [mouseTrigger='double-click'] Controls how pointer interaction starts cell editing. By default, a single click focuses a cell for navigation and a double click starts editing.
+ */
+
 /**
  * Public options accepted by `AMB.table(...)`.
  *
@@ -848,6 +855,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  *   columns?: object[],
  *   pagination?: boolean|AMBPaginationOptions,
  *   keyboardNavigation?: AMBKeyboardNavigationOptions,
+ *   cellEditing?: AMBCellEditingOptions,
  *   rowActionColumn?: AMBRowActionColumnOptions,
  *   selectionColumn?: AMBSelectionColumnOptions,
  *   search?: AMBSearchOptions,
@@ -951,6 +959,7 @@ export function createTable(options = {}) {
         floatingMessages,
         errorStyle,
         keyboardNavigation,
+        cellEditing,
         ...tabulatorOptions
     } = options;
     const normalizedFloatingMessages = normalizeFloatingMessageOptions(floatingMessages);
@@ -960,8 +969,11 @@ export function createTable(options = {}) {
     };
     const normalizedOptions = normalizePaginationOptions(tabulatorOptions);
     const normalizedKeyboardNavigation = normalizeKeyboardNavigationOptions(keyboardNavigation);
-    if (normalizedKeyboardNavigation.enabled && normalizedOptions.editTriggerEvent === undefined) {
-        normalizedOptions.editTriggerEvent = 'click';
+    const normalizedCellEditing = normalizeCellEditingOptions(cellEditing);
+    if (cellEditing !== undefined || normalizedOptions.editTriggerEvent === undefined) {
+        normalizedOptions.editTriggerEvent = normalizedCellEditing.mouseTrigger === 'single-click'
+            ? 'click'
+            : 'dblclick';
     }
     let crud = null;
     let controller = null;
@@ -1077,6 +1089,7 @@ export function createTable(options = {}) {
         paginationMethods,
         enabled: normalizedOptions.pagination === true,
         keyboardNavigation: normalizedKeyboardNavigation,
+        cellEditing: normalizedCellEditing,
         getGrid: () => controller,
         getCrud: () => crud
     });

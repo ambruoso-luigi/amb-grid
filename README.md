@@ -330,6 +330,28 @@ Reusable editors for common scenarios:
 AMB Grid keeps keyboard behavior aligned across editable data cells,
 popup/action cells, and non-data interactive columns:
 
+### Interaction states
+
+Mouse and keyboard interaction converge on three AMB Grid states:
+
+* **Navigation:** a single click focuses a normal editable cell; arrow keys
+  move geometrically and `Tab`/`Shift+Tab` move sequentially.
+* **Editing:** a double click (the default) or `Enter` starts the cell editor;
+  `Enter` commits and `Escape` cancels standard inline editors.
+* **Auxiliary:** `F2` opens a supported auxiliary control, while `Space`
+  toggles or activates checkbox and action controls.
+
+The default mouse behavior is explicit and can be configured without changing
+keyboard navigation:
+
+```js
+// Default: click focuses, double click edits.
+cellEditing: { mouseTrigger: 'double-click' }
+
+// Opt in to immediate editing on click.
+cellEditing: { mouseTrigger: 'single-click' }
+```
+
 * `Tab` moves to the next editable or interactive AMB Grid cell.
 * `Shift+Tab` moves to the previous editable or interactive AMB Grid
   cell.
@@ -379,7 +401,8 @@ popup/action cells, and non-data interactive columns:
   they commit the current checkbox lifecycle and continue geometric grid
   navigation. `Tab`/`Shift+Tab` confirm and navigate without an accidental
   extra toggle.
-* Lookup editors use `Enter` to open the lookup dialog when one is configured.
+* Lookup editors use `Enter` to edit or commit a manual value; `F2` opens the
+  lookup dialog when one is configured.
   While the dialog is open, `Tab`/`Shift+Tab` stay inside it, arrow keys move
   lookup selection, `Enter` selects, and `Escape` cancels. Record-based
   lookups can update multiple row fields through `mapToRow`.

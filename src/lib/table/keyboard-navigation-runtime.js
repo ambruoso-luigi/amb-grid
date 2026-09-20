@@ -87,6 +87,7 @@ export const createKeyboardNavigationRuntime = ({
     paginationMethods,
     enabled,
     keyboardNavigation,
+    cellEditing = { mouseTrigger: 'double-click' },
     getGrid = () => null,
     getCrud = () => null
 }) => {
@@ -708,36 +709,53 @@ export const createKeyboardNavigationRuntime = ({
         });
     };
 
-    const handleFocusOnlyPointerActivation = event => {
+    const handlePointerActivation = event => {
         const cellElement = event.target?.closest?.('.tabulator-cell');
         const cell = getCellFromElement(cellElement);
         const definition = cell?.getColumn?.()?.getDefinition?.() || {};
+        const metadata = getAmbColumnMetadata(definition);
         const isMarkedLargeText = cellElement?.classList?.contains?.('amb-cell--large-text');
 
-        if (getAmbColumnMetadata(definition).keyboardFocusOnly !== true && !isMarkedLargeText) return;
+        const focusOnly = metadata.keyboardFocusOnly === true || isMarkedLargeText;
 
-        event.preventDefault?.();
-        event.stopPropagation?.();
-        event.stopImmediatePropagation?.();
-        if (event.type === 'click') {
-            // Complete focus after the pointer sequence. Preventing mousedown
-            // keeps Tabulator from opening the editor, but browsers may still
-            // reset focus while completing the click's default processing.
-            void nextFrame().then(nextFrame).then(() => {
-                if (destroyed) return;
+        if (focusOnly) {
+            event.preventDefault?.();
+            event.stopPropagation?.();
+            event.stopImmediatePropagation?.();
+            if (event.type === 'click') {
+                void nextFrame().then(nextFrame).then(() => {
+                    if (destroyed) return;
 
-                const currentElement = cell?.getElement?.() || cellElement;
-                focusCellWithoutEditing({ getElement: () => currentElement });
-            });
+                    const currentElement = cell?.getElement?.() || cellElement;
+                    focusCellWithoutEditing({ getElement: () => currentElement });
+                });
+                return;
+            }
+
+            if (!navigateToCandidate(cell) && isMarkedLargeText) {
+                focusCellWithoutEditing({ getElement: () => cellElement });
+            }
             return;
         }
 
-        if (!navigateToCandidate(cell) && isMarkedLargeText) {
-            // A pointer event can arrive while Tabulator is replacing a virtual
-            // row and getRow(element) briefly has no component. The pipeline's
-            // marker is enough to preserve focus-first behavior on that element.
-            focusCellWithoutEditing({ getElement: () => cellElement });
-        }
+        if (
+            cellEditing.mouseTrigger !== 'double-click'
+            || !isEditableCandidate(cell)
+            || metadata.interactive
+            || metadata.focusSelector
+            || metadata.activateOnNavigationFocus
+        ) return;
+
+        if (event.type !== 'click') return;
+        // Keep the engine's pointer sequence intact so its native double-click
+        // trigger remains the single owner of editor creation.
+        if (event.detail > 1) return;
+        void nextFrame().then(nextFrame).then(() => {
+            if (destroyed) return;
+            if (cell?.getElement?.()?.classList?.contains?.('tabulator-editing')) return;
+
+            focusNavigationCandidate(cell);
+        });
     };
 
     const decoratePager = () => {
@@ -759,8 +777,8 @@ export const createKeyboardNavigationRuntime = ({
 
     if (listenerAttached) {
         tableElement.addEventListener('keydown', handleKeydown, true);
-        tableElement.addEventListener('mousedown', handleFocusOnlyPointerActivation, true);
-        tableElement.addEventListener('click', handleFocusOnlyPointerActivation, true);
+        tableElement.addEventListener('mousedown', handlePointerActivation, true);
+        tableElement.addEventListener('click', handlePointerActivation, true);
     }
     table.on?.('renderComplete', decoratePager);
     decoratePager();
@@ -783,8 +801,8 @@ export const createKeyboardNavigationRuntime = ({
             unregisterKeyboardContext();
             if (listenerAttached) {
                 tableElement.removeEventListener('keydown', handleKeydown, true);
-                tableElement.removeEventListener('mousedown', handleFocusOnlyPointerActivation, true);
-                tableElement.removeEventListener('click', handleFocusOnlyPointerActivation, true);
+                tableElement.removeEventListener('mousedown', handlePointerActivation, true);
+                tableElement.removeEventListener('click', handlePointerActivation, true);
             }
             table.off?.('renderComplete', decoratePager);
         }

@@ -62,6 +62,44 @@ test.describe('keyboard spatial navigation', () => {
         await expectNavigationFocus(last);
     });
 
+    test('uses click for navigation and double click or Enter for the same text editor', async ({ page }) => {
+        const target = rowCell(page, 'PRD-AB02', 'productName');
+        const right = rowCell(page, 'PRD-AB02', 'warehouse');
+
+        await target.click();
+        await expectNavigationFocus(target);
+        await page.keyboard.press('ArrowRight');
+        await expectNavigationFocus(right);
+
+        await target.dblclick();
+        await expect(target).toHaveClass(/tabulator-editing/);
+        await expect(target.locator('input.amb-cell-editor')).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expectNavigationFocus(target);
+
+        await page.keyboard.press('Enter');
+        await expect(target.locator('input.amb-cell-editor')).toBeFocused();
+    });
+
+    test('commits and cancels a mouse-opened text editor back to navigation focus', async ({ page }) => {
+        const target = rowCell(page, 'PRD-AB02', 'productName');
+        const original = await target.textContent();
+
+        await target.dblclick();
+        const input = target.locator('input.amb-cell-editor');
+        await input.fill('Mouse commit test');
+        await page.keyboard.press('Enter');
+        await expectNavigationFocus(target);
+        await expect(target).toContainText('Mouse commit test');
+
+        await target.dblclick();
+        await input.fill('Mouse cancel test');
+        await page.keyboard.press('Escape');
+        await expectNavigationFocus(target);
+        await expect(target).not.toContainText('Mouse cancel test');
+        expect(original).not.toBeNull();
+    });
+
     test('crosses adjacent pages vertically while preserving focus-only navigation', async ({ page }) => {
         const first = rowCell(page, 'PRD-A001', 'itemCode');
         const last = rowCell(page, 'PRD-H010', 'itemCode');
