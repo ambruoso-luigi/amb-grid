@@ -318,7 +318,13 @@ describe('AMB table controller event API', () => {
             expect(destroyCallback).toHaveBeenCalledOnce();
             expect(destroyCallback).toHaveBeenCalledWith({ reason: 'destroy' });
             expect(table.destroy).toHaveBeenCalledOnce();
-            expect(table.off).toHaveBeenCalledTimes(3);
+            expect(table.off.mock.calls.map(([event]) => event))
+                .toEqual([
+                    'historyUndo',
+                    'historyRedo',
+                    'cellEdited',
+                    'renderComplete'
+                ]);
             expect(table.off).toHaveBeenCalledWith('historyUndo', expect.any(Function));
             expect(table.off).toHaveBeenCalledWith('historyRedo', expect.any(Function));
             expect(table.off).toHaveBeenCalledWith('renderComplete', expect.any(Function));

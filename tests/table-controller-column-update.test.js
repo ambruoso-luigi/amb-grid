@@ -1025,7 +1025,8 @@ describe('AMB Grid managed column definition updates', () => {
         ]);
 
         expect(harness.previousLookupUnsubscribe).toHaveBeenCalledOnce();
-        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.table.on.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
         expect(harness.table.on).toHaveBeenCalledWith(
             'tableBuilt',
             expect.any(Function)
@@ -1092,8 +1093,10 @@ describe('AMB Grid managed column definition updates', () => {
         expect(secondPreparedDefinition.formatter)
             .not.toBe(firstPreparedDefinition.formatter);
         expect(nextLookup.setHandlers).toHaveBeenCalledOnce();
-        expect(harness.table.off).toHaveBeenCalledTimes(2);
-        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.table.off.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
+        expect(harness.table.on.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
         expect(harness.crud.replaceDeclarativeCellValidators)
             .toHaveBeenCalledOnce();
         expect(harness.searchController.replaceColumns).toHaveBeenCalledOnce();
@@ -1284,7 +1287,8 @@ describe('AMB Grid managed column definition updates', () => {
             .toHaveBeenCalledTimes(1);
 
         expect(harness.previousLookupUnsubscribe).toHaveBeenCalledOnce();
-        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.table.on.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
         await new Promise(resolve => setTimeout(resolve, 0));
         expect(harness.rowData.region).toBe('EU');
         expect(getLookupMetadata(harness.rowData, 'region').current).toEqual({
@@ -1348,8 +1352,10 @@ describe('AMB Grid managed column definition updates', () => {
             .toHaveBeenCalledOnce();
         expect(harness.crud.replaceDeclarativeCellValidators)
             .toHaveBeenCalledWith('priority', []);
-        expect(harness.table.off).toHaveBeenCalledTimes(2);
-        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.table.off.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
+        expect(harness.table.on.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
         expect(harness.searchController.replaceColumns).toHaveBeenCalledOnce();
         expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
         expect(harness.table.setColumns).not.toHaveBeenCalled();
@@ -1536,9 +1542,8 @@ describe('AMB Grid managed column definition updates', () => {
             .toEqual(countryMetadataBefore);
         expect(harness.previousLookupUnsubscribe)
             .toHaveBeenCalledOnce();
-        expect(harness.table.on).toHaveBeenCalledTimes(2);
-        expect(harness.table.on.mock.calls.map(call => call[0]))
-            .toEqual(['tableBuilt', 'dataLoaded']);
+        expect(harness.table.on.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
         expect(harness.lifecycleResources.unsubscribeLookupMetadata)
             .not.toBe(harness.previousLookupUnsubscribe);
         expect(harness.regionLookup.lookupInstance.load)
@@ -1877,7 +1882,8 @@ describe('AMB Grid managed column definition updates', () => {
         });
         expect(harness.previousLookupUnsubscribe)
             .toHaveBeenCalledOnce();
-        expect(harness.table.on).toHaveBeenCalledTimes(2);
+        expect(harness.table.on.mock.calls.map(([event]) => event))
+            .toEqual(['tableBuilt', 'dataLoaded', 'dataChanged']);
         expect(harness.searchController.replaceColumns)
             .toHaveBeenCalledOnce();
         expect(harness.searchController.getSearchState()).toEqual({

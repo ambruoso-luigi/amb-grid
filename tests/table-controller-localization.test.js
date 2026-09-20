@@ -276,7 +276,9 @@ describe('AMB table controller localization API', () => {
 
             expect(controller.table).toBe(table);
             expect(table.options.columns).toContainEqual(expect.objectContaining({
-                _ambManagedColumn: 'rowAction'
+                editor: expect.any(Function),
+                formatter: expect.any(Function),
+                headerSort: false
             }));
             expect(typeof controller.setLocale).toBe('function');
             expect(typeof controller.getLocale).toBe('function');

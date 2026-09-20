@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { lookup as createLookupEditor } from '../src/lib/editors/lookup-editor.js';
 import { getLookupMetadata } from '../src/lib/lookup-metadata.js';
+import { invokeCellAuxiliaryAction } from '../src/lib/table/keyboard-auxiliary.js';
 
 const records = [
     { id: 'ACTIVE', description: 'Active' },
@@ -55,7 +56,8 @@ const createHarness = ({
     load = ({ query }) => records.filter(record => record.id.includes(query)),
     lookupOptions = {},
     withRowNavigation = false,
-    dialogLifecycle = {}
+    dialogLifecycle = {},
+    activateAuxiliary = false
 } = {}) => {
     const rowData = { id: 1, status: initialValue };
     let editing = dialogLifecycle.editing !== false;
@@ -149,7 +151,9 @@ const createHarness = ({
         applyRecord
     });
 
-    const container = editor(cell, () => {}, success, cancel);
+    const container = editor(cell, callback => {
+        if (activateAuxiliary) callback();
+    }, success, cancel);
 
     return {
         cancel,
@@ -175,6 +179,12 @@ const createHarness = ({
 const flushDeferred = () => new Promise(resolve => {
     globalThis.setTimeout(resolve, 0);
 });
+
+const openLookupDialog = async cell => {
+    expect(invokeCellAuxiliaryAction(cell, {})).toBe(true);
+    await Promise.resolve();
+    await Promise.resolve();
+};
 
 const createMunicipalityHarness = ({
     initialValue = '',
@@ -834,11 +844,12 @@ describe('lookup editor blur commits', () => {
         expect(harness.table.navigatePrev).not.toHaveBeenCalled();
     });
 
-    test('Enter opens the configured lookup dialog and applies the selected record', async () => {
+    test('F2 opens the configured lookup dialog and applies the selected record', async () => {
         const dialog = {
             open: vi.fn(async () => records[1])
         };
         const harness = createHarness({
+            activateAuxiliary: true,
             options: {
                 dialog,
                 dialogTitle: 'Search status',
@@ -848,17 +859,7 @@ describe('lookup editor blur commits', () => {
                 ]
             }
         });
-        const preventDefault = vi.fn();
-        const stopPropagation = vi.fn();
-
-        await harness.input.dispatch('keydown', {
-            key: 'Enter',
-            preventDefault,
-            stopPropagation
-        });
-
-        expect(preventDefault).toHaveBeenCalledOnce();
-        expect(stopPropagation).toHaveBeenCalledOnce();
+        await openLookupDialog(harness.cell);
         expect(dialog.open).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
         expect(getLookupMetadata(harness.rowData, 'status').current).toEqual({
@@ -869,12 +870,12 @@ describe('lookup editor blur commits', () => {
 
     test('reopens once after a changed dialog selection and cleans up lifecycle listeners', async () => {
         const harness = createHarness({
+            activateAuxiliary: true,
             dialogLifecycle: { closeOnSuccess: true, event: 'cellEdited' },
             options: { dialog: { open: vi.fn(async () => records[1]) } }
         });
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
-        await Promise.resolve();
+        await openLookupDialog(harness.cell);
 
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
@@ -885,12 +886,12 @@ describe('lookup editor blur commits', () => {
 
     test('reopens once when a same-value dialog selection closes without lifecycle events', async () => {
         const harness = createHarness({
+            activateAuxiliary: true,
             dialogLifecycle: { closeOnSuccess: true },
             options: { dialog: { open: vi.fn(async () => records[0]) } }
         });
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
-        await Promise.resolve();
+        await openLookupDialog(harness.cell);
 
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('ACTIVE');
@@ -900,12 +901,12 @@ describe('lookup editor blur commits', () => {
 
     test('synchronous cellEdited schedules only one dialog-selection reopen', async () => {
         const harness = createHarness({
+            activateAuxiliary: true,
             dialogLifecycle: { closeOnSuccess: true, event: 'cellEdited' },
             options: { dialog: { open: vi.fn(async () => records[0]) } }
         });
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
-        await Promise.resolve();
+        await openLookupDialog(harness.cell);
 
         expect(harness.cell.edit).toHaveBeenCalledOnce();
         expect(harness.table.off).toHaveBeenCalledTimes(2);
@@ -913,12 +914,12 @@ describe('lookup editor blur commits', () => {
 
     test('cellEditCancelled completes the equivalent dialog-selection lifecycle once', async () => {
         const harness = createHarness({
+            activateAuxiliary: true,
             dialogLifecycle: { closeOnSuccess: true, event: 'cellEditCancelled' },
             options: { dialog: { open: vi.fn(async () => records[0]) } }
         });
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
-        await Promise.resolve();
+        await openLookupDialog(harness.cell);
 
         expect(harness.cell.edit).toHaveBeenCalledOnce();
         expect(harness.table.off).toHaveBeenCalledTimes(2);
@@ -927,6 +928,7 @@ describe('lookup editor blur commits', () => {
     test('ignores unrelated edit events until the current editor has really closed', async () => {
         const otherCell = { getElement: () => ({}) };
         const harness = createHarness({
+            activateAuxiliary: true,
             options: { dialog: { open: vi.fn(async () => records[0]) } }
         });
         harness.success.mockImplementation(() => {
@@ -934,8 +936,7 @@ describe('lookup editor blur commits', () => {
             harness.closeEditor();
         });
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
-        await Promise.resolve();
+        await openLookupDialog(harness.cell);
 
         expect(harness.cell.edit).toHaveBeenCalledOnce();
         expect(harness.table.off).toHaveBeenCalledTimes(2);
@@ -943,11 +944,11 @@ describe('lookup editor blur commits', () => {
 
     test('does not reopen when validation leaves the current editor active', async () => {
         const harness = createHarness({
+            activateAuxiliary: true,
             options: { dialog: { open: vi.fn(async () => records[0]) } }
         });
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
-        await Promise.resolve();
+        await openLookupDialog(harness.cell);
 
         expect(harness.cell.edit).not.toHaveBeenCalled();
         expect(harness.table.off).toHaveBeenCalledTimes(2);
@@ -956,6 +957,7 @@ describe('lookup editor blur commits', () => {
     test('applies a mapped dialog record once before reopening once', async () => {
         const selected = { id: 'ACTIVE', description: 'Active', category: 'open' };
         const harness = createHarness({
+            activateAuxiliary: true,
             dialogLifecycle: { closeOnSuccess: true },
             options: {
                 dialog: { open: vi.fn(async () => selected) },
@@ -963,8 +965,7 @@ describe('lookup editor blur commits', () => {
             }
         });
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
-        await Promise.resolve();
+        await openLookupDialog(harness.cell);
 
         expect(harness.applyRecord).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();

@@ -578,7 +578,7 @@ describe('row action column accessibility', () => {
         expect(globalThis.document.activeElement.dataset.action).toBe('delete');
     });
 
-    test('after an action leaves its cell empty, focus moves to the next valid candidate', async () => {
+    test('after delete, a deleted row does not focus an ordinary data cell', async () => {
         const data = { id: 1, _state: 'clean' };
         const crud = createCrud();
         const controller = createRowActionColumn(
@@ -608,7 +608,7 @@ describe('row action column accessibility', () => {
         await flushActionFocus();
 
         expect(rowElement.querySelector('.amb-row-action-button')).toBeNull();
-        expect(nextCell.edit).toHaveBeenCalledOnce();
+        expect(nextCell.edit).not.toHaveBeenCalled();
     });
 
     test('after remove-new, focus moves to the next row action cell when available', async () => {
