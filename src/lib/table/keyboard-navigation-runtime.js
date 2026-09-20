@@ -719,7 +719,7 @@ export const createKeyboardNavigationRuntime = ({
     const handlePointerActivation = event => {
         const cellElement = event.target?.closest?.('.tabulator-cell');
         const cell = getCellFromElement(cellElement);
-        if (cell) cancelScheduledNavigationFocusRestore();
+        if (cell) cancelScheduledNavigationFocusRestore(cell);
         const definition = cell?.getColumn?.()?.getDefinition?.() || {};
         const metadata = getAmbColumnMetadata(definition);
         const isMarkedLargeText = cellElement?.classList?.contains?.('amb-cell--large-text');
@@ -761,6 +761,11 @@ export const createKeyboardNavigationRuntime = ({
             || metadata.focusSelector
             || metadata.activateOnNavigationFocus
         ) return;
+
+        if (event.type === 'mousedown') {
+            focusNavigationCandidate(cell);
+            return;
+        }
 
         if (event.type !== 'click') return;
         // Keep the engine's pointer sequence intact so its native double-click

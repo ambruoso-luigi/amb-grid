@@ -34,7 +34,7 @@ const expectLookupEditor = async (page, code) => {
 };
 
 const selectStatusDialogResult = async (page, value) => {
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('F2');
     const dialog = page.locator('.amb-lookup-dialog');
     await expect(dialog).toBeVisible();
     await dialog.locator('tbody tr').filter({ hasText: value }).first().click();
@@ -111,7 +111,7 @@ test.describe('keyboard pagination focus', () => {
         await expect(status.locator('.amb-lookup-editor__input')).toHaveValue(currentValue);
         await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
 
-        await page.keyboard.press('Enter');
+        await page.keyboard.press('F2');
         const dialog = page.locator('.amb-lookup-dialog');
         await expect(dialog).toBeVisible();
         await page.keyboard.press('Escape');

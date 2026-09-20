@@ -18,6 +18,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Isolated deferred keyboard-close focus restoration per grid so pointer input
+  in one AMB Grid cannot cancel a pending restore in another.
 - Kept special AMB controls as the owner of their immediate pointer actions,
   while normal cells retain click-to-focus and double-click-to-edit behavior.
 - Preserved the most recent pointer focus destination when a keyboard-close

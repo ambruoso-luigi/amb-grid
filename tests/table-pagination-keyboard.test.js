@@ -639,6 +639,17 @@ describe('table pagination keyboard runtime', () => {
         expect(title.edit).not.toHaveBeenCalled();
     });
 
+    test('default pointer mousedown establishes navigation focus without opening an editor', () => {
+        const title = createCandidate({ field: 'title' });
+        const harness = createHarness({ cells: [title] });
+
+        const event = harness.tableElement.dispatch({ target: title.getElement() }, 'mousedown');
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(title.getElement());
+        expect(title.edit).not.toHaveBeenCalled();
+    });
+
     test('single-click editing mode leaves normal pointer editing to the engine', () => {
         const title = createCandidate({ field: 'title' });
         const harness = createHarness({
@@ -707,6 +718,8 @@ describe('table pagination keyboard runtime', () => {
             return frames.length;
         };
         const harness = createHarness({ cells: [source, destination] });
+        source.getTable = () => harness.table;
+        destination.getTable = () => harness.table;
         const event = {
             key: 'Enter',
             preventDefault: vi.fn(),
@@ -715,7 +728,7 @@ describe('table pagination keyboard runtime', () => {
         };
 
         handleEditorCommitCancelKeydown({
-            cell: { ...source, getTable: () => harness.table },
+            cell: source,
             event,
             onCommit: vi.fn(),
             onCancel: vi.fn()
@@ -728,6 +741,36 @@ describe('table pagination keyboard runtime', () => {
         frames.splice(0).forEach(callback => callback());
 
         expect(source.getElement().focus).not.toHaveBeenCalled();
+    });
+
+    test('a pointer in another grid does not cancel its pending focus restoration', () => {
+        const source = createCandidate({ field: 'source' });
+        const otherGridCell = createCandidate({ field: 'other' });
+        const frames = [];
+        globalThis.requestAnimationFrame = callback => {
+            frames.push(callback);
+            return frames.length;
+        };
+        const firstGrid = createHarness({ cells: [source] });
+        const secondGrid = createHarness({ cells: [otherGridCell] });
+        source.getTable = () => firstGrid.table;
+        otherGridCell.getTable = () => secondGrid.table;
+
+        handleEditorCommitCancelKeydown({
+            cell: source,
+            event: {
+                key: 'Enter',
+                preventDefault: vi.fn(),
+                stopPropagation: vi.fn(),
+                stopImmediatePropagation: vi.fn()
+            },
+            onCommit: vi.fn(),
+            onCancel: vi.fn()
+        });
+        secondGrid.tableElement.dispatch({ target: otherGridCell.getElement() }, 'click');
+        frames.splice(0).forEach(callback => callback());
+
+        expect(source.getElement().focus).toHaveBeenCalledOnce();
     });
 
     test('ignores calculation rows before resolving row or cell components', async () => {

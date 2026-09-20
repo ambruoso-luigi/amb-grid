@@ -190,6 +190,10 @@ test.describe('keyboard spatial navigation', () => {
 
     test('keeps autocomplete ArrowDown in its dropdown', async ({ page }) => {
         const warehouse = rowCell(page, 'PRD-AB02', 'warehouse');
+        await warehouse.click();
+        await expectNavigationFocus(warehouse);
+        await expect(warehouse.locator('input.amb-autocomplete-editor')).toHaveCount(0);
+
         await warehouse.dblclick({ delay: 100 });
         const input = warehouse.locator('input.amb-autocomplete-editor');
         await expect(input).toBeFocused();
@@ -198,6 +202,25 @@ test.describe('keyboard spatial navigation', () => {
         await expect(page.getByRole('listbox', { name: 'Results List' })
             .getByRole('option', { selected: true })).toHaveCount(1);
         await expect(warehouse).toHaveClass(/tabulator-editing/);
+    });
+
+    test('uses lookup double click for manual editing and F2 for the dialog', async ({ page }) => {
+        const status = rowCell(page, 'PRD-AB02', 'status');
+        const dialog = page.locator('.amb-lookup-dialog');
+
+        await status.click();
+        await expectNavigationFocus(status);
+        await expect(status.locator('.amb-lookup-editor__input')).toHaveCount(0);
+        await expect(dialog).toHaveCount(0);
+
+        await status.dblclick({ delay: 100 });
+        await expect(status.locator('.amb-lookup-editor__input')).toBeFocused();
+        await expect(dialog).toHaveCount(0);
+        await page.keyboard.press('Escape');
+        await expectNavigationFocus(status);
+
+        await page.keyboard.press('F2');
+        await expect(dialog).toBeVisible();
     });
 
     test('moves large text without opening its dialog and keeps its page boundary', async ({ page }) => {

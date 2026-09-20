@@ -100,24 +100,47 @@ export const focusCellWithoutEditing = cell => {
     return true;
 };
 
-let navigationFocusRestoreVersion = 0;
+const navigationFocusRestoreVersions = new WeakMap();
+
+const getNavigationFocusRestoreOwner = cell => {
+    const table = cell?.getTable?.();
+
+    if ((typeof table === 'object' || typeof table === 'function') && table !== null) {
+        return table;
+    }
+
+    if ((typeof cell === 'object' || typeof cell === 'function') && cell !== null) {
+        return cell;
+    }
+
+    const element = cell?.getElement?.();
+    return (typeof element === 'object' || typeof element === 'function') && element !== null
+        ? element
+        : null;
+};
 
 /**
- * Cancels a pending keyboard-close focus restoration when a pointer action
- * expresses a newer focus destination.
+ * Cancels a pending keyboard-close focus restoration for the source grid when
+ * a pointer action expresses a newer focus destination in that same grid.
  *
+ * @param {object} cell - Cell component owning the pointer destination.
  * @returns {void}
  * @private
  * @internal
  */
-export const cancelScheduledNavigationFocusRestore = () => {
-    navigationFocusRestoreVersion += 1;
+export const cancelScheduledNavigationFocusRestore = cell => {
+    const owner = getNavigationFocusRestoreOwner(cell);
+
+    if (!owner) return;
+
+    navigationFocusRestoreVersions.set(owner, (navigationFocusRestoreVersions.get(owner) || 0) + 1);
 };
 
 const scheduleNavigationFocusRestore = cell => {
-    const version = navigationFocusRestoreVersion;
+    const owner = getNavigationFocusRestoreOwner(cell);
+    const version = owner ? navigationFocusRestoreVersions.get(owner) || 0 : 0;
     const restore = () => {
-        if (version !== navigationFocusRestoreVersion) return;
+        if (owner && version !== (navigationFocusRestoreVersions.get(owner) || 0)) return;
 
         focusCellWithoutEditing(cell);
     };

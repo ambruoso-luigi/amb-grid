@@ -34,14 +34,15 @@ test.describe('contextual cell messages and large-text focus', () => {
         const firstDescription = await messageBody(page).textContent();
 
         await firstStatus.click();
-        await page.keyboard.press('Alt+ArrowDown');
-        await expect(cell(page, 'PRD-AB02', 'status')).toHaveClass(/tabulator-editing/);
-        await expect(cell(page, 'PRD-AB02', 'status').locator('.amb-lookup-editor__input')).toBeFocused();
+        await page.keyboard.press('ArrowDown');
+        await expect(cell(page, 'PRD-AB02', 'status')).toBeFocused();
+        await expect(cell(page, 'PRD-AB02', 'status')).not.toHaveClass(/tabulator-editing/);
         await page.evaluate(() => new Promise(resolve => {
             requestAnimationFrame(() => requestAnimationFrame(resolve));
         }));
-        await page.keyboard.press('Alt+ArrowDown');
-        await expect(cell(page, 'PRD-A003', 'status')).toHaveClass(/tabulator-editing/);
+        await page.keyboard.press('ArrowDown');
+        await expect(cell(page, 'PRD-A003', 'status')).toBeFocused();
+        await expect(cell(page, 'PRD-A003', 'status')).not.toHaveClass(/tabulator-editing/);
         await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
         await expect(messageBody(page)).not.toHaveText(firstDescription);
         const keyboardDescription = await messageBody(page).textContent();
@@ -178,8 +179,13 @@ test.describe('React supplier lookup messages and status select', () => {
         await expect(status).not.toHaveAttribute('data-lookup-field');
         await status.hover();
         await expect(message(page)).not.toHaveClass(/teh-floating-message--visible/);
+        await status.click();
+        await expect(status).toBeFocused();
+        await expect(status).not.toHaveClass(/tabulator-editing/);
+        await expect(status.locator('select.amb-cell-editor--select')).toHaveCount(0);
         await status.dblclick();
         await expect(status.locator('select.amb-cell-editor--select')).toBeVisible();
+        await expect(status.locator('select.amb-cell-editor--select')).toBeFocused();
         await expect(status.locator('.amb-lookup-editor__input')).toHaveCount(0);
     });
 
@@ -191,9 +197,10 @@ test.describe('React supplier lookup messages and status select', () => {
         await initialSupplier.hover();
         await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
         await initialSupplier.click();
-        await page.keyboard.press('Alt+ArrowDown');
-        await expect(supplier.locator('.amb-lookup-editor__input')).toBeFocused();
-        await page.keyboard.press('Enter');
+        await page.keyboard.press('ArrowDown');
+        await expect(supplier).toBeFocused();
+        await expect(supplier).not.toHaveClass(/tabulator-editing/);
+        await page.keyboard.press('F2');
 
         const dialog = page.locator('.amb-lookup-dialog');
         await expect(dialog).toBeVisible();
