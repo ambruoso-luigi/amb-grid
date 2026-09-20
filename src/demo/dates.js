@@ -145,10 +145,10 @@ export default function dates(app) {
             columns: [
                 { title: 'Event', titleKey: 'guides.dates.event.title', badge: 'TEXT', description: 'Editable event name.', descriptionKey: 'guides.dates.event.description' },
                 { title: 'Manual date', titleKey: 'guides.dates.manual.title', badge: 'DD/MM/YYYY', description: 'Manual input with calendar-date and range validation.', descriptionKey: 'guides.dates.manual.description' },
-                { title: 'Picker date', titleKey: 'guides.dates.picker.title', badge: 'MANUAL + PICKER', description: 'Supports both typing and selection from the calendar button.', descriptionKey: 'guides.dates.picker.description' },
+                { title: 'Picker date', titleKey: 'guides.dates.picker.title', badge: 'MANUAL + PICKER', description: 'Supports typing and calendar selection with F2 or the calendar button.', descriptionKey: 'guides.dates.picker.description' },
                 { title: 'ISO-style date', titleKey: 'guides.dates.iso.title', badge: 'ISO', description: 'Accepts YYYY-M-D or YYYY-MM-DD according to the date configuration.', descriptionKey: 'guides.dates.iso.description' },
                 { title: 'Compact date', titleKey: 'guides.dates.compact.title', badge: 'YYYYMMDD', description: 'Legacy compact date using exactly eight digits.', descriptionKey: 'guides.dates.compact.description' },
-                { title: 'Picker-only date', titleKey: 'guides.dates.pickerOnly.title', badge: 'PICKER', description: 'Selected through the calendar and stored as DD-MM-YYYY.', descriptionKey: 'guides.dates.pickerOnly.description' }
+                { title: 'Picker-only date', titleKey: 'guides.dates.pickerOnly.title', badge: 'PICKER', description: 'Enter or F2 opens the calendar; the selected value is stored as DD-MM-YYYY.', descriptionKey: 'guides.dates.pickerOnly.description' }
             ]
         })}
         <div class="demo-table-workbench">

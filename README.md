@@ -383,16 +383,12 @@ popup/action cells, and non-data interactive columns:
   While the dialog is open, `Tab`/`Shift+Tab` stay inside it, arrow keys move
   lookup selection, `Enter` selects, and `Escape` cancels. Record-based
   lookups can update multiple row fields through `mapToRow`.
-* Date editors use `Enter` to open the calendar when the editor supports it.
-  In `pickerOnly` mode, entering the editor opens the calendar immediately.
-  Arrow keys change only the highlighted day; `Enter` confirms that highlighted
-  day as the selection. `Tab`/`Shift+Tab` leave and navigate without turning a
-  merely highlighted day into a new selection. If a value was already selected,
-  leaving with `Tab` without confirmation preserves that value. After a real
-  mouse or keyboard selection, subsequent navigation remains in the grid flow.
-  `Escape` preserves the editor mode's close behavior. Manual picker editors
-  keep the calendar button available after the popup closes so it can be
-  reopened.
+* Date editors in manual mode use `Enter` to edit/commit and `Escape` to
+  cancel. `manualWithPickerButton` uses `F2` (or its calendar button) to open
+  the calendar; choosing a date returns to the manual input and requires
+  `Enter` to commit. `pickerOnly` opens its calendar on `Enter` or `F2`.
+  `Tab`/`Shift+Tab` preserve sequential commit/navigation, and datepicker
+  arrows remain local to the calendar.
 * Keyboard navigation focuses a large-text cell without opening its editor;
   press `Enter` to open the dialog. Text is selectable and editable only in
   the dialog, which traps `Tab`/`Shift+Tab`. `Ctrl+Enter` saves and `Escape`

@@ -15,6 +15,17 @@ const eventCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-fie
 const previousCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="manualDate"]');
 const nextCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="isoDate"]');
 
+const focusWithoutEditing = async cell => {
+    await cell.evaluate(element => {
+        const blockEdit = event => event.stopImmediatePropagation();
+        element.addEventListener('focus', blockEdit, true);
+        element.focus({ preventScroll: true });
+        element.removeEventListener('focus', blockEdit, true);
+    });
+    await expect(cell).toBeFocused();
+    await expect(cell).not.toHaveClass(/tabulator-editing/);
+};
+
 const openPicker = async page => {
     const cell = pickerCell(page);
 
@@ -49,6 +60,21 @@ const commitOutsideEditorAndVerify = async (page, cell, selectedValue) => {
 };
 
 test.describe('date picker commit regression', () => {
+    test('Enter edits manual picker input while F2 opens its calendar', async ({ page }) => {
+        await openDatesExample(page);
+        const cell = pickerCell(page);
+        await focusWithoutEditing(cell);
+
+        await page.keyboard.press('Enter');
+        const input = page.locator('input.amb-date-editor').last();
+        await expect(input).toBeFocused();
+        await expect(page.locator('.datepicker.active')).toHaveCount(0);
+
+        await page.keyboard.press('F2');
+        await expect(input).toBeVisible();
+        await expect(page.locator('.datepicker.active')).toBeVisible();
+    });
+
     test('mouse selection commits on external blur', async ({ page }) => {
         await openDatesExample(page);
         const { cell, initialValue, input } = await openPicker(page);

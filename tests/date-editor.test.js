@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { date as createDateEditor } from '../src/lib/editors/date-editor.js';
 import {
+    invokeCellAuxiliaryAction,
+    queueCellAuxiliaryAction
+} from '../src/lib/table/keyboard-auxiliary.js';
+import {
     formatPickerDate,
     getDateEditorBehavior,
     isAllowedDateInputKey,
@@ -60,6 +64,12 @@ describe('date editor modes', () => {
             hasPickerButton: false,
             autoOpenPicker: true
         });
+    });
+
+    test('exposes the auxiliary capability only for date modes with a picker', () => {
+        expect(createDateEditor({ mode: 'manual' })._ambCapabilities.auxiliary).toBe(false);
+        expect(createDateEditor({ mode: 'manualWithPickerButton' })._ambCapabilities.auxiliary).toBe(true);
+        expect(createDateEditor({ mode: 'pickerOnly' })._ambCapabilities.auxiliary).toBe(true);
     });
 
     test('formats picker selections with the configured column format', () => {
@@ -393,6 +403,7 @@ const createPickerHarness = (options = {}) => {
     ];
     const success = vi.fn();
     const cancel = vi.fn();
+    if (options.pendingAuxiliary) queueCellAuxiliaryAction(cell);
     const editor = createDateEditor({
         format: 'dd/mm/yyyy',
         picker: true,
@@ -532,7 +543,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
     });
 
-    test('Enter opens the picker without forcing navigation', async () => {
+    test('Enter commits manual picker input without opening the picker', async () => {
         const harness = createPickerHarness();
         const datepicker = datepickerState.instances[0];
 
@@ -541,10 +552,9 @@ describe('date editor picker keyboard navigation', () => {
         });
         await flushDeferred();
 
-        expect(datepicker.show).toHaveBeenCalledOnce();
-        expect(datepicker.active).toBe(true);
-        expect(globalThis.document.activeElement).toBe(harness.pickerInput);
-        expect(harness.success).not.toHaveBeenCalled();
+        expect(datepicker.show).not.toHaveBeenCalled();
+        expect(datepicker.active).toBe(false);
+        expect(harness.success).toHaveBeenCalledWith('20/07/2026');
         expect(harness.cell.navigateNext).not.toHaveBeenCalled();
         expect(harness.cell.navigatePrev).not.toHaveBeenCalled();
         expect(harness.table.navigateNext).not.toHaveBeenCalled();
@@ -555,9 +565,7 @@ describe('date editor picker keyboard navigation', () => {
         const harness = createPickerHarness();
         const datepicker = datepickerState.instances[0];
 
-        await harness.input.dispatch('keydown', {
-            key: 'Enter'
-        });
+        expect(invokeCellAuxiliaryAction(harness.cell, {})).toBe(true);
         expect(datepicker.active).toBe(true);
         expect(documentListeners).toHaveLength(2);
 
@@ -573,9 +581,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(harness.pickerButton).toBeTruthy();
 
-        await harness.input.dispatch('keydown', {
-            key: 'Enter'
-        });
+        expect(invokeCellAuxiliaryAction(harness.cell, {})).toBe(true);
 
         expect(datepicker.show).toHaveBeenCalledTimes(2);
         expect(datepicker.active).toBe(true);
@@ -585,9 +591,7 @@ describe('date editor picker keyboard navigation', () => {
         const harness = createPickerHarness();
         const datepicker = datepickerState.instances[0];
 
-        await harness.input.dispatch('keydown', {
-            key: 'Enter'
-        });
+        expect(invokeCellAuxiliaryAction(harness.cell, {})).toBe(true);
 
         await harness.pickerInput.dispatch('changeDate', {
             detail: {
@@ -608,11 +612,20 @@ describe('date editor picker keyboard navigation', () => {
         expect(datepicker.active).toBe(true);
     });
 
+    test('consumes a pending F2 request once when a manual picker editor renders', () => {
+        const harness = createPickerHarness({ pendingAuxiliary: true });
+        const datepicker = datepickerState.instances[0];
+
+        expect(datepicker.show).toHaveBeenCalledOnce();
+        expect(datepicker.active).toBe(true);
+        expect(harness.success).not.toHaveBeenCalled();
+    });
+
     test('manual picker selection commits the new value on a real external blur', async () => {
         const harness = createPickerHarness();
         const outside = createElement('button');
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
+        expect(invokeCellAuxiliaryAction(harness.cell, {})).toBe(true);
         await harness.pickerInput.dispatch('changeDate', {
             detail: {
                 date: new Date(2026, 7, 9)
@@ -644,7 +657,7 @@ describe('date editor picker keyboard navigation', () => {
     test('manual picker blur toward the picker does not commit prematurely', async () => {
         const harness = createPickerHarness();
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
+        expect(invokeCellAuxiliaryAction(harness.cell, {})).toBe(true);
         globalThis.document.activeElement = harness.pickerInput;
         await harness.input.dispatch('blur', { relatedTarget: harness.pickerInput });
         await flushDeferred();
@@ -765,7 +778,7 @@ describe('date editor picker keyboard navigation', () => {
         const harness = createPickerHarness();
         const datepicker = datepickerState.instances[0];
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
+        expect(invokeCellAuxiliaryAction(harness.cell, {})).toBe(true);
         const event = await globalThis.document.dispatch('keydown', { key: 'Tab' });
         await harness.input.dispatch('blur');
         await flushDeferred();
@@ -783,7 +796,7 @@ describe('date editor picker keyboard navigation', () => {
         const harness = createPickerHarness();
         const datepicker = datepickerState.instances[0];
 
-        await harness.input.dispatch('keydown', { key: 'Enter' });
+        expect(invokeCellAuxiliaryAction(harness.cell, {})).toBe(true);
         const event = await globalThis.document.dispatch('keydown', {
             key: 'Tab',
             shiftKey: true

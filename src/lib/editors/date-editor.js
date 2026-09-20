@@ -14,8 +14,13 @@ import {
     containEditorSpatialNavigation,
     focusInput,
     getInitialValue,
+    handleEditorCommitCancelKeydown,
     navigateEditableCellAfterClose
 } from './shared.js';
+import {
+    consumeCellAuxiliaryAction,
+    registerCellAuxiliaryAction
+} from '../table/keyboard-auxiliary.js';
 
 const DATE_OPTION_FORMATS = [
     'dd/mm/yyyy',
@@ -85,7 +90,9 @@ const createPickerOptions = options => {
      * Keyboard behavior:
      * - `Tab` and `Shift+Tab` commit and navigate whether the picker is open or
      *   closed.
-     * - `Enter` opens the datepicker when a picker is configured.
+     * - Manual inputs use the configured commit/cancel bindings (`Enter` and
+     *   `Escape` by default). In `manualWithPickerButton`, `F2` opens the
+     *   picker; `pickerOnly` opens it on `Enter` or `F2`.
      * - while the picker is open, arrow keys do not propagate to the grid,
      *   `Enter` is left to the picker when appropriate, and `Escape` preserves
      *   the configured manual or picker-only close behavior.
@@ -144,6 +151,7 @@ export function date(options = {}) {
                 let handlePickerDocumentKeydown = null;
                 let handlePickerTabKeydown = null;
                 let pickerFocusTrap = null;
+                let unregisterAuxiliary = null;
 
                 input.className = 'amb-date-editor';
                 wrapper.className = 'amb-date-editor-wrapper';
@@ -228,6 +236,8 @@ export function date(options = {}) {
                 };
 
                 const destroyDatepicker = () => {
+                    unregisterAuxiliary?.();
+                    unregisterAuxiliary = null;
                     cleanupPickerSession({ restoreFocus: false });
 
                     if (datepicker) {
@@ -447,6 +457,15 @@ export function date(options = {}) {
                 const showPicker = () => {
                     if (!datepicker) return;
 
+                    if (datepicker.active) {
+                        try {
+                            pickerInput.focus({ preventScroll: true });
+                        } catch {
+                            pickerInput.focus();
+                        }
+                        return;
+                    }
+
                     const parsedValue = parsers.date({
                         inputFormat: normalizedOptions.format,
                         outputFormat: 'Date',
@@ -535,21 +554,12 @@ export function date(options = {}) {
                             return;
                         }
 
-                        if (event.key === 'Enter') {
-                            if (datepicker && !datepicker.active) {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                showPicker();
-                                return;
-                            }
-
-                            commit();
-                            return;
-                        }
-
-                        if (event.key === 'Escape') {
-                            closeWithCancel();
-                        }
+                        handleEditorCommitCancelKeydown({
+                            cell,
+                            event,
+                            onCommit: commit,
+                            onCancel: closeWithCancel
+                        });
                     });
                     input.addEventListener('blur', commitManualInputOnBlur);
                 }
@@ -557,6 +567,8 @@ export function date(options = {}) {
                 onRendered(() => {
                     datepicker = new Datepicker(pickerInput, createPickerOptions(normalizedOptions));
                     pickerInput.addEventListener('keydown', keepPickerArrowInsideEditor);
+                    unregisterAuxiliary = registerCellAuxiliaryAction(cell, showPicker);
+                    const pendingAuxiliary = consumeCellAuxiliaryAction(cell);
 
                     if (editorBehavior.hasManualInput) {
                         input.focus();
@@ -568,7 +580,7 @@ export function date(options = {}) {
                         }
                     }
 
-                    if (editorBehavior.autoOpenPicker) {
+                    if (editorBehavior.autoOpenPicker || pendingAuxiliary) {
                         showPicker();
                     }
                 });
@@ -658,6 +670,10 @@ export function date(options = {}) {
         };
 
         editor._ambEditorType = 'date';
+        editor._ambCapabilities = {
+            auxiliary: normalizedOptions.mode === 'manualWithPickerButton'
+                || normalizedOptions.mode === 'pickerOnly'
+        };
 
         return editor;
     }
