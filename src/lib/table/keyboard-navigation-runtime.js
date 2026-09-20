@@ -285,6 +285,18 @@ export const createKeyboardNavigationRuntime = ({
     };
 
     const getCellFromElement = cellElement => {
+        if (!cellElement) return null;
+
+        // The internal table engine exposes row components from `getRows()`,
+        // but does not accept a row DOM node in `getRow()`. Resolve pointer
+        // targets against those components first so a normal click can enter
+        // AMB navigation state.
+        const activeRows = table.getRows?.('active') || table.getRows?.() || [];
+        const activeCell = activeRows
+            .flatMap(row => row?.getCells?.() || [])
+            .find(cell => cell.getElement?.() === cellElement);
+        if (activeCell) return activeCell;
+
         const rowElement = cellElement?.closest?.('.tabulator-row');
         const field = cellElement?.getAttribute?.('tabulator-field');
         const row = isDataRowElement(rowElement)

@@ -45,7 +45,7 @@ const selectDifferentDateWithMouse = async (page, input, initialValue) => {
 const commitOutsideEditorAndVerify = async (page, cell, selectedValue) => {
     await eventCell(page).dblclick();
     await expect.poll(() => cell.textContent()).toContain(selectedValue);
-    await cell.click();
+    await cell.dblclick({ delay: 100 });
     await expect(page.locator('input.amb-date-editor').last()).toHaveValue(selectedValue);
 };
 

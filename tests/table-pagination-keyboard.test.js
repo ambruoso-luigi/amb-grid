@@ -650,6 +650,19 @@ describe('table pagination keyboard runtime', () => {
         expect(title.edit).not.toHaveBeenCalled();
     });
 
+    test('resolves a pointer cell through rendered row components when getRow rejects DOM nodes', () => {
+        const title = createCandidate({ field: 'title' });
+        const harness = createHarness({ cells: [title] });
+        harness.table.getRow.mockReturnValue(null);
+        harness.table.getRows = vi.fn(() => [title.row]);
+
+        const event = harness.tableElement.dispatch({ target: title.getElement() }, 'mousedown');
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(title.getElement());
+        expect(title.edit).not.toHaveBeenCalled();
+    });
+
     test('single-click editing mode leaves normal pointer editing to the engine', () => {
         const title = createCandidate({ field: 'title' });
         const harness = createHarness({
