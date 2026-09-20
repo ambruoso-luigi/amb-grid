@@ -100,6 +100,45 @@ test.describe('keyboard spatial navigation', () => {
         expect(original).not.toBeNull();
     });
 
+    test('keeps navigation and editing DOM state mutually exclusive through mouse close flows', async ({ page }) => {
+        const source = rowCell(page, 'PRD-AB02', 'productName');
+        const destination = rowCell(page, 'PRD-AB02', 'warehouse');
+        const editors = table(page).locator('.tabulator-cell.tabulator-editing');
+
+        await source.click();
+        await expectNavigationFocus(source);
+        await expect(editors).toHaveCount(0);
+        await expect(source.locator('input.amb-cell-editor')).toHaveCount(0);
+
+        await source.dblclick({ delay: 100 });
+        const input = source.locator('input.amb-cell-editor');
+        await expect(input).toBeFocused();
+        await expect(editors).toHaveCount(1);
+
+        await input.fill('Cancelled mouse value');
+        await page.keyboard.press('Escape');
+        await expectNavigationFocus(source);
+        await expect(editors).toHaveCount(0);
+        await expect(source.locator('input.amb-cell-editor')).toHaveCount(0);
+
+        await page.keyboard.press('ArrowRight');
+        await expectNavigationFocus(destination);
+        await expect(editors).toHaveCount(0);
+
+        await source.click();
+        await page.keyboard.press('Enter');
+        await expect(input).toBeFocused();
+        await input.fill('Committed navigation value');
+        await page.keyboard.press('Enter');
+        await expectNavigationFocus(source);
+        await expect(editors).toHaveCount(0);
+        await expect(source.locator('input.amb-cell-editor')).toHaveCount(0);
+
+        await page.keyboard.press('ArrowRight');
+        await expectNavigationFocus(destination);
+        await expect(editors).toHaveCount(0);
+    });
+
     test('uses the latest pointer destination after an editor blur', async ({ page }) => {
         const source = rowCell(page, 'PRD-AB02', 'productName');
         const destination = rowCell(page, 'PRD-AB02', 'warehouse');
