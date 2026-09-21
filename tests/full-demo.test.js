@@ -5,6 +5,10 @@ const source = fs.readFileSync(
     new URL('../src/demo/full-demo.js', import.meta.url),
     'utf8'
 );
+const mainDemoSource = fs.readFileSync(
+    new URL('../src/demo/main.js', import.meta.url),
+    'utf8'
+);
 const basicCrudSource = fs.readFileSync(
     new URL('../src/demo/basic-crud.js', import.meta.url),
     'utf8'
@@ -28,9 +32,10 @@ const demoDatabase = JSON.parse(fs.readFileSync(
 
 describe('Legacy-friendly warehouse demo', () => {
     test('uses legacy-friendly naming with warehouse scenario', () => {
-        expect(source).toContain('Demo legacy-friendly');
+        expect(source).toContain('Demo principale · Legacy-friendly');
         expect(source).toContain('Gestionale Magazzino Classico');
-        expect(source).toContain('Classic Warehouse Backoffice');
+        expect(source).toContain('Demo gestionale classica per contesti server-rendered e legacy-friendly');
+        expect(source).not.toContain('Classic Warehouse Backoffice');
         expect(source).toContain('fakeApi.getProducts()');
         expect(source).toContain('fakeApi.saveProductChanges(payload)');
     });
@@ -222,14 +227,28 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('class="demo-inventory-panel card bg-base-100 text-base-content"');
         expect(source).toContain('class="demo-app-shell card bg-base-100"');
         expect(source).toContain('data-theme="light"');
-        expect(source).toContain('Dati magazzino editabili');
-        expect(source).toContain('data-i18n="mainDemo.panelKicker"');
-        expect(source).toContain('data-i18n="mainDemo.panelTitle"');
+        expect(source).toContain('data-i18n="mainDemo.kicker">Demo principale · Legacy-friendly');
+        expect(source).toContain('data-i18n="mainDemo.title">Gestionale Magazzino Classico');
+        expect(source).toContain('data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.');
+        expect(source).not.toContain('Pannello operativo');
+        expect(source).not.toContain('Dati magazzino editabili');
+        expect(source).not.toContain('Scenario: Classic Warehouse Backoffice');
+        expect(source).not.toContain('showScenario');
+        expect(mainDemoSource).not.toContain('mainDemo.primaryLabel');
+        expect(mainDemoSource).not.toContain('mainDemo.scenario');
+        expect(mainDemoSource).not.toContain('mainDemo.panelKicker');
+        expect(mainDemoSource).not.toContain('mainDemo.panelTitle');
+        expect(mainDemoSource).not.toContain('mainDemo.panelText');
+        expect(mainDemoSource).toContain("'mainDemo.kicker': 'Demo principale · Legacy-friendly'");
+        expect(mainDemoSource).toContain("'mainDemo.kicker': 'Main demo · Legacy-friendly'");
         expect(source).not.toContain('class="demo-app-shell__chips"');
         expect(source).not.toContain('data-i18n="mainDemo.chipPagination"');
         expect(source).not.toContain('data-i18n="mainDemo.chipValidation"');
         expect(demoCss).toContain('.demo-inventory-panel');
-        expect(demoCss).toContain('.demo-app-shell__header');
+        expect(demoCss).toContain('.demo-app-shell__meta h2');
+        expect(demoCss).not.toContain('.demo-app-shell__header');
+        expect(demoCss).not.toContain('.demo-scenario-label');
+        expect(demoCss).not.toContain('.demo-main-badge');
         expect(demoCss).toContain('.demo-panel .amb-feedback-region');
         expect(demoCss).not.toContain('.demo-app-chip');
         expect(demoCss).toContain('@import "tailwindcss" source(none);');

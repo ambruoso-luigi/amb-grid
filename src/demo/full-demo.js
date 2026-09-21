@@ -189,7 +189,6 @@ export default async function fullDemo(app, options = {}) {
         className = '',
         compactHeader = false,
         showHeader = true,
-        showScenario = true,
         tableHeight = null,
         variant = 'default'
     } = options;
@@ -215,22 +214,11 @@ export default async function fullDemo(app, options = {}) {
 
     app.innerHTML = `
         <div class="demo-inventory-panel card bg-base-100 text-base-content" data-theme="light">
-            ${showHeader ? `<div class="demo-app-shell__header card-body">
-                <div>
-                    <span class="demo-main-badge" data-i18n="mainDemo.primaryLabel">Demo principale</span>
-                    <p class="demo-kicker" data-i18n="mainDemo.kicker">Demo legacy-friendly</p>
-                    <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
-                    <p class="demo-note" data-i18n="mainDemo.description">Una pagina gestionale classica, adatta a contesti server-rendered e legacy-friendly, con una UI moderna per CRUD, validazione e payload applicativi.</p>
-                </div>
-                ${showScenario ? '<p class="demo-scenario-label" data-i18n="mainDemo.scenario">Scenario: Classic Warehouse Backoffice</p>' : ''}
-            </div>` : ''}
             <div class="demo-app-shell card bg-base-100">
                 <div class="demo-app-shell__meta card-body">
-                    <div>
-                        <p class="demo-kicker" data-i18n="mainDemo.panelKicker">Pannello operativo</p>
-                        <h3 data-i18n="mainDemo.panelTitle">Dati magazzino editabili</h3>
-                        <p class="demo-note" data-i18n="mainDemo.panelText">Gestisci righe prodotto, stati CRUD, validazione e payload backend nello stesso flusso.</p>
-                    </div>
+                    ${showHeader ? `<p class="demo-kicker" data-i18n="mainDemo.kicker">Demo principale · Legacy-friendly</p>
+                    <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
+                    <p class="demo-note" data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.</p>` : ''}
                 </div>
                 ${createDemoColumnGuide({
                     summary: 'How this table works',
