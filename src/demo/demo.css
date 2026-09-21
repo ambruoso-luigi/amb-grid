@@ -2709,6 +2709,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 .demo-disclosure--rich {
     background: #ffffff;
     border-color: var(--demo-border);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%), 0 3px 9px rgb(31 49 70 / 5%);
     position: relative;
     transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
@@ -2725,10 +2726,21 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     width: 3px;
 }
 
+.demo-disclosure--rich::after {
+    background: linear-gradient(90deg, #c8961d 0%, rgb(200 150 29 / 45%) 38%, rgb(200 150 29 / 12%) 100%);
+    content: "";
+    height: 1px;
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
 .demo-disclosure--rich[open] {
     background: #ffffff;
     border-color: var(--amb-site-border-strong);
-    box-shadow: 0 4px 12px rgb(31 49 70 / 7%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%), 0 5px 14px rgb(31 49 70 / 8%);
 }
 
 .demo-disclosure--rich:hover::before {
@@ -2736,11 +2748,11 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-disclosure__summary--rich {
-    background: var(--amb-site-surface-soft);
+    background: linear-gradient(180deg, #ffffff 0%, var(--amb-site-surface-soft) 100%);
     gap: 12px;
     justify-content: initial;
     min-height: 60px;
-    transition: background 180ms ease, box-shadow 180ms ease, color 180ms ease;
+    transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease;
 }
 
 .demo-disclosure__summary--rich::after {
@@ -2760,7 +2772,8 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     border-radius: 9px;
     height: 34px;
     justify-content: center;
-    transition: transform 180ms ease;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 2px 5px rgb(80 60 20 / 5%);
+    transition: transform 180ms ease, box-shadow 180ms ease;
     width: 34px;
 }
 
@@ -2790,41 +2803,22 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     margin-top: 2px;
 }
 
-.demo-disclosure__summary-cta {
-    color: var(--amb-site-blue);
-    flex: 0 0 auto;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.demo-disclosure__summary-cta-close {
-    display: none;
-}
-
-.demo-disclosure--rich[open] .demo-disclosure__summary-cta-open {
-    display: none;
-}
-
-.demo-disclosure--rich[open] .demo-disclosure__summary-cta-close {
-    display: inline;
-}
-
 .demo-disclosure__summary-chevron {
     align-items: center;
     background: #ffffff;
-    border: 1px solid #d7e0ea;
+    border: 1px solid var(--amb-site-border-strong);
     border-radius: 999px;
-    color: #536477;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 2px 5px rgb(31 49 70 / 6%);
+    color: var(--amb-site-navy);
     height: 34px;
     justify-content: center;
-    transition: transform 180ms ease, border-color 180ms ease;
+    transition: transform 200ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
     width: 34px;
 }
 
 .demo-disclosure__summary-chevron-icon {
     transform: rotate(0deg);
-    transition: transform 180ms ease;
+    transition: transform 210ms ease;
 }
 
 .demo-disclosure--rich[open] .demo-disclosure__summary-chevron-icon {
@@ -2833,7 +2827,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 
 .demo-disclosure__summary--rich:hover {
     background: #ffffff;
-    box-shadow: inset 0 0 0 1px rgb(31 49 70 / 6%);
+    box-shadow: inset 0 0 0 1px rgb(31 49 70 / 7%), 0 2px 6px rgb(31 49 70 / 4%);
     color: var(--amb-site-navy);
 }
 
@@ -2841,8 +2835,8 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     transform: translateY(-1px);
 }
 
-.demo-disclosure__summary--rich:hover .demo-disclosure__summary-cta {
-    color: var(--amb-site-blue-strong);
+.demo-disclosure--rich:hover {
+    border-color: var(--amb-site-border-strong);
 }
 
 .demo-disclosure--rich:not([open]) .demo-disclosure__summary--rich:hover .demo-disclosure__summary-chevron {
@@ -2853,13 +2847,19 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     transform: translateY(-2px);
 }
 
+.demo-disclosure__summary--rich:hover .demo-disclosure__summary-chevron {
+    background: #ffffff;
+    border-color: var(--amb-site-navy);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 3px 7px rgb(31 49 70 / 8%);
+}
+
 .demo-disclosure__body {
     display: grid;
     grid-template-rows: 0fr;
     opacity: 0;
     pointer-events: none;
     transform: translateY(-4px);
-    transition: grid-template-rows 220ms ease, opacity 180ms ease, transform 220ms ease;
+    transition: grid-template-rows 240ms ease, opacity 200ms ease, transform 230ms ease;
 }
 
 .demo-disclosure__body-inner {
@@ -4219,10 +4219,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 @media (max-width: 820px) {
-    .demo-disclosure__summary-cta {
-        display: none;
-    }
-
     .demo-page {
         padding: 12px;
     }

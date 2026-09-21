@@ -14,7 +14,6 @@ describe('createDemoColumnGuide', () => {
         expect(markup).not.toContain('demo-disclosure--rich');
         expect(markup).not.toContain('demo-disclosure__summary--rich');
         expect(markup).not.toContain('demo-disclosure__summary-description');
-        expect(markup).not.toContain('demo-disclosure__summary-cta');
         expect(markup).not.toContain('demo-disclosure__summary-chevron');
         expect(markup).not.toContain('demo-disclosure__body');
     });
@@ -25,11 +24,7 @@ describe('createDemoColumnGuide', () => {
             summaryKey: 'example.summary',
             summaryDescription: 'Example description',
             summaryDescriptionKey: 'example.description',
-            summaryIcon: 'guide',
-            summaryOpenLabel: 'Open guide',
-            summaryOpenLabelKey: 'example.open',
-            summaryCloseLabel: 'Close guide',
-            summaryCloseLabelKey: 'example.close'
+            summaryIcon: 'guide'
         });
 
         expect(demoIcons.guide).toBeTruthy();
@@ -38,9 +33,6 @@ describe('createDemoColumnGuide', () => {
         expect(markup).toContain('demo-disclosure__summary demo-disclosure__summary--rich');
         expect(markup).toContain('demo-disclosure__summary-icon');
         expect(markup).toContain('demo-disclosure__summary-description');
-        expect(markup).toContain('demo-disclosure__summary-cta');
-        expect(markup).toContain('demo-disclosure__summary-cta-open');
-        expect(markup).toContain('demo-disclosure__summary-cta-close');
         expect(markup).toContain('data-i18n="example.summary"');
         expect(markup).toContain('data-i18n="example.description"');
         expect(markup).toContain('demo-disclosure__summary-chevron-icon');
@@ -49,6 +41,8 @@ describe('createDemoColumnGuide', () => {
         expect(markup).toContain('demo-disclosure__content');
         expect(markup).toContain('<details class="demo-disclosure demo-disclosure--rich">');
         expect(markup).toContain('aria-hidden="true"');
+        expect(markup).not.toContain('Open guide');
+        expect(markup).not.toContain('Close guide');
     });
 
     test('exports the rich disclosure animation binder without requiring a DOM test dependency', () => {

@@ -55,10 +55,6 @@ export const createDemoColumnGuide = ({
     summaryDescription = '',
     summaryDescriptionKey = '',
     summaryIcon = '',
-    summaryOpenLabel = '',
-    summaryOpenLabelKey = '',
-    summaryCloseLabel = '',
-    summaryCloseLabelKey = '',
     intro = '',
     introKey = '',
     points = [],
@@ -72,10 +68,6 @@ export const createDemoColumnGuide = ({
             <span class="demo-disclosure__summary-copy">
                 ${renderTranslatedText({ tag: 'span', key: summaryKey, text: summary, className: 'demo-disclosure__summary-title' })}
                 ${summaryDescription ? renderTranslatedText({ tag: 'span', key: summaryDescriptionKey, text: summaryDescription, className: 'demo-disclosure__summary-description' }) : ''}
-            </span>
-            <span class="demo-disclosure__summary-cta" aria-hidden="true">
-                ${renderTranslatedText({ tag: 'span', key: summaryOpenLabelKey, text: summaryOpenLabel, className: 'demo-disclosure__summary-cta-open' })}
-                ${renderTranslatedText({ tag: 'span', key: summaryCloseLabelKey, text: summaryCloseLabel, className: 'demo-disclosure__summary-cta-close' })}
             </span>
             <span class="demo-disclosure__summary-chevron">${demoIcon('chevronDown', { className: 'demo-disclosure__summary-chevron-icon', size: 20 })}</span>
         </summary>`
