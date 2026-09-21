@@ -1,3 +1,5 @@
+import { demoIcon } from '../demo-icons.js';
+
 const escapeHtml = value => String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -50,22 +52,39 @@ const renderColumns = (columns, className = '') => `
 export const createDemoColumnGuide = ({
     summary,
     summaryKey,
+    summaryDescription = '',
+    summaryDescriptionKey = '',
+    summaryIcon = '',
     intro = '',
     introKey = '',
     points = [],
     columns = [],
     className = ''
-}) => `
-    <details class="demo-disclosure">
-        ${renderTranslatedText({
+}) => {
+    const hasRichSummary = Boolean(summaryDescription || summaryIcon);
+    const summaryMarkup = hasRichSummary
+        ? `<summary class="demo-disclosure__summary demo-disclosure__summary--rich">
+            ${summaryIcon ? `<span class="demo-disclosure__summary-leading">${demoIcon(summaryIcon, { className: 'demo-disclosure__summary-icon', size: 20 })}</span>` : ''}
+            <span class="demo-disclosure__summary-copy">
+                ${renderTranslatedText({ tag: 'span', key: summaryKey, text: summary, className: 'demo-disclosure__summary-title' })}
+                ${summaryDescription ? renderTranslatedText({ tag: 'span', key: summaryDescriptionKey, text: summaryDescription, className: 'demo-disclosure__summary-description' }) : ''}
+            </span>
+            <span class="demo-disclosure__summary-chevron">${demoIcon('chevronDown', { className: 'demo-disclosure__summary-chevron-icon', size: 20 })}</span>
+        </summary>`
+        : renderTranslatedText({
             tag: 'summary',
             key: summaryKey,
             text: summary,
             className: 'demo-disclosure__summary'
-        })}
+        });
+
+    return `
+    <details class="demo-disclosure${hasRichSummary ? ' demo-disclosure--rich' : ''}">
+        ${summaryMarkup}
         <div class="demo-disclosure__content">
             ${intro ? renderTranslatedText({ tag: 'p', key: introKey, text: intro }) : ''}
             ${renderPoints(points)}
             ${renderColumns(columns, className)}
         </div>
     </details>`;
+};

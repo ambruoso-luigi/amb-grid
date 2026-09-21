@@ -223,6 +223,9 @@ export default async function fullDemo(app, options = {}) {
                 ${createDemoColumnGuide({
                     summary: 'How this table works',
                     summaryKey: 'mainDemo.guide.summary',
+                    summaryDescription: 'Editing, validation, lookup, save flow and demonstrated fields',
+                    summaryDescriptionKey: 'mainDemo.guide.summaryDescription',
+                    summaryIcon: 'guide',
                     intro: 'Edit inventory data directly while AMB Grid coordinates CRUD state, validation, lookup, search, payload, and save actions.',
                     introKey: 'mainDemo.guide.intro',
                     points: [

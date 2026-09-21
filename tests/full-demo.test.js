@@ -40,6 +40,23 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('fakeApi.saveProductChanges(payload)');
     });
 
+    test('configures the main guide with its rich summary without changing its content', () => {
+        expect(source).toContain("summary: 'How this table works'");
+        expect(source).toContain("summaryKey: 'mainDemo.guide.summary'");
+        expect(source).toContain("summaryIcon: 'guide'");
+        expect(source).toContain("summaryDescription: 'Editing, validation, lookup, save flow and demonstrated fields'");
+        expect(source).toContain("summaryDescriptionKey: 'mainDemo.guide.summaryDescription'");
+        expect(source).toContain("title: 'Edit and add'");
+        expect(source).toContain("title: 'Row actions'");
+        expect(source).toContain("title: 'Validation and lookup'");
+        expect(source).toContain("title: 'Payload and save'");
+        expect(source).toContain("title: 'Search and filters'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'Come funziona questa tabella'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validazione, lookup, salvataggio e campi dimostrati'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'How this table works'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validation, lookup, save flow and demonstrated fields'");
+    });
+
     test('uses the AMB Grid toolbar instead of external action buttons', () => {
         expect(source).toContain('toolbar: {');
         expect(source).toContain("buttons: [");
