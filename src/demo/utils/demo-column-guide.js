@@ -55,6 +55,10 @@ export const createDemoColumnGuide = ({
     summaryDescription = '',
     summaryDescriptionKey = '',
     summaryIcon = '',
+    summaryOpenLabel = '',
+    summaryOpenLabelKey = '',
+    summaryCloseLabel = '',
+    summaryCloseLabelKey = '',
     intro = '',
     introKey = '',
     points = [],
@@ -69,6 +73,10 @@ export const createDemoColumnGuide = ({
                 ${renderTranslatedText({ tag: 'span', key: summaryKey, text: summary, className: 'demo-disclosure__summary-title' })}
                 ${summaryDescription ? renderTranslatedText({ tag: 'span', key: summaryDescriptionKey, text: summaryDescription, className: 'demo-disclosure__summary-description' }) : ''}
             </span>
+            <span class="demo-disclosure__summary-cta" aria-hidden="true">
+                ${renderTranslatedText({ tag: 'span', key: summaryOpenLabelKey, text: summaryOpenLabel, className: 'demo-disclosure__summary-cta-open' })}
+                ${renderTranslatedText({ tag: 'span', key: summaryCloseLabelKey, text: summaryCloseLabel, className: 'demo-disclosure__summary-cta-close' })}
+            </span>
             <span class="demo-disclosure__summary-chevron">${demoIcon('chevronDown', { className: 'demo-disclosure__summary-chevron-icon', size: 20 })}</span>
         </summary>`
         : renderTranslatedText({
@@ -77,14 +85,85 @@ export const createDemoColumnGuide = ({
             text: summary,
             className: 'demo-disclosure__summary'
         });
-
-    return `
-    <details class="demo-disclosure${hasRichSummary ? ' demo-disclosure--rich' : ''}">
-        ${summaryMarkup}
+    const contentMarkup = `
         <div class="demo-disclosure__content">
             ${intro ? renderTranslatedText({ tag: 'p', key: introKey, text: intro }) : ''}
             ${renderPoints(points)}
             ${renderColumns(columns, className)}
-        </div>
+        </div>`;
+    const bodyMarkup = hasRichSummary
+        ? `<div class="demo-disclosure__body"><div class="demo-disclosure__body-inner">${contentMarkup}</div></div>`
+        : contentMarkup;
+
+    return `
+    <details class="demo-disclosure${hasRichSummary ? ' demo-disclosure--rich' : ''}">
+        ${summaryMarkup}
+        ${bodyMarkup}
     </details>`;
+};
+
+/**
+ * Coordinates the rich demo disclosure animation while leaving native details
+ * and summary semantics in control of focus and keyboard activation.
+ */
+export const bindDemoColumnGuideAnimations = root => {
+    const disclosures = Array.from(root?.querySelectorAll?.('.demo-disclosure--rich') || []);
+    const cleanups = disclosures.map(details => {
+        const summary = details.querySelector('.demo-disclosure__summary');
+        const body = details.querySelector('.demo-disclosure__body');
+
+        if (!summary || !body) return () => {};
+
+        let openingFrame = null;
+        let closeFallback = null;
+        const prefersReducedMotion = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+        const finishClosing = () => {
+            if (!details.classList.contains('is-closing')) return;
+
+            details.open = false;
+            details.classList.remove('is-closing');
+            if (closeFallback) {
+                clearTimeout(closeFallback);
+                closeFallback = null;
+            }
+        };
+        const onTransitionEnd = event => {
+            if (event.target === body && event.propertyName === 'grid-template-rows') {
+                finishClosing();
+            }
+        };
+        const onClick = event => {
+            if (prefersReducedMotion() || details.classList.contains('is-opening') || details.classList.contains('is-closing')) {
+                return;
+            }
+
+            event.preventDefault();
+            if (details.open) {
+                details.classList.add('is-closing');
+                closeFallback = setTimeout(finishClosing, 280);
+                return;
+            }
+
+            details.open = true;
+            details.classList.add('is-opening');
+            openingFrame = requestAnimationFrame(() => {
+                openingFrame = null;
+                details.classList.remove('is-opening');
+            });
+        };
+
+        summary.addEventListener('click', onClick);
+        body.addEventListener('transitionend', onTransitionEnd);
+
+        return () => {
+            summary.removeEventListener('click', onClick);
+            body.removeEventListener('transitionend', onTransitionEnd);
+            if (openingFrame !== null) cancelAnimationFrame(openingFrame);
+            if (closeFallback) clearTimeout(closeFallback);
+            if (details.classList.contains('is-closing')) details.open = false;
+            details.classList.remove('is-opening', 'is-closing');
+        };
+    });
+
+    return () => cleanups.forEach(cleanup => cleanup());
 };

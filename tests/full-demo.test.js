@@ -44,17 +44,33 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("summary: 'How this table works'");
         expect(source).toContain("summaryKey: 'mainDemo.guide.summary'");
         expect(source).toContain("summaryIcon: 'guide'");
-        expect(source).toContain("summaryDescription: 'Editing, validation, lookup, save flow and demonstrated fields'");
+        expect(source).toContain("summaryDescription: 'Quick guide to editing, validation, lookup and saving'");
         expect(source).toContain("summaryDescriptionKey: 'mainDemo.guide.summaryDescription'");
+        expect(source).toContain("summaryOpenLabel: 'Open guide'");
+        expect(source).toContain("summaryOpenLabelKey: 'mainDemo.guide.open'");
+        expect(source).toContain("summaryCloseLabel: 'Close guide'");
+        expect(source).toContain("summaryCloseLabelKey: 'mainDemo.guide.close'");
         expect(source).toContain("title: 'Edit and add'");
         expect(source).toContain("title: 'Row actions'");
         expect(source).toContain("title: 'Validation and lookup'");
         expect(source).toContain("title: 'Payload and save'");
         expect(source).toContain("title: 'Search and filters'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'Come funziona questa tabella'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validazione, lookup, salvataggio e campi dimostrati'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Guida rapida a editing, validazione, lookup e salvataggio'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.open': 'Apri guida'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.close': 'Chiudi guida'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'How this table works'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validation, lookup, save flow and demonstrated fields'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Quick guide to editing, validation, lookup and saving'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.open': 'Open guide'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.close': 'Close guide'");
+        expect(source).toContain('bindDemoColumnGuideAnimations, createDemoColumnGuide');
+        expect(source).toContain('const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app)');
+        expect(source).toContain('destroyColumnGuideAnimations();');
+        expect(demoCss).toContain('.demo-disclosure__summary-chevron-icon');
+        expect(demoCss).toContain('.demo-disclosure--rich[open] .demo-disclosure__summary-chevron-icon');
+        expect(demoCss).toContain('.demo-disclosure__body');
+        expect(demoCss).toContain('.demo-disclosure__body-inner');
+        expect(demoCss).toContain('@media (prefers-reduced-motion: reduce)');
     });
 
     test('uses the AMB Grid toolbar instead of external action buttons', () => {

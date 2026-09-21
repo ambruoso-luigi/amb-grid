@@ -2,7 +2,7 @@ import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
-import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { bindDemoColumnGuideAnimations, createDemoColumnGuide } from './utils/demo-column-guide.js';
 
 const DEMO_SAVE_POLICY = 'valid-only';
 
@@ -223,9 +223,13 @@ export default async function fullDemo(app, options = {}) {
                 ${createDemoColumnGuide({
                     summary: 'How this table works',
                     summaryKey: 'mainDemo.guide.summary',
-                    summaryDescription: 'Editing, validation, lookup, save flow and demonstrated fields',
+                    summaryDescription: 'Quick guide to editing, validation, lookup and saving',
                     summaryDescriptionKey: 'mainDemo.guide.summaryDescription',
                     summaryIcon: 'guide',
+                    summaryOpenLabel: 'Open guide',
+                    summaryOpenLabelKey: 'mainDemo.guide.open',
+                    summaryCloseLabel: 'Close guide',
+                    summaryCloseLabelKey: 'mainDemo.guide.close',
                     intro: 'Edit inventory data directly while AMB Grid coordinates CRUD state, validation, lookup, search, payload, and save actions.',
                     introKey: 'mainDemo.guide.intro',
                     points: [
@@ -253,6 +257,8 @@ export default async function fullDemo(app, options = {}) {
             </div>
         </div>
     `;
+
+    const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app);
 
     const statusLookup = AMB.lookup({
         keyField: 'id',
@@ -483,6 +489,7 @@ export default async function fullDemo(app, options = {}) {
     const originalDestroy = demo.destroy.bind(demo);
 
     demo.destroy = () => {
+        destroyColumnGuideAnimations();
         reportDialog.destroy();
         partialSaveDialog.destroy();
         app.style.removeProperty('--demo-table-height');
