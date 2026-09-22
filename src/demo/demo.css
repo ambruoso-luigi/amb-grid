@@ -2716,14 +2716,15 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 
 .demo-disclosure--rich::before {
     background: #c8961d;
-    bottom: 0;
+    border-radius: 0 999px 999px 0;
     content: "";
+    height: 32px;
     left: 0;
     pointer-events: none;
     position: absolute;
-    top: 0;
+    top: 14px;
     transition: background 180ms ease;
-    width: 3px;
+    width: 2px;
 }
 
 .demo-disclosure--rich::after {
