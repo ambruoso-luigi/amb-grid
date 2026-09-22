@@ -54,18 +54,15 @@ const translations = {
         'video.youtube': 'YouTube',
         'frameworks.title': 'Integrabile dove lavori già',
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
-        'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
-        'frameworks.javascript.description': 'Usa AMB.table(...) direttamente in pagine moderne o server-rendered.',
-        'frameworks.javascript.status': 'Guida disponibile',
+        'frameworks.cta': 'Apri guida e demo',
+        'frameworks.javascript.meta': 'ESM / UMD · Integrazione diretta',
+        'frameworks.javascript.description': 'Integra AMB Grid in pagine JavaScript classiche o server-rendered, senza framework obbligatori.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
-        'frameworks.react.description': 'Mount nel componente e cleanup con grid.destroy().',
-        'frameworks.react.status': 'Demo disponibile',
+        'frameworks.react.description': 'Integra AMB Grid nel lifecycle del componente React, con mount e cleanup corretti.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
-        'frameworks.vue.description': 'Mount con onMounted e cleanup con onUnmounted.',
-        'frameworks.vue.status': 'Snippet pianificato',
-        'frameworks.angular.meta': 'Component lifecycle · TypeScript',
-        'frameworks.angular.description': 'Inizializzazione nel lifecycle del componente e cleanup alla distruzione.',
-        'frameworks.angular.status': 'Snippet pianificato',
+        'frameworks.vue.description': 'Integra AMB Grid con la Composition API usando il lifecycle del componente Vue.',
+        'frameworks.angular.meta': 'TypeScript · Component lifecycle',
+        'frameworks.angular.description': 'Integra AMB Grid nel ciclo di vita del componente Angular, con inizializzazione e cleanup corretti.',
         'mainDemo.kicker': 'Demo principale · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
         'mainDemo.description': 'Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.',
@@ -234,18 +231,15 @@ const translations = {
         'video.youtube': 'YouTube',
         'frameworks.title': 'Use AMB Grid where you already work',
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
+        'frameworks.cta': 'Open guide and demo',
         'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
-        'frameworks.javascript.description': 'Use AMB.table(...) directly in modern or server-rendered pages.',
-        'frameworks.javascript.status': 'Guide available',
+        'frameworks.javascript.description': 'Integrate AMB Grid into classic or server-rendered JavaScript pages without requiring a framework.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
-        'frameworks.react.description': 'Mount in the component and clean up with grid.destroy().',
-        'frameworks.react.status': 'Demo available',
+        'frameworks.react.description': 'Integrate AMB Grid into the React component lifecycle with proper mounting and cleanup.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
-        'frameworks.vue.description': 'Mount with onMounted and clean up with onUnmounted.',
-        'frameworks.vue.status': 'Snippet planned',
-        'frameworks.angular.meta': 'Component lifecycle · TypeScript',
-        'frameworks.angular.description': 'Initialize in the component lifecycle and clean up on destruction.',
-        'frameworks.angular.status': 'Snippet planned',
+        'frameworks.vue.description': 'Integrate AMB Grid with the Composition API through the Vue component lifecycle.',
+        'frameworks.angular.meta': 'TypeScript · Component lifecycle',
+        'frameworks.angular.description': 'Integrate AMB Grid into the Angular component lifecycle with proper initialization and cleanup.',
         'mainDemo.kicker': 'Main demo · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
         'mainDemo.description': 'Classic management demo for server-rendered and legacy-friendly contexts: edit products, validate data, and prepare the backend payload in the same flow.',
@@ -739,58 +733,60 @@ const renderShell = selectedId => {
                     <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
                 </div>
                 <div class="demo-framework-grid">
-                    <a class="demo-framework-card demo-framework-card--javascript demo-framework-card--ready card bg-base-100 border shadow-sm transition" href="#getting-started-javascript">
+                    <a class="demo-framework-card demo-framework-card--javascript card bg-base-100 border shadow-sm transition" href="#getting-started-javascript">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('javascript')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">JavaScript</span>
                             <span class="demo-framework-card__meta" data-i18n="frameworks.javascript.meta">ESM / UMD · Direct integration</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Usa AMB.table(...) direttamente in pagine moderne o server-rendered.</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Integra AMB Grid in pagine JavaScript classiche o server-rendered, senza framework obbligatori.</span>
                         </span>
                         <span class="demo-framework-card__footer">
-                            <span class="demo-framework-card__status demo-framework-card__status--ready">${demoIcon('available', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.javascript.status">Guida disponibile</span></span>
-                            <span class="demo-framework-card__cta" aria-hidden="true">${demoIcon('arrowUpRight', { className: 'demo-framework-card__cta-icon', size: 18 })}</span>
+                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 16 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
+                            <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span></span>
                         </span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--react demo-framework-card--ready card bg-base-100 border shadow-sm transition" href="#getting-started-react">
+                    <a class="demo-framework-card demo-framework-card--react card bg-base-100 border shadow-sm transition" href="#getting-started-react">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('react')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">React</span>
                             <span class="demo-framework-card__meta" data-i18n="frameworks.react.meta">TypeScript · Component lifecycle</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Mount nel componente e cleanup con grid.destroy().</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Integra AMB Grid nel lifecycle del componente React, con mount e cleanup corretti.</span>
                         </span>
                         <span class="demo-framework-card__footer">
-                            <span class="demo-framework-card__status demo-framework-card__status--ready">${demoIcon('available', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.react.status">Demo disponibile</span></span>
-                            <span class="demo-framework-card__cta" aria-hidden="true">${demoIcon('arrowUpRight', { className: 'demo-framework-card__cta-icon', size: 18 })}</span>
+                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 16 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
+                            <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span></span>
                         </span>
                     </a>
-                    <article class="demo-framework-card demo-framework-card--vue demo-framework-card--planned card bg-base-100 border shadow-sm transition">
+                    <article class="demo-framework-card demo-framework-card--vue card bg-base-100 border shadow-sm transition">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('vue')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
                             <span class="demo-framework-card__meta" data-i18n="frameworks.vue.meta">Composition API · TypeScript</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Mount con onMounted e cleanup con onUnmounted.</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Integra AMB Grid con la Composition API usando il lifecycle del componente Vue.</span>
                         </span>
-                        <span class="demo-framework-card__footer">
-                            <span class="demo-framework-card__status demo-framework-card__status--planned">${demoIcon('planned', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.vue.status">Snippet pianificato</span></span>
+                        <span class="demo-framework-card__footer" aria-hidden="true">
+                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 16 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
+                            <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span></span>
                         </span>
                     </article>
-                    <article class="demo-framework-card demo-framework-card--angular demo-framework-card--planned card bg-base-100 border shadow-sm transition">
+                    <article class="demo-framework-card demo-framework-card--angular card bg-base-100 border shadow-sm transition">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('angular')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
-                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">Component lifecycle · TypeScript</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Inizializzazione nel lifecycle del componente e cleanup alla distruzione.</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">TypeScript · Component lifecycle</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Integra AMB Grid nel ciclo di vita del componente Angular, con inizializzazione e cleanup corretti.</span>
                         </span>
-                        <span class="demo-framework-card__footer">
-                            <span class="demo-framework-card__status demo-framework-card__status--planned">${demoIcon('planned', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.angular.status">Snippet pianificato</span></span>
+                        <span class="demo-framework-card__footer" aria-hidden="true">
+                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 16 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
+                            <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 17 })}</span></span>
                         </span>
                     </article>
                 </div>

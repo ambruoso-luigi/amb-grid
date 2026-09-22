@@ -1260,10 +1260,6 @@ a {
     outline: 1px solid var(--amb-site-blue);
 }
 
-.demo-framework-card--planned {
-    cursor: default;
-}
-
 .demo-framework-card__icon {
     align-items: center;
     background:
@@ -1450,60 +1446,81 @@ a {
     overflow-wrap: anywhere;
 }
 
-.demo-framework-card__status {
+.demo-framework-card__cta-label {
     align-items: center;
-    color: var(--framework-accent);
+    color: var(--amb-site-navy);
     display: inline-flex;
     font-size: 12px;
     font-weight: 750;
     gap: 6px;
     line-height: 1.3;
+    min-width: 0;
 }
 
 .demo-framework-card__footer {
     align-items: center;
     display: flex;
-    gap: 12px;
+    gap: 14px;
     justify-content: space-between;
     margin-top: auto;
     width: 100%;
 }
 
-.demo-framework-card__status-icon {
+.demo-framework-card__cta-label-icon {
+    color: color-mix(in srgb, var(--framework-accent) 72%, #172033);
     flex: 0 0 auto;
 }
 
-.demo-framework-card__status--planned {
-    color: color-mix(in srgb, var(--framework-accent) 58%, var(--amb-site-slate));
-}
-
-.demo-framework-card__cta {
+.demo-framework-card__direction {
     align-items: center;
-    background: rgb(255 255 255 / 90%);
-    border: 1px solid color-mix(in srgb, var(--framework-accent) 38%, #ffffff);
+    background: color-mix(in srgb, var(--framework-soft) 74%, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--framework-accent) 42%, #ffffff);
     border-radius: 999px;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 2px 5px rgb(16 35 63 / 6%);
-    color: var(--framework-accent);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 2px 5px rgb(16 35 63 / 5%);
+    color: color-mix(in srgb, var(--framework-accent) 72%, #172033);
     display: inline-flex;
-    height: 34px;
+    flex: 0 0 auto;
+    height: 32px;
     justify-content: center;
     line-height: 1;
-    transition: background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
-    width: 34px;
+    min-width: 56px;
+    padding: 0 7px;
+    transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
-.demo-framework-card__cta-icon {
-    transition: transform 180ms ease;
+.demo-framework-card__direction-step {
+    align-items: center;
+    animation-duration: 2.1s;
+    animation-iteration-count: infinite;
+    animation-name: demo-framework-direction-flow;
+    animation-timing-function: ease-in-out;
+    display: inline-flex;
+    justify-content: center;
+    margin-inline: -2px;
+    opacity: 0.38;
 }
 
-.demo-framework-card--ready:hover .demo-framework-card__cta {
-    background: color-mix(in srgb, var(--framework-soft) 64%, #ffffff);
+.demo-framework-card__direction-step--1 {
+    animation-delay: 0ms;
+}
+
+.demo-framework-card__direction-step--2 {
+    animation-delay: 140ms;
+}
+
+.demo-framework-card__direction-step--3 {
+    animation-delay: 280ms;
+}
+
+.demo-framework-card:hover .demo-framework-card__direction {
+    background: color-mix(in srgb, var(--framework-soft) 88%, #ffffff);
     border-color: var(--framework-accent);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 3px 7px rgb(16 35 63 / 9%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 92%), 0 3px 8px rgb(16 35 63 / 8%);
+    transform: translateX(2px);
 }
 
-.demo-framework-card--ready:hover .demo-framework-card__cta-icon {
-    transform: translate(2px, -2px);
+.demo-framework-card:hover .demo-framework-card__direction-step {
+    animation-duration: 1.6s;
 }
 
 .demo-framework-card--javascript {
@@ -1529,9 +1546,7 @@ a {
 .demo-framework-card--javascript .demo-framework-card__icon,
 .demo-framework-card--react .demo-framework-card__icon,
 .demo-framework-card--vue .demo-framework-card__icon,
-.demo-framework-card--angular .demo-framework-card__icon,
-.demo-framework-card--javascript .demo-framework-card__status--ready,
-.demo-framework-card--react .demo-framework-card__status--ready {
+.demo-framework-card--angular .demo-framework-card__icon {
     color: var(--framework-accent);
 }
 
@@ -1544,9 +1559,6 @@ a {
     color: #172033;
 }
 
-.demo-framework-card--javascript .demo-framework-card__status--ready {
-    color: #172033;
-}
 
 /* Getting started guide */
 .demo-guide-page {
@@ -4121,6 +4133,28 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     padding-top: 16px;
 }
 
+@keyframes demo-framework-direction-flow {
+    0% {
+        opacity: 0.32;
+        transform: translateX(-2px);
+    }
+
+    35% {
+        opacity: 1;
+        transform: translateX(1px);
+    }
+
+    65% {
+        opacity: 0.62;
+        transform: translateX(3px);
+    }
+
+    100% {
+        opacity: 0.32;
+        transform: translateX(-2px);
+    }
+}
+
 @keyframes demo-status-reveal {
     from {
         opacity: 0;
@@ -4180,9 +4214,14 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
         transition: none;
     }
 
-    .demo-framework-card__cta-icon {
+    .demo-framework-card__direction-step {
+        animation: none;
+        opacity: 1;
         transform: none;
-        transition: none;
+    }
+
+    .demo-framework-card__direction {
+        transform: none;
     }
 }
 
