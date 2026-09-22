@@ -20,24 +20,50 @@ describe('demo site navigation', () => {
         expect(main).toContain("['#getting-started-javascript', '#javascript-demo'].includes(window.location.hash)");
         expect(main).toContain("'frameworks.title': 'Integrabile dove lavori gi\u00e0'");
         expect(main).toContain("'frameworks.title': 'Use AMB Grid where you already work'");
-        expect(main).toContain("'frameworks.javascript.badge': 'Classic integration'");
-        expect(main).toContain("'frameworks.javascript.status': 'Apri guida JavaScript'");
-        expect(main).toContain("'frameworks.javascript.status': 'Open JavaScript guide'");
+        expect(main).toContain("'frameworks.javascript.meta': 'ESM / UMD · Direct integration'");
+        expect(main).toContain("'frameworks.javascript.description': 'Usa AMB.table(...) direttamente in pagine moderne o server-rendered.'");
+        expect(main).toContain("'frameworks.javascript.status': 'Guida disponibile'");
+        expect(main).toContain("'frameworks.javascript.status': 'Guide available'");
         expect(main).toContain('demo-framework-card--ready');
         expect(main).toContain('data-i18n="frameworks.javascript.status"');
         expect(main).toContain('data-i18n="frameworks.react.status"');
-        expect(main).toContain("'frameworks.react.badge': 'Lifecycle integration'");
-        expect(main).toContain("'frameworks.vue.badge': 'Composition API example'");
-        expect(main).toContain("'frameworks.angular.badge': 'Component lifecycle example'");
+        expect(main).toContain("'frameworks.react.meta': 'TypeScript · Component lifecycle'");
+        expect(main).toContain("'frameworks.react.description': 'Mount nel componente e cleanup con grid.destroy().'");
+        expect(main).toContain("'frameworks.vue.meta': 'Composition API · TypeScript'");
+        expect(main).toContain("'frameworks.vue.status': 'Snippet pianificato'");
+        expect(main).toContain("'frameworks.vue.status': 'Snippet planned'");
+        expect(main).toContain("'frameworks.angular.meta': 'Component lifecycle · TypeScript'");
+        expect(main).toContain("'frameworks.angular.status': 'Snippet pianificato'");
+        expect(main).toContain("'frameworks.angular.status': 'Snippet planned'");
         expect(main).toContain('href="#getting-started-react"');
-        expect(main).toContain("'frameworks.react.status': 'Apri demo React'");
-        expect(main).toContain("'frameworks.react.status': 'Open React demo'");
+        expect(main).toContain("'frameworks.react.status': 'Demo disponibile'");
+        expect(main).toContain("'frameworks.react.status': 'Demo available'");
         expect(main).toContain("window.location.hash === '#getting-started-react'");
         expect(main).toContain("import('../../examples/react-demo/src/mount.tsx')");
         expect(main).toContain('currentReactDemoUnmount();');
         expect(main).toContain('id="react-demo-root"');
-        expect(main).toContain("'frameworks.angular.description': 'Conceptual example with AfterViewInit and OnDestroy.'");
-        expect(main).not.toContain('demo-framework-card__meta-item');
+        expect(main).toContain("'frameworks.angular.description': 'Initialize in the component lifecycle and clean up on destruction.'");
+        expect(main).toContain('<article class="demo-framework-card demo-framework-card--vue demo-framework-card--planned');
+        expect(main).toContain('<article class="demo-framework-card demo-framework-card--angular demo-framework-card--planned');
+        expect(main).not.toContain('demo-framework-card__badge');
+        expect(main).not.toContain('demo-framework-card__arrow');
+        expect(main).toContain('demo-framework-card__meta');
+        expect(main).toContain('demo-framework-card__footer');
+        expect(main).toContain("demoIcon('available'");
+        expect(main).toContain("demoIcon('planned'");
+        expect(main).toContain("demoIcon('arrowUpRight'");
+
+        const frameworkCards = main.slice(main.indexOf('class="demo-framework-grid"'), main.indexOf('</section>', main.indexOf('class="demo-framework-grid"')));
+        const icons = read('src/demo/demo-icons.js');
+
+        expect(frameworkCards).not.toContain('href="#feature-examples"');
+        expect(frameworkCards).toContain('demo-framework-card__cta');
+        expect(icons).toContain('ArrowUpRight');
+        expect(icons).toContain('CircleCheck');
+        expect(icons).toContain('Clock3');
+        expect(icons).toContain('arrowUpRight: ArrowUpRight');
+        expect(icons).toContain('available: CircleCheck');
+        expect(icons).toContain('planned: Clock3');
 
         const css = read('src/demo/demo.css');
 
@@ -45,6 +71,9 @@ describe('demo site navigation', () => {
         expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
         expect(css).toContain('grid-template-columns: 1fr;');
         expect(css).not.toContain('grid-column: span 2;');
+        expect(css).toContain('.demo-framework-card__meta');
+        expect(css).toContain('.demo-framework-card__footer');
+        expect(css).toContain('.demo-framework-card__cta');
     });
 
     test('uses the shared logo brand on the home and JavaScript guide pages', () => {
@@ -176,7 +205,7 @@ describe('demo site navigation', () => {
         expect(main).toContain('data-i18n="video.youtube">YouTube</span>');
         expect(main).not.toContain('demo-guide-video__play');
         expect(main).not.toContain('demo-secondary-home-link');
-        expect(main.match(/href="#feature-examples"/g)).toHaveLength(3);
+        expect(main.match(/href="#feature-examples"/g)).toHaveLength(1);
         expect(main).toContain('class="demo-button demo-button--primary" href="#feature-examples"');
         expect(main).not.toContain('data-i18n="hero.primary"');
         expect(main).not.toContain('demo-hero__metrics');

@@ -54,18 +54,18 @@ const translations = {
         'video.youtube': 'YouTube',
         'frameworks.title': 'Integrabile dove lavori già',
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
-        'frameworks.javascript.badge': 'Classic integration',
-        'frameworks.javascript.description': 'Snippet base con AMB.table(...).',
-        'frameworks.javascript.status': 'Apri guida JavaScript',
-        'frameworks.react.badge': 'Lifecycle integration',
-        'frameworks.react.description': 'Esempio concettuale con mount e grid.destroy() nel cleanup.',
-        'frameworks.react.status': 'Apri demo React',
-        'frameworks.vue.badge': 'Composition API example',
-        'frameworks.vue.description': 'Esempio concettuale con onMounted e onUnmounted.',
-        'frameworks.vue.status': 'Snippet planned',
-        'frameworks.angular.badge': 'Component lifecycle example',
-        'frameworks.angular.description': 'Esempio concettuale con AfterViewInit e OnDestroy.',
-        'frameworks.angular.status': 'Snippet planned',
+        'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
+        'frameworks.javascript.description': 'Usa AMB.table(...) direttamente in pagine moderne o server-rendered.',
+        'frameworks.javascript.status': 'Guida disponibile',
+        'frameworks.react.meta': 'TypeScript · Component lifecycle',
+        'frameworks.react.description': 'Mount nel componente e cleanup con grid.destroy().',
+        'frameworks.react.status': 'Demo disponibile',
+        'frameworks.vue.meta': 'Composition API · TypeScript',
+        'frameworks.vue.description': 'Mount con onMounted e cleanup con onUnmounted.',
+        'frameworks.vue.status': 'Snippet pianificato',
+        'frameworks.angular.meta': 'Component lifecycle · TypeScript',
+        'frameworks.angular.description': 'Inizializzazione nel lifecycle del componente e cleanup alla distruzione.',
+        'frameworks.angular.status': 'Snippet pianificato',
         'mainDemo.kicker': 'Demo principale · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
         'mainDemo.description': 'Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.',
@@ -234,17 +234,17 @@ const translations = {
         'video.youtube': 'YouTube',
         'frameworks.title': 'Use AMB Grid where you already work',
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
-        'frameworks.javascript.badge': 'Classic integration',
-        'frameworks.javascript.description': 'Basic snippet with AMB.table(...).',
-        'frameworks.javascript.status': 'Open JavaScript guide',
-        'frameworks.react.badge': 'Lifecycle integration',
-        'frameworks.react.description': 'Conceptual example with mount and grid.destroy() in cleanup.',
-        'frameworks.react.status': 'Open React demo',
-        'frameworks.vue.badge': 'Composition API example',
-        'frameworks.vue.description': 'Conceptual example with onMounted and onUnmounted.',
+        'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
+        'frameworks.javascript.description': 'Use AMB.table(...) directly in modern or server-rendered pages.',
+        'frameworks.javascript.status': 'Guide available',
+        'frameworks.react.meta': 'TypeScript · Component lifecycle',
+        'frameworks.react.description': 'Mount in the component and clean up with grid.destroy().',
+        'frameworks.react.status': 'Demo available',
+        'frameworks.vue.meta': 'Composition API · TypeScript',
+        'frameworks.vue.description': 'Mount with onMounted and clean up with onUnmounted.',
         'frameworks.vue.status': 'Snippet planned',
-        'frameworks.angular.badge': 'Component lifecycle example',
-        'frameworks.angular.description': 'Conceptual example with AfterViewInit and OnDestroy.',
+        'frameworks.angular.meta': 'Component lifecycle · TypeScript',
+        'frameworks.angular.description': 'Initialize in the component lifecycle and clean up on destruction.',
         'frameworks.angular.status': 'Snippet planned',
         'mainDemo.kicker': 'Main demo · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
@@ -745,11 +745,13 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">JavaScript</span>
-                            <span class="demo-framework-card__badge demo-framework-card__badge--ready" data-i18n="frameworks.javascript.badge">Classic integration</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Snippet base con AMB.table(...).</span>
-                            <span class="demo-framework-card__status demo-framework-card__status--ready" data-i18n="frameworks.javascript.status">Apri guida JavaScript</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.javascript.meta">ESM / UMD · Direct integration</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Usa AMB.table(...) direttamente in pagine moderne o server-rendered.</span>
                         </span>
-                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
+                        <span class="demo-framework-card__footer">
+                            <span class="demo-framework-card__status demo-framework-card__status--ready">${demoIcon('available', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.javascript.status">Guida disponibile</span></span>
+                            <span class="demo-framework-card__cta" aria-hidden="true">${demoIcon('arrowUpRight', { className: 'demo-framework-card__cta-icon', size: 18 })}</span>
+                        </span>
                     </a>
                     <a class="demo-framework-card demo-framework-card--react demo-framework-card--ready card bg-base-100 border shadow-sm transition" href="#getting-started-react">
                         <span class="demo-framework-card__icon" aria-hidden="true">
@@ -757,36 +759,40 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">React</span>
-                            <span class="demo-framework-card__badge demo-framework-card__badge--integration" data-i18n="frameworks.react.badge">Lifecycle integration</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Esempio concettuale con mount e grid.destroy() nel cleanup.</span>
-                            <span class="demo-framework-card__status demo-framework-card__status--ready" data-i18n="frameworks.react.status">Apri demo React</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.react.meta">TypeScript · Component lifecycle</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Mount nel componente e cleanup con grid.destroy().</span>
                         </span>
-                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
+                        <span class="demo-framework-card__footer">
+                            <span class="demo-framework-card__status demo-framework-card__status--ready">${demoIcon('available', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.react.status">Demo disponibile</span></span>
+                            <span class="demo-framework-card__cta" aria-hidden="true">${demoIcon('arrowUpRight', { className: 'demo-framework-card__cta-icon', size: 18 })}</span>
+                        </span>
                     </a>
-                    <a class="demo-framework-card demo-framework-card--vue demo-framework-card--integration card bg-base-100 border shadow-sm transition" href="#feature-examples">
+                    <article class="demo-framework-card demo-framework-card--vue demo-framework-card--planned card bg-base-100 border shadow-sm transition">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('vue')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
-                            <span class="demo-framework-card__badge demo-framework-card__badge--integration" data-i18n="frameworks.vue.badge">Composition API example</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Esempio concettuale con onMounted e onUnmounted.</span>
-                            <span class="demo-framework-card__status" data-i18n="frameworks.vue.status">Snippet planned</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.vue.meta">Composition API · TypeScript</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Mount con onMounted e cleanup con onUnmounted.</span>
                         </span>
-                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
-                    </a>
-                    <a class="demo-framework-card demo-framework-card--angular demo-framework-card--integration card bg-base-100 border shadow-sm transition" href="#feature-examples">
+                        <span class="demo-framework-card__footer">
+                            <span class="demo-framework-card__status demo-framework-card__status--planned">${demoIcon('planned', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.vue.status">Snippet pianificato</span></span>
+                        </span>
+                    </article>
+                    <article class="demo-framework-card demo-framework-card--angular demo-framework-card--planned card bg-base-100 border shadow-sm transition">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('angular')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
-                            <span class="demo-framework-card__badge demo-framework-card__badge--integration" data-i18n="frameworks.angular.badge">Component lifecycle example</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Esempio concettuale con AfterViewInit e OnDestroy.</span>
-                            <span class="demo-framework-card__status" data-i18n="frameworks.angular.status">Snippet planned</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">Component lifecycle · TypeScript</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Inizializzazione nel lifecycle del componente e cleanup alla distruzione.</span>
                         </span>
-                        <span class="demo-framework-card__arrow" aria-hidden="true">&rarr;</span>
-                    </a>
+                        <span class="demo-framework-card__footer">
+                            <span class="demo-framework-card__status demo-framework-card__status--planned">${demoIcon('planned', { className: 'demo-framework-card__status-icon', size: 16 })}<span data-i18n="frameworks.angular.status">Snippet pianificato</span></span>
+                        </span>
+                    </article>
                 </div>
             </section>
 
