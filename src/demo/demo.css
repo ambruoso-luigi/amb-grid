@@ -1450,10 +1450,10 @@ a {
     align-items: center;
     color: var(--amb-site-navy);
     display: inline-flex;
-    font-size: 12px;
-    font-weight: 750;
-    gap: 6px;
-    line-height: 1.3;
+    font-size: 14px;
+    font-weight: 800;
+    gap: 8px;
+    line-height: 1.25;
     min-width: 0;
 }
 
@@ -1463,6 +1463,7 @@ a {
     gap: 14px;
     justify-content: space-between;
     margin-top: auto;
+    min-width: 0;
     width: 100%;
 }
 
@@ -1473,54 +1474,68 @@ a {
 
 .demo-framework-card__direction {
     align-items: center;
-    background: color-mix(in srgb, var(--framework-soft) 74%, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--framework-accent) 42%, #ffffff);
-    border-radius: 999px;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 90%), 0 2px 5px rgb(16 35 63 / 5%);
-    color: color-mix(in srgb, var(--framework-accent) 72%, #172033);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: color-mix(in srgb, var(--framework-accent) 78%, #172033);
     display: inline-flex;
     flex: 0 0 auto;
-    height: 32px;
+    gap: 0;
+    height: auto;
     justify-content: center;
     line-height: 1;
-    min-width: 56px;
-    padding: 0 7px;
-    transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    min-width: auto;
+    padding: 0;
+    transition: color 180ms ease;
 }
 
 .demo-framework-card__direction-step {
     align-items: center;
-    animation-duration: 2.1s;
-    animation-iteration-count: infinite;
-    animation-name: demo-framework-direction-flow;
-    animation-timing-function: ease-in-out;
+    animation: none;
     display: inline-flex;
     justify-content: center;
-    margin-inline: -2px;
-    opacity: 0.38;
-}
-
-.demo-framework-card__direction-step--1 {
-    animation-delay: 0ms;
-}
-
-.demo-framework-card__direction-step--2 {
-    animation-delay: 140ms;
-}
-
-.demo-framework-card__direction-step--3 {
-    animation-delay: 280ms;
+    margin-inline: -1px;
+    opacity: 1;
+    transform: translateX(0);
 }
 
 .demo-framework-card:hover .demo-framework-card__direction {
-    background: color-mix(in srgb, var(--framework-soft) 88%, #ffffff);
-    border-color: var(--framework-accent);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 92%), 0 3px 8px rgb(16 35 63 / 8%);
-    transform: translateX(2px);
+    color: color-mix(in srgb, var(--framework-accent) 90%, #172033);
 }
 
-.demo-framework-card:hover .demo-framework-card__direction-step {
-    animation-duration: 1.6s;
+.demo-framework-card:focus-visible .demo-framework-card__cta-label {
+    color: color-mix(in srgb, var(--framework-accent) 30%, var(--amb-site-navy));
+}
+
+.demo-framework-card:hover .demo-framework-card__cta-label {
+    color: color-mix(in srgb, var(--framework-accent) 30%, var(--amb-site-navy));
+}
+
+.demo-framework-card:focus-visible .demo-framework-card__direction {
+    color: color-mix(in srgb, var(--framework-accent) 90%, #172033);
+}
+
+.demo-framework-card:hover .demo-framework-card__direction-step,
+.demo-framework-card:focus-visible .demo-framework-card__direction-step {
+    animation-duration: 720ms;
+    animation-iteration-count: infinite;
+    animation-name: demo-framework-direction-hover;
+    animation-timing-function: ease-in-out;
+}
+
+.demo-framework-card:hover .demo-framework-card__direction-step--1,
+.demo-framework-card:focus-visible .demo-framework-card__direction-step--1 {
+    animation-delay: 0ms;
+}
+
+.demo-framework-card:hover .demo-framework-card__direction-step--2,
+.demo-framework-card:focus-visible .demo-framework-card__direction-step--2 {
+    animation-delay: 90ms;
+}
+
+.demo-framework-card:hover .demo-framework-card__direction-step--3,
+.demo-framework-card:focus-visible .demo-framework-card__direction-step--3 {
+    animation-delay: 180ms;
 }
 
 .demo-framework-card--javascript {
@@ -4133,25 +4148,25 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     padding-top: 16px;
 }
 
-@keyframes demo-framework-direction-flow {
+@keyframes demo-framework-direction-hover {
     0% {
-        opacity: 0.32;
-        transform: translateX(-2px);
-    }
-
-    35% {
         opacity: 1;
-        transform: translateX(1px);
+        transform: translateX(0);
     }
 
-    65% {
-        opacity: 0.62;
-        transform: translateX(3px);
+    45% {
+        opacity: 1;
+        transform: translateX(4px);
+    }
+
+    70% {
+        opacity: 0.6;
+        transform: translateX(4px);
     }
 
     100% {
-        opacity: 0.32;
-        transform: translateX(-2px);
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
@@ -4215,12 +4230,15 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     }
 
     .demo-framework-card__direction-step {
-        animation: none;
+        animation: none !important;
         opacity: 1;
         transform: none;
     }
 
-    .demo-framework-card__direction {
+    .demo-framework-card:hover .demo-framework-card__direction-step,
+    .demo-framework-card:focus-visible .demo-framework-card__direction-step {
+        animation: none !important;
+        opacity: 1;
         transform: none;
     }
 }

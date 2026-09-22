@@ -53,6 +53,8 @@ describe('demo site navigation', () => {
         expect(frameworkCards.match(/data-i18n="frameworks\.cta"/g)).toHaveLength(4);
         expect(frameworkCards.match(/demoIcon\('guide'/g)).toHaveLength(4);
         expect(frameworkCards.match(/demoIcon\('chevronRight'/g)).toHaveLength(12);
+        expect(frameworkCards.match(/size: 18, strokeWidth: 2\.3/g)).toHaveLength(4);
+        expect(frameworkCards.match(/size: 20, strokeWidth: 2\.6/g)).toHaveLength(12);
         expect(frameworkCards.match(/class="demo-framework-card__direction"/g)).toHaveLength(4);
         expect(frameworkCards).toContain('demo-framework-card__direction-step--1');
         expect(frameworkCards).toContain('demo-framework-card__direction-step--2');
@@ -75,11 +77,18 @@ describe('demo site navigation', () => {
         expect(css).not.toContain('grid-column: span 2;');
         expect(css).toContain('.demo-framework-card__meta');
         expect(css).toContain('.demo-framework-card__footer');
-        expect(css).toContain('@keyframes demo-framework-direction-flow');
+        expect(css).not.toContain('@keyframes demo-framework-direction-flow');
+        expect(css).toContain('@keyframes demo-framework-direction-hover');
         expect(css).toContain('.demo-framework-card__direction');
         expect(css).toContain('.demo-framework-card__direction-step');
         expect(css).toContain('.demo-framework-card:hover .demo-framework-card__direction');
         expect(css).toContain('.demo-framework-card:hover .demo-framework-card__direction-step');
+        expect(css).toContain('.demo-framework-card:focus-visible .demo-framework-card__direction');
+        expect(css).toContain('.demo-framework-card:focus-visible .demo-framework-card__direction-step');
+        expect(css).toContain('background: transparent;');
+        expect(css).toContain('box-shadow: none;');
+        expect(css).toContain('animation: none;');
+        expect(css).toContain('@media (prefers-reduced-motion: reduce)');
         expect(css).not.toContain('.demo-framework-card__status');
         expect(css).not.toContain('.demo-framework-card__cta-icon');
     });
