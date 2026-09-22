@@ -75,8 +75,9 @@ export default function rowStates(app) {
         <h2 data-i18n="examples.rowStates.title">Row states</h2>
         <p class="demo-note" data-i18n="examples.rowStates.intro">Use the CRUD toolbar and row action column to explore how AMB Grid tracks each row through its lifecycle.</p>
         ${createDemoColumnGuide({
-            summary: 'Row states behavior',
+            summary: 'How row states work',
             summaryKey: 'examples.rowStates.detailsTitle',
+            summaryMeta: 'Clean · new · modified · deleted', summaryMetaKey: 'examples.rowStates.guideMeta', summaryIcon: 'help', variant: 'technical',
             points: [
                 { title: 'Lifecycle', titleKey: 'examples.rowStates.point1Title', description: 'clean is unchanged, new was added locally, and modified differs from its original data.', descriptionKey: 'examples.rowStates.detail1' },
                 { title: 'Delete', titleKey: 'examples.rowStates.point2Title', description: 'deleted marks an existing row for removal; a new unsaved row is removed directly.', descriptionKey: 'examples.rowStates.detail2' },

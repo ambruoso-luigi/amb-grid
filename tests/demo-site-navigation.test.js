@@ -379,17 +379,17 @@ describe('demo site navigation', () => {
     test('keeps public example disclosures bilingual without a redundant multifield introduction', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
-            ['basic-crud', 'basicCrud'],
-            ['validation', 'validation'],
-            ['autocomplete', 'autocomplete'],
-            ['multifield-lookup', 'multifieldLookup'],
-            ['row-states', 'rowStates'],
-            ['column-calculations', 'columnCalculations'],
-            ['dates', 'dates'],
-            ['parsers', 'parsers']
+            ['basic-crud', 'basicCrud', '7 fields · CRUD lifecycle'],
+            ['validation', 'validation', 'Rules · errors · constraints'],
+            ['autocomplete', 'autocomplete', 'Assisted input · suggestions'],
+            ['multifield-lookup', 'multifieldLookup', 'Search · multi-field mapping'],
+            ['row-states', 'rowStates', 'Clean · new · modified · deleted'],
+            ['column-calculations', 'columnCalculations', 'Count · sum · avg · min · max'],
+            ['dates', 'dates', 'Input · formats · datepicker'],
+            ['parsers', 'parsers', 'Normalization · payload']
         ];
 
-        examples.forEach(([fileName, key]) => {
+        examples.forEach(([fileName, key, meta]) => {
             const source = read(`src/demo/${fileName}.js`);
 
             expect(source).toContain(`data-i18n="examples.${key}.title"`);
@@ -400,8 +400,19 @@ describe('demo site navigation', () => {
             }
             expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
             expect(source).toContain(`summaryKey: 'examples.${key}.detailsTitle'`);
+            expect(source).toContain(`summaryMetaKey: 'examples.${key}.guideMeta'`);
+            expect(source).toContain(`summaryMeta: '${meta}'`);
+            expect(source).toContain("summaryIcon: 'help'");
+            expect(source).toContain("variant: 'technical'");
             expect(copy.match(new RegExp(`'examples\\.${key}\\.detailsTitle'`, 'g'))).toHaveLength(2);
+            expect(copy.match(new RegExp(`'examples\\.${key}\\.guideMeta'`, 'g'))).toHaveLength(2);
         });
+
+        expect(copy).toContain("'examples.basicCrud.guideMeta': '7 campi · lifecycle CRUD'");
+        expect(copy).toContain("'examples.validation.guideMeta': 'Regole · errori · vincoli'");
+        expect(copy).toContain("'examples.autocomplete.guideMeta': 'Input assistito · suggerimenti'");
+        expect(copy).toContain("'examples.multifieldLookup.guideMeta': 'Ricerca · mapping multiplo'");
+        expect(copy).toContain("'examples.parsers.guideMeta': 'Normalizzazione · payload'");
     });
 
     test('ends the home after responsive, framed feature grids without a roadmap', () => {

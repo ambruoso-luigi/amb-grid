@@ -13,6 +13,7 @@ export default function columnCalculations(app) {
         ${createDemoColumnGuide({
             summary: 'How column calculations work',
             summaryKey: 'examples.columnCalculations.detailsTitle',
+            summaryMeta: 'Count · sum · avg · min · max', summaryMetaKey: 'examples.columnCalculations.guideMeta', summaryIcon: 'help', variant: 'technical',
             intro: 'AMB Grid displays aggregate values in the calculation row. Each result uses its own column values and updates when the data changes.',
             introKey: 'examples.columnCalculations.detailsText',
             points: [

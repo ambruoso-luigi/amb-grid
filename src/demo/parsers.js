@@ -134,6 +134,7 @@ export default function parsers(app) {
         ${createDemoColumnGuide({
             summary: 'How parsers work',
             summaryKey: 'examples.parsers.detailsTitle',
+            summaryMeta: 'Normalization · payload', summaryMetaKey: 'examples.parsers.guideMeta', summaryIcon: 'help', variant: 'technical',
             intro: 'Parsers normalize visual values into backend-oriented shapes. They can reject incoherent syntax, but they do not replace validation or business rules.',
             introKey: 'examples.parsers.detailsText',
             points: [

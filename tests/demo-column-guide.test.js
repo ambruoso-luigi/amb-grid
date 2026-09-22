@@ -12,6 +12,7 @@ describe('createDemoColumnGuide', () => {
         expect(markup).toContain('<details class="demo-disclosure">');
         expect(markup).toContain('<summary class="demo-disclosure__summary" data-i18n="example.summary">Example</summary>');
         expect(markup).not.toContain('demo-disclosure--rich');
+        expect(markup).not.toContain('demo-disclosure--technical');
         expect(markup).not.toContain('demo-disclosure__summary--rich');
         expect(markup).not.toContain('demo-disclosure__summary-description');
         expect(markup).not.toContain('demo-disclosure__summary-chevron');
@@ -41,11 +42,36 @@ describe('createDemoColumnGuide', () => {
         expect(markup).toContain('demo-disclosure__content');
         expect(markup).toContain('<details class="demo-disclosure demo-disclosure--rich">');
         expect(markup).toContain('aria-hidden="true"');
+        expect(markup).not.toContain('demo-disclosure--technical');
         expect(markup).not.toContain('Open guide');
         expect(markup).not.toContain('Close guide');
     });
 
-    test('exports the rich disclosure animation binder without requiring a DOM test dependency', () => {
+    test('renders the technical summary as a separate disclosure variant', () => {
+        const markup = createDemoColumnGuide({
+            summary: 'How the example works',
+            summaryKey: 'example.summary',
+            summaryMeta: 'Input · output',
+            summaryMetaKey: 'example.meta',
+            summaryIcon: 'help',
+            variant: 'technical'
+        });
+
+        expect(demoIcons.help).toBeTruthy();
+        expect(markup).toContain('<details class="demo-disclosure demo-disclosure--technical">');
+        expect(markup).toContain('demo-disclosure__summary demo-disclosure__summary--technical');
+        expect(markup).toContain('demo-disclosure__technical-leading');
+        expect(markup).toContain('demo-disclosure__technical-icon');
+        expect(markup).toContain('demo-disclosure__technical-title');
+        expect(markup).toContain('demo-disclosure__technical-meta');
+        expect(markup).toContain('data-i18n="example.meta"');
+        expect(markup).toContain('demo-disclosure__technical-chevron-icon');
+        expect(markup).toContain('demo-disclosure__body');
+        expect(markup).not.toContain('demo-disclosure--rich');
+        expect(markup).not.toContain('demo-disclosure__summary--rich');
+    });
+
+    test('exports the disclosure animation binder without requiring a DOM test dependency', () => {
         expect(bindDemoColumnGuideAnimations).toBeTypeOf('function');
     });
 });

@@ -55,14 +55,25 @@ export const createDemoColumnGuide = ({
     summaryDescription = '',
     summaryDescriptionKey = '',
     summaryIcon = '',
+    summaryMeta = '',
+    summaryMetaKey = '',
+    variant = 'default',
     intro = '',
     introKey = '',
     points = [],
     columns = [],
     className = ''
 }) => {
-    const hasRichSummary = Boolean(summaryDescription || summaryIcon);
-    const summaryMarkup = hasRichSummary
+    const isTechnical = variant === 'technical';
+    const hasRichSummary = Boolean(summaryDescription || summaryIcon) && !isTechnical;
+    const summaryMarkup = isTechnical
+        ? `<summary class="demo-disclosure__summary demo-disclosure__summary--technical">
+            <span class="demo-disclosure__technical-leading" aria-hidden="true">${demoIcon(summaryIcon, { className: 'demo-disclosure__technical-icon', size: 17, strokeWidth: 2.2 })}</span>
+            ${renderTranslatedText({ tag: 'span', key: summaryKey, text: summary, className: 'demo-disclosure__technical-title' })}
+            ${summaryMeta ? renderTranslatedText({ tag: 'span', key: summaryMetaKey, text: summaryMeta, className: 'demo-disclosure__technical-meta' }) : ''}
+            <span class="demo-disclosure__technical-chevron" aria-hidden="true">${demoIcon('chevronDown', { className: 'demo-disclosure__technical-chevron-icon', size: 18, strokeWidth: 2.4 })}</span>
+        </summary>`
+        : hasRichSummary
         ? `<summary class="demo-disclosure__summary demo-disclosure__summary--rich">
             ${summaryIcon ? `<span class="demo-disclosure__summary-leading">${demoIcon(summaryIcon, { className: 'demo-disclosure__summary-icon', size: 20 })}</span>` : ''}
             <span class="demo-disclosure__summary-copy">
@@ -83,23 +94,23 @@ export const createDemoColumnGuide = ({
             ${renderPoints(points)}
             ${renderColumns(columns, className)}
         </div>`;
-    const bodyMarkup = hasRichSummary
+    const bodyMarkup = hasRichSummary || isTechnical
         ? `<div class="demo-disclosure__body"><div class="demo-disclosure__body-inner">${contentMarkup}</div></div>`
         : contentMarkup;
 
     return `
-    <details class="demo-disclosure${hasRichSummary ? ' demo-disclosure--rich' : ''}">
+    <details class="demo-disclosure${hasRichSummary ? ' demo-disclosure--rich' : isTechnical ? ' demo-disclosure--technical' : ''}">
         ${summaryMarkup}
         ${bodyMarkup}
     </details>`;
 };
 
 /**
- * Coordinates the rich demo disclosure animation while leaving native details
+ * Coordinates animated demo disclosures while leaving native details
  * and summary semantics in control of focus and keyboard activation.
  */
 export const bindDemoColumnGuideAnimations = root => {
-    const disclosures = Array.from(root?.querySelectorAll?.('.demo-disclosure--rich') || []);
+    const disclosures = Array.from(root?.querySelectorAll?.('.demo-disclosure--rich, .demo-disclosure--technical') || []);
     const cleanups = disclosures.map(details => {
         const summary = details.querySelector('.demo-disclosure__summary');
         const body = details.querySelector('.demo-disclosure__body');

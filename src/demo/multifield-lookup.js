@@ -166,8 +166,9 @@ export default async function multifieldLookup(app) {
         <div class="demo-multifield-lookup">
             <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
             ${createDemoColumnGuide({
-            summary: 'Multifield lookup behavior',
+            summary: 'How multifield lookup works',
             summaryKey: 'examples.multifieldLookup.detailsTitle',
+            summaryMeta: 'Search · multi-field mapping', summaryMetaKey: 'examples.multifieldLookup.guideMeta', summaryIcon: 'help', variant: 'technical',
             points: [
                 { title: 'Select a record', titleKey: 'examples.multifieldLookup.point1Title', description: 'Edit Municipality to type for autocomplete or use its search button for the complete lookup.', descriptionKey: 'examples.multifieldLookup.detail1' },
                 { title: 'Master field', titleKey: 'examples.multifieldLookup.point2Title', description: 'Municipality is the actionable master field; dependent fields remain readonly.', descriptionKey: 'examples.multifieldLookup.detail2' },

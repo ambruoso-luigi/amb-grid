@@ -19,6 +19,7 @@ import { animateCycleDetail, initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
 import { renderDemoFooter } from './demo-footer.js';
+import { bindDemoColumnGuideAnimations } from './utils/demo-column-guide.js';
 
 window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
@@ -395,6 +396,7 @@ const root = document.querySelector('#app');
 let currentMainDemo = null;
 let currentFeatureExample = null;
 let currentReactDemoUnmount = null;
+let currentFeatureGuideCleanup = null;
 let currentLang = 'it';
 let currentView = null;
 let featureLoadToken = 0;
@@ -594,7 +596,13 @@ const destroyDemo = demo => {
     }
 };
 
+const destroyFeatureGuideAnimations = () => {
+    if (typeof currentFeatureGuideCleanup === 'function') currentFeatureGuideCleanup();
+    currentFeatureGuideCleanup = null;
+};
+
 const destroyCurrentDemos = () => {
+    destroyFeatureGuideAnimations();
     destroyDemo(currentMainDemo);
     destroyDemo(currentFeatureExample);
     if (typeof currentReactDemoUnmount === 'function') {
@@ -913,6 +921,7 @@ const loadFeatureExample = async id => {
     const container = root.querySelector('#feature-example');
 
     featureLoadToken = token;
+    destroyFeatureGuideAnimations();
     destroyDemo(currentFeatureExample);
     currentFeatureExample = null;
     container.innerHTML = '';
@@ -926,6 +935,7 @@ const loadFeatureExample = async id => {
     }
 
     currentFeatureExample = mountedExample || null;
+    currentFeatureGuideCleanup = bindDemoColumnGuideAnimations(container);
     applyI18n();
     initDemoMotion(container);
 };

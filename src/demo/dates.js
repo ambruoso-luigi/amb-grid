@@ -134,6 +134,7 @@ export default function dates(app) {
         ${createDemoColumnGuide({
             summary: 'How dates work',
             summaryKey: 'examples.dates.detailsTitle',
+            summaryMeta: 'Input · formats · datepicker', summaryMetaKey: 'examples.dates.guideMeta', summaryIcon: 'help', variant: 'technical',
             intro: 'The example keeps date format, editor behavior, display, validation, and range constraints aligned through shared date configurations.',
             introKey: 'examples.dates.detailsText',
             points: [

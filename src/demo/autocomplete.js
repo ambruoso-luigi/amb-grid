@@ -128,8 +128,9 @@ export default function autocomplete(app) {
         <h2 data-i18n="examples.autocomplete.title">Autocomplete</h2>
         <p class="demo-note" data-i18n="examples.autocomplete.intro">Autocomplete helps users choose suggested values while AMB Grid controls commit, validation, and row state.</p>
         ${createDemoColumnGuide({
-            summary: 'Autocomplete behavior',
+            summary: 'How autocomplete works',
             summaryKey: 'examples.autocomplete.detailsTitle',
+            summaryMeta: 'Assisted input · suggestions', summaryMetaKey: 'examples.autocomplete.guideMeta', summaryIcon: 'help', variant: 'technical',
             points: [
                 { title: 'Suggestions', titleKey: 'examples.autocomplete.point1Title', description: 'Matching options appear and narrow while you type.', descriptionKey: 'examples.autocomplete.detail1' },
                 { title: 'Strict values', titleKey: 'examples.autocomplete.point2Title', description: 'Department fields require a value from the supplied list.', descriptionKey: 'examples.autocomplete.detail2' },

@@ -222,8 +222,9 @@ export default function validation(app) {
         <h2 data-i18n="examples.validation.title">Validation</h2>
         <p class="demo-note" data-i18n="examples.validation.intro">Most validations run when you leave an edited cell. The toolbar can create intentional errors, open the report, or reset the data.</p>
         ${createDemoColumnGuide({
-            summary: 'Validation rules and limits',
+            summary: 'How validation works',
             summaryKey: 'examples.validation.detailsTitle',
+            summaryMeta: 'Rules · errors · constraints', summaryMetaKey: 'examples.validation.guideMeta', summaryIcon: 'help', variant: 'technical',
             className: 'demo-column-guide--validation',
             points: [
                 { title: 'Field rules', titleKey: 'examples.validation.point1Title', description: 'Fields demonstrate required, unique, length, pattern, and format rules.', descriptionKey: 'examples.validation.detail1' },
