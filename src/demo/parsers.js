@@ -162,12 +162,12 @@ export default function parsers(app) {
         data: createParserData(),
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', minWidth: 58, widthGrow: 0.35, cssClass: 'demo-cell--readonly' },
+            { title: 'ID', field: 'id', minWidth: 58, widthGrow: 0.35, cssClass: 'demo-cell--passive' },
             {
                 title: 'Type', field: 'type', minWidth: 150, widthGrow: 1.05,
                 editable: false,
                 formatter: formatParserType,
-                cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
                 title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.5,
@@ -178,13 +178,13 @@ export default function parsers(app) {
                 title: 'Parsed value', field: 'parsedValue', minWidth: 190, widthGrow: 1.45,
                 editable: false,
                 formatter: formatParsedValue,
-                cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
                 title: 'Description', field: 'description', minWidth: 210, widthGrow: 1.8,
                 editable: false,
                 formatter: formatParserDescription,
-                cssClass: 'amb-cell--readonly-passive demo-cell--readonly'
+                cssClass: 'demo-cell--passive'
             }
         ]
     });

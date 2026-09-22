@@ -69,8 +69,10 @@ describe('Row states demo', () => {
         expect(source).toContain('buildErrorDetails(report)');
         expect(source).toContain('Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.');
         expect(
-            source.match(/cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'/g)
+            source.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)
         ).toHaveLength(5);
+        expect(source).not.toContain('demo-cell--readonly');
+        expect(source).not.toContain("cssClass: 'amb-cell--readonly-passive");
     });
 
     test('keeps report, row numbers, and error as clearly named custom actions', () => {

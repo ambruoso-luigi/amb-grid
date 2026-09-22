@@ -118,10 +118,10 @@ export default function basicCrud(app) {
         data: initialData.map(row => ({ ...row })),
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', minWidth: 75, widthGrow: 0.55, cssClass: 'demo-cell--readonly' },
-            { title: 'Temp ID', field: '_ambTempId', minWidth: 105, widthGrow: 0.75, cssClass: 'demo-cell--readonly' },
-            { title: 'Row No.', field: '_ambRowNumber', minWidth: 78, widthGrow: 0.55, cssClass: 'demo-cell--readonly' },
-            { title: 'State', field: '_state', minWidth: 88, widthGrow: 0.65, cssClass: 'demo-cell--readonly' },
+            { title: 'ID', field: 'id', minWidth: 75, widthGrow: 0.55, cssClass: 'demo-cell--passive' },
+            { title: 'Temp ID', field: '_ambTempId', minWidth: 105, widthGrow: 0.75, cssClass: 'demo-cell--passive' },
+            { title: 'Row No.', field: '_ambRowNumber', minWidth: 78, widthGrow: 0.55, cssClass: 'demo-cell--passive' },
+            { title: 'State', field: '_state', minWidth: 88, widthGrow: 0.65, cssClass: 'demo-cell--passive' },
             {
                 title: 'Title',
                 field: 'title',

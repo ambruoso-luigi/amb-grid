@@ -3776,20 +3776,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     outline: none;
 }
 
-.demo-business-grid .demo-cell--readonly {
-    background-color: var(--amb-site-blue-soft);
-    box-shadow: inset 3px 0 0 var(--amb-site-border-strong);
-    color: var(--amb-site-muted);
-    cursor: default;
-}
-
-.demo-business-grid .demo-cell--readonly:hover {
-    background-color: var(--amb-site-blue-soft);
-    box-shadow: inset 3px 0 0 var(--amb-site-border-strong);
-    color: var(--amb-site-muted);
-    cursor: default;
-}
-
 .demo-visually-hidden {
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
@@ -3845,6 +3831,34 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     --demo-checkbox-highlight: rgb(93 127 152 / 18%);
     --demo-checkbox-check: #fbfdff;
     --demo-checkbox-size: 18px;
+    --demo-passive-text: color-mix(in srgb, var(--amb-site-slate) 88%, var(--amb-site-navy));
+    --demo-passive-marker: rgb(105 128 149 / 55%);
+    --demo-passive-marker-error: rgb(177 59 59 / 58%);
+}
+
+.demo-business-grid :where(.tabulator-row .tabulator-cell.demo-cell--passive) {
+    --demo-passive-marker-current: var(--demo-passive-marker);
+    color: var(--demo-passive-text);
+    cursor: default;
+    position: relative;
+}
+
+.demo-business-grid :where(.tabulator-row .tabulator-cell.demo-cell--passive)::before {
+    background: var(--demo-passive-marker-current);
+    border-radius: 999px;
+    bottom: 3px;
+    content: "";
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 3px;
+    width: 2px;
+}
+
+.demo-panel .tabulator-row[data-row-error="true"] .demo-cell--passive,
+.demo-panel .tabulator-row[data-has-cell-error="true"] .demo-cell--passive,
+.demo-panel .tabulator-cell.demo-cell--passive[data-cell-error="true"] {
+    --demo-passive-marker-current: var(--demo-passive-marker-error);
 }
 
 .demo-panel .demo-business-grid .tabulator-cell.demo-business-checkbox-cell {

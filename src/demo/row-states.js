@@ -146,28 +146,28 @@ export default function rowStates(app) {
                 field: 'id',
                 minWidth: 68,
                 widthGrow: 0.4,
-                cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
                 title: 'Temp ID',
                 field: '_ambTempId',
                 minWidth: 105,
                 widthGrow: 0.65,
-                cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
                 title: '#',
                 field: '_ambRowNumber',
                 minWidth: 58,
                 widthGrow: 0.35,
-                cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
                 title: 'Lifecycle',
                 field: '_state',
                 minWidth: 92,
                 widthGrow: 0.6,
-                cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
                 title: 'Errors',
@@ -175,7 +175,7 @@ export default function rowStates(app) {
                 minWidth: 75,
                 widthGrow: 0.45,
                 formatter: formatErrorCount,
-                cssClass: 'amb-cell--readonly-passive amb-cell--derived demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             },
             { title: 'Item', field: 'item', minWidth: 125, widthGrow: 1.35, editor: AMB.editors.text({ trim: true }) },
             { title: 'Category', field: 'category', minWidth: 105, widthGrow: 0.9, editor: AMB.editors.text({ trim: true }) },

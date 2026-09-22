@@ -179,7 +179,7 @@ export default function autocomplete(app) {
         data: createAutocompleteData(),
         layout: 'fitColumns',
         columns: [
-            { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.4, cssClass: 'demo-cell--readonly' },
+            { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.4, cssClass: 'demo-cell--passive' },
             {
                 title: 'Task',
                 field: 'task',

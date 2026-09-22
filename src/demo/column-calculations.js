@@ -64,7 +64,7 @@ export default function columnCalculations(app) {
         columns: [
             {
                 title: 'ID', field: 'id', minWidth: 70, widthGrow: 0.45,
-                cssClass: 'demo-cell--readonly',
+                cssClass: 'demo-cell--passive',
                 topCalc: 'count',
                 topCalcFormatter: AMB.formatters.calculation({ label: 'COUNT', className: 'demo-calculation-summary demo-calculation-summary--count' })
             },

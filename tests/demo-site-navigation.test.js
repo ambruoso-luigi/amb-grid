@@ -415,6 +415,73 @@ describe('demo site navigation', () => {
         expect(copy).toContain("'examples.parsers.guideMeta': 'Normalizzazione · payload'");
     });
 
+    test('uses one demo-only passive-cell policy across public mini examples', () => {
+        const passiveCells = {
+            'basic-crud': { passive: 4, derived: 0 },
+            validation: { passive: 1, derived: 0 },
+            autocomplete: { passive: 1, derived: 0 },
+            'multifield-lookup': { passive: 5, derived: 5 },
+            'row-states': { passive: 5, derived: 5 },
+            'column-calculations': { passive: 1, derived: 0 },
+            dates: { passive: 1, derived: 0 },
+            parsers: { passive: 4, derived: 2 }
+        };
+
+        Object.entries(passiveCells).forEach(([fileName, expected]) => {
+            const source = read(`src/demo/${fileName}.js`);
+
+            expect((source.match(/demo-cell--passive/g) || [])).toHaveLength(expected.passive);
+            expect((source.match(/demo-cell--derived/g) || [])).toHaveLength(expected.derived);
+            expect(source).not.toContain('demo-cell--readonly');
+        });
+
+        expect(Object.values(passiveCells).reduce((total, expected) => total + expected.passive, 0)).toBe(22);
+
+        const multifield = read('src/demo/multifield-lookup.js');
+        expect(multifield.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)).toHaveLength(5);
+        expect(multifield).toContain('municipalityMultifieldLookup.masterColumn({');
+        expect(multifield).toContain('autocomplete: true');
+        expect(multifield).toContain('dialog: true');
+
+        const parsers = read('src/demo/parsers.js');
+        expect(parsers).toContain("title: 'Type'");
+        expect(parsers).toContain("title: 'Parsed value'");
+        expect(parsers).toContain("title: 'Description'");
+        expect(parsers.match(/editable: false/g)).toHaveLength(3);
+        expect(parsers).toContain('editor: parserInputEditor');
+
+        const calculations = read('src/demo/column-calculations.js');
+        expect(calculations).toContain('topCalc');
+        expect(calculations).toContain('topCalcFormatter');
+        expect(calculations).toContain('demo-calculation-summary');
+
+        const dates = read('src/demo/dates.js');
+        expect(dates).toContain('amb-cell--readonly-actionable');
+        expect(dates).toContain('amb-cell--actionable');
+        expect(dates).toContain('amb-cell--picker-only');
+
+        const css = read('src/demo/demo.css');
+        const passiveRule = css.match(/\.demo-business-grid :where\(\.tabulator-row \.tabulator-cell\.demo-cell--passive\) \{([\s\S]*?)\n\}/)?.[1] || '';
+        expect(css).toContain('--demo-passive-text');
+        expect(css).toContain('--demo-passive-marker');
+        expect(css).toContain('--demo-passive-marker-error');
+        expect(css).toContain('demo-cell--passive)::before');
+        expect(css).toContain('pointer-events: none;');
+        expect(css).toContain('--demo-passive-marker-current');
+        expect(css).toContain('data-row-error="true"');
+        expect(css).toContain('data-has-cell-error="true"');
+        expect(css).toContain('data-cell-error="true"');
+        expect(css).not.toContain('.demo-business-grid .demo-cell--readonly');
+        expect(css).not.toContain('demo-cell--readonly');
+        expect(passiveRule).not.toContain('background');
+        expect(passiveRule).not.toContain('box-shadow');
+        expect(passiveRule).toContain('color: var(--demo-passive-text);');
+        expect(passiveRule).toContain('cursor: default;');
+        expect(css).toContain('content: "";');
+        expect(css).toContain('position: absolute;');
+        expect(css).toContain('width: 2px;');
+    });
+
     test('ends the home after responsive, framed feature grids without a roadmap', () => {
         const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');

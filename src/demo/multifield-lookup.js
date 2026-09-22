@@ -325,27 +325,27 @@ export default async function multifieldLookup(app) {
             municipalityMultifieldLookup.dependentColumn('province', {
                 minWidth: 88,
                 widthGrow: 0.65,
-                cssClass: 'demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             }),
             municipalityMultifieldLookup.dependentColumn('region', {
                 minWidth: 105,
                 widthGrow: 1,
-                cssClass: 'demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             }),
             municipalityMultifieldLookup.dependentColumn('postalCode', {
                 minWidth: 105,
                 widthGrow: 0.8,
-                cssClass: 'demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             }),
             municipalityMultifieldLookup.dependentColumn('istatCode', {
                 minWidth: 105,
                 widthGrow: 0.8,
-                cssClass: 'demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             }),
             municipalityMultifieldLookup.dependentColumn('cadastralCode', {
                 minWidth: 125,
                 widthGrow: 0.95,
-                cssClass: 'demo-cell--readonly'
+                cssClass: 'demo-cell--passive demo-cell--derived'
             })
         ]
     });
