@@ -2709,22 +2709,10 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 .demo-disclosure--rich {
     background: #ffffff;
     border-color: var(--demo-border);
+    border-left-color: #c8961d;
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%), 0 3px 9px rgb(31 49 70 / 5%);
     position: relative;
     transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-}
-
-.demo-disclosure--rich::before {
-    background: #c8961d;
-    border-radius: 0 999px 999px 0;
-    content: "";
-    height: 32px;
-    left: 0;
-    pointer-events: none;
-    position: absolute;
-    top: 14px;
-    transition: background 180ms ease;
-    width: 2px;
 }
 
 .demo-disclosure--rich::after {
@@ -2741,11 +2729,8 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 .demo-disclosure--rich[open] {
     background: #ffffff;
     border-color: var(--amb-site-border-strong);
+    border-left-color: #c8961d;
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 85%), 0 5px 14px rgb(31 49 70 / 8%);
-}
-
-.demo-disclosure--rich:hover::before {
-    background: #b98613;
 }
 
 .demo-disclosure__summary--rich {
@@ -2838,6 +2823,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 
 .demo-disclosure--rich:hover {
     border-color: var(--amb-site-border-strong);
+    border-left-color: #b98613;
 }
 
 .demo-disclosure--rich:not([open]) .demo-disclosure__summary--rich:hover .demo-disclosure__summary-chevron {
