@@ -567,6 +567,7 @@ describe('demo site navigation', () => {
         const validationGridRule = css.match(/\.demo-validation-grid\s*\{([\s\S]*?)\n\}/)?.[1] || '';
         const validationRowRule = css.match(/\.demo-panel \.demo-validation-grid \.tabulator-row\s*\{([\s\S]*?)\n\}/)?.[1] || '';
         const validationCellRule = css.match(/\.demo-panel \.demo-validation-grid \.tabulator-cell\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+        const validationActionCellRule = css.match(/\.demo-panel\s+\.demo-validation-grid\s+\.tabulator-cell:has\(\.amb-row-actions\)\s*\{([\s\S]*?)\n\}/)?.[1] || '';
         const featureSources = [
             'basic-crud',
             'validation',
@@ -595,8 +596,11 @@ describe('demo site navigation', () => {
         expect(css).not.toContain(`.demo-panel .demo-validation-grid .amb-row-actions {
     min-height: 30px;
 }`);
-        expect(css).toContain('.tabulator-cell:has(.amb-row-actions)');
-        expect(css).toContain('padding-block: 3px;');
+        expect(validationActionCellRule).toContain('height: 100%;');
+        expect(validationActionCellRule).toContain('padding-block: 3px;');
+        expect(validationActionCellRule).not.toContain('height: 36px;');
+        expect(validationActionCellRule).not.toContain('min-height: 36px;');
+        expect(validationActionCellRule).not.toContain('min-height: var(--amb-demo-row-height);');
         expect(validation).toContain('rowActionColumn: {');
         expect(validation).toContain('enabled: true');
         expect(validation).toContain('delete: false');

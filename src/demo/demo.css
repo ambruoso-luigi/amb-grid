@@ -3712,6 +3712,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-panel .demo-validation-grid .tabulator-cell:has(.amb-row-actions) {
+    height: 100%;
     padding-block: 3px;
 }
 
