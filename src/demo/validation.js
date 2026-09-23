@@ -245,7 +245,7 @@ export default function validation(app) {
             ]
         })}
         <div class="demo-table-workbench">
-            <div id="validation-table" class="demo-business-grid demo-business-grid--viewport"></div>
+            <div id="validation-table" class="demo-business-grid demo-business-grid--viewport demo-validation-grid"></div>
         </div>
     `;
 

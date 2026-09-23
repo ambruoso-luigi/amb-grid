@@ -530,7 +530,7 @@ describe('demo site navigation', () => {
         expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
     });
 
-    test('shares the ten-row viewport and JavaScript-demo resize configuration', () => {
+    test('shares the default ten-row viewport and JavaScript-demo resize configuration', () => {
         const fullDemo = read('src/demo/full-demo.js');
         const css = read('src/demo/demo.css');
         const exampleFiles = [
@@ -559,6 +559,40 @@ describe('demo site navigation', () => {
             expect(source).not.toMatch(/\bheight:\s*['"]\d+px['"]/);
             expect(source).not.toMatch(/\bwidth:\s*\d+/);
         });
+    });
+
+    test('keeps Validation at eleven stable 36px rows with rollback actions', () => {
+        const validation = read('src/demo/validation.js');
+        const css = read('src/demo/demo.css');
+        const validationGridRule = css.match(/\.demo-validation-grid\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+        const featureSources = [
+            'basic-crud',
+            'validation',
+            'autocomplete',
+            'multifield-lookup',
+            'row-states',
+            'column-calculations',
+            'dates',
+            'parsers'
+        ].map(fileName => read(`src/demo/${fileName}.js`));
+
+        expect(validation).toContain('class="demo-business-grid demo-business-grid--viewport demo-validation-grid"');
+        expect(validationGridRule).toContain('--amb-demo-row-height: 36px;');
+        expect(validationGridRule).toContain('--amb-demo-visible-rows: 11;');
+        expect(validationGridRule).not.toContain('overflow-y: hidden');
+        expect(css).toContain('.demo-panel .demo-validation-grid .tabulator-row');
+        expect(css).toContain('.demo-panel .demo-validation-grid .tabulator-cell');
+        expect(css).toContain('min-height: var(--amb-demo-row-height);');
+        expect(css).toContain('.demo-panel .demo-validation-grid .amb-row-actions');
+        expect(css).toContain('min-height: 30px;');
+        expect(css).toContain('.tabulator-cell:has(.amb-row-actions)');
+        expect(css).toContain('padding-block: 3px;');
+        expect(validation).toContain('rowActionColumn: {');
+        expect(validation).toContain('enabled: true');
+        expect(validation).toContain('delete: false');
+        expect(validation).toContain('rollback: true');
+        expect(validation).toContain('removeNew: false');
+        expect(featureSources.filter(source => source.includes('demo-validation-grid'))).toHaveLength(1);
     });
 
     test('starts every public feature grid with at least ten coherent rows', () => {
