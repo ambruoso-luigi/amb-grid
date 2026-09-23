@@ -7,6 +7,10 @@ import {
     prepareColumnPipeline
 } from './column-pipeline.js';
 import { getAmbColumnMetadata } from './column-metadata.js';
+import {
+    normalizeValidationDependsOn,
+    normalizeValidationScope
+} from '../validation-scope.js';
 
 const isObjectPatch = patch => {
     return patch
@@ -322,7 +326,9 @@ const toCrudValidators = (validators, field) => {
         })
         .map(validator => ({
             message: validator.message,
-            validateFn: validator.validate
+            validateFn: validator.validate,
+            scope: normalizeValidationScope(validator.scope),
+            dependsOn: normalizeValidationDependsOn(validator.dependsOn)
         }));
 };
 

@@ -378,11 +378,15 @@ export const extractColumnValidators = (columns, messages = DEFAULT_MESSAGES) =>
         });
 
         if (validator && column.field) {
-            extractedValidators.push({
+            const extractedValidator = {
                 field: column.field,
                 message: validator.message,
                 validate: validator.validate
-            });
+            };
+
+            if ('scope' in validator) extractedValidator.scope = validator.scope;
+            if ('dependsOn' in validator) extractedValidator.dependsOn = validator.dependsOn;
+            extractedValidators.push(extractedValidator);
         }
 
         if (childColumns) {

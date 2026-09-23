@@ -60,6 +60,7 @@ vi.mock('../src/lib/crud-helper.js', () => ({
             this.options = options;
             this.on = vi.fn(() => vi.fn());
             this.addCellValidator = vi.fn();
+            this.replaceDeclarativeCellValidators = vi.fn();
             this.findRowByKey = vi.fn();
             this.getSavePayload = vi.fn();
             this.getStateReport = vi.fn();
@@ -177,6 +178,7 @@ const clearSetupCalls = (table, crud) => {
     table.deselectRow.mockClear();
     crud.on.mockClear();
     crud.addCellValidator.mockClear();
+    crud.replaceDeclarativeCellValidators.mockClear();
     crud.findRowByKey.mockClear();
     crud.getSavePayload.mockClear();
     crud.getStateReport.mockClear();
@@ -190,6 +192,51 @@ const clearSetupCalls = (table, crud) => {
 };
 
 describe('AMB table controller validation API', () => {
+    test('preserves declarative validation scope metadata during initial registration', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const controller = createTable({
+                selector: harness.mount,
+                columns: [
+                    {
+                        title: 'Alias',
+                        field: 'alias',
+                        validation: {
+                            unique: { message: 'Alias must be unique' }
+                        }
+                    },
+                    {
+                        title: 'Name',
+                        field: 'name',
+                        validation: {
+                            required: { message: 'Name is required' }
+                        }
+                    }
+                ],
+                toolbar: false
+            });
+            const crud = crudMock.instances[0];
+
+            expect(crud.replaceDeclarativeCellValidators).toHaveBeenCalledWith('alias', [{
+                message: 'Alias must be unique',
+                validateFn: expect.any(Function),
+                scope: 'field',
+                dependsOn: null
+            }]);
+            expect(crud.replaceDeclarativeCellValidators).toHaveBeenCalledWith('name', [{
+                message: 'Name is required',
+                validateFn: expect.any(Function),
+                scope: 'cell',
+                dependsOn: null
+            }]);
+
+            controller.destroy();
+        } finally {
+            harness.restore();
+        }
+    });
+
     test('validates through the AMB CRUD layer without using native table validation', () => {
         const harness = createDocumentHarness();
 

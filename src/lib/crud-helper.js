@@ -1,5 +1,9 @@
 
 import { LOOKUP_METADATA_FIELD, rollbackLookupMetadata } from './lookup-metadata.js';
+import {
+    normalizeValidationDependsOn,
+    normalizeValidationScope
+} from './validation-scope.js';
 
 /**
  * Row lifecycle states tracked by CrudHelper.
@@ -24,6 +28,15 @@ const SUPPORTED_SAVE_POLICIES = Object.freeze([
     'all-or-nothing',
     'valid-only'
 ]);
+
+const normalizeCellValidatorDescriptor = validator => {
+    return {
+        message: validator.message,
+        validateFn: validator.validateFn,
+        scope: normalizeValidationScope(validator.scope),
+        dependsOn: normalizeValidationDependsOn(validator.dependsOn)
+    };
+};
 
 /**
  * Policy used to decide whether pending CRUD changes form a save candidate.
@@ -1486,15 +1499,17 @@ export class CrudHelper {
      * @param {string} message - Error message used when validation fails.
      * @param {Function} validateFn - Function receiving (value, rowData, cell, helper); returns true when valid.
      */
-    addCellValidator(field, message, validateFn) {
+    addCellValidator(field, message, validateFn, options = {}) {
         if (!this.cellValidators.has(field)) {
             this.cellValidators.set(field, []);
         }
 
-        this.cellValidators.get(field).push({
+        this.cellValidators.get(field).push(normalizeCellValidatorDescriptor({
             message,
-            validateFn
-        });
+            validateFn,
+            scope: options.scope,
+            dependsOn: options.dependsOn
+        }));
     }
 
     /**
@@ -1521,10 +1536,7 @@ export class CrudHelper {
                 return validator
                     && typeof validator.validateFn === 'function';
             })
-            .map(validator => ({
-                message: validator.message,
-                validateFn: validator.validateFn
-            }));
+            .map(normalizeCellValidatorDescriptor);
         const nextValidators = [
             ...nextDeclarative,
             ...runtimeValidators

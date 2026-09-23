@@ -652,11 +652,15 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.cellValidators.get('name')).toEqual([
             {
                 message: 'Updated declarative rule',
-                validateFn: nextDeclarative
+                validateFn: nextDeclarative,
+                scope: 'cell',
+                dependsOn: null
             },
             {
                 message: 'Runtime rule',
-                validateFn: runtimeValidator
+                validateFn: runtimeValidator,
+                scope: 'cell',
+                dependsOn: null
             }
         ]);
         expect(crud.cellValidators.get('name'))
@@ -671,7 +675,9 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.cellValidators.get('name')).toEqual([
             {
                 message: 'Runtime rule',
-                validateFn: runtimeValidator
+                validateFn: runtimeValidator,
+                scope: 'cell',
+                dependsOn: null
             }
         ]);
 
@@ -679,6 +685,31 @@ describe('CrudHelper validation lifecycle', () => {
 
         expect(crud.cellValidators.has('name')).toBe(false);
         expect(crud.declarativeCellValidators.has('name')).toBe(false);
+    });
+
+    test('normalizes legacy and internal validator metadata', () => {
+        const { table } = createTableMock([{ id: 1, name: 'Atlas', code: 'A1' }]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('name', 'Required', validateFn);
+        crud.addCellValidator('code', 'Duplicate code', validateFn, {
+            scope: 'field',
+            dependsOn: ['code']
+        });
+
+        expect(crud.cellValidators.get('name')).toEqual([{
+            message: 'Required',
+            validateFn,
+            scope: 'cell',
+            dependsOn: null
+        }]);
+        expect(crud.cellValidators.get('code')).toEqual([{
+            message: 'Duplicate code',
+            validateFn,
+            scope: 'field',
+            dependsOn: ['code']
+        }]);
     });
 
     test('retires one removed column field without changing row errors or tracking', () => {
@@ -725,7 +756,9 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.declarativeCellValidators.has('region')).toBe(false);
         expect(crud.cellValidators.get('name')).toEqual([{
             message: 'Name rule',
-            validateFn: otherValidator
+            validateFn: otherValidator,
+            scope: 'cell',
+            dependsOn: null
         }]);
         expect(crud.cellErrors.get(1)).toEqual(new Map([
             ['name', 'Invalid name']

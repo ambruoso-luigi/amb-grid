@@ -951,7 +951,9 @@ describe('AMB Grid managed column definition updates', () => {
             requiredMessage: 'Unused after update',
             validator: {
                 message: 'Updated declarative rule',
-                validate: nextDeclarativeValidator
+                validate: nextDeclarativeValidator,
+                scope: 'row',
+                dependsOn: ['status', 'name']
             }
         };
         const originalApplicationSnapshot = {
@@ -1011,12 +1013,16 @@ describe('AMB Grid managed column definition updates', () => {
             .toHaveBeenCalledOnce();
         expect(harness.crud.declarative).toEqual([{
             message: 'Updated declarative rule',
-            validateFn: nextDeclarativeValidator
+            validateFn: nextDeclarativeValidator,
+            scope: 'row',
+            dependsOn: ['status', 'name']
         }]);
         expect(harness.crud.validators).toEqual([
             {
                 message: 'Updated declarative rule',
-                validateFn: nextDeclarativeValidator
+                validateFn: nextDeclarativeValidator,
+                scope: 'row',
+                dependsOn: ['status', 'name']
             },
             {
                 message: 'Runtime rule',

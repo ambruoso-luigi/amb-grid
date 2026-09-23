@@ -1,4 +1,9 @@
 import { parsers } from './parsers.js';
+import {
+    VALIDATION_SCOPE,
+    getBroadestValidationScope,
+    mergeValidationDependsOn
+} from './validation-scope.js';
 
 const isEmptyValue = value => {
     return value === null
@@ -631,6 +636,7 @@ export const validators = {
 
         return {
             message,
+            scope: VALIDATION_SCOPE.FIELD,
             validate: (value, rowData, cell, helper) => {
                 if (isEmptyValue(value)) return true;
                 if (!helper || !helper.table || typeof helper.table.getRows !== 'function') return true;
@@ -726,8 +732,11 @@ export const validators = {
      * @returns {{message: string, validate: Function}} Validator object.
      */
     anyOf(validatorsList, message = 'Value does not match any allowed format') {
-        return {
+        const scope = getBroadestValidationScope(validatorsList);
+        const dependsOn = mergeValidationDependsOn(validatorsList);
+        const validator = {
             message,
+            scope,
             validate: (value, rowData, cell, helper) => {
                 if (!Array.isArray(validatorsList) || validatorsList.length === 0) {
                     return false;
@@ -740,6 +749,10 @@ export const validators = {
                 });
             }
         };
+
+        if (dependsOn !== null) validator.dependsOn = dependsOn;
+
+        return validator;
     },
 
     /**
@@ -751,8 +764,11 @@ export const validators = {
      * @returns {{message: string, validate: Function}} Validator object.
      */
     allOf(validatorsList, message = 'Value does not satisfy all validation rules') {
-        return {
+        const scope = getBroadestValidationScope(validatorsList);
+        const dependsOn = mergeValidationDependsOn(validatorsList);
+        const validator = {
             message,
+            scope,
             validate: (value, rowData, cell, helper) => {
                 if (!Array.isArray(validatorsList) || validatorsList.length === 0) {
                     return false;
@@ -765,5 +781,9 @@ export const validators = {
                 });
             }
         };
+
+        if (dependsOn !== null) validator.dependsOn = dependsOn;
+
+        return validator;
     }
 };

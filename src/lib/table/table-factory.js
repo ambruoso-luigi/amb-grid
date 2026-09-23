@@ -48,6 +48,10 @@ import { createValidationMethods } from './controller/validation-methods.js';
 import { createKeyboardNavigationRuntime } from './keyboard-navigation-runtime.js';
 import { normalizeKeyboardNavigationOptions } from './keyboard-bindings.js';
 import { normalizeCellEditingOptions } from './cell-editing-options.js';
+import {
+    normalizeValidationDependsOn,
+    normalizeValidationScope
+} from '../validation-scope.js';
 
 export {
     applyDefaultColumnAlignments,
@@ -68,6 +72,13 @@ const DEFAULT_FLOATING_MESSAGE_OPTIONS = {
     searchFilterStatus: true
 };
 
+const toCrudValidatorDescriptor = validator => ({
+    message: validator.message,
+    validateFn: validator.validate,
+    scope: normalizeValidationScope(validator.scope),
+    dependsOn: normalizeValidationDependsOn(validator.dependsOn)
+});
+
 const registerDeclarativeValidators = (crud, validators = []) => {
     if (typeof crud.replaceDeclarativeCellValidators !== 'function') {
         validators.forEach(validator => {
@@ -76,7 +87,11 @@ const registerDeclarativeValidators = (crud, validators = []) => {
             crud.addCellValidator(
                 validator.field,
                 validator.message,
-                validator.validate
+                validator.validate,
+                {
+                    scope: normalizeValidationScope(validator.scope),
+                    dependsOn: normalizeValidationDependsOn(validator.dependsOn)
+                }
             );
         });
         return;
@@ -89,10 +104,7 @@ const registerDeclarativeValidators = (crud, validators = []) => {
 
         const fieldValidators = validatorsByField.get(validator.field) || [];
 
-        fieldValidators.push({
-            message: validator.message,
-            validateFn: validator.validate
-        });
+        fieldValidators.push(toCrudValidatorDescriptor(validator));
         validatorsByField.set(validator.field, fieldValidators);
     });
 

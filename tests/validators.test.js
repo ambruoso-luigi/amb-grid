@@ -1,6 +1,13 @@
 import { describe, expect, test } from 'vitest';
 import { validators } from '../src/lib/validators.js';
 import { extractColumnValidators } from '../src/lib/table/validation-extraction.js';
+import {
+    VALIDATION_SCOPE,
+    getBroadestValidationScope,
+    mergeValidationDependsOn,
+    normalizeValidationDependsOn,
+    normalizeValidationScope
+} from '../src/lib/validation-scope.js';
 
 const createRow = data => ({
     getData: () => data
@@ -20,7 +27,33 @@ const createHelper = rows => ({
     }
 });
 
+describe('validation scope utilities', () => {
+    test('normalizes scopes and dependencies with backward-compatible defaults', () => {
+        expect(VALIDATION_SCOPE).toEqual({ CELL: 'cell', ROW: 'row', FIELD: 'field', GRID: 'grid' });
+        expect(normalizeValidationScope()).toBe('cell');
+        expect(normalizeValidationScope(null)).toBe('cell');
+        expect(normalizeValidationScope('unknown')).toBe('cell');
+        expect(getBroadestValidationScope([{ scope: 'row' }, { scope: 'field' }])).toBe('field');
+        expect(normalizeValidationDependsOn(['startDate', '', 'endDate', 'startDate']))
+            .toEqual(['startDate', 'endDate']);
+        expect(normalizeValidationDependsOn([])).toBeNull();
+        expect(mergeValidationDependsOn([{ dependsOn: ['startDate'] }, { dependsOn: '*' }]))
+            .toBe('*');
+    });
+});
+
 describe('validators.unique', () => {
+    test('declares unique as field-scoped without changing comparison behavior', () => {
+        const currentRow = createRow({ code: 'ABC' });
+        const duplicateRow = createRow({ code: 'ABC' });
+        const cell = createCell('code', currentRow);
+        const validator = validators.unique();
+
+        expect(validator.scope).toBe('field');
+        expect(validator.validate('ABC', currentRow.getData(), cell, createHelper([currentRow, duplicateRow])))
+            .toBe(false);
+    });
+
     test('blocks duplicate values in the inferred current column', () => {
         const currentRow = createRow({ code: 'ABC' });
         const otherRow = createRow({ code: 'ABC' });
@@ -210,10 +243,33 @@ describe('validator combinators', () => {
         const cell = createCell('code', currentRow);
         const helper = createHelper([currentRow, duplicateRow]);
 
-        expect(combine([
+        const validator = combine([
             validators.unique(),
             { validate: () => name === 'anyOf' ? false : true }
-        ]).validate('ABC', currentRow.getData(), cell, helper)).toBe(false);
+        ]);
+
+        expect(validator.scope).toBe('field');
+        expect(validator.validate('ABC', currentRow.getData(), cell, helper)).toBe(false);
+    });
+
+    test.each([
+        ['anyOf', validators.anyOf],
+        ['allOf', validators.allOf]
+    ])('%s propagates broadest scope and merged dependencies', (name, combine) => {
+        expect(combine([{ validate: () => true }, { scope: 'row', validate: () => true }]).scope)
+            .toBe('row');
+        expect(combine([{ scope: 'row', validate: () => true }, { scope: 'field', validate: () => true }]).scope)
+            .toBe('field');
+        expect(combine([{ scope: 'field', validate: () => true }, { scope: 'grid', validate: () => true }]).scope)
+            .toBe('grid');
+        expect(combine([
+            { scope: 'row', dependsOn: ['startDate', 'endDate'], validate: () => true },
+            { scope: 'row', dependsOn: ['status', 'startDate'], validate: () => true }
+        ]).dependsOn).toEqual(['startDate', 'endDate', 'status']);
+        expect(combine([
+            { dependsOn: ['startDate'], validate: () => true },
+            { dependsOn: '*', validate: () => true }
+        ]).dependsOn).toBe('*');
     });
 
     test('keeps short-circuit and value-only child validators', () => {
@@ -240,7 +296,29 @@ describe('validator combinators', () => {
         }]);
         const [validator] = extractedValidators;
 
+        expect(validator.scope).toBe('field');
         expect(validator.validate('ABC', currentRow.getData(), cell, helper)).toBe(false);
+    });
+
+    test('preserves direct validator scope and dependencies during extraction', () => {
+        const validateFn = () => true;
+        const { validators: extractedValidators } = extractColumnValidators([{
+            field: 'endDate',
+            validator: {
+                message: 'Invalid interval',
+                validate: validateFn,
+                scope: 'row',
+                dependsOn: ['startDate', 'endDate']
+            }
+        }]);
+
+        expect(extractedValidators).toEqual([{
+            field: 'endDate',
+            message: 'Invalid interval',
+            validate: validateFn,
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        }]);
     });
 });
 
