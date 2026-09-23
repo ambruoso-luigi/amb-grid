@@ -3700,13 +3700,15 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     --amb-demo-visible-rows: 11;
 }
 
-.demo-panel .demo-validation-grid .tabulator-row,
-.demo-panel .demo-validation-grid .tabulator-cell {
+.demo-panel .demo-validation-grid .tabulator-row {
+    box-sizing: border-box;
+    height: var(--amb-demo-row-height);
     min-height: var(--amb-demo-row-height);
 }
 
-.demo-panel .demo-validation-grid .amb-row-actions {
-    min-height: 30px;
+.demo-panel .demo-validation-grid .tabulator-cell {
+    box-sizing: border-box;
+    min-height: 0;
 }
 
 .demo-panel .demo-validation-grid .tabulator-cell:has(.amb-row-actions) {

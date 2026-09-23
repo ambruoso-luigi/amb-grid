@@ -565,6 +565,8 @@ describe('demo site navigation', () => {
         const validation = read('src/demo/validation.js');
         const css = read('src/demo/demo.css');
         const validationGridRule = css.match(/\.demo-validation-grid\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+        const validationRowRule = css.match(/\.demo-panel \.demo-validation-grid \.tabulator-row\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+        const validationCellRule = css.match(/\.demo-panel \.demo-validation-grid \.tabulator-cell\s*\{([\s\S]*?)\n\}/)?.[1] || '';
         const featureSources = [
             'basic-crud',
             'validation',
@@ -580,11 +582,19 @@ describe('demo site navigation', () => {
         expect(validationGridRule).toContain('--amb-demo-row-height: 36px;');
         expect(validationGridRule).toContain('--amb-demo-visible-rows: 11;');
         expect(validationGridRule).not.toContain('overflow-y: hidden');
-        expect(css).toContain('.demo-panel .demo-validation-grid .tabulator-row');
-        expect(css).toContain('.demo-panel .demo-validation-grid .tabulator-cell');
-        expect(css).toContain('min-height: var(--amb-demo-row-height);');
-        expect(css).toContain('.demo-panel .demo-validation-grid .amb-row-actions');
-        expect(css).toContain('min-height: 30px;');
+        expect(validationRowRule).toContain('box-sizing: border-box;');
+        expect(validationRowRule).toContain('height: var(--amb-demo-row-height);');
+        expect(validationRowRule).toContain('min-height: var(--amb-demo-row-height);');
+        expect(validationCellRule).toContain('box-sizing: border-box;');
+        expect(validationCellRule).toContain('min-height: 0;');
+        expect(validationCellRule).not.toContain('min-height: var(--amb-demo-row-height);');
+        expect(validationCellRule).not.toContain('height: var(--amb-demo-row-height);');
+        expect(validationCellRule).not.toContain('height: 36px;');
+        expect(css).not.toContain(`.demo-panel .demo-validation-grid .tabulator-row,
+.demo-panel .demo-validation-grid .tabulator-cell`);
+        expect(css).not.toContain(`.demo-panel .demo-validation-grid .amb-row-actions {
+    min-height: 30px;
+}`);
         expect(css).toContain('.tabulator-cell:has(.amb-row-actions)');
         expect(css).toContain('padding-block: 3px;');
         expect(validation).toContain('rowActionColumn: {');
