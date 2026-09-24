@@ -269,6 +269,27 @@ export class CrudHelper {
         return affectedFields;
     }
 
+    _getMembershipAffectedValidationFields() {
+        const affectedFields = [];
+
+        this.cellValidators.forEach((validators, field) => {
+            const affectedValidators = (validators || []).filter(validator => {
+                const scope = normalizeValidationScope(validator && validator.scope);
+
+                return scope === VALIDATION_SCOPE.FIELD || scope === VALIDATION_SCOPE.GRID;
+            });
+
+            if (!affectedValidators.length) return;
+
+            affectedFields.push({
+                field,
+                scope: getBroadestValidationScope(affectedValidators)
+            });
+        });
+
+        return affectedFields;
+    }
+
     _hasTrackedCellError(row, field) {
         const errors = this.cellErrors.get(this._getRowKey(row));
 
@@ -375,6 +396,26 @@ export class CrudHelper {
                 field,
                 scope,
                 triggerRows,
+                validatedTriggerFieldsByRow
+            });
+        });
+    }
+
+    _reconcileValidationAfterRowMembershipChange(triggerRows = []) {
+        const normalizedTriggerRows = new Set((Array.isArray(triggerRows)
+            ? triggerRows
+            : []).filter(row => row && typeof row.getData === 'function'));
+        const validatedTriggerFieldsByRow = new Map();
+
+        normalizedTriggerRows.forEach(row => {
+            validatedTriggerFieldsByRow.set(row, new Set());
+        });
+
+        this._getMembershipAffectedValidationFields().forEach(({ field, scope }) => {
+            this._revalidateScopedField({
+                field,
+                scope,
+                triggerRows: normalizedTriggerRows,
                 validatedTriggerFieldsByRow
             });
         });
@@ -699,8 +740,12 @@ export class CrudHelper {
         return operations;
     }
 
-    _renumberAfterPhysicalDelete(deleteResult) {
-        const afterDelete = () => {
+    _renumberAfterPhysicalDelete(deleteResult, afterDelete) {
+        const completeDelete = () => {
+            if (typeof afterDelete === 'function') {
+                afterDelete();
+            }
+
             if (this.options.renumberOnDelete) {
                 this._renumberRows();
             }
@@ -709,11 +754,11 @@ export class CrudHelper {
         };
 
         if (deleteResult && typeof deleteResult.then === 'function') {
-            deleteResult.then(afterDelete);
+            deleteResult.then(completeDelete);
             return;
         }
 
-        afterDelete();
+        completeDelete();
     }
 
     _isPaginationEnabled() {
@@ -1121,7 +1166,7 @@ export class CrudHelper {
             }
         });
 
-        this._patchRow(row, {
+        return this._patchRow(row, {
             ...resetData,
             ...restoredData
         });
@@ -2367,7 +2412,10 @@ export class CrudHelper {
         const rowData = this._prepareNewRowData(data);
         const finalize = row => {
             this._applyRowStateBeforeReveal(row, ROW_STATE.NEW)
-                .then(() => this._revealAndFocusRow(row))
+                .then(() => {
+                    this._reconcileValidationAfterRowMembershipChange([row]);
+                    return this._revealAndFocusRow(row);
+                })
                 .catch(error => {
                     console.error('Failed to reveal added row', error);
                 });
@@ -2380,6 +2428,7 @@ export class CrudHelper {
         if (result && typeof result.then === 'function') {
             return result.then(async row => {
                 await this._applyRowStateBeforeReveal(row, ROW_STATE.NEW);
+                this._reconcileValidationAfterRowMembershipChange([row]);
                 await this._revealAndFocusRow(row);
                 return row;
             });
@@ -2409,7 +2458,7 @@ export class CrudHelper {
      * @param {*} [position] - Managed row component or internal position lookup.
      * @returns {Promise<object[]>|false} Preserved internal result, or `false`.
      */
-    addData(rowsData, addToTop, position) {
+    addData(rowsData, addToTop, position, reconciliationRows = null) {
         if (
             this.isDestroyed
             || !Array.isArray(rowsData)
@@ -2425,6 +2474,8 @@ export class CrudHelper {
         }
 
         const preparedRowsData = this._prepareNewRowsData(rowsData);
+        const ownsReconciliationRows = reconciliationRows === null;
+        const collectedRows = ownsReconciliationRows ? [] : reconciliationRows;
         const operation = this.table.addData(
             preparedRowsData,
             addToTop,
@@ -2439,6 +2490,11 @@ export class CrudHelper {
             await this._waitForOperations(stateOperations);
             await this._waitForOperations(this._renumberRows());
             this._applyRowParity();
+            managedRows.forEach(row => collectedRows.push(row));
+
+            if (ownsReconciliationRows) {
+                this._reconcileValidationAfterRowMembershipChange(collectedRows);
+            }
 
             return rows;
         };
@@ -3004,6 +3060,7 @@ export class CrudHelper {
         const tempIdField = this._getTempIdField();
         const managedRows = [];
         const reconciliationChanges = [];
+        const membershipRows = [];
 
         try {
             for (const rowData of rowsData) {
@@ -3041,7 +3098,12 @@ export class CrudHelper {
                     continue;
                 }
 
-                const addOperation = this.addData([rowData]);
+                const addOperation = this.addData(
+                    [rowData],
+                    undefined,
+                    undefined,
+                    membershipRows
+                );
 
                 if (addOperation === false) {
                     throw new Error('AMB Grid add operation became unavailable during updateOrAddData');
@@ -3058,10 +3120,16 @@ export class CrudHelper {
             }
         } catch (error) {
             this._reconcileValidationAfterRowFieldChangeBatch(reconciliationChanges);
+            if (membershipRows.length > 0) {
+                this._reconcileValidationAfterRowMembershipChange(membershipRows);
+            }
             throw error;
         }
 
         this._reconcileValidationAfterRowFieldChangeBatch(reconciliationChanges);
+        if (membershipRows.length > 0) {
+            this._reconcileValidationAfterRowMembershipChange(membershipRows);
+        }
         return managedRows;
     }
 
@@ -3122,13 +3190,23 @@ export class CrudHelper {
             this._clearRowCellStates(row);
             this.clearAllErrors(key);
 
-            this._renumberAfterPhysicalDelete(row.delete());
+            this._renumberAfterPhysicalDelete(row.delete(), () => {
+                this._reconcileValidationAfterRowMembershipChange();
+            });
             return true;
         }
 
         this._clearRowCellStates(row);
         this.clearAllErrors(key);
-        this._applyRowState(row, ROW_STATE.DELETED);
+        const stateOperation = this._applyRowState(row, ROW_STATE.DELETED);
+
+        if (stateOperation && typeof stateOperation.then === 'function') {
+            stateOperation.then(() => {
+                this._reconcileValidationAfterRowMembershipChange();
+            });
+        } else {
+            this._reconcileValidationAfterRowMembershipChange();
+        }
         return true;
     }
 
@@ -3154,7 +3232,9 @@ export class CrudHelper {
             this._clearRowCellStates(row);
             this.clearAllErrors(key);
 
-            this._renumberAfterPhysicalDelete(row.delete());
+            this._renumberAfterPhysicalDelete(row.delete(), () => {
+                this._reconcileValidationAfterRowMembershipChange();
+            });
             return true;
         }
 
@@ -3181,10 +3261,22 @@ export class CrudHelper {
                 }
                 : originalData;
 
-            this._restoreRowData(row, restoredData);
+            const restoreOperation = this._restoreRowData(row, restoredData);
             this._clearRowCellStates(row);
             this.clearAllErrors(key);
-            this._applyRowState(row, ROW_STATE.CLEAN);
+            const stateOperation = this._applyRowState(row, ROW_STATE.CLEAN);
+            const operations = [restoreOperation, stateOperation];
+            const hasPendingOperation = operations.some(operation => {
+                return operation && typeof operation.then === 'function';
+            });
+
+            if (hasPendingOperation) {
+                this._waitForOperations(operations).then(() => {
+                    this._reconcileValidationAfterRowMembershipChange();
+                });
+            } else {
+                this._reconcileValidationAfterRowMembershipChange();
+            }
             return true;
         }
 

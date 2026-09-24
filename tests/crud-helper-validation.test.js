@@ -13,13 +13,9 @@ const createElementMock = () => ({
 });
 
 const createTableMock = rowsData => {
-    const table = {
-        on: vi.fn(),
-        off: vi.fn(),
-        getRows: () => rows
-    };
+    const rows = [];
 
-    const rows = rowsData.map(data => {
+    const createRow = data => {
         const rowElement = createElementMock();
         const cells = new Map();
         let row;
@@ -61,7 +57,30 @@ const createTableMock = rowsData => {
         Object.keys(data).forEach(getCell);
 
         return row;
-    });
+    };
+
+    rowsData.forEach(data => rows.push(createRow(data)));
+    const table = {
+        on: vi.fn(),
+        off: vi.fn(),
+        getRows: () => rows,
+        addRow: vi.fn(data => {
+            const row = createRow(data);
+
+            rows.push(row);
+            return row;
+        }),
+        addData: vi.fn(rowsToAdd => {
+            const addedRows = rowsToAdd.map(data => {
+                const row = createRow(data);
+
+                rows.push(row);
+                return row;
+            });
+
+            return Promise.resolve(addedRows);
+        })
+    };
 
     return { table, rows };
 };
@@ -553,6 +572,139 @@ describe('CrudHelper validation lifecycle', () => {
         ]);
         expect(crud.cellErrors.has(2)).toBe(false);
         expect(crud.cellErrors.has(3)).toBe(false);
+    });
+
+    test('reconciles field-scoped validators when a new row is added', async () => {
+        const { crud } = createManualCrud([{ id: 1, alias: 'ABC' }]);
+
+        crud._revealAndFocusRow = vi.fn(async row => row);
+        const addedRow = crud.addRow({ alias: 'ABC' });
+
+        expect(addedRow.getData()._state).toBe(ROW_STATE.NEW);
+        await vi.waitFor(() => {
+            expect(crud.cellErrors.get(crud._getRowKey(addedRow))?.has('alias')).toBe(true);
+        });
+        expect(crud.cellErrors.has(1)).toBe(false);
+    });
+
+    test('batches membership reconciliation after addData without validating cell-local fields', async () => {
+        const { table } = createTableMock([{ id: 1, alias: 'ABC', name: 'Saved' }]);
+        const crud = new CrudHelper(table);
+        const localValidate = vi.fn(() => true);
+        const reconcile = vi.spyOn(crud, '_reconcileValidationAfterRowMembershipChange');
+        const uniqueValidator = validators.unique({}, 'Alias must be unique');
+
+        crud.addCellValidator('alias', uniqueValidator.message, uniqueValidator.validate, {
+            scope: uniqueValidator.scope,
+            dependsOn: uniqueValidator.dependsOn
+        });
+        crud.addCellValidator('name', 'Required', localValidate);
+        crud._captureInitialSnapshot();
+        const addedRows = await crud.addData([
+            { alias: 'ABC', name: '' },
+            { alias: 'DEF', name: '' }
+        ]);
+
+        expect(reconcile).toHaveBeenCalledTimes(1);
+        expect(localValidate).not.toHaveBeenCalled();
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.get(crud._getRowKey(addedRows[0]))?.has('alias')).toBe(true);
+        expect(crud.cellErrors.has(crud._getRowKey(addedRows[1]))).toBe(false);
+    });
+
+    test('reconciles default and includeDeleted unique validation after persisted deletion', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'ABC' },
+            { id: 2, alias: 'DEF' }
+        ]);
+
+        crud.updateRowFields(2, { alias: 'ABC' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.deleteRow(1)).toBe(true);
+        expect(crud.cellErrors.has(2)).toBe(false);
+
+        const { table } = createTableMock([
+            { id: 1, alias: 'ABC' },
+            { id: 2, alias: 'DEF' }
+        ]);
+        const includeDeletedCrud = new CrudHelper(table);
+        const includeDeleted = validators.unique({ includeDeleted: true }, 'Alias must be unique');
+
+        includeDeletedCrud.addCellValidator('alias', includeDeleted.message, includeDeleted.validate, {
+            scope: includeDeleted.scope,
+            dependsOn: includeDeleted.dependsOn
+        });
+        includeDeletedCrud._captureInitialSnapshot();
+        includeDeletedCrud.updateRowFields(2, { alias: 'ABC' });
+        includeDeletedCrud.deleteRow(1);
+        expect(includeDeletedCrud.cellErrors.get(2)?.has('alias')).toBe(true);
+    });
+
+    test('reconciles removal of a new row membership transition', () => {
+        const { crud } = createManualCrud([
+            { id: null, _ambTempId: 'new-a', alias: 'ABC', _state: ROW_STATE.NEW },
+            { id: 2, alias: 'DEF' }
+        ]);
+
+        crud.updateRowFields(2, { alias: 'ABC' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.deleteRow('new-a')).toBe(true);
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('reconciles modified rollback without marking the restored clean comparator', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'ABC' },
+            { id: 2, alias: 'DEF' }
+        ]);
+
+        crud.updateRowFields(1, { alias: 'XYZ' });
+        crud.updateRowFields(2, { alias: 'ABC' });
+        expect(crud.cellErrors.has(2)).toBe(false);
+        expect(crud.rollbackRow(1)).toBe(true);
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+    });
+
+    test('clears pending conflicts when a modified row rolls back and removes new rows on rollback', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'XYZ' },
+            { id: 2, alias: 'DEF' }
+        ]);
+
+        crud.updateRowFields(1, { alias: 'ABC' });
+        crud.updateRowFields(2, { alias: 'ABC' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.rollbackRow(1)).toBe(true);
+        expect(crud.cellErrors.has(2)).toBe(false);
+
+        const { crud: newCrud } = createManualCrud([
+            { id: null, _ambTempId: 'new-a', alias: 'ABC', _state: ROW_STATE.NEW },
+            { id: 2, alias: 'DEF' }
+        ]);
+
+        newCrud.updateRowFields(2, { alias: 'ABC' });
+        expect(newCrud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(newCrud.rollbackRow('new-a')).toBe(true);
+        expect(newCrud.findRowByKey('new-a')).toBeNull();
+        expect(newCrud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('reconciles missing upsert rows and batches add-only upserts', async () => {
+        const { crud } = createManualCrud([{ id: 1, alias: 'ABC' }]);
+        const reconcile = vi.spyOn(crud, '_reconcileValidationAfterRowMembershipChange');
+
+        const added = await crud.updateOrAddRow(99, { id: 99, alias: 'ABC' });
+        expect(crud.cellErrors.get(crud._getRowKey(added))?.has('alias')).toBe(true);
+
+        reconcile.mockClear();
+        const rows = await crud.updateOrAddData([
+            { id: 10, alias: 'ABC' },
+            { id: 11, alias: 'DEF' }
+        ]);
+        expect(rows.map(row => row.getData().id)).toEqual([10, 11]);
+        expect(reconcile).toHaveBeenCalledTimes(1);
+        expect(crud.cellErrors.get(10)?.has('alias')).toBe(true);
     });
 
     describe('getSavePayload save policies', () => {
