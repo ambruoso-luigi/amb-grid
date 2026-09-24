@@ -319,10 +319,23 @@ export const extractValidationRules = (field, validation = {}, messages = DEFAUL
     }
 
     if (validation.custom && typeof validation.custom.validate === 'function') {
-        extractedValidators.push(validators.custom(
+        const customOptions = {};
+
+        if (Object.prototype.hasOwnProperty.call(validation.custom, 'scope')) {
+            customOptions.scope = validation.custom.scope;
+        }
+        if (Object.prototype.hasOwnProperty.call(validation.custom, 'dependsOn')) {
+            customOptions.dependsOn = validation.custom.dependsOn;
+        }
+
+        const customArguments = [
             validation.custom.message || DEFAULT_VALIDATION_MESSAGES.custom,
             validation.custom.validate
-        ));
+        ];
+
+        if (Object.keys(customOptions).length > 0) customArguments.push(customOptions);
+
+        extractedValidators.push(validators.custom(...customArguments));
     }
 
     if (validation.anyOf) {
