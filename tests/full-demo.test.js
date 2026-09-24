@@ -59,8 +59,10 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app)');
         expect(source).toContain('destroyColumnGuideAnimations();');
         expect(demoCss).toContain('.demo-disclosure__summary-chevron-icon');
-        expect(demoCss).toContain('.demo-disclosure--rich::before');
+        expect(demoCss).toContain('.demo-disclosure--rich {');
+        expect(demoCss).toContain('border-left-color: #c8961d;');
         expect(demoCss).toContain('.demo-disclosure--rich::after');
+        expect(demoCss).not.toContain('.demo-disclosure--rich::before');
         expect(demoCss).toContain('.demo-disclosure--rich[open] .demo-disclosure__summary-chevron-icon');
         expect(demoCss).toContain('.demo-disclosure__body');
         expect(demoCss).toContain('.demo-disclosure__body-inner');

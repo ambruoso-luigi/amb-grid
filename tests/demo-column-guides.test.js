@@ -47,7 +47,9 @@ describe('Public demo column guides', () => {
         demos.forEach(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 
-            expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
+            expect(source).toMatch(
+                /import\s*{[^}]*\bcreateDemoColumnGuide\b[^}]*}\s*from '.\/utils\/demo-column-guide\.js';/
+            );
             expect(source).toContain('createDemoColumnGuide({');
         });
     });

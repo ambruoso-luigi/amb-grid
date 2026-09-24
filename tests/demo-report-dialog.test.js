@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
+import { createDemoColumnGuide } from '../src/demo/utils/demo-column-guide.js';
 
 const readSource = relativePath => {
     return readFileSync(new URL(relativePath, import.meta.url), 'utf8');
@@ -110,8 +111,16 @@ describe('demo report dialog integration', () => {
     test('keeps demo guidance compact in closed disclosures', () => {
         const validationSource = readSource('../src/demo/validation.js');
         const basicCrudSource = readSource('../src/demo/basic-crud.js');
-        const guideSource = readSource('../src/demo/utils/demo-column-guide.js');
         const demoCss = readSource('../src/demo/demo.css');
+        const technicalMarkup = createDemoColumnGuide({
+            summary: 'How validation works',
+            summaryKey: 'examples.validation.detailsTitle',
+            summaryMeta: 'Rules · errors · constraints',
+            summaryMetaKey: 'examples.validation.guideMeta',
+            summaryIcon: 'help',
+            variant: 'technical',
+            intro: 'Validation guide'
+        });
 
         expect(validationSource).toContain(
             'The toolbar can create intentional errors, open the report, or reset the data.'
@@ -122,10 +131,21 @@ describe('demo report dialog integration', () => {
         expect(basicCrudSource).toContain(
             "summaryKey: 'examples.basicCrud.detailsTitle'"
         );
-        expect(guideSource).toContain('<details class="demo-disclosure">');
-        expect(guideSource).not.toContain('<details class="demo-disclosure" open>');
+        expect(validationSource).toContain("variant: 'technical'");
+        expect(validationSource).toContain("summaryMetaKey: 'examples.validation.guideMeta'");
+        expect(basicCrudSource).toContain("variant: 'technical'");
+        expect(basicCrudSource).toContain("summaryMetaKey: 'examples.basicCrud.guideMeta'");
+        expect(technicalMarkup).toContain(
+            '<details class="demo-disclosure demo-disclosure--technical">'
+        );
+        expect(technicalMarkup).not.toContain(
+            '<details class="demo-disclosure demo-disclosure--technical" open>'
+        );
+        expect(technicalMarkup).toContain('demo-disclosure__summary--technical');
+        expect(technicalMarkup).toContain('demo-disclosure__technical-meta');
         expect(demoCss).toContain('.demo-disclosure__summary');
         expect(demoCss).toContain('.demo-rules-list');
+        expect(demoCss).toContain('.demo-disclosure__summary--technical');
     });
 
     test('shows Row beside the built-in Add icon without changing accessibility text', () => {
