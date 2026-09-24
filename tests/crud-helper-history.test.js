@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
 import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
+import { validators } from '../src/lib/validators.js';
 
 const createElement = () => ({
     dataset: {},
@@ -96,6 +97,15 @@ const cloneOriginalRows = crud => {
         key,
         structuredClone(value)
     ]);
+};
+
+const addUniqueNameValidator = crud => {
+    const validator = validators.unique({}, 'Name must be unique');
+
+    crud.addCellValidator('name', validator.message, validator.validate, {
+        scope: validator.scope,
+        dependsOn: validator.dependsOn
+    });
 };
 
 describe('CrudHelper interaction-history reconciliation', () => {
@@ -272,5 +282,34 @@ describe('CrudHelper interaction-history reconciliation', () => {
             first,
             {}
         )).rejects.toThrow(/unknown history action "futureAction"/);
+    });
+
+    test('reconciles field-scoped errors after history cell edits', async () => {
+        const { crud, first, second } = createHarness();
+
+        crud._captureInitialSnapshot();
+        addUniqueNameValidator(crud);
+        crud.updateRowFields(2, { name: 'Ada' });
+        expect(crud.cellErrors.get(2)?.has('name')).toBe(true);
+
+        first.data.name = 'Augusta';
+        await crud.reconcileHistoryAction('redo', 'cellEdit', first.getCell('name'), {});
+        expect(crud.cellErrors.has(2)).toBe(false);
+
+        first.data.name = 'Ada';
+        await crud.reconcileHistoryAction('undo', 'cellEdit', first.getCell('name'), {});
+        expect(crud.cellErrors.get(2)?.has('name')).toBe(true);
+    });
+
+    test('keeps cell-scoped validators local during history cell edits', async () => {
+        const { crud, first } = createHarness();
+        const validateFn = vi.fn(() => true);
+
+        crud._captureInitialSnapshot();
+        crud.addCellValidator('name', 'Invalid name', validateFn);
+        first.data.name = 'Augusta';
+        await crud.reconcileHistoryAction('redo', 'cellEdit', first.getCell('name'), {});
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
     });
 });

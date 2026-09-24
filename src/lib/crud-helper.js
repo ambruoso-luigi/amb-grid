@@ -1453,7 +1453,14 @@ export class CrudHelper {
             return;
         }
 
-        if (state === ROW_STATE.NEW || state === ROW_STATE.DELETED) {
+        if (state === ROW_STATE.NEW) {
+            this._clearCellState(component);
+            this._validateCell(component);
+            this._reconcileValidationAfterCellChange(component);
+            return;
+        }
+
+        if (state === ROW_STATE.DELETED) {
             this._clearCellState(component);
             this._validateCell(component);
             return;
@@ -1462,6 +1469,7 @@ export class CrudHelper {
         this._syncCellState(component);
         await this._applyConsistentRowState(row);
         this._validateCell(component);
+        this._reconcileValidationAfterCellChange(component);
     }
 
     async _reconcileHistoryPresentRow(component, data) {
@@ -1488,9 +1496,14 @@ export class CrudHelper {
             await this._applyConsistentRowState(row);
         }
 
-        this.validateRow(key);
+        const finalState = this._getBaseRowState(row);
+
+        if (!baseline || finalState === ROW_STATE.NEW || finalState === ROW_STATE.MODIFIED) {
+            this.validateRow(key);
+        }
         await this._renumberHistoryRows();
         this._applyRowParity();
+        this._reconcileValidationAfterRowMembershipChange();
     }
 
     async _reconcileHistoryMissingRow(component, data) {
@@ -1500,14 +1513,15 @@ export class CrudHelper {
         this._clearHistoryRowTracking(key);
         await this._renumberHistoryRows();
         this._applyRowParity();
+        this._reconcileValidationAfterRowMembershipChange();
     }
 
     /**
      * Reconcile one runtime interaction-history action with affected CRUD state.
      *
      * The runtime has already applied the data or position change. This method
-     * updates only the involved cell or row, plus technical numbering and
-     * visual parity when required. It never replaces the CRUD baseline and
+     * realigns the affected cell or row lifecycle, technical numbering, visual
+     * parity, and scoped validation results. It never replaces the CRUD baseline and
      * never reconstructs manual row errors as historical state.
      *
      * Physical deletion of a persisted row through advanced direct engine
