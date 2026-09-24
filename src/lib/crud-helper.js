@@ -754,11 +754,10 @@ export class CrudHelper {
         };
 
         if (deleteResult && typeof deleteResult.then === 'function') {
-            deleteResult.then(completeDelete);
-            return;
+            return deleteResult.then(completeDelete);
         }
 
-        completeDelete();
+        return completeDelete();
     }
 
     _isPaginationEnabled() {
@@ -3289,7 +3288,33 @@ export class CrudHelper {
      * @param {*} id - Row identifier.
      * @returns {boolean} True when the row was found and the saved marker was applied or no-op was valid.
      */
-    markRowSaved(identifier) {
+    _createSaveValidationReconciliationContext() {
+        return {
+            requiresReconciliation: false,
+            operations: []
+        };
+    }
+
+    _trackSaveValidationOperation(context, operation) {
+        if (!context || !operation || typeof operation.then !== 'function') return;
+
+        context.operations.push(operation);
+    }
+
+    _flushSaveValidationReconciliation(context) {
+        if (!context || !context.requiresReconciliation) return;
+
+        if (context.operations.length === 0) {
+            this._reconcileValidationAfterRowMembershipChange();
+            return;
+        }
+
+        this._waitForOperations(context.operations).then(() => {
+            this._reconcileValidationAfterRowMembershipChange();
+        });
+    }
+
+    _markRowSaved(identifier, reconciliationContext) {
         const row = this.findRowByKey(identifier);
 
         if (!row) {
@@ -3309,7 +3334,9 @@ export class CrudHelper {
         if (state === ROW_STATE.NEW || state === ROW_STATE.MODIFIED) {
             this.originalRows.set(key, this._cleanHelperFields(data));
             this._clearRowCellStates(row);
-            this._applyRowState(row, ROW_STATE.SAVED);
+            const stateOperation = this._applyRowState(row, ROW_STATE.SAVED);
+            this._trackSaveValidationOperation(reconciliationContext, stateOperation);
+            reconciliationContext.requiresReconciliation = true;
             this._emit('row-saved', {
                 row,
                 id,
@@ -3331,11 +3358,21 @@ export class CrudHelper {
                 key,
                 state
             });
-            this._renumberAfterPhysicalDelete(row.delete());
+            const deleteOperation = this._renumberAfterPhysicalDelete(row.delete());
+            this._trackSaveValidationOperation(reconciliationContext, deleteOperation);
+            reconciliationContext.requiresReconciliation = true;
             return true;
         }
 
         return true;
+    }
+
+    markRowSaved(identifier) {
+        const reconciliationContext = this._createSaveValidationReconciliationContext();
+        const result = this._markRowSaved(identifier, reconciliationContext);
+
+        this._flushSaveValidationReconciliation(reconciliationContext);
+        return result;
     }
 
     /**
@@ -3345,9 +3382,18 @@ export class CrudHelper {
      * @returns {boolean} True only when every row was marked successfully.
      */
     markRowsSaved(ids) {
-        return ids.every(id => {
-            return this.markRowSaved(id);
-        });
+        const reconciliationContext = this._createSaveValidationReconciliationContext();
+        let allSaved = true;
+
+        for (const id of ids) {
+            if (!this._markRowSaved(id, reconciliationContext)) {
+                allSaved = false;
+                break;
+            }
+        }
+
+        this._flushSaveValidationReconciliation(reconciliationContext);
+        return allSaved;
     }
 
     /**
@@ -3357,6 +3403,7 @@ export class CrudHelper {
      */
     markValidChangesSaved() {
         const report = this.getStateReport();
+        const reconciliationContext = this._createSaveValidationReconciliationContext();
         const result = {
             saved: [],
             skipped: []
@@ -3371,7 +3418,7 @@ export class CrudHelper {
                 return;
             }
 
-            if (this.markRowSaved(row.key)) {
+            if (this._markRowSaved(row.key, reconciliationContext)) {
                 result.saved.push({
                     key: row.key,
                     id: row.id,
@@ -3391,6 +3438,7 @@ export class CrudHelper {
             });
         });
 
+        this._flushSaveValidationReconciliation(reconciliationContext);
         return result;
     }
 

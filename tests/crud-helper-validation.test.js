@@ -690,6 +690,90 @@ describe('CrudHelper validation lifecycle', () => {
         expect(newCrud.cellErrors.has(2)).toBe(false);
     });
 
+    test('clears includeDeleted field conflicts only after a deleted row is physically confirmed', async () => {
+        const { table, rows } = createTableMock([
+            { id: 1, alias: 'ABC' },
+            { id: 2, alias: 'DEF' }
+        ]);
+        const crud = new CrudHelper(table);
+        const uniqueValidator = validators.unique({ includeDeleted: true }, 'Alias must be unique');
+
+        crud.addCellValidator('alias', uniqueValidator.message, uniqueValidator.validate, {
+            scope: uniqueValidator.scope,
+            dependsOn: uniqueValidator.dependsOn
+        });
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(2, { alias: 'ABC' });
+        crud.deleteRow(1);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.markRowSaved(1)).toBe(true);
+
+        await vi.waitFor(() => {
+            expect(rows).not.toContain(crud.findRowById(1));
+            expect(crud.cellErrors.has(2)).toBe(false);
+        });
+    });
+
+    test('reconciles grid-scoped errors when a modified row becomes saved', () => {
+        const { table } = createTableMock([
+            { id: 1, quota: 1 },
+            { id: 2, quota: 2 }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn((_value, _params, cell) => {
+            return cell.getRow().getData()._state !== ROW_STATE.MODIFIED
+                || crud._getManagedRows().filter(row => row.getData()._state === ROW_STATE.MODIFIED).length < 2;
+        });
+
+        crud.addCellValidator('quota', 'Too many pending rows', validateFn, {
+            scope: 'grid',
+            dependsOn: '*'
+        });
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(1, { quota: 3 });
+        crud.updateRowFields(2, { quota: 4 });
+        expect(crud.cellErrors.get(2)?.has('quota')).toBe(true);
+        crud.markRowSaved(1);
+
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('batches reconciliation for saved rows and keeps clean saves as no-ops', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Alpha' },
+            { id: 2, alias: 'Beta' },
+            { id: 3, alias: 'Clean' }
+        ]);
+        const reconcile = vi.spyOn(crud, '_reconcileValidationAfterRowMembershipChange');
+
+        crud.updateRowFields(1, { alias: 'Alpha1' });
+        crud.updateRowFields(2, { alias: 'Beta1' });
+        expect(crud.markRowsSaved([1, 2])).toBe(true);
+        expect(reconcile).toHaveBeenCalledTimes(1);
+        reconcile.mockClear();
+        expect(crud.markRowSaved(3)).toBe(true);
+        expect(reconcile).not.toHaveBeenCalled();
+    });
+
+    test('flushes partial saved rows once and preserves markValidChangesSaved batching', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Alpha' },
+            { id: 2, alias: 'Beta' }
+        ]);
+        const reconcile = vi.spyOn(crud, '_reconcileValidationAfterRowMembershipChange');
+
+        crud.updateRowFields(1, { alias: 'Alpha1' });
+        expect(crud.markRowsSaved([1, 999])).toBe(false);
+        expect(crud.findRowById(1).getData()._state).toBe(ROW_STATE.SAVED);
+        expect(reconcile).toHaveBeenCalledTimes(1);
+
+        reconcile.mockClear();
+        crud.updateRowFields(2, { alias: 'Beta1' });
+        const result = crud.markValidChangesSaved();
+        expect(result.saved.map(row => row.id)).toEqual([2]);
+        expect(reconcile).toHaveBeenCalledTimes(1);
+    });
+
     test('reconciles missing upsert rows and batches add-only upserts', async () => {
         const { crud } = createManualCrud([{ id: 1, alias: 'ABC' }]);
         const reconcile = vi.spyOn(crud, '_reconcileValidationAfterRowMembershipChange');
