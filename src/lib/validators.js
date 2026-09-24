@@ -2,7 +2,9 @@ import { parsers } from './parsers.js';
 import {
     VALIDATION_SCOPE,
     getBroadestValidationScope,
-    mergeValidationDependsOn
+    mergeValidationDependsOn,
+    normalizeValidationDependsOn,
+    normalizeValidationScope
 } from './validation-scope.js';
 
 const isEmptyValue = value => {
@@ -716,11 +718,24 @@ export const validators = {
      * @param {Function} validateFn - Validation function.
      * @returns {{message: string, validate: Function}} Validator object.
      */
-    custom(message, validateFn) {
-        return {
+    custom(message, validateFn, options) {
+        if (!options || typeof options !== 'object') {
+            return {
+                message,
+                validate: validateFn
+            };
+        }
+
+        const validator = {
             message,
-            validate: validateFn
+            validate: validateFn,
+            scope: normalizeValidationScope(options.scope)
         };
+        const dependsOn = normalizeValidationDependsOn(options.dependsOn);
+
+        if (dependsOn !== null) validator.dependsOn = dependsOn;
+
+        return validator;
     },
 
     /**

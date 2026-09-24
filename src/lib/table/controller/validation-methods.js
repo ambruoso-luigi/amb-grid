@@ -32,13 +32,17 @@ export const createValidationMethods = ({ crud }) => ({
      * @param {string} field - Field whose AMB validator collection is extended.
      * @param {*} message - Fallback validation message forwarded unchanged.
      * @param {Function} validateFn - Validator callback forwarded by identity.
+     * @param {object} [options] - Automatic validation dependency options.
+     * @param {'cell'|'row'|'field'|'grid'} [options.scope='cell'] - Validation scope.
+     * @param {string[]|'*'} [options.dependsOn] - Fields whose value changes may invalidate the validator.
      * @returns {undefined} Result returned directly by `CrudHelper`.
      */
-    addCellValidator(field, message, validateFn) {
+    addCellValidator(field, message, validateFn, options) {
         return crud.addCellValidator(
             field,
             message,
-            validateFn
+            validateFn,
+            options
         );
     },
 

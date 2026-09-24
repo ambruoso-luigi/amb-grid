@@ -1742,6 +1742,9 @@ export class CrudHelper {
      * @param {string} field - Cell field name to validate.
      * @param {string} message - Error message used when validation fails.
      * @param {Function} validateFn - Function receiving (value, rowData, cell, helper); returns true when valid.
+     * @param {object} [options] - Internal/public validator dependency metadata.
+     * @param {'cell'|'row'|'field'|'grid'} [options.scope='cell'] - Validation scope.
+     * @param {string[]|'*'} [options.dependsOn] - Field dependencies.
      */
     addCellValidator(field, message, validateFn, options = {}) {
         if (!this.cellValidators.has(field)) {

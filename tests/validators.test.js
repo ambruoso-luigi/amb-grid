@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { validators } from '../src/lib/validators.js';
 import { extractColumnValidators } from '../src/lib/table/validation-extraction.js';
 import {
@@ -11,6 +11,31 @@ import {
 
 const createRow = data => ({
     getData: () => data
+});
+
+describe('validators.custom metadata', () => {
+    test('preserves legacy descriptors and exposes normalized options', () => {
+        const validateFn = vi.fn(() => true);
+
+        expect(validators.custom('Invalid', validateFn)).toEqual({
+            message: 'Invalid',
+            validate: validateFn
+        });
+        expect(validators.custom('Interval', validateFn, {
+            scope: 'row',
+            dependsOn: ['startDate', '', 'endDate', 'startDate']
+        })).toEqual({
+            message: 'Interval',
+            validate: validateFn,
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        });
+        expect(validators.custom('Grid', validateFn, { scope: 'grid', dependsOn: '*' }))
+            .toEqual(expect.objectContaining({ scope: 'grid', dependsOn: '*' }));
+        expect(validators.custom('Local', validateFn, {}))
+            .toEqual({ message: 'Local', validate: validateFn, scope: 'cell' });
+        expect(validators.custom('Fallback', validateFn, { scope: 'banana' }).scope).toBe('cell');
+    });
 });
 
 const createCell = (field, row) => ({
