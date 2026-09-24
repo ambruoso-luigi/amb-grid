@@ -38,6 +38,10 @@ export const createValidationMethods = ({ crud }) => ({
      * @returns {undefined} Result returned directly by `CrudHelper`.
      */
     addCellValidator(field, message, validateFn, options) {
+        if (options === undefined) {
+            return crud.addCellValidator(field, message, validateFn);
+        }
+
         return crud.addCellValidator(
             field,
             message,

@@ -273,7 +273,10 @@ export const validators = {
      * not perform checksum, bank, account, official, or existence validation.
      *
      * @param {string} [message='Invalid IBAN'] - Validation message.
-     * @returns {{message: string, validate: Function}} Validator object.
+     * Cross-row validator for the same field across managed rows. Deleted rows
+     * are ignored by default unless `includeDeleted` is true; affected pending
+     * results are reconciled when managed values, lifecycle state, or membership changes.
+     * @returns {{message: string, validate: Function, scope: 'field'}} Validator object.
      */
     iban(message = 'Invalid IBAN') {
         return {
@@ -716,7 +719,10 @@ export const validators = {
      *
      * @param {string} message - Validation message.
      * @param {Function} validateFn - Validation function.
-     * @returns {{message: string, validate: Function}} Validator object.
+     * @param {object} [options] - Validation dependency metadata.
+     * @param {'cell'|'row'|'field'|'grid'} [options.scope='cell'] - Validation scope.
+     * @param {string[]|'*'} [options.dependsOn] - Fields whose changes can invalidate the validator.
+     * @returns {{message: string, validate: Function, scope?: 'cell'|'row'|'field'|'grid', dependsOn?: string[]|'*'}} Validator object.
      */
     custom(message, validateFn, options) {
         if (!options || typeof options !== 'object') {
