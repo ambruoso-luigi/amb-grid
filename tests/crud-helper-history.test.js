@@ -312,4 +312,60 @@ describe('CrudHelper interaction-history reconciliation', () => {
 
         expect(validateFn).toHaveBeenCalledTimes(1);
     });
+
+    test('reconciles field-scoped conflicts across rowAdd undo and redo history', async () => {
+        const { crud, rows, second } = createHarness();
+
+        crud._captureInitialSnapshot();
+        addUniqueNameValidator(crud);
+        crud.updateRowFields(2, { name: 'Linus' });
+        expect(second.getData()._state).toBe(ROW_STATE.MODIFIED);
+        expect(crud.cellErrors.get(2)?.has('name') ?? false).toBe(false);
+
+        const rowData = {
+            id: null,
+            name: 'Linus',
+            _ambTempId: 'amb-temp-9',
+            _ambRowNumber: 3,
+            _state: ROW_STATE.NEW
+        };
+        const added = createRow({ ...rowData });
+
+        rows.push(added);
+        await crud.reconcileHistoryAction('redo', 'rowAdd', added, { data: rowData });
+        expect(added.getData()._state).toBe(ROW_STATE.NEW);
+        expect(crud.cellErrors.get('amb-temp-9')?.has('name')).toBe(true);
+        expect(crud.cellErrors.get(2)?.has('name')).toBe(true);
+        expect(crud.cellErrors.get(1)?.has('name') ?? false).toBe(false);
+
+        rows.splice(rows.indexOf(added), 1);
+        await crud.reconcileHistoryAction('undo', 'rowAdd', added, { data: rowData });
+        expect(second.getData()._state).toBe(ROW_STATE.MODIFIED);
+        expect(crud.cellErrors.get(2)?.has('name') ?? false).toBe(false);
+        expect(crud.cellErrors.has('amb-temp-9')).toBe(false);
+    });
+
+    test('reconciles persisted rowDelete history without marking the restored clean comparator', async () => {
+        const { crud, first, second, rows } = createHarness();
+
+        crud._captureInitialSnapshot();
+        addUniqueNameValidator(crud);
+        const baseline = cloneOriginalRows(crud);
+
+        crud.updateRowFields(2, { name: 'Ada' });
+        expect(crud.cellErrors.get(2)?.has('name')).toBe(true);
+        const deletedData = { ...first.getData() };
+        rows.splice(rows.indexOf(first), 1);
+        await crud.reconcileHistoryAction('redo', 'rowDelete', first, { data: deletedData });
+        expect(crud.cellErrors.get(2)?.has('name') ?? false).toBe(false);
+        expect(crud.getChanges().deleted).toEqual([]);
+
+        const restored = createRow({ ...deletedData });
+        rows.unshift(restored);
+        await crud.reconcileHistoryAction('undo', 'rowDelete', restored, { data: deletedData });
+        expect(restored.getData()._state).toBe(ROW_STATE.CLEAN);
+        expect(crud.cellErrors.get(2)?.has('name')).toBe(true);
+        expect(crud.cellErrors.get(1)?.has('name') ?? false).toBe(false);
+        expect(cloneOriginalRows(crud)).toEqual(baseline);
+    });
 });
