@@ -69,10 +69,40 @@ const createTableMock = rowsData => {
 const createCrud = rowsData => {
     const { table, rows } = createTableMock(rowsData);
     const crud = new CrudHelper(table);
+    const uniqueValidator = validators.unique({}, 'Alias must be unique');
 
-    crud.addCellValidator('alias', 'Alias must be unique', validators.unique().validate);
+    crud.addCellValidator(
+        'alias',
+        uniqueValidator.message,
+        uniqueValidator.validate,
+        {
+            scope: uniqueValidator.scope,
+            dependsOn: uniqueValidator.dependsOn
+        }
+    );
 
     return { crud, rows };
+};
+
+const getCellEditedHandler = table => {
+    return table.on.mock.calls.find(([eventName]) => eventName === 'cellEdited')?.[1];
+};
+
+const editCell = ({ table, row, field, value }) => {
+    row.update({ [field]: value });
+
+    const handler = getCellEditedHandler(table);
+
+    expect(handler).toBeTypeOf('function');
+    handler(row.getCell(field));
+};
+
+const createManualCrud = rowsData => {
+    const result = createCrud(rowsData);
+
+    result.crud._captureInitialSnapshot();
+
+    return result;
 };
 
 const createMixedPolicyCrud = () => {
@@ -90,6 +120,145 @@ const createMixedPolicyCrud = () => {
 };
 
 describe('CrudHelper validation lifecycle', () => {
+    test('clears stale field-scoped errors when another edited row resolves the conflict', () => {
+        const { crud, rows } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' }
+        ]);
+
+        editCell({ table: crud.table, row: rows[1], field: 'alias', value: 'Atlas' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+
+        editCell({ table: crud.table, row: rows[0], field: 'alias', value: 'Atlas2' });
+
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('reconciles multiple pending unique errors after the final duplicate is removed', () => {
+        const { crud, rows } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' },
+            { id: 11, alias: 'Ledger' }
+        ]);
+
+        editCell({ table: crud.table, row: rows[1], field: 'alias', value: 'Atlas' });
+        editCell({ table: crud.table, row: rows[2], field: 'alias', value: 'Atlas' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.cellErrors.get(11)?.has('alias')).toBe(true);
+
+        editCell({ table: crud.table, row: rows[0], field: 'alias', value: 'Atlas2' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.cellErrors.get(11)?.has('alias')).toBe(true);
+
+        editCell({ table: crud.table, row: rows[2], field: 'alias', value: 'Atla' });
+        expect(crud.cellErrors.has(2)).toBe(false);
+        expect(crud.cellErrors.has(11)).toBe(false);
+    });
+
+    test('uses clean rows as field-scope context without marking them as interactive targets', () => {
+        const { crud, rows } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' }
+        ]);
+
+        editCell({ table: crud.table, row: rows[1], field: 'alias', value: 'Atlas' });
+
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+    });
+
+    test('reconciles both pending rows when a field-scoped conflict appears and disappears', () => {
+        const { crud, rows } = createManualCrud([
+            { id: 1, alias: 'Alpha' },
+            { id: 2, alias: 'Beta' }
+        ]);
+
+        editCell({ table: crud.table, row: rows[0], field: 'alias', value: 'ABC' });
+        editCell({ table: crud.table, row: rows[1], field: 'alias', value: 'ABC' });
+        expect(crud.cellErrors.get(1)?.has('alias')).toBe(true);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+
+        editCell({ table: crud.table, row: rows[1], field: 'alias', value: 'DEF' });
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('keeps cell-scoped validators local during manual editing', () => {
+        const { table, rows } = createTableMock([
+            { id: 1, email: 'a@example.com' },
+            { id: 2, email: 'b@example.com' },
+            { id: 3, email: 'c@example.com' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('email', 'Invalid email', validateFn);
+        crud._captureInitialSnapshot();
+        editCell({ table, row: rows[1], field: 'email', value: 'updated@example.com' });
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('revalidates row-scoped target fields only when their dependencies change', () => {
+        const { table, rows } = createTableMock([
+            { id: 1, startDate: '2026-01-01', endDate: '2026-01-02', description: 'Initial' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('endDate', 'Invalid interval', validateFn, {
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        });
+        crud._captureInitialSnapshot();
+        editCell({ table, row: rows[0], field: 'startDate', value: '2026-01-03' });
+        expect(validateFn).toHaveBeenCalledTimes(1);
+
+        editCell({ table, row: rows[0], field: 'description', value: 'Changed' });
+        expect(validateFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('revalidates dependency-free row-scoped fields for another edit in the same row', () => {
+        const { table, rows } = createTableMock([
+            { id: 1, summary: 'Initial', description: 'Initial description' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('summary', 'Invalid summary', validateFn, { scope: 'row' });
+        crud._captureInitialSnapshot();
+        editCell({ table, row: rows[0], field: 'description', value: 'Changed' });
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('reconciles grid-scoped validators without marking unrelated clean comparator rows', () => {
+        const { table, rows } = createTableMock([
+            { id: 1, amount: 1, description: 'Initial', quota: 10, summary: 'Initial' },
+            { id: 2, amount: 2, description: 'Clean', quota: 20, summary: 'Clean' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+        const dependencyFreeValidateFn = vi.fn(() => true);
+
+        crud.addCellValidator('quota', 'Invalid quota', validateFn, {
+            scope: 'grid',
+            dependsOn: ['amount']
+        });
+        crud.addCellValidator('summary', 'Invalid summary', dependencyFreeValidateFn, {
+            scope: 'grid'
+        });
+        crud._captureInitialSnapshot();
+        editCell({ table, row: rows[0], field: 'description', value: 'Unrelated' });
+        expect(validateFn).not.toHaveBeenCalled();
+        expect(dependencyFreeValidateFn).toHaveBeenCalledTimes(1);
+
+        editCell({ table, row: rows[0], field: 'amount', value: 3 });
+        expect(validateFn).toHaveBeenCalledTimes(1);
+        expect(dependencyFreeValidateFn).toHaveBeenCalledTimes(2);
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
     describe('getSavePayload save policies', () => {
         test('defaults to all-or-nothing semantics', () => {
             const { crud } = createMixedPolicyCrud();
