@@ -212,6 +212,40 @@ describe('AMB table controller validation API', () => {
                         validation: {
                             required: { message: 'Name is required' }
                         }
+                    },
+                    {
+                        title: 'End date',
+                        field: 'endDate',
+                        validation: {
+                            custom: {
+                                message: 'Invalid interval',
+                                validate: () => true,
+                                scope: 'row',
+                                dependsOn: ['startDate', 'endDate']
+                            }
+                        }
+                    },
+                    {
+                        title: 'Legacy',
+                        field: 'legacy',
+                        validation: {
+                            custom: {
+                                message: 'Legacy custom',
+                                validate: () => true
+                            }
+                        }
+                    },
+                    {
+                        title: 'Summary',
+                        field: 'summary',
+                        validation: {
+                            custom: {
+                                message: 'Invalid summary',
+                                validate: () => true,
+                                scope: 'grid',
+                                dependsOn: '*'
+                            }
+                        }
                     }
                 ],
                 toolbar: false
@@ -229,6 +263,24 @@ describe('AMB table controller validation API', () => {
                 validateFn: expect.any(Function),
                 scope: 'cell',
                 dependsOn: null
+            }]);
+            expect(crud.replaceDeclarativeCellValidators).toHaveBeenCalledWith('endDate', [{
+                message: 'Invalid interval',
+                validateFn: expect.any(Function),
+                scope: 'row',
+                dependsOn: ['startDate', 'endDate']
+            }]);
+            expect(crud.replaceDeclarativeCellValidators).toHaveBeenCalledWith('legacy', [{
+                message: 'Legacy custom',
+                validateFn: expect.any(Function),
+                scope: 'cell',
+                dependsOn: null
+            }]);
+            expect(crud.replaceDeclarativeCellValidators).toHaveBeenCalledWith('summary', [{
+                message: 'Invalid summary',
+                validateFn: expect.any(Function),
+                scope: 'grid',
+                dependsOn: '*'
             }]);
 
             controller.destroy();

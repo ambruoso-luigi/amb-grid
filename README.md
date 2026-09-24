@@ -296,6 +296,24 @@ grid.addCellValidator('endDate', 'Invalid interval', validateInterval, {
 });
 ```
 
+The same scopes are available through `AMB.validators.custom(...)`,
+`grid.addCellValidator(...)`, and declarative `validation.custom`; all three
+forms register validators in the same AMB Grid validation engine.
+
+```js
+validation: {
+  custom: {
+    message: 'Invalid interval',
+    validate: (value, rowData) =>
+      !rowData.startDate
+      || !value
+      || value >= rowData.startDate,
+    scope: 'row',
+    dependsOn: ['startDate', 'endDate']
+  }
+}
+```
+
 Built-in validation support including:
 
 * Required fields

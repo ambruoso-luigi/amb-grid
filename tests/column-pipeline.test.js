@@ -82,6 +82,75 @@ const findPreparedColumn = (pipeline, field) => {
 };
 
 describe('AMB Grid column preparation pipeline', () => {
+    test('preserves scoped metadata for declarative custom validators', () => {
+        const validateFn = vi.fn(() => true);
+        const legacyValidate = vi.fn(() => true);
+        const fieldValidate = vi.fn(() => true);
+        const gridValidate = vi.fn(() => true);
+        const pipeline = prepareColumnPipeline({
+            columns: [{
+                field: 'endDate',
+                validation: {
+                    custom: {
+                        message: 'Invalid interval',
+                        validate: validateFn,
+                        scope: 'row',
+                        dependsOn: ['startDate', 'endDate']
+                    }
+                }
+            }, {
+                field: 'legacy',
+                validation: {
+                    custom: {
+                        message: 'Legacy custom',
+                        validate: legacyValidate
+                    }
+                }
+            }, {
+                field: 'alias',
+                validation: {
+                    custom: {
+                        message: 'Invalid alias',
+                        validate: fieldValidate,
+                        scope: 'field'
+                    }
+                }
+            }, {
+                field: 'summary',
+                validation: {
+                    custom: {
+                        message: 'Invalid summary',
+                        validate: gridValidate,
+                        scope: 'grid',
+                        dependsOn: '*'
+                    }
+                }
+            }]
+        });
+        const endDate = pipeline.validators.find(validator => validator.field === 'endDate');
+        const legacy = pipeline.validators.find(validator => validator.field === 'legacy');
+        const alias = pipeline.validators.find(validator => validator.field === 'alias');
+        const summary = pipeline.validators.find(validator => validator.field === 'summary');
+
+        expect(endDate).toEqual({
+            field: 'endDate',
+            message: 'Invalid interval',
+            validate: validateFn,
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        });
+        expect(endDate.validate).toBe(validateFn);
+        expect(legacy).toMatchObject({
+            field: 'legacy',
+            message: 'Legacy custom',
+            validate: legacyValidate
+        });
+        expect(Object.prototype.hasOwnProperty.call(legacy, 'scope')).toBe(false);
+        expect(Object.prototype.hasOwnProperty.call(legacy, 'dependsOn')).toBe(false);
+        expect(alias).toMatchObject({ scope: 'field', validate: fieldValidate });
+        expect(summary).toMatchObject({ scope: 'grid', dependsOn: '*', validate: gridValidate });
+    });
+
     test('marks large-text editors as focus-only while preserving application classes', () => {
         const editor = vi.fn();
         editor._ambEditorType = 'largeText';

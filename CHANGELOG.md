@@ -20,6 +20,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Preserved `scope` and `dependsOn` metadata for declarative `validation.custom` validators.
+
 - Fixed stale cross-row validation results; affected pending `unique` cells now refresh after relevant values, lifecycle state, or membership changes.
 
 - Isolated deferred keyboard-close focus restoration per grid so pointer input

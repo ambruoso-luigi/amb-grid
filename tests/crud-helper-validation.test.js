@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import { CrudHelper, ROW_STATE } from '../src/lib/crud-helper.js';
 import { validators } from '../src/lib/validators.js';
+import { extractValidationRules } from '../src/lib/table/validation-extraction.js';
 
 const createElementMock = () => ({
     dataset: {},
@@ -140,6 +141,39 @@ const createMixedPolicyCrud = () => {
 };
 
 describe('CrudHelper validation lifecycle', () => {
+    test('reconciles a declarative row-scoped custom validator when its dependency changes', () => {
+        const { table, rows } = createTableMock([{
+            id: 1,
+            startDate: '2026-01-10',
+            endDate: '2026-01-20'
+        }]);
+        const crud = new CrudHelper(table);
+        const [validator] = extractValidationRules('endDate', {
+            custom: {
+                message: 'Invalid interval',
+                validate(value, rowData) {
+                    return !rowData.startDate || !value || value >= rowData.startDate;
+                },
+                scope: 'row',
+                dependsOn: ['startDate', 'endDate']
+            }
+        });
+
+        crud.replaceDeclarativeCellValidators('endDate', [{
+            message: validator.message,
+            validateFn: validator.validate,
+            scope: validator.scope,
+            dependsOn: validator.dependsOn
+        }]);
+        crud._captureInitialSnapshot();
+
+        editCell({ table, row: rows[0], field: 'startDate', value: '2026-02-01' });
+        expect(crud.cellErrors.get(1)?.get('endDate')).toBe('Invalid interval');
+
+        editCell({ table, row: rows[0], field: 'startDate', value: '2026-01-01' });
+        expect(crud.cellErrors.has(1)).toBe(false);
+    });
+
     test('clears stale field-scoped errors when another edited row resolves the conflict', () => {
         const { crud, rows } = createManualCrud([
             { id: 1, alias: 'Atlas' },
