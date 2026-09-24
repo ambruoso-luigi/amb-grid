@@ -28,6 +28,10 @@ export const createValidationMethods = ({ crud }) => ({
      * `grid.updateRow(...)`, `grid.validateRow(...)`,
      * `grid.validateChanges()` and `grid.validate()`. This configures AMB CRUD
      * validators, not the native validator definition of an existing column.
+     * `cell` depends on the current cell; `row` may use fields in its row;
+     * `field` may use the same field across rows; and `grid` may use grid context.
+     * `dependsOn` refines field-value changes that invalidate a validator; `'*'`
+     * covers every application field.
      *
      * @param {string} field - Field whose AMB validator collection is extended.
      * @param {*} message - Fallback validation message forwarded unchanged.

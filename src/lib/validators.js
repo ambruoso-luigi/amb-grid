@@ -273,10 +273,7 @@ export const validators = {
      * not perform checksum, bank, account, official, or existence validation.
      *
      * @param {string} [message='Invalid IBAN'] - Validation message.
-     * Cross-row validator for the same field across managed rows. Deleted rows
-     * are ignored by default unless `includeDeleted` is true; affected pending
-     * results are reconciled when managed values, lifecycle state, or membership changes.
-     * @returns {{message: string, validate: Function, scope: 'field'}} Validator object.
+     * @returns {{message: string, validate: Function}} Validator object.
      */
     iban(message = 'Invalid IBAN') {
         return {
@@ -615,11 +612,13 @@ export const validators = {
     },
 
     /**
-     * Validate that a non-empty value is unique within the current column.
+     * Validate that a non-empty value is unique for the same field across managed rows.
      *
      * When used by AMB.table, the field is inferred from the edited cell. Empty
      * values are valid unless combined with `required`. Rows marked as deleted
      * are ignored by default so pending deletions do not block reuse of a value.
+     * This cross-row validator is field-scoped, so AMB Grid reconciles affected
+     * pending results when managed values, lifecycle state, or row membership changes.
      *
      * @param {object|string} [options] - Unique validation options or explicit field name.
      * @param {string} [options.field] - Field to compare. Defaults to the current cell field.
@@ -627,7 +626,7 @@ export const validators = {
      * @param {boolean} [options.trim=true] - Whether string values are trimmed before comparison.
      * @param {boolean} [options.includeDeleted=false] - Include rows marked as deleted in the comparison.
      * @param {string} [message='Value must be unique'] - Validation message.
-     * @returns {{message: string, validate: Function}} Validator object.
+     * @returns {{message: string, validate: Function, scope: 'field'}} Validator object.
      */
     unique(options = {}, message = 'Value must be unique') {
         const normalizedOptions = typeof options === 'string'
