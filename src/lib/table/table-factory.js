@@ -436,10 +436,21 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {'cell'|'row'|'field'|'grid'} AMBValidationScope
+ */
+
+/**
+ * @typedef {object} AMBValidatorRegistrationOptions
+ * @property {AMBValidationScope} [scope='cell'] - Scope used for automatic reconciliation.
+ * @property {string[]|'*'} [dependsOn] - Field changes that may invalidate the validator.
+ */
+
+/**
  * @callback AMBGridAddCellValidator
  * @param {string} field - Cell field name.
  * @param {string} message - Error message used when validation fails.
  * @param {AMBGridCellValidator} validateFn - Validator callback.
+ * @param {AMBValidatorRegistrationOptions} [options] - Automatic validation dependency metadata.
  * @returns {void}
  */
 

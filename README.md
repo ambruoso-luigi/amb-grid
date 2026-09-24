@@ -266,6 +266,25 @@ hardcoding backend behavior into AMB Grid.
 
 ### Validation Framework
 
+`unique` is a cross-row rule; pending errors refresh automatically when relevant
+values, row lifecycle state, or membership changes. Deleted rows are ignored by
+default unless `includeDeleted: true` is set.
+
+#### Validation scopes
+
+`cell` depends on the current cell, `row` on fields in its row, `field` on the
+same field across rows, and `grid` on grid context. Scope controls automatic
+reconciliation; `grid.validate()`, `grid.validateChanges()`, and
+`grid.validateRow()` remain explicit application operations. `validateChanges()`
+marks NEW and MODIFIED rows, while other rows can still provide cross-row context.
+
+```js
+grid.addCellValidator('endDate', 'Invalid interval', validateInterval, {
+  scope: 'row',
+  dependsOn: ['startDate', 'endDate']
+});
+```
+
 Built-in validation support including:
 
 * Required fields
