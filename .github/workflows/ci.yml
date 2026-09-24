@@ -30,6 +30,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Run TypeScript type tests
+        run: npm run test:types
+
       - name: Build library package
         run: npm run build:lib
 
