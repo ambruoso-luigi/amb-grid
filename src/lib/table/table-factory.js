@@ -861,6 +861,15 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
 
 /** @typedef {'double-click'|'single-click'} AMBMouseEditTrigger */
 /**
+ * @typedef {object} AMBDeclarativeCustomValidatorOptions
+ * @property {string} [message]
+ * @property {AMBGridCellValidator} validate
+ * @property {AMBValidationScope} [scope]
+ * @property {string[]|'*'} [dependsOn]
+ */
+/** @typedef {{[key: string]: unknown, custom?: AMBDeclarativeCustomValidatorOptions}} AMBColumnValidationOptions */
+/** @typedef {{[key: string]: unknown, field?: string, validation?: AMBColumnValidationOptions, columns?: AMBColumnOptions[]}} AMBColumnOptions */
+/**
  * @typedef {object} AMBCellEditingOptions
  * @property {AMBMouseEditTrigger} [mouseTrigger='double-click'] Controls how pointer interaction starts cell editing. By default, a single click focuses a cell for navigation and a double click starts editing.
  */
@@ -875,7 +884,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @typedef {AMBTablePassthroughOptions & {
  *   selector: string|HTMLElement,
  *   data?: object[],
- *   columns?: object[],
+ *   columns?: AMBColumnOptions[],
  *   pagination?: boolean|AMBPaginationOptions,
  *   keyboardNavigation?: AMBKeyboardNavigationOptions,
  *   cellEditing?: AMBCellEditingOptions,
