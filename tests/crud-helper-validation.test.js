@@ -394,6 +394,167 @@ describe('CrudHelper validation lifecycle', () => {
         expect(validateFn).toHaveBeenCalledTimes(1);
     });
 
+    test('batches field-scoped reconciliation after updateData', async () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' },
+            { id: 3, alias: 'Ledger' }
+        ]);
+
+        await crud.updateData([
+            { id: 2, alias: 'Atlas' },
+            { id: 3, alias: 'Atlas' }
+        ]);
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.cellErrors.get(3)?.has('alias')).toBe(true);
+
+        await crud.updateData([
+            { id: 1, alias: 'Atlas2' },
+            { id: 3, alias: 'Atla' }
+        ]);
+        expect(crud.cellErrors.has(2)).toBe(false);
+        expect(crud.cellErrors.has(3)).toBe(false);
+    });
+
+    test('validates field-scoped batch targets only through local patched fields', async () => {
+        const { table } = createTableMock([
+            { id: 1, code: 'A' },
+            { id: 2, code: 'B' },
+            { id: 3, code: 'C' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('code', 'Invalid code', validateFn, { scope: 'field' });
+        crud._captureInitialSnapshot();
+        await crud.updateData([
+            { id: 1, code: 'A1' },
+            { id: 2, code: 'B1' }
+        ]);
+
+        expect(validateFn).toHaveBeenCalledTimes(2);
+    });
+
+    test('deduplicates same-row multi-patch row-scoped reconciliation', async () => {
+        const { table } = createTableMock([
+            { id: 1, startDate: '2026-01-01', endDate: '2026-01-02', summary: 'Initial' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('summary', 'Invalid summary', validateFn, {
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        });
+        crud._captureInitialSnapshot();
+        await crud.updateData([
+            { id: 1, startDate: '2026-02-01' },
+            { id: 1, endDate: '2026-02-10' }
+        ]);
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('revalidates row-scoped dependencies once for each bulk trigger row', async () => {
+        const { table } = createTableMock([
+            { id: 1, startDate: '2026-01-01', endDate: '2026-01-02' },
+            { id: 2, startDate: '2026-02-01', endDate: '2026-02-02' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('endDate', 'Invalid interval', validateFn, {
+            scope: 'row',
+            dependsOn: ['startDate']
+        });
+        crud._captureInitialSnapshot();
+        await crud.updateData([
+            { id: 1, startDate: '2026-01-03' },
+            { id: 2, startDate: '2026-02-03' }
+        ]);
+
+        expect(validateFn).toHaveBeenCalledTimes(2);
+    });
+
+    test('flushes successful updateData mutations before rethrowing the original failure', async () => {
+        const { crud, rows } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' },
+            { id: 3, alias: 'Ledger' }
+        ]);
+        const expectedError = new Error('Expected row update failure');
+
+        crud.updateRowFields(2, { alias: 'Atlas' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        rows[2].update = () => Promise.reject(expectedError);
+
+        const operation = crud.updateData([
+            { id: 1, alias: 'Atlas2' },
+            { id: 3, alias: 'Something' }
+        ]);
+
+        await expect(operation).rejects.toBe(expectedError);
+        expect(rows[0].getData().alias).toBe('Atlas2');
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('reconciles stale conflicts through the existing updateOrAddRow path', async () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' }
+        ]);
+
+        crud.table.addData = vi.fn();
+        crud.updateRowFields(2, { alias: 'Atlas' });
+        await crud.updateOrAddRow(1, { id: 1, alias: 'Atlas2' });
+
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('batches existing updateOrAddData rows without duplicate field validation', async () => {
+        const { table } = createTableMock([
+            { id: 1, code: 'A' },
+            { id: 2, code: 'B' },
+            { id: 3, code: 'C' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        table.addData = vi.fn();
+        crud.addCellValidator('code', 'Invalid code', validateFn, { scope: 'field' });
+        crud._captureInitialSnapshot();
+        await crud.updateOrAddData([
+            { id: 1, code: 'A1' },
+            { id: 2, code: 'B1' }
+        ]);
+
+        expect(validateFn).toHaveBeenCalledTimes(2);
+    });
+
+    test('reconciles existing updateOrAddData unique conflicts as one batch', async () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' },
+            { id: 3, alias: 'Ledger' }
+        ]);
+
+        crud.table.addData = vi.fn();
+        await crud.updateOrAddData([
+            { id: 2, alias: 'Atlas' },
+            { id: 3, alias: 'Atlas' }
+        ]);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+        expect(crud.cellErrors.get(3)?.has('alias')).toBe(true);
+
+        await crud.updateOrAddData([
+            { id: 1, alias: 'Atlas2' },
+            { id: 3, alias: 'Atla' }
+        ]);
+        expect(crud.cellErrors.has(2)).toBe(false);
+        expect(crud.cellErrors.has(3)).toBe(false);
+    });
+
     describe('getSavePayload save policies', () => {
         test('defaults to all-or-nothing semantics', () => {
             const { crud } = createMixedPolicyCrud();

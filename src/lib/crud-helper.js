@@ -275,31 +275,108 @@ export class CrudHelper {
         return Boolean(errors && errors.has(field));
     }
 
-    _isInteractiveValidationTarget(row, field, triggerRow) {
+    _isInteractiveValidationTarget(row, field, triggerRows) {
         const state = this._getBaseRowState(row);
 
         if (state === ROW_STATE.DELETED) return false;
-        if (row === triggerRow) return true;
+        if (triggerRows.has(row)) return true;
         if (state === ROW_STATE.NEW || state === ROW_STATE.MODIFIED) return true;
 
         return this._hasTrackedCellError(row, field);
     }
 
-    _revalidateScopedField({ field, scope, triggerRow, validatedTriggerFields }) {
+    _revalidateScopedField({
+        field,
+        scope,
+        triggerRows,
+        validatedTriggerFieldsByRow
+    }) {
         if (scope === VALIDATION_SCOPE.ROW) {
-            if (!validatedTriggerFields.has(field)) {
-                this._validateField(triggerRow, field, { markDeletedErrors: false });
-            }
+            triggerRows.forEach(row => {
+                if (this._getBaseRowState(row) === ROW_STATE.DELETED) return;
+                if (validatedTriggerFieldsByRow.get(row)?.has(field)) return;
+
+                this._validateField(row, field, { markDeletedErrors: false });
+            });
             return;
         }
 
         if (scope !== VALIDATION_SCOPE.FIELD && scope !== VALIDATION_SCOPE.GRID) return;
 
         this._getManagedRows().forEach(row => {
-            if (!this._isInteractiveValidationTarget(row, field, triggerRow)) return;
-            if (row === triggerRow && validatedTriggerFields.has(field)) return;
+            if (!this._isInteractiveValidationTarget(row, field, triggerRows)) return;
+            if (triggerRows.has(row) && validatedTriggerFieldsByRow.get(row)?.has(field)) {
+                return;
+            }
 
             this._validateField(row, field, { markDeletedErrors: false });
+        });
+    }
+
+    _reconcileValidationAfterRowFieldChangeBatch(changes = []) {
+        const rowChanges = new Map();
+
+        (Array.isArray(changes) ? changes : []).forEach(change => {
+            const triggerRow = change && change.triggerRow;
+            const changedFields = [...new Set((Array.isArray(change?.changedFields)
+                ? change.changedFields
+                : []).filter(field => typeof field === 'string' && field))];
+
+            if (!triggerRow || typeof triggerRow.getData !== 'function' || changedFields.length === 0) {
+                return;
+            }
+
+            const validatedTriggerFields = [...new Set((Array.isArray(change?.validatedTriggerFields)
+                ? change.validatedTriggerFields
+                : []).filter(field => typeof field === 'string' && field))];
+            const previous = rowChanges.get(triggerRow);
+
+            if (previous) {
+                changedFields.forEach(field => previous.changedFields.add(field));
+                validatedTriggerFields.forEach(field => previous.validatedTriggerFields.add(field));
+                return;
+            }
+
+            rowChanges.set(triggerRow, {
+                changedFields: new Set(changedFields),
+                validatedTriggerFields: new Set(validatedTriggerFields)
+            });
+        });
+
+        const affectedFields = new Map();
+        const validatedTriggerFieldsByRow = new Map();
+
+        rowChanges.forEach((change, triggerRow) => {
+            validatedTriggerFieldsByRow.set(triggerRow, change.validatedTriggerFields);
+
+            change.changedFields.forEach(changedField => {
+                this._getAffectedValidationFields(changedField).forEach(({ field, scope }) => {
+                    const planEntry = affectedFields.get(field);
+
+                    if (planEntry) {
+                        planEntry.scope = getBroadestValidationScope([
+                            { scope: planEntry.scope },
+                            { scope }
+                        ]);
+                        planEntry.triggerRows.add(triggerRow);
+                        return;
+                    }
+
+                    affectedFields.set(field, {
+                        scope,
+                        triggerRows: new Set([triggerRow])
+                    });
+                });
+            });
+        });
+
+        affectedFields.forEach(({ scope, triggerRows }, field) => {
+            this._revalidateScopedField({
+                field,
+                scope,
+                triggerRows,
+                validatedTriggerFieldsByRow
+            });
         });
     }
 
@@ -308,38 +385,11 @@ export class CrudHelper {
         changedFields,
         validatedTriggerFields = []
     ) {
-        const normalizedChangedFields = [...new Set((Array.isArray(changedFields)
-            ? changedFields
-            : []).filter(field => typeof field === 'string' && field))];
-
-        if (!triggerRow || normalizedChangedFields.length === 0) return;
-
-        const validatedFields = new Set((Array.isArray(validatedTriggerFields)
-            ? validatedTriggerFields
-            : []).filter(field => typeof field === 'string' && field));
-        const affectedFields = new Map();
-
-        normalizedChangedFields.forEach(changedField => {
-            this._getAffectedValidationFields(changedField).forEach(({ field, scope }) => {
-                const previousScope = affectedFields.get(field);
-
-                affectedFields.set(
-                    field,
-                    previousScope
-                        ? getBroadestValidationScope([{ scope: previousScope }, { scope }])
-                        : scope
-                );
-            });
-        });
-
-        affectedFields.forEach((scope, field) => {
-            this._revalidateScopedField({
-                field,
-                scope,
-                triggerRow,
-                validatedTriggerFields: validatedFields
-            });
-        });
+        this._reconcileValidationAfterRowFieldChangeBatch([{
+            triggerRow,
+            changedFields,
+            validatedTriggerFields
+        }]);
     }
 
     _reconcileValidationAfterCellChange(cell) {
@@ -2754,9 +2804,11 @@ export class CrudHelper {
         return row;
     }
 
-    async _updateManagedRows(rowsData) {
+    async _updateManagedRows(rowsData, reconciliationChanges = null) {
         const idField = this.options.idField;
         const tempIdField = this._getTempIdField();
+        const ownsReconciliationChanges = reconciliationChanges === null;
+        const collectedChanges = ownsReconciliationChanges ? [] : reconciliationChanges;
         const technicalFields = new Set([
             idField,
             tempIdField,
@@ -2765,39 +2817,58 @@ export class CrudHelper {
             this._getRowNumberField()
         ]);
 
-        for (const rowData of rowsData) {
-            if (
-                !rowData
-                || typeof rowData !== 'object'
-                || Array.isArray(rowData)
-            ) {
-                continue;
+        try {
+            for (const rowData of rowsData) {
+                if (
+                    !rowData
+                    || typeof rowData !== 'object'
+                    || Array.isArray(rowData)
+                ) {
+                    continue;
+                }
+
+                const id = rowData[idField];
+                const tempId = rowData[tempIdField];
+                const identifier = this._isMissingId(id) ? tempId : id;
+
+                if (this._isMissingId(identifier)) continue;
+
+                const row = this.findRowByKey(identifier);
+
+                if (
+                    !row
+                    || this._getBaseRowState(row) === ROW_STATE.DELETED
+                ) {
+                    continue;
+                }
+
+                const patch = { ...rowData };
+
+                technicalFields.forEach(field => {
+                    delete patch[field];
+                });
+
+                const changedFields = Object.keys(patch);
+
+                if (changedFields.length === 0) continue;
+
+                await this._updateManagedRowAndTrack(row, patch);
+                collectedChanges.push({
+                    triggerRow: row,
+                    changedFields,
+                    validatedTriggerFields: changedFields
+                });
+            }
+        } catch (error) {
+            if (ownsReconciliationChanges) {
+                this._reconcileValidationAfterRowFieldChangeBatch(collectedChanges);
             }
 
-            const id = rowData[idField];
-            const tempId = rowData[tempIdField];
-            const identifier = this._isMissingId(id) ? tempId : id;
+            throw error;
+        }
 
-            if (this._isMissingId(identifier)) continue;
-
-            const row = this.findRowByKey(identifier);
-
-            if (
-                !row
-                || this._getBaseRowState(row) === ROW_STATE.DELETED
-            ) {
-                continue;
-            }
-
-            const patch = { ...rowData };
-
-            technicalFields.forEach(field => {
-                delete patch[field];
-            });
-
-            if (Object.keys(patch).length === 0) continue;
-
-            await this._updateManagedRowAndTrack(row, patch);
+        if (ownsReconciliationChanges) {
+            this._reconcileValidationAfterRowFieldChangeBatch(collectedChanges);
         }
     }
 
@@ -2932,55 +3003,65 @@ export class CrudHelper {
         const idField = this.options.idField;
         const tempIdField = this._getTempIdField();
         const managedRows = [];
+        const reconciliationChanges = [];
 
-        for (const rowData of rowsData) {
-            if (
-                !rowData
-                || typeof rowData !== 'object'
-                || Array.isArray(rowData)
-            ) {
-                continue;
-            }
-
-            const id = rowData[idField];
-            const tempId = rowData[tempIdField];
-            const identifier = this._isMissingId(id) ? tempId : id;
-            const row = this._isMissingId(identifier)
-                ? null
-                : this.findRowByKey(identifier);
-
-            if (row) {
-                if (this._getBaseRowState(row) === ROW_STATE.DELETED) {
+        try {
+            for (const rowData of rowsData) {
+                if (
+                    !rowData
+                    || typeof rowData !== 'object'
+                    || Array.isArray(rowData)
+                ) {
                     continue;
                 }
 
-                const updateOperation = this.updateData([rowData]);
+                const id = rowData[idField];
+                const tempId = rowData[tempIdField];
+                const identifier = this._isMissingId(id) ? tempId : id;
+                const row = this._isMissingId(identifier)
+                    ? null
+                    : this.findRowByKey(identifier);
 
-                if (updateOperation === false) {
-                    throw new Error('AMB Grid update operation became unavailable during updateOrAddData');
+                if (row) {
+                    if (this._getBaseRowState(row) === ROW_STATE.DELETED) {
+                        continue;
+                    }
+
+                    const updateOperation = this._updateManagedRows(
+                        [rowData],
+                        reconciliationChanges
+                    );
+
+                    if (updateOperation === false) {
+                        throw new Error('AMB Grid update operation became unavailable during updateOrAddData');
+                    }
+
+                    await updateOperation;
+                    managedRows.push(row);
+                    continue;
                 }
 
-                await updateOperation;
-                managedRows.push(row);
-                continue;
+                const addOperation = this.addData([rowData]);
+
+                if (addOperation === false) {
+                    throw new Error('AMB Grid add operation became unavailable during updateOrAddData');
+                }
+
+                const addedRows = await addOperation;
+                const addedRow = Array.isArray(addedRows) ? addedRows[0] : null;
+
+                if (!addedRow) {
+                    throw new Error('AMB Grid add operation returned no managed row during updateOrAddData');
+                }
+
+                managedRows.push(addedRow);
             }
-
-            const addOperation = this.addData([rowData]);
-
-            if (addOperation === false) {
-                throw new Error('AMB Grid add operation became unavailable during updateOrAddData');
-            }
-
-            const addedRows = await addOperation;
-            const addedRow = Array.isArray(addedRows) ? addedRows[0] : null;
-
-            if (!addedRow) {
-                throw new Error('AMB Grid add operation returned no managed row during updateOrAddData');
-            }
-
-            managedRows.push(addedRow);
+        } catch (error) {
+            this._reconcileValidationAfterRowFieldChangeBatch(reconciliationChanges);
+            throw error;
         }
 
+        this._reconcileValidationAfterRowFieldChangeBatch(reconciliationChanges);
         return managedRows;
     }
 
