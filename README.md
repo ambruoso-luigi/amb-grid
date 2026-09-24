@@ -270,6 +270,17 @@ hardcoding backend behavior into AMB Grid.
 values, row lifecycle state, or membership changes. Deleted rows are ignored by
 default unless `includeDeleted: true` is set.
 
+```js
+validation: {
+  unique: {
+    caseSensitive: false,
+    message: 'Code must be unique'
+  }
+}
+```
+
+AMB Grid reconciles affected pending validation automatically when the relevant cross-row context changes.
+
 #### Validation scopes
 
 `cell` depends on the current cell, `row` on fields in its row, `field` on the

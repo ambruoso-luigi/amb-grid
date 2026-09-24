@@ -8,10 +8,6 @@ All notable changes to AMB Grid are documented in this file.
 
 - Added scoped validator metadata (`cell`, `row`, `field`, `grid`) and runtime `scope` / `dependsOn` registration.
 
-### Fixed
-
-- Fixed stale cross-row validation results; affected pending `unique` cells now refresh after relevant values, lifecycle state, or membership changes.
-
 - Added public `cellEditing.mouseTrigger`, with default single-click focus and
   double-click editing plus explicit `single-click` compatibility mode.
 - Added configurable F2 auxiliary actions for AMB Grid cells, initially supported by Lookup editors.
@@ -23,6 +19,8 @@ All notable changes to AMB Grid are documented in this file.
   opening ordinary editors, skipping read-only and unavailable cells.
 
 ### Fixed
+
+- Fixed stale cross-row validation results; affected pending `unique` cells now refresh after relevant values, lifecycle state, or membership changes.
 
 - Isolated deferred keyboard-close focus restoration per grid so pointer input
   in one AMB Grid cannot cancel a pending restore in another.
