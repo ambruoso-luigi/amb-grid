@@ -285,9 +285,9 @@ export class CrudHelper {
         return this._hasTrackedCellError(row, field);
     }
 
-    _revalidateScopedField({ field, scope, triggerRow, changedField }) {
+    _revalidateScopedField({ field, scope, triggerRow, validatedTriggerFields }) {
         if (scope === VALIDATION_SCOPE.ROW) {
-            if (field !== changedField) {
+            if (!validatedTriggerFields.has(field)) {
                 this._validateField(triggerRow, field, { markDeletedErrors: false });
             }
             return;
@@ -297,9 +297,48 @@ export class CrudHelper {
 
         this._getManagedRows().forEach(row => {
             if (!this._isInteractiveValidationTarget(row, field, triggerRow)) return;
-            if (row === triggerRow && field === changedField) return;
+            if (row === triggerRow && validatedTriggerFields.has(field)) return;
 
             this._validateField(row, field, { markDeletedErrors: false });
+        });
+    }
+
+    _reconcileValidationAfterRowFieldChanges(
+        triggerRow,
+        changedFields,
+        validatedTriggerFields = []
+    ) {
+        const normalizedChangedFields = [...new Set((Array.isArray(changedFields)
+            ? changedFields
+            : []).filter(field => typeof field === 'string' && field))];
+
+        if (!triggerRow || normalizedChangedFields.length === 0) return;
+
+        const validatedFields = new Set((Array.isArray(validatedTriggerFields)
+            ? validatedTriggerFields
+            : []).filter(field => typeof field === 'string' && field));
+        const affectedFields = new Map();
+
+        normalizedChangedFields.forEach(changedField => {
+            this._getAffectedValidationFields(changedField).forEach(({ field, scope }) => {
+                const previousScope = affectedFields.get(field);
+
+                affectedFields.set(
+                    field,
+                    previousScope
+                        ? getBroadestValidationScope([{ scope: previousScope }, { scope }])
+                        : scope
+                );
+            });
+        });
+
+        affectedFields.forEach((scope, field) => {
+            this._revalidateScopedField({
+                field,
+                scope,
+                triggerRow,
+                validatedTriggerFields: validatedFields
+            });
         });
     }
 
@@ -318,14 +357,11 @@ export class CrudHelper {
 
         if (!triggerRow || typeof changedField !== 'string' || !changedField) return;
 
-        this._getAffectedValidationFields(changedField).forEach(({ field, scope }) => {
-            this._revalidateScopedField({
-                field,
-                scope,
-                triggerRow,
-                changedField
-            });
-        });
+        this._reconcileValidationAfterRowFieldChanges(
+            triggerRow,
+            [changedField],
+            [changedField]
+        );
     }
 
     _captureInitialSnapshot() {
@@ -2689,13 +2725,15 @@ export class CrudHelper {
         }
 
         const patch = data && typeof data === 'object' ? data : {};
+        const changedFields = Object.keys(patch);
 
         this._patchRow(row, patch);
         this._markRowModified(row);
 
-        Object.keys(patch).forEach(field => {
+        changedFields.forEach(field => {
             this._validateField(row, field);
         });
+        this._reconcileValidationAfterRowFieldChanges(row, changedFields, changedFields);
 
         return row;
     }

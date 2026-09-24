@@ -110,11 +110,12 @@ const createMixedPolicyCrud = () => {
         { id: 1, alias: 'Atlas' },
         { id: 2, alias: 'Beacon' },
         { id: null, _ambTempId: 'amb-temp-1', alias: 'Comet', _state: ROW_STATE.NEW },
-        { id: 4, alias: 'Delta', _state: ROW_STATE.DELETED }
+        { id: 4, alias: 'Delta', _state: ROW_STATE.DELETED },
+        { id: 5, alias: 'Atlas' }
     ]);
 
     result.crud.updateRowFields(1, { alias: 'Atlas Updated' });
-    result.crud.updateRowFields(2, { alias: 'Atlas Updated' });
+    result.crud.updateRowFields(2, { alias: 'Atlas' });
 
     return result;
 };
@@ -257,6 +258,140 @@ describe('CrudHelper validation lifecycle', () => {
         expect(validateFn).toHaveBeenCalledTimes(1);
         expect(dependencyFreeValidateFn).toHaveBeenCalledTimes(2);
         expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('reconciles stale field-scoped errors after programmatic row updates', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' }
+        ]);
+
+        crud.updateRowFields(2, { alias: 'Atlas' });
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+
+        crud.updateRowFields(1, { alias: 'Atlas2' });
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('keeps clean comparator rows unmarked during programmatic field reconciliation', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Atlas' },
+            { id: 2, alias: 'Beacon' }
+        ]);
+
+        crud.updateRowFields(2, { alias: 'Atlas' });
+
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+    });
+
+    test('reconciles programmatic conflicts between two pending rows', () => {
+        const { crud } = createManualCrud([
+            { id: 1, alias: 'Alpha' },
+            { id: 2, alias: 'Beta' }
+        ]);
+
+        crud.updateRowFields(1, { alias: 'ABC' });
+        crud.updateRowFields(2, { alias: 'ABC' });
+        expect(crud.cellErrors.get(1)?.has('alias')).toBe(true);
+        expect(crud.cellErrors.get(2)?.has('alias')).toBe(true);
+
+        crud.updateRowFields(2, { alias: 'DEF' });
+        expect(crud.cellErrors.has(1)).toBe(false);
+        expect(crud.cellErrors.has(2)).toBe(false);
+    });
+
+    test('revalidates row-scoped dependencies after programmatic patches', () => {
+        const { table, rows } = createTableMock([
+            { id: 1, startDate: '2026-01-01', endDate: '2026-01-02' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('endDate', 'Invalid interval', validateFn, {
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        });
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(1, { startDate: '2026-01-03' });
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
+        expect(rows[0].getData().endDate).toBe('2026-01-02');
+    });
+
+    test('deduplicates row-scoped target validation inside one multi-field patch', () => {
+        const { table } = createTableMock([
+            { id: 1, startDate: '2026-01-01', endDate: '2026-01-02' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('endDate', 'Invalid interval', validateFn, {
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        });
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(1, {
+            startDate: '2026-01-03',
+            endDate: '2026-01-04'
+        });
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('deduplicates an unpatched row-scoped target affected by multiple patch fields', () => {
+        const { table } = createTableMock([
+            { id: 1, startDate: '2026-01-01', endDate: '2026-01-02', summary: 'Initial' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('summary', 'Invalid summary', validateFn, {
+            scope: 'row',
+            dependsOn: ['startDate', 'endDate']
+        });
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(1, {
+            startDate: '2026-01-03',
+            endDate: '2026-01-04'
+        });
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('keeps programmatic cell-scoped validators local', () => {
+        const { table } = createTableMock([
+            { id: 1, email: 'a@example.com' },
+            { id: 2, email: 'b@example.com' },
+            { id: 3, email: 'c@example.com' }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('email', 'Invalid email', validateFn);
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(2, { email: 'updated@example.com' });
+
+        expect(validateFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('respects grid-scoped dependencies during programmatic patches', () => {
+        const { table } = createTableMock([
+            { id: 1, amount: 1, description: 'Initial', quota: 10 }
+        ]);
+        const crud = new CrudHelper(table);
+        const validateFn = vi.fn(() => true);
+
+        crud.addCellValidator('quota', 'Invalid quota', validateFn, {
+            scope: 'grid',
+            dependsOn: ['amount']
+        });
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(1, { description: 'Changed' });
+        expect(validateFn).not.toHaveBeenCalled();
+
+        crud.updateRowFields(1, { amount: 10 });
+        expect(validateFn).toHaveBeenCalledTimes(1);
     });
 
     describe('getSavePayload save policies', () => {
@@ -404,7 +539,7 @@ describe('CrudHelper validation lifecycle', () => {
                 { id: 2, alias: 'Beacon' }
             ]);
 
-            crud.markCellError(1, 'alias', 'Clean row application error');
+            crud.markCellError(1, 'description', 'Clean row application error');
             crud.updateRowFields(2, { alias: 'Comet' });
 
             const report = crud.getStateReport();
@@ -444,11 +579,12 @@ describe('CrudHelper validation lifecycle', () => {
         test('leaves lifecycle confirmation to markValidChangesSaved', () => {
             const { crud } = createCrud([
                 { id: 1, alias: 'Atlas' },
-                { id: 2, alias: 'Beacon' }
+                { id: 2, alias: 'Beacon' },
+                { id: 3, alias: 'Atlas' }
             ]);
 
             crud.updateRowFields(1, { alias: 'Comet' });
-            crud.updateRowFields(2, { alias: 'Comet' });
+            crud.updateRowFields(2, { alias: 'Atlas' });
 
             const payload = crud.getSavePayload({ savePolicy: 'valid-only' });
 
