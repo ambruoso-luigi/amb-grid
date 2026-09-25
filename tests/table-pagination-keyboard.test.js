@@ -650,6 +650,65 @@ describe('table pagination keyboard runtime', () => {
         expect(title.edit).not.toHaveBeenCalled();
     });
 
+    test('leaves mousedown inside an active editor owned by the editor', () => {
+        const title = createCandidate({ field: 'title' });
+        const harness = createHarness({ cells: [title] });
+
+        harness.setEditing(true, title);
+        globalThis.document.activeElement = title.getElement().editor;
+
+        const event = harness.tableElement.dispatch({
+            target: title.getElement().editor
+        }, 'mousedown');
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
+        expect(event.stopImmediatePropagation).not.toHaveBeenCalled();
+        expect(title.getElement().focus).not.toHaveBeenCalled();
+        expect(title.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(title.getElement().editor);
+        expect(title.getElement().classList.contains('tabulator-editing')).toBe(true);
+    });
+
+    test('leaves click inside an active editor owned by the editor', async () => {
+        const title = createCandidate({ field: 'title' });
+        const harness = createHarness({ cells: [title] });
+
+        harness.setEditing(true, title);
+        globalThis.document.activeElement = title.getElement().editor;
+
+        const event = harness.tableElement.dispatch({
+            target: title.getElement().editor
+        }, 'click');
+        await flush();
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
+        expect(event.stopImmediatePropagation).not.toHaveBeenCalled();
+        expect(title.getElement().focus).not.toHaveBeenCalled();
+        expect(title.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(title.getElement().editor);
+        expect(title.getElement().classList.contains('tabulator-editing')).toBe(true);
+    });
+
+    test('leaves pointer padding inside an active editor cell owned by the editor', () => {
+        const title = createCandidate({ field: 'title' });
+        const harness = createHarness({ cells: [title] });
+
+        harness.setEditing(true, title);
+
+        const event = harness.tableElement.dispatch({
+            target: title.getElement()
+        }, 'mousedown');
+
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(event.stopPropagation).not.toHaveBeenCalled();
+        expect(event.stopImmediatePropagation).not.toHaveBeenCalled();
+        expect(title.getElement().focus).not.toHaveBeenCalled();
+        expect(title.edit).not.toHaveBeenCalled();
+        expect(title.getElement().classList.contains('tabulator-editing')).toBe(true);
+    });
+
     test('resolves a pointer cell through rendered row components when getRow rejects DOM nodes', () => {
         const title = createCandidate({ field: 'title' });
         const harness = createHarness({ cells: [title] });

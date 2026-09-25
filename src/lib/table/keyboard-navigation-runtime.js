@@ -732,6 +732,7 @@ export const createKeyboardNavigationRuntime = ({
         const cellElement = event.target?.closest?.('.tabulator-cell');
         const cell = getCellFromElement(cellElement);
         if (cell) cancelScheduledNavigationFocusRestore(cell);
+        if (cellElement?.classList?.contains?.('tabulator-editing')) return;
         const definition = cell?.getColumn?.()?.getDefinition?.() || {};
         const metadata = getAmbColumnMetadata(definition);
         const isMarkedLargeText = cellElement?.classList?.contains?.('amb-cell--large-text');
