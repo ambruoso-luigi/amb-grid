@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>AMB Grid pointer ownership fixture</title>
+    <link rel="stylesheet" href="/node_modules/tabulator-tables/dist/css/tabulator.min.css">
+    <link rel="stylesheet" href="/src/amb-grid.css">
+    <style>
+        #pointer-ownership-grid { max-width: 960px; }
+        #outside-control { margin-top: 24px; }
+    </style>
+</head>
+<body>
+    <div id="pointer-ownership-grid"></div>
+    <button id="outside-control" type="button">Outside control</button>
+    <script type="module">
+        import { AMB } from '/src/index.js';
+
+        window.__pointerOwnershipGrid = AMB.table({
+            selector: '#pointer-ownership-grid',
+            data: [{
+                id: 1,
+                name: 'Mario Rossi',
+                other: 'Second cell',
+                quantity: 12345,
+                price: 123.45,
+                category: 'A'
+            }, {
+                id: 2,
+                name: 'Luigi Verdi',
+                other: 'Other row',
+                quantity: 67890,
+                price: 67.89,
+                category: 'B'
+            }],
+            columns: [
+                { title: 'ID', field: 'id' },
+                { title: 'Name', field: 'name', editor: AMB.editors.text() },
+                { title: 'Other', field: 'other', editor: AMB.editors.text() },
+                { title: 'Quantity', field: 'quantity', editor: AMB.editors.integer() },
+                { title: 'Price', field: 'price', editor: AMB.editors.decimal({ decimalDigits: 2 }) },
+                {
+                    title: 'Category',
+                    field: 'category',
+                    editor: AMB.editors.select({
+                        options: [
+                            { value: 'A', label: 'Alpha' },
+                            { value: 'B', label: 'Beta' },
+                            { value: 'C', label: 'Gamma' }
+                        ],
+                        allowEmpty: false
+                    })
+                }
+            ],
+            toolbar: false
+        });
+    </script>
+</body>
+</html>
