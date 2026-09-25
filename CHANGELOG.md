@@ -20,6 +20,10 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Kept pointer interaction inside an active inline editor owned by the editor,
+  preserving caret positioning and text selection instead of returning the cell
+  to Navigation.
+
 - Preserved `scope` and `dependsOn` metadata for declarative `validation.custom` validators.
 
 - Fixed stale cross-row validation results; affected pending `unique` cells now refresh after relevant values, lifecycle state, or membership changes.

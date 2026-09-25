@@ -400,6 +400,13 @@ cellEditing: { mouseTrigger: 'double-click' }
 cellEditing: { mouseTrigger: 'single-click' }
 ```
 
+`cellEditing.mouseTrigger` controls only the gesture that starts editing. Once
+an inline editor is open, pointer interaction inside its cell belongs to the
+editor in both modes: clicks can position the caret, dragging can select text,
+and double clicks can select a word without returning the cell to Navigation.
+Clicking another cell or an external control leaves the editor through the
+normal editing lifecycle.
+
 * `Tab` moves to the next editable or interactive AMB Grid cell.
 * `Shift+Tab` moves to the previous editable or interactive AMB Grid
   cell.
