@@ -29,6 +29,11 @@ const focusCheckboxViaTab = async page => {
     const itemCodeInput = itemCodeCell.locator('input');
 
     await itemCodeCell.click();
+    await expect(itemCodeCell).toBeFocused();
+    await expect(itemCodeCell).not.toHaveClass(/tabulator-editing/);
+    await expect(itemCodeInput).toHaveCount(0);
+    await page.keyboard.press('Enter');
+    await expect(itemCodeCell).toHaveClass(/tabulator-editing/);
     await expect(itemCodeInput).toBeFocused();
 
     const fieldsAfterItemCode = [

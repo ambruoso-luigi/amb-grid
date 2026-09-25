@@ -83,10 +83,19 @@ test.describe('cell editor pointer ownership', () => {
         const { name, input } = await openTextEditor(page);
         const box = await input.boundingBox();
         expect(box).not.toBeNull();
+        const startX = box.x + (box.width * 0.2);
+        const endX = box.x + (box.width * 0.8);
+        const y = box.y + (box.height / 2);
 
-        await page.mouse.move(box.x + 8, box.y + box.height / 2);
+        await input.click({ position: { x: box.width * 0.2, y: box.height / 2 } });
+        const startCaret = await input.evaluate(element => element.selectionStart);
+        await input.click({ position: { x: box.width * 0.8, y: box.height / 2 } });
+        const endCaret = await input.evaluate(element => element.selectionStart);
+        expect(startCaret).toBeLessThan(endCaret);
+
+        await page.mouse.move(startX, y);
         await page.mouse.down();
-        await page.mouse.move(box.x + Math.min(box.width - 8, 58), box.y + box.height / 2, { steps: 8 });
+        await page.mouse.move(endX, y, { steps: 16 });
         await page.mouse.up();
 
         const selection = await input.evaluate(element => ({
@@ -96,6 +105,7 @@ test.describe('cell editor pointer ownership', () => {
         expect(selection.start).toBeLessThan(selection.end);
         await expect(name).toHaveClass(/tabulator-editing/);
         await expect(input).toBeVisible();
+        await expect(name.locator('input.amb-cell-editor')).toHaveCount(1);
     });
 
     test('allows native double-click word selection without reopening the editor', async ({ page }) => {

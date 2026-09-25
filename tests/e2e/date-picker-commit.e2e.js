@@ -87,10 +87,12 @@ test.describe('date picker commit regression', () => {
         await expect(page.locator('.datepicker.active')).toHaveCount(0);
 
         await page.keyboard.press('F2');
-        const input = page.locator('input.amb-date-editor').last();
-        await expect(input).toBeFocused();
+        const input = cell.locator('input.amb-date-editor');
+        const anchor = cell.locator('.amb-date-editor-picker-anchor');
+        await expect(cell).toHaveClass(/tabulator-editing/);
         await expect(input).toBeVisible();
         await expect(page.locator('.datepicker.active')).toBeVisible();
+        await expect(anchor).toBeFocused();
     });
 
     test('mouse selection commits on external blur', async ({ page }) => {
@@ -122,7 +124,12 @@ test.describe('date picker commit regression', () => {
         await page.keyboard.press('Tab');
         await expect(nextCell(page)).toHaveClass(/tabulator-editing/);
         await cell.click();
-        await expect(page.locator('input.amb-date-editor').last()).toHaveValue(selectedValue);
+        await expect(cell).toBeFocused();
+        await expect(cell).not.toHaveClass(/tabulator-editing/);
+        await page.keyboard.press('Enter');
+        const reopenedInput = cell.locator('input.amb-date-editor');
+        await expect(reopenedInput).toBeFocused();
+        await expect(reopenedInput).toHaveValue(selectedValue);
     });
 
     test('Shift+Tab commits and navigates to the previous editable cell', async ({ page }) => {
@@ -133,6 +140,11 @@ test.describe('date picker commit regression', () => {
         await page.keyboard.press('Shift+Tab');
         await expect(previousCell(page)).toHaveClass(/tabulator-editing/);
         await cell.click();
-        await expect(page.locator('input.amb-date-editor').last()).toHaveValue(selectedValue);
+        await expect(cell).toBeFocused();
+        await expect(cell).not.toHaveClass(/tabulator-editing/);
+        await page.keyboard.press('Enter');
+        const reopenedInput = cell.locator('input.amb-date-editor');
+        await expect(reopenedInput).toBeFocused();
+        await expect(reopenedInput).toHaveValue(selectedValue);
     });
 });
