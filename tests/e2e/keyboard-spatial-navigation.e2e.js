@@ -166,7 +166,7 @@ test.describe('keyboard spatial navigation', () => {
         await focusNavigationCell(last);
         await page.keyboard.press('ArrowDown');
         await expect(await currentPage(page)).toBe(2);
-        const nextFirst = rowCell(page, 'PRD-I011', 'itemCode');
+        const nextFirst = rowCell(page, 'PRD-A011', 'itemCode');
         await expectNavigationFocus(nextFirst);
         await page.keyboard.press('ArrowUp');
         await expect(await currentPage(page)).toBe(1);
@@ -262,7 +262,7 @@ test.describe('keyboard spatial navigation', () => {
         await expect(dialog).toBeVisible();
     });
 
-    test('moves large text without opening its dialog and keeps its page boundary', async ({ page }) => {
+    test('moves large text across the page boundary without opening its dialog', async ({ page }) => {
         const notes = rowCell(page, 'PRD-AB02', 'notes');
         const nextNotes = rowCell(page, 'PRD-A003', 'notes');
         await focusNavigationCell(notes);
@@ -275,8 +275,15 @@ test.describe('keyboard spatial navigation', () => {
         const lastNotes = rowCell(page, 'PRD-H010', 'notes');
         await focusNavigationCell(lastNotes);
         await page.keyboard.press('ArrowDown');
-        await expectNavigationFocus(lastNotes);
+        await expect(await currentPage(page)).toBe(2);
+        const nextPageNotes = rowCell(page, 'PRD-A011', 'notes');
+        await expectNavigationFocus(nextPageNotes);
+        await expect(nextPageNotes).not.toHaveClass(/tabulator-editing/);
+        await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
+        await page.keyboard.press('ArrowUp');
         await expect(await currentPage(page)).toBe(1);
+        await expectNavigationFocus(lastNotes);
+        await expect(lastNotes).not.toHaveClass(/tabulator-editing/);
         await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
     });
 
