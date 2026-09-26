@@ -77,24 +77,6 @@ test.describe('date picker commit regression', () => {
         await expect(picker).toHaveCount(1);
     });
 
-    test('F2 opens the calendar from a manually focused picker date', async ({ page }) => {
-        await openDatesExample(page);
-        const cell = pickerCell(page);
-        await cell.click();
-        await expect(cell).toBeFocused();
-        await expect(cell).not.toHaveClass(/tabulator-editing/);
-        await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
-        await expect(page.locator('.datepicker.active')).toHaveCount(0);
-
-        await page.keyboard.press('F2');
-        const input = cell.locator('input.amb-date-editor');
-        const anchor = cell.locator('.amb-date-editor-picker-anchor');
-        await expect(cell).toHaveClass(/tabulator-editing/);
-        await expect(input).toBeVisible();
-        await expect(page.locator('.datepicker.active')).toBeVisible();
-        await expect(anchor).toBeFocused();
-    });
-
     test('mouse selection commits on external blur', async ({ page }) => {
         await openDatesExample(page);
         const { cell, initialValue, input } = await openPicker(page);

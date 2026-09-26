@@ -85,16 +85,23 @@ test.describe('keyboard pagination focus', () => {
         await expect(notes).toBeFocused();
     });
 
-    test('exits the grid at both absolute Tab boundaries', async ({ page }) => {
+    test('Shift+Tab exits the grid at the first absolute boundary', async ({ page }) => {
         await cell(page, 'itemCode').click();
         await cell(page, 'itemCode').dblclick({ delay: 100 });
         await expectItemCodeEditor(page);
         await page.keyboard.press('Shift+Tab');
         await expectFocusOutsideGrid(page);
+    });
+
+    test('Tab exits the grid at the last absolute boundary', async ({ page }) => {
         await cell(page, 'itemCode').click();
         await cell(page, 'itemCode').dblclick({ delay: 100 });
+        await expectItemCodeEditor(page);
         for (let number = 2; number <= 11; number += 1) await moveAndCheck(page, 'Alt+PageDown', number);
-        await cell(page, 'notes').click();
+        const notes = cell(page, 'notes');
+        await notes.click();
+        await expect(notes).toBeFocused();
+        await expect(notes).not.toHaveClass(/tabulator-editing/);
         await page.keyboard.press('Tab');
         await expectFocusOutsideGrid(page);
     });

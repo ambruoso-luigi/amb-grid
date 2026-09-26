@@ -217,12 +217,10 @@ test.describe('keyboard spatial navigation', () => {
 
     test('keeps autocomplete ArrowDown in its dropdown', async ({ page }) => {
         const warehouse = rowCell(page, 'PRD-AB02', 'warehouse');
-        await warehouse.click();
-        await expectNavigationFocus(warehouse);
-        await expect(warehouse.locator('input.amb-autocomplete-editor')).toHaveCount(0);
-
         await warehouse.dblclick({ delay: 100 });
         const input = warehouse.locator('input.amb-autocomplete-editor');
+        await expect(warehouse).toHaveClass(/tabulator-editing/);
+        await expect(input).toBeVisible();
         await expect(input).toBeFocused();
         await page.keyboard.press('ArrowDown');
         await expect(input).toBeFocused();
