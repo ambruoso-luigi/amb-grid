@@ -46,27 +46,45 @@ test.describe('managed selection column interaction', () => {
         await expectUnselected(page, id);
     });
 
-    test('selection checkbox is the exclusive keyboard and pointer selection control', async ({ page }) => {
+    test('selection checkbox toggles with Space', async ({ page }) => {
         const id = 'NT-001';
-        const input = selectionInput(page, id);
 
         await pressSelectionKey(page, id, 'Space');
         await expectSelected(page, id);
         await pressSelectionKey(page, id, 'Space');
         await expectUnselected(page, id);
+    });
 
-        await pressSelectionKey(page, id, '1');
-        await expectSelected(page, id);
-        await pressSelectionKey(page, id, '0');
-        await expectUnselected(page, id);
-        await pressSelectionKey(page, id, 'S');
-        await expectSelected(page, id);
-        await pressSelectionKey(page, id, 'N');
-        await expectUnselected(page, id);
+    for (const [selectKey, unselectKey] of [['1', '0'], ['S', 'N']]) {
+        test(`selection checkbox supports ${selectKey}/${unselectKey}`, async ({ page }) => {
+            const id = 'NT-001';
+
+            await pressSelectionKey(page, id, selectKey);
+            await expectSelected(page, id);
+            await pressSelectionKey(page, id, unselectKey);
+            await expectUnselected(page, id);
+        });
+    }
+
+    test('selection checkbox supports Y', async ({ page }) => {
+        const id = 'NT-001';
+
         await pressSelectionKey(page, id, 'Y');
+        await expectSelected(page, id);
+    });
+
+    test('selection checkbox toggles with Enter', async ({ page }) => {
+        const id = 'NT-001';
+
+        await pressSelectionKey(page, id, 'Enter');
         await expectSelected(page, id);
         await pressSelectionKey(page, id, 'Enter');
         await expectUnselected(page, id);
+    });
+
+    test('selection checkbox toggles with pointer clicks', async ({ page }) => {
+        const id = 'NT-001';
+        const input = selectionInput(page, id);
 
         await input.click();
         await expectSelected(page, id);

@@ -140,7 +140,11 @@ test.describe('keyboard spatial navigation', () => {
         const destination = rowCell(page, 'PRD-AB02', 'warehouse');
 
         await source.dblclick({ delay: 100 });
-        await source.locator('input.amb-cell-editor').fill('Pointer source commit');
+        const sourceInput = source.locator('input.amb-cell-editor');
+        await expect(source).toHaveClass(/tabulator-editing/);
+        await expect(sourceInput).toBeVisible();
+        await expect(sourceInput).toBeFocused();
+        await sourceInput.fill('Pointer source commit');
         await destination.click();
         await expectNavigationFocus(destination);
         await expect(source).not.toHaveClass(/tabulator-editing/);

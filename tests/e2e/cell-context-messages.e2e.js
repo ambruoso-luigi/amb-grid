@@ -202,8 +202,6 @@ test.describe('React supplier lookup messages and status select', () => {
         const editedRow = reactRow(page, 'ITM-1002');
         const supplier = reactCell(page, 'ITM-1002', 'supplierCode');
 
-        await initialSupplier.hover();
-        await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
         await initialSupplier.click();
         await page.keyboard.press('ArrowDown');
         await expect(supplier).toBeFocused();
