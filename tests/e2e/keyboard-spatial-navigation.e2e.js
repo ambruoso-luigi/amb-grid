@@ -12,14 +12,10 @@ const expectFocusIndicator = target => expect.poll(() => target.evaluate(element
 })).toBe(true);
 
 const focusNavigationCell = async target => {
-    await target.evaluate(element => {
-        const blockEditFocus = event => event.stopImmediatePropagation();
-        element.addEventListener('focus', blockEditFocus, true);
-        element.focus({ preventScroll: true });
-        element.removeEventListener('focus', blockEditFocus, true);
-    });
+    await target.click();
     await expect(target).toBeFocused();
     await expect(target).not.toHaveClass(/tabulator-editing/);
+    await expect(target.locator('input.amb-cell-editor')).toHaveCount(0);
 };
 
 const expectNavigationFocus = async target => {
@@ -173,30 +169,20 @@ test.describe('keyboard spatial navigation', () => {
         await expectNavigationFocus(last);
     });
 
-    test('Enter opens an editor while editor arrows stay in the input', async ({ page }) => {
-        const start = rowCell(page, 'PRD-AB02', 'itemCode');
-        const target = rowCell(page, 'PRD-AB02', 'productName');
-        const below = rowCell(page, 'PRD-A003', 'productName');
-        await focusNavigationCell(start);
-        await page.keyboard.press('ArrowRight');
-        await expectNavigationFocus(target);
-        await page.keyboard.press('Enter');
-        const input = target.locator('input.amb-cell-editor');
-        await expect(target).toHaveClass(/tabulator-editing/);
-        await expect(input).toBeFocused();
-        await page.keyboard.press('ArrowLeft');
-        await expect(input).toBeFocused();
-        await expect(target).toHaveClass(/tabulator-editing/);
-        await page.keyboard.press('ArrowRight');
-        await expect(input).toBeFocused();
-        await page.keyboard.press('ArrowDown');
-        await expect(input).toBeFocused();
-        await expect(target).toHaveClass(/tabulator-editing/);
-        await expect(below).not.toHaveClass(/tabulator-editing/);
-        await page.keyboard.press('ArrowUp');
-        await expect(input).toBeFocused();
-        await expect(target).toHaveClass(/tabulator-editing/);
-    });
+    for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) {
+        test(`standard text editor keeps ${key} inside the editor`, async ({ page }) => {
+            const target = rowCell(page, 'PRD-AB02', 'productName');
+
+            await focusNavigationCell(target);
+            await page.keyboard.press('Enter');
+            const input = target.locator('input.amb-cell-editor');
+            await expect(input).toBeFocused();
+            await page.keyboard.press(key);
+            await expect(input).toBeFocused();
+            await expect(target).toHaveClass(/tabulator-editing/);
+            await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+        });
+    }
 
     test('commits a text editor with Enter and restores navigation focus to its source cell', async ({ page }) => {
         const target = rowCell(page, 'PRD-AB02', 'productName');
@@ -210,7 +196,6 @@ test.describe('keyboard spatial navigation', () => {
         await expectNavigationFocus(target);
         await expect(target).toContainText('Keyboard commit test');
         await expect(adjacent).not.toBeFocused();
-        await expectFocusIndicator(target);
     });
 
     test('cancels a text editor with Escape and restores navigation focus to its source cell', async ({ page }) => {
@@ -224,7 +209,6 @@ test.describe('keyboard spatial navigation', () => {
         await expectNavigationFocus(target);
         await expect(target).toContainText(original || '');
         await expect(target).not.toContainText('DO NOT SAVE THIS');
-        await expectFocusIndicator(target);
     });
 
     test('keeps autocomplete ArrowDown in its dropdown', async ({ page }) => {

@@ -17,6 +17,14 @@ const expectFocusIndicator = async target => {
 const reactRow = (page, code) => page.locator('.react-demo-grid .tabulator-row').filter({ hasText: code });
 const reactCell = (page, code, field) => reactRow(page, code)
     .locator(`.tabulator-cell[tabulator-field="${field}"]`);
+const waitForReactDemoReady = async page => {
+    const shell = page.locator('.react-demo-grid-shell');
+
+    await expect(shell).toBeVisible();
+    await expect(shell).toHaveAttribute('aria-busy', 'false');
+    await expect(reactRow(page, 'ITM-1002')).toBeVisible();
+    await expect(reactCell(page, 'ITM-1002', 'status')).toBeVisible();
+};
 
 test.describe('contextual cell messages and large-text focus', () => {
     test.beforeEach(async ({ page }) => {
@@ -144,7 +152,7 @@ test.describe('contextual cell messages and large-text focus', () => {
 test.describe('React supplier lookup messages and status select', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/#getting-started-react');
-        await expect(reactRow(page, 'ITM-1001')).toBeVisible();
+        await waitForReactDemoReady(page);
     });
 
     test('shows stable supplier descriptions and keeps Status outside the lookup system', async ({ page }) => {
@@ -240,8 +248,13 @@ test.describe('React supplier lookup messages and status select', () => {
         const row = reactRow(page, 'ITM-1002');
         const status = reactCell(page, 'ITM-1002', 'status');
 
+        await status.click();
+        await expect(status).toBeFocused();
+        await expect(status).not.toHaveClass(/tabulator-editing/);
         await status.dblclick();
-        await status.locator('select.amb-cell-editor--select').selectOption('HOLD');
+        const editor = status.locator('select.amb-cell-editor--select');
+        await expect(editor).toBeFocused();
+        await editor.selectOption('HOLD');
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
 
         await page.locator('.react-demo-language__label').filter({ hasText: 'EN' }).click();

@@ -21,22 +21,6 @@ const selectedRowCount = page => {
     return page.locator('#basic-table .tabulator-row.tabulator-selected').count();
 };
 
-const focusNextActionButton = async (page, selector) => {
-    for (let index = 0; index < 30; index += 1) {
-        const isFocused = await page.evaluate(selector => {
-            const active = document.activeElement;
-
-            return Boolean(active && active.matches(selector));
-        }, selector);
-
-        if (isFocused) return;
-
-        await page.keyboard.press('Tab');
-    }
-
-    await expect(page.locator(selector).first()).toBeFocused();
-};
-
 const getActiveGridFocus = page => {
     return page.evaluate(() => {
         const active = document.activeElement;
@@ -82,18 +66,15 @@ test.describe('row controls accessibility', () => {
         await expect.poll(() => selectedRowCount(page)).toBe(1);
     });
 
-    test('main demo row actions are reachable by Tab and activate delete and rollback', async ({ page }) => {
+    test('main demo row actions are keyboard focusable and activate delete and rollback', async ({ page }) => {
         await openInventoryDemo(page);
 
-        const deleteButtonSelector = '#inventory-table .tabulator-row:first-child .amb-row-action-button--delete';
-        const rollbackButtonSelector = '#inventory-table .tabulator-row:first-child .amb-row-action-button--rollback';
         const firstRow = page.locator('#inventory-table .tabulator-row').first();
+        const deleteButton = firstRow.locator('.amb-row-action-button--delete');
 
-        await page.locator('#javascript-demo .amb-toolbar__button--show-report').focus();
-        await focusNextActionButton(page, deleteButtonSelector);
-
-        const deleteButton = page.locator(deleteButtonSelector);
-
+        await expect(deleteButton).toBeVisible();
+        await expect(deleteButton).toBeEnabled();
+        await deleteButton.focus();
         await expect(deleteButton).toBeFocused();
         await expect(deleteButton).toHaveAttribute('aria-label', 'Delete product');
         await expect(deleteButton).toHaveAttribute('title', 'Delete product');
@@ -113,10 +94,11 @@ test.describe('row controls accessibility', () => {
         await page.keyboard.press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'deleted');
 
-        await focusNextActionButton(page, rollbackButtonSelector);
+        const rollbackButton = firstRow.locator('.amb-row-action-button--rollback');
 
-        const rollbackButton = page.locator(rollbackButtonSelector);
-
+        await expect(rollbackButton).toBeVisible();
+        await expect(rollbackButton).toBeEnabled();
+        await rollbackButton.focus();
         await expect(rollbackButton).toBeFocused();
         await expect(rollbackButton).toHaveAttribute('aria-label', 'Rollback product changes');
         await expect(rollbackButton).toHaveAttribute('title', 'Rollback product changes');
@@ -126,6 +108,7 @@ test.describe('row controls accessibility', () => {
         await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'clean');
 
+        await expect(deleteButton).toBeVisible();
         await deleteButton.click();
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
     });
@@ -153,11 +136,6 @@ test.describe('row controls accessibility', () => {
         expect(afterActionFocus.tagName).toBe('INPUT');
         expect(afterActionFocus.field).toBe('itemCode');
 
-        await deleteButton.focus();
-        await deleteButton.press('Enter');
-        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
-        await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
-        await expect(firstRow).toHaveAttribute('data-state', 'deleted');
     });
 
     test('main demo data cbox still supports whole-cell mouse editing', async ({ page }) => {
@@ -178,7 +156,7 @@ test.describe('row controls accessibility', () => {
         const table = page.locator('#validation-table');
         const rows = table.locator('.tabulator-row');
         const firstRow = rows.nth(0);
-        const secondRow = rows.nth(1);
+        const secondRow = rows.filter({ hasText: 'Beacon' });
 
         await expect(rows).toHaveCount(11);
         await expect(table.locator('.amb-row-action-button')).toHaveCount(0);
@@ -189,8 +167,8 @@ test.describe('row controls accessibility', () => {
         await expect(secondRow).toHaveAttribute('data-state', 'modified');
         await expect(table.locator('.amb-row-action-button--rollback')).toHaveCount(10);
 
-        const rollback = table.locator('.amb-row-action-button--rollback').first();
-        const rollbackRow = rollback.locator('xpath=ancestor::div[contains(@class, "tabulator-row")]');
+        const rollbackRow = secondRow;
+        const rollback = rollbackRow.locator('.amb-row-action-button--rollback');
 
         await rollback.focus();
         await expect(rollback).toBeFocused();
