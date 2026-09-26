@@ -369,6 +369,52 @@ describe('table pagination keyboard runtime', () => {
         expect(globalThis.document.activeElement).toBe(itemCode.getElement().editor);
     });
 
+    test('opens the next automatic destination when Tab starts from a managed action', () => {
+        const rowAction = createCandidate({ field: '_actions' });
+        const itemCode = createCandidate({ field: 'itemCode' });
+        setAmbColumnMetadata(rowAction.getColumn().getDefinition(), {
+            interactive: true,
+            managedColumn: 'rowAction',
+            focusSelector: '.amb-row-action-button'
+        });
+        const harness = createHarness({ cells: [rowAction, itemCode] });
+        globalThis.document.activeElement = rowAction.getElement();
+
+        const event = harness.tableElement.dispatch({ key: 'Tab', target: rowAction.getElement() });
+
+        expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(itemCode.edit).toHaveBeenCalledOnce();
+        expect(globalThis.document.activeElement).toBe(itemCode.getElement().editor);
+    });
+
+    test('contains ArrowDown at a standard inline editor but preserves the checkbox opt-in', () => {
+        const text = createCandidate({ field: 'text' });
+        const checkbox = createCandidate({ field: 'checkbox' });
+        setAmbColumnMetadata(checkbox.getColumn().getDefinition(), {
+            spatialNavigationWhileEditing: true
+        });
+        const harness = createHarness({ cells: [text, checkbox] });
+        harness.setEditing(true, text);
+        globalThis.document.activeElement = text.getElement().editor;
+        text.getElement().editor.matches = selector => selector === 'input.amb-cell-editor';
+
+        const textArrow = harness.tableElement.dispatch({
+            key: 'ArrowDown',
+            target: text.getElement().editor
+        });
+
+        harness.setEditing(true, checkbox);
+        globalThis.document.activeElement = checkbox.getElement().editor;
+        const checkboxArrow = harness.tableElement.dispatch({
+            key: 'ArrowDown',
+            target: checkbox.getElement().editor
+        });
+
+        expect(textArrow.stopPropagation).toHaveBeenCalledOnce();
+        expect(textArrow.preventDefault).not.toHaveBeenCalled();
+        expect(checkboxArrow.stopPropagation).toHaveBeenCalledOnce();
+    });
+
     test('destroy removes a pending render listener and unlocks the coordinator', async () => {
         const harness = createHarness({});
         const transition = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });

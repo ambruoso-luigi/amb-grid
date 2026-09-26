@@ -110,6 +110,19 @@ export const createKeyboardNavigationRuntime = ({
     const pendingEditorCloseFinalizers = new Set();
     const pendingRenderWaitFinalizers = new Set();
 
+    const containStandardEditorArrows = event => {
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+        const target = event.target;
+        if (!target?.matches?.('input.amb-cell-editor') || !tableElement.contains?.(target)) return;
+        if (!target.closest?.('.tabulator-cell.tabulator-editing')) return;
+
+        // Tabulator listens in capture phase on the grid. Contain standard
+        // inline-editor arrows before they reach that listener, while keeping
+        // the input's native caret behavior because default is not prevented.
+        event.stopImmediatePropagation?.();
+    };
+    globalThis.addEventListener?.('keydown', containStandardEditorArrows, true);
+
     const normalizeDestination = destination => (
         typeof destination === 'string'
             ? { edge: destination, field: null, column: null, activation: 'edit' }
@@ -607,7 +620,12 @@ export const createKeyboardNavigationRuntime = ({
             // the only editor that opts into spatial navigation while editing;
             // that opt-in applies to arrows only, never Enter.
             if (enter || ['commit', 'cancel'].includes(action)) return;
-            if (spatialAction && !getAmbColumnMetadata(activeDefinition).spatialNavigationWhileEditing) return;
+            if (spatialAction && !getAmbColumnMetadata(activeDefinition).spatialNavigationWhileEditing) {
+                if (event.target?.matches?.('input.amb-cell-editor')) {
+                    event.stopPropagation?.();
+                }
+                return;
+            }
         }
         if (auxiliary && getAmbColumnMetadata(activeDefinition).auxiliaryAction !== true) return;
         if (
@@ -681,7 +699,11 @@ export const createKeyboardNavigationRuntime = ({
                 || candidate.getElement?.() === editingElement
                 || candidate.getElement?.() === activeCell?.getElement?.()
             ));
+            const activeManagedColumn = getAmbColumnMetadata(activeDefinition).managedColumn;
             const direction = action === 'previous' ? 'prev' : 'next';
+            const managedOriginTarget = currentIndex === -1 && activeManagedColumn
+                ? candidates[direction === 'prev' ? candidates.length - 1 : 0]
+                : null;
             const atPageBoundary = direction === 'prev'
                 ? currentIndex === 0
                 : currentIndex === candidates.length - 1;
@@ -690,6 +712,13 @@ export const createKeyboardNavigationRuntime = ({
                 targetCandidate?.getColumn?.()?.getDefinition?.()
             ).keyboardFocusOnly === true;
 
+            if (managedOriginTarget) {
+                event.preventDefault();
+                event.stopPropagation?.();
+                event.stopImmediatePropagation?.();
+                navigateToCandidate(managedOriginTarget);
+                return;
+            }
             if (currentIndex === -1) return;
             if ((focusOnly || targetFocusOnly) && !atPageBoundary) {
                 event.preventDefault();
@@ -839,6 +868,7 @@ export const createKeyboardNavigationRuntime = ({
          */
         destroy() {
             destroyed = true;
+            globalThis.removeEventListener?.('keydown', containStandardEditorArrows, true);
             for (const finalize of [...pendingEditorCloseFinalizers]) finalize();
             for (const finalize of [...pendingRenderWaitFinalizers]) finalize();
             activeFinalizer?.();
