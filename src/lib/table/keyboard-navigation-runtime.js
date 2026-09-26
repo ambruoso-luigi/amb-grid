@@ -162,6 +162,10 @@ export const createKeyboardNavigationRuntime = ({
         );
     };
 
+    const isAutomaticPageCandidate = candidate => !getAmbColumnMetadata(
+        candidate?.getColumn?.()?.getDefinition?.() || {}
+    ).managedColumn;
+
     const getDestinationCandidates = destination => {
         const { edge, field, column } = normalizeDestination(destination);
         const rows = getRenderedRows(edge);
@@ -178,7 +182,8 @@ export const createKeyboardNavigationRuntime = ({
 
         return rows.flatMap(row => {
             const cells = row.getCells();
-            return edge === 'last' ? cells.slice().reverse() : cells;
+            return (edge === 'last' ? cells.slice().reverse() : cells)
+                .filter(isAutomaticPageCandidate);
         });
     };
 
@@ -667,7 +672,10 @@ export const createKeyboardNavigationRuntime = ({
         if (isTab) {
             const candidates = getRenderedRows('first')
                 .flatMap(row => row.getCells())
-                .filter(isKeyboardOperationalCandidate);
+                .filter(candidate => (
+                    isKeyboardOperationalCandidate(candidate)
+                    && isAutomaticPageCandidate(candidate)
+                ));
             const currentIndex = candidates.findIndex(candidate => (
                 candidate === activeCell
                 || candidate.getElement?.() === editingElement
@@ -787,6 +795,9 @@ export const createKeyboardNavigationRuntime = ({
         void nextFrame().then(nextFrame).then(() => {
             if (destroyed) return;
             if (cell?.getElement?.()?.classList?.contains?.('tabulator-editing')) return;
+            const cellElement = cell?.getElement?.();
+            const activeElement = globalThis.document?.activeElement;
+            if (activeElement && activeElement !== cellElement && !cellElement?.contains?.(activeElement)) return;
 
             focusNavigationCandidate(cell);
         });

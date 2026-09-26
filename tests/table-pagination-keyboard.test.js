@@ -349,6 +349,26 @@ describe('table pagination keyboard runtime', () => {
         expect(harness.paginationMethods.previousPage).toHaveBeenCalledOnce();
     });
 
+    test('skips managed action cells when activating the first editable page destination', async () => {
+        const rowAction = createCandidate({ field: '_actions' });
+        const itemCode = createCandidate({ field: 'itemCode' });
+        setAmbColumnMetadata(rowAction.getColumn().getDefinition(), {
+            interactive: true,
+            managedColumn: 'rowAction',
+            focusSelector: '.amb-row-action-button'
+        });
+        const harness = createHarness({ cells: [rowAction, itemCode] });
+        const transition = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });
+
+        harness.table.emit('renderComplete');
+
+        expect(await transition).toBe(true);
+        expect(rowAction.edit).not.toHaveBeenCalled();
+        expect(itemCode.edit).toHaveBeenCalledOnce();
+        expect(itemCode.getElement().classList.contains('tabulator-editing')).toBe(true);
+        expect(globalThis.document.activeElement).toBe(itemCode.getElement().editor);
+    });
+
     test('destroy removes a pending render listener and unlocks the coordinator', async () => {
         const harness = createHarness({});
         const transition = harness.runtime.transitionPage({ direction: 'next', destination: 'first' });
