@@ -64,16 +64,20 @@ const confirmDialog = async page => {
 
 const editCell = async (row, field, value) => {
     const cell = row.locator(`.tabulator-cell[tabulator-field="${field}"]`);
-    let input = cell.locator('input');
+    const input = cell.locator('input');
 
-    if (await input.count() === 0) {
+    if (!await cell.evaluate(element => element.classList.contains('tabulator-editing'))) {
         await cell.dblclick();
-        input = cell.locator('input');
     }
 
+    await expect(cell).toHaveClass(/tabulator-editing/);
     await expect(input).toBeVisible();
+    await expect(input).toBeFocused();
     await input.fill(value);
     await input.press('Enter');
+    await expect(cell).not.toHaveClass(/tabulator-editing/);
+    await expect(input).toHaveCount(0);
+    await expect(cell).toBeFocused();
 };
 
 const openCalculationsPage = async page => {
