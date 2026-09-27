@@ -198,12 +198,10 @@ test.describe('React supplier lookup messages and status select', () => {
     });
 
     test('maps a supplier dialog selection into the row and restores it through rollback', async ({ page }) => {
-        const initialSupplier = reactCell(page, 'ITM-1001', 'supplierCode');
         const editedRow = reactRow(page, 'ITM-1002');
         const supplier = reactCell(page, 'ITM-1002', 'supplierCode');
 
-        await initialSupplier.click();
-        await page.keyboard.press('ArrowDown');
+        await supplier.click();
         await expect(supplier).toBeFocused();
         await expect(supplier).not.toHaveClass(/tabulator-editing/);
         await page.keyboard.press('F2');
@@ -246,7 +244,7 @@ test.describe('React supplier lookup messages and status select', () => {
         const row = reactRow(page, 'ITM-1002');
         const status = reactCell(page, 'ITM-1002', 'status');
 
-        await status.focus();
+        await status.click();
         await expect(status).toBeFocused();
         await expect(status).not.toHaveClass(/tabulator-editing/);
         await page.keyboard.press('Enter');

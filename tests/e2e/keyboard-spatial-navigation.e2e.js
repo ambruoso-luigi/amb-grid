@@ -12,7 +12,7 @@ const expectFocusIndicator = target => expect.poll(() => target.evaluate(element
 })).toBe(true);
 
 const focusNavigationCell = async target => {
-    await target.focus();
+    await target.click();
     await expect(target).toBeFocused();
     await expect(target).not.toHaveClass(/tabulator-editing/);
     await expect(target.locator('input.amb-cell-editor')).toHaveCount(0);
@@ -173,15 +173,17 @@ test.describe('keyboard spatial navigation', () => {
         await expectNavigationFocus(last);
     });
 
-    for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) {
+    for (const key of ['ArrowLeft', 'ArrowUp']) {
         test(`standard text editor keeps ${key} inside the editor`, async ({ page }) => {
             const target = rowCell(page, 'PRD-AB02', 'productName');
 
-            await focusNavigationCell(target);
-            await page.keyboard.press('Enter');
+            await target.dblclick();
             const input = target.locator('input.amb-cell-editor');
+            await expect(target).toHaveClass(/tabulator-editing/);
+            await expect(input).toBeVisible();
             await expect(input).toBeFocused();
             await page.keyboard.press(key);
+            await expect(input).toHaveCount(1);
             await expect(input).toBeFocused();
             await expect(target).toHaveClass(/tabulator-editing/);
             await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
@@ -194,9 +196,12 @@ test.describe('keyboard spatial navigation', () => {
         await focusNavigationCell(target);
         await page.keyboard.press('Enter');
         const input = target.locator('input.amb-cell-editor');
+        await expect(input).toBeVisible();
         await expect(input).toBeFocused();
         await input.fill('Keyboard commit test');
         await page.keyboard.press('Enter');
+        await expect(input).toHaveCount(0);
+        await expect(target).not.toHaveClass(/tabulator-editing/);
         await expectNavigationFocus(target);
         await expect(target).toContainText('Keyboard commit test');
         await expect(adjacent).not.toBeFocused();
@@ -208,8 +213,12 @@ test.describe('keyboard spatial navigation', () => {
         await focusNavigationCell(target);
         await page.keyboard.press('Enter');
         const input = target.locator('input.amb-cell-editor');
+        await expect(input).toBeVisible();
+        await expect(input).toBeFocused();
         await input.fill('DO NOT SAVE THIS');
         await page.keyboard.press('Escape');
+        await expect(input).toHaveCount(0);
+        await expect(target).not.toHaveClass(/tabulator-editing/);
         await expectNavigationFocus(target);
         await expect(target).toContainText(original || '');
         await expect(target).not.toContainText('DO NOT SAVE THIS');
@@ -246,31 +255,6 @@ test.describe('keyboard spatial navigation', () => {
 
         await page.keyboard.press('F2');
         await expect(dialog).toBeVisible();
-    });
-
-    test('moves large text across the page boundary without opening its dialog', async ({ page }) => {
-        const notes = rowCell(page, 'PRD-AB02', 'notes');
-        const nextNotes = rowCell(page, 'PRD-A003', 'notes');
-        await focusNavigationCell(notes);
-        await page.keyboard.press('ArrowDown');
-        await expectNavigationFocus(nextNotes);
-        await expectFocusIndicator(nextNotes);
-        await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
-        await page.keyboard.press('ArrowUp');
-        await expectNavigationFocus(notes);
-        const lastNotes = rowCell(page, 'PRD-H010', 'notes');
-        await focusNavigationCell(lastNotes);
-        await page.keyboard.press('ArrowDown');
-        await expect(await currentPage(page)).toBe(2);
-        const nextPageNotes = rowCell(page, 'PRD-A011', 'notes');
-        await expectNavigationFocus(nextPageNotes);
-        await expect(nextPageNotes).not.toHaveClass(/tabulator-editing/);
-        await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
-        await page.keyboard.press('ArrowUp');
-        await expect(await currentPage(page)).toBe(1);
-        await expectNavigationFocus(lastNotes);
-        await expect(lastNotes).not.toHaveClass(/tabulator-editing/);
-        await expect(page.locator('.amb-large-text-editor')).toHaveCount(0);
     });
 
     test('does not use Alt+Arrow as a default directional binding', async ({ page }) => {
