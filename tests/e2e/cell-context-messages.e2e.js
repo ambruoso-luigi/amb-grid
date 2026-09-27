@@ -232,12 +232,19 @@ test.describe('React supplier lookup messages and status select', () => {
 
     test('updates React-owned copy without losing a pending grid change', async ({ page }) => {
         const row = reactRow(page, 'ITM-1002');
-        const status = reactCell(page, 'ITM-1002', 'status');
+        const supplier = reactCell(page, 'ITM-1002', 'supplierCode');
 
-        await status.press('Enter');
-        const editor = status.locator('select.amb-cell-editor--select');
-        await expect(editor).toBeVisible();
-        await editor.selectOption('HOLD');
+        await supplier.press('F2');
+        const dialog = page.locator('.amb-lookup-dialog');
+        await expect(dialog).toBeVisible();
+        const search = dialog.locator('.amb-lookup-dialog__search');
+        await search.fill('SUP-003');
+        await expect(dialog.locator('tbody tr')).toContainText('Lombarda Industrial');
+        await dialog.locator('tbody tr').filter({ hasText: 'SUP-003' }).click();
+        await dialog.locator('.amb-lookup-dialog__button--primary').click();
+        await page.keyboard.press('Escape');
+        await expect(supplier).toContainText('Lombarda Industrial');
+        await expect(supplier).toContainText('SUP-003 · Milano');
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
 
         await page.locator('.react-demo-language__label').filter({ hasText: 'EN' }).click();
@@ -249,12 +256,14 @@ test.describe('React supplier lookup messages and status select', () => {
             'Search a supplier by code, name, or city'
         );
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
-        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'hold');
+        await expect(supplier).toContainText('Lombarda Industrial');
+        await expect(supplier).toContainText('SUP-003 · Milano');
 
         await page.locator('.react-demo-language__label').filter({ hasText: 'IT' }).click();
         await expect(page.getByRole('heading', { name: 'Operazioni inventario' })).toBeVisible();
         await expect(page.locator('.react-table-guide__column-list')).toContainText('Fornitore');
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
-        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'hold');
+        await expect(supplier).toContainText('Lombarda Industrial');
+        await expect(supplier).toContainText('SUP-003 · Milano');
     });
 });
