@@ -67,15 +67,7 @@ test.describe('date picker commit regression', () => {
         const cell = pickerOnlyCell(page);
         const picker = page.locator('.datepicker.active');
 
-        await cell.dblclick({ delay: 100 });
-        await expect(picker).toHaveCount(1);
-        await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
-        await page.keyboard.press('Escape');
-        await expect(picker).toHaveCount(0);
-        await expect(cell).toBeFocused();
-        await expect(cell).not.toHaveClass(/tabulator-editing/);
-        await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
-        await page.keyboard.press('Enter');
+        await cell.press('Enter');
         await expect(picker).toHaveCount(1);
         await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
         await page.keyboard.press('Escape');

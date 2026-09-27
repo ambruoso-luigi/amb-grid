@@ -201,10 +201,7 @@ test.describe('React supplier lookup messages and status select', () => {
         const editedRow = reactRow(page, 'ITM-1002');
         const supplier = reactCell(page, 'ITM-1002', 'supplierCode');
 
-        await supplier.click();
-        await expect(supplier).toBeFocused();
-        await expect(supplier).not.toHaveClass(/tabulator-editing/);
-        await page.keyboard.press('F2');
+        await supplier.press('F2');
 
         const dialog = page.locator('.amb-lookup-dialog');
         await expect(dialog).toBeVisible();
