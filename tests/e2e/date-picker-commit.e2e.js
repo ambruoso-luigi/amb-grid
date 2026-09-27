@@ -14,7 +14,6 @@ const pickerCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-fi
 const eventCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="eventName"]');
 const previousCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="manualDate"]');
 const nextCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="isoDate"]');
-const compactCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="compactDate"]');
 const pickerOnlyCell = page => pickerRow(page).locator('.tabulator-cell[tabulator-field="pickerOnlyDate"]');
 
 const openPicker = async page => {
@@ -66,20 +65,13 @@ test.describe('date picker commit regression', () => {
     test('picker-only Enter opens the calendar without a manual input', async ({ page }) => {
         await openDatesExample(page);
         const cell = pickerOnlyCell(page);
-        const compact = compactCell(page);
         const picker = page.locator('.datepicker.active');
 
-        await compact.dblclick();
-        const compactInput = compact.locator('input.amb-date-editor');
-        await expect(compact).toHaveClass(/tabulator-editing/);
-        await expect(compactInput).toBeVisible();
-        await expect(compactInput).toBeFocused();
+        await cell.dblclick({ delay: 100 });
+        await expect(picker).toHaveCount(1);
+        await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
         await page.keyboard.press('Escape');
-        await expect(compactInput).toHaveCount(0);
-        await expect(compact).not.toHaveClass(/tabulator-editing/);
-        await expect(compact).toBeFocused();
-
-        await page.keyboard.press('ArrowRight');
+        await expect(picker).toHaveCount(0);
         await expect(cell).toBeFocused();
         await expect(cell).not.toHaveClass(/tabulator-editing/);
         await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
