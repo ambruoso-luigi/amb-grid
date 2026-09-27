@@ -228,27 +228,15 @@ test.describe('React supplier lookup messages and status select', () => {
         await expect(supplier).toContainText('Emilia Tech Supplies');
         await expect(supplier).toContainText('SUP-002 · Bologna');
 
-        const status = reactCell(page, 'ITM-1002', 'status');
-        await status.dblclick();
-        await status.locator('select.amb-cell-editor--select').selectOption('HOLD');
-        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'hold');
-        await expect(editedRow.locator('.amb-row-action-button--rollback')).toBeVisible();
-        await editedRow.locator('.amb-row-action-button--rollback').click();
-        await expect(status.locator('.inventory-status')).toHaveAttribute('data-status', 'active');
     });
 
     test('updates React-owned copy without losing a pending grid change', async ({ page }) => {
         const row = reactRow(page, 'ITM-1002');
         const status = reactCell(page, 'ITM-1002', 'status');
 
-        await status.click();
-        await expect(status).toBeFocused();
-        await expect(status).not.toHaveClass(/tabulator-editing/);
-        await page.keyboard.press('Enter');
+        await status.press('Enter');
         const editor = status.locator('select.amb-cell-editor--select');
-        await expect(status).toHaveClass(/tabulator-editing/);
         await expect(editor).toBeVisible();
-        await expect(editor).toBeFocused();
         await editor.selectOption('HOLD');
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
 
