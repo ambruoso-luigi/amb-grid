@@ -102,7 +102,7 @@ test.describe('managed selection column interaction', () => {
         await expect(row(page, 'NT-002')).toHaveClass(/tabulator-selected/);
         await headerInput.uncheck();
         await expect(headerInput).not.toBeChecked();
-        await expectUnselected(page, 'NT-001');
-        await expectUnselected(page, 'NT-002');
+        await expect(row(page, 'NT-001')).not.toHaveClass(/tabulator-selected/);
+        await expect(row(page, 'NT-002')).not.toHaveClass(/tabulator-selected/);
     });
 });
