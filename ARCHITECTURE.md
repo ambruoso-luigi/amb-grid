@@ -1,4 +1,4 @@
-﻿# AMB Grid Architecture
+# AMB Grid Architecture
 
 
 This document describes the current architecture of AMB Grid: the main responsibilities of the library, the ownership boundaries between its parts, and the dependency rules that should remain stable as the project evolves.
@@ -44,42 +44,44 @@ React, Vue, Angular, classic JavaScript pages, and server-rendered applications 
 The main runtime path is intentionally layered:
 
 
-    Application / framework
-            |
-            v
-    AMB Grid public package surface
-            |
-            v
-    AMB.table(...)
-            |
-            v
-    AMBTableController
-            |
-            +-- CRUD lifecycle and row state
-            +-- row, cell, and column operations
-            +-- validation, editing, and parsing coordination
-            +-- lookup and Multifield Lookup
-            +-- selection, search, filtering, and pagination
-            +-- calculations and history
-            +-- AMB-owned UI and lifecycle cleanup
-            |
-            v
-    AMB Grid internal runtime/modules
-            |
-            +-- CrudHelper
-            +-- column pipeline and column runtime
-            +-- search controller
-            +-- history runtime
-            +-- calculation runtime
-            +-- lookup coordination
-            +-- UI components and binders
-            |
-            v
-    Third-party runtime dependencies
-            |
-            +-- Tabulator
-            +-- Awesomplete
-            +-- vanilla-datepicker
+```text
+Application / framework
+        |
+        v
+AMB Grid public package surface
+        |
+        v
+AMB.table(...)
+        |
+        v
+AMBTableController
+        |
+        +-- CRUD lifecycle and row state
+        +-- row, cell, and column operations
+        +-- validation, editing, and parsing coordination
+        +-- lookup and Multifield Lookup
+        +-- selection, search, filtering, and pagination
+        +-- calculations and history
+        +-- AMB-owned UI and lifecycle cleanup
+        |
+        v
+AMB Grid internal runtime/modules
+        |
+        +-- CrudHelper
+        +-- column pipeline and column runtime
+        +-- search controller
+        +-- history runtime
+        +-- calculation runtime
+        +-- lookup coordination
+        +-- UI components and binders
+        |
+        v
+Third-party runtime dependencies
+        |
+        +-- Tabulator
+        +-- Awesomplete
+        +-- vanilla-datepicker
+```
 
 
 The package exposes the `AMB` namespace together with selected named exports. `AMB.table(...)` is the primary grid creation path and returns the controller that applications should normally use for grid operations.
@@ -161,10 +163,12 @@ The column runtime keeps AMB-managed column behavior synchronized when columns a
 These four families deliberately have different responsibilities:
 
 
-    Formatter  -> how a stored value is presented
-    Editor     -> how the user changes a value
-    Validator  -> whether a value is acceptable
-    Parser     -> how a value is normalized into a predictable representation, especially for payload/backend use
+```text
+Formatter  -> how a stored value is presented
+Editor     -> how the user changes a value
+Validator  -> whether a value is acceptable
+Parser     -> how a value is normalized into a predictable representation, especially for payload/backend use
+```
 
 
 Editors manage user interaction and commit behavior. Validators evaluate values and produce validation results. Parsers normalize values into predictable representations, especially for payload-oriented use, without replacing validation. Formatters control presentation and must not become the authoritative source of stored data.
@@ -224,14 +228,16 @@ The package also exposes selected named exports from `src/index.js`, including `
 Two controller properties provide intentionally lower-level access:
 
 
-    Normal application use
-            |
-            v
-    AMB namespace / AMBTableController
-            |
-            +-- grid.table  -> advanced access to the internal table engine
-            |
-            +-- grid.crud   -> advanced compatible access to CrudHelper
+```text
+Normal application use
+        |
+        v
+AMB namespace / AMBTableController
+        |
+        +-- grid.table  -> advanced access to the internal table engine
+        |
+        +-- grid.crud   -> advanced compatible access to CrudHelper
+```
 
 
 `grid.table` and `grid.crud` exist for integration scenarios and compatibility, but normal application code should prefer controller methods where AMB Grid already exposes the required behavior. Direct engine or CRUD-layer calls can bypass controller-level coordination if used outside the documented contract.
@@ -267,17 +273,19 @@ AMB Grid owns the grid runtime created inside that container. This includes the 
 The ownership boundary is therefore:
 
 
-    Application / framework
-            |
-            +-- owns view/component/container
-            +-- owns backend calls and surrounding application state
-            |
-            v
-    AMB.table(...)
-            |
-            +-- owns the AMB Grid instance inside the container
-            +-- owns internal runtime resources
-            +-- returns the controller
+```text
+Application / framework
+        |
+        +-- owns view/component/container
+        +-- owns backend calls and surrounding application state
+        |
+        v
+AMB.table(...)
+        |
+        +-- owns the AMB Grid instance inside the container
+        +-- owns internal runtime resources
+        +-- returns the controller
+```
 
 
 Framework integrations follow the same model rather than introducing framework-specific grid ownership. React creates the grid after mount and destroys it during effect cleanup; Vue maps creation and destruction to its mount/unmount lifecycle; Angular creates the grid after the view exists and destroys it from the component lifecycle.
@@ -292,22 +300,24 @@ Resources created for one AMB Grid instance are released through that instance's
 The destroy path releases AMB-owned resources before destroying the internal table engine. This includes calculation and history runtimes, toolbar resources, column and lookup subscriptions, binders, search, feedback, messages, dialogs, CRUD bindings, and finally the table engine itself.
 
 
-    AMB.table(...)
-         |
-         v
-    managed grid instance
-         |
-         +-- controller
-         +-- CRUD layer
-         +-- runtime services
-         +-- UI resources
-         +-- internal engine
-         |
-         v
-    grid.destroy()
-         |
-         v
-    release owned resources and destroy the engine
+```text
+AMB.table(...)
+     |
+     v
+managed grid instance
+     |
+     +-- controller
+     +-- CRUD layer
+     +-- runtime services
+     +-- UI resources
+     +-- internal engine
+     |
+     v
+grid.destroy()
+     |
+     v
+release owned resources and destroy the engine
+```
 
 
 A controller should not normally be reused after destruction.
@@ -319,16 +329,18 @@ A controller should not normally be reused after destruction.
 The intended dependency direction is one-way:
 
 
-    Application / framework
-            |
-            v
-    Public AMB Grid API
-            |
-            v
-    AMB Grid internal runtime/modules
-            |
-            v
-    Third-party runtime dependencies
+```text
+Application / framework
+        |
+        v
+Public AMB Grid API
+        |
+        v
+AMB Grid internal runtime/modules
+        |
+        v
+Third-party runtime dependencies
+```
 
 
 The inverse direction must not become an architectural dependency: the reusable core must not depend on demo code, fake backends, framework examples, or application-specific backend logic. Third-party runtime details should not leak into normal application code when an AMB Grid abstraction already exists.
@@ -349,11 +361,13 @@ When data is initially loaded or deliberately replaced through the managed contr
 The main lifecycle states are:
 
 
-    clean      -> row matches the current baseline
-    new        -> row exists only on the client and has not yet been confirmed by the backend
-    modified   -> persisted row differs from its baseline
-    deleted    -> persisted row is marked for deletion but remains available for rollback
-    saved      -> a pending row was explicitly acknowledged as saved
+```text
+clean      -> row matches the current baseline
+new        -> row exists only on the client and has not yet been confirmed by the backend
+modified   -> persisted row differs from its baseline
+deleted    -> persisted row is marked for deletion but remains available for rollback
+saved      -> a pending row was explicitly acknowledged as saved
+```
 
 
 New rows receive AMB-managed temporary identifiers when no backend identifier exists. A new row that is removed before being saved can be physically removed immediately; a persisted row is normally marked as `deleted` so it can still participate in rollback and save reporting.
@@ -383,19 +397,21 @@ Validation does not replace CRUD state, and CRUD state does not imply validity. 
 The save boundary is therefore:
 
 
-    managed rows and CRUD state
-            |
-            v
-    validation / state report
-            |
-            v
-    getSavePayload()
-            |
-            v
-    application-owned transport
-            |
-            v
-    backend persistence
+```text
+managed rows and CRUD state
+        |
+        v
+validation / state report
+        |
+        v
+getSavePayload()
+        |
+        v
+application-owned transport
+        |
+        v
+backend persistence
+```
 
 
 AMB Grid stops at payload preparation. The application decides whether, when, and how to call the backend.
@@ -416,16 +432,18 @@ After the application has received successful persistence confirmation, `grid.ma
 This keeps the direction explicit:
 
 
-    AMB Grid prepares changes
-            |
-            v
-    application sends them
-            |
-            v
-    backend confirms persistence
-            |
-            v
-    application reconciles ids / saved state with AMB Grid
+```text
+AMB Grid prepares changes
+        |
+        v
+application sends them
+        |
+        v
+backend confirms persistence
+        |
+        v
+application reconciles ids / saved state with AMB Grid
+```
 
 
 AMB Grid never treats payload generation itself as proof that persistence succeeded.
@@ -521,24 +539,22 @@ Type declaration generation and consumer type-checks protect the TypeScript-faci
 Conceptually, the test layers map to change types as follows:
 
 
-    library behavior / contracts
-            -> Vitest
+```text
+library behavior / contracts
+        -> Vitest
 
+browser interaction and focus behavior
+        -> Playwright E2E
 
-    browser interaction and focus behavior
-            -> Playwright E2E
+npm package surface and consumer installation
+        -> package verification / smoke tests
 
+standalone browser distribution
+        -> legacy package and browser smoke tests
 
-    npm package surface and consumer installation
-            -> package verification / smoke tests
-
-
-    standalone browser distribution
-            -> legacy package and browser smoke tests
-
-
-    TypeScript public contract
-            -> declaration build and consumer type-check
+TypeScript public contract
+        -> declaration build and consumer type-check
+```
 
 
 No single test layer replaces the others; each protects a different architectural boundary.

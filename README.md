@@ -378,7 +378,7 @@ Reusable editors for common scenarios:
 AMB Grid keeps keyboard behavior aligned across editable data cells,
 popup/action cells, and non-data interactive columns:
 
-### Interaction states
+#### Interaction states
 
 Mouse and keyboard interaction converge on three AMB Grid states:
 
@@ -1060,7 +1060,18 @@ npm run docs
 
 ## Documentation
 
-Generated API documentation is available in the `docs` folder.
+Use the current documentation for the level of detail appropriate to the task:
+
+- [Architecture](ARCHITECTURE.md) explains internal responsibilities, ownership,
+  lifecycle boundaries, and distribution layers.
+- [Generated API documentation](docs/index.html) lists the public API generated
+  from source JSDoc.
+- [Security notes](docs/security.md) explains client-side safety boundaries and
+  backend responsibilities.
+- [Changelog](CHANGELOG.md) records released and unreleased changes.
+- [Releasing](RELEASING.md) describes the verified release process.
+
+## Styling
 
 Reusable AMB Grid styles live in `src/amb-grid.css`. Demo/site-only rules live
 in `src/demo/demo.css`. `src/style.css` remains a temporary compatibility file
@@ -1102,19 +1113,6 @@ The controller returned by `AMB.table(...)` is the primary public API. Use
 `grid.table` only for advanced engine access not yet covered by AMB Grid.
 Direct engine calls can bypass AMB Grid lifecycle, validation, state tracking,
 events, or UI coordination.
-
-## Roadmap
-
-The following areas are currently being stabilized before a first serious release:
-
-* CRUD state management
-* Safe textual formatters
-* Lifecycle and cleanup behavior
-* Save payload generation
-* Backend identifier synchronization
-* Documentation and security notes
-* Legacy-friendly and modern integration demos
-* Basic automated tests for the core behavior
 
 ## License
 
