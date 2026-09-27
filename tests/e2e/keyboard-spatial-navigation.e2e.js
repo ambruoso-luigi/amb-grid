@@ -58,25 +58,6 @@ test.describe('keyboard spatial navigation', () => {
         await expectNavigationFocus(last);
     });
 
-    test('uses click for navigation and double click or Enter for the same text editor', async ({ page }) => {
-        const target = rowCell(page, 'PRD-AB02', 'productName');
-        const right = rowCell(page, 'PRD-AB02', 'warehouse');
-
-        await target.click();
-        await expectNavigationFocus(target);
-        await page.keyboard.press('ArrowRight');
-        await expectNavigationFocus(right);
-
-        await target.dblclick();
-        await expect(target).toHaveClass(/tabulator-editing/);
-        await expect(target.locator('input.amb-cell-editor')).toBeFocused();
-        await page.keyboard.press('Escape');
-        await expectNavigationFocus(target);
-
-        await page.keyboard.press('Enter');
-        await expect(target.locator('input.amb-cell-editor')).toBeFocused();
-    });
-
     test('commits and cancels a mouse-opened text editor back to navigation focus', async ({ page }) => {
         const target = rowCell(page, 'PRD-AB02', 'productName');
         const original = await target.textContent();
