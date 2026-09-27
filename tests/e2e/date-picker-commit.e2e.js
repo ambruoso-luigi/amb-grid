@@ -50,31 +50,43 @@ const commitOutsideEditorAndVerify = async (page, cell, selectedValue) => {
 };
 
 test.describe('date picker commit regression', () => {
-    test('picker-only uses double click, Enter, and F2 without opening a manual input', async ({ page }) => {
+    test('picker-only double click opens the calendar without a manual input', async ({ page }) => {
         await openDatesExample(page);
         const cell = pickerOnlyCell(page);
         const picker = page.locator('.datepicker.active');
-
-        await cell.click();
-        await expect(cell).toBeFocused();
-        await expect(cell).not.toHaveClass(/tabulator-editing/);
-        await expect(picker).toHaveCount(0);
-        await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
 
         await cell.dblclick({ delay: 100 });
         await expect(picker).toHaveCount(1);
         await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
         await page.keyboard.press('Escape');
         await expect(picker).toHaveCount(0);
+    });
 
-        await cell.click();
+    test('picker-only Enter opens the calendar without a manual input', async ({ page }) => {
+        await openDatesExample(page);
+        const cell = pickerOnlyCell(page);
+        const picker = page.locator('.datepicker.active');
+
+        await cell.focus();
+        await expect(cell).toBeFocused();
+        await expect(cell).not.toHaveClass(/tabulator-editing/);
         await page.keyboard.press('Enter');
         await expect(picker).toHaveCount(1);
+        await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
         await page.keyboard.press('Escape');
+        await expect(picker).toHaveCount(0);
+    });
 
-        await cell.click();
+    test('picker-only F2 opens the calendar without a manual input', async ({ page }) => {
+        await openDatesExample(page);
+        const cell = pickerOnlyCell(page);
+        const picker = page.locator('.datepicker.active');
+
+        await cell.focus();
+        await expect(cell).toBeFocused();
         await page.keyboard.press('F2');
         await expect(picker).toHaveCount(1);
+        await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
     });
 
     test('mouse selection commits on external blur', async ({ page }) => {

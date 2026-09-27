@@ -246,7 +246,10 @@ test.describe('React supplier lookup messages and status select', () => {
         const row = reactRow(page, 'ITM-1002');
         const status = reactCell(page, 'ITM-1002', 'status');
 
-        await status.dblclick();
+        await status.focus();
+        await expect(status).toBeFocused();
+        await expect(status).not.toHaveClass(/tabulator-editing/);
+        await page.keyboard.press('Enter');
         const editor = status.locator('select.amb-cell-editor--select');
         await expect(status).toHaveClass(/tabulator-editing/);
         await expect(editor).toBeVisible();

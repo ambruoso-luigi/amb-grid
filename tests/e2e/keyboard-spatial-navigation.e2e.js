@@ -12,7 +12,7 @@ const expectFocusIndicator = target => expect.poll(() => target.evaluate(element
 })).toBe(true);
 
 const focusNavigationCell = async target => {
-    await target.click();
+    await target.focus();
     await expect(target).toBeFocused();
     await expect(target).not.toHaveClass(/tabulator-editing/);
     await expect(target.locator('input.amb-cell-editor')).toHaveCount(0);
