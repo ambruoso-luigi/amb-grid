@@ -3,6 +3,8 @@ import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { bindDemoColumnGuideAnimations, createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { createDemoCommandGuide } from './components/demo-command-guide.ts';
+import { demoIcon } from './demo-icons.js';
 
 const DEMO_SAVE_POLICY = 'valid-only';
 
@@ -40,7 +42,9 @@ const messages = {
         row: 'Riga',
         validChangesCanSave: '{count} modifiche valide possono comunque essere salvate.',
         invalidRowsRemainPending: 'Le righe con errori resteranno in attesa di correzione.',
-        saveValidChangesQuestion: 'Vuoi salvare le modifiche valide?'
+        saveValidChangesQuestion: 'Vuoi salvare le modifiche valide?',
+        commandGuideLabel: 'Guida comandi',
+        commandGuideTitle: 'Mouse, tastiera e scorciatoie della tabella'
     },
     en: {
         reloaded: 'Data reloaded.',
@@ -75,7 +79,9 @@ const messages = {
         row: 'Row',
         validChangesCanSave: '{count} valid changes can still be saved.',
         invalidRowsRemainPending: 'Rows with errors will remain pending for correction.',
-        saveValidChangesQuestion: 'Do you want to save the valid changes?'
+        saveValidChangesQuestion: 'Do you want to save the valid changes?',
+        commandGuideLabel: 'Command guide',
+        commandGuideTitle: 'Mouse, keyboard and table shortcuts'
     }
 };
 
@@ -248,6 +254,7 @@ export default async function fullDemo(app, options = {}) {
                     ]
                 })}
                 <div class="demo-table-workbench">
+                    <div class="demo-command-guide-host"></div>
                     <div id="inventory-table" class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"></div>
                 </div>
             </div>
@@ -275,6 +282,7 @@ export default async function fullDemo(app, options = {}) {
     const warehouseOptions = await fakeApi.getWarehouses();
     const products = await fakeApi.getProducts();
     let crud = null;
+    let commandGuide = null;
 
     const tableOptions = {
         selector: '#inventory-table',
@@ -300,6 +308,13 @@ export default async function fullDemo(app, options = {}) {
                 'save',
                 'payload',
                 'validate',
+                {
+                    id: 'demo-command-guide',
+                    label: t('commandGuideLabel'),
+                    title: t('commandGuideTitle'),
+                    icon: demoIcon('help'),
+                    onClick: handleCommandGuide
+                },
                 {
                     id: 'show-report',
                     label: 'Report',
@@ -482,10 +497,36 @@ export default async function fullDemo(app, options = {}) {
 
     const demo = AMB.table(tableOptions);
     crud = demo.crud;
+    const commandGuideHost = app.querySelector('.demo-command-guide-host');
+    const commandGuideTrigger = app.querySelector('[data-action="demo-command-guide"]');
+    const updateCommandGuideTrigger = () => {
+        commandGuide?.setLocale(getLanguage());
+
+        if (!(commandGuideTrigger instanceof HTMLElement)) return;
+        const commandGuideLabel = commandGuideTrigger.querySelector('.amb-toolbar__button-label');
+
+        if (commandGuideLabel) commandGuideLabel.textContent = t('commandGuideLabel');
+        commandGuideTrigger.title = t('commandGuideTitle');
+        commandGuideTrigger.setAttribute('aria-label', t('commandGuideTitle'));
+    };
+    const handleDemoLanguageChange = () => updateCommandGuideTrigger();
+
+    if (commandGuideHost instanceof HTMLElement) {
+        commandGuide = createDemoCommandGuide({
+            host: commandGuideHost,
+            trigger: commandGuideTrigger instanceof HTMLElement ? commandGuideTrigger : undefined,
+            locale: getLanguage()
+        });
+        updateCommandGuideTrigger();
+    }
+    window.addEventListener('amb-demo-language-change', handleDemoLanguageChange);
     const originalDestroy = demo.destroy.bind(demo);
 
     demo.destroy = () => {
         destroyColumnGuideAnimations();
+        window.removeEventListener('amb-demo-language-change', handleDemoLanguageChange);
+        commandGuide?.destroy();
+        commandGuide = null;
         reportDialog.destroy();
         partialSaveDialog.destroy();
         app.style.removeProperty('--demo-table-height');
@@ -502,6 +543,12 @@ export default async function fullDemo(app, options = {}) {
 
         originalDestroy();
     };
+
+    function handleCommandGuide({ event }) {
+        const trigger = event?.currentTarget;
+
+        commandGuide?.toggle(trigger instanceof HTMLElement ? trigger : undefined);
+    }
 
     function openPayloadReport(payload = demo.getSavePayload({
         savePolicy: DEMO_SAVE_POLICY,

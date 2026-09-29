@@ -1,8 +1,18 @@
+import fs from 'node:fs';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
     createDemoCommandGuide
 } from '../src/demo/components/demo-command-guide.ts';
 import { commandGuideCopy } from '../src/demo/components/demo-command-guide-copy.ts';
+
+const fullDemoSource = fs.readFileSync(
+    new URL('../src/demo/full-demo.js', import.meta.url),
+    'utf8'
+);
+const demoMainSource = fs.readFileSync(
+    new URL('../src/demo/main.js', import.meta.url),
+    'utf8'
+);
 
 class ElementMock {
     constructor(tagName, ownerDocument) {
@@ -211,5 +221,24 @@ describe('demo command guide', () => {
         expect(commandGuideCopy.it.tabs.keyboard.items[2].keys)
             .toEqual(['Alt+PageUp', 'Alt+PageDown']);
         expect(commandGuideCopy.en.tabs.editing.items[1].keys).toEqual(['Esc']);
+    });
+
+    test('integrates one command guide before the main demo toolbar and grid', () => {
+        expect(demoMainSource).toContain("import './components/demo-command-guide.css'");
+        expect(fullDemoSource).toContain("from './components/demo-command-guide.ts'");
+        expect(fullDemoSource).toContain("from './demo-icons.js'");
+        expect(fullDemoSource).toContain("demoIcon('help')");
+        expect(fullDemoSource).toContain("id: 'demo-command-guide'");
+        expect(fullDemoSource).toContain("onClick: handleCommandGuide");
+        expect(fullDemoSource).toContain("window.addEventListener('amb-demo-language-change', handleDemoLanguageChange)");
+        expect(fullDemoSource).toContain("window.removeEventListener('amb-demo-language-change', handleDemoLanguageChange)");
+        expect(fullDemoSource).toContain('commandGuide?.setLocale(getLanguage())');
+        expect(fullDemoSource).toContain('commandGuide?.destroy()');
+
+        const hostIndex = fullDemoSource.indexOf('class="demo-command-guide-host"');
+        const tableIndex = fullDemoSource.indexOf('id="inventory-table"');
+
+        expect(hostIndex).toBeGreaterThan(-1);
+        expect(tableIndex).toBeGreaterThan(hostIndex);
     });
 });

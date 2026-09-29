@@ -2,6 +2,7 @@ import 'tabulator-tables/dist/css/tabulator.min.css';
 import 'vanillajs-datepicker/css/datepicker.min.css';
 import '../amb-grid.css';
 import './demo.css';
+import './components/demo-command-guide.css';
 import { AMB } from '../index.js';
 import basicCrud from './basic-crud.js';
 import validation from './validation.js';
