@@ -24,6 +24,22 @@ const miniDemoSources = {
     dates: fs.readFileSync(new URL('../src/demo/dates.js', import.meta.url), 'utf8'),
     parsers: fs.readFileSync(new URL('../src/demo/parsers.js', import.meta.url), 'utf8')
 };
+const inventoryShellSource = fs.readFileSync(
+    new URL('../examples/react-demo/src/components/InventoryShell.tsx', import.meta.url),
+    'utf8'
+);
+const inventoryToolbarSource = fs.readFileSync(
+    new URL('../examples/react-demo/src/components/InventoryToolbar.tsx', import.meta.url),
+    'utf8'
+);
+const inventoryGridSource = fs.readFileSync(
+    new URL('../examples/react-demo/src/components/InventoryGrid.tsx', import.meta.url),
+    'utf8'
+);
+const reactMountSource = fs.readFileSync(
+    new URL('../examples/react-demo/src/mount.tsx', import.meta.url),
+    'utf8'
+);
 
 class ElementMock {
     constructor(tagName, ownerDocument) {
@@ -345,5 +361,30 @@ describe('demo command guide', () => {
         expect(source).not.toContain('toolbar: false');
         expect(source).toContain('toolbar: {');
         expect(source).toContain('buttons: [commandGuideToolbar.button]');
+    });
+
+    test('bridges the shared command guide into the React inventory demo', () => {
+        expect(inventoryShellSource).toContain('createDemoCommandGuide');
+        expect(inventoryShellSource).toContain('DemoCommandGuideController');
+        expect(inventoryShellSource).toContain('commandGuideHostRef');
+        expect(inventoryShellSource).toContain('commandGuideTriggerRef');
+        expect(inventoryShellSource).toContain('commandGuideRef');
+        expect(inventoryShellSource).toContain('className="demo-command-guide-host"');
+        expect(inventoryShellSource.indexOf('className="demo-command-guide-host"'))
+            .toBeLessThan(inventoryShellSource.indexOf('<InventoryToolbar busy'));
+        expect(inventoryShellSource).toContain('const controller = createDemoCommandGuide({');
+        expect(inventoryShellSource).toContain('controller.destroy()');
+        expect(inventoryShellSource).toContain('commandGuideRef.current?.setLocale(language)');
+        expect(inventoryShellSource).toContain('commandGuideTriggerRef={commandGuideTriggerRef}');
+        expect(inventoryShellSource).toContain('onCommandGuideToggle={handleCommandGuideToggle}');
+
+        expect(inventoryToolbarSource).toContain('CircleHelp');
+        expect(inventoryToolbarSource).toContain("label: 'Guida comandi'");
+        expect(inventoryToolbarSource).toContain("label: 'Command guide'");
+        expect(inventoryToolbarSource).toContain('onClick={props.onCommandGuideToggle}');
+        expect(inventoryToolbarSource).toContain('ref={props.commandGuideTriggerRef}');
+
+        expect(reactMountSource).toContain("demo-command-guide.css");
+        expect(inventoryGridSource).toContain('toolbar: false');
     });
 });

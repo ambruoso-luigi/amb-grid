@@ -1,16 +1,30 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Braces, Filter, LoaderCircle, PackagePlus, RotateCcw, Save, Search, ShieldCheck } from 'lucide-react';
+import { Braces, CircleHelp, Filter, LoaderCircle, PackagePlus, RotateCcw, Save, Search, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 
 export type InventoryFilters = { status: string; inspection: string };
 
+const commandGuideCopy = {
+  it: {
+    label: 'Guida comandi',
+    title: 'Mouse, tastiera e scorciatoie della tabella',
+  },
+  en: {
+    label: 'Command guide',
+    title: 'Mouse, keyboard and table shortcuts',
+  },
+} as const;
+
 type InventoryToolbarProps = {
   busy: boolean;
+  commandGuideTriggerRef: RefObject<HTMLButtonElement | null>;
   filters: InventoryFilters;
   filtersOpen: boolean;
   gridReady: boolean;
+  language: 'it' | 'en';
   onAdd: () => void;
+  onCommandGuideToggle: () => void;
   onFiltersChange: (filters: InventoryFilters) => void;
   onFiltersClose: () => void;
   onFiltersToggle: () => void;
@@ -25,6 +39,7 @@ type InventoryToolbarProps = {
 
 export function InventoryToolbar(props: InventoryToolbarProps) {
   const disabled = !props.gridReady || props.busy;
+  const commandGuide = commandGuideCopy[props.language];
   const filtersControlRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -57,6 +72,7 @@ export function InventoryToolbar(props: InventoryToolbarProps) {
         </AnimatePresence>
       </div>
       <Button disabled={!props.gridReady} onClick={props.onPayload} size="sm" variant="outline"><Braces aria-hidden="true" className="inventory-toolbar__icon" /> Payload</Button>
+      <Button aria-label={commandGuide.title} onClick={props.onCommandGuideToggle} ref={props.commandGuideTriggerRef} size="sm" title={commandGuide.title} variant="outline"><CircleHelp aria-hidden="true" className="inventory-toolbar__icon" /> {commandGuide.label}</Button>
     </div>
   </div>;
 }

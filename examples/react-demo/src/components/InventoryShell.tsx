@@ -7,6 +7,10 @@ import { InventoryToolbar, type InventoryFilters } from './InventoryToolbar';
 import { PayloadSheet, type InventoryPayload } from './PayloadSheet';
 import { PartialSaveAlert } from './ui/alert-dialog';
 import type { InventoryRow } from '../data/inventory';
+import {
+  createDemoCommandGuide,
+  type DemoCommandGuideController,
+} from '../../../../src/demo/components/demo-command-guide';
 
 type SaveResponse = {
   insertedIds: { tempId?: string; id: number }[];
@@ -81,6 +85,29 @@ export function InventoryShell({ language }: InventoryShellProps) {
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeGridRef = useRef<InventoryGridController | null>(null);
   const loadAbortRef = useRef<AbortController | null>(null);
+  const commandGuideHostRef = useRef<HTMLDivElement | null>(null);
+  const commandGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const commandGuideRef = useRef<DemoCommandGuideController | null>(null);
+
+  useEffect(() => {
+    if (!commandGuideHostRef.current || !commandGuideTriggerRef.current) return;
+
+    const controller = createDemoCommandGuide({
+      host: commandGuideHostRef.current,
+      trigger: commandGuideTriggerRef.current,
+      locale: language,
+    });
+    commandGuideRef.current = controller;
+
+    return () => {
+      controller.destroy();
+      if (commandGuideRef.current === controller) commandGuideRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    commandGuideRef.current?.setLocale(language);
+  }, [language]);
 
   const showFeedback = useCallback((tone: 'success' | 'error', text: string) => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
@@ -232,6 +259,10 @@ export function InventoryShell({ language }: InventoryShellProps) {
     applyGridView(grid, searchQuery, nextFilters);
   }, [grid, searchQuery]);
 
+  const handleCommandGuideToggle = useCallback(() => {
+    commandGuideRef.current?.toggle(commandGuideTriggerRef.current ?? undefined);
+  }, []);
+
   return (
     <motion.section animate={{ opacity: 1, y: 0 }} className="inventory-operations" id="inventory-operations" initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }} transition={{ duration: 0.45, ease: 'easeOut' }}>
       <div className="inventory-workspace">
@@ -241,7 +272,8 @@ export function InventoryShell({ language }: InventoryShellProps) {
         </header>
 
         <InventoryKpis snapshot={snapshot} />
-        <InventoryToolbar busy={busy} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} onAdd={addProduct} onFiltersChange={updateFilters} onFiltersClose={() => setFiltersOpen(false)} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={() => grid && void loadProducts(grid)} onSave={() => void prepareSave()} onSearch={updateSearch} onValidate={() => void validate()} pending={snapshot.pending} searchQuery={searchQuery} />
+        <div className="demo-command-guide-host" ref={commandGuideHostRef} />
+        <InventoryToolbar busy={busy} commandGuideTriggerRef={commandGuideTriggerRef} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} language={language} onAdd={addProduct} onCommandGuideToggle={handleCommandGuideToggle} onFiltersChange={updateFilters} onFiltersClose={() => setFiltersOpen(false)} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={() => grid && void loadProducts(grid)} onSave={() => void prepareSave()} onSearch={updateSearch} onValidate={() => void validate()} pending={snapshot.pending} searchQuery={searchQuery} />
         {feedback && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-feedback" data-tone={feedback.tone} initial={shouldReduceMotion ? false : { opacity: 0, y: -4 }} role="status">{feedback.tone === 'success' ? <CheckCircle2 aria-hidden="true" size={16} /> : <CircleAlert aria-hidden="true" size={16} />}{feedback.text}</motion.div>}
         <div className="react-demo-grid-shell" aria-busy={busy}><InventoryGrid onReady={handleGridReady} onStateChange={syncFromGrid} /></div>
       </div>

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { startMockBackend } from './mocks/browser';
 import './styles.css';
+import '../../../src/demo/components/demo-command-guide.css';
 
 export function mountReactDemo(container: HTMLElement) {
   const root = createRoot(container);
