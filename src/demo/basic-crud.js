@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const formatArchivedCheckbox = createDemoCheckboxFormatter({ checkedValue: 'Y' });
 
@@ -70,10 +71,12 @@ export default function basicCrud(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-command-guide-host"></div>
             <div id="basic-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#basic-table',
         rowActionColumn: {
@@ -101,7 +104,8 @@ export default function basicCrud(app) {
                     id: 'selected',
                     label: 'Show selected',
                     onClick: handleShowSelected
-                }
+                },
+                commandGuideToolbar.button
             ],
             onAdd: handleAdd,
             onReload: handleReload,
@@ -173,6 +177,7 @@ export default function basicCrud(app) {
             }
         ]
     });
+    commandGuideToolbar.mount();
 
     const { crud } = demo;
     const reportDialog = createDemoReportDialog();
@@ -203,6 +208,7 @@ export default function basicCrud(app) {
     demo.destroy = () => {
         reportDialog.destroy();
         partialSaveDialog.destroy();
+        commandGuideToolbar.destroy();
         originalDestroy();
     };
 

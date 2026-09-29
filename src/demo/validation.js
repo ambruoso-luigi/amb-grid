@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const hasReservedDocumentPrefix = value => {
     if (value === null || value === undefined || String(value).trim() === '') return true;
@@ -245,10 +246,12 @@ export default function validation(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-command-guide-host"></div>
             <div id="validation-table" class="demo-business-grid demo-business-grid--viewport demo-validation-grid"></div>
         </div>
     `;
 
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#validation-table',
         rowActionColumn: {
@@ -281,7 +284,8 @@ export default function validation(app) {
                     label: 'Reset data',
                     title: 'Reset validation demo data',
                     onClick: handleResetData
-                }
+                },
+                commandGuideToolbar.button
             ]
         },
         data: validationData,
@@ -404,6 +408,7 @@ export default function validation(app) {
             }
         ]
     });
+    commandGuideToolbar.mount();
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
 
@@ -423,6 +428,7 @@ export default function validation(app) {
 
     demo.destroy = () => {
         reportDialog.destroy();
+        commandGuideToolbar.destroy();
         originalDestroy();
     };
 

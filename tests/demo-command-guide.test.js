@@ -4,6 +4,7 @@ import {
     createDemoCommandGuide
 } from '../src/demo/components/demo-command-guide.ts';
 import { commandGuideCopy } from '../src/demo/components/demo-command-guide-copy.ts';
+import { createDemoCommandGuideToolbar } from '../src/demo/utils/demo-command-guide-toolbar.js';
 
 const fullDemoSource = fs.readFileSync(
     new URL('../src/demo/full-demo.js', import.meta.url),
@@ -13,6 +14,12 @@ const demoMainSource = fs.readFileSync(
     new URL('../src/demo/main.js', import.meta.url),
     'utf8'
 );
+const miniDemoSources = {
+    basicCrud: fs.readFileSync(new URL('../src/demo/basic-crud.js', import.meta.url), 'utf8'),
+    validation: fs.readFileSync(new URL('../src/demo/validation.js', import.meta.url), 'utf8'),
+    autocomplete: fs.readFileSync(new URL('../src/demo/autocomplete.js', import.meta.url), 'utf8'),
+    multifieldLookup: fs.readFileSync(new URL('../src/demo/multifield-lookup.js', import.meta.url), 'utf8')
+};
 
 class ElementMock {
     constructor(tagName, ownerDocument) {
@@ -97,23 +104,38 @@ class ElementMock {
 
 const createHarness = () => {
     const originalDocument = globalThis.document;
+    const originalWindow = globalThis.window;
+    const originalHTMLElement = globalThis.HTMLElement;
     const documentListeners = new Map();
+    const windowListeners = new Map();
     const documentMock = {
         activeElement: null,
+        documentElement: { lang: 'it' },
         createElement: tagName => new ElementMock(tagName, documentMock),
         addEventListener: (type, listener) => documentListeners.set(type, listener),
         removeEventListener: (type, listener) => {
             if (documentListeners.get(type) === listener) documentListeners.delete(type);
         }
     };
+    const windowMock = {
+        addEventListener: (type, listener) => windowListeners.set(type, listener),
+        removeEventListener: (type, listener) => {
+            if (windowListeners.get(type) === listener) windowListeners.delete(type);
+        }
+    };
 
     globalThis.document = documentMock;
+    globalThis.window = windowMock;
+    globalThis.HTMLElement = ElementMock;
     return {
         documentMock,
         documentListeners,
+        windowListeners,
         createElement: tagName => documentMock.createElement(tagName),
         restore() {
             globalThis.document = originalDocument;
+            globalThis.window = originalWindow;
+            globalThis.HTMLElement = originalHTMLElement;
         }
     };
 };
@@ -223,6 +245,50 @@ describe('demo command guide', () => {
         expect(commandGuideCopy.en.tabs.editing.items[1].keys).toEqual(['Esc']);
     });
 
+    test('mounts the toolbar adapter, synchronizes locale, and cleans up safely', () => {
+        const harness = createHarness();
+        harnesses.push(harness);
+        const host = harness.createElement('div');
+        const trigger = harness.createElement('button');
+        const label = harness.createElement('span');
+        const app = {
+            querySelector: selector => ({
+                '.demo-command-guide-host': host,
+                '[data-action="demo-command-guide"]': trigger
+            })[selector] || null
+        };
+
+        trigger.querySelector = selector => selector === '.amb-toolbar__button-label' ? label : null;
+        const adapter = createDemoCommandGuideToolbar(app);
+
+        expect(adapter.button.id).toBe('demo-command-guide');
+        expect(adapter.button.icon).toContain('<svg');
+        expect(adapter.button.label).toBe('Guida comandi');
+
+        adapter.mount();
+        expect(trigger.getAttribute('aria-expanded')).toBe('false');
+        expect(trigger.getAttribute('aria-controls')).toBe('demo-command-guide-panel');
+        expect(harness.windowListeners.has('amb-demo-language-change')).toBe(true);
+
+        adapter.button.onClick({ event: { currentTarget: trigger } });
+        expect(host.children[0].getAttribute('aria-hidden')).toBe('false');
+        expect(trigger.classList.contains('is-command-guide-active')).toBe(true);
+
+        harness.documentMock.documentElement.lang = 'en';
+        harness.windowListeners.get('amb-demo-language-change')();
+        expect(label.textContent).toBe('Command guide');
+        expect(trigger.title).toBe('Mouse, keyboard and table shortcuts');
+        expect(trigger.getAttribute('aria-label')).toBe('Mouse, keyboard and table shortcuts');
+        expect(host.children[0].children[0].children[0].children[0].textContent)
+            .toBe('How to interact with the table');
+
+        adapter.destroy();
+        expect(harness.windowListeners.has('amb-demo-language-change')).toBe(false);
+        expect(trigger.classList.contains('is-command-guide-active')).toBe(false);
+        expect(trigger.getAttribute('aria-expanded')).toBe('false');
+        expect(() => adapter.destroy()).not.toThrow();
+    });
+
     test('integrates one command guide before the main demo toolbar and grid', () => {
         expect(demoMainSource).toContain("import './components/demo-command-guide.css'");
         expect(fullDemoSource).toContain("from './components/demo-command-guide.ts'");
@@ -240,5 +306,28 @@ describe('demo command guide', () => {
 
         expect(hostIndex).toBeGreaterThan(-1);
         expect(tableIndex).toBeGreaterThan(hostIndex);
+    });
+
+    test('integrates the shared command-guide toolbar before each mini-demo grid', () => {
+        const demos = [
+            ['basicCrud', 'id="basic-table"'],
+            ['validation', 'id="validation-table"'],
+            ['autocomplete', 'id="autocomplete-table"'],
+            ['multifieldLookup', 'id="municipality-table"']
+        ];
+
+        demos.forEach(([name, tableId]) => {
+            const source = miniDemoSources[name];
+            const hostIndex = source.indexOf('class="demo-command-guide-host"');
+            const tableIndex = source.indexOf(tableId);
+
+            expect(source).toContain("from './utils/demo-command-guide-toolbar.js'");
+            expect(source).toContain('createDemoCommandGuideToolbar(app)');
+            expect(source).toContain('commandGuideToolbar.button');
+            expect(source).toContain('commandGuideToolbar.mount()');
+            expect(source).toContain('commandGuideToolbar.destroy()');
+            expect(hostIndex).toBeGreaterThan(-1);
+            expect(tableIndex).toBeGreaterThan(hostIndex);
+        });
     });
 });

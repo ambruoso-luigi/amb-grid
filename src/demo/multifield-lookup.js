@@ -6,6 +6,7 @@ import {
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.meta.url);
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
@@ -187,6 +188,7 @@ export default async function multifieldLookup(app) {
             })}
             <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
             <div class="demo-table-workbench">
+                <div class="demo-command-guide-host"></div>
                 <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
             </div>
         </div>
@@ -275,6 +277,7 @@ export default async function multifieldLookup(app) {
     });
     let grid = null;
     const reportDialog = createDemoReportDialog();
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
 
     grid = AMB.table({
         selector: '#municipality-table',
@@ -291,7 +294,8 @@ export default async function multifieldLookup(app) {
                     label: 'Reset data',
                     title: 'Reset municipality demo data',
                     onClick: handleResetData
-                }
+                },
+                commandGuideToolbar.button
             ],
             onAdd: handleAddRow,
             onPayload: handleShowPayload
@@ -349,6 +353,7 @@ export default async function multifieldLookup(app) {
             })
         ]
     });
+    commandGuideToolbar.mount();
     const stopDecoratingLookupButtons = decorateDemoEditorButtons(tableMount, {
         selector: '.amb-lookup-editor__button',
         icon: 'lookup',
@@ -385,6 +390,7 @@ export default async function multifieldLookup(app) {
 
             municipalityDialog.destroy();
 
+            commandGuideToolbar.destroy();
             grid.destroy();
         }
     };

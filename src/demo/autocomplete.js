@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const departments = [
     'Administration',
@@ -148,10 +149,12 @@ export default function autocomplete(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-command-guide-host"></div>
             <div id="autocomplete-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#autocomplete-table',
         toolbar: {
@@ -173,7 +176,8 @@ export default function autocomplete(app) {
                     label: 'Reset data',
                     title: 'Reset autocomplete demo data',
                     onClick: handleResetAutocomplete
-                }
+                },
+                commandGuideToolbar.button
             ]
         },
         data: createAutocompleteData(),
@@ -255,11 +259,13 @@ export default function autocomplete(app) {
             }
         ]
     });
+    commandGuideToolbar.mount();
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
 
     demo.destroy = () => {
         reportDialog.destroy();
+        commandGuideToolbar.destroy();
         originalDestroy();
     };
 
