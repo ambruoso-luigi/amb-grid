@@ -3933,6 +3933,13 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
         inset 0 1px 0 rgb(255 255 255 / 24%);
 }
 
+.demo-install-link { align-items: center; border-top: 1px solid #d9e3ed; color: var(--amb-site-navy); display: flex; gap: 10px; margin-top: 20px; padding-top: 16px; text-decoration: none; }
+.demo-install-link span { display: grid; gap: 2px; }
+.demo-install-link strong { font-size: 14px; }
+.demo-install-link small { color: var(--amb-site-muted); font-size: 13px; }
+.demo-install-link svg:last-child { margin-left: auto; }
+.demo-install-link:hover strong { color: var(--amb-site-blue); }
+
 .demo-panel .demo-business-grid .demo-inspection-visual.is-checked::after,
 .demo-panel .demo-business-grid .amb-checkbox-editor:has(.amb-checkbox-editor__input:checked)::after {
     border: solid var(--demo-checkbox-check);

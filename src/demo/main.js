@@ -20,6 +20,7 @@ import { animateCycleDetail, initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
 import { renderDemoFooter } from './demo-footer.js';
+import { bindDemoLanguageSwitch, readDemoLanguage, renderDemoLanguageSwitch, syncDemoLanguageSwitch, writeDemoLanguage } from './demo-language-switch.js';
 import { bindDemoColumnGuideAnimations } from './utils/demo-column-guide.js';
 
 window.AMB = AMB;
@@ -57,6 +58,8 @@ const translations = {
         'frameworks.title': 'Integrabile dove lavori già',
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
         'frameworks.cta': 'Apri guida e demo',
+        'frameworks.install.title': 'Installazione e download',
+        'frameworks.install.description': 'npm, bundle standalone e release ZIP',
         'frameworks.javascript.meta': 'ESM / UMD · Integrazione diretta',
         'frameworks.javascript.description': 'Integra AMB Grid in pagine JavaScript classiche o server-rendered, senza framework obbligatori.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
@@ -234,6 +237,8 @@ const translations = {
         'frameworks.title': 'Use AMB Grid where you already work',
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
         'frameworks.cta': 'Open guide and demo',
+        'frameworks.install.title': 'Installation and download',
+        'frameworks.install.description': 'npm, standalone bundle and release ZIP',
         'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
         'frameworks.javascript.description': 'Integrate AMB Grid into classic or server-rendered JavaScript pages without requiring a framework.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
@@ -398,7 +403,7 @@ let currentMainDemo = null;
 let currentFeatureExample = null;
 let currentReactDemoUnmount = null;
 let currentFeatureGuideCleanup = null;
-let currentLang = 'it';
+let currentLang = readDemoLanguage();
 let currentView = null;
 let featureLoadToken = 0;
 let mainDemoLoadToken = 0;
@@ -509,39 +514,6 @@ const cycleDetailCopy = {
     align: ['cycle.detail.align.title', 'cycle.detail.align.intro']
 };
 
-const renderLanguageSwitch = () => `
-    <div class="language-switch is-it" data-language-switch aria-label="Language">
-        <button
-            type="button"
-            class="language-switch__label language-switch__label--en"
-            data-language-label="en"
-            data-language-set="en"
-            aria-label="English"
-            aria-pressed="false"
-        >EN</button>
-        <button
-            type="button"
-            class="language-switch__control"
-            data-language-toggle
-            role="switch"
-            aria-checked="true"
-            aria-label="Cambia lingua in inglese"
-        >
-            <span class="language-switch__flag language-switch__flag--en" aria-hidden="true"></span>
-            <span class="language-switch__flag language-switch__flag--it" aria-hidden="true"></span>
-            <span class="language-switch__knob" aria-hidden="true"></span>
-        </button>
-        <button
-            type="button"
-            class="language-switch__label language-switch__label--it"
-            data-language-label="it"
-            data-language-set="it"
-            aria-label="Italiano"
-            aria-pressed="true"
-        >IT</button>
-    </div>
-`;
-
 const applyI18n = () => {
     document.documentElement.lang = currentLang;
     document.title = currentLang === 'it'
@@ -559,26 +531,7 @@ const applyI18n = () => {
         element.setAttribute('aria-label', title);
     });
 
-    root.querySelectorAll('[data-language-switch]').forEach(switchElement => {
-        switchElement.classList.toggle('is-it', currentLang === 'it');
-        switchElement.classList.toggle('is-en', currentLang === 'en');
-    });
-
-    root.querySelectorAll('[data-language-label]').forEach(label => {
-        const isActive = label.dataset.languageLabel === currentLang;
-
-        label.classList.toggle('is-active', isActive);
-        label.setAttribute('aria-pressed', String(isActive));
-    });
-
-    root.querySelectorAll('[data-language-toggle]').forEach(button => {
-        const isItalian = currentLang === 'it';
-        const nextLanguageLabel = getText(isItalian ? 'language.switchToEn' : 'language.switchToIt');
-
-        button.setAttribute('aria-checked', String(isItalian));
-        button.setAttribute('aria-label', nextLanguageLabel);
-        button.title = nextLanguageLabel;
-    });
+    syncDemoLanguageSwitch(root, currentLang, getText);
 
     window.dispatchEvent(new CustomEvent('amb-demo-language-change', {
         detail: { language: currentLang }
@@ -617,21 +570,10 @@ const destroyCurrentDemos = () => {
     reactDemoLoadToken += 1;
 };
 
-const bindLanguageButtons = () => {
-    root.querySelectorAll('[data-language-toggle]').forEach(button => {
-        button.addEventListener('click', () => {
-            currentLang = currentLang === 'it' ? 'en' : 'it';
-            applyI18n();
-        });
-    });
-
-    root.querySelectorAll('[data-language-set]').forEach(button => {
-        button.addEventListener('click', () => {
-            currentLang = button.dataset.languageSet === 'en' ? 'en' : 'it';
-            applyI18n();
-        });
-    });
-};
+const bindLanguageButtons = () => bindDemoLanguageSwitch(root, () => currentLang, language => {
+    currentLang = writeDemoLanguage(language);
+    applyI18n();
+});
 
 let activeCycleDetail = null;
 
@@ -702,7 +644,7 @@ const renderShell = selectedId => {
             <header class="demo-hero">
                 <nav class="demo-topbar" aria-label="AMB Grid demo navigation">
                     ${renderDemoBrand()}
-                    ${renderLanguageSwitch()}
+                    ${renderDemoLanguageSwitch()}
                 </nav>
                 <div class="demo-hero__body">
                     <div class="demo-hero__content" id="top">
@@ -799,6 +741,11 @@ const renderShell = selectedId => {
                         </span>
                     </article>
                 </div>
+                <a class="demo-install-link" href="/install/">
+                    ${demoIcon('package', { className: 'demo-install-link__icon', size: 20 })}
+                    <span><strong data-i18n="frameworks.install.title">Installazione e download</strong><small data-i18n="frameworks.install.description">npm, bundle standalone e release ZIP</small></span>
+                    ${demoIcon('arrowRight', { size: 18 })}
+                </a>
             </section>
 
             <section class="demo-section demo-section--flow">

@@ -1,6 +1,6 @@
 import { renderDemoBrand } from './demo-brand.js';
 
-export const renderDemoFooter = ({ demoHref = '#top' } = {}) => `
+export const renderDemoFooter = ({ demoHref = '#top', examplesHref = '#feature-examples', guideHref = '#getting-started-javascript' } = {}) => `
     <footer class="demo-footer">
         <div class="demo-footer__brand">
             ${renderDemoBrand({ href: demoHref })}
@@ -10,8 +10,8 @@ export const renderDemoFooter = ({ demoHref = '#top' } = {}) => `
         <nav class="demo-footer__group" aria-labelledby="footer-resources-title">
             <h2 id="footer-resources-title" data-i18n="footer.resources">Resources</h2>
             <a href="${demoHref}" data-i18n="footer.demo">Main demo</a>
-            <a href="#feature-examples" data-i18n="footer.examples">Feature examples</a>
-            <a href="#getting-started-javascript" data-i18n="footer.guide">JavaScript guide</a>
+            <a href="${examplesHref}" data-i18n="footer.examples">Feature examples</a>
+            <a href="${guideHref}" data-i18n="footer.guide">JavaScript guide</a>
         </nav>
         <nav class="demo-footer__group" aria-labelledby="footer-project-title">
             <h2 id="footer-project-title" data-i18n="footer.projectLinks">Project</h2>

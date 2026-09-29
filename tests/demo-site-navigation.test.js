@@ -51,6 +51,11 @@ describe('demo site navigation', () => {
 
         expect(frameworkCards).not.toContain('href="#feature-examples"');
         expect(frameworkCards.match(/data-i18n="frameworks\.cta"/g)).toHaveLength(4);
+        expect(main).toContain('class="demo-install-link" href="/install/"');
+        expect(main).toContain("'frameworks.install.title': 'Installazione e download'");
+        expect(main).toContain("'frameworks.install.title': 'Installation and download'");
+        expect(main).toContain("'frameworks.install.description': 'npm, standalone bundle and release ZIP'");
+        expect(main.indexOf('class="demo-install-link"')).toBeGreaterThan(main.indexOf('class="demo-framework-grid"'));
         expect(frameworkCards.match(/demoIcon\('guide'/g)).toHaveLength(4);
         expect(frameworkCards.match(/demoIcon\('chevronRight'/g)).toHaveLength(12);
         expect(frameworkCards.match(/size: 18, strokeWidth: 2\.3/g)).toHaveLength(4);
