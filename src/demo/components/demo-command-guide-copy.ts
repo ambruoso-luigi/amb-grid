@@ -36,8 +36,7 @@ export const commandGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
                 label: 'Modifica',
                 groups: [{ items: [
                     { tokens: [action('Doppio click su una cella editabile')], text: 'Apre la modifica della cella.' },
-                    { tokens: [key('Enter')], text: 'Su una cella selezionata apre la modifica della cella editabile.' },
-                    { tokens: [key('Enter')], text: 'Durante la modifica conferma il valore negli editor compatibili e applica le eventuali regole di validazione.' },
+                    { tokens: [key('Enter')], text: 'Su una cella selezionata ed editabile apre la modifica. Durante la modifica conferma il valore e applica le eventuali regole di validazione.' },
                     { tokens: [key('Tab'), key('Shift+Tab')], text: 'Durante la modifica confermano il valore, applicano le eventuali regole di validazione e passano alla cella successiva o precedente.' },
                     { tokens: [key('Esc')], text: 'Annulla la modifica corrente e torna alla cella.' },
                     { tokens: [action("Click su un'altra cella")], text: 'Conclude la modifica corrente e passa alla cella selezionata.' }
@@ -57,15 +56,15 @@ export const commandGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
                 label: 'Checkbox e selezione',
                 groups: [
                     { title: 'Checkbox dati', items: [
-                        { tokens: [action('Click nella cella')], text: 'Cambia il valore della checkbox. Puoi cliccare in qualsiasi punto della cella, non soltanto sul quadratino.' },
-                        { tokens: [key('Space'), key('Enter')], text: 'Alternano lo stato della checkbox quando la checkbox è la cella attiva.' },
-                        { tokens: [key('1'), key('S')], text: 'Attiva.' },
-                        { tokens: [key('0'), key('N')], text: 'Disattiva.' }
+                        { tokens: [action('Click nella cella')], text: 'Cambia il valore della checkbox. Puoi cliccare in qualsiasi punto della cella, non soltanto sul quadratino.' }
                     ] },
                     { title: 'Selezione riga', items: [
-                        { tokens: [action('Click')], text: 'Seleziona o deseleziona la riga tramite la checkbox dedicata.' },
-                        { tokens: [key('Space'), key('Enter')], text: 'Alternano la selezione della riga.' },
-                        { tokens: [key('1'), key('0')], text: 'Selezionano o deselezionano direttamente.' }
+                        { tokens: [action('Click sulla checkbox di selezione')], text: 'Seleziona o deseleziona la riga.' }
+                    ] },
+                    { title: 'Comandi da tastiera', items: [
+                        { tokens: [key('Space'), key('Enter')], text: 'Alternano lo stato corrente.' },
+                        { tokens: [key('1'), key('S'), key('Y')], text: 'Impostano lo stato attivo o selezionato.' },
+                        { tokens: [key('0'), key('N')], text: 'Impostano lo stato disattivo o non selezionato. S, Y e N funzionano sia in maiuscolo sia in minuscolo.' }
                     ] }
                 ]
             },
@@ -118,8 +117,7 @@ export const commandGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
                 label: 'Editing',
                 groups: [{ items: [
                     { tokens: [action('Double click an editable cell')], text: 'Opens cell editing.' },
-                    { tokens: [key('Enter')], text: 'On a selected cell, opens editing for the editable cell.' },
-                    { tokens: [key('Enter')], text: 'While editing, confirms the value in compatible editors and applies any validation rules.' },
+                    { tokens: [key('Enter')], text: 'On a selected editable cell, opens editing. While editing, confirms the value and applies any configured validation rules.' },
                     { tokens: [key('Tab'), key('Shift+Tab')], text: 'While editing, confirm the value, apply any validation rules, and move to the next or previous cell.' },
                     { tokens: [key('Esc')], text: 'Cancels the current edit and returns to the cell.' },
                     { tokens: [action('Click another cell')], text: 'Finishes the current edit and moves to the selected cell.' }
@@ -139,15 +137,15 @@ export const commandGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
                 label: 'Checkboxes & selection',
                 groups: [
                     { title: 'Data checkboxes', items: [
-                        { tokens: [action('Click the cell')], text: 'Changes the checkbox value. You can click anywhere in the cell, not only the box.' },
-                        { tokens: [key('Space'), key('Enter')], text: 'Toggle the checkbox when it is the active cell.' },
-                        { tokens: [key('1'), key('Y')], text: 'Check.' },
-                        { tokens: [key('0'), key('N')], text: 'Uncheck.' }
+                        { tokens: [action('Click the cell')], text: 'Changes the checkbox value. You can click anywhere in the cell, not only the box.' }
                     ] },
                     { title: 'Row selection', items: [
-                        { tokens: [action('Click')], text: 'Selects or deselects the row through its dedicated checkbox.' },
-                        { tokens: [key('Space'), key('Enter')], text: 'Toggle row selection.' },
-                        { tokens: [key('1'), key('0')], text: 'Select or deselect directly.' }
+                        { tokens: [action('Click the selection checkbox')], text: 'Selects or deselects the row.' }
+                    ] },
+                    { title: 'Keyboard commands', items: [
+                        { tokens: [key('Space'), key('Enter')], text: 'Toggle the current state.' },
+                        { tokens: [key('1'), key('S'), key('Y')], text: 'Set the active or selected state.' },
+                        { tokens: [key('0'), key('N')], text: 'Set the inactive or unselected state. S, Y and N work in both uppercase and lowercase.' }
                     ] }
                 ]
             },

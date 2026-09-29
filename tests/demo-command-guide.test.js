@@ -289,11 +289,34 @@ describe('demo command guide', () => {
         expect(commandGuideCopy.en.tabs.advanced.label).toBe('Lookup, calendar & dialogs');
         expect(commandGuideCopy.it.tabs.navigation.groups[0].items[4].tokens.map(token => token.label))
             .toEqual(['Alt+PageUp', 'Alt+PageDown']);
-        expect(commandGuideCopy.it.tabs.editing.groups[0].items[4].tokens[0].label).toBe('Esc');
+        const italianEditing = commandGuideCopy.it.tabs.editing.groups[0].items;
+        const englishEditing = commandGuideCopy.en.tabs.editing.groups[0].items;
+        expect(italianEditing.filter(item => item.tokens[0]?.label === 'Enter')).toHaveLength(1);
+        expect(englishEditing.filter(item => item.tokens[0]?.label === 'Enter')).toHaveLength(1);
+        expect(italianEditing[1].text).toContain('apre la modifica');
+        expect(italianEditing[1].text).toContain('conferma il valore');
+        expect(englishEditing[1].text).toContain('opens editing');
+        expect(englishEditing[1].text).toContain('confirms the value');
+        expect(italianEditing[3].tokens[0].label).toBe('Esc');
         expect(commandGuideCopy.it.tabs.checkbox.groups[0].items[0].tokens[0].kind).toBe('action');
-        expect(commandGuideCopy.it.tabs.checkbox.groups[0].items[1].tokens[0].kind).toBe('key');
         expect(commandGuideCopy.it.tabs.checkbox.groups[0].items[0].text)
             .toContain('qualsiasi punto della cella');
+        const italianCheckboxGroups = commandGuideCopy.it.tabs.checkbox.groups;
+        const englishCheckboxGroups = commandGuideCopy.en.tabs.checkbox.groups;
+        expect(italianCheckboxGroups.map(group => group.title))
+            .toEqual(['Checkbox dati', 'Selezione riga', 'Comandi da tastiera']);
+        expect(englishCheckboxGroups.map(group => group.title))
+            .toEqual(['Data checkboxes', 'Row selection', 'Keyboard commands']);
+        const italianKeyboardItems = italianCheckboxGroups[2].items;
+        const englishKeyboardItems = englishCheckboxGroups[2].items;
+        const expectedCheckboxKeycaps = [['Space', 'Enter'], ['1', 'S', 'Y'], ['0', 'N']];
+        expect(italianKeyboardItems.map(item => item.tokens.map(token => token.label)))
+            .toEqual(expectedCheckboxKeycaps);
+        expect(englishKeyboardItems.map(item => item.tokens.map(token => token.label)))
+            .toEqual(expectedCheckboxKeycaps);
+        expect(italianKeyboardItems[2].text).toContain('maiuscolo sia in minuscolo');
+        expect(englishKeyboardItems[2].text).toContain('uppercase and lowercase');
+        expect(italianCheckboxGroups[1].items).toHaveLength(1);
         expect(commandGuideCopy.it.tabs.advanced.groups.map(group => group.title))
             .toEqual(['Lookup', 'Calendario', 'Finestre di conferma']);
         expect(commandGuideCopy.it.trigger.label).toBe('Guida comandi');

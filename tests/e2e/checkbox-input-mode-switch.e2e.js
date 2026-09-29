@@ -155,6 +155,34 @@ test.describe('checkbox input mode switch regression', () => {
         await expect(checkboxInput(page)).toBeFocused();
     });
 
+    test('Tab keeps a visible checkbox visual on the editor container', async ({ page }) => {
+        await openInventoryTestPage(page);
+        await page.addStyleTag({ url: '/src/demo/demo.css' });
+        await page.locator('#inventory-test-table').evaluate(table => {
+            table.classList.add('demo-business-grid');
+            table.parentElement?.classList.add('demo-panel');
+        });
+        await focusCheckboxViaTab(page);
+
+        const visual = await checkboxCell(page).locator('.amb-checkbox-editor').evaluate(editor => {
+            const before = getComputedStyle(editor, '::before');
+
+            return {
+                content: before.content,
+                display: before.display,
+                height: before.height,
+                width: before.width
+            };
+        });
+
+        await expect(checkboxInput(page)).toBeVisible();
+        await expect(checkboxInput(page)).toBeFocused();
+        expect(visual.content).not.toBe('none');
+        expect(visual.display).not.toBe('none');
+        expect(parseFloat(visual.width)).toBeGreaterThan(0);
+        expect(parseFloat(visual.height)).toBeGreaterThan(0);
+    });
+
     test('Tab -> clicks at both cell edges toggle and keep focus there', async ({ page }) => {
         await openInventoryTestPage(page);
 
