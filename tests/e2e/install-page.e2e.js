@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('opens the installation page from home and preserves English', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: /Installation and download|Installazione e download/ }).click();
+    await page.getByRole('link', { name: /Install AMB Grid|Installa AMB Grid/ }).click();
     await expect(page).toHaveURL(/\/install\/$/);
     await expect(page.locator('.demo-topbar')).toBeVisible();
     await expect(page.getByRole('heading', { name: /Bring AMB Grid|Porta AMB Grid/ })).toBeVisible();

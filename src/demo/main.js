@@ -58,7 +58,7 @@ const translations = {
         'frameworks.title': 'Integrabile dove lavori già',
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
         'frameworks.cta': 'Apri guida e demo',
-        'frameworks.install.title': 'Installazione e download',
+        'frameworks.install.title': 'Installa AMB Grid',
         'frameworks.install.description': 'npm, bundle standalone e release ZIP',
         'frameworks.javascript.meta': 'ESM / UMD · Integrazione diretta',
         'frameworks.javascript.description': 'Integra AMB Grid in pagine JavaScript classiche o server-rendered, senza framework obbligatori.',
@@ -237,7 +237,7 @@ const translations = {
         'frameworks.title': 'Use AMB Grid where you already work',
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
         'frameworks.cta': 'Open guide and demo',
-        'frameworks.install.title': 'Installation and download',
+        'frameworks.install.title': 'Install AMB Grid',
         'frameworks.install.description': 'npm, standalone bundle and release ZIP',
         'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
         'frameworks.javascript.description': 'Integrate AMB Grid into classic or server-rendered JavaScript pages without requiring a framework.',
@@ -742,9 +742,9 @@ const renderShell = selectedId => {
                     </article>
                 </div>
                 <a class="demo-install-link" href="/install/">
-                    ${demoIcon('package', { className: 'demo-install-link__icon', size: 20 })}
-                    <span><strong data-i18n="frameworks.install.title">Installazione e download</strong><small data-i18n="frameworks.install.description">npm, bundle standalone e release ZIP</small></span>
-                    ${demoIcon('arrowRight', { size: 18 })}
+                    <span class="demo-install-link__icon" aria-hidden="true">${demoIcon('package', { size: 20 })}</span>
+                    <span class="demo-install-link__content"><strong class="demo-install-link__title" data-i18n="frameworks.install.title">Installa AMB Grid</strong><small class="demo-install-link__description" data-i18n="frameworks.install.description">npm, bundle standalone e release ZIP</small></span>
+                    <span class="demo-install-link__direction" aria-hidden="true"><span class="demo-install-link__direction-step demo-install-link__direction-step--1">${demoIcon('chevronRight', { size: 20, strokeWidth: 2.6 })}</span><span class="demo-install-link__direction-step demo-install-link__direction-step--2">${demoIcon('chevronRight', { size: 20, strokeWidth: 2.6 })}</span><span class="demo-install-link__direction-step demo-install-link__direction-step--3">${demoIcon('chevronRight', { size: 20, strokeWidth: 2.6 })}</span></span>
                 </a>
             </section>
 
