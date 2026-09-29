@@ -14,6 +14,7 @@ class ElementMock {
         this.parentElement = null;
         this.className = '';
         this.hidden = false;
+        this.inert = false;
         this.tabIndex = 0;
         this.textContent = '';
         this.type = '';
@@ -130,12 +131,14 @@ describe('demo command guide', () => {
 
         expect(host.children).toHaveLength(1);
         expect(panel.id).toBe('demo-command-guide-panel');
+        expect(panel.children).toHaveLength(1);
         expect(panel.getAttribute('aria-hidden')).toBe('false');
+        expect(panel.inert).toBe(false);
         expect(trigger.getAttribute('aria-expanded')).toBe('true');
         expect(trigger.getAttribute('aria-controls')).toBe('demo-command-guide-panel');
         expect(trigger.classList.contains('is-command-guide-active')).toBe(true);
-        expect(panel.children[1].getAttribute('role')).toBe('tablist');
-        expect(panel.children[1].children).toHaveLength(4);
+        expect(panel.children[0].children[1].getAttribute('role')).toBe('tablist');
+        expect(panel.children[0].children[1].children).toHaveLength(4);
     });
 
     test('moves the singleton from host A to host B and deactivates trigger A', () => {
@@ -157,12 +160,12 @@ describe('demo command guide', () => {
 
     test('changes tab with click and keyboard arrows without global listeners', () => {
         const { harness, panel } = openGuide();
-        const tablist = panel.children[1];
+        const tablist = panel.children[0].children[1];
         const [mouseTab, keyboardTab] = tablist.children;
 
         keyboardTab.click();
         expect(keyboardTab.getAttribute('aria-selected')).toBe('true');
-        expect(panel.children[2].children[1].hidden).toBe(false);
+        expect(panel.children[0].children[2].children[1].hidden).toBe(false);
 
         const arrowEvent = keyboardTab.keydown('ArrowLeft');
         expect(arrowEvent.preventDefault).toHaveBeenCalledOnce();
@@ -176,10 +179,10 @@ describe('demo command guide', () => {
 
         controller.setLocale('en');
 
-        expect(panel.children[0].children[0].textContent)
+        expect(panel.children[0].children[0].children[0].textContent)
             .toBe('How to interact with the table');
-        expect(panel.children[1].children[1].textContent).toBe('Keyboard');
-        expect(panel.children[2].children[0].children[0].children[1].textContent)
+        expect(panel.children[0].children[1].children[1].textContent).toBe('Keyboard');
+        expect(panel.children[0].children[2].children[0].children[0].children[1].textContent)
             .toBe('Focus a cell for navigation.');
     });
 
@@ -188,9 +191,16 @@ describe('demo command guide', () => {
 
         controller.close();
         expect(panel.getAttribute('aria-hidden')).toBe('true');
+        expect(panel.inert).toBe(true);
         expect(trigger.classList.contains('is-command-guide-active')).toBe(false);
         expect(trigger.getAttribute('aria-expanded')).toBe('false');
 
+        controller.open();
+        expect(panel.getAttribute('aria-hidden')).toBe('false');
+        expect(panel.inert).toBe(false);
+
+        controller.close();
+        expect(panel.inert).toBe(true);
         controller.destroy();
         expect(trigger.classList.contains('is-command-guide-active')).toBe(false);
     });

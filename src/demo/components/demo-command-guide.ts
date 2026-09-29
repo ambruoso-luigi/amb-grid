@@ -40,6 +40,7 @@ const createElement = <TagName extends keyof HTMLElementTagNameMap>(tagName: Tag
 
 const createSharedGuide = (): SharedGuide => {
     const panel = createElement('section');
+    const inner = createElement('div');
     const header = createElement('header');
     const title = createElement('h2');
     const subtitle = createElement('p');
@@ -50,7 +51,9 @@ const createSharedGuide = (): SharedGuide => {
 
     panel.id = panelId;
     panel.className = 'demo-command-guide';
+    panel.inert = true;
     panel.setAttribute('aria-hidden', 'true');
+    inner.className = 'demo-command-guide__inner';
     header.className = 'demo-command-guide__header';
     title.className = 'demo-command-guide__title';
     subtitle.className = 'demo-command-guide__subtitle';
@@ -82,7 +85,8 @@ const createSharedGuide = (): SharedGuide => {
     });
 
     header.append(title, subtitle);
-    panel.append(header, tablist, content);
+    inner.append(header, tablist, content);
+    panel.appendChild(inner);
 
     return {
         ownerDocument: document,
@@ -134,6 +138,7 @@ class DemoCommandGuide implements DemoCommandGuideController {
         this.activateTrigger();
         this.render();
         guide.panel.classList.add('is-open');
+        guide.panel.inert = false;
         guide.panel.setAttribute('aria-hidden', 'false');
     }
 
@@ -142,6 +147,7 @@ class DemoCommandGuide implements DemoCommandGuideController {
         const guide = getSharedGuide();
 
         guide.panel.classList.remove('is-open');
+        guide.panel.inert = true;
         guide.panel.setAttribute('aria-hidden', 'true');
         this.deactivate();
         activeController = null;

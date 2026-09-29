@@ -15,8 +15,9 @@
     transform: translateY(0);
 }
 
-.demo-command-guide > * {
+.demo-command-guide__inner {
     min-height: 0;
+    overflow: hidden;
 }
 
 .demo-command-guide__header,
