@@ -2,19 +2,9 @@ import { useEffect, useRef, type RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Braces, CircleHelp, Filter, LoaderCircle, PackagePlus, RotateCcw, Save, Search, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
+import { commandGuideCopy } from '../../../../src/demo/components/demo-command-guide-copy';
 
 export type InventoryFilters = { status: string; inspection: string };
-
-const commandGuideCopy = {
-  it: {
-    label: 'Guida comandi',
-    title: 'Mouse, tastiera e scorciatoie della tabella',
-  },
-  en: {
-    label: 'Command guide',
-    title: 'Mouse, keyboard and table shortcuts',
-  },
-} as const;
 
 type InventoryToolbarProps = {
   busy: boolean;
@@ -39,7 +29,7 @@ type InventoryToolbarProps = {
 
 export function InventoryToolbar(props: InventoryToolbarProps) {
   const disabled = !props.gridReady || props.busy;
-  const commandGuide = commandGuideCopy[props.language];
+  const commandGuide = commandGuideCopy[props.language].trigger;
   const filtersControlRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {

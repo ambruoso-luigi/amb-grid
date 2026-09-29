@@ -2592,6 +2592,11 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-example {
+    --demo-command-guide-accent: var(--amb-site-navy-2);
+    --demo-command-guide-accent-rgb: 22 50 83;
+    --demo-command-guide-glow-rgb: 61 103 145;
+    --demo-command-guide-active-bg: #eff4fa;
+    --demo-command-guide-active-text: var(--amb-site-navy);
     margin-top: 16px;
     min-width: 0;
 }

@@ -1,16 +1,6 @@
 import { createDemoCommandGuide } from '../components/demo-command-guide.ts';
+import { commandGuideCopy } from '../components/demo-command-guide-copy.ts';
 import { demoIcon } from '../demo-icons.js';
-
-const toolbarCopy = {
-    it: {
-        label: 'Guida comandi',
-        title: 'Mouse, tastiera e scorciatoie della tabella'
-    },
-    en: {
-        label: 'Command guide',
-        title: 'Mouse, keyboard and table shortcuts'
-    }
-};
 
 const getLocale = () => document.documentElement.lang === 'en' ? 'en' : 'it';
 
@@ -21,7 +11,7 @@ export const createDemoCommandGuideToolbar = app => {
 
     const syncLocale = () => {
         const locale = getLocale();
-        const copy = toolbarCopy[locale];
+        const copy = commandGuideCopy[locale].trigger;
 
         controller?.setLocale(locale);
         if (!(trigger instanceof HTMLElement)) return;
@@ -37,8 +27,8 @@ export const createDemoCommandGuideToolbar = app => {
     return {
         button: {
             id: 'demo-command-guide',
-            label: toolbarCopy[getLocale()].label,
-            title: toolbarCopy[getLocale()].title,
+            label: commandGuideCopy[getLocale()].trigger.label,
+            title: commandGuideCopy[getLocale()].trigger.title,
             icon: demoIcon('help'),
             onClick: ({ event }) => {
                 const currentTrigger = event.currentTarget;

@@ -134,7 +134,7 @@ describe('Public Column calculations interactions', () => {
     test('uses the standard Add toolbar and row action column with a valid editable row', () => {
         const source = read('src/demo/column-calculations.js');
 
-        expect(source).toContain("buttons: ['add']");
+        expect(source).toContain("buttons: ['add', commandGuideToolbar.button]");
         expect(source).toContain('onAdd: handleAdd');
         expect(source).toContain('rowActionColumn: {');
         expect(source).toContain('enabled: true');
@@ -172,7 +172,7 @@ describe('Public Validation demo controller usage', () => {
         expect(source).toContain('demo.validateChanges()');
         expect(source).toContain('demo.getStateReport()');
         expect(source).toContain('demo.rollbackRow(row.key)');
-        expect(source).toContain("required: {\n                        message: 'Alias is required'");
+        expect(source).toMatch(/required:\s*\{\s*message: 'Alias is required'/);
         expect(source).toContain('AMB.validators.anyOf');
         expect(source).toContain('AMB.validators.custom');
     });

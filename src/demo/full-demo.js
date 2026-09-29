@@ -4,6 +4,7 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { bindDemoColumnGuideAnimations, createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuide } from './components/demo-command-guide.ts';
+import { commandGuideCopy } from './components/demo-command-guide-copy.ts';
 import { demoIcon } from './demo-icons.js';
 
 const DEMO_SAVE_POLICY = 'valid-only';
@@ -42,9 +43,7 @@ const messages = {
         row: 'Riga',
         validChangesCanSave: '{count} modifiche valide possono comunque essere salvate.',
         invalidRowsRemainPending: 'Le righe con errori resteranno in attesa di correzione.',
-        saveValidChangesQuestion: 'Vuoi salvare le modifiche valide?',
-        commandGuideLabel: 'Guida comandi',
-        commandGuideTitle: 'Mouse, tastiera e scorciatoie della tabella'
+        saveValidChangesQuestion: 'Vuoi salvare le modifiche valide?'
     },
     en: {
         reloaded: 'Data reloaded.',
@@ -79,9 +78,7 @@ const messages = {
         row: 'Row',
         validChangesCanSave: '{count} valid changes can still be saved.',
         invalidRowsRemainPending: 'Rows with errors will remain pending for correction.',
-        saveValidChangesQuestion: 'Do you want to save the valid changes?',
-        commandGuideLabel: 'Command guide',
-        commandGuideTitle: 'Mouse, keyboard and table shortcuts'
+        saveValidChangesQuestion: 'Do you want to save the valid changes?'
     }
 };
 
@@ -310,8 +307,8 @@ export default async function fullDemo(app, options = {}) {
                 'validate',
                 {
                     id: 'demo-command-guide',
-                    label: t('commandGuideLabel'),
-                    title: t('commandGuideTitle'),
+                    label: commandGuideCopy[getLanguage()].trigger.label,
+                    title: commandGuideCopy[getLanguage()].trigger.title,
                     icon: demoIcon('help'),
                     onClick: handleCommandGuide
                 },
@@ -505,9 +502,11 @@ export default async function fullDemo(app, options = {}) {
         if (!(commandGuideTrigger instanceof HTMLElement)) return;
         const commandGuideLabel = commandGuideTrigger.querySelector('.amb-toolbar__button-label');
 
-        if (commandGuideLabel) commandGuideLabel.textContent = t('commandGuideLabel');
-        commandGuideTrigger.title = t('commandGuideTitle');
-        commandGuideTrigger.setAttribute('aria-label', t('commandGuideTitle'));
+        const triggerCopy = commandGuideCopy[getLanguage()].trigger;
+
+        if (commandGuideLabel) commandGuideLabel.textContent = triggerCopy.label;
+        commandGuideTrigger.title = triggerCopy.title;
+        commandGuideTrigger.setAttribute('aria-label', triggerCopy.title);
     };
     const handleDemoLanguageChange = () => updateCommandGuideTrigger();
 

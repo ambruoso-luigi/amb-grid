@@ -13,7 +13,8 @@ describe('Public Parsers demo integration', () => {
 
         expect(source).toContain('const demo = AMB.table({');
         expect(source).toContain("selector: '#parsers-table'");
-        expect(source).toContain('toolbar: false');
+        expect(source).toContain('toolbar: {');
+        expect(source).toContain('buttons: [commandGuideToolbar.button]');
         expect(source).toContain("layout: 'fitColumns'");
         expect(source).toContain('class="demo-table-workbench"');
         expect(source).toContain('demo-business-grid--viewport');

@@ -40,6 +40,22 @@ const reactMountSource = fs.readFileSync(
     new URL('../examples/react-demo/src/mount.tsx', import.meta.url),
     'utf8'
 );
+const commandGuideSource = fs.readFileSync(
+    new URL('../src/demo/components/demo-command-guide.ts', import.meta.url),
+    'utf8'
+);
+const commandGuideCss = fs.readFileSync(
+    new URL('../src/demo/components/demo-command-guide.css', import.meta.url),
+    'utf8'
+);
+const demoCss = fs.readFileSync(
+    new URL('../src/demo/demo.css', import.meta.url),
+    'utf8'
+);
+const reactStyles = fs.readFileSync(
+    new URL('../examples/react-demo/src/styles.css', import.meta.url),
+    'utf8'
+);
 
 class ElementMock {
     constructor(tagName, ownerDocument) {
@@ -263,6 +279,8 @@ describe('demo command guide', () => {
         expect(commandGuideCopy.it.tabs.keyboard.items[2].keys)
             .toEqual(['Alt+PageUp', 'Alt+PageDown']);
         expect(commandGuideCopy.en.tabs.editing.items[1].keys).toEqual(['Esc']);
+        expect(commandGuideCopy.it.trigger.label).toBe('Guida comandi');
+        expect(commandGuideCopy.en.trigger.title).toBe('Mouse, keyboard and table shortcuts');
     });
 
     test('mounts the toolbar adapter, synchronizes locale, and cleans up safely', () => {
@@ -320,6 +338,7 @@ describe('demo command guide', () => {
         expect(fullDemoSource).toContain("window.removeEventListener('amb-demo-language-change', handleDemoLanguageChange)");
         expect(fullDemoSource).toContain('commandGuide?.setLocale(getLanguage())');
         expect(fullDemoSource).toContain('commandGuide?.destroy()');
+        expect(fullDemoSource).toContain('commandGuideCopy[getLanguage()].trigger');
 
         const hostIndex = fullDemoSource.indexOf('class="demo-command-guide-host"');
         const tableIndex = fullDemoSource.indexOf('id="inventory-table"');
@@ -379,12 +398,32 @@ describe('demo command guide', () => {
         expect(inventoryShellSource).toContain('onCommandGuideToggle={handleCommandGuideToggle}');
 
         expect(inventoryToolbarSource).toContain('CircleHelp');
-        expect(inventoryToolbarSource).toContain("label: 'Guida comandi'");
-        expect(inventoryToolbarSource).toContain("label: 'Command guide'");
+        expect(inventoryToolbarSource).toContain("demo-command-guide-copy");
+        expect(inventoryToolbarSource).toContain('commandGuideCopy[props.language].trigger');
         expect(inventoryToolbarSource).toContain('onClick={props.onCommandGuideToggle}');
         expect(inventoryToolbarSource).toContain('ref={props.commandGuideTriggerRef}');
 
         expect(reactMountSource).toContain("demo-command-guide.css");
         expect(inventoryGridSource).toContain('toolbar: false');
+    });
+
+    test('uses contextual CSS custom properties without theming controller logic', () => {
+        [
+            '--demo-command-guide-accent',
+            '--demo-command-guide-accent-rgb',
+            '--demo-command-guide-glow-rgb',
+            '--demo-command-guide-active-bg',
+            '--demo-command-guide-active-text'
+        ].forEach(property => expect(commandGuideCss).toContain(property));
+        expect(commandGuideCss).toContain('border-bottom-color: var(--demo-command-guide-accent);');
+        expect(commandGuideCss).toContain('outline: 2px solid var(--demo-command-guide-accent);');
+        expect(commandGuideCss).toContain('background-color: var(--demo-command-guide-active-bg) !important;');
+        expect(commandGuideCss).toContain('rgb(var(--demo-command-guide-glow-rgb) / .18)');
+        expect(commandGuideCss.match(/@keyframes demo-command-guide-glow/g)).toHaveLength(1);
+        expect(commandGuideSource).not.toContain('theme:');
+        expect(commandGuideSource).not.toContain('style.setProperty');
+
+        expect(demoCss).toContain('.demo-example {\n    --demo-command-guide-accent:');
+        expect(reactStyles).toContain('.inventory-workspace { --demo-command-guide-accent:');
     });
 });

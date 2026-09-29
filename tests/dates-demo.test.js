@@ -12,7 +12,7 @@ describe('Public Dates demo integration', () => {
         expect(source).toContain("summaryKey: 'examples.dates.detailsTitle'");
         expect(source).toContain('class="demo-table-workbench"');
         expect(source).toContain('class="demo-business-grid demo-business-grid--viewport"');
-        expect(source).toContain("buttons: ['validate']");
+        expect(source).toContain("buttons: ['validate', commandGuideToolbar.button]");
         expect(source).toContain('onValidate: handleValidateDates');
         expect(source).toContain("validateLabel.dataset.i18n = 'examples.dates.validate'");
         expect(source).not.toContain("id: 'validate-dates'");

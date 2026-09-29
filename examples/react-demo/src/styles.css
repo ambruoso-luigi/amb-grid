@@ -50,7 +50,7 @@ button, a { outline-offset: 3px; }
 
 /* React-owned operational dashboard. */
 .react-demo-panel .inventory-operations { background: linear-gradient(145deg, #fafdff 0%, #f5fafc 100%); border: 1px solid #c5dde5; border-radius: 18px; box-shadow: 0 18px 48px rgb(25 59 84 / 10%); overflow: visible; }
-.inventory-workspace { min-width: 0; padding: clamp(20px, 2.8vw, 38px); }
+.inventory-workspace { --demo-command-guide-accent: #0ea5b7; --demo-command-guide-accent-rgb: 14 165 183; --demo-command-guide-glow-rgb: 84 175 193; --demo-command-guide-active-bg: #e8f8fb; --demo-command-guide-active-text: #08758d; min-width: 0; padding: clamp(20px, 2.8vw, 38px); }
 .inventory-workspace__header { align-items: flex-start; display: flex; gap: 24px; justify-content: space-between; }
 .inventory-workspace__eyebrow { align-items: center; color: #087f98; display: inline-flex; font-size: 11px; font-weight: 850; gap: 6px; letter-spacing: .08em; margin-bottom: 9px; text-transform: uppercase; }
 .inventory-workspace h2 { color: #102b45; font-size: clamp(25px, 2.4vw, 34px); font-weight: 760; letter-spacing: -.035em; margin: 0; }

@@ -15,6 +15,10 @@ type GuideTabCopy = {
 type GuideCopy = {
     title: string;
     subtitle: string;
+    trigger: {
+        label: string;
+        title: string;
+    };
     tabs: Record<DemoCommandGuideTab, GuideTabCopy>;
 };
 
@@ -22,6 +26,10 @@ export const commandGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
     it: {
         title: 'Come interagire con la tabella',
         subtitle: 'Mouse, tastiera e scorciatoie disponibili nella demo',
+        trigger: {
+            label: 'Guida comandi',
+            title: 'Mouse, tastiera e scorciatoie della tabella'
+        },
         tabs: {
             mouse: {
                 label: 'Mouse',
@@ -64,6 +72,10 @@ export const commandGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
     en: {
         title: 'How to interact with the table',
         subtitle: 'Mouse, keyboard, and shortcuts available in the demo',
+        trigger: {
+            label: 'Command guide',
+            title: 'Mouse, keyboard and table shortcuts'
+        },
         tabs: {
             mouse: {
                 label: 'Mouse',
