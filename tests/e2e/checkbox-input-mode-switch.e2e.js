@@ -155,7 +155,7 @@ test.describe('checkbox input mode switch regression', () => {
         await expect(checkboxInput(page)).toBeFocused();
     });
 
-    test('Tab -> click empty checkbox cell toggles and keeps focus there', async ({ page }) => {
+    test('Tab -> clicks at both cell edges toggle and keep focus there', async ({ page }) => {
         await openInventoryTestPage(page);
 
         const cell = checkboxCell(page);
@@ -165,12 +165,20 @@ test.describe('checkbox input mode switch regression', () => {
 
         await cell.click({
             position: {
-                x: Math.max(1, (box?.width || 20) - 5),
+                x: 5,
                 y: Math.max(1, (box?.height || 20) / 2)
             }
         });
 
         await expect(checkboxInput(page)).toBeChecked({ checked: !initialChecked });
+        await cell.click({
+            position: {
+                x: Math.max(1, (box?.width || 20) - 5),
+                y: Math.max(1, (box?.height || 20) / 2)
+            }
+        });
+
+        await expect(checkboxInput(page)).toBeChecked({ checked: initialChecked });
         await expect(checkboxInput(page)).toBeVisible();
         await expect(checkboxInput(page)).toBeFocused();
         await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);

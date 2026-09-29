@@ -93,7 +93,6 @@
 
 .demo-command-guide__tabpanel {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: .65rem;
     padding: .75rem 1.1rem 1rem;
 }
@@ -102,11 +101,28 @@
     display: none;
 }
 
+.demo-command-guide__group {
+    min-width: 0;
+}
+
+.demo-command-guide__group-title {
+    margin: 0 0 .5rem;
+    color: #24344f;
+    font-size: .78rem;
+    font-weight: 750;
+}
+
+.demo-command-guide__group-items {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .65rem;
+}
+
 .demo-command-guide__item {
     min-width: 0;
 }
 
-.demo-command-guide__keys {
+.demo-command-guide__tokens {
     display: flex;
     flex-wrap: wrap;
     gap: .25rem;
@@ -135,6 +151,47 @@
     padding: 0 .42rem;
 }
 
+.demo-command-guide__action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.55rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: .72rem;
+    font-weight: 650;
+    line-height: 1.15;
+    padding: 0 .5rem;
+}
+
+#demo-command-guide-tabpanel-checkbox {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#demo-command-guide-tabpanel-checkbox .demo-command-guide__group-items {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#demo-command-guide-tabpanel-advanced {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#demo-command-guide-tabpanel-advanced .demo-command-guide__group {
+    border-left: 1px solid #e2e8f0;
+    padding-left: .65rem;
+}
+
+#demo-command-guide-tabpanel-advanced .demo-command-guide__group:first-child {
+    border-left: 0;
+    padding-left: 0;
+}
+
+#demo-command-guide-tabpanel-advanced .demo-command-guide__group-items {
+    grid-template-columns: 1fr;
+    gap: .55rem;
+}
+
 .is-command-guide-active {
     animation: demo-command-guide-glow 3.7s ease-in-out infinite;
     background-color: var(--demo-command-guide-active-bg) !important;
@@ -152,11 +209,19 @@
 }
 
 @media (max-width: 900px) {
-    .demo-command-guide__tabpanel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .demo-command-guide__group-items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #demo-command-guide-tabpanel-advanced { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #demo-command-guide-tabpanel-advanced .demo-command-guide__group:last-child { grid-column: span 2; }
 }
 
 @media (max-width: 560px) {
-    .demo-command-guide__tabpanel { grid-template-columns: 1fr; }
+    .demo-command-guide__group-items,
+    #demo-command-guide-tabpanel-checkbox,
+    #demo-command-guide-tabpanel-checkbox .demo-command-guide__group-items,
+    #demo-command-guide-tabpanel-advanced { grid-template-columns: 1fr; }
+    #demo-command-guide-tabpanel-advanced .demo-command-guide__group { border-left: 0; border-top: 1px solid #e2e8f0; padding: .65rem 0 0; }
+    #demo-command-guide-tabpanel-advanced .demo-command-guide__group:first-child { border-top: 0; padding-top: 0; }
+    #demo-command-guide-tabpanel-advanced .demo-command-guide__group:last-child { grid-column: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

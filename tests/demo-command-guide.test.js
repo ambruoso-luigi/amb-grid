@@ -206,7 +206,8 @@ describe('demo command guide', () => {
         expect(trigger.getAttribute('aria-controls')).toBe('demo-command-guide-panel');
         expect(trigger.classList.contains('is-command-guide-active')).toBe(true);
         expect(panel.children[0].children[1].getAttribute('role')).toBe('tablist');
-        expect(panel.children[0].children[1].children).toHaveLength(4);
+        expect(panel.children[0].children[1].children).toHaveLength(5);
+        expect(panel.children[0].children[1].children[0].textContent).toBe('Navigazione');
     });
 
     test('moves the singleton from host A to host B and deactivates trigger A', () => {
@@ -229,16 +230,22 @@ describe('demo command guide', () => {
     test('changes tab with click and keyboard arrows without global listeners', () => {
         const { harness, panel } = openGuide();
         const tablist = panel.children[0].children[1];
-        const [mouseTab, keyboardTab] = tablist.children;
+        const [navigationTab, editingTab] = tablist.children;
 
-        keyboardTab.click();
-        expect(keyboardTab.getAttribute('aria-selected')).toBe('true');
+        editingTab.click();
+        expect(editingTab.getAttribute('aria-selected')).toBe('true');
         expect(panel.children[0].children[2].children[1].hidden).toBe(false);
 
-        const arrowEvent = keyboardTab.keydown('ArrowLeft');
+        const arrowEvent = editingTab.keydown('ArrowLeft');
         expect(arrowEvent.preventDefault).toHaveBeenCalledOnce();
-        expect(mouseTab.getAttribute('aria-selected')).toBe('true');
-        expect(harness.documentMock.activeElement).toBe(mouseTab);
+        expect(navigationTab.getAttribute('aria-selected')).toBe('true');
+        expect(harness.documentMock.activeElement).toBe(navigationTab);
+        const endEvent = navigationTab.keydown('End');
+        const advancedTab = tablist.children[4];
+        expect(endEvent.preventDefault).toHaveBeenCalledOnce();
+        expect(advancedTab.getAttribute('aria-selected')).toBe('true');
+        expect(advancedTab.keydown('Home').preventDefault).toHaveBeenCalledOnce();
+        expect(navigationTab.getAttribute('aria-selected')).toBe('true');
         expect(harness.documentListeners.size).toBe(0);
     });
 
@@ -249,9 +256,9 @@ describe('demo command guide', () => {
 
         expect(panel.children[0].children[0].children[0].textContent)
             .toBe('How to interact with the table');
-        expect(panel.children[0].children[1].children[1].textContent).toBe('Keyboard');
-        expect(panel.children[0].children[2].children[0].children[0].children[1].textContent)
-            .toBe('Focus a cell for navigation.');
+        expect(panel.children[0].children[1].children[1].textContent).toBe('Editing');
+        expect(commandGuideCopy.en.tabs.navigation.groups[0].items[0].text)
+            .toBe('Selects the cell without opening editing.');
     });
 
     test('closes and destroys without leaving active trigger state', () => {
@@ -275,10 +282,20 @@ describe('demo command guide', () => {
 
     test('keeps the essential Italian and English copy in the dedicated source', () => {
         expect(commandGuideCopy.it.title).toBe('Come interagire con la tabella');
-        expect(commandGuideCopy.en.tabs.special.label).toBe('Special actions');
-        expect(commandGuideCopy.it.tabs.keyboard.items[2].keys)
+        expect(Object.keys(commandGuideCopy.it.tabs)).toEqual([
+            'navigation', 'editing', 'whileEditing', 'checkbox', 'advanced'
+        ]);
+        expect(commandGuideCopy.it.tabs.navigation.label).toBe('Navigazione');
+        expect(commandGuideCopy.en.tabs.advanced.label).toBe('Lookup, calendar & dialogs');
+        expect(commandGuideCopy.it.tabs.navigation.groups[0].items[4].tokens.map(token => token.label))
             .toEqual(['Alt+PageUp', 'Alt+PageDown']);
-        expect(commandGuideCopy.en.tabs.editing.items[1].keys).toEqual(['Esc']);
+        expect(commandGuideCopy.it.tabs.editing.groups[0].items[4].tokens[0].label).toBe('Esc');
+        expect(commandGuideCopy.it.tabs.checkbox.groups[0].items[0].tokens[0].kind).toBe('action');
+        expect(commandGuideCopy.it.tabs.checkbox.groups[0].items[1].tokens[0].kind).toBe('key');
+        expect(commandGuideCopy.it.tabs.checkbox.groups[0].items[0].text)
+            .toContain('qualsiasi punto della cella');
+        expect(commandGuideCopy.it.tabs.advanced.groups.map(group => group.title))
+            .toEqual(['Lookup', 'Calendario', 'Finestre di conferma']);
         expect(commandGuideCopy.it.trigger.label).toBe('Guida comandi');
         expect(commandGuideCopy.en.trigger.title).toBe('Mouse, keyboard and table shortcuts');
     });
@@ -419,6 +436,8 @@ describe('demo command guide', () => {
         expect(commandGuideCss).toContain('outline: 2px solid var(--demo-command-guide-accent);');
         expect(commandGuideCss).toContain('background-color: var(--demo-command-guide-active-bg) !important;');
         expect(commandGuideCss).toContain('rgb(var(--demo-command-guide-glow-rgb) / .18)');
+        expect(commandGuideCss).toContain('.demo-command-guide__action');
+        expect(commandGuideCss).toContain('#demo-command-guide-tabpanel-advanced');
         expect(commandGuideCss.match(/@keyframes demo-command-guide-glow/g)).toHaveLength(1);
         expect(commandGuideSource).not.toContain('theme:');
         expect(commandGuideSource).not.toContain('style.setProperty');

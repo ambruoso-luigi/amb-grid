@@ -49,10 +49,16 @@ test('the JavaScript demo command guide opens, localizes, and leaves the grid in
     }), gridSnapshot)).toEqual(gridSnapshot);
 
     const tabs = panel.getByRole('tab');
-    await expect(tabs).toHaveCount(4);
-    await expect(tabs).toHaveText(['Mouse', 'Tastiera', 'Modifica', 'Azioni speciali']);
-    await panel.getByRole('tab', { name: 'Tastiera', exact: true }).click();
-    await expect(panel.getByRole('tab', { name: 'Tastiera', exact: true }))
+    await expect(tabs).toHaveCount(5);
+    await expect(tabs).toHaveText([
+        'Navigazione',
+        'Modifica',
+        'Durante la modifica',
+        'Checkbox e selezione',
+        'Lookup, calendario e conferme'
+    ]);
+    await panel.getByRole('tab', { name: 'Modifica', exact: true }).click();
+    await expect(panel.getByRole('tab', { name: 'Modifica', exact: true }))
         .toHaveAttribute('aria-selected', 'true');
 
     await page.locator('[data-language-set="en"]').click();
@@ -60,7 +66,13 @@ test('the JavaScript demo command guide opens, localizes, and leaves the grid in
     await expect(trigger).toHaveAttribute('title', 'Mouse, keyboard and table shortcuts');
     await expect(trigger).toHaveAttribute('aria-label', 'Mouse, keyboard and table shortcuts');
     await expect(panel).toContainText('How to interact with the table');
-    await expect(tabs).toHaveText(['Mouse', 'Keyboard', 'Editing', 'Special actions']);
+    await expect(tabs).toHaveText([
+        'Navigation',
+        'Editing',
+        'While editing',
+        'Checkboxes & selection',
+        'Lookup, calendar & dialogs'
+    ]);
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toHaveCount(1);
 

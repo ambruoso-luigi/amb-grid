@@ -29,7 +29,7 @@ type SharedGuide = {
     tabPanels: Map<DemoCommandGuideTab, HTMLElement>;
 };
 
-const tabs: readonly DemoCommandGuideTab[] = ['mouse', 'keyboard', 'editing', 'special'];
+const tabs: readonly DemoCommandGuideTab[] = ['navigation', 'editing', 'whileEditing', 'checkbox', 'advanced'];
 const panelId = 'demo-command-guide-panel';
 let sharedGuide: SharedGuide | null = null;
 let activeController: DemoCommandGuide | null = null;
@@ -109,7 +109,7 @@ class DemoCommandGuide implements DemoCommandGuideController {
     private host: HTMLElement;
     private trigger: HTMLElement | undefined;
     private locale: DemoCommandGuideLocale;
-    private selectedTab: DemoCommandGuideTab = 'mouse';
+    private selectedTab: DemoCommandGuideTab = 'navigation';
     private destroyed = false;
 
     constructor({ host, trigger, locale = 'it' }: DemoCommandGuideOptions) {
@@ -196,22 +196,43 @@ class DemoCommandGuide implements DemoCommandGuideController {
             tabPanel.hidden = tab !== this.selectedTab;
             tabPanel.replaceChildren();
 
-            copy.tabs[tab].items.forEach(item => {
-                const itemElement = createElement('div');
-                const keys = createElement('span');
-                const text = createElement('p');
+            copy.tabs[tab].groups.forEach(group => {
+                const groupElement = createElement('section');
+                const items = createElement('div');
 
-                itemElement.className = 'demo-command-guide__item';
-                keys.className = 'demo-command-guide__keys';
-                item.keys.forEach(key => {
-                    const keycap = createElement('kbd');
-                    keycap.className = 'demo-keycap';
-                    keycap.textContent = key;
-                    keys.appendChild(keycap);
+                groupElement.className = 'demo-command-guide__group';
+                items.className = 'demo-command-guide__group-items';
+                if (group.title) {
+                    const groupTitle = createElement('h3');
+
+                    groupTitle.className = 'demo-command-guide__group-title';
+                    groupTitle.textContent = group.title;
+                    groupElement.appendChild(groupTitle);
+                }
+
+                group.items.forEach(item => {
+                    const itemElement = createElement('div');
+                    const tokens = createElement('span');
+                    const text = createElement('p');
+
+                    itemElement.className = 'demo-command-guide__item';
+                    tokens.className = 'demo-command-guide__tokens';
+                    item.tokens.forEach(token => {
+                        const tokenElement = createElement(token.kind === 'key' ? 'kbd' : 'span');
+
+                        tokenElement.className = token.kind === 'key'
+                            ? 'demo-keycap'
+                            : 'demo-command-guide__action';
+                        tokenElement.textContent = token.label;
+                        tokens.appendChild(tokenElement);
+                    });
+                    text.textContent = item.text;
+                    itemElement.append(tokens, text);
+                    items.appendChild(itemElement);
                 });
-                text.textContent = item.text;
-                itemElement.append(keys, text);
-                tabPanel.appendChild(itemElement);
+
+                groupElement.appendChild(items);
+                tabPanel.appendChild(groupElement);
             });
         });
 
