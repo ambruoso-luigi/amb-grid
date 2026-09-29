@@ -1,5 +1,6 @@
 import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const priorityParser = AMB.parsers.custom(value => {
     const priorities = {
@@ -152,13 +153,17 @@ export default function parsers(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-command-guide-host"></div>
             <div id="parsers-table" class="demo-business-grid demo-business-grid--viewport demo-parsers-grid"></div>
         </div>
     `;
 
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#parsers-table',
-        toolbar: false,
+        toolbar: {
+            buttons: [commandGuideToolbar.button]
+        },
         data: createParserData(),
         layout: 'fitColumns',
         columns: [
@@ -188,6 +193,7 @@ export default function parsers(app) {
             }
         ]
     });
+    commandGuideToolbar.mount();
     const handleLanguageChange = () => demo.redraw(true);
     const originalDestroy = demo.destroy.bind(demo);
 
@@ -195,6 +201,7 @@ export default function parsers(app) {
 
     demo.destroy = () => {
         window.removeEventListener('amb-demo-language-change', handleLanguageChange);
+        commandGuideToolbar.destroy();
         originalDestroy();
     };
 

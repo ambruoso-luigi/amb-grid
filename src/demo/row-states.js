@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const countRowsByState = (report, state) => {
     return report.rows.filter(row => row.state === state).length;
@@ -98,10 +99,12 @@ export default function rowStates(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-command-guide-host"></div>
             <div id="row-states-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#row-states-table',
         rowActionColumn: {
@@ -132,7 +135,8 @@ export default function rowStates(app) {
                     label: 'Row numbers',
                     title: 'Show row number report',
                     onClick: handleShowRowNumbers
-                }
+                },
+                commandGuideToolbar.button
             ],
             onAdd: handleAdd,
             onSave: handleSave,
@@ -183,6 +187,7 @@ export default function rowStates(app) {
             { title: 'Note', field: 'note', minWidth: 140, widthGrow: 1.6, editor: AMB.editors.text({ trim: true }) }
         ]
     });
+    commandGuideToolbar.mount();
 
     crud = demo.crud;
     const reportDialog = createDemoReportDialog();
@@ -243,6 +248,7 @@ export default function rowStates(app) {
 
     demo.destroy = () => {
         reportDialog.destroy();
+        commandGuideToolbar.destroy();
         originalDestroy();
     };
 

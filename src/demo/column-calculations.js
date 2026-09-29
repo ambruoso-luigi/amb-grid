@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import { countPrintProducts } from './utils/demo-calculations.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const formatAveragePrice = value => Number(value).toFixed(2);
 
@@ -32,10 +33,12 @@ export default function columnCalculations(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-command-guide-host"></div>
             <div id="column-calculations-table" class="demo-business-grid demo-business-grid--viewport demo-column-calculations-grid"></div>
         </div>
     `;
 
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const grid = AMB.table({
         selector: '#column-calculations-table',
         rowActionColumn: {
@@ -45,7 +48,7 @@ export default function columnCalculations(app) {
             confirmRemoveNewMessage: 'Remove this new product?'
         },
         toolbar: {
-            buttons: ['add'],
+            buttons: ['add', commandGuideToolbar.button],
             onAdd: handleAdd
         },
         data: [
@@ -111,6 +114,7 @@ export default function columnCalculations(app) {
             }
         ]
     });
+    commandGuideToolbar.mount();
 
     function handleAdd() {
         grid.feedback.clear();
@@ -128,6 +132,7 @@ export default function columnCalculations(app) {
 
     return {
         destroy() {
+            commandGuideToolbar.destroy();
             grid.destroy();
         }
     };

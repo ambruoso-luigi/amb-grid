@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
+import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 
 const minDate = '2025-01-01';
 const maxDate = '2027-12-31';
@@ -153,14 +154,16 @@ export default function dates(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-command-guide-host"></div>
             <div id="dates-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
+    const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#dates-table',
         toolbar: {
-            buttons: ['validate'],
+            buttons: ['validate', commandGuideToolbar.button],
             onValidate: handleValidateDates
         },
         data: dateData.map(row => ({ ...row })),
@@ -201,6 +204,7 @@ export default function dates(app) {
             }
         ]
     });
+    commandGuideToolbar.mount();
 
     const reportDialog = createDemoReportDialog();
     const stopDecoratingDateButtons = decorateDemoEditorButtons(app.querySelector('#dates-table'), {
@@ -222,6 +226,7 @@ export default function dates(app) {
     demo.destroy = () => {
         reportDialog.destroy();
         stopDecoratingDateButtons();
+        commandGuideToolbar.destroy();
         originalDestroy();
     };
 
