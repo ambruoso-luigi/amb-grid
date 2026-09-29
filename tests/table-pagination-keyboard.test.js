@@ -438,6 +438,29 @@ describe('table pagination keyboard runtime', () => {
         expect(harness.tableElement.next.title).toBe('Next page (Alt+PageDown)');
     });
 
+    test.each([
+        ['PageDown', 1, 'nextPage'],
+        ['PageUp', 2, 'previousPage']
+    ])('keeps Alt+%s focus-only after changing page', async (key, page, method) => {
+        const itemCode = createCandidate({ field: 'itemCode' });
+        const harness = createHarness({ page, cells: [itemCode] });
+
+        shortcut(harness, key);
+        await flush();
+        harness.table.emit('renderComplete');
+        await flush();
+
+        expect(harness.paginationMethods[method]).toHaveBeenCalledOnce();
+        expect(itemCode.getElement().focus).toHaveBeenCalledOnce();
+        expect(itemCode.edit).not.toHaveBeenCalled();
+        expect(itemCode.getElement().classList.contains('tabulator-editing')).toBe(false);
+        expect(globalThis.document.activeElement).toBe(itemCode.getElement());
+
+        const enter = harness.tableElement.dispatch({ key: 'Enter', target: itemCode.getElement() });
+        expect(enter.preventDefault).toHaveBeenCalledOnce();
+        expect(itemCode.edit).toHaveBeenCalledOnce();
+    });
+
     test('Enter opens a focused large-text cell exactly once', () => {
         const notes = createCandidate({ focusOnly: true, field: 'notes' });
         const harness = createHarness({ cells: [notes] });

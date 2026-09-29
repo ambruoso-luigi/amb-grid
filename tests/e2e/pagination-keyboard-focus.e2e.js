@@ -15,6 +15,14 @@ const expectItemCodeEditor = async page => {
     await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
 };
 
+const expectItemCodeNavigationFocus = async page => {
+    const itemCode = cell(page, 'itemCode');
+
+    await expect(itemCode).toBeFocused();
+    await expect(itemCode.locator('input.amb-cell-editor')).toHaveCount(0);
+    await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+};
+
 const moveAndCheck = async (page, key, number) => {
     await page.keyboard.press(key);
     await waitForPage(page, number);
@@ -58,10 +66,10 @@ test.describe('keyboard pagination focus', () => {
         await page.keyboard.press('Alt+PageDown');
         await waitForPage(page, 2);
         await expect(page.locator('.amb-autocomplete-cell--editing')).toHaveCount(0);
-        await expectItemCodeEditor(page);
+        await expectItemCodeNavigationFocus(page);
         await page.keyboard.press('Alt+PageUp');
         await waitForPage(page, 1);
-        await expectItemCodeEditor(page);
+        await expectItemCodeNavigationFocus(page);
     });
 
     test('moves Tab and Shift+Tab symmetrically across pages', async ({ page }) => {
@@ -81,6 +89,18 @@ test.describe('keyboard pagination focus', () => {
         await expectItemCodeEditor(page);
         await page.keyboard.press('Shift+Tab');
         await expectFocusOutsideGrid(page);
+    });
+
+    test('opens editing only after Enter following an Alt+PageDown focus change', async ({ page }) => {
+        await cell(page, 'itemCode').click();
+        await page.keyboard.press('Enter');
+        await expectItemCodeEditor(page);
+        await page.keyboard.press('Alt+PageDown');
+        await waitForPage(page, 2);
+        await expectItemCodeNavigationFocus(page);
+
+        await page.keyboard.press('Enter');
+        await expectItemCodeEditor(page);
     });
 
     test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {
@@ -131,9 +151,9 @@ test.describe('keyboard pagination focus', () => {
         await page.keyboard.press('Alt+PageDown');
         await waitForPage(page, 2);
         await expect(page.locator('.amb-lookup-editor')).toHaveCount(0);
-        await expectItemCodeEditor(page);
+        await expectItemCodeNavigationFocus(page);
         await page.keyboard.press('Alt+PageUp');
         await waitForPage(page, 1);
-        await expectItemCodeEditor(page);
+        await expectItemCodeNavigationFocus(page);
     });
 });

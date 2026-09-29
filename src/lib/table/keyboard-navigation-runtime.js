@@ -745,7 +745,10 @@ export const createKeyboardNavigationRuntime = ({
         event.stopImmediatePropagation?.();
         transitionPage({
             direction: previous ? 'prev' : 'next',
-            destination: 'first'
+            destination: {
+                edge: 'first',
+                activation: 'focus'
+            }
         });
     };
 
