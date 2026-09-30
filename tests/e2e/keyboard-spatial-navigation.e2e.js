@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { enterNavigationWithClick, openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 const table = page => page.locator('#inventory-table');
 const rowByCode = (page, code) => table(page).locator('.tabulator-row').filter({ hasText: code });
@@ -11,12 +12,7 @@ const expectFocusIndicator = target => expect.poll(() => target.evaluate(element
     return style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0;
 })).toBe(true);
 
-const focusNavigationCell = async target => {
-    await target.click();
-    await expect(target).toBeFocused();
-    await expect(target).not.toHaveClass(/tabulator-editing/);
-    await expect(target.locator('input.amb-cell-editor')).toHaveCount(0);
-};
+const focusNavigationCell = (page, target, label) => enterNavigationWithClick(page, target, label, '#inventory-table');
 
 const expectNavigationFocus = async target => {
     await expect(target).toBeFocused();
@@ -42,7 +38,7 @@ test.describe('keyboard spatial navigation', () => {
         const start = rowCell(page, 'PRD-AB02', 'itemCode');
         const right = rowCell(page, 'PRD-AB02', 'productName');
         const down = rowCell(page, 'PRD-A003', 'productName');
-        await focusNavigationCell(start);
+        await focusNavigationCell(page, start, 'directional start');
         await expectFocusIndicator(start);
         await page.keyboard.press('ArrowRight');
         await expectNavigationFocus(right);
@@ -53,7 +49,7 @@ test.describe('keyboard spatial navigation', () => {
         await page.keyboard.press('ArrowUp');
         await expectNavigationFocus(start);
         const last = rowCell(page, 'PRD-AB02', 'notes');
-        await focusNavigationCell(last);
+        await focusNavigationCell(page, last, 'directional boundary');
         await page.keyboard.press('ArrowRight');
         await expectNavigationFocus(last);
     });
@@ -80,11 +76,11 @@ test.describe('keyboard spatial navigation', () => {
     test('crosses adjacent pages vertically while preserving focus-only navigation', async ({ page }) => {
         const first = rowCell(page, 'PRD-A001', 'itemCode');
         const last = rowCell(page, 'PRD-H010', 'itemCode');
-        await focusNavigationCell(first);
+        await focusNavigationCell(page, first, 'vertical first row');
         await page.keyboard.press('ArrowUp');
         await expectNavigationFocus(first);
         await expect(await currentPage(page)).toBe(1);
-        await focusNavigationCell(last);
+        await focusNavigationCell(page, last, 'vertical last row');
         await page.keyboard.press('ArrowDown');
         await expect(await currentPage(page)).toBe(2);
         const nextFirst = rowCell(page, 'PRD-A011', 'itemCode');
@@ -98,11 +94,7 @@ test.describe('keyboard spatial navigation', () => {
         test(`standard text editor keeps ${key} inside the editor`, async ({ page }) => {
             const target = rowCell(page, 'PRD-AB02', 'productName');
 
-            await target.dblclick();
-            const input = target.locator('input.amb-cell-editor');
-            await expect(target).toHaveClass(/tabulator-editing/);
-            await expect(input).toBeVisible();
-            await expect(input).toBeFocused();
+            const input = await openEditorFromNavigation(page, target, `text editor ${key}`, '#inventory-table');
             await page.keyboard.press(key);
             await expect(input).toHaveCount(1);
             await expect(input).toBeFocused();
@@ -114,7 +106,7 @@ test.describe('keyboard spatial navigation', () => {
     test('commits a text editor with Enter and restores navigation focus to its source cell', async ({ page }) => {
         const target = rowCell(page, 'PRD-AB02', 'productName');
         const adjacent = rowCell(page, 'PRD-AB02', 'warehouse');
-        await focusNavigationCell(target);
+        await focusNavigationCell(page, target, 'keyboard commit');
         await page.keyboard.press('Enter');
         const input = target.locator('input.amb-cell-editor');
         await expect(input).toBeVisible();
@@ -146,11 +138,7 @@ test.describe('keyboard spatial navigation', () => {
 
     test('keeps autocomplete ArrowDown in its dropdown', async ({ page }) => {
         const warehouse = rowCell(page, 'PRD-AB02', 'warehouse');
-        await warehouse.dblclick({ delay: 100 });
-        const input = warehouse.locator('input.amb-autocomplete-editor');
-        await expect(warehouse).toHaveClass(/tabulator-editing/);
-        await expect(input).toBeVisible();
-        await expect(input).toBeFocused();
+        const input = await openEditorFromNavigation(page, warehouse, 'autocomplete ArrowDown', '#inventory-table', 'input.amb-autocomplete-editor');
         await page.keyboard.press('ArrowDown');
         await expect(input).toBeFocused();
         await expect(page.getByRole('listbox', { name: 'Results List' })
@@ -181,7 +169,7 @@ test.describe('keyboard spatial navigation', () => {
         const target = rowCell(page, 'PRD-AB02', 'itemCode');
         const previous = rowCell(page, 'PRD-A001', 'itemCode');
         const next = rowCell(page, 'PRD-A003', 'itemCode');
-        await focusNavigationCell(target);
+        await focusNavigationCell(page, target, 'Alt arrow');
         await page.keyboard.press('Alt+ArrowDown');
         await expect(next).not.toBeFocused();
         await expect(next).not.toHaveClass(/tabulator-editing/);
@@ -196,7 +184,7 @@ test.describe('keyboard spatial navigation', () => {
         const row = basicTable.locator('.tabulator-row').first();
         const title = row.locator('.tabulator-cell[tabulator-field="title"]');
         await expect(title).toBeVisible();
-        await focusNavigationCell(title);
+        await focusNavigationCell(page, title, 'readonly cell');
 
         await page.keyboard.press('ArrowLeft');
         await expect.poll(async () => ['id', '_ambTempId', '_ambRowNumber', '_state']

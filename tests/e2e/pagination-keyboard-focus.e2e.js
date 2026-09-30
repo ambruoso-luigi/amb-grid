@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openEditorFromNavigation, reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 const table = page => page.locator('#inventory-table');
 const firstRow = page => table(page).locator('.tabulator-row').first();
@@ -92,15 +93,18 @@ test.describe('keyboard pagination focus', () => {
     });
 
     test('opens editing only after Enter following an Alt+PageDown focus change', async ({ page }) => {
-        await cell(page, 'itemCode').click();
-        await page.keyboard.press('Enter');
+        await openEditorFromNavigation(page, cell(page, 'itemCode'), 'Alt+PageDown phase A/B', '#inventory-table');
         await expectItemCodeEditor(page);
         await page.keyboard.press('Alt+PageDown');
         await waitForPage(page, 2);
-        await expectItemCodeNavigationFocus(page);
+        try {
+            await expectItemCodeNavigationFocus(page);
+        } catch (error) {
+            await reportFocusDiagnostics(page, cell(page, 'itemCode'), 'Alt+PageDown phase C: page transition failed', '#inventory-table');
+            throw error;
+        }
 
-        await page.keyboard.press('Enter');
-        await expectItemCodeEditor(page);
+        await openEditorFromNavigation(page, cell(page, 'itemCode'), 'Alt+PageDown phase D', '#inventory-table');
     });
 
     test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {

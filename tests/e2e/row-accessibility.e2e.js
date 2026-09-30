@@ -21,6 +21,20 @@ const selectedRowCount = page => {
     return page.locator('#basic-table .tabulator-row.tabulator-selected').count();
 };
 
+const reportSelectionDiagnostics = async (page, label) => {
+    const state = await page.evaluate(() => {
+        const checkbox = document.querySelector('#basic-table .amb-selection-column input[aria-label="Select Row"]');
+        const row = checkbox?.closest('.tabulator-row');
+        const active = document.activeElement;
+        return {
+            activeElement: { tagName: active?.tagName || null, className: String(active?.className || '') },
+            checkbox: { checked: checkbox?.checked ?? null, focused: active === checkbox, connected: checkbox?.isConnected ?? false },
+            rowSelected: row?.classList.contains('tabulator-selected') ?? null
+        };
+    });
+    console.error(`[focus diagnostics] selection focus retention: ${label}\n${JSON.stringify(state)}`);
+};
+
 const getActiveGridFocus = page => {
     return page.evaluate(() => {
         const active = document.activeElement;
@@ -42,25 +56,43 @@ const getActiveGridFocus = page => {
 };
 
 test.describe('row controls accessibility', () => {
-    test('Basic CRUD row selection is focusable and supports keyboard and mouse', async ({ page }) => {
+    const expectSelectionFocus = async (page, selection, phase) => {
+        try {
+            await expect(selection).toBeFocused();
+        } catch (error) {
+            await reportSelectionDiagnostics(page, phase);
+            throw error;
+        }
+    };
+
+    test('Basic CRUD row selection retains keyboard focus through selection shortcuts', async ({ page }) => {
         await openBasicCrudDemo(page);
 
         const firstSelection = page.locator('#basic-table .tabulator-row .amb-selection-column input[aria-label="Select Row"]').first();
 
         await firstSelection.focus();
-        await expect(firstSelection).toBeFocused();
+        await expectSelectionFocus(page, firstSelection, 'initial focus');
 
         await page.keyboard.press('Enter');
         await expect.poll(() => selectedRowCount(page)).toBe(1);
+        await expectSelectionFocus(page, firstSelection, 'after Enter');
 
         await page.keyboard.press('0');
         await expect.poll(() => selectedRowCount(page)).toBe(0);
+        await expectSelectionFocus(page, firstSelection, 'after 0');
 
         await page.keyboard.press('1');
         await expect.poll(() => selectedRowCount(page)).toBe(1);
+        await expectSelectionFocus(page, firstSelection, 'after 1');
 
         await page.keyboard.press('Space');
         await expect.poll(() => selectedRowCount(page)).toBe(0);
+        await expectSelectionFocus(page, firstSelection, 'after Space');
+    });
+
+    test('Basic CRUD row selection supports pointer selection', async ({ page }) => {
+        await openBasicCrudDemo(page);
+        const firstSelection = page.locator('#basic-table .tabulator-row .amb-selection-column input[aria-label="Select Row"]').first();
 
         await firstSelection.click();
         await expect.poll(() => selectedRowCount(page)).toBe(1);
