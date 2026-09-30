@@ -7,6 +7,19 @@ const rowCell = (page, code, field) => rowByCode(page, code)
     .locator(`.tabulator-cell[tabulator-field="${field}"]`);
 const currentPage = page => table(page).locator('.tabulator-page.active').textContent()
     .then(value => Number(value));
+const firstVisibleItemCode = page => table(page).locator('.tabulator-row').first()
+    .locator('.tabulator-cell[tabulator-field="itemCode"]');
+const lastVisibleItemCode = page => table(page).locator('.tabulator-row').last()
+    .locator('.tabulator-cell[tabulator-field="itemCode"]');
+
+const goToPenultimatePage = async page => {
+    const last = table(page).locator('.tabulator-page[data-page="last"]');
+    await expect(last).toBeVisible();
+    await last.click();
+    const previous = table(page).locator('.tabulator-page[data-page="prev"]');
+    await previous.click();
+    return currentPage(page);
+};
 const expectFocusIndicator = target => expect.poll(() => target.evaluate(element => {
     const style = getComputedStyle(element);
     return style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0;
@@ -88,6 +101,22 @@ test.describe('keyboard spatial navigation', () => {
         await page.keyboard.press('ArrowUp');
         await expect(await currentPage(page)).toBe(1);
         await expectNavigationFocus(last);
+    });
+
+    test('preserves Item code focus across the final page boundary with Arrow keys', async ({ page }) => {
+        const penultimate = await goToPenultimatePage(page);
+        const lastItemCode = lastVisibleItemCode(page);
+        await focusNavigationCell(page, lastItemCode, 'final boundary ArrowDown setup');
+
+        await page.keyboard.press('ArrowDown');
+        await expect.poll(() => currentPage(page)).toBeGreaterThan(await penultimate);
+        await expectNavigationFocus(firstVisibleItemCode(page));
+        await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+
+        await page.keyboard.press('ArrowUp');
+        await expect(await currentPage(page)).toBe(await penultimate);
+        await expectNavigationFocus(lastVisibleItemCode(page));
+        await expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
     });
 
     for (const key of ['ArrowLeft', 'ArrowUp']) {

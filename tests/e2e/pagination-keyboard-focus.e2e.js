@@ -8,6 +8,24 @@ const rowByCode = (page, code) => table(page).locator('.tabulator-row').filter({
 const rowCell = (page, code, field) => rowByCode(page, code).locator(`.tabulator-cell[tabulator-field="${field}"]`);
 const currentPage = page => table(page).locator('.tabulator-page.active').textContent().then(Number);
 const waitForPage = (page, number) => expect.poll(() => currentPage(page)).toBe(number);
+const firstItemCode = page => firstRow(page).locator('.tabulator-cell[tabulator-field="itemCode"]');
+
+const goToLastPage = async page => {
+    const pager = table(page);
+    const last = pager.locator('.tabulator-page[data-page="last"]');
+    await expect(last).toBeVisible();
+    await last.click();
+    await expect.poll(() => currentPage(page)).toBeGreaterThan(1);
+};
+
+const goToPenultimatePage = async page => {
+    await goToLastPage(page);
+    const previous = table(page).locator('.tabulator-page[data-page="prev"]');
+    await previous.click();
+    const penultimate = await currentPage(page);
+    await expect(table(page).locator('.tabulator-page[data-page="next"]')).toBeVisible();
+    return penultimate;
+};
 
 const expectItemCodeEditor = async page => {
     const itemCode = cell(page, 'itemCode');
@@ -106,6 +124,31 @@ test.describe('keyboard pagination focus', () => {
 
         await page.keyboard.press('Enter');
         await expectItemCodeEditor(page);
+    });
+
+    test('keeps focus-only navigation across the final page boundary with Alt+Page shortcuts', async ({ page }) => {
+        const penultimate = await goToPenultimatePage(page);
+        const itemCode = firstItemCode(page);
+        await itemCode.click();
+        await expectItemCodeNavigationFocus(page);
+
+        await page.keyboard.press('Alt+PageDown');
+        await expect.poll(() => currentPage(page)).toBeGreaterThan(penultimate);
+        await expectItemCodeNavigationFocus(page);
+        await page.keyboard.press('Enter');
+        await expectItemCodeEditor(page);
+        await page.keyboard.press('Escape');
+        await expectItemCodeNavigationFocus(page);
+
+        await page.keyboard.press('Alt+PageUp');
+        await waitForPage(page, penultimate);
+        try {
+            await expectItemCodeNavigationFocus(page);
+            await expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
+        } catch (error) {
+            await reportFocusDiagnostics(page, firstItemCode(page), 'final boundary Alt+PageUp focus restore failed', '#inventory-table');
+            throw error;
+        }
     });
 
     test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {
