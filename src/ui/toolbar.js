@@ -164,6 +164,67 @@ const createButton = definition => {
     return button;
 };
 
+const settleActiveEditor = ({ grid, tableElement, button }) => {
+    const editingElement = tableElement.querySelector(
+        '.tabulator-cell.tabulator-editing'
+    );
+
+    if (!editingElement) return null;
+
+    const table = grid.table;
+    const canObserveLifecycle = table
+        && typeof table.on === 'function'
+        && typeof table.off === 'function';
+    let resolveSettled;
+    const settled = new Promise(resolve => {
+        resolveSettled = resolve;
+    });
+    let finished = false;
+    const isEditingCell = cell => cell
+        && typeof cell.getElement === 'function'
+        && cell.getElement() === editingElement;
+    const finish = () => {
+        if (finished) return;
+
+        finished = true;
+
+        if (canObserveLifecycle) {
+            table.off('cellEdited', handleEdited);
+            table.off('cellEditCancelled', handleCancelled);
+        }
+
+        resolveSettled();
+    };
+    const handleEdited = cell => {
+        if (isEditingCell(cell)) finish();
+    };
+    const handleCancelled = cell => {
+        if (isEditingCell(cell)) finish();
+    };
+
+    if (canObserveLifecycle) {
+        table.on('cellEdited', handleEdited);
+        table.on('cellEditCancelled', handleCancelled);
+    }
+
+    try {
+        button.focus({ preventScroll: true });
+    } catch {
+        button.focus();
+    }
+
+    if (!tableElement.querySelector('.tabulator-cell.tabulator-editing')) {
+        finish();
+        return null;
+    }
+
+    if (canObserveLifecycle) {
+        return settled;
+    }
+
+    return null;
+};
+
 /**
  * Create the AMB Grid CRUD header toolbar.
  *
@@ -221,6 +282,15 @@ export const createToolbar = ({ selector, toolbar, getGrid }) => {
                 button.setAttribute('aria-disabled', 'true');
 
                 try {
+                    const editorSettled = definition.id === 'add'
+                        ? null
+                        : settleActiveEditor({
+                            grid,
+                            tableElement,
+                            button
+                        });
+
+                    if (editorSettled) await editorSettled;
                     const context = { grid, event };
 
                     if (definition.includePayload) {

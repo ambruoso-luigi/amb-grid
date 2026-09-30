@@ -135,6 +135,7 @@ const createHarness = toolbar => {
         controller,
         grid,
         parent,
+        tableElement,
         restore() {
             globalThis.document = originalDocument;
         }
@@ -166,6 +167,132 @@ describe('AMB toolbar', () => {
             expect(harness.controller).toBeNull();
             expect(harness.parent.children).toHaveLength(1);
         } finally {
+            harness.restore();
+        }
+    });
+
+    test('settles an active editor before reading payload and invoking callbacks', async () => {
+        const events = [];
+        const onPayload = vi.fn(() => events.push('callback'));
+        const harness = createHarness({
+            buttons: ['payload'],
+            onPayload
+        });
+        let editing = true;
+        const editingElement = {};
+        const lifecycleListeners = new Map();
+        const editingCell = {
+            getElement: () => editingElement
+        };
+
+        harness.tableElement.querySelector = selector => {
+            return selector === '.tabulator-cell.tabulator-editing' && editing
+                ? editingElement
+                : null;
+        };
+        harness.grid.table = {
+            on: (type, handler) => lifecycleListeners.set(type, handler),
+            off: (type, handler) => {
+                if (lifecycleListeners.get(type) === handler) {
+                    lifecycleListeners.delete(type);
+                }
+            }
+        };
+        harness.grid.crud.getSavePayload.mockImplementation(() => {
+            events.push('payload');
+            return { canSave: true };
+        });
+
+        try {
+            const [payloadButton] = harness.controller.actions.children;
+
+            payloadButton.focus = () => {
+                events.push('commit');
+                editing = false;
+                lifecycleListeners.get('cellEdited')(editingCell);
+            };
+
+            await payloadButton.dispatch('click');
+
+            expect(events).toEqual(['commit', 'payload', 'callback']);
+            expect(lifecycleListeners.size).toBe(0);
+        } finally {
+            harness.controller.destroy();
+            harness.restore();
+        }
+    });
+
+    test('settles an active editor before a custom callback without payload work', async () => {
+        const events = [];
+        const onCustom = vi.fn(() => events.push('callback'));
+        const harness = createHarness({
+            buttons: [{ id: 'custom', label: 'Custom', onClick: onCustom }]
+        });
+        let editing = true;
+        const editingElement = {};
+        const lifecycleListeners = new Map();
+        const editingCell = {
+            getElement: () => editingElement
+        };
+
+        harness.tableElement.querySelector = selector => {
+            return selector === '.tabulator-cell.tabulator-editing' && editing
+                ? editingElement
+                : null;
+        };
+        harness.grid.table = {
+            on: (type, handler) => lifecycleListeners.set(type, handler),
+            off: (type, handler) => {
+                if (lifecycleListeners.get(type) === handler) {
+                    lifecycleListeners.delete(type);
+                }
+            }
+        };
+
+        try {
+            const [customButton] = harness.controller.actions.children;
+
+            customButton.focus = () => {
+                events.push('commit');
+                editing = false;
+                lifecycleListeners.get('cellEdited')(editingCell);
+            };
+
+            await customButton.dispatch('click');
+
+            expect(events).toEqual(['commit', 'callback']);
+            expect(harness.grid.crud.getSavePayload).not.toHaveBeenCalled();
+            expect(lifecycleListeners.size).toBe(0);
+        } finally {
+            harness.controller.destroy();
+            harness.restore();
+        }
+    });
+
+    test('does not observe or focus when no editor is active', async () => {
+        const onValidate = vi.fn();
+        const harness = createHarness({
+            buttons: ['validate'],
+            onValidate
+        });
+        const on = vi.fn();
+        const off = vi.fn();
+
+        harness.grid.table = { on, off };
+
+        try {
+            const [validateButton] = harness.controller.actions.children;
+            const focus = vi.fn();
+
+            validateButton.focus = focus;
+            await validateButton.dispatch('click');
+
+            expect(onValidate).toHaveBeenCalledTimes(1);
+            expect(on).not.toHaveBeenCalled();
+            expect(off).not.toHaveBeenCalled();
+            expect(focus).not.toHaveBeenCalled();
+        } finally {
+            harness.controller.destroy();
             harness.restore();
         }
     });
