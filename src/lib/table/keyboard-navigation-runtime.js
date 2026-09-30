@@ -35,7 +35,7 @@ const isDataRowElement = element => {
         && !element.classList.contains('amb-calc-row');
 };
 
-const isCandidateActuallyActive = candidate => {
+const isCandidateActuallyActive = (candidate, focusOnly = false) => {
     const element = candidate?.getElement?.();
     const activeElement = globalThis.document?.activeElement;
     const definition = candidate?.getColumn?.()?.getDefinition?.() || {};
@@ -44,7 +44,7 @@ const isCandidateActuallyActive = candidate => {
 
     const metadata = getAmbColumnMetadata(definition);
 
-    if (metadata.keyboardFocusOnly === true) {
+    if (focusOnly || metadata.keyboardFocusOnly === true) {
         return activeElement === element || Boolean(element.contains?.(activeElement));
     }
 
@@ -190,7 +190,7 @@ export const createKeyboardNavigationRuntime = ({
     const activateCandidate = async (candidate, destination) => {
         const focusOnly = normalizeDestination(destination).activation === 'focus';
         const result = focusOnly ? focusNavigationCandidate(candidate) : navigateToCandidate(candidate);
-        const activeImmediately = isCandidateActuallyActive(candidate);
+        const activeImmediately = isCandidateActuallyActive(candidate, focusOnly);
         if (!result) return { active: false, activeImmediately };
 
         await Promise.resolve();
@@ -198,7 +198,7 @@ export const createKeyboardNavigationRuntime = ({
         await nextFrame();
 
         return {
-            active: focusOnly || isCandidateActuallyActive(candidate),
+            active: isCandidateActuallyActive(candidate, focusOnly),
             activeImmediately
         };
     };

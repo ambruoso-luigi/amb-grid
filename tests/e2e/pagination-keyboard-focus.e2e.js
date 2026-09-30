@@ -104,7 +104,8 @@ test.describe('keyboard pagination focus', () => {
             throw error;
         }
 
-        await openEditorFromNavigation(page, cell(page, 'itemCode'), 'Alt+PageDown phase D', '#inventory-table');
+        await page.keyboard.press('Enter');
+        await expectItemCodeEditor(page);
     });
 
     test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {

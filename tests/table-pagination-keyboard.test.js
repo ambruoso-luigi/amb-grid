@@ -461,6 +461,31 @@ describe('table pagination keyboard runtime', () => {
         expect(itemCode.edit).toHaveBeenCalledOnce();
     });
 
+    test('recovers focus-only activation when a final-page candidate is replaced after focus', async () => {
+        const firstCandidate = createCandidate({ field: 'itemCode' });
+        const replacementCandidate = createCandidate({ field: 'itemCode' });
+        const harness = createHarness({ page: 2, max: 3, cells: [firstCandidate] });
+
+        firstCandidate.getElement().focus.mockImplementation(() => {
+            globalThis.document.activeElement = firstCandidate.getElement();
+            Promise.resolve().then(() => {
+                harness.setCells([replacementCandidate]);
+                globalThis.document.activeElement = null;
+            });
+        });
+
+        shortcut(harness, 'PageDown');
+        await flush();
+        harness.table.emit('renderComplete');
+        await flush();
+
+        expect(firstCandidate.getElement().focus).toHaveBeenCalledOnce();
+        expect(replacementCandidate.getElement().focus).toHaveBeenCalledOnce();
+        expect(firstCandidate.edit).not.toHaveBeenCalled();
+        expect(replacementCandidate.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(replacementCandidate.getElement());
+    });
+
     test('Enter opens a focused large-text cell exactly once', () => {
         const notes = createCandidate({ focusOnly: true, field: 'notes' });
         const harness = createHarness({ cells: [notes] });
