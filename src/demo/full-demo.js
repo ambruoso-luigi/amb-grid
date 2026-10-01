@@ -384,7 +384,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Stock quantity',
                 field: 'stockQuantity',
-                minWidth: 150,
+                minWidth: 140,
                 widthGrow: 0.65,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
@@ -417,7 +417,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Last check date',
                 field: 'lastCheckDate',
-                minWidth: 125,
+                minWidth: 150,
                 widthGrow: 0.7,
                 editor: AMB.editors.date({
                     format: 'dd/mm/yyyy',
@@ -463,7 +463,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Requires inspection',
                 field: 'requiresInspection',
-                minWidth: 190,
+                minWidth: 175,
                 widthGrow: 0.65,
                 hozAlign: 'center',
                 cssClass: 'demo-business-checkbox-cell',
