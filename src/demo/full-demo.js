@@ -91,8 +91,6 @@ const t = key => messages[getLanguage()][key] || messages.it[key] || key;
 const formatInspectionCheckbox = createDemoCheckboxFormatter();
 
 const demoRowActionMessages = {
-    delete: 'Delete this product?',
-    rollback: 'Rollback this product?',
     removeNew: 'Remove this new product?'
 };
 
@@ -286,8 +284,6 @@ export default async function fullDemo(app, options = {}) {
         rowActionColumn: {
             enabled: true,
             width: 55,
-            confirmDeleteMessage: demoRowActionMessages.delete,
-            confirmRollbackMessage: demoRowActionMessages.rollback,
             confirmRemoveNewMessage: demoRowActionMessages.removeNew,
             labels: demoRowActionLabels
         },

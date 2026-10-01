@@ -4160,6 +4160,48 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     border-color: var(--amb-site-border-strong);
 }
 
+.demo-panel #inventory-table {
+    --amb-row-new-bg: #dcebff;
+    --amb-row-modified-bg: #fff0c2;
+    --amb-row-saved-bg: #ddf2e3;
+    --amb-row-deleted-bg: #cdd5df;
+    --amb-row-error-bg: #fbdddd;
+}
+
+.demo-panel #inventory-table .tabulator-row[data-state="new"] {
+    box-shadow: inset 4px 0 0 #367bb5;
+}
+
+.demo-panel #inventory-table .tabulator-row[data-state="modified"] {
+    box-shadow: inset 4px 0 0 #ad791d;
+}
+
+.demo-panel #inventory-table .tabulator-row[data-state="saved"] {
+    box-shadow: inset 4px 0 0 #31834c;
+}
+
+.demo-panel #inventory-table .tabulator-row[data-state="deleted"] {
+    background-color: var(--amb-row-deleted-bg) !important;
+    box-shadow: inset 4px 0 0 #64748b;
+    color: #475569;
+    text-decoration-color: #64748b;
+}
+
+.demo-panel #inventory-table .tabulator-row[data-row-error="true"],
+.demo-panel #inventory-table .tabulator-row[data-has-cell-error="true"] {
+    background-color: var(--amb-row-error-bg) !important;
+    box-shadow: inset 4px 0 0 #bd4242;
+}
+
+.demo-panel #inventory-table .tabulator-cell[data-cell-state="modified"] {
+    background-color: #ffe29a !important;
+}
+
+.demo-panel #inventory-table .tabulator-cell[data-cell-error="true"] {
+    background-color: #fbdddd !important;
+    box-shadow: inset 0 -2px 0 #bd4242;
+}
+
 .demo-report-dialog[hidden] {
     display: none;
 }

@@ -50,7 +50,7 @@ test.describe('row controls accessibility', () => {
         await expect.poll(() => selectedRowCount(page)).toBe(1);
     });
 
-    test('main demo row actions are keyboard focusable and activate delete and rollback', async ({ page }) => {
+    test('main demo row actions activate delete and rollback without confirmation', async ({ page }) => {
         await openInventoryDemo(page);
 
         const firstRow = page.locator('#inventory-table .tabulator-row').first();
@@ -65,18 +65,8 @@ test.describe('row controls accessibility', () => {
 
         await deleteButton.focus();
         await page.keyboard.press('Enter');
-        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
-        const cancelConfirmation = page.locator('.teh-confirm-dialog__button--cancel');
-        const confirmConfirmation = page.locator('.teh-confirm-dialog__button--confirm');
-        await expect(cancelConfirmation).toBeFocused();
-        await page.keyboard.press('ArrowRight');
-        await expect(confirmConfirmation).toBeFocused();
-        await page.keyboard.press('ArrowLeft');
-        await expect(cancelConfirmation).toBeFocused();
-        await page.keyboard.press('ArrowDown');
-        await expect(confirmConfirmation).toBeFocused();
-        await page.keyboard.press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'deleted');
+        await expect(page.locator('.teh-confirm-dialog--visible')).toHaveCount(0);
 
         const rollbackButton = firstRow.locator('.amb-row-action-button--rollback');
 
@@ -88,13 +78,34 @@ test.describe('row controls accessibility', () => {
         await expect(rollbackButton).toHaveAttribute('title', 'Rollback product changes');
 
         await rollbackButton.press('Space');
-        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
-        await page.locator('.teh-confirm-dialog__button--confirm').press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'clean');
+        await expect(page.locator('.teh-confirm-dialog--visible')).toHaveCount(0);
 
         await expect(deleteButton).toBeVisible();
-        await deleteButton.click();
+    });
+
+    test('main demo confirms removal of a new row', async ({ page }) => {
+        await openInventoryDemo(page);
+
+        await page.locator('#javascript-demo .amb-toolbar__button--add').click();
+        const newRow = page.locator('#inventory-table .tabulator-row[data-state="new"]');
+        const removeNewButton = newRow.locator('.amb-row-action-button--remove-new');
+
+        await expect(newRow).toBeVisible();
+        await expect(removeNewButton).toBeVisible();
+        await removeNewButton.focus();
+        await expect(removeNewButton).toBeFocused();
+        await page.keyboard.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
+        await page.locator('.teh-confirm-dialog__button--cancel').click();
+        await expect(newRow).toBeVisible();
+        await expect(newRow).toHaveAttribute('data-state', 'new');
+
+        await removeNewButton.focus();
+        await page.keyboard.press('Enter');
+        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
+        await page.locator('.teh-confirm-dialog__button--confirm').click();
+        await expect(newRow).toHaveCount(0);
     });
 
     test('main demo row action exits to Item code with native Tab navigation', async ({ page }) => {
