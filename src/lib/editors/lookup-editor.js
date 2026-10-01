@@ -807,7 +807,17 @@ export function lookup(lookupInstance, options = {}) {
 
             input.addEventListener('input', event => {
                 if (normalizedOptions.uppercase) {
-                    input.value = input.value.toUpperCase();
+                    const currentValue = input.value;
+                    const normalizedValue = currentValue.toUpperCase();
+
+                    if (normalizedValue !== currentValue) {
+                        const selectionStart = input.selectionStart;
+                        const selectionEnd = input.selectionEnd;
+                        const selectionDirection = input.selectionDirection;
+
+                        input.value = normalizedValue;
+                        input.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
+                    }
                 }
 
                 const isDeleteInput = typeof event.inputType === 'string'

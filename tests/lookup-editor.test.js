@@ -28,6 +28,8 @@ const createElement = tagName => {
         value: '',
         selectionStart: 0,
         selectionEnd: 0,
+        selectionDirection: 'none',
+        setSelectionRangeCalls: [],
         appendChild(child) {
             this.children.push(child);
         },
@@ -43,9 +45,11 @@ const createElement = tagName => {
         },
         focus() {},
         select() {},
-        setSelectionRange(start, end) {
+        setSelectionRange(start, end, direction = 'none') {
             this.selectionStart = start;
             this.selectionEnd = end;
+            this.selectionDirection = direction;
+            this.setSelectionRangeCalls.push([start, end, direction]);
         }
     };
 };
@@ -398,6 +402,42 @@ describe('lookup editor blur commits', () => {
         expect(harness.input.value).toBe('REPAIR');
         expect(harness.input.selectionStart).toBe(3);
         expect(harness.input.selectionEnd).toBe(6);
+    });
+
+    test('preserves a partial selection while uppercasing typed lookup values', async () => {
+        const harness = createHarness({
+            options: {
+                autoComplete: false
+            }
+        });
+
+        harness.input.value = 'ABcDE';
+        harness.input.selectionStart = 2;
+        harness.input.selectionEnd = 4;
+        harness.input.selectionDirection = 'backward';
+        await harness.input.dispatch('input');
+
+        expect(harness.input.value).toBe('ABCDE');
+        expect(harness.input.selectionStart).toBe(2);
+        expect(harness.input.selectionEnd).toBe(4);
+        expect(harness.input.selectionDirection).toBe('backward');
+        expect(harness.input.setSelectionRangeCalls).toEqual([[2, 4, 'backward']]);
+    });
+
+    test('does not restore the selection when lookup input is already uppercase', async () => {
+        const harness = createHarness({
+            options: {
+                autoComplete: false
+            }
+        });
+
+        harness.input.value = 'A1B';
+        harness.input.selectionStart = 1;
+        harness.input.selectionEnd = 1;
+        await harness.input.dispatch('input');
+
+        expect(harness.input.value).toBe('A1B');
+        expect(harness.input.setSelectionRangeCalls).toEqual([]);
     });
 
     test('Tab accepting a mapped autocomplete suggestion applies the full row patch', async () => {

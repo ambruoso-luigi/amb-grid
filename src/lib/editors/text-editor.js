@@ -25,13 +25,25 @@ export function text(options = {}) {
             }
 
             const normalizeInputValue = () => {
+                const currentValue = input.value;
+                let normalizedValue = currentValue;
+
                 if (options.uppercase) {
-                    input.value = input.value.toUpperCase();
+                    normalizedValue = normalizedValue.toUpperCase();
                 }
 
                 if (options.lowercase) {
-                    input.value = input.value.toLowerCase();
+                    normalizedValue = normalizedValue.toLowerCase();
                 }
+
+                if (normalizedValue === currentValue) return;
+
+                const selectionStart = input.selectionStart;
+                const selectionEnd = input.selectionEnd;
+                const selectionDirection = input.selectionDirection;
+
+                input.value = normalizedValue;
+                input.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
             };
 
             const getValue = () => {
