@@ -82,6 +82,12 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).not.toContain('scheduleMunicipalityLookup');
         expect(demoSource).not.toContain('cellDblClick');
         expect(demoSource).not.toContain('lookupBusy');
+        expect(demoSource).toContain('const municipalitiesPromise = loadMunicipalities()');
+        expect(demoSource).not.toContain('await loadMunicipalities()');
+        expect(demoSource).toContain('data-municipality-lookup-status');
+        expect(demoSource).toContain("setLookupStatus('Municipality lookup data is unavailable.')");
+        expect(demoSource).toContain('let destroyed = false;');
+        expect(demoSource).toContain('destroyed = true;');
         expect(demoSource).toContain('autoCompleteMinChars: 1');
         expect(demoSource).toContain('autoCompleteOnTab: true');
         expect(demoSource).toContain('query');

@@ -384,7 +384,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Stock quantity',
                 field: 'stockQuantity',
-                minWidth: 115,
+                minWidth: 150,
                 widthGrow: 0.65,
                 editor: AMB.editors.integer({ allowEmpty: false }),
                 formatter: AMB.formatters.integer(),
@@ -463,7 +463,7 @@ export default async function fullDemo(app, options = {}) {
             {
                 title: 'Requires inspection',
                 field: 'requiresInspection',
-                minWidth: 145,
+                minWidth: 190,
                 widthGrow: 0.65,
                 hozAlign: 'center',
                 cssClass: 'demo-business-checkbox-cell',

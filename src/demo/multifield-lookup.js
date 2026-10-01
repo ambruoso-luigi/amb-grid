@@ -162,7 +162,7 @@ const loadMunicipalities = async () => {
     return response.json();
 };
 
-export default async function multifieldLookup(app) {
+export default function multifieldLookup(app) {
     app.innerHTML = `
         <div class="demo-multifield-lookup">
             <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
@@ -187,6 +187,7 @@ export default async function multifieldLookup(app) {
             ]
             })}
             <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
+            <p class="demo-note" data-municipality-lookup-status role="status" aria-live="polite">Municipality lookup data is loading.</p>
             <div class="demo-table-workbench">
                 <div class="demo-command-guide-host"></div>
                 <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
@@ -195,14 +196,25 @@ export default async function multifieldLookup(app) {
     `;
 
     const tableMount = app.querySelector('#municipality-table');
-    let municipalities;
+    const lookupStatus = app.querySelector('[data-municipality-lookup-status]');
+    let destroyed = false;
+    const setLookupStatus = message => {
+        if (destroyed) {
+            return;
+        }
 
-    try {
-        municipalities = await loadMunicipalities();
-    } catch (error) {
-        tableMount.textContent = error.message;
-        return null;
-    }
+        lookupStatus.textContent = message;
+        lookupStatus.hidden = !message;
+    };
+    const municipalitiesPromise = loadMunicipalities()
+        .then(records => {
+            setLookupStatus('');
+            return records;
+        })
+        .catch(() => {
+            setLookupStatus('Municipality lookup data is unavailable.');
+            return null;
+        });
 
     const municipalityLookup = AMB.lookup({
         keyField: 'istatCode',
@@ -213,7 +225,19 @@ export default async function multifieldLookup(app) {
             fields: 'visible'
         },
         mapToRow: MUNICIPALITY_MAP_TO_ROW,
-        load: ({ query }) => filterMunicipalities(municipalities, query)
+        load: async ({ query }) => {
+            if (destroyed) {
+                return [];
+            }
+
+            const municipalities = await municipalitiesPromise;
+
+            if (destroyed || !municipalities) {
+                return [];
+            }
+
+            return filterMunicipalities(municipalities, query);
+        }
     });
     const municipalityDialog = new AMB.LookupDialog();
     const municipalityMultifieldLookup = AMB.multifieldLookup({
@@ -385,6 +409,7 @@ export default async function multifieldLookup(app) {
     return {
         ...grid,
         destroy() {
+            destroyed = true;
             reportDialog.destroy();
             stopDecoratingLookupButtons();
 
