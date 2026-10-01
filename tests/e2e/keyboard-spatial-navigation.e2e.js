@@ -89,11 +89,13 @@ test.describe('keyboard spatial navigation', () => {
     test('crosses adjacent pages vertically while preserving focus-only navigation', async ({ page }) => {
         const first = rowCell(page, 'PRD-A001', 'itemCode');
         const last = rowCell(page, 'PRD-H010', 'itemCode');
-        await focusNavigationCell(page, first, 'vertical first row');
+        await first.focus();
+        await expect(first).toBeFocused();
         await page.keyboard.press('ArrowUp');
         await expectNavigationFocus(first);
         await expect(await currentPage(page)).toBe(1);
-        await focusNavigationCell(page, last, 'vertical last row');
+        await last.focus();
+        await expect(last).toBeFocused();
         await page.keyboard.press('ArrowDown');
         await expect(await currentPage(page)).toBe(2);
         const nextFirst = rowCell(page, 'PRD-A011', 'itemCode');
