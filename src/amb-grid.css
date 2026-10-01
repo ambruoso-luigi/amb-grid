@@ -450,7 +450,6 @@
 }
 
 .tabulator-row .tabulator-cell.amb-autocomplete-cell--editing {
-    overflow: visible;
     z-index: 20;
 }
 
