@@ -146,6 +146,61 @@ describe('selection column keyboard access', () => {
         expect(event.stopPropagation).toHaveBeenCalledOnce();
     });
 
+    test('keeps a continuous Enter, 0, 1, Space sequence synchronized', () => {
+        const controller = createSelectionColumn({ enabled: true });
+        const events = [];
+        let selected = false;
+        const row = {
+            isSelected: () => selected,
+            select: vi.fn(() => {
+                events.push('select');
+                selected = true;
+            }),
+            deselect: vi.fn(() => {
+                events.push('deselect');
+                selected = false;
+            })
+        };
+        const input = renderSelectionInput(controller, row, renderedInput => {
+            row.getElement = () => ({
+                querySelector: selector => selector === '.amb-selection-column__input'
+                    ? renderedInput
+                    : null
+            });
+
+            return createSelectionCell(controller, row, renderedInput);
+        });
+        const dispatch = key => {
+            const event = createKeyboardEvent(key);
+
+            event.preventDefault = vi.fn(() => events.push(`prevent:${key}`));
+            input.dispatch('keydown', event);
+            return event;
+        };
+
+        dispatch('Enter');
+        expect(selected).toBe(true);
+        expect(input.checked).toBe(true);
+
+        dispatch('0');
+        expect(selected).toBe(false);
+        expect(input.checked).toBe(false);
+
+        dispatch('1');
+        expect(selected).toBe(true);
+        expect(input.checked).toBe(true);
+
+        dispatch(' ');
+        expect(selected).toBe(false);
+        expect(input.checked).toBe(false);
+        expect(events).toEqual([
+            'select', 'prevent:Enter',
+            'deselect', 'prevent:0',
+            'select', 'prevent:1',
+            'deselect', 'prevent: '
+        ]);
+    });
+
     test('Tab from the selection column navigates to the next AMB editable cell', async () => {
         const controller = createSelectionColumn({ enabled: true });
         const nextCell = createEditableCell();

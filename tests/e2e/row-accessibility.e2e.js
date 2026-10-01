@@ -70,23 +70,28 @@ test.describe('row controls accessibility', () => {
 
         const firstSelection = page.locator('#basic-table .tabulator-row .amb-selection-column input[aria-label="Select Row"]').first();
 
+        await expect(firstSelection).toBeVisible();
         await firstSelection.focus();
         await expectSelectionFocus(page, firstSelection, 'initial focus');
 
         await page.keyboard.press('Enter');
         await expect.poll(() => selectedRowCount(page)).toBe(1);
+        await expect(firstSelection).toBeChecked();
         await expectSelectionFocus(page, firstSelection, 'after Enter');
 
         await page.keyboard.press('0');
         await expect.poll(() => selectedRowCount(page)).toBe(0);
+        await expect(firstSelection).not.toBeChecked();
         await expectSelectionFocus(page, firstSelection, 'after 0');
 
         await page.keyboard.press('1');
         await expect.poll(() => selectedRowCount(page)).toBe(1);
+        await expect(firstSelection).toBeChecked();
         await expectSelectionFocus(page, firstSelection, 'after 1');
 
         await page.keyboard.press('Space');
         await expect.poll(() => selectedRowCount(page)).toBe(0);
+        await expect(firstSelection).not.toBeChecked();
         await expectSelectionFocus(page, firstSelection, 'after Space');
     });
 
