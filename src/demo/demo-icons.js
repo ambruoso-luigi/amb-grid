@@ -1,5 +1,6 @@
 import {
     ArrowRight,
+    ArrowUpRight,
     Atom,
     Blocks,
     Box,
@@ -37,6 +38,7 @@ export const demoIcons = {
     angular: Component,
     api: Server,
     arrowRight: ArrowRight,
+    arrowUpRight: ArrowUpRight,
     autocomplete: Sparkles,
     backend: Database,
     crud: Workflow,

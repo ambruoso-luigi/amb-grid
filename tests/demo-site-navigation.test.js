@@ -46,7 +46,11 @@ describe('demo site navigation', () => {
         expect(main).toContain('demo-framework-card__meta');
         expect(main).toContain('demo-framework-card__footer');
 
-        const frameworkCards = main.slice(main.indexOf('class="demo-framework-grid"'), main.indexOf('class="demo-install-link"'));
+        const frameworkSectionStart = main.indexOf('id="framework-integrations"');
+        const frameworkGridStart = main.indexOf('class="demo-framework-grid"', frameworkSectionStart);
+        const frameworkGridEnd = main.indexOf('</div>\n            </section>', frameworkGridStart);
+        const frameworkHeading = main.slice(frameworkSectionStart, frameworkGridStart);
+        const frameworkCards = main.slice(frameworkGridStart, frameworkGridEnd);
         const icons = read('src/demo/demo-icons.js');
 
         expect(frameworkCards).not.toContain('href="#feature-examples"');
@@ -54,13 +58,16 @@ describe('demo site navigation', () => {
         expect(main).toContain('class="demo-install-link" href="/install/"');
         expect(main).toContain("'frameworks.install.title': 'Installa AMB Grid'");
         expect(main).toContain("'frameworks.install.title': 'Install AMB Grid'");
-        expect(main).toContain("'frameworks.install.description': 'npm, bundle standalone e release ZIP'");
-        expect(main).toContain("'frameworks.install.description': 'npm, standalone bundle and release ZIP'");
-        expect(main.indexOf('class="demo-install-link"')).toBeGreaterThan(main.indexOf('class="demo-framework-grid"'));
-        const installStrip = main.slice(main.indexOf('class="demo-install-link"'), main.indexOf('</a>', main.indexOf('class="demo-install-link"')));
-        expect(installStrip).toContain("demoIcon('package'");
-        expect(installStrip.match(/demoIcon\('chevronRight'/g)).toHaveLength(3);
-        expect(installStrip).not.toContain('demo-framework-card');
+        expect(main).not.toContain('frameworks.install.description');
+        expect(main.indexOf('class="demo-install-link"')).toBeLessThan(frameworkGridStart);
+        expect(frameworkHeading).toContain('demo-frameworks__heading-copy');
+        expect((main.slice(frameworkSectionStart, frameworkGridEnd).match(/href="\/install\//g) || [])).toHaveLength(1);
+        const installCta = main.slice(main.indexOf('class="demo-install-link"'), main.indexOf('</a>', main.indexOf('class="demo-install-link"')));
+        expect(installCta).toContain("demoIcon('package'");
+        expect(installCta).toContain("demoIcon('arrowUpRight'");
+        expect(installCta).not.toContain("demoIcon('chevronRight'");
+        expect(installCta).not.toContain('demo-install-link__description');
+        expect(installCta).not.toContain('demo-framework-card');
         expect(frameworkCards.match(/demoIcon\('guide'/g)).toHaveLength(4);
         expect(frameworkCards.match(/demoIcon\('chevronRight'/g)).toHaveLength(12);
         expect(frameworkCards.match(/size: 18, strokeWidth: 2\.3/g)).toHaveLength(4);
@@ -74,8 +81,9 @@ describe('demo site navigation', () => {
         expect(frameworkCards).not.toContain("demoIcon('arrowUpRight'");
         expect(icons).toContain('ChevronRight');
         expect(icons).toContain('chevronRight: ChevronRight');
+        expect(icons).toContain('ArrowUpRight');
+        expect(icons).toContain('arrowUpRight: ArrowUpRight');
         expect(icons).toContain('guide: BookOpen');
-        expect(icons).not.toContain('arrowUpRight: ArrowUpRight');
         expect(icons).not.toContain('available: CircleCheck');
         expect(icons).not.toContain('planned: Clock3');
 
@@ -95,14 +103,17 @@ describe('demo site navigation', () => {
         expect(css).toContain('.demo-framework-card:hover .demo-framework-card__direction-step');
         expect(css).toContain('.demo-framework-card:focus-visible .demo-framework-card__direction');
         expect(css).toContain('.demo-framework-card:focus-visible .demo-framework-card__direction-step');
-        expect(css).toContain('.demo-install-link__direction-step');
-        expect(css).toContain('animation-name: demo-framework-direction-hover;');
+        expect(css).not.toContain('.demo-install-link__direction-step');
+        expect(css).toContain('.demo-install-link:hover .demo-install-link__direction');
         expect(css).toContain('.demo-install-link:focus-visible');
         const installCss = css.slice(css.indexOf('.demo-install-link {'), css.indexOf('.demo-panel .demo-business-grid', css.indexOf('.demo-install-link {')));
         expect(installCss).not.toContain('border-top:');
-        expect(css).toContain('background: transparent;');
-        expect(css).toContain('box-shadow: none;');
-        expect(css).toContain('animation: none;');
+        expect(installCss).toContain('background: #17365c;');
+        expect(installCss).toContain('height: 46px;');
+        expect(installCss).toContain('border-radius: 6px;');
+        expect(css).toContain('grid-template-columns: minmax(0, 1fr) auto;');
+        expect(css).toContain('@media (max-width: 760px)');
+        expect(css).toContain('justify-self: start;');
         expect(css).toContain('@media (prefers-reduced-motion: reduce)');
         expect(css).not.toContain('.demo-framework-card__status');
         expect(css).not.toContain('.demo-framework-card__cta-icon');

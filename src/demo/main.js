@@ -59,7 +59,6 @@ const translations = {
         'frameworks.description': 'Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.',
         'frameworks.cta': 'Apri guida e demo',
         'frameworks.install.title': 'Installa AMB Grid',
-        'frameworks.install.description': 'npm, bundle standalone e release ZIP',
         'frameworks.javascript.meta': 'ESM / UMD · Integrazione diretta',
         'frameworks.javascript.description': 'Integra AMB Grid in pagine JavaScript classiche o server-rendered, senza framework obbligatori.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
@@ -238,7 +237,6 @@ const translations = {
         'frameworks.description': 'Integrate AMB Grid in classic JavaScript pages, legacy-friendly systems or modern stacks like React, Vue and Angular.',
         'frameworks.cta': 'Open guide and demo',
         'frameworks.install.title': 'Install AMB Grid',
-        'frameworks.install.description': 'npm, standalone bundle and release ZIP',
         'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
         'frameworks.javascript.description': 'Integrate AMB Grid into classic or server-rendered JavaScript pages without requiring a framework.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
@@ -680,8 +678,15 @@ const renderShell = selectedId => {
 
             <section class="demo-section demo-frameworks card bg-base-100 text-base-content border shadow-sm" id="framework-integrations" data-theme="light">
                 <div class="demo-section-heading">
-                    <h2 data-i18n="frameworks.title">Integrabile dove lavori già</h2>
-                    <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
+                    <div class="demo-frameworks__heading-copy">
+                        <h2 data-i18n="frameworks.title">Integrabile dove lavori già</h2>
+                        <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
+                    </div>
+                    <a class="demo-install-link" href="/install/">
+                        <span class="demo-install-link__icon" aria-hidden="true">${demoIcon('package', { size: 18 })}</span>
+                        <strong class="demo-install-link__title" data-i18n="frameworks.install.title">Installa AMB Grid</strong>
+                        <span class="demo-install-link__direction" aria-hidden="true">${demoIcon('arrowUpRight', { size: 18, strokeWidth: 2.4 })}</span>
+                    </a>
                 </div>
                 <div class="demo-framework-grid">
                     <a class="demo-framework-card demo-framework-card--javascript card bg-base-100 border shadow-sm transition" href="#getting-started-javascript">
@@ -741,11 +746,6 @@ const renderShell = selectedId => {
                         </span>
                     </article>
                 </div>
-                <a class="demo-install-link" href="/install/">
-                    <span class="demo-install-link__icon" aria-hidden="true">${demoIcon('package', { size: 20 })}</span>
-                    <span class="demo-install-link__content"><strong class="demo-install-link__title" data-i18n="frameworks.install.title">Installa AMB Grid</strong><small class="demo-install-link__description" data-i18n="frameworks.install.description">npm, bundle standalone e release ZIP</small></span>
-                    <span class="demo-install-link__direction" aria-hidden="true"><span class="demo-install-link__direction-step demo-install-link__direction-step--1">${demoIcon('chevronRight', { size: 20, strokeWidth: 2.6 })}</span><span class="demo-install-link__direction-step demo-install-link__direction-step--2">${demoIcon('chevronRight', { size: 20, strokeWidth: 2.6 })}</span><span class="demo-install-link__direction-step demo-install-link__direction-step--3">${demoIcon('chevronRight', { size: 20, strokeWidth: 2.6 })}</span></span>
-                </a>
             </section>
 
             <section class="demo-section demo-section--flow">
