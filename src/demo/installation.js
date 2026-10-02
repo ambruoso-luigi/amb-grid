@@ -1,9 +1,9 @@
 import './demo.css';
 import './installation.css';
 import packageJson from '../../package.json';
-import { renderDemoBrand } from './demo-brand.js';
 import { renderDemoFooter } from './demo-footer.js';
-import { bindDemoLanguageSwitch, readDemoLanguage, renderDemoLanguageSwitch, syncDemoLanguageSwitch, writeDemoLanguage } from './demo-language-switch.js';
+import { readDemoLanguage } from './demo-language-switch.js';
+import { mountSiteNavbar } from './components/site-navbar.js';
 
 const root = document.querySelector('#app');
 const version = packageJson.version;
@@ -11,6 +11,7 @@ const releaseTag = `v${version}`;
 const zipName = `amb-grid-legacy-${version}.zip`;
 const zipUrl = `https://github.com/ambruoso-luigi/amb-grid/releases/download/${releaseTag}/${zipName}`;
 let language = readDemoLanguage();
+mountSiteNavbar(document.querySelector('#site-navbar'), { onLanguageChange: next => { language = next; render(); } });
 
 const copy = {
     it: { title: 'AMB Grid - Installazione e download', description: 'Installa AMB Grid con npm oppure scarica il bundle standalone.', kicker: 'INSTALLAZIONE E DOWNLOAD', hero: 'Porta AMB Grid nel tuo progetto', intro: 'Usa il bundle standalone in pagine classiche, server-rendered e applicazioni esistenti. Il package npm non è ancora pubblicato.', npm: 'npm / ESM', npmText: 'Consigliato per progetti con npm e bundler moderni.', npmStatus: 'Package non ancora pubblicato su npm.', zip: 'Standalone / ZIP', zipText: 'Bundle autonomo per pagine senza bundler.', download: 'Scarica bundle standalone', methods: 'Scegli come installare', standalone: 'Installazione standalone', first: 'Primo avvio', next: 'AMB Grid è pronta.', guide: 'Continua con la guida JavaScript', frameworks: 'Usi un framework?', switchToIt: 'Cambia lingua in italiano', switchToEn: 'Cambia lingua in inglese' },
@@ -26,7 +27,6 @@ const code = value => value.includes("from 'amb-grid'")
 
 const render = () => {
     root.innerHTML = `<main class="installation-page site-container">
-      <nav class="demo-topbar" aria-label="AMB Grid navigation">${renderDemoBrand({ href: '/' })}${renderDemoLanguageSwitch()}</nav>
       <header class="installation-hero"><p class="installation-kicker">${text('kicker')}</p><h1>${text('hero')}</h1><p>${text('intro')}</p><div class="installation-actions"><a class="demo-button demo-button--secondary" href="#npm">${text('npm')}</a><a class="demo-button demo-button--primary" href="#standalone">${text('download')}</a></div></header>
       <section class="installation-paths" aria-label="${text('methods')}"><article class="installation-path"><h2>${text('npm')}</h2><p>${text('npmText')}</p><span class="installation-badge">ESM · TypeScript</span><p class="installation-status">${text('npmStatus')}</p></article><article class="installation-path"><h2>${text('zip')}</h2><p>${text('zipText')}</p><span class="installation-badge">UMD · ${releaseTag}</span><p><a href="${zipUrl}">${text('download')}</a><br><small>${zipName}<br>GitHub Release ${releaseTag}</small></p></article></section>
       <section class="installation-details"><article class="installation-detail" id="npm"><h2>${text('npm')}</h2><p>${text('npmStatus')}</p>${code("import { AMB } from 'amb-grid';\nimport 'amb-grid/style.css';")}</article><article class="installation-detail" id="standalone"><h2>${text('standalone')}</h2>${code('<link rel="stylesheet" href="./amb-grid/amb-grid.css">\n<script src="./amb-grid/amb-grid.umd.js"><\/script>\n\nAMB.table({ selector: \'#grid\', data, columns });')}<p><a href="https://github.com/ambruoso-luigi/amb-grid/releases">${language === 'it' ? 'Vedi tutte le release su GitHub →' : 'View all releases on GitHub →'}</a></p></article><article class="installation-detail installation-detail--wide"><h2>${text('first')}</h2>${code('<div id="grid"></div>\n\nconst data = [{ id: 1, name: \'Notebook\', quantity: 4 }, { id: 2, name: \'Monitor\', quantity: 2 }];\nconst columns = [{ title: \'Nome\', field: \'name\', editor: AMB.editors.text() }, { title: \'Quantità\', field: \'quantity\', editor: AMB.editors.integer({ allowEmpty: false }), formatter: AMB.formatters.integer() }];\nconst grid = AMB.table({ selector: \'#grid\', data, columns });')}<p><strong>${language === 'it' ? 'Contenuto ZIP' : 'ZIP contents'}</strong></p>${code(`amb-grid/\n├── amb-grid.umd.js\n├── amb-grid.css\n├── README.md\n├── LICENSE\n└── VERSION.txt`)}</article></section>
@@ -35,7 +35,5 @@ const render = () => {
     document.documentElement.lang = language;
     document.title = text('title');
     document.querySelector('meta[name="description"]')?.setAttribute('content', text('description'));
-    syncDemoLanguageSwitch(root, language, key => text(key.replace('language.', '')));
-    bindDemoLanguageSwitch(root, () => language, next => { language = writeDemoLanguage(next); render(); });
 };
 render();

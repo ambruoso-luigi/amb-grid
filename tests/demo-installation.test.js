@@ -11,8 +11,8 @@ describe('installation page', () => {
 
         expect(html).toContain('/src/demo/installation.js');
         expect(vite).toContain("install/index.html");
-        expect(source).toContain("renderDemoBrand({ href: '/' })");
-        expect(source).toContain('renderDemoLanguageSwitch()');
+        expect(html).toContain('id="site-navbar"');
+        expect(source).toContain("mountSiteNavbar(document.querySelector('#site-navbar')");
         expect(source).toContain('renderDemoFooter({');
         expect(source).toContain("id=\"npm\"");
         expect(source).toContain("id=\"standalone\"");

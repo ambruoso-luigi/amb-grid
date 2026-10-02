@@ -1,7 +1,4 @@
 import { motion, useReducedMotion } from 'motion/react';
-import { Home } from 'lucide-react';
-
-const ambGridLogo = new URL('../../../../src/demo/amb-grid-logo.png', import.meta.url).href;
 
 type Language = 'it' | 'en';
 
@@ -10,7 +7,6 @@ const copy = {
     integration: 'INTEGRAZIONE REACT',
     title: 'AMB Grid con React',
     description: 'Una demo reale con lifecycle React, componenti TypeScript, UI moderna e la stessa logica CRUD di AMB Grid.',
-    home: 'Home',
     videoLabel: 'Demo React',
     videoOpen: 'Apri Demo React su YouTube',
   },
@@ -18,7 +14,6 @@ const copy = {
     integration: 'REACT INTEGRATION',
     title: 'AMB Grid with React',
     description: 'A real demo with the React lifecycle, TypeScript components, a modern UI and the same AMB Grid CRUD logic.',
-    home: 'Home',
     videoLabel: 'React Demo',
     videoOpen: 'Open the React Demo on YouTube',
   },
@@ -42,32 +37,17 @@ const YouTubeMark = () => (
 
 type ReactHeroProps = {
   language: Language;
-  onLanguageChange: (language: Language) => void;
 };
 
-export function ReactHero({ language, onLanguageChange }: ReactHeroProps) {
+export function ReactHero({ language }: ReactHeroProps) {
   const shouldReduceMotion = useReducedMotion();
   const enter = shouldReduceMotion ? undefined : { opacity: 0, y: 14 };
   const text = copy[language];
 
   return (
     <header className="react-hero-shell">
-      <nav aria-label="React demo navigation" className="react-demo-topbar">
-        <a aria-label="AMB Grid home" className="react-demo-brand" href="#">
-          <img alt="AMB Grid" src={ambGridLogo} />
-        </a>
-        <div aria-label="Select language" className="react-demo-language" role="group">
-          <button aria-pressed={language === 'it'} className="react-demo-language__label" onClick={() => onLanguageChange('it')} type="button">IT</button>
-          <button aria-pressed={language === 'en'} className="react-demo-language__label" onClick={() => onLanguageChange('en')} type="button">EN</button>
-        </div>
-      </nav>
-
       <div className="react-hero">
         <motion.div animate={{ opacity: 1, y: 0 }} className="react-hero__copy" initial={enter} transition={{ duration: 0.45, ease: 'easeOut' }}>
-          <a className="react-demo-home-link" href="#">
-            <Home aria-hidden="true" className="size-4" />
-            {text.home}
-          </a>
           <div className="react-identity">
             <motion.span animate={{ opacity: 1, scale: 1 }} className="react-identity__logo" initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.92 }} transition={{ duration: 0.38, ease: 'easeOut' }}>
               <ReactMark />

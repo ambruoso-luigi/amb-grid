@@ -14,13 +14,13 @@ import dates from './dates.js';
 import parsers from './parsers.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
-import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
 import { animateCycleDetail, initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
 import { renderDemoFooter } from './demo-footer.js';
-import { bindDemoLanguageSwitch, readDemoLanguage, renderDemoLanguageSwitch, syncDemoLanguageSwitch, writeDemoLanguage } from './demo-language-switch.js';
+import { readDemoLanguage } from './demo-language-switch.js';
+import { mountSiteNavbar } from './components/site-navbar.js';
 import { bindDemoColumnGuideAnimations } from './utils/demo-column-guide.js';
 
 window.AMB = AMB;
@@ -409,6 +409,11 @@ let reactDemoLoadToken = 0;
 
 const getText = key => translations[currentLang][key] || translations.it[key] || key;
 
+mountSiteNavbar(document.querySelector('#site-navbar'), { onLanguageChange: language => {
+    currentLang = language;
+    applyI18n();
+} });
+
 const cycleDetailBodies = {
     edit: `
         <div class="demo-cycle-detail__groups">
@@ -529,8 +534,6 @@ const applyI18n = () => {
         element.setAttribute('aria-label', title);
     });
 
-    syncDemoLanguageSwitch(root, currentLang, getText);
-
     window.dispatchEvent(new CustomEvent('amb-demo-language-change', {
         detail: { language: currentLang }
     }));
@@ -567,11 +570,6 @@ const destroyCurrentDemos = () => {
     mainDemoLoadToken += 1;
     reactDemoLoadToken += 1;
 };
-
-const bindLanguageButtons = () => bindDemoLanguageSwitch(root, () => currentLang, language => {
-    currentLang = writeDemoLanguage(language);
-    applyI18n();
-});
 
 let activeCycleDetail = null;
 
@@ -640,10 +638,6 @@ const renderShell = selectedId => {
     root.innerHTML = `
         <main class="demo-page site-container">
             <header class="demo-hero">
-                <nav class="demo-topbar" aria-label="AMB Grid demo navigation">
-                    ${renderDemoBrand()}
-                    ${renderDemoLanguageSwitch()}
-                </nav>
                 <div class="demo-hero__body">
                     <div class="demo-hero__content" id="top">
                         <p class="demo-hero-badge">
@@ -657,7 +651,7 @@ const renderShell = selectedId => {
                             <a class="demo-button demo-button--primary" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
                         </div>
                     </div>
-                    <a
+                    <a id="video"
                         class="demo-video-preview demo-guide-video demo-hero__video"
                         href="https://youtu.be/4m0EZ4vPmT0"
                         target="_blank"
@@ -682,11 +676,6 @@ const renderShell = selectedId => {
                         <h2 data-i18n="frameworks.title">Integrabile dove lavori già</h2>
                         <p class="demo-note" data-i18n="frameworks.description">Usa AMB Grid in pagine JavaScript classiche, sistemi legacy-friendly o stack moderni come React, Vue e Angular.</p>
                     </div>
-                    <a class="demo-install-link" href="/install/">
-                        <span class="demo-install-link__icon" aria-hidden="true">${demoIcon('package', { size: 18 })}</span>
-                        <strong class="demo-install-link__title" data-i18n="frameworks.install.title">Installa AMB Grid</strong>
-                        <span class="demo-install-link__direction" aria-hidden="true">${demoIcon('arrowUpRight', { size: 18, strokeWidth: 2.4 })}</span>
-                    </a>
                 </div>
                 <div class="demo-framework-grid">
                     <a class="demo-framework-card demo-framework-card--javascript card bg-base-100 border shadow-sm transition" href="#getting-started-javascript">
@@ -838,7 +827,6 @@ const renderShell = selectedId => {
     });
     bindCycleDetails();
     openCycleDetail('edit');
-    bindLanguageButtons();
 };
 
 const mountMainDemo = async (selector, expectedView = 'guide', options = {}) => {
@@ -913,7 +901,6 @@ const renderGuide = () => {
     destroyCurrentDemos();
     currentView = 'guide';
     gettingStartedJavaScript(root);
-    bindLanguageButtons();
     applyI18n();
     initDemoMotion(root);
     mountMainDemo('#javascript-demo', 'guide', {

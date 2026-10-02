@@ -212,15 +212,6 @@ a {
     position: relative;
 }
 
-.demo-topbar {
-    align-items: center;
-    border-bottom: 1px solid rgb(145 168 191 / 34%);
-    display: flex;
-    gap: 18px;
-    justify-content: space-between;
-    padding-bottom: clamp(16px, 2vw, 22px);
-}
-
 .demo-hero__body {
     align-items: stretch;
     display: grid;
@@ -247,36 +238,6 @@ a {
 .demo-brand:hover .demo-brand__logo {
     filter: drop-shadow(0 7px 14px rgb(16 35 63 / 10%));
     transform: translateY(-1px);
-}
-
-.demo-language {
-    background: #ffffff;
-    border: 1px solid var(--amb-site-border-strong);
-    border-radius: 999px;
-    box-shadow: 0 8px 20px rgb(16 35 63 / 10%);
-    display: inline-flex;
-    gap: 5px;
-    padding: 5px;
-}
-
-.demo-language button {
-    background: transparent;
-    border: 0;
-    border-radius: 999px;
-    color: var(--amb-site-muted);
-    cursor: pointer;
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 1;
-    min-width: 48px;
-    padding: 8px 10px;
-    transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
-}
-
-.demo-language button.is-active {
-    background: var(--amb-site-blue-soft);
-    color: var(--amb-site-blue-strong);
-    box-shadow: inset 0 0 0 1px rgb(29 95 153 / 18%);
 }
 
 .language-switch {
@@ -546,7 +507,6 @@ a {
 .demo-menu-button:focus-visible,
 .language-switch__label:focus-visible,
 .language-switch__control:focus-visible,
-.demo-language button:focus-visible,
 .demo-report-dialog__button:focus-visible,
 .demo-report-dialog__tab:focus-visible,
 .demo-disclosure__summary:focus-visible {
@@ -1611,10 +1571,6 @@ a {
         linear-gradient(180deg, rgb(255 255 255 / 54%) 0%, color-mix(in srgb, var(--framework-accent-soft) 62%, transparent) 100%);
 }
 
-.js-guide-page .demo-guide-hero .demo-topbar {
-    border-bottom-color: color-mix(in srgb, var(--framework-accent-border) 58%, transparent);
-}
-
 .demo-framework-identity {
     align-items: center;
     border-left: 2px solid var(--framework-accent);
@@ -1729,55 +1685,6 @@ a {
 
 .demo-guide-hero > * {
     position: relative;
-}
-
-.demo-guide-hero .demo-topbar {
-    border-bottom-color: rgb(145 168 191 / 34%);
-}
-
-.demo-secondary-home-link {
-    align-items: center;
-    background: color-mix(in srgb, var(--framework-accent-soft) 72%, #ffffff);
-    border: 1px solid var(--framework-accent-border);
-    border-radius: 8px;
-    color: var(--amb-site-navy);
-    display: inline-flex;
-    font-size: 14px;
-    font-weight: 650;
-    gap: 8px;
-    justify-self: start;
-    line-height: 1;
-    min-height: 38px;
-    padding: 9px 13px;
-    text-decoration: none;
-    transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease, transform 180ms ease;
-    width: fit-content;
-}
-
-.demo-secondary-home-link__icon {
-    color: var(--framework-accent);
-    flex: 0 0 auto;
-}
-
-.demo-secondary-home-link:hover {
-    background: var(--framework-accent-soft);
-    border-color: var(--framework-accent);
-    color: var(--amb-site-navy);
-    box-shadow: 0 7px 16px rgb(16 35 63 / 10%);
-    transform: translateY(-1px);
-}
-
-.demo-secondary-home-link:focus-visible {
-    outline: none;
-    box-shadow:
-        var(--amb-site-ring),
-        0 7px 16px rgb(16 35 63 / 10%);
-    transform: translateY(-1px);
-}
-
-.demo-secondary-home-link:active {
-    box-shadow: 0 3px 9px rgb(16 35 63 / 10%);
-    transform: translateY(0);
 }
 
 .demo-guide-hero__content {
@@ -3942,58 +3849,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
         inset 0 1px 0 rgb(255 255 255 / 24%);
 }
 
-.demo-install-link {
-    align-items: center;
-    background: #17365c;
-    border: 1px solid #17365c;
-    border-radius: 6px;
-    color: #ffffff;
-    display: inline-flex;
-    gap: 8px;
-    height: 46px;
-    justify-self: end;
-    padding: 0 13px;
-    text-decoration: none;
-    transition: background-color 170ms ease, border-color 170ms ease;
-}
-
-.demo-install-link__icon {
-    align-items: center;
-    color: #ffffff;
-    display: inline-flex;
-    flex: 0 0 18px;
-    justify-content: center;
-}
-
-.demo-install-link__title {
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 750;
-    line-height: 1.25;
-}
-
-.demo-install-link__direction {
-    align-items: center;
-    color: #ffffff;
-    display: inline-flex;
-    flex: 0 0 auto;
-    transition: transform 170ms ease;
-}
-
-.demo-install-link:hover {
-    background-color: #214a7b;
-    border-color: #214a7b;
-}
-
-.demo-install-link:hover .demo-install-link__direction {
-    transform: translate(2px, -2px);
-}
-
-.demo-install-link:focus-visible {
-    outline: 3px solid color-mix(in srgb, #17365c 42%, #ffffff);
-    outline-offset: 3px;
-}
-
 .demo-panel .demo-business-grid .demo-inspection-visual.is-checked::after,
 .demo-panel .demo-business-grid .amb-checkbox-editor:has(.amb-checkbox-editor__input:checked)::after {
     border: solid var(--demo-checkbox-check);
@@ -4501,11 +4356,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
         transform: none;
     }
 
-    .demo-install-link__direction,
-    .demo-install-link:hover .demo-install-link__direction {
-        transform: none;
-        transition: none;
-    }
 }
 
 /* Responsive */
@@ -4603,9 +4453,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
         grid-template-columns: 1fr;
     }
 
-    .demo-install-link {
-        justify-self: start;
-    }
 }
 
 @media (max-width: 640px) {
@@ -4636,11 +4483,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
         width: 100%;
     }
 
-    .demo-topbar {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
     .demo-guide-page h1 {
         font-size: clamp(28px, 10vw, 40px);
     }
@@ -4653,10 +4495,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 
     .demo-framework-identity__stack {
         line-height: 1.5;
-    }
-
-    .demo-secondary-home-link {
-        max-width: 100%;
     }
 
     .demo-brand__logo {

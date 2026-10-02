@@ -1,4 +1,3 @@
-import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
 import { renderDemoFooter } from './demo-footer.js';
 
@@ -6,45 +5,8 @@ export default function gettingStartedJavaScript(app) {
     app.innerHTML = `
         <main class="demo-page demo-guide-page js-guide-page site-container site-container--wide">
             <header class="demo-guide-hero">
-                <nav class="demo-topbar" aria-label="AMB Grid guide navigation">
-                    ${renderDemoBrand()}
-                    <div class="language-switch is-it" data-language-switch aria-label="Language">
-                        <button
-                            type="button"
-                            class="language-switch__label language-switch__label--en"
-                            data-language-label="en"
-                            data-language-set="en"
-                            aria-label="English"
-                            aria-pressed="false"
-                        >EN</button>
-                        <button
-                            type="button"
-                            class="language-switch__control"
-                            data-language-toggle
-                            role="switch"
-                            aria-checked="true"
-                            aria-label="Cambia lingua in inglese"
-                        >
-                            <span class="language-switch__flag language-switch__flag--en" aria-hidden="true"></span>
-                            <span class="language-switch__flag language-switch__flag--it" aria-hidden="true"></span>
-                            <span class="language-switch__knob" aria-hidden="true"></span>
-                        </button>
-                        <button
-                            type="button"
-                            class="language-switch__label language-switch__label--it"
-                            data-language-label="it"
-                            data-language-set="it"
-                            aria-label="Italiano"
-                            aria-pressed="true"
-                        >IT</button>
-                    </div>
-                </nav>
                 <div class="demo-guide-hero__layout">
                     <div class="demo-guide-hero__copy">
-                        <a class="demo-secondary-home-link" href="#top">
-                            ${demoIcon('home', { className: 'demo-secondary-home-link__icon', size: 19 })}
-                            <span data-i18n="guide.home">Home</span>
-                        </a>
                         <div class="demo-framework-identity">
                             <span class="demo-framework-identity__logo">
                                 ${frameworkIcon('javascript')}

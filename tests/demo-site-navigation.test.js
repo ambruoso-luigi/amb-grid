@@ -55,19 +55,8 @@ describe('demo site navigation', () => {
 
         expect(frameworkCards).not.toContain('href="#feature-examples"');
         expect(frameworkCards.match(/data-i18n="frameworks\.cta"/g)).toHaveLength(4);
-        expect(main).toContain('class="demo-install-link" href="/install/"');
-        expect(main).toContain("'frameworks.install.title': 'Installa AMB Grid'");
-        expect(main).toContain("'frameworks.install.title': 'Install AMB Grid'");
-        expect(main).not.toContain('frameworks.install.description');
-        expect(main.indexOf('class="demo-install-link"')).toBeLessThan(frameworkGridStart);
         expect(frameworkHeading).toContain('demo-frameworks__heading-copy');
-        expect((main.slice(frameworkSectionStart, frameworkGridEnd).match(/href="\/install\//g) || [])).toHaveLength(1);
-        const installCta = main.slice(main.indexOf('class="demo-install-link"'), main.indexOf('</a>', main.indexOf('class="demo-install-link"')));
-        expect(installCta).toContain("demoIcon('package'");
-        expect(installCta).toContain("demoIcon('arrowUpRight'");
-        expect(installCta).not.toContain("demoIcon('chevronRight'");
-        expect(installCta).not.toContain('demo-install-link__description');
-        expect(installCta).not.toContain('demo-framework-card');
+        expect(main.slice(frameworkSectionStart, frameworkGridEnd)).not.toContain('href="/install/"');
         expect(frameworkCards.match(/demoIcon\('guide'/g)).toHaveLength(4);
         expect(frameworkCards.match(/demoIcon\('chevronRight'/g)).toHaveLength(12);
         expect(frameworkCards.match(/size: 18, strokeWidth: 2\.3/g)).toHaveLength(4);
@@ -103,33 +92,27 @@ describe('demo site navigation', () => {
         expect(css).toContain('.demo-framework-card:hover .demo-framework-card__direction-step');
         expect(css).toContain('.demo-framework-card:focus-visible .demo-framework-card__direction');
         expect(css).toContain('.demo-framework-card:focus-visible .demo-framework-card__direction-step');
-        expect(css).not.toContain('.demo-install-link__direction-step');
-        expect(css).toContain('.demo-install-link:hover .demo-install-link__direction');
-        expect(css).toContain('.demo-install-link:focus-visible');
-        const installCss = css.slice(css.indexOf('.demo-install-link {'), css.indexOf('.demo-panel .demo-business-grid', css.indexOf('.demo-install-link {')));
-        expect(installCss).not.toContain('border-top:');
-        expect(installCss).toContain('background: #17365c;');
-        expect(installCss).toContain('height: 46px;');
-        expect(installCss).toContain('border-radius: 6px;');
         expect(css).toContain('grid-template-columns: minmax(0, 1fr) auto;');
         expect(css).toContain('@media (max-width: 760px)');
-        expect(css).toContain('justify-self: start;');
         expect(css).toContain('@media (prefers-reduced-motion: reduce)');
         expect(css).not.toContain('.demo-framework-card__status');
         expect(css).not.toContain('.demo-framework-card__cta-icon');
     });
 
-    test('uses the shared logo brand on the home and JavaScript guide pages', () => {
+    test('mounts the shared logo brand outside home, JavaScript and React views', () => {
         const main = read('src/demo/main.js');
         const guide = read('src/demo/getting-started-javascript.js');
+        const navbar = read('src/demo/components/site-navbar.js');
+        const language = read('src/demo/demo-language-switch.js');
         const brand = read('src/demo/demo-brand.js');
         const css = read('src/demo/demo.css');
         const logo = statSync(new URL('../src/demo/amb-grid-logo.png', import.meta.url));
 
-        expect(main).toContain("import { renderDemoBrand } from './demo-brand.js';");
-        expect(guide).toContain("import { renderDemoBrand } from './demo-brand.js';");
-        expect(main).toContain('${renderDemoBrand()}');
-        expect(guide).toContain('${renderDemoBrand()}');
+        expect(main).toContain("import { mountSiteNavbar } from './components/site-navbar.js';");
+        expect(main).toContain("mountSiteNavbar(document.querySelector('#site-navbar')");
+        expect(navbar).toContain("renderDemoBrand({ href: '/#top' })");
+        expect(guide).not.toContain('demo-topbar');
+        expect(main).toContain("root.innerHTML = '<div id=\"react-demo-root\"></div>'");
         expect(brand).toContain("new URL('./amb-grid-logo.png', import.meta.url).href");
         expect(brand).toContain('class="demo-brand__logo"');
         expect(brand).toContain('alt="AMB Grid"');
@@ -193,6 +176,7 @@ describe('demo site navigation', () => {
         expect(css).toContain('--framework-accent:');
         expect(css).toContain('.demo-framework-identity__logo');
         expect(motion).toContain("root.querySelector('.js-guide-page .demo-guide-hero')");
+        expect(motion).not.toContain('demo-secondary-home-link');
         expect(motion).toContain('if (prefersReducedMotion()) return;');
     });
 
@@ -202,9 +186,7 @@ describe('demo site navigation', () => {
         const css = read('src/demo/demo.css');
         const icons = read('src/demo/demo-icons.js');
 
-        expect(guide).toContain("demoIcon('home'");
-        expect(guide).toContain('class="demo-secondary-home-link" href="#top"');
-        expect(guide).toContain('data-i18n="guide.home">Home</span>');
+        expect(guide).not.toContain('demo-secondary-home-link');
         expect(guide).not.toContain('Torna alla home demo');
         expect(guide).not.toContain('Back to demo home');
         expect(guide).toContain('class="demo-video-preview demo-guide-video"');
@@ -212,14 +194,11 @@ describe('demo site navigation', () => {
         expect(guide).toContain('data-i18n="video.youtube">YouTube</span>');
         expect(guide).toContain('data-i18n-title="guide.videoOpen"');
         expect(guide).toContain('demoYoutubeIcon({');
-        expect(main).toContain("'guide.home': 'Home'");
         expect(main).toContain("'guide.videoTitle': 'JavaScript Demo'");
         expect(main).toContain("'video.youtube': 'YouTube'");
         expect(main).not.toContain('demo-secondary-home-link');
-        expect(icons).toContain('home: Home');
         expect(icons).toContain('export const demoYoutubeIcon');
         expect(icons).not.toContain('Youtube,');
-        expect(css).toContain('.demo-secondary-home-link');
         expect(css).toContain('.demo-video-preview__destination');
         expect(css).toContain('.demo-video-preview__brand');
         expect(guide).not.toContain('demo-guide-video__play');
@@ -287,12 +266,12 @@ describe('demo site navigation', () => {
     });
 
     test('uses a visual language switch with a single flag control', () => {
-        const main = read('src/demo/main.js');
-        const guide = read('src/demo/getting-started-javascript.js');
+        const navbar = read('src/demo/components/site-navbar.js');
+        const language = read('src/demo/demo-language-switch.js');
         const css = read('src/demo/demo.css');
         const englishFlag = statSync(new URL('../src/demo/assets/lang-en.svg', import.meta.url));
         const italianFlag = statSync(new URL('../src/demo/assets/lang-it.svg', import.meta.url));
-        const combined = `${main}\n${guide}`;
+        const combined = `${navbar}\n${language}`;
 
         expect(combined).toContain('class="language-switch');
         expect(combined).toContain('data-language-toggle');
