@@ -55,11 +55,12 @@ test.describe('autocomplete last-row layout', () => {
         await page.goto('/#getting-started-javascript');
 
         const table = page.locator('#inventory-table');
-        const warehouse = table.locator('.tabulator-tableholder .tabulator-row')
-            .last()
-            .locator('.tabulator-cell[tabulator-field="warehouse"]');
+        const lastRow = table.locator('.tabulator-tableholder .tabulator-row')
+            .filter({ hasText: 'PRD-H010' });
+        const warehouse = lastRow.locator('.tabulator-cell[tabulator-field="warehouse"]');
 
         await expect(table).toBeVisible();
+        await expect(lastRow).toBeVisible();
         await expect(warehouse).toBeVisible();
 
         const before = await measureLayout(page);
@@ -67,6 +68,7 @@ test.describe('autocomplete last-row layout', () => {
         await warehouse.dblclick();
         const input = warehouse.locator('input.amb-autocomplete-editor');
 
+        await expect(input).toBeVisible();
         await expect(input).toBeFocused();
         await input.fill('');
 

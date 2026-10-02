@@ -53,7 +53,8 @@ test.describe('row controls accessibility', () => {
     test('main demo row actions activate delete and rollback without confirmation', async ({ page }) => {
         await openInventoryDemo(page);
 
-        const firstRow = page.locator('#inventory-table .tabulator-row').first();
+        const firstRow = page.locator('#inventory-table .tabulator-row')
+            .filter({ hasText: 'PRD-A001' });
         const deleteButton = firstRow.locator('.amb-row-action-button--delete');
 
         await expect(deleteButton).toBeVisible();
@@ -63,7 +64,6 @@ test.describe('row controls accessibility', () => {
         await expect(deleteButton).toHaveAttribute('aria-label', 'Delete product');
         await expect(deleteButton).toHaveAttribute('title', 'Delete product');
 
-        await deleteButton.focus();
         await page.keyboard.press('Enter');
         await expect(firstRow).toHaveAttribute('data-state', 'deleted');
         await expect(page.locator('.teh-confirm-dialog--visible')).toHaveCount(0);

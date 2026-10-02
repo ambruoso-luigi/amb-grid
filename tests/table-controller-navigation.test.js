@@ -316,6 +316,38 @@ describe('AMB table controller editable-cell navigation API', () => {
         }
     });
 
+    test('preserves disabled engine keybindings while reserving directional keys for AMB', () => {
+        const harness = createDocumentHarness();
+
+        try {
+            const create = options => {
+                createTable({ selector: harness.mount, columns: [], toolbar: false, ...options });
+                return tabulatorMock.instances.at(-1).options.keybindings;
+            };
+            const customKeybindings = {
+                navNext: 'Tab',
+                customShortcut: 'Ctrl+K'
+            };
+
+            expect(create({ keybindings: false })).toBe(false);
+            expect(create({})).toEqual({
+                navUp: false,
+                navDown: false,
+                navLeft: false,
+                navRight: false
+            });
+            expect(create({ keybindings: customKeybindings })).toEqual({
+                ...customKeybindings,
+                navUp: false,
+                navDown: false,
+                navLeft: false,
+                navRight: false
+            });
+        } finally {
+            harness.restore();
+        }
+    });
+
     test('exposes flat navigation methods and delegates without public arguments', () => {
         const harness = createDocumentHarness();
 
