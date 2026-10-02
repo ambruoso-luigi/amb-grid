@@ -84,7 +84,7 @@ import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, 
      * @param {string} [options.labelField] - Display label field override.
      * @param {{open: Function}} [options.dialog] - Lookup dialog instance or compatible object used to select a value.
      * @param {string} [options.dialogTitle='Search value'] - Title shown by the lookup dialog.
-     * @param {Array<{field: string, title?: string, width?: number}>} [options.dialogColumns] - Fallback dialog columns when the lookup does not define columns.
+     * @param {object[]} [options.dialogColumns] - Fallback dialog columns when the lookup does not define columns.
      * @param {string} [options.searchPlaceholder='Search...'] - Placeholder shown in the lookup dialog search input.
      * @param {Object<string, string>} [options.mapToRow] - Mapping from grid row fields to lookup record fields.
      * @param {LookupOpenDialogHandler} [options.onOpenDialog] - Handle opening the lookup dialog.

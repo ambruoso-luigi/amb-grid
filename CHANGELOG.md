@@ -20,6 +20,10 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Corrected autocomplete dropdown placement for a final visible row.
+- Preserved editor caret and selection while normalizing uppercase or lowercase input.
+- Restored CRUD error indicators after Tabulator rendering and pagination rebuild cells.
+- Preserved informational cell tooltips while clearing stale validation markers.
 - Prevented membership reconciliation from prematurely marking untouched empty fields in new rows as invalid.
 
 - Kept pointer interaction inside an active inline editor owned by the editor,
@@ -52,6 +56,10 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Changed
 
+- Loaded the Multifield Lookup demo dataset asynchronously and independently.
+- Simplified JavaScript demo CRUD palette and action confirmations.
+- Added declarative allowed-values validation for JavaScript demo Status codes.
+- Moved the Home installation call to action into the header.
 - Lookup keyboard behavior now uses Enter for manual commit and F2 for opening the search dialog.
 - ArrowUp/ArrowDown spatial navigation now continues across adjacent pages while preserving the current column.
 - Standard inline editors return focus to the source cell after keyboard commit or cancel.

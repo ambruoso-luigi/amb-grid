@@ -382,6 +382,13 @@ Rollback restores the AMB baseline for modified or deleted persisted rows. Rolli
 Validation does not replace CRUD state, and CRUD state does not imply validity. AMB Grid tracks application-level row and field errors separately from row lifecycle state.
 
 
+`CrudHelper` retains those errors independently from Tabulator DOM elements. When
+Tabulator recreates rows or cells during rendering or pagination, AMB Grid
+resynchronizes the visual indicators from the tracked state; the DOM is never
+the primary validation source. Row lifecycle state and row validity therefore
+remain distinct concepts.
+
+
 `grid.validate(...)`, `grid.validateChanges()`, and row-level validation APIs evaluate configured AMB validators. Validation of pending changes primarily concerns `new` and `modified` rows, while deleted rows are excluded from normal change validation unless explicitly included for a technical audit.
 
 

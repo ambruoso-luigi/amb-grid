@@ -267,8 +267,10 @@ hardcoding backend behavior into AMB Grid.
 ### Validation Framework
 
 `unique` is a cross-row rule; pending errors refresh automatically when relevant
-values, row lifecycle state, or membership changes. Deleted rows are ignored by
-default unless `includeDeleted: true` is set.
+values, row lifecycle state, or membership changes. Previously tracked errors
+remain part of the validation state until the relevant validation result resolves
+or clears them. Deleted rows are ignored by default unless `includeDeleted: true`
+is set.
 
 ```js
 validation: {
@@ -279,8 +281,12 @@ validation: {
 }
 ```
 
-AMB Grid reconciles affected pending validation automatically when the relevant cross-row context changes.
-That reconciliation does not perform full required-field validation on untouched empty fields in new rows; use an explicit validation operation to mark those fields.
+AMB Grid reconciles affected pending validation automatically when the relevant
+cross-row context changes, so non-empty duplicates remain detectable. Membership
+reconciliation does not mark an untouched empty field in a new row as Required
+when it has no tracked error. Explicit validation through `grid.validate(...)`,
+`grid.validateChanges()`, or row validation still evaluates every configured
+required field.
 
 #### Validation scopes
 
@@ -450,9 +456,12 @@ normal editing lifecycle.
   Delete; modified and deleted rows expose Rollback; new rows expose Remove
   new. An action cell participates in keyboard navigation only when its action
   is available and enabled. `Enter` and `Space` activate the row action.
-  Delete confirmation traps `Tab`/`Shift+Tab` inside the dialog; after delete
-  focus returns to Rollback, after Rollback focus returns to Delete, and
-  Remove new falls back to the next or previous valid visible destination.
+  Action confirmations are configurable and are not implied by the action
+  itself. When configured, a confirmation dialog traps `Tab`/`Shift+Tab`; after
+  Delete focus returns to Rollback, after Rollback focus returns to Delete, and
+  Remove new falls back to the next or previous valid visible destination. The
+  JavaScript demo runs Delete and Rollback immediately while retaining a Remove
+  new confirmation.
 * Checkbox editors toggle immediately when their checkbox is clicked, and use
   `Enter`, `Space`, and configured toggle keys to change value from the
   keyboard. Their arrow keys are the deliberate exception: they commit the
@@ -844,6 +853,14 @@ from the lookup record, not the typed text. For example, `mila`, `MILA`,
 cell stores `Milano`. Set `caseSensitive: true` to require matching uppercase
 and lowercase exactly. `uppercase` is separate: it transforms typed input, while
 `caseSensitive` controls lookup matching.
+
+The lookup editor validates a manually entered code during interaction (on blur
+by default), but that check does not replace declarative column validation.
+`grid.validateChanges()` reevaluates configured column rules rather than
+replaying editor interaction. When an application must prevent an unknown lookup
+code from being saved, it should also configure a matching column rule such as
+`validation.allowedValues` or a custom validator. The JavaScript demo Status
+column follows this pattern with `allowedValues` built from the status IDs.
 
 `mapToRow` uses `{ gridRowField: lookupRecordField }`. `keyField` is required
 and validated for presence and uniqueness when records load. At least one
