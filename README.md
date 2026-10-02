@@ -280,6 +280,7 @@ validation: {
 ```
 
 AMB Grid reconciles affected pending validation automatically when the relevant cross-row context changes.
+That reconciliation does not perform full required-field validation on untouched empty fields in new rows; use an explicit validation operation to mark those fields.
 
 #### Validation scopes
 

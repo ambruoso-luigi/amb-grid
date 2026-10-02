@@ -20,6 +20,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ### Fixed
 
+- Prevented membership reconciliation from prematurely marking untouched empty fields in new rows as invalid.
+
 - Kept pointer interaction inside an active inline editor owned by the editor,
   preserving caret positioning and text selection instead of returning the cell
   to Navigation.

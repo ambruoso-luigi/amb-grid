@@ -621,6 +621,49 @@ describe('CrudHelper validation lifecycle', () => {
         expect(crud.cellErrors.has(1)).toBe(false);
     });
 
+    test('defers empty new-row required validation during membership reconciliation', async () => {
+        const { crud } = createManualCrud([{ id: 1, alias: 'ABC' }]);
+
+        crud._revealAndFocusRow = vi.fn(async row => row);
+        crud.addCellValidator('alias', 'Alias is required', value => {
+            return typeof value === 'string' && value.trim() !== '';
+        });
+
+        const blankRow = crud.addRow({ alias: '   ' });
+
+        await vi.waitFor(() => {
+            expect(blankRow.getData()._state).toBe(ROW_STATE.NEW);
+        });
+        expect(crud.cellErrors.has(crud._getRowKey(blankRow))).toBe(false);
+
+        const validation = crud.validateChanges();
+        const payload = crud.getSavePayload({
+            savePolicy: 'valid-only',
+            includeInvalid: true
+        });
+
+        expect(validation.errors).toEqual(expect.arrayContaining([
+            expect.objectContaining({ field: 'alias', message: 'Alias is required' })
+        ]));
+        expect(payload.changes.inserted).toEqual([]);
+        expect(payload.invalidChangedRows).toEqual(expect.arrayContaining([
+            expect.objectContaining({ key: crud._getRowKey(blankRow) })
+        ]));
+
+        const duplicateRow = crud.addRow({ alias: 'ABC' });
+
+        await vi.waitFor(() => {
+            expect(crud.cellErrors.get(crud._getRowKey(duplicateRow))?.get('alias'))
+                .toBe('Alias must be unique');
+        });
+        expect(crud.cellErrors.get(crud._getRowKey(blankRow))?.get('alias'))
+            .toBe('Alias is required');
+
+        expect(crud.deleteRow(crud._getRowKey(duplicateRow))).toBe(true);
+        expect(crud.cellErrors.get(crud._getRowKey(blankRow))?.get('alias'))
+            .toBe('Alias is required');
+    });
+
     test('batches membership reconciliation after addData without validating cell-local fields', async () => {
         const { table } = createTableMock([{ id: 1, alias: 'ABC', name: 'Saved' }]);
         const crud = new CrudHelper(table);

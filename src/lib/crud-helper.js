@@ -306,11 +306,23 @@ export class CrudHelper {
         return this._hasTrackedCellError(row, field);
     }
 
+    _isUntouchedBlankNewMembershipTarget(row, field) {
+        if (this._getBaseRowState(row) !== ROW_STATE.NEW) return false;
+        if (this._hasTrackedCellError(row, field)) return false;
+
+        const value = row.getData()[field];
+
+        return value === null
+            || value === undefined
+            || (typeof value === 'string' && value.trim() === '');
+    }
+
     _revalidateScopedField({
         field,
         scope,
         triggerRows,
-        validatedTriggerFieldsByRow
+        validatedTriggerFieldsByRow,
+        isMembershipReconciliation = false
     }) {
         if (scope === VALIDATION_SCOPE.ROW) {
             triggerRows.forEach(row => {
@@ -327,6 +339,12 @@ export class CrudHelper {
         this._getManagedRows().forEach(row => {
             if (!this._isInteractiveValidationTarget(row, field, triggerRows)) return;
             if (triggerRows.has(row) && validatedTriggerFieldsByRow.get(row)?.has(field)) {
+                return;
+            }
+            if (
+                isMembershipReconciliation
+                && this._isUntouchedBlankNewMembershipTarget(row, field)
+            ) {
                 return;
             }
 
@@ -416,7 +434,8 @@ export class CrudHelper {
                 field,
                 scope,
                 triggerRows: normalizedTriggerRows,
-                validatedTriggerFieldsByRow
+                validatedTriggerFieldsByRow,
+                isMembershipReconciliation: true
             });
         });
     }
