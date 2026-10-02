@@ -422,6 +422,11 @@ normal editing lifecycle.
   opens the last editable cell on the previous page.
 * At the absolute grid boundaries, `Tab` and `Shift+Tab` move focus out of the
   grid in the corresponding direction.
+* ArrowLeft, ArrowRight, ArrowUp, and ArrowDown use geometric navigation and
+  can reach available managed columns, including row actions. The automatic
+  sequential `Tab`/`Shift+Tab` path excludes managed columns from ordinary data
+  destinations; once a managed control is active, it retains its dedicated
+  keyboard handling.
 * `Alt+PageDown` opens the next page and its first editable cell.
   `Alt+PageUp` opens the previous page and its first editable cell.
 * Arrow keys move focus geometrically between operational editable or

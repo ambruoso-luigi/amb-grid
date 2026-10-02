@@ -93,15 +93,15 @@ test.describe('keyboard spatial navigation', () => {
         await expect(first).toBeFocused();
         await page.keyboard.press('ArrowUp');
         await expectNavigationFocus(first);
-        await expect(await currentPage(page)).toBe(1);
+        await expect.poll(() => currentPage(page)).toBe(1);
         await last.focus();
         await expect(last).toBeFocused();
         await page.keyboard.press('ArrowDown');
-        await expect(await currentPage(page)).toBe(2);
+        await expect.poll(() => currentPage(page)).toBe(2);
         const nextFirst = rowCell(page, 'PRD-A011', 'itemCode');
         await expectNavigationFocus(nextFirst);
         await page.keyboard.press('ArrowUp');
-        await expect(await currentPage(page)).toBe(1);
+        await expect.poll(() => currentPage(page)).toBe(1);
         await expectNavigationFocus(last);
     });
 
