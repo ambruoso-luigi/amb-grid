@@ -275,6 +275,7 @@ export default async function fullDemo(app, options = {}) {
     const reportDialog = createDemoReportDialog();
     const partialSaveDialog = new AMB.ConfirmDialog();
     const warehouseOptions = await fakeApi.getWarehouses();
+    const statusOptions = (await fakeApi.getStatuses()).map(status => status.id);
     const products = await fakeApi.getProducts();
     let crud = null;
     let commandGuide = null;
@@ -436,6 +437,12 @@ export default async function fullDemo(app, options = {}) {
                 minWidth: 105,
                 widthGrow: 0.7,
                 required: true,
+                validation: {
+                    allowedValues: {
+                        values: statusOptions,
+                        message: 'Unknown status code'
+                    }
+                },
                 editor: AMB.editors.lookup(statusLookup, {
                     uppercase: true,
                     allowEmpty: false,

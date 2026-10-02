@@ -504,6 +504,8 @@ export class CrudHelper {
 
             if (!rowElement || !rowElement.dataset) return;
 
+            this._syncRowCellStates(row);
+            this._syncRowCellErrorMarkers(row);
             rowElement.dataset.state = this._getBaseRowState(row);
             rowElement.dataset.ambRowParity = index % 2 === 0 ? 'odd' : 'even';
         });
@@ -1324,6 +1326,31 @@ export class CrudHelper {
         row.getCells().forEach(cell => {
             this._syncCellState(cell);
         });
+    }
+
+    _syncRowCellErrorMarkers(row) {
+        if (!row) return;
+
+        const errors = this.cellErrors.get(this._getRowKey(row));
+
+        row.getCells().forEach(cell => {
+            const cellElement = cell.getElement();
+
+            if (!cellElement) return;
+
+            const message = errors && errors.get(cell.getField());
+
+            if (message) {
+                cellElement.dataset.cellError = 'true';
+                cellElement.title = message;
+                return;
+            }
+
+            delete cellElement.dataset.cellError;
+            cellElement.removeAttribute('title');
+        });
+
+        this._syncRowErrorAttribute(row);
     }
 
     _getHistoryTechnicalFields() {

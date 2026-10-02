@@ -240,6 +240,52 @@ const createRowsData = count => {
 };
 
 describe('CrudHelper row reveal and pagination normalization', () => {
+    test('restores errors and modified markers after paginated Add and Remove new rerender cells', async () => {
+        const { table } = createTableMock({
+            rowsData: createRowsData(20),
+            pagination: true,
+            pageSize: 10,
+            rerenderOnNavigation: true
+        });
+        const crud = new CrudHelper(table);
+        const renderComplete = table.handlers.get('renderComplete');
+
+        crud._captureInitialSnapshot();
+        crud.updateRowFields(1, { name: 'Invalid existing row' });
+        crud.markCellError(1, 'name', 'Invalid name');
+
+        expect(crud.getErrors().cells).toEqual(expect.arrayContaining([
+            expect.objectContaining({ id: 1, field: 'name', message: 'Invalid name' })
+        ]));
+
+        const newRow = await crud.addRow({ id: null, name: 'New row' });
+
+        expect(crud.getErrors().cells).toEqual(expect.arrayContaining([
+            expect.objectContaining({ id: 1, field: 'name', message: 'Invalid name' })
+        ]));
+
+        expect(crud.deleteRow(newRow.getData()._ambTempId)).toBe(true);
+        await flushPromises();
+
+        expect(crud.getErrors().cells).toEqual(expect.arrayContaining([
+            expect.objectContaining({ id: 1, field: 'name', message: 'Invalid name' })
+        ]));
+
+        await table.setPage(1);
+        renderComplete();
+
+        const restoredCell = table.getVisibleRows()[0].getCell('name').getElement();
+
+        expect(crud.getErrors().cells).toEqual(expect.arrayContaining([
+            expect.objectContaining({ id: 1, field: 'name', message: 'Invalid name' })
+        ]));
+        expect(restoredCell.dataset).toEqual(expect.objectContaining({
+            cellError: 'true',
+            cellState: ROW_STATE.MODIFIED
+        }));
+        expect(restoredCell.title).toBe('Invalid name');
+    });
+
     test('moveRow preserves delegation and realigns technical numbering without CRUD changes', () => {
         const { table, rows, moveResult } = createTableMock({
             rowsData: [

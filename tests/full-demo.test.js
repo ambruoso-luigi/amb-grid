@@ -135,6 +135,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('maxOptions: 8');
         expect(source).toContain('AMB.editors.lookup(statusLookup');
         expect(source).toContain('fakeApi.searchStatuses(query)');
+        expect(source).toContain('const statusOptions = (await fakeApi.getStatuses()).map(status => status.id)');
+        expect(source).toMatch(/title: 'Status'[\s\S]*?validation: \{[\s\S]*?allowedValues: \{[\s\S]*?values: statusOptions,[\s\S]*?message: 'Unknown status code'/);
         expect(source).toContain('data: products');
         expect(source).toContain('pagination: true');
         expect(source).toContain('paginationMode: \'local\'');
