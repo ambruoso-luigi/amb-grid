@@ -191,11 +191,11 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("delete: 'Delete product'");
         expect(source).toContain("rollback: 'Rollback product changes'");
         expect(source).toContain("removeNew: 'Remove new product'");
-        expect(source).toContain("delete: 'Delete this product?'");
-        expect(source).toContain("rollback: 'Rollback this product?'");
+        expect(source).not.toContain("delete: 'Delete this product?'");
+        expect(source).not.toContain("rollback: 'Rollback this product?'");
         expect(source).toContain("removeNew: 'Remove this new product?'");
-        expect(source).toContain('confirmDeleteMessage: demoRowActionMessages.delete');
-        expect(source).toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
+        expect(source).not.toContain('confirmDeleteMessage: demoRowActionMessages.delete');
+        expect(source).not.toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
         expect(source).toContain('confirmRemoveNewMessage: demoRowActionMessages.removeNew');
         expect(source).not.toContain('demoRowActionIcons');
         expect(source).not.toMatch(/rowActionColumn: \{[\s\S]*?icons:/);
@@ -242,10 +242,10 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('message: payload.isPartialSave ? t(\'partialSaved\') : t(\'saved\')');
     });
 
-    test('keeps row-action confirmation standard while reserving ConfirmDialog for partial save', () => {
+    test('confirms only Remove new while reserving ConfirmDialog for partial save', () => {
         expect(source).toContain('rowActionColumn: {');
-        expect(source).toContain('confirmDeleteMessage: demoRowActionMessages.delete');
-        expect(source).toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
+        expect(source).not.toContain('confirmDeleteMessage: demoRowActionMessages.delete');
+        expect(source).not.toContain('confirmRollbackMessage: demoRowActionMessages.rollback');
         expect(source).toContain('confirmRemoveNewMessage: demoRowActionMessages.removeNew');
         expect(source).toContain('const partialSaveDialog = new AMB.ConfirmDialog()');
         expect(source).not.toContain('createDemoRowActionColumn');
