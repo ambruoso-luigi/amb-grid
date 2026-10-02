@@ -1007,6 +1007,13 @@ export function createTable(options = {}) {
             ? 'click'
             : 'dblclick';
     }
+    normalizedOptions.keybindings = {
+        ...normalizedOptions.keybindings,
+        navUp: false,
+        navDown: false,
+        navLeft: false,
+        navRight: false
+    };
     let crud = null;
     let controller = null;
     let table = null;
