@@ -8,6 +8,7 @@ const createRowMock = (data = {}) => {
         element,
         getData: () => data,
         getElement: () => element,
+        getCells: () => [],
         update: patch => {
             Object.assign(data, patch);
         }

@@ -245,7 +245,11 @@ describe('CrudHelper row reveal and pagination normalization', () => {
             rowsData: createRowsData(20),
             pagination: true,
             pageSize: 10,
-            rerenderOnNavigation: true
+            rerenderOnNavigation: true,
+            columns: [
+                { field: 'name', editor: 'input' },
+                { field: 'notes', editor: 'input' }
+            ]
         });
         const crud = new CrudHelper(table);
         const renderComplete = table.handlers.get('renderComplete');
@@ -272,9 +276,12 @@ describe('CrudHelper row reveal and pagination normalization', () => {
         ]));
 
         await table.setPage(1);
-        renderComplete();
 
         const restoredCell = table.getVisibleRows()[0].getCell('name').getElement();
+        const informationalCell = table.getVisibleRows()[0].getCell('notes').getElement();
+
+        informationalCell.title = 'Informational tooltip';
+        renderComplete();
 
         expect(crud.getErrors().cells).toEqual(expect.arrayContaining([
             expect.objectContaining({ id: 1, field: 'name', message: 'Invalid name' })
@@ -284,6 +291,7 @@ describe('CrudHelper row reveal and pagination normalization', () => {
             cellState: ROW_STATE.MODIFIED
         }));
         expect(restoredCell.title).toBe('Invalid name');
+        expect(informationalCell.title).toBe('Informational tooltip');
     });
 
     test('moveRow preserves delegation and realigns technical numbering without CRUD changes', () => {

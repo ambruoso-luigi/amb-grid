@@ -1346,8 +1346,10 @@ export class CrudHelper {
                 return;
             }
 
-            delete cellElement.dataset.cellError;
-            cellElement.removeAttribute('title');
+            if (cellElement.dataset.cellError === 'true') {
+                delete cellElement.dataset.cellError;
+                cellElement.removeAttribute('title');
+            }
         });
 
         this._syncRowErrorAttribute(row);
