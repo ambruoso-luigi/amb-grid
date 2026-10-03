@@ -673,6 +673,7 @@ describe('demo site navigation', () => {
         expect(main).toContain("'cycle.keyboardText': 'Navigation, editing and controls can be managed entirely from the keyboard, across rows, pages and complex editors.'");
         expect(main).toContain('data-i18n="cycle.keyboardTitle"');
         expect(main).toContain('data-i18n="cycle.keyboardText"');
+        expect(main).toContain('const renderShell = selectedId => {\n    activeCycleDetail = null;');
         expect(main).toContain("openCycleDetail('edit');");
         expect(main).toContain("card.setAttribute('aria-selected', String(isActive));");
         expect(main).toContain('panel.dataset.cycleAccent = id;');

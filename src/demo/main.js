@@ -636,6 +636,7 @@ const bindCycleDetails = () => {
 };
 
 const renderShell = selectedId => {
+    activeCycleDetail = null;
     root.innerHTML = `
         <main class="demo-page site-container">
             <header class="demo-hero">
