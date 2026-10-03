@@ -21,10 +21,11 @@ export const reportFocusDiagnostics = async (page, target, label, tableSelector)
             const activeCell = active?.closest?.('.tabulator-cell');
             const table = document.querySelector(selector);
             return {
-                activeElement: { tagName: active?.tagName || null, className: String(active?.className || '') },
+                activeElement: { tagName: active?.tagName || null, className: String(active?.className || ''), connected: Boolean(active?.isConnected) },
                 activeCell: { field: activeCell?.getAttribute('tabulator-field') || null, editing: Boolean(activeCell?.classList.contains('tabulator-editing')) },
                 openEditors: table?.querySelectorAll('.tabulator-cell.tabulator-editing').length ?? null,
-                currentPage: table?.querySelector('.tabulator-page.active')?.textContent?.trim() || null
+                currentPage: table?.querySelector('.tabulator-page.active')?.textContent?.trim() || null,
+                dialogOpen: Boolean(document.querySelector('.amb-lookup-dialog, .teh-confirm-dialog--visible'))
             };
         }, tableSelector)
     ]);
@@ -34,11 +35,13 @@ export const reportFocusDiagnostics = async (page, target, label, tableSelector)
 export const enterNavigationWithClick = async (page, target, label, tableSelector) => {
     const field = await target.getAttribute('tabulator-field');
     try {
+        await target.scrollIntoViewIfNeeded();
+        await expect(target).toBeVisible();
         await target.click();
+        await expect.poll(() => page.evaluate(() => document.activeElement?.closest('.tabulator-cell')?.getAttribute('tabulator-field') || null)).toBe(field);
         await expect(target).toBeFocused();
         await expect(target).not.toHaveClass(/tabulator-editing/);
         await expect(target.locator('input.amb-cell-editor')).toHaveCount(0);
-        await expect.poll(() => page.evaluate(() => document.activeElement?.closest('.tabulator-cell')?.getAttribute('tabulator-field') || null)).toBe(field);
     } catch (error) {
         await reportFocusDiagnostics(page, target, `${label}: navigation setup failed`, tableSelector);
         throw error;

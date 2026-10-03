@@ -100,6 +100,7 @@ test.describe('keyboard spatial navigation', () => {
         await expect.poll(() => currentPage(page)).toBe(2);
         const nextFirst = rowCell(page, 'PRD-A011', 'itemCode');
         await expectNavigationFocus(nextFirst);
+        await focusNavigationCell(page, nextFirst, 'directional return from page two');
         await page.keyboard.press('ArrowUp');
         await expect.poll(() => currentPage(page)).toBe(1);
         await expectNavigationFocus(last);
@@ -181,8 +182,7 @@ test.describe('keyboard spatial navigation', () => {
         const status = rowCell(page, 'PRD-AB02', 'status');
         const dialog = page.locator('.amb-lookup-dialog');
 
-        await status.click();
-        await expectNavigationFocus(status);
+        await focusNavigationCell(page, status, 'lookup manual editing');
         await expect(status.locator('.amb-lookup-editor__input')).toHaveCount(0);
         await expect(dialog).toHaveCount(0);
 

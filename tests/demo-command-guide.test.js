@@ -51,7 +51,7 @@ const commandGuideCss = fs.readFileSync(
 const demoCss = fs.readFileSync(
     new URL('../src/demo/demo.css', import.meta.url),
     'utf8'
-);
+).replace(/\r\n/g, '\n');
 const reactStyles = fs.readFileSync(
     new URL('../examples/react-demo/src/styles.css', import.meta.url),
     'utf8'

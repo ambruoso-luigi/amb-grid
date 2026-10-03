@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 const openBasicCrudDemo = async page => {
     await page.goto('/src/demo/index.html#feature-examples');
@@ -72,7 +73,12 @@ test.describe('row controls accessibility', () => {
 
         await expect(rollbackButton).toBeVisible();
         await expect(rollbackButton).toBeEnabled();
-        await expect(rollbackButton).toBeFocused();
+        try {
+            await expect.poll(() => rollbackButton.evaluate(element => document.activeElement === element)).toBe(true);
+        } catch (error) {
+            await reportFocusDiagnostics(page, rollbackButton, 'Delete transition rollback focus failed', '#inventory-table');
+            throw error;
+        }
         await expect(rollbackButton).toHaveAttribute('aria-label', 'Rollback product changes');
         await expect(rollbackButton).toHaveAttribute('title', 'Rollback product changes');
 
@@ -100,7 +106,12 @@ test.describe('row controls accessibility', () => {
         await expect(itemCodeEditor).toHaveCount(0);
         await expect(itemCodeCell).toBeFocused();
         await page.keyboard.press('ArrowLeft');
-        await expect(removeNewButton).toBeFocused();
+        try {
+            await expect.poll(() => removeNewButton.evaluate(element => document.activeElement === element)).toBe(true);
+        } catch (error) {
+            await reportFocusDiagnostics(page, removeNewButton, 'Remove new ArrowLeft focus failed', '#inventory-table');
+            throw error;
+        }
         await page.keyboard.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--cancel').click();
