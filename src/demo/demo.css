@@ -334,41 +334,10 @@ a {
     max-width: 860px;
 }
 
-.demo-hero-badge {
-    align-items: center;
-    background: rgb(255 255 255 / 78%);
-    border: 1px solid rgb(124 150 176 / 42%);
-    border-radius: 999px;
-    box-shadow:
-        0 1px 0 rgb(255 255 255 / 80%) inset,
-        0 12px 28px rgb(16 35 63 / 9%);
-    color: var(--amb-site-blue-strong);
-    display: inline-flex;
-    flex-wrap: wrap;
-    font-size: 13px;
-    font-weight: 850;
-    gap: 8px;
-    line-height: 1.2;
-    margin: 0 0 18px;
-    max-width: 100%;
-    padding: 8px 12px;
-    width: fit-content;
-}
-
-.demo-hero-badge strong {
-    color: var(--amb-site-navy-2);
-    font-weight: 800;
-}
-
-.demo-hero-badge-icon,
 .demo-hero-cta-icon,
 .demo-hero-metric-icon {
     color: currentColor;
     flex: 0 0 auto;
-}
-
-.demo-hero-badge-icon {
-    color: var(--amb-site-blue);
 }
 
 .demo-hero__subtitle {
@@ -4511,10 +4480,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 
     .demo-hero__actions .demo-button {
         width: 100%;
-    }
-
-    .demo-hero-badge {
-        border-radius: 8px;
     }
 
     .demo-framework-grid {

@@ -48,8 +48,6 @@ const translations = {
         'language.enTitle': 'English',
         'language.switchToIt': 'Cambia lingua in italiano',
         'language.switchToEn': 'Cambia lingua in inglese',
-        'hero.badge': 'AMB Grid',
-        'hero.badgeDetail': 'Griglie CRUD per applicazioni business',
         'hero.title': 'Griglie CRUD per applicazioni business',
         'hero.description': 'AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
         'hero.secondary': 'Vedi esempi funzionali',
@@ -226,8 +224,6 @@ const translations = {
         'language.enTitle': 'English',
         'language.switchToIt': 'Switch language to Italian',
         'language.switchToEn': 'Switch language to English',
-        'hero.badge': 'AMB Grid',
-        'hero.badgeDetail': 'CRUD grids for business applications',
         'hero.title': 'CRUD data grids for business applications',
         'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
         'hero.secondary': 'View feature examples',
@@ -643,11 +639,6 @@ const renderShell = selectedId => {
                 <div class="demo-hero__brand">${renderDemoBrand({ href: '#top' })}</div>
                 <div class="demo-hero__body">
                     <div class="demo-hero__content" id="top">
-                        <p class="demo-hero-badge">
-                            ${demoIcon('crud', { className: 'demo-hero-badge-icon', size: 16, strokeWidth: 2.2 })}
-                            <span data-i18n="hero.badge">AMB Grid</span>
-                            <strong data-i18n="hero.badgeDetail">Griglie CRUD per applicazioni business</strong>
-                        </p>
                         <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
                         <p class="demo-hero__text" data-i18n="hero.description">AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.</p>
                         <div class="demo-hero__actions">
