@@ -111,6 +111,9 @@ describe('demo site navigation', () => {
         expect(main).toContain("import { mountSiteNavbar } from './components/site-navbar.js';");
         expect(main).toContain("mountSiteNavbar(document.querySelector('#site-navbar')");
         expect(navbar).toContain("renderDemoBrand({ href: '/#top' })");
+        expect(main).toContain('class="demo-hero__brand"');
+        expect(guide).toContain('class="demo-guide-hero__brand"');
+        expect(guide).toContain("renderDemoBrand({ href: '#top' })");
         expect(guide).not.toContain('demo-topbar');
         expect(main).toContain("root.innerHTML = '<div id=\"react-demo-root\"></div>'");
         expect(brand).toContain("new URL('./amb-grid-logo.png', import.meta.url).href");

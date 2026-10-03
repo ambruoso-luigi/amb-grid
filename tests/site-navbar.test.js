@@ -22,7 +22,7 @@ describe('shared site navbar', () => {
         expect(navbar).toContain("event.key === 'Escape'");
         expect(navbar).toContain('amb-demo-language-change');
         expect(navbar).toContain('currentRoute');
-        expect(css).toContain('position: sticky');
+        expect(css).toContain('#site-navbar { background: #fff; position: sticky;');
         expect(css).toContain('@media (max-width: 760px)');
         expect(css).toContain('prefers-reduced-motion');
     });
@@ -37,6 +37,7 @@ describe('shared site navbar', () => {
         expect(main).toContain("root.innerHTML = '<div id=\"react-demo-root\"></div>'");
         expect(app).toContain("readDemoLanguage");
         expect(app).toContain("amb-demo-language-change");
+        expect(hero).toContain('className="react-hero-brand"');
         expect(hero).not.toContain('react-demo-topbar');
         expect(hero).not.toContain('react-demo-language');
     });

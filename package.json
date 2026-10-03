@@ -29,7 +29,8 @@
     "dist-lib"
   ],
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "./src/demo/main.js"
   ],
   "keywords": [
     "amb-grid",

@@ -1,5 +1,7 @@
 import { motion, useReducedMotion } from 'motion/react';
 
+const ambGridLogo = new URL('../../../../src/demo/amb-grid-logo.png', import.meta.url).href;
+
 type Language = 'it' | 'en';
 
 const copy = {
@@ -46,6 +48,7 @@ export function ReactHero({ language }: ReactHeroProps) {
 
   return (
     <header className="react-hero-shell">
+      <div className="react-hero-brand"><img alt="AMB Grid" src={ambGridLogo} /></div>
       <div className="react-hero">
         <motion.div animate={{ opacity: 1, y: 0 }} className="react-hero__copy" initial={enter} transition={{ duration: 0.45, ease: 'easeOut' }}>
           <div className="react-identity">

@@ -1,10 +1,12 @@
 import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
+import { renderDemoBrand } from './demo-brand.js';
 import { renderDemoFooter } from './demo-footer.js';
 
 export default function gettingStartedJavaScript(app) {
     app.innerHTML = `
         <main class="demo-page demo-guide-page js-guide-page site-container site-container--wide">
             <header class="demo-guide-hero">
+                <div class="demo-guide-hero__brand">${renderDemoBrand({ href: '#top' })}</div>
                 <div class="demo-guide-hero__layout">
                     <div class="demo-guide-hero__copy">
                         <div class="demo-framework-identity">

@@ -247,8 +247,8 @@ test.describe('React supplier lookup messages and status select', () => {
         await expect(supplier).toContainText('SUP-003 · Milano');
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
 
-        await page.locator('.react-demo-language__label').filter({ hasText: 'EN' }).click();
-        await expect(page.locator('.react-demo-language__label').filter({ hasText: 'EN' }))
+        await page.locator('#site-navbar').getByRole('button', { name: 'English' }).click();
+        await expect(page.locator('#site-navbar').getByRole('button', { name: 'English' }))
             .toHaveAttribute('aria-pressed', 'true');
         await expect(page.getByRole('heading', { name: 'Inventory Operations' })).toBeVisible();
         await page.locator('.react-table-guide__trigger').click();
@@ -259,7 +259,7 @@ test.describe('React supplier lookup messages and status select', () => {
         await expect(supplier).toContainText('Lombarda Industrial');
         await expect(supplier).toContainText('SUP-003 · Milano');
 
-        await page.locator('.react-demo-language__label').filter({ hasText: 'IT' }).click();
+        await page.locator('#site-navbar').getByRole('button', { name: 'Italiano' }).click();
         await expect(page.getByRole('heading', { name: 'Operazioni inventario' })).toBeVisible();
         await expect(page.locator('.react-table-guide__column-list')).toContainText('Fornitore');
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();

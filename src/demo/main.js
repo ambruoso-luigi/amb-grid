@@ -14,6 +14,7 @@ import dates from './dates.js';
 import parsers from './parsers.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
+import { renderDemoBrand } from './demo-brand.js';
 import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
 import { animateCycleDetail, initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
@@ -638,6 +639,7 @@ const renderShell = selectedId => {
     root.innerHTML = `
         <main class="demo-page site-container">
             <header class="demo-hero">
+                <div class="demo-hero__brand">${renderDemoBrand({ href: '#top' })}</div>
                 <div class="demo-hero__body">
                     <div class="demo-hero__content" id="top">
                         <p class="demo-hero-badge">
