@@ -157,7 +157,9 @@ test.describe('keyboard pagination focus', () => {
 
     test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {
         const status = rowCell(page, 'PRD-AB02', 'status');
+        await expect(status).toBeVisible();
         await status.click();
+        await expect(status).toBeFocused();
         await status.dblclick({ delay: 100 });
         await expectLookupEditor(page, 'PRD-AB02');
         const currentValue = await status.locator('.amb-lookup-editor__input').inputValue();
@@ -200,7 +202,9 @@ test.describe('keyboard pagination focus', () => {
 
     test('waits for lookup lifecycle across page shortcuts', async ({ page }) => {
         const status = rowCell(page, 'PRD-AB02', 'status');
+        await expect(status).toBeVisible();
         await status.click();
+        await expect(status).toBeFocused();
         await status.dblclick({ delay: 100 });
         await expectLookupEditor(page, 'PRD-AB02');
         await page.keyboard.press('Alt+PageDown');
