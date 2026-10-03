@@ -46,10 +46,10 @@
 .site-navbar__main-nav {
     align-items: center;
     display: flex;
-    flex: 1;
-    justify-content: space-evenly;
-    margin-left: clamp(38px, 4vw, 64px);
-    margin-right: clamp(24px, 3vw, 48px);
+    flex: 0 1 auto;
+    gap: clamp(24px, 2.2vw, 32px);
+    justify-content: flex-start;
+    margin-left: clamp(52px, 5vw, 84px);
     min-width: 0;
 }
 
@@ -57,7 +57,7 @@
     align-items: center;
     display: flex;
     flex: 0 0 auto;
-    gap: 18px;
+    margin-left: auto;
 }
 
 .site-navbar__main-nav > a,
@@ -69,7 +69,7 @@
     cursor: pointer;
     display: inline-flex;
     font: inherit;
-    font-size: 16px;
+    font-size: 16.5px;
     font-weight: 600;
     gap: 6px;
     min-height: 48px;
@@ -115,12 +115,12 @@
     display: inline-flex;
     height: 40px;
     justify-content: center;
-    transition: background 160ms ease, color 160ms ease;
+    margin-left: 8px;
+    transition: color 160ms ease;
     width: 40px;
 }
 
 .site-navbar__github:hover {
-    background: #f1f5f9;
     color: #0b1f3e;
 }
 
@@ -128,6 +128,20 @@
     display: block;
     height: 22px;
     width: 22px;
+}
+
+.site-navbar__demo-chevron {
+    color: currentColor;
+    display: block;
+    flex: 0 0 16px;
+    height: 16px;
+    width: 16px;
+}
+
+.site-navbar__demo:hover .site-navbar__demo-chevron,
+.site-navbar__demo:focus-within .site-navbar__demo-chevron,
+.site-navbar__demo.is-open .site-navbar__demo-chevron {
+    animation: site-navbar-chevron-bob 700ms ease-in-out 2;
 }
 
 .site-navbar__demo {
@@ -305,11 +319,10 @@
     .site-navbar__utilities {
         align-items: flex-start;
         border-top: 1px solid #e2e8f0;
-        gap: 8px;
         padding-top: 10px;
     }
 
-    .site-navbar__github {
+    .site-navbar__main-nav > .site-navbar__github {
         justify-content: flex-start;
         padding-left: 8px;
         width: 48px;
@@ -334,10 +347,21 @@
     }
 }
 
+@keyframes site-navbar-chevron-bob {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(2px);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .site-navbar,
     .site-navbar *,
     .site-navbar *::after {
+        animation: none !important;
         transition: none !important;
     }
 }

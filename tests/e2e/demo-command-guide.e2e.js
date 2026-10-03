@@ -21,7 +21,7 @@ test('the JavaScript demo command guide opens, localizes, and leaves the grid in
     const pageErrors = [];
     page.on('pageerror', error => pageErrors.push(error.message));
 
-    await page.goto('/src/demo/index.html#javascript-demo');
+    await page.goto('/#getting-started-javascript');
     const table = page.locator('#inventory-table.tabulator');
     const trigger = page.locator('[data-action="demo-command-guide"]');
 
@@ -61,7 +61,7 @@ test('the JavaScript demo command guide opens, localizes, and leaves the grid in
     await expect(panel.getByRole('tab', { name: 'Modifica', exact: true }))
         .toHaveAttribute('aria-selected', 'true');
 
-    await page.locator('[data-language-set="en"]').click();
+    await page.locator('#site-navbar').getByRole('button', { name: 'English' }).click();
     await expect(trigger).toContainText('Command guide');
     await expect(trigger).toHaveAttribute('title', 'Mouse, keyboard and table shortcuts');
     await expect(trigger).toHaveAttribute('aria-label', 'Mouse, keyboard and table shortcuts');
@@ -87,7 +87,7 @@ test('the React demo shares one command guide across a route change', async ({ p
     const pageErrors = [];
     page.on('pageerror', error => pageErrors.push(error.message));
 
-    await page.goto('/src/demo/index.html#getting-started-react');
+    await page.goto('/#getting-started-react');
     await expect(page.locator('.inventory-toolbar')).toBeVisible();
     await expect(page.locator('.react-demo-grid')).toBeVisible();
 
@@ -120,7 +120,7 @@ test('the React demo shares one command guide across a route change', async ({ p
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toHaveCount(1);
 
-    await page.evaluate(() => { window.location.hash = '#javascript-demo'; });
+    await page.evaluate(() => { window.location.hash = '#getting-started-javascript'; });
     const javascriptTrigger = page.locator('[data-action="demo-command-guide"]');
     await expect(javascriptTrigger).toBeVisible();
     await expect(page.locator('.inventory-toolbar')).toHaveCount(0);

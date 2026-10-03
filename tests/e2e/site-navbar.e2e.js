@@ -20,6 +20,13 @@ test('keeps the shared navbar sticky and remounts the React demo', async ({ page
     await navbar.getByRole('link', { name: 'Home' }).click();
     await expect(page.locator('.demo-hero__brand .demo-brand__logo')).toBeVisible();
     await navbar.getByRole('button', { name: /Demo/ }).click();
+    await expect(navbar.getByRole('button', { name: /Demo/ })).toHaveAttribute('aria-expanded', 'true');
+    await page.locator('.demo-hero').click();
+    await expect(navbar.getByRole('button', { name: /Demo/ })).toHaveAttribute('aria-expanded', 'false');
+    await navbar.getByRole('button', { name: /Demo/ }).click();
+    await page.keyboard.press('Escape');
+    await expect(navbar.getByRole('button', { name: /Demo/ })).toHaveAttribute('aria-expanded', 'false');
+    await navbar.getByRole('button', { name: /Demo/ }).click();
     await demoMenu.getByRole('link', { name: 'React' }).click();
     await expect(page.locator('.react-demo-grid')).toBeVisible();
 });
@@ -60,7 +67,7 @@ test('lays out the desktop navigation and dropdown without overlaps', async ({ p
         }).map((row, index, all) => ({ ...row, withinMenu: row.right <= bounds.right, separate: index === 0 || all[index - 1].bottom <= row.bottom - row.height }));
     });
     geometry.forEach(row => {
-        expect(row.height).toBe(40);
+        expect(row.height).toBeCloseTo(40, 3);
         expect(row.iconHeight).toBeLessThanOrEqual(18);
         expect(row.iconRight).toBeLessThanOrEqual(row.labelLeft);
         expect(row.withinMenu).toBe(true);

@@ -41,6 +41,9 @@ describe('shared site navbar', () => {
         expect(navbar).toContain('site-navbar__main-nav');
         expect(navbar).toContain('site-navbar__utilities');
         expect(navbar).toContain('site-navbar__github');
+        expect(navbar).toContain('renderDemoChevron');
+        expect(navbar).toContain("document.addEventListener('pointerdown'");
+        expect(navbar).toContain('demo.contains(event.target)');
         expect(navbar).toContain('aria-label="GitHub"');
         expect(navbar).not.toContain('site-navbar__install');
         expect(css).toContain('#site-navbar {');
@@ -48,6 +51,7 @@ describe('shared site navbar', () => {
         expect(css).toContain('.site-navbar__dropdown > a');
         expect(css).not.toContain('.site-navbar__dropdown span {');
         expect(css).toContain('@media (max-width: 1080px)');
+        expect(css).toContain('@keyframes site-navbar-chevron-bob');
         expect(css).toContain('prefers-reduced-motion');
     });
 
