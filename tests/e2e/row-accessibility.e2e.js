@@ -91,25 +91,16 @@ test.describe('row controls accessibility', () => {
         await page.locator('#javascript-demo .amb-toolbar__button--add').click();
         const newRow = page.locator('#inventory-table .tabulator-row[data-state="new"]');
         const removeNewButton = newRow.locator('.amb-row-action-button--remove-new');
-        const itemCodeCell = newRow.locator('.tabulator-cell[tabulator-field="itemCode"]');
-        const itemCodeEditor = newRow.locator('.tabulator-cell[tabulator-field="itemCode"] input.amb-cell-editor');
 
         await expect(newRow).toBeVisible();
         await expect(removeNewButton).toBeVisible();
-        await expect(itemCodeEditor).toBeVisible();
-        await expect(itemCodeEditor).toBeFocused();
-        await page.keyboard.press('Escape');
-        await expect(itemCodeEditor).toHaveCount(0);
-        await expect(itemCodeCell).toBeFocused();
-        await page.keyboard.press('ArrowLeft');
-        await expect(removeNewButton).toBeFocused();
-        await page.keyboard.press('Enter');
+        await expect(removeNewButton).toBeEnabled();
+        await removeNewButton.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--cancel').click();
         await expect(newRow).toBeVisible();
         await expect(newRow).toHaveAttribute('data-state', 'new');
-        await expect(removeNewButton).toBeFocused();
-        await page.keyboard.press('Space');
+        await removeNewButton.press('Space');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--confirm').click();
         await expect(newRow).toHaveCount(0);

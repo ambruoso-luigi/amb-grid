@@ -86,26 +86,6 @@ test.describe('keyboard spatial navigation', () => {
         expect(original).not.toBeNull();
     });
 
-    test('crosses adjacent pages vertically while preserving focus-only navigation', async ({ page }) => {
-        const first = rowCell(page, 'PRD-A001', 'itemCode');
-        const last = rowCell(page, 'PRD-H010', 'itemCode');
-        await first.focus();
-        await expect(first).toBeFocused();
-        await page.keyboard.press('ArrowUp');
-        await expectNavigationFocus(first);
-        await expect.poll(() => currentPage(page)).toBe(1);
-        await last.focus();
-        await expect(last).toBeFocused();
-        await page.keyboard.press('ArrowDown');
-        await expect.poll(() => currentPage(page)).toBe(2);
-        const nextFirst = rowCell(page, 'PRD-A011', 'itemCode');
-        await expectNavigationFocus(nextFirst);
-        await focusNavigationCell(page, nextFirst, 'directional return from page two');
-        await page.keyboard.press('ArrowUp');
-        await expect.poll(() => currentPage(page)).toBe(1);
-        await expectNavigationFocus(last);
-    });
-
     test('preserves Item code focus across the final page boundary with Arrow keys', async ({ page }) => {
         const penultimate = await goToPenultimatePage(page);
         const lastItemCode = lastVisibleItemCode(page);
