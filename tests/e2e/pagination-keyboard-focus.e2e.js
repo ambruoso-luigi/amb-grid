@@ -173,7 +173,9 @@ test.describe('keyboard pagination focus', () => {
 
     test('preserves sequential navigation after a real lookup selection', async ({ page }) => {
         const status = rowCell(page, 'PRD-AB02', 'status');
+        await expect(status).toBeVisible();
         await status.click();
+        await expect(status).toBeFocused();
         await status.dblclick({ delay: 100 });
         await expectLookupEditor(page, 'PRD-AB02');
         await selectStatusDialogResult(page, 'A001');
@@ -183,6 +185,7 @@ test.describe('keyboard pagination focus', () => {
 
         await page.keyboard.press('Escape');
         await status.click();
+        await expect(status).toBeFocused();
         await status.dblclick({ delay: 100 });
         await expectLookupEditor(page, 'PRD-AB02');
         await selectStatusDialogResult(page, 'AB03');

@@ -89,6 +89,7 @@ test.describe('row controls accessibility', () => {
         await page.locator('#javascript-demo .amb-toolbar__button--add').click();
         const newRow = page.locator('#inventory-table .tabulator-row[data-state="new"]');
         const removeNewButton = newRow.locator('.amb-row-action-button--remove-new');
+        const itemCodeCell = newRow.locator('.tabulator-cell[tabulator-field="itemCode"]');
         const itemCodeEditor = newRow.locator('.tabulator-cell[tabulator-field="itemCode"] input.amb-cell-editor');
 
         await expect(newRow).toBeVisible();
@@ -97,6 +98,7 @@ test.describe('row controls accessibility', () => {
         await expect(itemCodeEditor).toBeFocused();
         await page.keyboard.press('Escape');
         await expect(itemCodeEditor).toHaveCount(0);
+        await expect(itemCodeCell).toBeFocused();
         await page.keyboard.press('ArrowLeft');
         await expect(removeNewButton).toBeFocused();
         await page.keyboard.press('Enter');

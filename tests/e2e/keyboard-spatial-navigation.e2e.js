@@ -116,7 +116,7 @@ test.describe('keyboard spatial navigation', () => {
         await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
 
         await page.keyboard.press('ArrowUp');
-        await expect(await currentPage(page)).toBe(await penultimate);
+        await expect.poll(() => currentPage(page)).toBe(penultimate);
         await expectNavigationFocus(lastVisibleItemCode(page));
         await expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
     });

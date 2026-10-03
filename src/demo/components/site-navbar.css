@@ -19,7 +19,8 @@
 
 .site-navbar__inner {
     align-items: center;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content minmax(0, 1fr);
     margin: 0 auto;
     max-width: 1872px;
     min-height: 69px;
@@ -37,10 +38,7 @@
 }
 
 .site-navbar__menu {
-    align-items: center;
-    display: flex;
-    flex: 1;
-    min-width: 0;
+    display: contents;
 }
 
 .site-navbar__main-nav {
@@ -49,15 +47,15 @@
     flex: 0 1 auto;
     gap: clamp(24px, 2.2vw, 32px);
     justify-content: flex-start;
-    margin-left: clamp(52px, 5vw, 84px);
     min-width: 0;
+    justify-self: center;
 }
 
 .site-navbar__utilities {
     align-items: center;
     display: flex;
     flex: 0 0 auto;
-    margin-left: auto;
+    justify-self: end;
 }
 
 .site-navbar__main-nav > a,
@@ -256,6 +254,7 @@
 
 @media (max-width: 1080px) {
     .site-navbar__inner {
+        display: flex;
         gap: 12px;
         min-height: 64px;
         padding-inline: 16px;

@@ -47,9 +47,10 @@ test('lays out the desktop navigation and dropdown without overlaps', async ({ p
             height: Math.round(inner.height),
             sameRow: [logo, navigation, utilities].every(rect => Math.abs((rect.top + rect.height / 2) - (inner.top + inner.height / 2)) < 2),
             ordered: logo.right < navigation.left && navigation.right < utilities.left,
-            distributed: navigation.width > 480
+            distributed: navigation.width > 480,
+            centered: Math.abs((navigation.left + navigation.width / 2) - (inner.left + inner.width / 2)) < 3
         };
-    })).toEqual({ height: 69, sameRow: true, ordered: true, distributed: true });
+    })).toEqual({ height: 69, sameRow: true, ordered: true, distributed: true, centered: true });
     await expect(navbar.getByRole('link', { name: 'GitHub' })).toHaveCount(1);
     await expect(navbar.getByRole('link', { name: 'GitHub' })).not.toContainText('GitHub');
     await expect(navbar.locator('.language-switch__flag')).toHaveCount(0);
@@ -78,4 +79,11 @@ test('lays out the desktop navigation and dropdown without overlaps', async ({ p
     await navbar.getByRole('button', { name: /Demo/ }).click();
     await expect(rows).toHaveCount(5);
     await expect.poll(() => rows.evaluateAll(items => items.map(item => Math.round(item.getBoundingClientRect().height)))).toEqual([40, 40, 40, 40, 40]);
+
+    await page.setViewportSize({ width: 1660, height: 900 });
+    await expect.poll(() => navbar.evaluate(element => {
+        const inner = element.querySelector('.site-navbar__inner').getBoundingClientRect();
+        const navigation = element.querySelector('.site-navbar__main-nav').getBoundingClientRect();
+        return Math.abs((navigation.left + navigation.width / 2) - (inner.left + inner.width / 2)) < 3;
+    })).toBe(true);
 });
