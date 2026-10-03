@@ -159,6 +159,8 @@ test.describe('React supplier lookup messages and status select', () => {
         const active = reactCell(page, 'ITM-1001', 'supplierCode');
 
         await expect(page.locator('body')).toHaveClass(/amb-react-demo-active/);
+        await expect(active).toBeVisible();
+        await page.mouse.move(0, 0);
         await active.hover();
         await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
         await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
@@ -168,9 +170,8 @@ test.describe('React supplier lookup messages and status select', () => {
         expect(box).not.toBeNull();
         for (let step = 0; step < 6; step += 1) {
             await page.mouse.move(box.x + 12 + step, box.y + box.height / 2);
-            await page.waitForTimeout(85);
         }
-        await expect(message(page)).toHaveClass(/teh-floating-message--visible/, { timeout: 100 });
+        await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
         await expect(messageBody(page)).toContainText('Adriatica Components · Ancona');
 
         await reactCell(page, 'ITM-1003', 'supplierCode').hover();

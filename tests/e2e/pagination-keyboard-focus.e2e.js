@@ -79,9 +79,13 @@ test.describe('keyboard pagination focus', () => {
 
     test('closes autocomplete naturally before page shortcuts', async ({ page }) => {
         const warehouse = cell(page, 'warehouse');
-        await warehouse.click();
-        await warehouse.dblclick({ delay: 100 });
-        await expect(warehouse.locator('input.amb-autocomplete-editor')).toBeFocused();
+        await openEditorFromNavigation(
+            page,
+            warehouse,
+            'Warehouse autocomplete pagination setup',
+            '#inventory-table',
+            'input.amb-autocomplete-editor'
+        );
         await page.keyboard.press('Alt+PageDown');
         await waitForPage(page, 2);
         await expect(page.locator('.amb-autocomplete-cell--editing')).toHaveCount(0);
