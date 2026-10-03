@@ -118,6 +118,11 @@
     width: 40px;
 }
 
+.site-navbar__main-nav > .site-navbar__github {
+    min-height: 40px;
+    padding: 0;
+}
+
 .site-navbar__github:hover {
     color: #0b1f3e;
     transform: scale(1.04);
@@ -125,8 +130,8 @@
 
 .site-navbar__github svg {
     display: block;
-    height: 24px;
-    width: 24px;
+    height: 30px;
+    width: 30px;
 }
 
 .site-navbar__demo-chevron {
