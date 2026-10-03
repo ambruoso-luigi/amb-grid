@@ -114,7 +114,6 @@
     height: 40px;
     justify-content: center;
     margin-left: 8px;
-    transition: color 160ms ease, transform 160ms ease;
     width: 40px;
 }
 
@@ -123,15 +122,44 @@
     padding: 0;
 }
 
-.site-navbar__github:hover {
-    color: #0b1f3e;
-    transform: scale(1.04);
+.site-navbar__main-nav > .site-navbar__github::after {
+    content: none;
 }
 
-.site-navbar__github svg {
+.site-navbar__github-icon {
+    height: 30px;
+    position: relative;
+    width: 30px;
+}
+
+.site-navbar__github-mark {
     display: block;
     height: 30px;
     width: 30px;
+}
+
+.site-navbar__github-ring {
+    height: 44px;
+    left: -7px;
+    pointer-events: none;
+    position: absolute;
+    top: -7px;
+    width: 44px;
+}
+
+.site-navbar__github-ring-arc {
+    fill: none;
+    stroke: #102950;
+    stroke-dasharray: 63;
+    stroke-dashoffset: 63;
+    stroke-linecap: round;
+    stroke-width: 1.4;
+    transition: stroke-dashoffset 220ms ease-out;
+}
+
+.site-navbar__github:hover .site-navbar__github-ring-arc,
+.site-navbar__github:focus-visible .site-navbar__github-ring-arc {
+    stroke-dashoffset: 0;
 }
 
 .site-navbar__demo-chevron {
