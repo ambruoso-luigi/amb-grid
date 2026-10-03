@@ -114,18 +114,19 @@
     height: 40px;
     justify-content: center;
     margin-left: 8px;
-    transition: color 160ms ease;
+    transition: color 160ms ease, transform 160ms ease;
     width: 40px;
 }
 
 .site-navbar__github:hover {
     color: #0b1f3e;
+    transform: scale(1.04);
 }
 
 .site-navbar__github svg {
     display: block;
-    height: 22px;
-    width: 22px;
+    height: 24px;
+    width: 24px;
 }
 
 .site-navbar__demo-chevron {

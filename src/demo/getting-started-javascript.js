@@ -24,28 +24,28 @@ export default function gettingStartedJavaScript(app) {
                             <p class="demo-framework-identity__stack" data-i18n="guide.identity.stack">JavaScript · Tailwind CSS · daisyUI · Motion · Lucide</p>
                         </div>
                     </div>
-                    <a
-                        class="demo-video-preview demo-guide-video"
-                        href="https://youtu.be/4m0EZ4vPmT0"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-i18n-title="guide.videoOpen"
-                        aria-label="Apri Demo JavaScript su YouTube"
-                    >
-                        <img
-                            class="demo-video-preview__image"
-                            src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg"
-                            alt=""
-                            loading="eager"
-                        >
-                        <span class="demo-video-preview__overlay" aria-hidden="true"></span>
-                        <span class="demo-video-preview__title" data-i18n="guide.videoTitle">Demo JavaScript</span>
-                        <span class="demo-video-preview__destination">
-                            <span class="demo-video-preview__brand">${demoYoutubeIcon({ className: 'demo-video-preview__brand-icon', size: 20 })}</span>
-                            <span data-i18n="video.youtube">YouTube</span>
-                        </span>
-                    </a>
                 </div>
+                <a
+                    class="demo-video-preview demo-guide-video"
+                    href="https://youtu.be/4m0EZ4vPmT0"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-i18n-title="guide.videoOpen"
+                    aria-label="Apri Demo JavaScript su YouTube"
+                >
+                    <img
+                        class="demo-video-preview__image"
+                        src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg"
+                        alt=""
+                        loading="eager"
+                    >
+                    <span class="demo-video-preview__overlay" aria-hidden="true"></span>
+                    <span class="demo-video-preview__title" data-i18n="guide.videoTitle">Demo JavaScript</span>
+                    <span class="demo-video-preview__destination">
+                        <span class="demo-video-preview__brand">${demoYoutubeIcon({ className: 'demo-video-preview__brand-icon', size: 20 })}</span>
+                        <span data-i18n="video.youtube">YouTube</span>
+                    </span>
+                </a>
             </header>
 
             <section class="demo-panel demo-panel--main demo-panel--javascript" id="javascript-demo"></section>

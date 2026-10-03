@@ -654,23 +654,23 @@ const renderShell = selectedId => {
                             <a class="demo-button demo-button--primary" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
                         </div>
                     </div>
-                    <a id="video"
-                        class="demo-video-preview demo-guide-video demo-hero__video"
-                        href="https://youtu.be/4m0EZ4vPmT0"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-i18n-title="hero.videoOpen"
-                        aria-label="Apri Demo AMB Grid su YouTube"
-                    >
-                        <img class="demo-video-preview__image" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" alt="" loading="eager">
-                        <span class="demo-video-preview__overlay" aria-hidden="true"></span>
-                        <span class="demo-video-preview__title" data-i18n="hero.videoLabel">Demo AMB Grid</span>
-                        <span class="demo-video-preview__destination">
-                            <span class="demo-video-preview__brand">${demoYoutubeIcon({ className: 'demo-video-preview__brand-icon', size: 20 })}</span>
-                            <span data-i18n="video.youtube">YouTube</span>
-                        </span>
-                    </a>
                 </div>
+                <a id="video"
+                    class="demo-video-preview demo-guide-video demo-hero__video"
+                    href="https://youtu.be/4m0EZ4vPmT0"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-i18n-title="hero.videoOpen"
+                    aria-label="Apri Demo AMB Grid su YouTube"
+                >
+                    <img class="demo-video-preview__image" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" alt="" loading="eager">
+                    <span class="demo-video-preview__overlay" aria-hidden="true"></span>
+                    <span class="demo-video-preview__title" data-i18n="hero.videoLabel">Demo AMB Grid</span>
+                    <span class="demo-video-preview__destination">
+                        <span class="demo-video-preview__brand">${demoYoutubeIcon({ className: 'demo-video-preview__brand-icon', size: 20 })}</span>
+                        <span data-i18n="video.youtube">YouTube</span>
+                    </span>
+                </a>
             </header>
 
             <section class="demo-section demo-frameworks card bg-base-100 text-base-content border shadow-sm" id="framework-integrations" data-theme="light">

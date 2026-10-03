@@ -66,13 +66,13 @@ export function ReactHero({ language }: ReactHeroProps) {
           <p className="react-hero__stack">React · TypeScript · shadcn/ui · Motion · MSW</p>
           </div>
         </motion.div>
-        <motion.a animate={{ opacity: 1, scale: 1, y: 0 }} aria-label={text.videoOpen} className="react-video-preview" href="https://youtu.be/4m0EZ4vPmT0" initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.985, y: 14 }} rel="noopener noreferrer" target="_blank" transition={{ delay: 0.12, duration: 0.5, ease: 'easeOut' }} whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
-          <img alt="" className="react-video-preview__image" loading="eager" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" />
-          <span aria-hidden="true" className="react-video-preview__overlay" />
-          <span className="react-video-preview__title">{text.videoLabel}</span>
-          <span className="react-video-preview__destination"><span className="react-video-preview__brand"><YouTubeMark /></span><span>YouTube</span></span>
-        </motion.a>
       </div>
+      <motion.a animate={{ opacity: 1, scale: 1, y: 0 }} aria-label={text.videoOpen} className="react-video-preview" href="https://youtu.be/4m0EZ4vPmT0" initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.985, y: 14 }} rel="noopener noreferrer" target="_blank" transition={{ delay: 0.12, duration: 0.5, ease: 'easeOut' }} whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
+        <img alt="" className="react-video-preview__image" loading="eager" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" />
+        <span aria-hidden="true" className="react-video-preview__overlay" />
+        <span className="react-video-preview__title">{text.videoLabel}</span>
+        <span className="react-video-preview__destination"><span className="react-video-preview__brand"><YouTubeMark /></span><span>YouTube</span></span>
+      </motion.a>
     </header>
   );
 }
