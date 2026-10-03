@@ -1,5 +1,6 @@
 import './site-navbar.css';
 import { renderDemoBrand } from '../demo-brand.js';
+import { demoIcon, frameworkIcon } from '../demo-icons.js';
 import { readDemoLanguage, renderDemoLanguageSwitch, syncDemoLanguageSwitch, writeDemoLanguage } from '../demo-language-switch.js';
 
 const labels = {
@@ -11,7 +12,7 @@ const currentRoute = () => window.location.pathname === '/install/' ? 'install' 
 
 export const mountSiteNavbar = (container, { onLanguageChange } = {}) => {
     if (!container) return null;
-    container.innerHTML = `<nav class="site-navbar" aria-label="AMB Grid"><div class="site-navbar__inner">${renderDemoBrand({ href: '/#top' })}<button class="site-navbar__menu-toggle" type="button" aria-expanded="false" aria-controls="site-navbar-menu"><span aria-hidden="true">☰</span><span class="sr-only" data-navbar-menu-label></span></button><div class="site-navbar__menu" id="site-navbar-menu"><div class="site-navbar__links"><a href="/#top" data-navbar-route="#top">Home</a><div class="site-navbar__demo"><button type="button" aria-expanded="false" aria-controls="site-navbar-demo-menu">Demo <span aria-hidden="true">⌄</span></button><div class="site-navbar__dropdown" id="site-navbar-demo-menu"><a href="/#getting-started-javascript" data-navbar-route="#getting-started-javascript">JavaScript</a><a href="/#getting-started-react" data-navbar-route="#getting-started-react">React</a><a href="/#feature-examples" data-navbar-route="#feature-examples">Esempi funzionali</a><span aria-disabled="true">Vue <small></small></span><span aria-disabled="true">Angular <small></small></span></div></div><a href="/docs/index.html">Documentazione</a><a href="/#video" data-navbar-route="#video">Video</a></div><div class="site-navbar__actions"><a href="https://github.com/ambruoso-luigi/amb-grid" target="_blank" rel="noopener noreferrer">GitHub</a>${renderDemoLanguageSwitch()}<a class="site-navbar__install" href="/install/" data-navbar-route="install">Installa</a></div></div></div></nav>`;
+    container.innerHTML = `<nav class="site-navbar" aria-label="AMB Grid"><div class="site-navbar__inner">${renderDemoBrand({ href: '/#top' })}<button class="site-navbar__menu-toggle" type="button" aria-expanded="false" aria-controls="site-navbar-menu"><span aria-hidden="true">☰</span><span class="sr-only" data-navbar-menu-label></span></button><div class="site-navbar__menu" id="site-navbar-menu"><div class="site-navbar__links"><a href="/#top" data-navbar-route="#top">Home</a><div class="site-navbar__demo"><button type="button" aria-expanded="false" aria-controls="site-navbar-demo-menu">Demo <span aria-hidden="true">⌄</span></button><div class="site-navbar__dropdown" id="site-navbar-demo-menu"><a href="/#feature-examples" data-navbar-route="#feature-examples"><span class="site-navbar__dropdown-icon" aria-hidden="true">${demoIcon('framework', { className: 'site-navbar__dropdown-svg', size: 17 })}</span><span data-demo-label="examples">Esempi funzionali</span></a><a href="/#getting-started-javascript" data-navbar-route="#getting-started-javascript"><span class="site-navbar__dropdown-icon" aria-hidden="true">${frameworkIcon('javascript')}</span><span data-demo-label="javascript">JavaScript</span></a><a href="/#getting-started-react" data-navbar-route="#getting-started-react"><span class="site-navbar__dropdown-icon" aria-hidden="true">${frameworkIcon('react')}</span><span data-demo-label="react">React</span></a><span class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"><span class="site-navbar__dropdown-icon" aria-hidden="true">${frameworkIcon('vue')}</span><span data-demo-label="vue">Vue</span><small data-demo-future></small></span><span class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"><span class="site-navbar__dropdown-icon" aria-hidden="true">${frameworkIcon('angular')}</span><span data-demo-label="angular">Angular</span><small data-demo-future></small></span></div></div><a href="/docs/index.html">Documentazione</a><a href="/#video" data-navbar-route="#video">Video</a></div><div class="site-navbar__actions"><a href="https://github.com/ambruoso-luigi/amb-grid" target="_blank" rel="noopener noreferrer">GitHub</a>${renderDemoLanguageSwitch()}<a class="site-navbar__install" href="/install/" data-navbar-route="install">Installa</a></div></div></div></nav>`;
     const menu = container.querySelector('.site-navbar__menu');
     const menuToggle = container.querySelector('.site-navbar__menu-toggle');
     const demoToggle = container.querySelector('.site-navbar__demo > button');
@@ -22,14 +23,14 @@ export const mountSiteNavbar = (container, { onLanguageChange } = {}) => {
         container.querySelectorAll('[data-navbar-route]').forEach(link => link.classList.toggle('is-active', link.dataset.navbarRoute === currentRoute()));
         container.querySelector('.site-navbar__links > a[href="/#top"]').textContent = copy.home;
         demoToggle.childNodes[0].textContent = `${copy.demo} `;
-        container.querySelector('[href="/#getting-started-javascript"]').textContent = copy.javascript;
-        container.querySelector('[href="/#getting-started-react"]').textContent = copy.react;
-        container.querySelector('[href="/#feature-examples"]').textContent = copy.examples;
+        container.querySelector('[data-demo-label="javascript"]').textContent = copy.javascript;
+        container.querySelector('[data-demo-label="react"]').textContent = copy.react;
+        container.querySelector('[data-demo-label="examples"]').textContent = copy.examples;
         container.querySelector('[href="/docs/index.html"]').textContent = copy.documentation;
         container.querySelector('[href="/#video"]').textContent = copy.video;
         container.querySelector('[href="https://github.com/ambruoso-luigi/amb-grid"]').textContent = copy.github;
         container.querySelector('.site-navbar__install').textContent = copy.install;
-        container.querySelectorAll('[aria-disabled="true"] small').forEach(item => { item.textContent = copy.future; });
+        container.querySelectorAll('[data-demo-future]').forEach(item => { item.textContent = copy.future; });
         syncDemoLanguageSwitch(container, language, key => key.endsWith('switchToIt') ? 'Switch language to Italian' : 'Switch language to English');
         setMenuOpen(false); setDemoOpen(false);
     };

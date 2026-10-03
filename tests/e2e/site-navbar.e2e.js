@@ -8,7 +8,7 @@ test('keeps the shared navbar sticky and remounts the React demo', async ({ page
     await expect(page.locator('.demo-hero__brand .demo-brand__logo')).toBeVisible();
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await expect(navbar).toBeInViewport();
-    await expect(navbar).toHaveJSProperty('offsetTop', 0);
+    await expect.poll(() => navbar.evaluate(element => Math.round(element.getBoundingClientRect().top))).toBe(0);
 
     await page.getByRole('button', { name: /Demo/ }).click();
     await page.getByRole('link', { name: 'React' }).click();

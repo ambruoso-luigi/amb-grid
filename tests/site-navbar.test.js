@@ -16,8 +16,21 @@ describe('shared site navbar', () => {
         expect(navbar).toContain('href="/#video"');
         expect(navbar).toContain('href="/install/"');
         expect(navbar).toContain('https://github.com/ambruoso-luigi/amb-grid');
-        expect(navbar).toContain('Vue <small>');
-        expect(navbar).toContain('Angular <small>');
+        const dropdown = navbar.slice(navbar.indexOf('id="site-navbar-demo-menu"'), navbar.indexOf('</div></div><a href="/docs/index.html"'));
+
+        expect(dropdown.indexOf('data-demo-label="examples"')).toBeLessThan(dropdown.indexOf('data-demo-label="javascript"'));
+        expect(dropdown.indexOf('data-demo-label="javascript"')).toBeLessThan(dropdown.indexOf('data-demo-label="react"'));
+        expect(dropdown.indexOf('data-demo-label="react"')).toBeLessThan(dropdown.indexOf('data-demo-label="vue"'));
+        expect(dropdown.indexOf('data-demo-label="vue"')).toBeLessThan(dropdown.indexOf('data-demo-label="angular"'));
+        expect(navbar).toContain("demoIcon('framework'");
+        ['javascript', 'react', 'vue', 'angular'].forEach(name => expect(navbar).toContain(`frameworkIcon('${name}')`));
+        expect(navbar).toContain('class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"');
+        expect(navbar).toContain('data-demo-future');
+        expect(navbar).toContain("querySelector('[data-demo-label=\"examples\"]')");
+        expect(navbar).not.toContain("querySelector('[href=\"/#feature-examples\"]').textContent");
+        expect(navbar).toContain('href="/#feature-examples"');
+        expect(navbar).toContain('href="/#getting-started-javascript"');
+        expect(navbar).toContain('href="/#getting-started-react"');
         expect(navbar).toContain('aria-expanded');
         expect(navbar).toContain("event.key === 'Escape'");
         expect(navbar).toContain('amb-demo-language-change');
