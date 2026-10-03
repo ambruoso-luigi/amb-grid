@@ -7,7 +7,7 @@ import { describe, expect, test } from 'vitest';
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const tableFactoryPath = resolve(repositoryRoot, 'src/lib/table/table-factory.js');
 
-const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8');
+const readTableFactorySource = () => readFileSync(tableFactoryPath, 'utf8').replace(/\r\n/g, '\n');
 
 describe('AMB table controller method modularization', () => {
     test('wires read-only CRUD report methods through the controller composition', () => {

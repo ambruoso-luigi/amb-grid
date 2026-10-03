@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openEditorFromNavigation, reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
+import { enterNavigationWithClick, openEditorFromNavigation, reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 const table = page => page.locator('#inventory-table');
 const firstRow = page => table(page).locator('.tabulator-row').first();
@@ -93,7 +93,7 @@ test.describe('keyboard pagination focus', () => {
 
     test('moves Tab and Shift+Tab symmetrically across pages', async ({ page }) => {
         const notes = rowCell(page, 'PRD-H010', 'notes');
-        await notes.click();
+        await enterNavigationWithClick(page, notes, 'Tab pagination setup', '#inventory-table');
         await page.keyboard.press('Tab');
         await waitForPage(page, 2);
         await expectItemCodeEditor(page);

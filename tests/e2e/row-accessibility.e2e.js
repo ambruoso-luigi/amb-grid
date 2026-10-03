@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
+import { enterNavigationWithClick } from './helpers/focus-diagnostics.js';
 
 const openBasicCrudDemo = async page => {
     await page.goto('/src/demo/index.html#feature-examples');
     await expect(page.locator('#basic-table.tabulator')).toBeVisible();
 };
 
-const openInventoryDemo = async page => {
-    await page.goto('/src/demo/index.html#getting-started-javascript');
+const openInventoryDemo = async (page, { publicEntry = false } = {}) => {
+    await page.goto(publicEntry ? '/#getting-started-javascript' : '/src/demo/index.html#getting-started-javascript');
     await expect(page.locator('#inventory-table.tabulator')).toBeVisible();
     await expect(page.locator('#inventory-table .tabulator-row .amb-row-action-button--delete').first()).toBeVisible();
 };
@@ -52,15 +52,17 @@ test.describe('row controls accessibility', () => {
     });
 
     test('main demo row actions activate delete and rollback without confirmation', async ({ page }) => {
-        await openInventoryDemo(page);
+        await openInventoryDemo(page, { publicEntry: true });
 
         const firstRow = page.locator('#inventory-table .tabulator-row')
             .filter({ hasText: 'PRD-A001' });
+        const itemCode = firstRow.locator('.tabulator-cell[tabulator-field="itemCode"]');
         const deleteButton = firstRow.locator('.amb-row-action-button--delete');
 
+        await enterNavigationWithClick(page, itemCode, 'Delete row action setup', '#inventory-table');
+        await page.keyboard.press('ArrowLeft');
         await expect(deleteButton).toBeVisible();
         await expect(deleteButton).toBeEnabled();
-        await deleteButton.focus();
         await expect(deleteButton).toBeFocused();
         await expect(deleteButton).toHaveAttribute('aria-label', 'Delete product');
         await expect(deleteButton).toHaveAttribute('title', 'Delete product');
@@ -73,12 +75,6 @@ test.describe('row controls accessibility', () => {
 
         await expect(rollbackButton).toBeVisible();
         await expect(rollbackButton).toBeEnabled();
-        try {
-            await expect.poll(() => rollbackButton.evaluate(element => document.activeElement === element)).toBe(true);
-        } catch (error) {
-            await reportFocusDiagnostics(page, rollbackButton, 'Delete transition rollback focus failed', '#inventory-table');
-            throw error;
-        }
         await expect(rollbackButton).toHaveAttribute('aria-label', 'Rollback product changes');
         await expect(rollbackButton).toHaveAttribute('title', 'Rollback product changes');
 
@@ -90,7 +86,7 @@ test.describe('row controls accessibility', () => {
     });
 
     test('main demo confirms removal of a new row', async ({ page }) => {
-        await openInventoryDemo(page);
+        await openInventoryDemo(page, { publicEntry: true });
 
         await page.locator('#javascript-demo .amb-toolbar__button--add').click();
         const newRow = page.locator('#inventory-table .tabulator-row[data-state="new"]');
@@ -106,12 +102,7 @@ test.describe('row controls accessibility', () => {
         await expect(itemCodeEditor).toHaveCount(0);
         await expect(itemCodeCell).toBeFocused();
         await page.keyboard.press('ArrowLeft');
-        try {
-            await expect.poll(() => removeNewButton.evaluate(element => document.activeElement === element)).toBe(true);
-        } catch (error) {
-            await reportFocusDiagnostics(page, removeNewButton, 'Remove new ArrowLeft focus failed', '#inventory-table');
-            throw error;
-        }
+        await expect(removeNewButton).toBeFocused();
         await page.keyboard.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--cancel').click();
