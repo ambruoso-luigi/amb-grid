@@ -23,8 +23,10 @@ describe('shared site navbar', () => {
         expect(dropdown.indexOf('data-demo-label="react"')).toBeLessThan(dropdown.indexOf('data-demo-label="vue"'));
         expect(dropdown.indexOf('data-demo-label="vue"')).toBeLessThan(dropdown.indexOf('data-demo-label="angular"'));
         expect(navbar).toContain("demoIcon('framework'");
-        ['javascript', 'react', 'vue', 'angular'].forEach(name => expect(navbar).toContain(`frameworkIcon('${name}')`));
+        expect(navbar).toContain('renderNavbarDemoIcon');
+        expect(navbar).not.toContain('frameworkIcon');
         expect(navbar).toContain('class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"');
+        expect(navbar).toContain('class="site-navbar__dropdown-label"');
         expect(navbar).toContain('data-demo-future');
         expect(navbar).toContain("querySelector('[data-demo-label=\"examples\"]')");
         expect(navbar).not.toContain("querySelector('[href=\"/#feature-examples\"]').textContent");
@@ -35,8 +37,17 @@ describe('shared site navbar', () => {
         expect(navbar).toContain("event.key === 'Escape'");
         expect(navbar).toContain('amb-demo-language-change');
         expect(navbar).toContain('currentRoute');
-        expect(css).toContain('#site-navbar { background: #fff; position: sticky;');
-        expect(css).toContain('@media (max-width: 760px)');
+        expect(navbar).toContain("['#feature-examples', '#getting-started-javascript', '#getting-started-react']");
+        expect(navbar).toContain('site-navbar__main-nav');
+        expect(navbar).toContain('site-navbar__utilities');
+        expect(navbar).toContain('site-navbar__github');
+        expect(navbar).toContain('aria-label="GitHub"');
+        expect(navbar).not.toContain('site-navbar__install');
+        expect(css).toContain('#site-navbar {');
+        expect(css).toContain('position: sticky;');
+        expect(css).toContain('.site-navbar__dropdown > a');
+        expect(css).not.toContain('.site-navbar__dropdown span {');
+        expect(css).toContain('@media (max-width: 1080px)');
         expect(css).toContain('prefers-reduced-motion');
     });
 

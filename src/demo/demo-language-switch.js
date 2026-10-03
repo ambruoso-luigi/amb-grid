@@ -18,7 +18,7 @@ export const renderDemoLanguageSwitch = () => `
     <div class="language-switch is-it" data-language-switch aria-label="Language">
         <button type="button" class="language-switch__label language-switch__label--en" data-language-label="en" data-language-set="en" aria-label="English" aria-pressed="false">EN</button>
         <button type="button" class="language-switch__control" data-language-toggle role="switch" aria-checked="true" aria-label="Switch language">
-            <span class="language-switch__flag language-switch__flag--en" aria-hidden="true"></span><span class="language-switch__flag language-switch__flag--it" aria-hidden="true"></span><span class="language-switch__knob" aria-hidden="true"></span>
+            <span class="language-switch__knob" aria-hidden="true"></span>
         </button>
         <button type="button" class="language-switch__label language-switch__label--it" data-language-label="it" data-language-set="it" aria-label="Italiano" aria-pressed="true">IT</button>
     </div>`;

@@ -112,7 +112,7 @@ test('the React demo shares one command guide across a route change', async ({ p
         return host > -1 && toolbar > host && grid > toolbar;
     })).toBe(true);
 
-    await page.getByRole('group', { name: 'Select language' }).getByRole('button', { name: 'EN' }).click();
+    await page.locator('#site-navbar').getByRole('button', { name: 'English' }).click();
     await expect(trigger).toContainText('Command guide');
     await expect(trigger).toHaveAttribute('title', 'Mouse, keyboard and table shortcuts');
     await expect(trigger).toHaveAttribute('aria-label', 'Mouse, keyboard and table shortcuts');

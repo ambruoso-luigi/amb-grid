@@ -268,30 +268,24 @@ describe('demo site navigation', () => {
         expect(fullDemo).not.toContain('querySelector(`[data-action=');
     });
 
-    test('uses a visual language switch with a single flag control', () => {
+    test('uses a minimal visual language switch without flags', () => {
         const navbar = read('src/demo/components/site-navbar.js');
         const language = read('src/demo/demo-language-switch.js');
         const css = read('src/demo/demo.css');
-        const englishFlag = statSync(new URL('../src/demo/assets/lang-en.svg', import.meta.url));
-        const italianFlag = statSync(new URL('../src/demo/assets/lang-it.svg', import.meta.url));
         const combined = `${navbar}\n${language}`;
 
         expect(combined).toContain('class="language-switch');
         expect(combined).toContain('data-language-toggle');
         expect(combined).toContain('data-language-set="en"');
         expect(combined).toContain('data-language-set="it"');
-        expect(combined).toContain('class="language-switch__flag language-switch__flag--en"');
-        expect(combined).toContain('class="language-switch__flag language-switch__flag--it"');
+        expect(combined).toContain('class="language-switch__knob"');
+        expect(combined).not.toContain('language-switch__flag');
         expect(combined).not.toContain('data-language-flag');
         expect(combined).not.toContain('🇬🇧');
         expect(combined).not.toContain('data-language="it"');
         expect(combined).not.toContain('data-language="en"');
-        expect(css).toContain('.language-switch__flag--en');
-        expect(css).toContain('.language-switch__flag--it');
-        expect(css).toContain("url('./assets/lang-en.svg')");
-        expect(css).toContain("url('./assets/lang-it.svg')");
-        expect(englishFlag.size).toBeGreaterThan(0);
-        expect(italianFlag.size).toBeGreaterThan(0);
+        expect(css).toContain('.language-switch__knob');
+        expect(css).not.toContain('.language-switch__flag');
     });
 
     test('shows eight focused public feature examples', () => {
