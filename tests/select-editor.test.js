@@ -15,6 +15,12 @@ class SelectMock {
     addEventListener(type, listener) {
         this.listeners.set(type, [...(this.listeners.get(type) || []), listener]);
     }
+    removeEventListener(type, listener) {
+        this.listeners.set(
+            type,
+            (this.listeners.get(type) || []).filter(candidate => candidate !== listener)
+        );
+    }
     dispatch(type, event = {}) {
         const result = {
             preventDefault: vi.fn(), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn(), ...event
@@ -98,8 +104,8 @@ describe('select editor keyboard close actions', () => {
         control.dispatch('keydown', { key: 'ArrowDown' });
         control.value = 'two';
         control.dispatch('change');
-        control.dispatch('keyup', { key: 'Escape' });
         const lateralEvent = control.dispatch('keydown', { key: 'ArrowLeft' });
+        control.dispatch('keyup', { key: 'Escape' });
         control.dispatch('blur');
 
         expect(cancel).toHaveBeenCalledOnce();
@@ -120,5 +126,38 @@ describe('select editor keyboard close actions', () => {
         control.dispatch('blur');
         expect(success).toHaveBeenCalledOnce();
         expect(success).toHaveBeenCalledWith('two');
+    });
+
+    test('keeps the most recently committed value across a second cancelled session', () => {
+        let cellValue = 'ACTIVE';
+        const success = vi.fn(value => {
+            cellValue = value;
+        });
+        const cancel = vi.fn();
+        const editor = select({ options: ['ACTIVE', 'REVIEW'] });
+        const cell = { getValue: () => cellValue };
+
+        const firstControl = editor(cell, callback => callback(), success, cancel);
+        expect(firstControl.value).toBe('ACTIVE');
+        firstControl.dispatch('keydown', { key: 'ArrowDown' });
+        firstControl.value = 'REVIEW';
+        firstControl.dispatch('change');
+        firstControl.dispatch('keydown', { key: 'Enter' });
+
+        expect(cellValue).toBe('REVIEW');
+        expect(success).toHaveBeenCalledOnce();
+
+        const secondControl = editor(cell, callback => callback(), success, cancel);
+        expect(secondControl.value).toBe('REVIEW');
+        secondControl.dispatch('keydown', { key: 'ArrowUp' });
+        secondControl.value = 'ACTIVE';
+        secondControl.dispatch('change');
+        secondControl.dispatch('keyup', { key: 'Escape' });
+        secondControl.dispatch('change');
+        secondControl.dispatch('blur');
+
+        expect(cellValue).toBe('REVIEW');
+        expect(success).toHaveBeenCalledOnce();
+        expect(cancel).toHaveBeenCalledOnce();
     });
 });

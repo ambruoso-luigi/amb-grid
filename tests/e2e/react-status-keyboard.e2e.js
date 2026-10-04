@@ -90,17 +90,68 @@ test('React Status: keyboard navigation, commit and cancel', async ({ page }) =>
     await expect(editor).toBeFocused();
     await expect(editor).toHaveValue('REVIEW');
 
-    await page.keyboard.press('Escape');
+    await editor.evaluate(select => {
+        window.__ambSelectSecondEventTrace = [];
+        const record = event => {
+            const active = document.activeElement;
+            const cell = select.closest('.tabulator-cell');
 
-    if (await editor.count()) {
-        await expect(editor).toBeFocused();
+            window.__ambSelectSecondEventTrace.push({
+                type: event.type,
+                key: event.key || null,
+                value: select.value,
+                activeElement: {
+                    tagName: active?.tagName || null,
+                    className: String(active?.className || '')
+                },
+                editing: Boolean(cell?.classList.contains('tabulator-editing')),
+                connected: select.isConnected
+            });
+        };
+
+        ['keydown', 'keyup', 'input', 'change', 'blur', 'focusout'].forEach(type => {
+            select.addEventListener(type, record);
+        });
+    });
+
+    const captureStatusState = () => status.evaluate(cellElement => {
+        const internalCell = cellElement._cell;
+        const row = internalCell?.getRow?.();
+
+        return {
+            formatterValue: cellElement.querySelector('.inventory-status')?.getAttribute('data-status') || null,
+            cellValue: internalCell?.getValue?.() ?? null,
+            rowStatus: row?.getData?.()?.status ?? null,
+            selectValue: cellElement.querySelector('select')?.value ?? null
+        };
+    });
+    const beforeCancel = await captureStatusState();
+
+    try {
         await page.keyboard.press('Escape');
-    }
 
-    await expect(editor).toHaveCount(0);
-    await expect(statusVisual).toHaveAttribute('data-status', 'review');
-    await expect(status).toBeFocused();
-    await expect(status).not.toHaveClass(/tabulator-editing/);
+        if (await editor.count()) {
+            await expect(editor).toBeFocused();
+            await page.keyboard.press('Escape');
+        }
+
+        await expect(editor).toHaveCount(0);
+        await expect(statusVisual).toHaveAttribute('data-status', 'review');
+        await expect(status).toBeFocused();
+        await expect(status).not.toHaveClass(/tabulator-editing/);
+    } catch (error) {
+        const [trace, afterCancel] = await Promise.all([
+            page.evaluate(() => window.__ambSelectSecondEventTrace),
+            captureStatusState()
+        ]);
+
+        console.error('React Status second Select event trace', JSON.stringify({
+            beforeCancel,
+            afterCancel,
+            trace
+        }));
+        throw error;
+    }
 
     await page.keyboard.press('ArrowLeft');
     await expect(column('unitPrice')).toBeFocused();

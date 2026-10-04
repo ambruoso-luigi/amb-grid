@@ -51,41 +51,62 @@ export function select(options = {}) {
                 ));
             });
 
-            select.value = getInitialValue(cell);
-
+            const initialValue = getInitialValue(cell);
+            let draftValue = initialValue;
             let closed = false;
             let keyboardOptionNavigation = false;
-            let cancelling = false;
-            const commit = () => {
-                if (closed || cancelling) return;
-                closed = true;
-                success(select.value);
-            };
-            const closeWithCancel = () => {
-                if (closed) return;
-                cancelling = true;
-                closed = true;
-                cancel();
-                scheduleEditorFocusRestore(cell);
+
+            select.value = initialValue;
+
+            const cleanup = () => {
+                select.removeEventListener('change', handleChange);
+                select.removeEventListener('blur', handleBlur);
+                select.removeEventListener('pointerdown', handlePointerDown);
+                select.removeEventListener('mousedown', handlePointerDown);
+                select.removeEventListener('keydown', handleKeydown);
+                select.removeEventListener('keyup', handleKeyup);
             };
 
-            const commitFromChange = () => {
+            const closeWithSuccess = () => {
+                if (closed) return;
+
+                closed = true;
+                cleanup();
+                success(draftValue);
+            };
+
+            const closeWithCancel = ({ restoreFocus = false } = {}) => {
+                if (closed) return;
+
+                closed = true;
+                draftValue = initialValue;
+                select.value = initialValue;
+                cleanup();
+                cancel();
+
+                if (restoreFocus) scheduleEditorFocusRestore(cell);
+            };
+
+            const handleChange = () => {
+                draftValue = select.value;
                 if (keyboardOptionNavigation) return;
 
-                commit();
+                closeWithSuccess();
                 scheduleEditorFocusRestore(cell);
             };
 
-            select.addEventListener('change', commitFromChange);
-            select.addEventListener('blur', () => {
-                if (keyboardOptionNavigation || cancelling) return;
+            const handleBlur = () => {
+                if (closed || keyboardOptionNavigation) return;
 
-                commit();
-            });
-            select.addEventListener('pointerdown', () => {
+                draftValue = select.value;
+                closeWithSuccess();
+            };
+
+            const handlePointerDown = () => {
                 keyboardOptionNavigation = false;
-            });
-            select.addEventListener('keydown', event => {
+            };
+
+            const handleKeydown = event => {
                 containEditorSpatialNavigation(event);
                 if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                     keyboardOptionNavigation = true;
@@ -98,17 +119,25 @@ export function select(options = {}) {
                 handleEditorCommitCancelKeydown({
                     cell,
                     event,
-                    onCommit: commit,
+                    onCommit: closeWithSuccess,
                     onCancel: closeWithCancel
                 });
-            });
-            select.addEventListener('keyup', event => {
+            };
+
+            const handleKeyup = event => {
                 if (event.key !== 'Escape' || closed) return;
 
                 event.preventDefault();
                 event.stopPropagation();
-                closeWithCancel();
-            });
+                closeWithCancel({ restoreFocus: true });
+            };
+
+            select.addEventListener('change', handleChange);
+            select.addEventListener('blur', handleBlur);
+            select.addEventListener('pointerdown', handlePointerDown);
+            select.addEventListener('mousedown', handlePointerDown);
+            select.addEventListener('keydown', handleKeydown);
+            select.addEventListener('keyup', handleKeyup);
 
             onRendered(() => {
                 select.focus();
