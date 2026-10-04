@@ -433,6 +433,33 @@ const flushDeferred = () => new Promise(resolve => {
     globalThis.setTimeout(resolve, 0);
 });
 
+const createManualHarness = (options = {}) => {
+    const cellElement = createElement('div');
+    cellElement.classList.contains = vi.fn(() => true);
+    const table = {};
+    const cell = {
+        edit: vi.fn(),
+        getElement: () => cellElement,
+        getValue: () => '20/07/2026',
+        getTable: () => table,
+        getRow: () => ({}),
+        getColumn: () => ({
+            getDefinition: () => ({ editor: 'date' })
+        })
+    };
+    const success = vi.fn();
+    const cancel = vi.fn();
+    const input = createDateEditor({
+        format: 'dd/mm/yyyy',
+        mode: 'manual',
+        ...options
+    })(cell, callback => callback(), success, cancel);
+
+    cellElement.contains = target => target === input;
+
+    return { cancel, cell, cellElement, input, success };
+};
+
 describe('date editor picker keyboard navigation', () => {
     const originalDocument = globalThis.document;
     const originalWindow = globalThis.window;
@@ -480,6 +507,45 @@ describe('date editor picker keyboard navigation', () => {
         globalThis.document = originalDocument;
         globalThis.window = originalWindow;
         vi.restoreAllMocks();
+    });
+
+    test('manual Enter commits once and restores navigation focus to the cell', async () => {
+        const harness = createManualHarness();
+        harness.input.value = '09/08/2026';
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(harness.success).toHaveBeenCalledWith('09/08/2026');
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+        expect(harness.cell.edit).not.toHaveBeenCalled();
+    });
+
+    test('manual Escape cancels once and restores navigation focus to the cell', async () => {
+        const harness = createManualHarness();
+        harness.input.value = '09/08/2026';
+
+        await harness.input.dispatch('keydown', { key: 'Escape' });
+        await flushDeferred();
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+        expect(harness.cell.edit).not.toHaveBeenCalled();
+    });
+
+    test('manual Enter ignores a later blur without a second commit', async () => {
+        const harness = createManualHarness();
+        harness.input.value = '09/08/2026';
+
+        await harness.input.dispatch('keydown', { key: 'Enter' });
+        await harness.input.dispatch('blur');
+        await flushDeferred();
+
+        expect(harness.success).toHaveBeenCalledOnce();
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
     });
 
     test('Tab commits and navigates next without a duplicate blur commit', async () => {

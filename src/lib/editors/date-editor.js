@@ -91,7 +91,8 @@ const createPickerOptions = options => {
      * - `Tab` and `Shift+Tab` commit and navigate whether the picker is open or
      *   closed.
      * - Manual inputs use the configured commit/cancel bindings (`Enter` and
-     *   `Escape` by default). In `manualWithPickerButton`, `F2` opens the
+     *   `Escape` by default) and return focus to their original cell after
+     *   closing. In `manualWithPickerButton`, `F2` opens the
      *   picker; `pickerOnly` opens it on `Enter` or `F2`.
      * - while the picker is open, arrow keys do not propagate to the grid,
      *   `Enter` is left to the picker when appropriate, and `Escape` preserves
@@ -606,13 +607,19 @@ export function date(options = {}) {
                 const result = parseDateEditorValue(input.value, normalizedOptions);
 
                 if (result.action === 'cancel') {
-                    closed = true;
-                    cancel();
+                    cancelEditing();
                     return;
                 }
 
                 closed = true;
                 success(result.value);
+            };
+
+            const cancelEditing = () => {
+                if (closed) return;
+
+                closed = true;
+                cancel();
             };
 
             const navigateAfterClose = direction => {
@@ -635,15 +642,12 @@ export function date(options = {}) {
                     return;
                 }
 
-                if (event.key === 'Enter') {
-                    commit();
-                    return;
-                }
-
-                if (event.key === 'Escape') {
-                    closed = true;
-                    cancel();
-                }
+                handleEditorCommitCancelKeydown({
+                    cell,
+                    event,
+                    onCommit: commit,
+                    onCancel: cancelEditing
+                });
             });
             input.addEventListener('blur', () => {
                 const cellElement = cell

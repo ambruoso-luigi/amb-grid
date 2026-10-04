@@ -438,7 +438,9 @@ normal editing lifecycle.
   `Alt+ArrowDown` are no longer defaults, but can be restored explicitly with
   `keyboardNavigation: { bindings: { up: 'Alt+ArrowUp', down: 'Alt+ArrowDown' } }`.
 * In standard inline editors, arrow keys remain with the editor; `Enter`
-  commits and `Escape` cancels, returning focus to the same cell. These
+  commits and `Escape` cancels, returning focus to the same cell. Manual date
+  editors follow this same rule, so either close action returns focus to the
+  original cell in navigation mode. These
   bindings can be customized, for example
   `keyboardNavigation: { bindings: { commit: 'Ctrl+Enter', cancel: 'Escape' } }`.
   Lookup, date, checkbox, and large-text editors retain their dedicated
