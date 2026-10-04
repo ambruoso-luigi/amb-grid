@@ -12,6 +12,8 @@ import {
      * keyboard navigation is enabled, commit/cancel use table bindings. On
      * activation the native picker is opened when the browser supports it;
      * arrow-key option browsing remains in the editor until commit or cancel.
+     * A browser popup may consume the first `Escape`; its corresponding keyup
+     * still cancels the editor when delivered to the native control.
      *
      * @param {object} [options] - Select editor options.
      * @param {Array<string|object>} [options.options=[]] - Available options.
@@ -62,6 +64,7 @@ export function select(options = {}) {
                 if (closed) return;
                 closed = true;
                 cancel();
+                scheduleEditorFocusRestore(cell);
             };
 
             const commitFromChange = () => {
@@ -77,9 +80,6 @@ export function select(options = {}) {
                 containEditorSpatialNavigation(event);
                 if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                     navigatingOptions = true;
-                    Promise.resolve().then(() => {
-                        navigatingOptions = false;
-                    });
                     return;
                 }
                 handleEditorCommitCancelKeydown({
@@ -88,6 +88,13 @@ export function select(options = {}) {
                     onCommit: commit,
                     onCancel: closeWithCancel
                 });
+            });
+            select.addEventListener('keyup', event => {
+                if (event.key !== 'Escape' || closed) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+                closeWithCancel();
             });
 
             onRendered(() => {

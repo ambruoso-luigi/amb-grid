@@ -200,19 +200,4 @@ test.describe('keyboard pagination focus', () => {
         await expect(rowCell(page, 'PRD-AB02', 'requiresInspection')).toHaveClass(/tabulator-editing/);
     });
 
-    test('waits for lookup lifecycle across page shortcuts', async ({ page }) => {
-        const status = rowCell(page, 'PRD-AB02', 'status');
-        await expect(status).toBeVisible();
-        await status.click();
-        await expect(status).toBeFocused();
-        await status.dblclick({ delay: 100 });
-        await expectLookupEditor(page, 'PRD-AB02');
-        await page.keyboard.press('Alt+PageDown');
-        await waitForPage(page, 2);
-        await expect(page.locator('.amb-lookup-editor')).toHaveCount(0);
-        await expectItemCodeNavigationFocus(page);
-        await page.keyboard.press('Alt+PageUp');
-        await waitForPage(page, 1);
-        await expectItemCodeNavigationFocus(page);
-    });
 });

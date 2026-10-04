@@ -451,7 +451,8 @@ normal editing lifecycle.
   browser permits it. ArrowUp and ArrowDown browse options without committing;
   `Enter` confirms and `Escape` cancels, then focus returns to the source cell.
   When the browser popup is open, its first `Escape` may close only that popup;
-  a subsequent `Escape` closes the editor.
+  the editor also cancels from the delivered `keyup`, otherwise a subsequent
+  `Escape` closes it.
 * `F2` activates an auxiliary control when the focused cell supports one;
   Lookup editors use it to open their search dialog. Lookup double click or
   `Enter` edits or commits the manual value instead of opening the dialog.

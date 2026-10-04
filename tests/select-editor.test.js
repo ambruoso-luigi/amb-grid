@@ -77,7 +77,6 @@ describe('select editor keyboard close actions', () => {
         expect(event.preventDefault).not.toHaveBeenCalled();
         expect(success).not.toHaveBeenCalled();
 
-        await Promise.resolve();
         control.dispatch('keydown', { key: 'Enter' });
         control.dispatch('blur');
 
@@ -91,6 +90,19 @@ describe('select editor keyboard close actions', () => {
         control.dispatch('keydown', { key: 'Escape' });
         control.dispatch('blur');
         expect(cancel).toHaveBeenCalledTimes(1);
+        expect(success).not.toHaveBeenCalled();
+    });
+
+    test('Escape keyup cancels option navigation without a later lateral-key commit', () => {
+        const { control, success, cancel } = createHarness();
+        control.dispatch('keydown', { key: 'ArrowDown' });
+        control.value = 'two';
+        control.dispatch('change');
+        control.dispatch('keyup', { key: 'Escape' });
+        control.dispatch('keydown', { key: 'ArrowLeft' });
+        control.dispatch('blur');
+
+        expect(cancel).toHaveBeenCalledOnce();
         expect(success).not.toHaveBeenCalled();
     });
 
