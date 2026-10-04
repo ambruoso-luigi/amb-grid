@@ -3,12 +3,15 @@ import {
     createSelectOption,
     getInitialValue,
     handleEditorCommitCancelKeydown,
-    normalizeSelectOption
+    normalizeSelectOption,
+    scheduleEditorFocusRestore
 } from './shared.js';
 
     /**
      * Native select editor. Saves the selected option value as a string. While
-     * keyboard navigation is enabled, commit/cancel use table bindings.
+     * keyboard navigation is enabled, commit/cancel use table bindings. On
+     * activation the native picker is opened when the browser supports it;
+     * arrow-key option browsing remains in the editor until commit or cancel.
      *
      * @param {object} [options] - Select editor options.
      * @param {Array<string|object>} [options.options=[]] - Available options.
@@ -49,6 +52,7 @@ export function select(options = {}) {
             select.value = getInitialValue(cell);
 
             let closed = false;
+            let navigatingOptions = false;
             const commit = () => {
                 if (closed) return;
                 closed = true;
@@ -60,10 +64,24 @@ export function select(options = {}) {
                 cancel();
             };
 
-            select.addEventListener('change', commit);
+            const commitFromChange = () => {
+                if (navigatingOptions) return;
+
+                commit();
+                scheduleEditorFocusRestore(cell);
+            };
+
+            select.addEventListener('change', commitFromChange);
             select.addEventListener('blur', commit);
             select.addEventListener('keydown', event => {
                 containEditorSpatialNavigation(event);
+                if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                    navigatingOptions = true;
+                    Promise.resolve().then(() => {
+                        navigatingOptions = false;
+                    });
+                    return;
+                }
                 handleEditorCommitCancelKeydown({
                     cell,
                     event,
@@ -74,6 +92,14 @@ export function select(options = {}) {
 
             onRendered(() => {
                 select.focus();
+
+                if (typeof select.showPicker !== 'function') return;
+
+                try {
+                    select.showPicker();
+                } catch {
+                    // Browsers may reject picker opening outside a trusted activation.
+                }
             });
             return select;
         };

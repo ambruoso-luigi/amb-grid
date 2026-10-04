@@ -136,7 +136,7 @@ export const cancelScheduledNavigationFocusRestore = cell => {
     navigationFocusRestoreVersions.set(owner, (navigationFocusRestoreVersions.get(owner) || 0) + 1);
 };
 
-const scheduleNavigationFocusRestore = cell => {
+export const scheduleEditorFocusRestore = cell => {
     const owner = getNavigationFocusRestoreOwner(cell);
     const version = owner ? navigationFocusRestoreVersions.get(owner) || 0 : 0;
     const restore = () => {
@@ -193,7 +193,7 @@ export const handleEditorCommitCancelKeydown = ({ cell, event, onCommit, onCance
     event.stopImmediatePropagation?.();
     if (action === 'commit') onCommit();
     else onCancel();
-    scheduleNavigationFocusRestore(cell);
+    scheduleEditorFocusRestore(cell);
     return true;
 };
 

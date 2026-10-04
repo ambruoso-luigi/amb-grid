@@ -2,18 +2,19 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { select } from '../src/lib/editors/select-editor.js';
 
 class SelectMock {
-    constructor() {
+    constructor({ showPicker } = {}) {
         this.className = '';
         this.children = [];
         this.listeners = new Map();
         this.value = '';
+        this.focus = vi.fn();
+        if (showPicker) this.showPicker = showPicker;
     }
 
     appendChild(child) { this.children.push(child); }
     addEventListener(type, listener) {
         this.listeners.set(type, [...(this.listeners.get(type) || []), listener]);
     }
-    focus() {}
     dispatch(type, event = {}) {
         const result = {
             preventDefault: vi.fn(), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn(), ...event
@@ -25,10 +26,12 @@ class SelectMock {
 
 describe('select editor keyboard close actions', () => {
     const originalDocument = globalThis.document;
+    let pickerFactory;
 
     beforeEach(() => {
+        pickerFactory = undefined;
         globalThis.document = {
-            createElement: () => new SelectMock()
+            createElement: () => new SelectMock({ showPicker: pickerFactory?.() })
         };
     });
 
@@ -45,12 +48,40 @@ describe('select editor keyboard close actions', () => {
         return { control, success, cancel };
     };
 
-    test('Enter commits exactly once even when followed by blur', () => {
+    test('focuses and opens the native picker when supported', () => {
+        const showPicker = vi.fn();
+        pickerFactory = () => showPicker;
+
+        const { control } = createHarness();
+
+        expect(control.focus).toHaveBeenCalledOnce();
+        expect(showPicker).toHaveBeenCalledOnce();
+    });
+
+    test('keeps the focused native select usable when showPicker is unavailable or rejected', () => {
+        pickerFactory = () => vi.fn(() => {
+            throw new Error('NotAllowedError');
+        });
+
+        expect(() => createHarness()).not.toThrow();
+        expect(createHarness().control.focus).toHaveBeenCalledOnce();
+    });
+
+    test('ArrowDown browses options without committing, then Enter commits once', async () => {
         const { control, success, cancel } = createHarness();
+        const event = control.dispatch('keydown', { key: 'ArrowDown' });
         control.value = 'two';
+        control.dispatch('change');
+
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+
+        await Promise.resolve();
         control.dispatch('keydown', { key: 'Enter' });
         control.dispatch('blur');
-        expect(success).toHaveBeenCalledTimes(1);
+
+        expect(success).toHaveBeenCalledOnce();
         expect(success).toHaveBeenCalledWith('two');
         expect(cancel).not.toHaveBeenCalled();
     });
@@ -63,20 +94,12 @@ describe('select editor keyboard close actions', () => {
         expect(success).not.toHaveBeenCalled();
     });
 
-    test('change commits exactly once even when followed by blur', () => {
+    test('a mouse selection commits once and a later blur does not duplicate it', () => {
         const { control, success } = createHarness();
         control.value = 'two';
         control.dispatch('change');
         control.dispatch('blur');
         expect(success).toHaveBeenCalledOnce();
         expect(success).toHaveBeenCalledWith('two');
-    });
-
-    test('contains ArrowDown without preventing the native select behavior', () => {
-        const { control } = createHarness();
-        const event = control.dispatch('keydown', { key: 'ArrowDown' });
-
-        expect(event.stopPropagation).toHaveBeenCalledOnce();
-        expect(event.preventDefault).not.toHaveBeenCalled();
     });
 });
