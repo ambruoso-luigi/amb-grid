@@ -71,14 +71,20 @@ test.describe('keyboard spatial navigation', () => {
         const target = rowCell(page, 'PRD-AB02', 'productName');
         const original = await target.textContent();
 
-        await target.dblclick();
+        await target.dblclick({ delay: 100 });
         const input = target.locator('input.amb-cell-editor');
+        await expect(target).toHaveClass(/tabulator-editing/);
+        await expect(input).toBeVisible();
+        await expect(input).toBeFocused();
         await input.fill('Mouse commit test');
         await page.keyboard.press('Enter');
         await expectNavigationFocus(target);
         await expect(target).toContainText('Mouse commit test');
 
-        await target.dblclick();
+        await target.dblclick({ delay: 100 });
+        await expect(target).toHaveClass(/tabulator-editing/);
+        await expect(input).toBeVisible();
+        await expect(input).toBeFocused();
         await input.fill('Mouse cancel test');
         await page.keyboard.press('Escape');
         await expectNavigationFocus(target);

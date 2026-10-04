@@ -345,7 +345,8 @@ const createElement = tagName => {
 };
 
 const createPickerHarness = (options = {}) => {
-    const cellElement = {};
+    const cellElement = createElement('div');
+    cellElement.classList.contains = vi.fn(() => true);
     const table = {
         navigateLeft: vi.fn(() => false),
         navigateRight: vi.fn(() => false),
@@ -1028,6 +1029,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(documentListeners).toHaveLength(0);
         expect(focusCellNoEvent).toHaveBeenCalledOnce();
         expect(focusCellNoEvent).toHaveBeenCalledWith(internalCell);
+        expect(globalThis.document.activeElement).toBe(harness.cell.getElement());
         expect(datepicker.show).toHaveBeenCalledOnce();
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
         expect(harness.fuelCell.edit).not.toHaveBeenCalled();

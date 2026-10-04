@@ -15,7 +15,8 @@ import {
     focusInput,
     getInitialValue,
     handleEditorCommitCancelKeydown,
-    navigateEditableCellAfterClose
+    navigateEditableCellAfterClose,
+    scheduleEditorFocusRestore
 } from './shared.js';
 import {
     consumeCellAuxiliaryAction,
@@ -95,8 +96,8 @@ const createPickerOptions = options => {
      *   closing. In `manualWithPickerButton`, `F2` opens the
      *   picker; `pickerOnly` opens it on `Enter` or `F2`.
      * - In `pickerOnly`, `Escape` closes the picker and returns focus to the
-     *   original cell without reopening editing; an external pointer close
-     *   retains the pointer-selected focus destination.
+     *   original cell in navigation mode without reopening editing; an
+     *   external pointer close retains the pointer-selected focus destination.
      * - while the picker is open, arrow keys do not propagate to the grid,
      *   `Enter` is left to the picker when appropriate, and `Escape` preserves
      *   the configured manual or picker-only close behavior.
@@ -287,6 +288,7 @@ export function date(options = {}) {
 
                     if (restoreFocus && normalizedOptions.mode === 'pickerOnly') {
                         restoreCellFocusWithoutEditing();
+                        scheduleEditorFocusRestore(cell);
                     }
                 };
 

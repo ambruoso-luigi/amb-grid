@@ -10,6 +10,7 @@ const cell = (page, field) => firstInventoryRow(page)
 
 test('React Status select remains open while browsing and restores focus after closing', async ({ page }) => {
     await page.goto('/#getting-started-react');
+    await expect(page.locator('.react-demo-grid-shell')).toHaveAttribute('aria-busy', 'false');
     await expect(firstInventoryRow(page)).toBeVisible();
 
     const itemCode = cell(page, 'itemCode');
@@ -30,14 +31,14 @@ test('React Status select remains open while browsing and restores focus after c
     await expect(select).toBeFocused();
 
     await page.keyboard.press('Enter');
-    await expect(status).toContainText('Review');
+    await expect(status).toContainText('REVIEW');
     await expect(status).toBeFocused();
     await expect(status).not.toHaveClass(/tabulator-editing/);
 
     await page.keyboard.press('Enter');
     await expect(select).toBeFocused();
     await page.keyboard.press('Escape');
-    await expect(status).toContainText('Review');
+    await expect(status).toContainText('REVIEW');
     await expect(status).toBeFocused();
     await expect(status).not.toHaveClass(/tabulator-editing/);
 });
