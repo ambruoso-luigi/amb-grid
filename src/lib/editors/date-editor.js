@@ -94,6 +94,9 @@ const createPickerOptions = options => {
      *   `Escape` by default) and return focus to their original cell after
      *   closing. In `manualWithPickerButton`, `F2` opens the
      *   picker; `pickerOnly` opens it on `Enter` or `F2`.
+     * - In `pickerOnly`, `Escape` closes the picker and returns focus to the
+     *   original cell without reopening editing; an external pointer close
+     *   retains the pointer-selected focus destination.
      * - while the picker is open, arrow keys do not propagate to the grid,
      *   `Enter` is left to the picker when appropriate, and `Escape` preserves
      *   the configured manual or picker-only close behavior.
@@ -274,13 +277,17 @@ export function date(options = {}) {
                     }
                 };
 
-                const closeWithCancel = () => {
+                const closeWithCancel = ({ restoreFocus = false } = {}) => {
                     if (closed) return;
 
 
                     closed = true;
                     destroyDatepicker();
                     cancel();
+
+                    if (restoreFocus && normalizedOptions.mode === 'pickerOnly') {
+                        restoreCellFocusWithoutEditing();
+                    }
                 };
 
                 const commit = () => {
@@ -427,7 +434,7 @@ export function date(options = {}) {
                             return;
                         }
 
-                        closeWithCancel();
+                        closeWithCancel({ restoreFocus: true });
                         return;
                     }
 

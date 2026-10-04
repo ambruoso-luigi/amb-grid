@@ -33,7 +33,7 @@ test('manual date editors restore navigation focus after Enter and Escape', asyn
         await expect(cell).toBeFocused();
 
         await page.keyboard.press('Enter');
-        const input = cell.locator('input.amb-date-editor');
+        const input = cell.locator('input[type="text"]');
         await expect(input).toBeFocused();
         await input.fill(value);
         await page.keyboard.press('Enter');

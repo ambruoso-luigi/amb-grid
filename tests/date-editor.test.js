@@ -1001,11 +1001,54 @@ describe('date editor picker keyboard navigation', () => {
         expect(focusCellNoEvent).toHaveBeenCalledWith(internalCell);
     });
 
-    test('pickerOnly hide cancels without navigation', async () => {
+    test('pickerOnly Escape cancels once, removes picker listeners, and restores cell focus', async () => {
+        const internalCell = {};
+        const focusCellNoEvent = vi.fn();
         const harness = createPickerHarness({
             mode: 'pickerOnly',
             picker: false
         });
+        const datepicker = datepickerState.instances[0];
+
+        harness.cell._getSelf = () => internalCell;
+        internalCell.table = {
+            modules: {
+                edit: {
+                    focusCellNoEvent
+                }
+            }
+        };
+
+        await globalThis.document.dispatch('keydown', { key: 'Escape' });
+        await flushDeferred();
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(datepicker.destroy).toHaveBeenCalledOnce();
+        expect(documentListeners).toHaveLength(0);
+        expect(focusCellNoEvent).toHaveBeenCalledOnce();
+        expect(focusCellNoEvent).toHaveBeenCalledWith(internalCell);
+        expect(datepicker.show).toHaveBeenCalledOnce();
+        expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
+        expect(harness.fuelCell.edit).not.toHaveBeenCalled();
+    });
+
+    test('pickerOnly external hide cancels without stealing focus or navigating', async () => {
+        const internalCell = {};
+        const focusCellNoEvent = vi.fn();
+        const harness = createPickerHarness({
+            mode: 'pickerOnly',
+            picker: false
+        });
+
+        harness.cell._getSelf = () => internalCell;
+        internalCell.table = {
+            modules: {
+                edit: {
+                    focusCellNoEvent
+                }
+            }
+        };
 
         await harness.pickerInput.dispatch('hide');
         await flushDeferred();
@@ -1014,6 +1057,7 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).not.toHaveBeenCalled();
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();
         expect(harness.fuelCell.edit).not.toHaveBeenCalled();
+        expect(focusCellNoEvent).not.toHaveBeenCalled();
         expect(globalThis.document.removeEventListener).toHaveBeenCalledWith(
             'keydown',
             expect.any(Function)

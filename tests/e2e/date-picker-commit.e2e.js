@@ -66,12 +66,23 @@ test.describe('date picker commit regression', () => {
         await openDatesExample(page);
         const cell = pickerOnlyCell(page);
         const picker = page.locator('.datepicker.active');
+        const compactCell = pickerRow(page).locator('.tabulator-cell[tabulator-field="compactDate"]');
 
-        await cell.press('Enter');
+        await eventCell(page).click();
+        await expect(eventCell(page)).toBeFocused();
+        for (let step = 0; step < 5; step += 1) {
+            await page.keyboard.press('ArrowRight');
+        }
+        await expect(cell).toBeFocused();
+        await page.keyboard.press('Enter');
         await expect(picker).toHaveCount(1);
         await expect(cell.locator('input.amb-date-editor')).toHaveCount(0);
         await page.keyboard.press('Escape');
         await expect(picker).toHaveCount(0);
+        await expect(cell).toBeFocused();
+        await expect(cell).not.toHaveClass(/tabulator-editing/);
+        await page.keyboard.press('ArrowLeft');
+        await expect(compactCell).toBeFocused();
     });
 
     test('picker-only F2 opens the calendar without a manual input', async ({ page }) => {

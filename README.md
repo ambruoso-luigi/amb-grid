@@ -440,7 +440,9 @@ normal editing lifecycle.
 * In standard inline editors, arrow keys remain with the editor; `Enter`
   commits and `Escape` cancels, returning focus to the same cell. Manual date
   editors follow this same rule, so either close action returns focus to the
-  original cell in navigation mode. These
+  original cell in navigation mode. In `pickerOnly`, `Escape` also closes the
+  calendar and restores focus to its original cell without reopening editing;
+  a pointer-driven external close preserves the selected focus destination. These
   bindings can be customized, for example
   `keyboardNavigation: { bindings: { commit: 'Ctrl+Enter', cancel: 'Escape' } }`.
   Lookup, date, checkbox, and large-text editors retain their dedicated
