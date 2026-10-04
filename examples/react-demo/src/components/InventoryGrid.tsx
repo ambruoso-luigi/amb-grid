@@ -140,6 +140,61 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
       ],
     } satisfies Parameters<typeof AMB.table>[0];
     const grid = AMB.table(tableOptions);
+    const selectTrace: Array<Record<string, unknown>> = [];
+    const getStatusCell = () => grid.table.getRows()
+      .find(row => row.getData().itemCode === 'ITM-1001')
+      ?.getCell('status') ?? null;
+    const describeElement = (element: Element | null) => element ? {
+      tagName: element.tagName,
+      className: typeof (element as HTMLElement).className === 'string' ? (element as HTMLElement).className : null,
+    } : null;
+    const recordSelectTrace = (type: string, event?: Event, cell = getStatusCell()) => {
+      if (!cell) return;
+      const element = cell.getElement();
+      const rowData = cell.getRow().getData();
+      selectTrace.push({
+        type,
+        key: event instanceof KeyboardEvent ? event.key : null,
+        target: describeElement(event?.target instanceof Element ? event.target : null),
+        activeElement: describeElement(document.activeElement),
+        editing: element.classList.contains('tabulator-editing'),
+        editorPresent: Boolean(element.querySelector('input')),
+        popupPresent: Boolean(document.querySelector('.tabulator-edit-list')),
+        cellValue: cell.getValue(),
+        rowStatus: rowData.status,
+      });
+    };
+    const isStatusListEvent = (event: Event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      return Boolean(target?.closest('.tabulator-edit-list') || target?.closest('.tabulator-cell[tabulator-field="status"]'));
+    };
+    const onDocumentKey = (event: KeyboardEvent) => {
+      if (!['Escape', 'Enter', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+      if (isStatusListEvent(event)) recordSelectTrace(event.type, event);
+    };
+    const onListPointer = (event: PointerEvent | MouseEvent) => {
+      if (isStatusListEvent(event)) recordSelectTrace(event.type, event);
+    };
+    const onStatusEditing = (cell: GridCell) => {
+      if (cell.getField() === 'status') recordSelectTrace('cellEditing', undefined, cell);
+    };
+    const onStatusEdited = (cell: GridCell) => {
+      if (cell.getField() === 'status') recordSelectTrace('cellEdited', undefined, cell);
+    };
+    const onStatusCancelled = (cell: GridCell) => {
+      if (cell.getField() === 'status') recordSelectTrace('cellEditCancelled', undefined, cell);
+    };
+
+    if (import.meta.env.DEV) {
+      document.addEventListener('keydown', onDocumentKey, true);
+      document.addEventListener('keyup', onDocumentKey, true);
+      document.addEventListener('pointerdown', onListPointer, true);
+      document.addEventListener('click', onListPointer, true);
+      grid.table.on('cellEditing', onStatusEditing);
+      grid.table.on('cellEdited', onStatusEdited);
+      grid.table.on('cellEditCancelled', onStatusCancelled);
+      Object.assign(window, { __ambSelectTrace: selectTrace });
+    }
     let isActive = true;
     const refresh = () => queueMicrotask(() => {
       if (isActive) onStateChange(grid);
@@ -173,6 +228,16 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
 
     destroyGrid = () => {
       isActive = false;
+      if (import.meta.env.DEV) {
+        document.removeEventListener('keydown', onDocumentKey, true);
+        document.removeEventListener('keyup', onDocumentKey, true);
+        document.removeEventListener('pointerdown', onListPointer, true);
+        document.removeEventListener('click', onListPointer, true);
+        grid.table.off('cellEditing', onStatusEditing);
+        grid.table.off('cellEdited', onStatusEdited);
+        grid.table.off('cellEditCancelled', onStatusCancelled);
+        Reflect.deleteProperty(window, '__ambSelectTrace');
+      }
       engineEvents.forEach((eventName) => grid.off(eventName, refresh));
       grid.off('cellEdited', refreshEditedRow);
       grid.off('tableBuilt', handleTableBuilt);
