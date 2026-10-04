@@ -1,4 +1,5 @@
 import { ROW_STATE } from '../crud-helper.js';
+import { normalizeSelectValues } from '../editors/select-editor.js';
 import { escapeHtmlText, formatters } from '../formatters.js';
 import { focusCellWithoutEditing, getLookupOptionValue } from '../editors/shared.js';
 import { getLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
@@ -123,6 +124,63 @@ const isLookupColumn = column => {
 
 const isCheckboxColumn = column => {
     return CHECKBOX_EDITOR_TYPES.has(getAmbEditorType(column));
+};
+
+const restoreSelectCellFocus = cell => {
+    const restore = () => {
+        const cellElement = cell?.getElement?.();
+        const activeElement = globalThis.document?.activeElement;
+        const focusMovedElsewhere = activeElement
+            && activeElement !== globalThis.document?.body
+            && activeElement !== globalThis.document?.documentElement
+            && activeElement !== cellElement;
+
+        if (
+            !cellElement?.isConnected
+            || cellElement.classList?.contains('tabulator-editing')
+            || focusMovedElsewhere
+        ) return;
+
+        focusCellWithoutEditing(cell);
+    };
+
+    if (typeof globalThis.requestAnimationFrame === 'function') {
+        globalThis.requestAnimationFrame(restore);
+        return;
+    }
+
+    Promise.resolve().then(restore);
+};
+
+const composeSelectCloseCallback = (callback, cell) => {
+    if (typeof callback === 'function') callback(cell);
+    restoreSelectCellFocus(cell);
+};
+
+export const prepareSelectColumns = (columns = []) => {
+    return (columns || []).map(column => {
+        const nextColumn = { ...column };
+
+        if (nextColumn.columns) nextColumn.columns = prepareSelectColumns(nextColumn.columns);
+        if (getAmbEditorType(nextColumn) !== 'select') return nextColumn;
+
+        const config = nextColumn.editor._ambSelectConfig || {};
+        const originalCellEdited = nextColumn.cellEdited;
+        const originalCellEditCancelled = nextColumn.cellEditCancelled;
+
+        nextColumn.editor = 'list';
+        nextColumn.editorParams = {
+            values: normalizeSelectValues(config),
+            autocomplete: false,
+            verticalNavigation: 'editor',
+            clearable: false,
+            emptyValue: ''
+        };
+        nextColumn.cellEdited = cell => composeSelectCloseCallback(originalCellEdited, cell);
+        nextColumn.cellEditCancelled = cell => composeSelectCloseCallback(originalCellEditCancelled, cell);
+
+        return nextColumn;
+    });
 };
 
 const appendCssClasses = (cssClass, classes) => [...new Set([
@@ -815,8 +873,9 @@ export const prepareColumnPipeline = ({
     const formattedColumns = applyDefaultEditorFormatters(
         calculationColumns
     );
+    const preparedSelectColumns = prepareSelectColumns(formattedColumns);
     const editableColumns = wrapEditableForDeletedRows(
-        formattedColumns,
+        preparedSelectColumns,
         getCrud
     );
     const preparedLookupColumns = prepareLookupColumns(

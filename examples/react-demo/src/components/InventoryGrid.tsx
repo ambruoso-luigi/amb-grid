@@ -133,152 +133,13 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
         { title: 'Stock quantity', field: 'stockQuantity', minWidth: 142, editor: AMB.editors.integer({ allowEmpty: false }), formatter: stockFormatter, bottomCalc: sumNumbers, bottomCalcFormatter: stockCalculationFormatter, required: true, validation: { integer: true, min: { value: 0, message: 'Cannot be negative' } } },
         { title: 'Unit price', field: 'unitPrice', minWidth: 118, editor: AMB.editors.decimal({ integerDigits: 7, decimalDigits: 2, allowEmpty: false }), formatter: AMB.formatters.currency(), required: true, validation: { decimal: { integerDigits: 7, decimalDigits: 2, allowNegative: false, message: 'Enter a valid price' } } },
         { title: 'Inventory value', field: 'inventoryValue', minWidth: 142, editable: false, formatter: inventoryValueFormatter, bottomCalc: sumInventoryValue, bottomCalcFormatter: inventoryValueCalculationFormatter },
-        {
-          title: 'Status',
-          field: 'status',
-          minWidth: 112,
-          editor: 'list',
-          editorParams: {
-            values: [
-              { value: 'ACTIVE', label: 'Active' },
-              { value: 'REVIEW', label: 'Review' },
-              { value: 'HOLD', label: 'On hold' },
-            ],
-            autocomplete: false,
-            verticalNavigation: 'editor',
-            clearable: false,
-            emptyValue: '',
-          },
-          formatter: statusFormatter,
-          required: true,
-        },
+        { title: 'Status', field: 'status', minWidth: 112, editor: AMB.editors.select({ options: [{ value: 'ACTIVE', label: 'Active' }, { value: 'REVIEW', label: 'Review' }, { value: 'HOLD', label: 'On hold' }], allowEmpty: false }), formatter: statusFormatter, required: true },
         { title: 'Requires inspection', field: 'requiresInspection', minWidth: 150, hozAlign: 'center', formatter: inspectionCheckboxFormatter, editor: AMB.editors.checkbox(), bottomCalc: countInspections, bottomCalcFormatter: inspectionCalculationFormatter },
         { title: 'Last check date', field: 'lastCheckDate', minWidth: 132, editor: AMB.editors.date({ format: 'yyyy-mm-dd', allowEmpty: false, picker: true }), formatter: AMB.formatters.date('yyyy-mm-dd'), required: true, validation: { date: { format: 'yyyy-mm-dd', allowEmpty: false, message: 'Enter a valid date' } } },
         { title: 'Notes', field: 'notes', minWidth: 210, formatter: AMB.formatters.largeTextPreview({ maxLength: 42 }), editor: AMB.editors.largeText({ title: 'Edit inventory notes', rows: 8 }) },
       ],
     } satisfies Parameters<typeof AMB.table>[0];
     const grid = AMB.table(tableOptions);
-    const listProbeEvents: Array<Record<string, unknown>> = [];
-    const describeFocusedElement = () => {
-      const activeElement = document.activeElement;
-
-      if (!activeElement) return null;
-
-      return {
-        tagName: activeElement.tagName,
-        id: activeElement.id || null,
-        className: typeof activeElement.className === 'string' ? activeElement.className : null,
-      };
-    };
-    const getStatusCell = () => grid.table.getRows()
-      .find(row => row.getData().itemCode === 'ITM-1001')
-      ?.getCell('status') ?? null;
-    const getStatusCellState = (cell: ReturnType<typeof getStatusCell>) => {
-      if (!cell) return null;
-
-      const element = cell.getElement();
-
-      return {
-        value: cell.getValue(),
-        editing: element.classList.contains('tabulator-editing'),
-        focusedElement: describeFocusedElement(),
-        html: element.outerHTML,
-      };
-    };
-    const getListState = () => {
-      const container = document.querySelector<HTMLElement>('.tabulator-edit-list');
-
-      if (!container) {
-        return {
-          present: false,
-          visible: false,
-          options: [],
-          focusedElement: describeFocusedElement(),
-        };
-      }
-
-      const style = window.getComputedStyle(container);
-      const bounds = container.getBoundingClientRect();
-
-      return {
-        present: true,
-        visible: style.display !== 'none'
-          && style.visibility !== 'hidden'
-          && Number.parseFloat(style.opacity || '1') > 0
-          && bounds.width > 0
-          && bounds.height > 0,
-        options: [...container.querySelectorAll('.tabulator-edit-list-item')]
-          .map(option => option.textContent?.trim() ?? ''),
-        focusedElement: describeFocusedElement(),
-      };
-    };
-    const restoreStatusCellFocus = (cell: ReturnType<typeof getStatusCell>) => {
-      requestAnimationFrame(() => {
-        if (!cell || cell.getField() !== 'status') return;
-
-        const element = cell.getElement();
-        const activeElement = document.activeElement;
-        const focusMovedElsewhere = activeElement
-          && activeElement !== document.body
-          && activeElement !== document.documentElement
-          && activeElement !== element;
-
-        if (!element.isConnected || element.classList.contains('tabulator-editing') || focusMovedElsewhere) return;
-
-        element.focus({ preventScroll: true });
-      });
-    };
-    const recordListProbeEvent = (eventName: string, cell: ReturnType<typeof getStatusCell>) => {
-      if (!cell || cell.getField() !== 'status') return;
-
-      listProbeEvents.push({ eventName, ...getStatusCellState(cell) });
-    };
-    const onStatusCellEditing = (cell: ReturnType<typeof getStatusCell>) => recordListProbeEvent('cellEditing', cell);
-    const onStatusCellEdited = (cell: ReturnType<typeof getStatusCell>) => {
-      recordListProbeEvent('cellEdited', cell);
-      restoreStatusCellFocus(cell);
-    };
-    const onStatusCellEditCancelled = (cell: ReturnType<typeof getStatusCell>) => {
-      recordListProbeEvent('cellEditCancelled', cell);
-      restoreStatusCellFocus(cell);
-    };
-
-    grid.table.on('cellEditing', onStatusCellEditing);
-    grid.table.on('cellEdited', onStatusCellEdited);
-    grid.table.on('cellEditCancelled', onStatusCellEditCancelled);
-
-    if (import.meta.env.DEV) {
-      const probe = {
-        inspect: () => {
-          const cell = getStatusCell();
-          const definition = cell?.getColumn().getDefinition();
-          const editable = typeof definition?.editable === 'function'
-            ? definition.editable(cell)
-            : definition?.editable ?? null;
-
-          return {
-            runtimeDefinition: definition ?? null,
-            editor: definition?.editor ?? null,
-            editorParams: definition?.editorParams ?? null,
-            editable,
-            cell: getStatusCellState(cell),
-            list: getListState(),
-            events: [...listProbeEvents],
-          };
-        },
-        edit: () => {
-          const cell = getStatusCell();
-          const result = cell?.edit();
-          const state = getStatusCellState(cell);
-
-          listProbeEvents.push({ eventName: 'edit()', result, ...state });
-
-          return { result, state, events: [...listProbeEvents] };
-        },
-      };
-
-      Object.assign(window, { __ambListProbe: probe });
-    }
     let isActive = true;
     const refresh = () => queueMicrotask(() => {
       if (isActive) onStateChange(grid);
@@ -312,10 +173,6 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
 
     destroyGrid = () => {
       isActive = false;
-      grid.table.off('cellEditing', onStatusCellEditing);
-      grid.table.off('cellEdited', onStatusCellEdited);
-      grid.table.off('cellEditCancelled', onStatusCellEditCancelled);
-      if (window.__ambListProbe) Reflect.deleteProperty(window, '__ambListProbe');
       engineEvents.forEach((eventName) => grid.off(eventName, refresh));
       grid.off('cellEdited', refreshEditedRow);
       grid.off('tableBuilt', handleTableBuilt);

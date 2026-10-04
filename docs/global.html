@@ -152,7 +152,69 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line15">line 15</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line21">line 21</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="containEditorSpatialNavigation"><span class="type-signature">(constant) </span>containEditorSpatialNavigation<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Keeps spatial keys inside an editor without cancelling their native behavior.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_editors_shared.js.html">lib/editors/shared.js</a>, <a href="lib_editors_shared.js.html#line201">line 201</a>
     </li></ul></dd>
     
 
@@ -176,14 +238,7 @@
 
 
 <div class="description">
-    Create the managed AMB row action column exposed as `rowActionColumn`.
-
-The column is an interactive action cell, not a data column. It participates
-in AMB keyboard navigation, focuses its row action button, and activates
-delete, rollback/undo, or remove-new with `Enter`/`Space`. Delete
-confirmation uses the shared dialog focus trap. After delete focus returns
-to rollback, after rollback focus returns to delete, and remove-new falls
-back to the next or previous visible row action when possible.
+    Create the managed AMB row action column exposed as `rowActionColumn`.The column is an interactive action cell, not a data column. It participatesin AMB keyboard navigation, focuses its row action button, and activatesdelete, rollback/undo, or remove-new with `Enter`/`Space`. Deleteconfirmation uses the shared dialog focus trap. After delete focus returnsto rollback, after rollback focus returns to delete, and remove-new fallsback to the next or previous visible row action when possible.
 </div>
 
 
@@ -245,14 +300,7 @@ back to the next or previous visible row action when possible.
 
 
 <div class="description">
-    Create the standard AMB row selection column.
-
-The column is an interactive non-data cell. It participates in AMB keyboard
-navigation, focuses the native checkbox control, uses `Enter`/`Space` to
-toggle row selection, and keeps `Tab`/`Shift+Tab` as cell navigation. When
-enabled, this control is the exclusive user-interaction surface for managed
-row selection; clicks and keyboard activity in ordinary cells do not select
-rows.
+    Create the standard AMB row selection column.The column is an interactive non-data cell. It participates in AMB keyboardnavigation, focuses the native checkbox control, uses `Enter`/`Space` totoggle row selection, and keeps `Tab`/`Shift+Tab` as cell navigation. Whenenabled, this control is the exclusive user-interaction surface for managedrow selection; clicks and keyboard activity in ordinary cells do not selectrows.
 </div>
 
 
@@ -476,7 +524,7 @@ rows.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_shared.js.html">lib/editors/shared.js</a>, <a href="lib_editors_shared.js.html#line144">line 144</a>
+        <a href="lib_editors_shared.js.html">lib/editors/shared.js</a>, <a href="lib_editors_shared.js.html#line209">line 209</a>
     </li></ul></dd>
     
 
@@ -742,6 +790,68 @@ rows.
 
         
             
+<h4 class="name" id="normalizeCellEditingOptions"><span class="type-signature">(constant) </span>normalizeCellEditingOptions<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Normalizes the public AMB pointer-editing configuration.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_cell-editing-options.js.html">lib/table/cell-editing-options.js</a>, <a href="lib_table_cell-editing-options.js.html#line10">line 10</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="normalizeKeyboardNavigationOptions"><span class="type-signature">(constant) </span>normalizeKeyboardNavigationOptions<span class="type-signature"></span></h4>
 
 
@@ -786,7 +896,7 @@ rows.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_keyboard-bindings.js.html">lib/table/keyboard-bindings.js</a>, <a href="lib_table_keyboard-bindings.js.html#line76">line 76</a>
+        <a href="lib_table_keyboard-bindings.js.html">lib/table/keyboard-bindings.js</a>, <a href="lib_table_keyboard-bindings.js.html#line83">line 83</a>
     </li></ul></dd>
     
 
@@ -810,11 +920,7 @@ rows.
 
 
 <div class="description">
-    Resolve the value/action used when an autocomplete editor closes.
-
-Selected or highlighted suggestions win first. When `commitMatchedValue` is
-enabled, typed exact/prefix matches resolve to the canonical list value
-before custom-value and invalid behavior are considered.
+    Resolve the value/action used when an autocomplete editor closes.Selected or highlighted suggestions win first. When `commitMatchedValue` isenabled, typed exact/prefix matches resolve to the canonical list valuebefore custom-value and invalid behavior are considered.
 </div>
 
 
@@ -1054,7 +1160,7 @@ before custom-value and invalid behavior are considered.
     
 
     
-    <h4 class="name" id="addCellValidator"><span class="type-signature"></span>addCellValidator<span class="signature">(field, message, validateFn)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+    <h4 class="name" id="addCellValidator"><span class="type-signature"></span>addCellValidator<span class="signature">(field, message, validateFn, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
     
 
     
@@ -1062,19 +1168,7 @@ before custom-value and invalid behavior are considered.
 
 
 <div class="description">
-    Appends a runtime AMB validator for a field.
-
-The callback receives `(value, rowData, cell, helper)` and may return a
-boolean or an AMB-compatible object such as
-`{ isValid: false, message: 'Specific message', code: 'optional-code' }`.
-The registration message is the fallback when the callback does not
-provide a more specific message.
-
-Registration does not validate existing data or change current errors
-and markers. The rule is used by later AMB flows such as cell editing,
-`grid.updateRow(...)`, `grid.validateRow(...)`,
-`grid.validateChanges()` and `grid.validate()`. This configures AMB CRUD
-validators, not the native validator definition of an existing column.
+    Appends a runtime AMB validator for a field.The callback receives `(value, rowData, cell, helper)` and may return aboolean or an AMB-compatible object such as`{ isValid: false, message: 'Specific message', code: 'optional-code' }`.The registration message is the fallback when the callback does notprovide a more specific message.Registration does not validate existing data or change current errorsand markers. The rule is used by later AMB flows such as cell editing,`grid.updateRow(...)`, `grid.validateRow(...)`,`grid.validateChanges()` and `grid.validate()`. This configures AMB CRUDvalidators, not the native validator definition of an existing column.`cell` depends on the current cell; `row` may use fields in its row;`field` may use the same field across rows; and `grid` may use grid context.`dependsOn` refines field-value changes that invalidate a validator; `'*'`covers every application field.
 </div>
 
 
@@ -1097,6 +1191,8 @@ validators, not the native validator definition of an existing column.
 
         <th>Type</th>
 
+        
+        <th>Attributes</th>
         
 
         
@@ -1123,6 +1219,14 @@ validators, not the native validator definition of an existing column.
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
@@ -1145,6 +1249,14 @@ validators, not the native validator definition of an existing column.
             
             </td>
 
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -1169,10 +1281,169 @@ validators, not the native validator definition of an existing column.
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">Validator callback forwarded by identity.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Automatic validation dependency options.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">'cell'</span>
+|
+
+<span class="param-type">'row'</span>
+|
+
+<span class="param-type">'field'</span>
+|
+
+<span class="param-type">'grid'</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'cell'
+                
+                </td>
+            
+
+            <td class="description last">Validation scope.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dependsOn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+|
+
+<span class="param-type">'*'</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Fields whose value changes may invalidate the validator.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -1213,7 +1484,7 @@ validators, not the native validator definition of an existing column.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line37">line 37</a>
+        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line44">line 44</a>
     </li></ul></dd>
     
 
@@ -2156,14 +2427,7 @@ or AMB Grid CRUD state.
 
 
 <div class="description">
-    Adds a row managed by the AMB CRUD lifecycle.
-
-`CrudHelper` assigns the new state and temporary identifier, adds the
-technical fields, and attempts to reveal and focus the new row. Data is
-forwarded unchanged and no request is sent to the backend. The flat API
-intentionally does not support the engine's positioning arguments; use
-`grid.table.addRow(...)` only for advanced direct engine access, which
-can bypass AMB tracking.
+    Adds a row managed by the AMB CRUD lifecycle.`CrudHelper` assigns the new state and temporary identifier, adds thetechnical fields, and attempts to reveal and focus the new row. Data isforwarded unchanged and no request is sent to the backend. The flat APIintentionally does not support the engine's positioning arguments; use`grid.table.addRow(...)` only for advanced direct engine access, whichcan bypass AMB tracking.
 </div>
 
 
@@ -2285,8 +2549,7 @@ can bypass AMB tracking.
 
         
 <div class="param-desc">
-    Row Component or Promise returned
-  directly by `CrudHelper`.
+    Row Component or Promise returned  directly by `CrudHelper`.
 </div>
 
 
@@ -2995,13 +3258,7 @@ accessible feedback, confirmation dialogs and validation messages.
 
 
 <div class="description">
-    Reconciles AMB temporary row ids with ids assigned by the backend.
-
-Mappings and options are forwarded unchanged to `CrudHelper`, which owns
-row resolution, duplicate detection, data and snapshot updates, and
-internal map reconciliation. This method does not send a backend request.
-
-A normal application flow is:
+    Reconciles AMB temporary row ids with ids assigned by the backend.Mappings and options are forwarded unchanged to `CrudHelper`, which ownsrow resolution, duplicate detection, data and snapshot updates, andinternal map reconciliation. This method does not send a backend request.A normal application flow is:
 </div>
 
 
@@ -3331,12 +3588,7 @@ A normal application flow is:
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>const payload = grid.getSavePayload();
-
-const response = await saveRows(payload.changes);
-
-grid.applyBackendIds(response.insertedIds);
-const result = grid.markValidChangesSaved();</code></pre>
+    <pre class="prettyprint"><code>const payload = grid.getSavePayload();const response = await saveRows(payload.changes);grid.applyBackendIds(response.insertedIds);const result = grid.markValidChangesSaved();</code></pre>
 
 
 
@@ -3354,16 +3606,7 @@ const result = grid.markValidChangesSaved();</code></pre>
 
 
 <div class="description">
-    AMB Grid text editor with suggestions from a string list.
-
-AMB Grid owns the input value, matching and commit rules, validation
-integration, CRUD state, floating positioning and lifecycle cleanup. The
-internal suggestion widget handles suggestion rendering and keyboard
-selection. Suggestions have no separate hidden associated data, and this
-editor does not perform remote lookup or asynchronous validation.
-The suggestion list is rendered as a floating overlay under `document.body`
-and positioned from the active input, so it is not clipped by the internal
-table engine scroll area and does not change grid layout.
+    AMB Grid text editor with suggestions from a string list.AMB Grid owns the input value, matching and commit rules, validationintegration, CRUD state, floating positioning and lifecycle cleanup. Theinternal suggestion widget handles suggestion rendering and keyboardselection. Suggestions have no separate hidden associated data, and thiseditor does not perform remote lookup or asynchronous validation.While keyboard navigation is enabled, commit/cancel use table bindings(Enter/Escape by default); Tab continues its dedicated commit/navigation flow.The suggestion list is rendered as a floating overlay under `document.body`and positioned from the active input, so it is not clipped by the internaltable engine scroll area and does not change grid layout.
 </div>
 
 
@@ -3920,7 +4163,7 @@ table engine scroll area and does not change grid layout.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_autocomplete-editor.js.html">lib/editors/autocomplete-editor.js</a>, <a href="lib_editors_autocomplete-editor.js.html#line211">line 211</a>
+        <a href="lib_editors_autocomplete-editor.js.html">lib/editors/autocomplete-editor.js</a>, <a href="lib_editors_autocomplete-editor.js.html#line214">line 214</a>
     </li></ul></dd>
     
 
@@ -4474,20 +4717,7 @@ unavailable.
 
 
 <div class="description">
-    Create a checkbox editor that saves `checkedValue` or `uncheckedValue`.
-
-Keyboard:
-- Enter: always toggles the state and keeps the checkbox active.
-- Space: toggles the state by default through `toggleKeys`.
-- 1, Y, y, S, s: set the checked state by default through `checkedKeys`.
-- 0, N, n: set the unchecked state by default through `uncheckedKeys`.
-- Tab: commits and moves to the next editable cell.
-- Shift+Tab: commits and moves to the previous editable cell.
-- Escape: cancels the edit.
-
-A normal blur commits the value without imposing navigation.
-The `toggleKeys`, `checkedKeys`, and `uncheckedKeys` options replace
-their respective default key lists when provided.
+    Create a checkbox editor that saves `checkedValue` or `uncheckedValue`.Keyboard:- Enter: always toggles the state and keeps the checkbox active.- Space: toggles the state by default through `toggleKeys`.- 1, Y, y, S, s: set the checked state by default through `checkedKeys`.- 0, N, n: set the unchecked state by default through `uncheckedKeys`.- Tab: commits and moves to the next editable cell.- Shift+Tab: commits and moves to the previous editable cell.- Escape: cancels the edit.A normal blur commits the value without imposing navigation.The `toggleKeys`, `checkedKeys`, and `uncheckedKeys` options replacetheir respective default key lists when provided.
 </div>
 
 
@@ -5430,16 +5660,7 @@ returns `true` when delegated and `false` when unavailable.
 
 
 <div class="description">
-    Clears one AMB application error associated with a row field.
-
-The identifier and field are forwarded without transformation.
-`CrudHelper` owns row resolution, AMB error-map updates, runtime
-attributes, highlighting and any existing CRUD event. This does not run
-validation, change lifecycle state or clear the separate native Cell
-Component validation marker used by `clearCellValidation()`.
-
-`true` means the row was found and the operation was handled; it does not
-guarantee that an error was previously registered for the field.
+    Clears one AMB application error associated with a row field.The identifier and field are forwarded without transformation.`CrudHelper` owns row resolution, AMB error-map updates, runtimeattributes, highlighting and any existing CRUD event. This does not runvalidation, change lifecycle state or clear the separate native CellComponent validation marker used by `clearCellValidation()`.`true` means the row was found and the operation was handled; it does notguarantee that an error was previously registered for the field.
 </div>
 
 
@@ -5621,19 +5842,7 @@ guarantee that an error was previously registered for the field.
 
 
 <div class="description">
-    Clears every AMB application error associated with fields of one row.
-
-The backend id or `_ambTempId` is forwarded unchanged. The general
-row-level error, if present, remains registered; use
-`clearErrorsForRow(...)` to clear both levels. `CrudHelper` owns error-map
-updates, runtime markers, titles, row highlighting and the existing
-`cell-error-cleared` events.
-
-This operation does not run validation, change lifecycle state or clear
-native Cell Component validation markers. Errors can reappear during a
-later validation when their underlying condition remains. `true` means
-the row was found and the cleanup was handled, even when it had no cell
-errors.
+    Clears every AMB application error associated with fields of one row.The backend id or `_ambTempId` is forwarded unchanged. The generalrow-level error, if present, remains registered; use`clearErrorsForRow(...)` to clear both levels. `CrudHelper` owns error-mapupdates, runtime markers, titles, row highlighting and the existing`cell-error-cleared` events.This operation does not run validation, change lifecycle state or clearnative Cell Component validation markers. Errors can reappear during alater validation when their underlying condition remains. `true` meansthe row was found and the cleanup was handled, even when it had no cellerrors.
 </div>
 
 
@@ -6275,18 +6484,7 @@ access and can bypass CRUD synchronization.
 
 
 <div class="description">
-    Clears all AMB application errors belonging to one row.
-
-Both the general row error and all field errors are removed for the row
-resolved by backend id or `_ambTempId`; errors belonging to other rows
-are untouched. `CrudHelper` remains responsible for its error maps,
-runtime markers/titles, row highlighting and existing cleared events.
-
-The operation does not remove or modify validators, run validation,
-change row data or lifecycle state, or clear native Cell Component
-validation markers. Errors can reappear during a later validation when
-their underlying condition remains. The boolean is returned directly
-from `CrudHelper`.
+    Clears all AMB application errors belonging to one row.Both the general row error and all field errors are removed for the rowresolved by backend id or `_ambTempId`; errors belonging to other rowsare untouched. `CrudHelper` remains responsible for its error maps,runtime markers/titles, row highlighting and existing cleared events.The operation does not remove or modify validators, run validation,change row data or lifecycle state, or clear native Cell Componentvalidation markers. Errors can reappear during a later validation whentheir underlying condition remains. The boolean is returned directlyfrom `CrudHelper`.
 </div>
 
 
@@ -7012,15 +7210,7 @@ Components but can bypass AMB tracking.
 
 
 <div class="description">
-    Clears only the row-level AMB application error.
-
-Cell-field errors for the same row remain registered. `CrudHelper` owns
-row resolution, runtime attributes and any existing CRUD event. This
-operation does not modify row data or lifecycle state, run validation or
-clear native Cell Component validation markers.
-
-`true` means the row was found and the operation was handled; it does not
-guarantee that a row-level error was previously registered.
+    Clears only the row-level AMB application error.Cell-field errors for the same row remain registered. `CrudHelper` ownsrow resolution, runtime attributes and any existing CRUD event. Thisoperation does not modify row data or lifecycle state, run validation orclear native Cell Component validation markers.`true` means the row was found and the operation was handled; it does notguarantee that a row-level error was previously registered.
 </div>
 
 
@@ -7293,10 +7483,7 @@ not directly modify row data or CRUD state.
 
 
 <div class="description">
-    Clears the current row selection.
-
-All selected rows are deselected. The method performs no operation when
-row deselection is not available.
+    Clears the current row selection.All selected rows are deselected. The method performs no operation whenrow deselection is not available.
 </div>
 
 
@@ -8037,8 +8224,7 @@ row data and CRUD state.
 
 
 <div class="description">
-    Create a data source for the specialized lookup editor.
-Results are cached by query unless disabled. Editor calls pass `query`,`rowData`, `field`, and `context` to the loader.
+    Create a data source for the specialized lookup editor.Results are cached by query unless disabled. Editor calls pass `query`,`rowData`, `field`, and `context` to the loader.
 </div>
 
 
@@ -8754,18 +8940,7 @@ row data and CRUD state.
 
 
 <div class="description">
-    Create a Multifield Lookup definition.
-
-`AMB.multifieldLookup(...)` links one editable master cell to a complete lookup record.
-A normal lookup answers "which value goes in this cell?"; a Multifield Lookup answers
-"which external record is attached to this row, and which row fields must
-be updated together?". The mapping is explicit: every `{ from, field }`
-pair maps `lookupRecord[from]` to `row[field]`.Keyboard behavior is inherited from the lookup editor: when the master cell
-is closed, `Enter` opens the lookup dialog and `Tab`/`Shift+Tab` navigate
-between cells. When the dialog is open, focus remains in the dialog,
-arrows move selection, `Enter` selects, and `Escape` closes.
-Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
-`masterColumn({ editorOptions: { caseSensitive } })` overrides it.
+    Create a Multifield Lookup definition.`AMB.multifieldLookup(...)` links one editable master cell to a complete lookup record.A normal lookup answers "which value goes in this cell?"; a Multifield Lookup answers"which external record is attached to this row, and which row fields mustbe updated together?". The mapping is explicit: every `{ from, field }`pair maps `lookupRecord[from]` to `row[field]`.Keyboard behavior is inherited from the lookup editor: when the master cellis closed, `Enter` opens the lookup dialog and `Tab`/`Shift+Tab` navigatebetween cells. When the dialog is open, focus remains in the dialog,arrows move selection, `Enter` selects, and `Escape` closes.Lookup autocomplete matching also inherits `lookup.caseSensitive` unless`masterColumn({ editorOptions: { caseSensitive } })` overrides it.
 </div>
 
 
@@ -8924,49 +9099,7 @@ Lookup autocomplete matching also inherits `lookup.caseSensitive` unless
 
 
 <div class="description">
-    Creates an AMB-managed CRUD grid controller.
-
-The returned controller is the main public API for data access, row
-operations, selection, pagination, filters, search, validation, payload
-generation and lifecycle cleanup.
-
-AMB Grid manages the underlying table engine internally. Advanced engine
-access is available through `table` for integration scenarios not yet
-covered by the controller API, while normal application code should prefer
-methods exposed directly on the controller.
-`grid.on(...)` and `grid.off(...)` manage public engine events, while
-`grid.onCrud(...)` and `grid.offCrud(...)` manage AMB CRUD lifecycle events.
-
-AMB Grid provides the CRUD application layer, column validation, rollback
-handling, lookup behavior, initial lookup description metadata for loaded
-rows, save payloads, optional row action and selection columns, hover
-messages, large text previews, search helpers, and lifecycle cleanup.
-Lookup columns created with `AMB.editors.lookup(...)` are marked on rendered
-cells and their prefilled values are resolved asynchronously into internal
-metadata after table build and data reloads. When lookup description
-floating messages are enabled, lookup cells are marked on render so hover
-descriptions can work before a cell is edited.
-Column validators can be provided with `validator`, `required`, or astructured `validation` object. Most validators do not imply required:
-use `required: true`, `validation.required`, or `AMB.validators.required()`
-when empty values should fail validation.
-Validators can also be added dynamically with `grid.addCellValidator(...)`;
-`grid.removeCellValidators(field)` removes all current AMB rules for a field.
-AMB numeric editors/formatters receive `hozAlign: 'right'` by default and
-AMB date editors/formatters receive `hozAlign: 'center'` by default, onlywhen the column did not already define `hozAlign`.Internal-engine pagination options are still passed through unchanged when
-`pagination` is boolean. AMB Grid also accepts an object-style pagination
-convenience layer:
-`{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.
-Object-style pagination is translated to the corresponding internal-engine
-options before grid creation and takes precedence over equivalent `paginationMode`,
-`paginationSize`, and `paginationSizeSelector` values. Remote pagination is
-only delegated to the underlying table engine; AMB Grid does not add
-backend/server-side behavior.
-When pagination is enabled, AMB Grid sets the underlying engine's
-`paginationAddRow` to `'table'` unless explicitly provided, so
-`grid.addRow(...)` appends to the whole grid, uses the underlying engine row
-component to open the page containing the new row when possible, and attempts
-to focus the first editable visible data cell. Action columns are not
-candidates for automatic focus.
+    Creates an AMB-managed CRUD grid controller.The returned controller is the main public API for data access, rowoperations, selection, pagination, filters, search, validation, payloadgeneration and lifecycle cleanup.AMB Grid manages the underlying table engine internally. Advanced engineaccess is available through `table` for integration scenarios not yetcovered by the controller API, while normal application code should prefermethods exposed directly on the controller.`grid.on(...)` and `grid.off(...)` manage public engine events, while`grid.onCrud(...)` and `grid.offCrud(...)` manage AMB CRUD lifecycle events.AMB Grid provides the CRUD application layer, column validation, rollbackhandling, lookup behavior, initial lookup description metadata for loadedrows, save payloads, optional row action and selection columns, hovermessages, large text previews, search helpers, and lifecycle cleanup.Lookup columns created with `AMB.editors.lookup(...)` are marked on renderedcells and their prefilled values are resolved asynchronously into internalmetadata after table build and data reloads. When lookup descriptionfloating messages are enabled, lookup cells are marked on render so hoverdescriptions can work before a cell is edited.Column validators can be provided with `validator`, `required`, or astructured `validation` object. Most validators do not imply required:use `required: true`, `validation.required`, or `AMB.validators.required()`when empty values should fail validation.Validators can also be added dynamically with `grid.addCellValidator(...)`;`grid.removeCellValidators(field)` removes all current AMB rules for a field.AMB numeric editors/formatters receive `hozAlign: 'right'` by default andAMB date editors/formatters receive `hozAlign: 'center'` by default, onlywhen the column did not already define `hozAlign`.Internal-engine pagination options are still passed through unchanged when`pagination` is boolean. AMB Grid also accepts an object-style paginationconvenience layer:`{ enabled: true, mode: 'local', pageSize: 10, pageSizeSelector: [10, 25, 50] }`.Object-style pagination is translated to the corresponding internal-engineoptions before grid creation and takes precedence over equivalent `paginationMode`,`paginationSize`, and `paginationSizeSelector` values. Remote pagination isonly delegated to the underlying table engine; AMB Grid does not addbackend/server-side behavior.When pagination is enabled, AMB Grid sets the underlying engine's`paginationAddRow` to `'table'` unless explicitly provided, so`grid.addRow(...)` appends to the whole grid, uses the underlying engine rowcomponent to open the page containing the new row when possible, and attemptsto focus the first editable visible data cell. Action columns are notcandidates for automatic focus.
 </div>
 
 
@@ -9059,7 +9192,7 @@ candidates for automatic focus.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line935">line 935</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line976">line 976</a>
     </li></ul></dd>
     
 
@@ -9130,14 +9263,7 @@ candidates for automatic focus.
 
 
 <div class="description">
-    Date editor. Saves a date string in the configured format.Keyboard behavior:- `Tab` and `Shift+Tab` commit and navigate whether the picker is open or  closed.- `Enter` opens the datepicker when a picker is configured.
-- while the picker is open, arrow keys do not propagate to the grid,
-  `Enter` is left to the picker when appropriate, and `Escape` preserves
-  the configured manual or picker-only close behavior.
-- picker selection updates the manual editor value; leaving the editor
-  commits it, while `Tab` and `Shift+Tab` commit and navigate.
-- manual picker editors keep the calendar button mounted after picker
-  close so the calendar can be reopened.
+    Date editor. Saves a date string in the configured format.Keyboard behavior:- `Tab` and `Shift+Tab` commit and navigate whether the picker is open or  closed.- Manual inputs use the configured commit/cancel bindings (`Enter` and  `Escape` by default) and return focus to their original cell after  closing. In `manualWithPickerButton`, `F2` opens the  picker; `pickerOnly` opens it on `Enter` or `F2`.- In `pickerOnly`, `Escape` closes the picker and returns focus to the  original cell in navigation mode without reopening editing; an  external pointer close retains the pointer-selected focus destination.  The picker-only configuration disables the datepicker's own Escape  toggle so the grid handles this close action consistently.- while the picker is open, arrow keys do not propagate to the grid,  `Enter` is left to the picker when appropriate, and `Escape` preserves  the configured manual or picker-only close behavior.- picker selection updates the manual editor value; leaving the editor  commits it, while `Tab` and `Shift+Tab` commit and navigate.- manual picker editors keep the calendar button mounted after picker  close so the calendar can be reopened.
 </div>
 
 
@@ -9623,7 +9749,7 @@ candidates for automatic focus.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_date-editor.js.html">lib/editors/date-editor.js</a>, <a href="lib_editors_date-editor.js.html#line107">line 107</a>
+        <a href="lib_editors_date-editor.js.html">lib/editors/date-editor.js</a>, <a href="lib_editors_date-editor.js.html#line126">line 126</a>
     </li></ul></dd>
     
 
@@ -9689,7 +9815,7 @@ candidates for automatic focus.
 
 
 <div class="description">
-    Decimal editor. Saves a number, or an empty string when allowed.
+    Decimal editor. Saves a number, or an empty string when allowed. Whilekeyboard navigation is enabled, commit/cancel use table bindings.
 </div>
 
 
@@ -10206,7 +10332,7 @@ candidates for automatic focus.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line225">line 225</a>
+        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line228">line 228</a>
     </li></ul></dd>
     
 
@@ -10446,13 +10572,7 @@ which case the operation is rejected.
 
 
 <div class="description">
-    Applies a local deletion through the AMB CRUD lifecycle.
-
-A new row is physically removed; a persisted row is cleared of errors
-and markers and remains tracked as `deleted` until backend confirmation
-through a save-confirmation method. This method accepts one backend id or
-`_ambTempId`, sends no backend request, and intentionally overrides the
-engine's similarly named operation.
+    Applies a local deletion through the AMB CRUD lifecycle.A new row is physically removed; a persisted row is cleared of errorsand markers and remains tracked as `deleted` until backend confirmationthrough a save-confirmation method. This method accepts one backend id or`_ambTempId`, sends no backend request, and intentionally overrides theengine's similarly named operation.
 </div>
 
 
@@ -10611,14 +10731,7 @@ engine's similarly named operation.
 
 
 <div class="description">
-    Deselects one row using an AMB Grid row identifier.
-
-Backend identifiers and AMB Grid temporary identifiers are resolved
-through the CRUD layer.
-
-This method currently deselects one row at a time. Arrays, row ranges and
-deselect-all behavior are not part of this method; use `clearSelection()`
-to clear the complete selection.
+    Deselects one row using an AMB Grid row identifier.Backend identifiers and AMB Grid temporary identifiers are resolvedthrough the CRUD layer.This method currently deselects one row at a time. Arrays, row ranges anddeselect-all behavior are not part of this method; use `clearSelection()`to clear the complete selection.
 </div>
 
 
@@ -10777,15 +10890,7 @@ to clear the complete selection.
 
 
 <div class="description">
-    Releases the complete AMB Grid controller.
-
-Lifecycle cleanup destroys owned AMB Grid resources first: history
-coordination, toolbar, column and binder subscriptions, search,
-feedback, cell messages, floating messages and dialogs. History
-listeners and pending waits are released before CRUD event bindings are
-disconnected, and the internal table engine is destroyed last.
-
-The controller should not normally be reused after destruction.
+    Releases the complete AMB Grid controller.Lifecycle cleanup destroys owned AMB Grid resources first: historycoordination, toolbar, column and binder subscriptions, search,feedback, cell messages, floating messages and dialogs. Historylisteners and pending waits are released before CRUD event bindings aredisconnected, and the internal table engine is destroyed last.The controller should not normally be reused after destruction.
 </div>
 
 
@@ -13317,15 +13422,7 @@ forwarded unchanged, and `false` means unavailable.
 
 
 <div class="description">
-    Reads the cell-field errors currently tracked by AMB CRUD.
-
-Each item contains the available row identifiers, field and message. An
-empty array means that no cell error is registered. This method does not
-return native Cell Components and does not read or change their separate
-runtime validation markers.
-
-The array is returned directly from `CrudHelper`; treat it as a read
-result and do not mutate it expecting to update AMB Grid state.
+    Reads the cell-field errors currently tracked by AMB CRUD.Each item contains the available row identifiers, field and message. Anempty array means that no cell error is registered. This method does notreturn native Cell Components and does not read or change their separateruntime validation markers.The array is returned directly from `CrudHelper`; treat it as a readresult and do not mutate it expecting to update AMB Grid state.
 </div>
 
 
@@ -14767,13 +14864,7 @@ forwarded unchanged. This reads Cell Component runtime state and returns
 
 
 <div class="description">
-    Reads changes currently classified by the AMB CRUD lifecycle.
-
-Unlike `getStateReport()`, this returns only inserted, updated and
-deleted changes. It does not exclude invalid changes automatically or
-perform validation. The result is returned directly from `CrudHelper`;
-treat it as a read snapshot and do not mutate it expecting to update AMB
-Grid state.
+    Reads changes currently classified by the AMB CRUD lifecycle.Unlike `getStateReport()`, this returns only inserted, updated anddeleted changes. It does not exclude invalid changes automatically orperform validation. The result is returned directly from `CrudHelper`;treat it as a read snapshot and do not mutate it expecting to update AMBGrid state.
 </div>
 
 
@@ -17453,16 +17544,7 @@ retain their runtime identities and should be treated carefully.
 
 
 <div class="description">
-    Reads the complete summary of errors currently tracked by AMB CRUD.
-
-Row errors and cell-field errors remain separated in the `rows` and
-`cells` arrays. Unlike `getStateReport()`, this focused result does not
-include rows, lifecycle states, changes or save candidates. Reading it
-does not validate rows or modify native validation markers, messages or
-CRUD error state.
-
-The result is returned directly from `CrudHelper`; treat it as a read
-snapshot and do not mutate it expecting to update AMB Grid state.
+    Reads the complete summary of errors currently tracked by AMB CRUD.Row errors and cell-field errors remain separated in the `rows` and`cells` arrays. Unlike `getStateReport()`, this focused result does notinclude rows, lifecycle states, changes or save candidates. Reading itdoes not validate rows or modify native validation markers, messages orCRUD error state.The result is returned directly from `CrudHelper`; treat it as a readsnapshot and do not mutate it expecting to update AMB Grid state.
 </div>
 
 
@@ -24037,15 +24119,7 @@ method returns `false` when the row or operation is not available.
 
 
 <div class="description">
-    Reads the row-level errors currently tracked by AMB CRUD.
-
-Each item contains the available row key, backend id, temporary id, row
-number and message. An empty array means that no row error is registered.
-Reading the array does not validate rows, clear messages or modify native
-validation markers.
-
-The array is returned directly from `CrudHelper`; treat it as a read
-result and do not mutate it expecting to update AMB Grid state.
+    Reads the row-level errors currently tracked by AMB CRUD.Each item contains the available row key, backend id, temporary id, rownumber and message. An empty array means that no row error is registered.Reading the array does not validate rows, clear messages or modify nativevalidation markers.The array is returned directly from `CrudHelper`; treat it as a readresult and do not mutate it expecting to update AMB Grid state.
 </div>
 
 
@@ -25240,17 +25314,7 @@ those components may bypass or interfere with AMB Grid CRUD tracking.
 
 
 <div class="description">
-    Builds the AMB save payload using the options supported by `CrudHelper`.
-
-The supplied options object is forwarded unchanged. Defaults, filtering
-and payload structure remain owned by `CrudHelper`. This operation does
-not send the payload, validate rows or mark them as saved. The result is
-returned directly; treat it as a generated read result and do not mutate
-it expecting to update AMB Grid state.
-
-`canSave` reports whether the changes are savable under `savePolicy`, not
-whether the complete grid is free of errors. `isPartialSave` identifies
-a mixed valid/invalid `valid-only` candidate; it does not perform a save.
+    Builds the AMB save payload using the options supported by `CrudHelper`.The supplied options object is forwarded unchanged. Defaults, filteringand payload structure remain owned by `CrudHelper`. This operation doesnot send the payload, validate rows or mark them as saved. The result isreturned directly; treat it as a generated read result and do not mutateit expecting to update AMB Grid state.`canSave` reports whether the changes are savable under `savePolicy`, notwhether the complete grid is free of errors. `isPartialSave` identifiesa mixed valid/invalid `valid-only` candidate; it does not perform a save.
 </div>
 
 
@@ -25536,14 +25600,7 @@ returned.
 
 
 <div class="description">
-    Returns the data objects for the selected rows.
-
-Rows are returned in their selection order. The method returns runtime
-grid data as-is and does not create an AMB Grid save payload or remove
-technical fields.
-
-Returned objects should be treated as read-only because direct mutation
-may bypass CRUD tracking.
+    Returns the data objects for the selected rows.Rows are returned in their selection order. The method returns runtimegrid data as-is and does not create an AMB Grid save payload or removetechnical fields.Returned objects should be treated as read-only because direct mutationmay bypass CRUD tracking.
 </div>
 
 
@@ -25653,11 +25710,7 @@ may bypass CRUD tracking.
 
 
 <div class="description">
-    Returns the row components for the selected rows.
-
-Components are returned in their selection order. Row components expose
-advanced operations, so direct mutations may bypass or interfere with AMB
-Grid CRUD tracking.
+    Returns the row components for the selected rows.Components are returned in their selection order. Row components exposeadvanced operations, so direct mutations may bypass or interfere with AMBGrid CRUD tracking.
 </div>
 
 
@@ -25767,11 +25820,7 @@ Grid CRUD tracking.
 
 
 <div class="description">
-    Returns the data objects for the selected rows.
-
-This AMB Grid compatibility method returns selected row data rather than
-row components. Use `getSelectedRowComponents()` when component access is
-required.
+    Returns the data objects for the selected rows.This AMB Grid compatibility method returns selected row data rather thanrow components. Use `getSelectedRowComponents()` when component access isrequired.
 </div>
 
 
@@ -27088,14 +27137,7 @@ as read-only.
 
 
 <div class="description">
-    Reads the complete AMB CRUD state report.
-
-The report is a broader snapshot than `getChanges()`: it describes rows,
-lifecycle state, errors, all changes and valid save candidates. It does
-not run `validate()` and does not convert the report into the focused
-structure returned by `getSavePayload()`. The result is returned directly
-from `CrudHelper`; treat it as a read snapshot and do not mutate it
-expecting to update AMB Grid state.
+    Reads the complete AMB CRUD state report.The report is a broader snapshot than `getChanges()`: it describes rows,lifecycle state, errors, all changes and valid save candidates. It doesnot run `validate()` and does not convert the report into the focusedstructure returned by `getSavePayload()`. The result is returned directlyfrom `CrudHelper`; treat it as a read snapshot and do not mutate itexpecting to update AMB Grid state.
 </div>
 
 
@@ -27553,13 +27595,7 @@ that the row is a root.
 
 
 <div class="description">
-    Reads whether the AMB CRUD layer currently tracks application errors.
-
-Both row-level and cell-field errors are included. This does not run
-`validate()`, clear errors or change messages and markers. CRUD errors
-can come from AMB validators or application logic and are distinct from
-the native Cell Component validation state exposed by
-`getInvalidCells()` and `isCellValid(...)`.
+    Reads whether the AMB CRUD layer currently tracks application errors.Both row-level and cell-field errors are included. This does not run`validate()`, clear errors or change messages and markers. CRUD errorscan come from AMB validators or application logic and are distinct fromthe native Cell Component validation state exposed by`getInvalidCells()` and `isCellValid(...)`.
 </div>
 
 
@@ -28219,7 +28255,7 @@ runtime dataset may already contain the imported rows.
 
 
 <div class="description">
-    Integer editor. Saves a number, or an empty string when allowed.
+    Integer editor. Saves a number, or an empty string when allowed. Whilekeyboard navigation is enabled, commit/cancel use table bindings.
 </div>
 
 
@@ -28619,7 +28655,7 @@ runtime dataset may already contain the imported rows.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line108">line 108</a>
+        <a href="lib_editors_number-editors.js.html">lib/editors/number-editors.js</a>, <a href="lib_editors_number-editors.js.html#line109">line 109</a>
     </li></ul></dd>
     
 
@@ -29570,12 +29606,7 @@ method returns `false` when the row or operation is not available.
 
 
 <div class="description">
-    Reports whether one managed row component is currently selected.
-
-The AMB Grid row identifier can be a backend id or an AMB temporary
-identifier. The managed row component is resolved through the CRUD layer,
-then its runtime selection state is read without changing the selection.
-This method does not modify row data or AMB Grid CRUD state.
+    Reports whether one managed row component is currently selected.The AMB Grid row identifier can be a backend id or an AMB temporaryidentifier. The managed row component is resolved through the CRUD layer,then its runtime selection state is read without changing the selection.This method does not modify row data or AMB Grid CRUD state.
 </div>
 
 
@@ -29904,11 +29935,7 @@ or the operation is not available.
 
 
 <div class="description">
-    Modal textarea editor for long text.
-
-Keyboard behavior: `Escape` cancels, `Ctrl+Enter` saves, and the dialog
-traps `Tab`/`Shift+Tab` across its textarea and actions. Closing restores
-keyboard focus to the source cell without reopening the editor.
+    Modal textarea editor for long text.Keyboard behavior: `Escape` cancels, `Ctrl+Enter` saves, and the dialogtraps `Tab`/`Shift+Tab` across its textarea and actions. Closing restoreskeyboard focus to the source cell without reopening the editor.
 </div>
 
 
@@ -30576,12 +30603,7 @@ keyboard focus to the source cell without reopening the editor.
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>{
-  title: 'Notes',
-  field: 'notes',
-  editor: AMB.editors.largeText(),
-  formatter: AMB.formatters.largeTextPreview()
-}</code></pre>
+    <pre class="prettyprint"><code>{  title: 'Notes',  field: 'notes',  editor: AMB.editors.largeText(),  formatter: AMB.formatters.largeTextPreview()}</code></pre>
 
 
 
@@ -30599,7 +30621,7 @@ keyboard focus to the source cell without reopening the editor.
 
 
 <div class="description">
-    Lookup code editor with a text input and search dialog button.Keyboard behavior:- `Tab` and `Shift+Tab` commit and navigate when the lookup dialog is  closed.- `Enter` opens the configured lookup dialog; without a dialog it keeps  the manual commit behavior.- while the lookup dialog is open, focus is trapped inside the dialog,  arrow keys move lookup selection, `Enter` selects, and `Escape`  cancels.- record-based lookups can update multiple row fields through  `mapToRow`.
+    Lookup code editor with a text input and search dialog button.Keyboard behavior:- `Tab` and `Shift+Tab` commit and navigate when the lookup dialog is  closed.- `Enter` commits the manual value; `F2` opens the configured lookup dialog  when one is available.- while the lookup dialog is open, focus is trapped inside the dialog,  arrow keys move lookup selection, `Enter` selects, and `Escape`  cancels.- record-based lookups can update multiple row fields through  `mapToRow`.
 </div>
 
 
@@ -30626,8 +30648,6 @@ keyboard focus to the source cell without reopening the editor.
         <th>Attributes</th>
         
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -30662,10 +30682,6 @@ keyboard focus to the source cell without reopening the editor.
             
 
             
-                <td class="default">
-                
-                </td>
-            
 
             <td class="description last">Lookup instance created with `AMB.lookup`.</td>
         </tr>
@@ -30698,10 +30714,6 @@ keyboard focus to the source cell without reopening the editor.
                 </td>
             
 
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">Lookup editor options.
@@ -31458,25 +31470,25 @@ keyboard focus to the source cell without reopening the editor.
         </tr>
 
     
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>dialogColumns</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">Array.&lt;object></span>
+
+
             
             </td>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -31491,14 +31503,14 @@ keyboard focus to the source cell without reopening the editor.
                 </td>
             
 
-            <td class="description last"></td>
+            <td class="description last">Fallback dialog columns when the lookup does not define columns.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>options.searchPlaceholder</code></td>
+                <td class="name"><code>searchPlaceholder</code></td>
             
 
             <td class="type">
@@ -31537,7 +31549,7 @@ keyboard focus to the source cell without reopening the editor.
 
         <tr>
             
-                <td class="name"><code>options.mapToRow</code></td>
+                <td class="name"><code>mapToRow</code></td>
             
 
             <td class="type">
@@ -31574,7 +31586,7 @@ keyboard focus to the source cell without reopening the editor.
 
         <tr>
             
-                <td class="name"><code>options.onOpenDialog</code></td>
+                <td class="name"><code>onOpenDialog</code></td>
             
 
             <td class="type">
@@ -31611,7 +31623,7 @@ keyboard focus to the source cell without reopening the editor.
 
         <tr>
             
-                <td class="name"><code>options.onInvalidCode</code></td>
+                <td class="name"><code>onInvalidCode</code></td>
             
 
             <td class="type">
@@ -31648,7 +31660,7 @@ keyboard focus to the source cell without reopening the editor.
 
         <tr>
             
-                <td class="name"><code>options.dialogOptions</code></td>
+                <td class="name"><code>dialogOptions</code></td>
             
 
             <td class="type">
@@ -31679,6 +31691,13 @@ keyboard focus to the source cell without reopening the editor.
             
 
             <td class="description last">Options forwarded to `LookupDialog.open`. Editor-calculated title, columns, data, and search fields take precedence.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -31719,7 +31738,7 @@ keyboard focus to the source cell without reopening the editor.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line106">line 106</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line108">line 108</a>
     </li></ul></dd>
     
 
@@ -31790,9 +31809,7 @@ keyboard focus to the source cell without reopening the editor.
 
 
 <div class="description">
-    Alias for <a href="global.html#createLookup">createLookup</a>. Exposed as `AMB.lookup(options)`.
-Use `AMB.lookup` as the primary public API; `createLookup` is the equivalent
-named export for advanced or direct module usage.
+    Alias for <a href="global.html#createLookup">createLookup</a>. Exposed as `AMB.lookup(options)`.Use `AMB.lookup` as the primary public API; `createLookup` is the equivalentnamed export for advanced or direct module usage.
 </div>
 
 
@@ -31963,18 +31980,7 @@ named export for advanced or direct module usage.
 
 
 <div class="description">
-    Registers an application error for one field of an AMB-managed row.
-
-The identifier can be a backend id or `_ambTempId`; identifier, field
-and message are forwarded without transformation. `CrudHelper` verifies
-the row and cell, rejects deleted rows, records the error, synchronizes
-AMB runtime dataset/title attributes and highlighting, and emits the
-existing CRUD event. The operation does not run validation or change the
-row lifecycle state.
-
-This AMB application error is distinct from native Cell Component
-validation state. The boolean result is returned directly from
-`CrudHelper`.
+    Registers an application error for one field of an AMB-managed row.The identifier can be a backend id or `_ambTempId`; identifier, fieldand message are forwarded without transformation. `CrudHelper` verifiesthe row and cell, rejects deleted rows, records the error, synchronizesAMB runtime dataset/title attributes and highlighting, and emits theexisting CRUD event. The operation does not run validation or change therow lifecycle state.This AMB application error is distinct from native Cell Componentvalidation state. The boolean result is returned directly from`CrudHelper`.
 </div>
 
 
@@ -32179,13 +32185,7 @@ validation state. The boolean result is returned directly from
 
 
 <div class="description">
-    Registers an application error for an entire AMB-managed row.
-
-The backend id or `_ambTempId` and message are forwarded unchanged.
-Deleted rows cannot receive a new error. `CrudHelper` remains responsible
-for the AMB error map, runtime row title/dataset attributes, highlighting
-and the existing `row-error` event. This explicit marker does not replace
-validation and does not change the row lifecycle state.
+    Registers an application error for an entire AMB-managed row.The backend id or `_ambTempId` and message are forwarded unchanged.Deleted rows cannot receive a new error. `CrudHelper` remains responsiblefor the AMB error map, runtime row title/dataset attributes, highlightingand the existing `row-error` event. This explicit marker does not replacevalidation and does not change the row lifecycle state.
 </div>
 
 
@@ -32367,12 +32367,7 @@ validation and does not change the row lifecycle state.
 
 
 <div class="description">
-    Confirms one row as saved after a positive backend response.
-
-New and modified rows are consolidated; a confirmed deleted row can be
-physically removed. A new row must receive its backend id before it can
-be confirmed. The identifier is forwarded unchanged and can be a backend
-id or `_ambTempId`. This method changes CRUD state but sends no request.
+    Confirms one row as saved after a positive backend response.New and modified rows are consolidated; a confirmed deleted row can bephysically removed. A new row must receive its backend id before it canbe confirmed. The identifier is forwarded unchanged and can be a backendid or `_ambTempId`. This method changes CRUD state but sends no request.
 </div>
 
 
@@ -32531,12 +32526,7 @@ id or `_ambTempId`. This method changes CRUD state but sends no request.
 
 
 <div class="description">
-    Confirms an explicit list of rows after a positive backend response.
-
-Identifiers are forwarded unchanged. `true` is returned only when every
-identifier is handled successfully. The operation is not atomic and
-provides no group rollback: earlier rows may already be consolidated
-when a later row fails. This method sends no backend request.
+    Confirms an explicit list of rows after a positive backend response.Identifiers are forwarded unchanged. `true` is returned only when everyidentifier is handled successfully. The operation is not atomic andprovides no group rollback: earlier rows may already be consolidatedwhen a later row fails. This method sends no backend request.
 </div>
 
 
@@ -32695,12 +32685,7 @@ when a later row fails. This method sends no backend request.
 
 
 <div class="description">
-    Confirms the valid changes in the current CRUD report.
-
-Call this only after the application receives a positive response from
-its own save request. `CrudHelper` decides which valid changes can be
-consolidated; new rows without backend ids are skipped. The returned
-object lists saved and skipped rows. This method sends no backend request.
+    Confirms the valid changes in the current CRUD report.Call this only after the application receives a positive response fromits own save request. `CrudHelper` decides which valid changes can beconsolidated; new rows without backend ids are skipped. The returnedobject lists saved and skipped rows. This method sends no backend request.
 </div>
 
 
@@ -35555,12 +35540,7 @@ engine access are preserved.
 
 
 <div class="description">
-    Removes one specific AMB CRUD application-event callback.
-
-The event name and previously registered callback are required and
-forwarded unchanged. This does not affect engine listeners registered
-through `grid.on(...)`. Remaining CRUD subscriptions are released by the
-AMB lifecycle when `grid.destroy()` runs.
+    Removes one specific AMB CRUD application-event callback.The event name and previously registered callback are required andforwarded unchanged. This does not affect engine listeners registeredthrough `grid.on(...)`. Remaining CRUD subscriptions are released by theAMB lifecycle when `grid.destroy()` runs.
 </div>
 
 
@@ -35927,17 +35907,7 @@ on the callback `this` value.
 
 
 <div class="description">
-    Subscribes to an AMB CRUD application event.
-
-Current events include `row-state-changed`, `row-saved`, `cell-error`,
-`cell-error-cleared`, `row-error` and `row-error-cleared`; this is not a
-whitelist and later versions may add more. The event name and callback
-are forwarded unchanged. Event-specific payloads can contain row or cell
-components, identifiers, fields, messages and state details.
-
-This is distinct from `grid.on('cellEdited', callback)`, which subscribes
-to an engine runtime event. CRUD events describe tracked updates, state
-changes, application errors and save confirmations.
+    Subscribes to an AMB CRUD application event.Current events include `row-state-changed`, `row-saved`, `cell-error`,`cell-error-cleared`, `row-error` and `row-error-cleared`; this is not awhitelist and later versions may add more. The event name and callbackare forwarded unchanged. Event-specific payloads can contain row or cellcomponents, identifiers, fields, messages and state details.This is distinct from `grid.on('cellEdited', callback)`, which subscribesto an engine runtime event. CRUD events describe tracked updates, statechanges, application errors and save confirmations.
 </div>
 
 
@@ -36106,12 +36076,7 @@ changes, application errors and save confirmations.
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>const unsubscribe = grid.onCrud(
-  'row-state-changed',
-  callback
-);
-
-unsubscribe();</code></pre>
+    <pre class="prettyprint"><code>const unsubscribe = grid.onCrud(  'row-state-changed',  callback);unsubscribe();</code></pre>
 
 
 
@@ -37287,16 +37252,7 @@ that the column or operation is unavailable.
 
 
 <div class="description">
-    Removes all AMB validators currently associated with a field.
-
-This includes dynamically registered validators and declarative rules
-extracted from the initial column configuration. Validators for other
-fields are unchanged. Existing application errors and runtime markers
-are not cleared, and no validation is run; the application can explicitly
-clear errors or validate later according to its own flow.
-
-This changes AMB CRUD validator configuration rather than the native
-validator definition of a constructed engine column.
+    Removes all AMB validators currently associated with a field.This includes dynamically registered validators and declarative rulesextracted from the initial column configuration. Validators for otherfields are unchanged. Existing application errors and runtime markersare not cleared, and no validation is run; the application can explicitlyclear errors or validate later according to its own flow.This changes AMB CRUD validator configuration rather than the nativevalidator definition of a constructed engine column.
 </div>
 
 
@@ -37389,7 +37345,7 @@ validator definition of a constructed engine column.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line60">line 60</a>
+        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line72">line 72</a>
     </li></ul></dd>
     
 
@@ -38639,12 +38595,7 @@ grid table.
 
 
 <div class="description">
-    Rolls back the local CRUD changes for one row.
-
-A new row is removed, while modified or deleted rows are restored.
-Snapshot data, lookup metadata, errors, markers and clean state remain
-owned by `CrudHelper`. The identifier is forwarded unchanged and this
-method sends no request to the backend.
+    Rolls back the local CRUD changes for one row.A new row is removed, while modified or deleted rows are restored.Snapshot data, lookup metadata, errors, markers and clean state remainowned by `CrudHelper`. The identifier is forwarded unchanged and thismethod sends no request to the backend.
 </div>
 
 
@@ -39875,7 +39826,9 @@ may bypass or interfere with AMB Grid CRUD tracking.
 
 
 <div class="description">
-    Native select editor. Saves the selected option value as a string.
+    Creates an AMB Select editor declaration backed internally by Tabulator List.
+Values and labels are normalized before the table runtime is created; the
+public factory continues to accept the same Select options as before.
 </div>
 
 
@@ -40205,7 +40158,7 @@ may bypass or interfere with AMB Grid CRUD tracking.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_select-editor.js.html">lib/editors/select-editor.js</a>, <a href="lib_editors_select-editor.js.html#line19">line 19</a>
+        <a href="lib_editors_select-editor.js.html">lib/editors/select-editor.js</a>, <a href="lib_editors_select-editor.js.html#line16">line 16</a>
     </li></ul></dd>
     
 
@@ -40234,7 +40187,7 @@ may bypass or interfere with AMB Grid CRUD tracking.
 
         
 <div class="param-desc">
-    Grid editor function compatible with the internal table engine.
+    AMB editor declaration transformed into Tabulator List by the table pipeline.
 </div>
 
 
@@ -40271,13 +40224,7 @@ may bypass or interfere with AMB Grid CRUD tracking.
 
 
 <div class="description">
-    Selects one row using an AMB Grid row identifier.
-
-Backend identifiers and AMB Grid temporary identifiers are resolved
-through the CRUD layer.
-
-This method currently selects one row at a time. Arrays, row ranges and
-select-all behavior are not part of this AMB Grid method contract.
+    Selects one row using an AMB Grid row identifier.Backend identifiers and AMB Grid temporary identifiers are resolvedthrough the CRUD layer.This method currently selects one row at a time. Arrays, row ranges andselect-all behavior are not part of this AMB Grid method contract.
 </div>
 
 
@@ -47688,7 +47635,7 @@ delegated; `false` means the row or popup operation is unavailable.
 
 
 <div class="description">
-    Single-line text editor. Saves a string; Enter/blur commit and Escape cancels.
+    Single-line text editor. While keyboard navigation is enabled, commit/canceluse the table bindings (Enter/Escape by default); otherwise legacy behavior applies.
 </div>
 
 
@@ -48016,7 +47963,7 @@ delegated; `false` means the row or popup operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_text-editor.js.html">lib/editors/text-editor.js</a>, <a href="lib_editors_text-editor.js.html#line14">line 14</a>
+        <a href="lib_editors_text-editor.js.html">lib/editors/text-editor.js</a>, <a href="lib_editors_text-editor.js.html#line15">line 15</a>
     </li></ul></dd>
     
 
@@ -48412,13 +48359,7 @@ action was delegated to the runtime component.
 
 
 <div class="description">
-    Toggles the selection state of one row using an AMB Grid identifier.
-
-Backend identifiers and AMB Grid temporary identifiers are resolved
-through the CRUD layer before the runtime Row Component is toggled.
-
-This operation changes only row selection and does not modify row data,
-snapshots or AMB Grid CRUD state.
+    Toggles the selection state of one row using an AMB Grid identifier.Backend identifiers and AMB Grid temporary identifiers are resolvedthrough the CRUD layer before the runtime Row Component is toggled.This operation changes only row selection and does not modify row data,snapshots or AMB Grid CRUD state.
 </div>
 
 
@@ -49587,20 +49528,7 @@ access and can bypass the AMB CRUD lifecycle.
 
 
 <div class="description">
-    Updates one managed row or adds a missing row through AMB Grid.
-
-A backend id or `_ambTempId` identifies the operation. Existing rows are
-updated through normal tracking and validation with technical fields
-protected. Missing rows are added as `new`, using the supplied
-identifier as backend id when their application data has none.
-Conflicting identifiers and `deleted` rows resolve to `null`.
-
-The operation performs no focus, scrolling, selection, page change, or
-automatic rollback. Its Promise preserves the actual Row Component or
-`null`, internal rejections propagate unchanged, and invalid input or
-dependencies return `false`. Direct
-`grid.table.updateOrAddRow(...)` remains advanced engine access and can
-bypass the AMB CRUD lifecycle.
+    Updates one managed row or adds a missing row through AMB Grid.A backend id or `_ambTempId` identifies the operation. Existing rows areupdated through normal tracking and validation with technical fieldsprotected. Missing rows are added as `new`, using the suppliedidentifier as backend id when their application data has none.Conflicting identifiers and `deleted` rows resolve to `null`.The operation performs no focus, scrolling, selection, page change, orautomatic rollback. Its Promise preserves the actual Row Component or`null`, internal rejections propagate unchanged, and invalid input ordependencies return `false`. Direct`grid.table.updateOrAddRow(...)` remains advanced engine access and canbypass the AMB CRUD lifecycle.
 </div>
 
 
@@ -49785,13 +49713,7 @@ bypass the AMB CRUD lifecycle.
 
 
 <div class="description">
-    Applies a partial patch through the AMB CRUD lifecycle.
-
-The identifier can be a backend id or `_ambTempId`. `CrudHelper` updates
-modification tracking and revalidates each patched field, while deleted
-rows are not updated. This AMB-aware method intentionally overrides the
-similarly named engine operation. `grid.table.updateRow(...)` is advanced
-direct access and can bypass AMB lifecycle tracking.
+    Applies a partial patch through the AMB CRUD lifecycle.The identifier can be a backend id or `_ambTempId`. `CrudHelper` updatesmodification tracking and revalidates each patched field, while deletedrows are not updated. This AMB-aware method intentionally overrides thesimilarly named engine operation. `grid.table.updateRow(...)` is advanceddirect access and can bypass AMB lifecycle tracking.
 </div>
 
 
@@ -49976,16 +49898,7 @@ direct access and can bypass AMB lifecycle tracking.
 
 
 <div class="description">
-    Validates the AMB-managed rows.
-
-The supplied options are forwarded unchanged to the CRUD validation
-layer. Validation can update AMB Grid error tracking and visual error
-markers, but it does not change row lifecycle state, original snapshots
-or save-payload classification.
-
-This public controller method intentionally overrides the similarly named
-engine operation so application code receives the AMB Grid validation
-report.
+    Validates the AMB-managed rows.The supplied options are forwarded unchanged to the CRUD validationlayer. Validation can update AMB Grid error tracking and visual errormarkers, but it does not change row lifecycle state, original snapshotsor save-payload classification.This public controller method intentionally overrides the similarly namedengine operation so application code receives the AMB Grid validationreport.
 </div>
 
 
@@ -50159,7 +50072,7 @@ report.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line82">line 82</a>
+        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line94">line 94</a>
     </li></ul></dd>
     
 
@@ -50416,16 +50329,7 @@ separate from AMB Grid validation reports and CRUD application errors.
 
 
 <div class="description">
-    Validates rows with pending insert or update changes.
-
-Only AMB Grid rows in the `new` or `modified` lifecycle states are
-included in the returned validation report. Clean, saved and deleted rows
-are not validated or marked by this operation, although cross-row
-validators can still inspect them when required.
-
-The operation can update AMB Grid validation errors and visual markers,
-but it does not change row lifecycle state, original snapshots or
-save-payload classification.
+    Validates rows with pending insert or update changes.Only AMB Grid rows in the `new` or `modified` lifecycle states areincluded in the returned validation report. Clean, saved and deleted rowsare not validated or marked by this operation, although cross-rowvalidators can still inspect them when required.The operation can update AMB Grid validation errors and visual markers,but it does not change row lifecycle state, original snapshots orsave-payload classification.
 </div>
 
 
@@ -50469,7 +50373,7 @@ save-payload classification.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line101">line 101</a>
+        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -50711,11 +50615,7 @@ means that the column or validation operation is unavailable.
 
 
 <div class="description">
-    Validates one AMB-managed row.
-
-Backend identifiers and AMB temporary identifiers are resolved by the CRUD
-layer. The operation can update validation errors for the requested row
-but does not change its lifecycle state or original snapshot.
+    Validates one AMB-managed row.Backend identifiers and AMB temporary identifiers are resolved by the CRUDlayer. The operation can update validation errors for the requested rowbut does not change its lifecycle state or original snapshot.
 </div>
 
 
@@ -50920,7 +50820,7 @@ but does not change its lifecycle state or original snapshot.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line118">line 118</a>
+        <a href="lib_table_controller_validation-methods.js.html">lib/table/controller/validation-methods.js</a>, <a href="lib_table_controller_validation-methods.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -51347,6 +51247,368 @@ means the callback, row or operation is unavailable.
 
         
                 
+<h4 class="name" id="AMBCellEditingOptions">AMBCellEditingOptions</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>mouseTrigger</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMouseEditTrigger">AMBMouseEditTrigger</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'double-click'
+                
+                </td>
+            
+
+            <td class="description last">Controls how pointer interaction starts cell editing. By default, a single click focuses a cell for navigation and a double click starts editing.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line872">line 872</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBDeclarativeCustomValidatorOptions">AMBDeclarativeCustomValidatorOptions</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBGridCellValidator">AMBGridCellValidator</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBValidationScope">AMBValidationScope</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dependsOn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+|
+
+<span class="param-type">'*'</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line863">line 863</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
 <h4 class="name" id="AMBErrorStyleOptions">AMBErrorStyleOptions</h4>
 
 
@@ -51467,7 +51729,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line788">line 788</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line812">line 812</a>
     </li></ul></dd>
     
 
@@ -51629,7 +51891,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line294">line 294</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line307">line 307</a>
     </li></ul></dd>
     
 
@@ -51878,7 +52140,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line301">line 301</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line314">line 314</a>
     </li></ul></dd>
     
 
@@ -52164,7 +52426,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line763">line 763</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line787">line 787</a>
     </li></ul></dd>
     
 
@@ -52186,7 +52448,7 @@ means the callback, row or operation is unavailable.
     
 
     
-    <h4 class="name" id="AMBGridAddCellValidator"><span class="type-signature"></span>AMBGridAddCellValidator<span class="signature">(field, message, validateFn)</span><span class="type-signature"> &rarr; {void}</span></h4>
+    <h4 class="name" id="AMBGridAddCellValidator"><span class="type-signature"></span>AMBGridAddCellValidator<span class="signature">(field, message, validateFn, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {void}</span></h4>
     
 
     
@@ -52214,6 +52476,8 @@ means the callback, row or operation is unavailable.
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -52239,6 +52503,14 @@ means the callback, row or operation is unavailable.
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
@@ -52261,6 +52533,14 @@ means the callback, row or operation is unavailable.
             
             </td>
 
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -52285,10 +52565,51 @@ means the callback, row or operation is unavailable.
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">Validator callback.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBValidatorRegistrationOptions">AMBValidatorRegistrationOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Automatic validation dependency metadata.</td>
         </tr>
 
     
@@ -52329,7 +52650,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line425">line 425</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line448">line 448</a>
     </li></ul></dd>
     
 
@@ -52554,7 +52875,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line364">line 364</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line377">line 377</a>
     </li></ul></dd>
     
 
@@ -52777,7 +53098,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line416">line 416</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line429">line 429</a>
     </li></ul></dd>
     
 
@@ -52883,7 +53204,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line271">line 271</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line284">line 284</a>
     </li></ul></dd>
     
 
@@ -52985,7 +53306,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line359">line 359</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line372">line 372</a>
     </li></ul></dd>
     
 
@@ -53154,7 +53475,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line329">line 329</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line342">line 342</a>
     </li></ul></dd>
     
 
@@ -53256,7 +53577,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line234">line 234</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line247">line 247</a>
     </li></ul></dd>
     
 
@@ -53419,7 +53740,7 @@ means the callback, row or operation is unavailable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line208">line 208</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line221">line 221</a>
     </li></ul></dd>
     
 
@@ -53485,20 +53806,7 @@ means the callback, row or operation is unavailable.
 
 
 <div class="description">
-    Public controller returned by `AMB.table(...)`.
-
-The controller is the main AMB Grid API for data access, row operations,
-selection, pagination, filters, search, validation, payload generation and
-lifecycle cleanup.
-
-AMB Grid manages the underlying table engine internally. Advanced engine
-access remains available for integration scenarios not covered by the
-controller API, but normal application code should prefer the methods
-exposed directly on this controller.
-
-`destroy()` releases the complete AMB-managed grid, including AMB event
-bindings, lookup and large-text helpers, search helpers, floating messages,
-dialogs, the CRUD layer and the internally managed table engine.
+    Public controller returned by `AMB.table(...)`.The controller is the main AMB Grid API for data access, row operations,selection, pagination, filters, search, validation, payload generation andlifecycle cleanup.AMB Grid manages the underlying table engine internally. Advanced engineaccess remains available for integration scenarios not covered by thecontroller API, but normal application code should prefer the methodsexposed directly on this controller.`destroy()` releases the complete AMB-managed grid, including AMB eventbindings, lookup and large-text helpers, search helpers, floating messages,dialogs, the CRUD layer and the internally managed table engine.
 </div>
 
 
@@ -53603,7 +53911,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line187">line 187</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line200">line 200</a>
     </li></ul></dd>
     
 
@@ -53770,7 +54078,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line345">line 345</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line358">line 358</a>
     </li></ul></dd>
     
 
@@ -53878,7 +54186,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line246">line 246</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line259">line 259</a>
     </li></ul></dd>
     
 
@@ -54041,7 +54349,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line214">line 214</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line227">line 227</a>
     </li></ul></dd>
     
 
@@ -54204,7 +54512,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line323">line 323</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line336">line 336</a>
     </li></ul></dd>
     
 
@@ -54306,7 +54614,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line340">line 340</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line353">line 353</a>
     </li></ul></dd>
     
 
@@ -54469,7 +54777,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line309">line 309</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line322">line 322</a>
     </li></ul></dd>
     
 
@@ -54571,7 +54879,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line255">line 255</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line268">line 268</a>
     </li></ul></dd>
     
 
@@ -54676,7 +54984,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line260">line 260</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line273">line 273</a>
     </li></ul></dd>
     
 
@@ -54873,7 +55181,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line351">line 351</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line364">line 364</a>
     </li></ul></dd>
     
 
@@ -55070,7 +55378,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line227">line 227</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line240">line 240</a>
     </li></ul></dd>
     
 
@@ -55244,7 +55552,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line220">line 220</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line233">line 233</a>
     </li></ul></dd>
     
 
@@ -55418,7 +55726,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line239">line 239</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line252">line 252</a>
     </li></ul></dd>
     
 
@@ -55524,7 +55832,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line397">line 397</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line410">line 410</a>
     </li></ul></dd>
     
 
@@ -55626,7 +55934,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line335">line 335</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line348">line 348</a>
     </li></ul></dd>
     
 
@@ -55777,7 +56085,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line402">line 402</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line415">line 415</a>
     </li></ul></dd>
     
 
@@ -56013,7 +56321,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line408">line 408</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line421">line 421</a>
     </li></ul></dd>
     
 
@@ -56176,7 +56484,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line391">line 391</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line404">line 404</a>
     </li></ul></dd>
     
 
@@ -56412,7 +56720,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line315">line 315</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line328">line 328</a>
     </li></ul></dd>
     
 
@@ -56563,7 +56871,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line282">line 282</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line295">line 295</a>
     </li></ul></dd>
     
 
@@ -56714,7 +57022,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line265">line 265</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line278">line 278</a>
     </li></ul></dd>
     
 
@@ -56865,7 +57173,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line276">line 276</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line289">line 289</a>
     </li></ul></dd>
     
 
@@ -57016,7 +57324,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line288">line 288</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line301">line 301</a>
     </li></ul></dd>
     
 
@@ -57167,7 +57475,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line372">line 372</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line385">line 385</a>
     </li></ul></dd>
     
 
@@ -57321,7 +57629,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line378">line 378</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line391">line 391</a>
     </li></ul></dd>
     
 
@@ -57498,7 +57806,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line384">line 384</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line397">line 397</a>
     </li></ul></dd>
     
 
@@ -57652,7 +57960,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line793">line 793</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line817">line 817</a>
     </li></ul></dd>
     
 
@@ -57738,6 +58046,9 @@ dialogs, the CRUD layer and the internally managed table engine.
 <span class="param-type">'cancel'</span>
 |
 
+<span class="param-type">'auxiliary'</span>
+|
+
 <span class="param-type">'next'</span>
 |
 
@@ -57780,7 +58091,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line816">line 816</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line841">line 841</a>
     </li></ul></dd>
     
 
@@ -58108,6 +58419,43 @@ dialogs, the CRUD layer and the internally managed table engine.
 
         <tr>
             
+                <td class="name"><code>auxiliary</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'F2'
+                
+                </td>
+            
+
+            <td class="description last">Activates an auxiliary cell control, such as a Lookup dialog.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>next</code></td>
             
 
@@ -58214,7 +58562,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line803">line 803</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line827">line 827</a>
     </li></ul></dd>
     
 
@@ -58472,7 +58820,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line818">line 818</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line843">line 843</a>
     </li></ul></dd>
     
 
@@ -58701,7 +59049,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line829">line 829</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line854">line 854</a>
     </li></ul></dd>
     
 
@@ -58775,7 +59123,78 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line817">line 817</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line842">line 842</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBMouseEditTrigger">AMBMouseEditTrigger</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">'double-click'</span>
+|
+
+<span class="param-type">'single-click'</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line862">line 862</a>
     </li></ul></dd>
     
 
@@ -60037,7 +60456,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line251">line 251</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line264">line 264</a>
     </li></ul></dd>
     
 
@@ -60287,7 +60706,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line700">line 700</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line724">line 724</a>
     </li></ul></dd>
     
 
@@ -60499,7 +60918,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line708">line 708</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line732">line 732</a>
     </li></ul></dd>
     
 
@@ -60691,7 +61110,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line715">line 715</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line739">line 739</a>
     </li></ul></dd>
     
 
@@ -60903,7 +61322,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line722">line 722</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line746">line 746</a>
     </li></ul></dd>
     
 
@@ -61323,7 +61742,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line729">line 729</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line753">line 753</a>
     </li></ul></dd>
     
 
@@ -61461,7 +61880,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line749">line 749</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line773">line 773</a>
     </li></ul></dd>
     
 
@@ -61745,7 +62164,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line754">line 754</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line778">line 778</a>
     </li></ul></dd>
     
 
@@ -61960,7 +62379,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line742">line 742</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line766">line 766</a>
     </li></ul></dd>
     
 
@@ -67984,7 +68403,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line433">line 433</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line457">line 457</a>
     </li></ul></dd>
     
 
@@ -68122,7 +68541,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line783">line 783</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line807">line 807</a>
     </li></ul></dd>
     
 
@@ -68472,7 +68891,260 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line772">line 772</a>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line796">line 796</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBValidationScope">AMBValidationScope</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">'cell'</span>
+|
+
+<span class="param-type">'row'</span>
+|
+
+<span class="param-type">'field'</span>
+|
+
+<span class="param-type">'grid'</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line438">line 438</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBValidatorRegistrationOptions">AMBValidatorRegistrationOptions</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBValidationScope">AMBValidationScope</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'cell'
+                
+                </td>
+            
+
+            <td class="description last">Scope used for automatic reconciliation.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dependsOn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+|
+
+<span class="param-type">'*'</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Field changes that may invalidate the validator.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line442">line 442</a>
     </li></ul></dd>
     
 
@@ -68542,7 +69214,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line11">line 11</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line13">line 13</a>
     </li></ul></dd>
     
 
@@ -68838,7 +69510,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line33">line 33</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -68957,7 +69629,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line44">line 44</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line46">line 46</a>
     </li></ul></dd>
     
 
@@ -69640,7 +70312,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line16">line 16</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line18">line 18</a>
     </li></ul></dd>
     
 
@@ -69759,7 +70431,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line27">line 27</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line29">line 29</a>
     </li></ul></dd>
     
 
@@ -69910,7 +70582,7 @@ dialogs, the CRUD layer and the internally managed table engine.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line5">line 5</a>
+        <a href="lib_editors_lookup-editor.js.html">lib/editors/lookup-editor.js</a>, <a href="lib_editors_lookup-editor.js.html#line7">line 7</a>
     </li></ul></dd>
     
 
@@ -69966,16 +70638,7 @@ dialogs, the CRUD layer and the internally managed table engine.
 
 
 <div class="description">
-    Read-only save candidate generated from the current CRUD state.
-
-`canSave` means that the payload contains a savable set of changes under
-the requested policy; it does not mean that the whole grid has no errors.
-With `all-or-nothing`, every pending CRUD change must be valid. With
-`valid-only`, at least one valid change must exist and `changes` contains
-only valid changes.
-
-`isPartialSave` identifies a `valid-only` candidate that has both valid and
-invalid pending changes. It does not mean that AMB Grid performed a save.
+    Read-only save candidate generated from the current CRUD state.`canSave` means that the payload contains a savable set of changes underthe requested policy; it does not mean that the whole grid has no errors.With `all-or-nothing`, every pending CRUD change must be valid. With`valid-only`, at least one valid change must exist and `changes` containsonly valid changes.`isPartialSave` identifies a `valid-only` candidate that has both valid andinvalid pending changes. It does not mean that AMB Grid performed a save.
 </div>
 
 
@@ -70282,7 +70945,7 @@ invalid pending changes. It does not mean that AMB Grid performed a save.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line43">line 43</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -70498,7 +71161,7 @@ invalid pending changes. It does not mean that AMB Grid performed a save.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line34">line 34</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line49">line 49</a>
     </li></ul></dd>
     
 
@@ -70573,7 +71236,7 @@ invalid pending changes. It does not mean that AMB Grid performed a save.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line28">line 28</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
@@ -70720,7 +71383,7 @@ invalid pending changes. It does not mean that AMB Grid performed a save.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line68">line 68</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line83">line 83</a>
     </li></ul></dd>
     
 
@@ -71167,7 +71830,7 @@ invalid pending changes. It does not mean that AMB Grid performed a save.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line76">line 76</a>
+        <a href="lib_crud-helper.js.html">lib/crud-helper.js</a>, <a href="lib_crud-helper.js.html#line91">line 91</a>
     </li></ul></dd>
     
 
@@ -71197,13 +71860,13 @@ invalid pending changes. It does not mean that AMB Grid performed a save.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addColumn">addColumn</a></li><li><a href="global.html#addData">addData</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#addTreeChild">addTreeChild</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearData">clearData</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createRowActionColumn">createRowActionColumn</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteColumn">deleteColumn</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#focusNavigationCandidate">focusNavigationCandidate</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#import">import</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#moveRow">moveRow</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeKeyboardNavigationOptions">normalizeKeyboardNavigationOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redo">redo</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#replaceData">replaceData</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setColumns">setColumns</a></li><li><a href="global.html#setData">setData</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#undo">undo</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateColumnDefinition">updateColumnDefinition</a></li><li><a href="global.html#updateData">updateData</a></li><li><a href="global.html#updateOrAddData">updateOrAddData</a></li><li><a href="global.html#updateOrAddRow">updateOrAddRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AMB.html">AMB</a></li><li><a href="AMB.date.html">date</a></li><li><a href="editors.html">editors</a></li><li><a href="formatters.html">formatters</a></li><li><a href="parsers.html">parsers</a></li><li><a href="validators.html">validators</a></li></ul><h3>Classes</h3><ul><li><a href="ConfirmDialog.html">ConfirmDialog</a></li><li><a href="CrudHelper.html">CrudHelper</a></li><li><a href="FeedbackRegion.html">FeedbackRegion</a></li><li><a href="FloatingMessage.html">FloatingMessage</a></li><li><a href="LookupDialog.html">LookupDialog</a></li><li><a href="SearchFiltersDialog.html">SearchFiltersDialog</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ROW_STATE">ROW_STATE</a></li><li><a href="global.html#activeSheet">activeSheet</a></li><li><a href="global.html#addCellValidator">addCellValidator</a></li><li><a href="global.html#addColumn">addColumn</a></li><li><a href="global.html#addData">addData</a></li><li><a href="global.html#addFilter">addFilter</a></li><li><a href="global.html#addRange">addRange</a></li><li><a href="global.html#addRow">addRow</a></li><li><a href="global.html#addSheet">addSheet</a></li><li><a href="global.html#addTreeChild">addTreeChild</a></li><li><a href="global.html#alert">alert</a></li><li><a href="global.html#applyBackendIds">applyBackendIds</a></li><li><a href="global.html#autocomplete">autocomplete</a></li><li><a href="global.html#blockRedraw">blockRedraw</a></li><li><a href="global.html#cancelCellEdit">cancelCellEdit</a></li><li><a href="global.html#checkCellHeight">checkCellHeight</a></li><li><a href="global.html#checkbox">checkbox</a></li><li><a href="global.html#clearAlert">clearAlert</a></li><li><a href="global.html#clearCellEdited">clearCellEdited</a></li><li><a href="global.html#clearCellEditedMarker">clearCellEditedMarker</a></li><li><a href="global.html#clearCellError">clearCellError</a></li><li><a href="global.html#clearCellErrorsForRow">clearCellErrorsForRow</a></li><li><a href="global.html#clearCellValidation">clearCellValidation</a></li><li><a href="global.html#clearCellValidationMarker">clearCellValidationMarker</a></li><li><a href="global.html#clearData">clearData</a></li><li><a href="global.html#clearErrorsForRow">clearErrorsForRow</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#clearHeaderFilter">clearHeaderFilter</a></li><li><a href="global.html#clearHistory">clearHistory</a></li><li><a href="global.html#clearRangeValues">clearRangeValues</a></li><li><a href="global.html#clearRowError">clearRowError</a></li><li><a href="global.html#clearSearch">clearSearch</a></li><li><a href="global.html#clearSelection">clearSelection</a></li><li><a href="global.html#clearSheet">clearSheet</a></li><li><a href="global.html#clearSort">clearSort</a></li><li><a href="global.html#collapseTreeRow">collapseTreeRow</a></li><li><a href="global.html#containEditorSpatialNavigation">containEditorSpatialNavigation</a></li><li><a href="global.html#copyToClipboard">copyToClipboard</a></li><li><a href="global.html#createLookup">createLookup</a></li><li><a href="global.html#createMultifieldLookup">createMultifieldLookup</a></li><li><a href="global.html#createRowActionColumn">createRowActionColumn</a></li><li><a href="global.html#createSelectionColumn">createSelectionColumn</a></li><li><a href="global.html#createTable">createTable</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#decimal">decimal</a></li><li><a href="global.html#deleteColumn">deleteColumn</a></li><li><a href="global.html#deleteRow">deleteRow</a></li><li><a href="global.html#deselectRow">deselectRow</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#download">download</a></li><li><a href="global.html#downloadToTab">downloadToTab</a></li><li><a href="global.html#editCell">editCell</a></li><li><a href="global.html#escapeHtmlText">escapeHtmlText</a></li><li><a href="global.html#expandTreeRow">expandTreeRow</a></li><li><a href="global.html#findAutocompleteMatch">findAutocompleteMatch</a></li><li><a href="global.html#focusNavigationCandidate">focusNavigationCandidate</a></li><li><a href="global.html#freezeRow">freezeRow</a></li><li><a href="global.html#getAjaxUrl">getAjaxUrl</a></li><li><a href="global.html#getAutocompleteSuggestionValues">getAutocompleteSuggestionValues</a></li><li><a href="global.html#getCalcCell">getCalcCell</a></li><li><a href="global.html#getCalcCells">getCalcCells</a></li><li><a href="global.html#getCalcData">getCalcData</a></li><li><a href="global.html#getCalcElement">getCalcElement</a></li><li><a href="global.html#getCalcResults">getCalcResults</a></li><li><a href="global.html#getCellColumn">getCellColumn</a></li><li><a href="global.html#getCellData">getCellData</a></li><li><a href="global.html#getCellElement">getCellElement</a></li><li><a href="global.html#getCellErrors">getCellErrors</a></li><li><a href="global.html#getCellField">getCellField</a></li><li><a href="global.html#getCellInitialValue">getCellInitialValue</a></li><li><a href="global.html#getCellOldValue">getCellOldValue</a></li><li><a href="global.html#getCellRanges">getCellRanges</a></li><li><a href="global.html#getCellRow">getCellRow</a></li><li><a href="global.html#getCellType">getCellType</a></li><li><a href="global.html#getCellValue">getCellValue</a></li><li><a href="global.html#getChanges">getChanges</a></li><li><a href="global.html#getColumn">getColumn</a></li><li><a href="global.html#getColumnCells">getColumnCells</a></li><li><a href="global.html#getColumnDefinition">getColumnDefinition</a></li><li><a href="global.html#getColumnDefinitions">getColumnDefinitions</a></li><li><a href="global.html#getColumnDownloadTitle">getColumnDownloadTitle</a></li><li><a href="global.html#getColumnElement">getColumnElement</a></li><li><a href="global.html#getColumnField">getColumnField</a></li><li><a href="global.html#getColumnLayout">getColumnLayout</a></li><li><a href="global.html#getColumnParent">getColumnParent</a></li><li><a href="global.html#getColumnRanges">getColumnRanges</a></li><li><a href="global.html#getColumnSubColumns">getColumnSubColumns</a></li><li><a href="global.html#getColumnWidth">getColumnWidth</a></li><li><a href="global.html#getColumns">getColumns</a></li><li><a href="global.html#getData">getData</a></li><li><a href="global.html#getDataCount">getDataCount</a></li><li><a href="global.html#getEditedCells">getEditedCells</a></li><li><a href="global.html#getErrors">getErrors</a></li><li><a href="global.html#getFilters">getFilters</a></li><li><a href="global.html#getGroupElement">getGroupElement</a></li><li><a href="global.html#getGroupField">getGroupField</a></li><li><a href="global.html#getGroupKey">getGroupKey</a></li><li><a href="global.html#getGroupParent">getGroupParent</a></li><li><a href="global.html#getGroupRows">getGroupRows</a></li><li><a href="global.html#getGroupSubGroups">getGroupSubGroups</a></li><li><a href="global.html#getGroupedData">getGroupedData</a></li><li><a href="global.html#getGroups">getGroups</a></li><li><a href="global.html#getHeaderFilterValue">getHeaderFilterValue</a></li><li><a href="global.html#getHeaderFilters">getHeaderFilters</a></li><li><a href="global.html#getHistoryRedoSize">getHistoryRedoSize</a></li><li><a href="global.html#getHistoryUndoSize">getHistoryUndoSize</a></li><li><a href="global.html#getHtml">getHtml</a></li><li><a href="global.html#getInvalidCells">getInvalidCells</a></li><li><a href="global.html#getLang">getLang</a></li><li><a href="global.html#getLocale">getLocale</a></li><li><a href="global.html#getNextColumn">getNextColumn</a></li><li><a href="global.html#getNextRow">getNextRow</a></li><li><a href="global.html#getPage">getPage</a></li><li><a href="global.html#getPageMax">getPageMax</a></li><li><a href="global.html#getPageSize">getPageSize</a></li><li><a href="global.html#getPrevColumn">getPrevColumn</a></li><li><a href="global.html#getPrevRow">getPrevRow</a></li><li><a href="global.html#getRangeBottomEdge">getRangeBottomEdge</a></li><li><a href="global.html#getRangeBounds">getRangeBounds</a></li><li><a href="global.html#getRangeCells">getRangeCells</a></li><li><a href="global.html#getRangeColumns">getRangeColumns</a></li><li><a href="global.html#getRangeData">getRangeData</a></li><li><a href="global.html#getRangeElement">getRangeElement</a></li><li><a href="global.html#getRangeLeftEdge">getRangeLeftEdge</a></li><li><a href="global.html#getRangeRightEdge">getRangeRightEdge</a></li><li><a href="global.html#getRangeRows">getRangeRows</a></li><li><a href="global.html#getRangeStructuredCells">getRangeStructuredCells</a></li><li><a href="global.html#getRangeTopEdge">getRangeTopEdge</a></li><li><a href="global.html#getRanges">getRanges</a></li><li><a href="global.html#getRangesData">getRangesData</a></li><li><a href="global.html#getRow">getRow</a></li><li><a href="global.html#getRowCell">getRowCell</a></li><li><a href="global.html#getRowCells">getRowCells</a></li><li><a href="global.html#getRowData">getRowData</a></li><li><a href="global.html#getRowElement">getRowElement</a></li><li><a href="global.html#getRowErrors">getRowErrors</a></li><li><a href="global.html#getRowFromPosition">getRowFromPosition</a></li><li><a href="global.html#getRowGroup">getRowGroup</a></li><li><a href="global.html#getRowIndex">getRowIndex</a></li><li><a href="global.html#getRowPosition">getRowPosition</a></li><li><a href="global.html#getRowRanges">getRowRanges</a></li><li><a href="global.html#getRows">getRows</a></li><li><a href="global.html#getSavePayload">getSavePayload</a></li><li><a href="global.html#getSearchState">getSearchState</a></li><li><a href="global.html#getSelectedData">getSelectedData</a></li><li><a href="global.html#getSelectedRowComponents">getSelectedRowComponents</a></li><li><a href="global.html#getSelectedRows">getSelectedRows</a></li><li><a href="global.html#getSheet">getSheet</a></li><li><a href="global.html#getSheetData">getSheetData</a></li><li><a href="global.html#getSheetDefinition">getSheetDefinition</a></li><li><a href="global.html#getSheetDefinitions">getSheetDefinitions</a></li><li><a href="global.html#getSheetKey">getSheetKey</a></li><li><a href="global.html#getSheetTitle">getSheetTitle</a></li><li><a href="global.html#getSheets">getSheets</a></li><li><a href="global.html#getSorters">getSorters</a></li><li><a href="global.html#getStateReport">getStateReport</a></li><li><a href="global.html#getTreeChildren">getTreeChildren</a></li><li><a href="global.html#getTreeParent">getTreeParent</a></li><li><a href="global.html#hasErrors">hasErrors</a></li><li><a href="global.html#hideColumn">hideColumn</a></li><li><a href="global.html#hideGroup">hideGroup</a></li><li><a href="global.html#import">import</a></li><li><a href="global.html#integer">integer</a></li><li><a href="global.html#isCellEdited">isCellEdited</a></li><li><a href="global.html#isCellValid">isCellValid</a></li><li><a href="global.html#isColumnVisible">isColumnVisible</a></li><li><a href="global.html#isGroupVisible">isGroupVisible</a></li><li><a href="global.html#isRowFrozen">isRowFrozen</a></li><li><a href="global.html#isRowSelected">isRowSelected</a></li><li><a href="global.html#isTreeExpanded">isTreeExpanded</a></li><li><a href="global.html#largeText">largeText</a></li><li><a href="global.html#lookup">lookup</a></li><li><a href="global.html#markCellError">markCellError</a></li><li><a href="global.html#markRowError">markRowError</a></li><li><a href="global.html#markRowSaved">markRowSaved</a></li><li><a href="global.html#markRowsSaved">markRowsSaved</a></li><li><a href="global.html#markValidChangesSaved">markValidChangesSaved</a></li><li><a href="global.html#moveColumn">moveColumn</a></li><li><a href="global.html#moveRow">moveRow</a></li><li><a href="global.html#navigateCellDown">navigateCellDown</a></li><li><a href="global.html#navigateCellLeft">navigateCellLeft</a></li><li><a href="global.html#navigateCellNext">navigateCellNext</a></li><li><a href="global.html#navigateCellPrev">navigateCellPrev</a></li><li><a href="global.html#navigateCellRight">navigateCellRight</a></li><li><a href="global.html#navigateCellUp">navigateCellUp</a></li><li><a href="global.html#navigateDown">navigateDown</a></li><li><a href="global.html#navigateLeft">navigateLeft</a></li><li><a href="global.html#navigateNext">navigateNext</a></li><li><a href="global.html#navigatePrev">navigatePrev</a></li><li><a href="global.html#navigateRight">navigateRight</a></li><li><a href="global.html#navigateUp">navigateUp</a></li><li><a href="global.html#nextPage">nextPage</a></li><li><a href="global.html#normalizeAutocompleteComparableValue">normalizeAutocompleteComparableValue</a></li><li><a href="global.html#normalizeAutocompleteInput">normalizeAutocompleteInput</a></li><li><a href="global.html#normalizeAutocompleteOptions">normalizeAutocompleteOptions</a></li><li><a href="global.html#normalizeCellEditingOptions">normalizeCellEditingOptions</a></li><li><a href="global.html#normalizeKeyboardNavigationOptions">normalizeKeyboardNavigationOptions</a></li><li><a href="global.html#normalizeRowHeight">normalizeRowHeight</a></li><li><a href="global.html#off">off</a></li><li><a href="global.html#offCrud">offCrud</a></li><li><a href="global.html#on">on</a></li><li><a href="global.html#onCrud">onCrud</a></li><li><a href="global.html#previousPage">previousPage</a></li><li><a href="global.html#print">print</a></li><li><a href="global.html#recalc">recalc</a></li><li><a href="global.html#redo">redo</a></li><li><a href="global.html#redraw">redraw</a></li><li><a href="global.html#reformatRow">reformatRow</a></li><li><a href="global.html#refreshFilter">refreshFilter</a></li><li><a href="global.html#reloadHeaderFilter">reloadHeaderFilter</a></li><li><a href="global.html#removeCellValidators">removeCellValidators</a></li><li><a href="global.html#removeFilter">removeFilter</a></li><li><a href="global.html#removeRange">removeRange</a></li><li><a href="global.html#removeSheet">removeSheet</a></li><li><a href="global.html#replaceData">replaceData</a></li><li><a href="global.html#resolveAutocompleteCommit">resolveAutocompleteCommit</a></li><li><a href="global.html#restoreCellInitialValue">restoreCellInitialValue</a></li><li><a href="global.html#restoreCellOldValue">restoreCellOldValue</a></li><li><a href="global.html#restoreRedraw">restoreRedraw</a></li><li><a href="global.html#rollbackRow">rollbackRow</a></li><li><a href="global.html#scrollToColumn">scrollToColumn</a></li><li><a href="global.html#scrollToGroup">scrollToGroup</a></li><li><a href="global.html#scrollToRow">scrollToRow</a></li><li><a href="global.html#searchData">searchData</a></li><li><a href="global.html#searchRows">searchRows</a></li><li><a href="global.html#select">select</a></li><li><a href="global.html#selectRow">selectRow</a></li><li><a href="global.html#setCellValue">setCellValue</a></li><li><a href="global.html#setColumnLayout">setColumnLayout</a></li><li><a href="global.html#setColumnTitle">setColumnTitle</a></li><li><a href="global.html#setColumnWidth">setColumnWidth</a></li><li><a href="global.html#setColumns">setColumns</a></li><li><a href="global.html#setData">setData</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setGroupBy">setGroupBy</a></li><li><a href="global.html#setGroupHeader">setGroupHeader</a></li><li><a href="global.html#setGroupStartOpen">setGroupStartOpen</a></li><li><a href="global.html#setGroupValues">setGroupValues</a></li><li><a href="global.html#setHeaderFilterFocus">setHeaderFilterFocus</a></li><li><a href="global.html#setHeaderFilterValue">setHeaderFilterValue</a></li><li><a href="global.html#setHeight">setHeight</a></li><li><a href="global.html#setLocale">setLocale</a></li><li><a href="global.html#setMaxHeight">setMaxHeight</a></li><li><a href="global.html#setMaxPage">setMaxPage</a></li><li><a href="global.html#setMinHeight">setMinHeight</a></li><li><a href="global.html#setPage">setPage</a></li><li><a href="global.html#setPageSize">setPageSize</a></li><li><a href="global.html#setPageToRow">setPageToRow</a></li><li><a href="global.html#setRangeBounds">setRangeBounds</a></li><li><a href="global.html#setRangeEndBound">setRangeEndBound</a></li><li><a href="global.html#setRangeStartBound">setRangeStartBound</a></li><li><a href="global.html#setSearchFields">setSearchFields</a></li><li><a href="global.html#setSearchOptions">setSearchOptions</a></li><li><a href="global.html#setSearchQuery">setSearchQuery</a></li><li><a href="global.html#setSheetColumns">setSheetColumns</a></li><li><a href="global.html#setSheetData">setSheetData</a></li><li><a href="global.html#setSheetRows">setSheetRows</a></li><li><a href="global.html#setSheetTitle">setSheetTitle</a></li><li><a href="global.html#setSheets">setSheets</a></li><li><a href="global.html#setSort">setSort</a></li><li><a href="global.html#showCellPopup">showCellPopup</a></li><li><a href="global.html#showColumn">showColumn</a></li><li><a href="global.html#showColumnPopup">showColumnPopup</a></li><li><a href="global.html#showGroup">showGroup</a></li><li><a href="global.html#showGroupPopup">showGroupPopup</a></li><li><a href="global.html#showRowPopup">showRowPopup</a></li><li><a href="global.html#text">text</a></li><li><a href="global.html#toggleColumn">toggleColumn</a></li><li><a href="global.html#toggleGroup">toggleGroup</a></li><li><a href="global.html#toggleSelectRow">toggleSelectRow</a></li><li><a href="global.html#toggleTreeRow">toggleTreeRow</a></li><li><a href="global.html#undo">undo</a></li><li><a href="global.html#unfreezeRow">unfreezeRow</a></li><li><a href="global.html#updateColumnDefinition">updateColumnDefinition</a></li><li><a href="global.html#updateData">updateData</a></li><li><a href="global.html#updateOrAddData">updateOrAddData</a></li><li><a href="global.html#updateOrAddRow">updateOrAddRow</a></li><li><a href="global.html#updateRow">updateRow</a></li><li><a href="global.html#validate">validate</a></li><li><a href="global.html#validateCell">validateCell</a></li><li><a href="global.html#validateChanges">validateChanges</a></li><li><a href="global.html#validateColumnCells">validateColumnCells</a></li><li><a href="global.html#validateRow">validateRow</a></li><li><a href="global.html#validateRowCells">validateRowCells</a></li><li><a href="global.html#watchRowPosition">watchRowPosition</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sat Sep 19 2026 10:36:37 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Oct 04 2026 20:12:37 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

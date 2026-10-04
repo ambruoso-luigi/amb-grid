@@ -26,119 +26,65 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import {
-    containEditorSpatialNavigation,
-    createSelectOption,
-    getInitialValue,
-    handleEditorCommitCancelKeydown,
-    normalizeSelectOption,
-    scheduleEditorFocusRestore
-} from './shared.js';
+            <pre class="prettyprint source linenums"><code>import { normalizeSelectOption } from './shared.js';
 
-    /**
-     * Native select editor. Saves the selected option value as a string. While
-     * keyboard navigation is enabled, commit/cancel use table bindings. On
-     * activation the native picker is opened when the browser supports it;
-     * arrow-key option browsing remains in the editor until commit or cancel.
-     * A browser popup may consume the first `Escape`; its corresponding keyup
-     * still cancels the editor when delivered to the native control.
-     *
-     * @param {object} [options] - Select editor options.
-     * @param {Array&lt;string|object>} [options.options=[]] - Available options.
-     * @param {boolean} [options.allowEmpty=true] - Add an empty option.
-     * @param {string} [options.emptyLabel=''] - Label for the empty option.
-     * @param {string} [options.valueField='value'] - Value field for object options.
-     * @param {string} [options.labelField='label'] - Label field for object options.
-     * @returns {Function} Grid editor function compatible with the internal table engine.
-     */
+/**
+ * Creates an AMB Select editor declaration backed internally by Tabulator List.
+ * Values and labels are normalized before the table runtime is created; the
+ * public factory continues to accept the same Select options as before.
+ *
+ * @param {object} [options] - Select editor options.
+ * @param {Array&lt;string|object>} [options.options=[]] - Available options.
+ * @param {boolean} [options.allowEmpty=true] - Add an empty option.
+ * @param {string} [options.emptyLabel=''] - Label for the empty option.
+ * @param {string} [options.valueField='value'] - Value field for object options.
+ * @param {string} [options.labelField='label'] - Label field for object options.
+ * @returns {Function} AMB editor declaration transformed into Tabulator List by the table pipeline.
+ */
 export function select(options = {}) {
-        const normalizedOptions = {
-            options: [],
-            allowEmpty: true,
-            emptyLabel: '',
-            valueField: 'value',
-            labelField: 'label',
-            ...options
-        };
+    const normalizedOptions = {
+        options: [],
+        allowEmpty: true,
+        emptyLabel: '',
+        valueField: 'value',
+        labelField: 'label',
+        ...options
+    };
+    const editor = () => {
+        throw new Error('AMB Select editors must be initialized through AMB.table().');
+    };
 
-        return (cell, onRendered, success, cancel) => {
-            const select = document.createElement('select');
+    editor._ambEditorType = 'select';
+    editor._ambSelectConfig = normalizedOptions;
 
-            select.className = 'amb-cell-editor amb-cell-editor--select';
-
-            if (normalizedOptions.allowEmpty) {
-                select.appendChild(createSelectOption({
-                    value: '',
-                    label: normalizedOptions.emptyLabel
-                }));
-            }
-
-            normalizedOptions.options.forEach(option => {
-                select.appendChild(createSelectOption(
-                    normalizeSelectOption(option, normalizedOptions)
-                ));
-            });
-
-            select.value = getInitialValue(cell);
-
-            let closed = false;
-            let navigatingOptions = false;
-            const commit = () => {
-                if (closed) return;
-                closed = true;
-                success(select.value);
-            };
-            const closeWithCancel = () => {
-                if (closed) return;
-                closed = true;
-                cancel();
-                scheduleEditorFocusRestore(cell);
-            };
-
-            const commitFromChange = () => {
-                if (navigatingOptions) return;
-
-                commit();
-                scheduleEditorFocusRestore(cell);
-            };
-
-            select.addEventListener('change', commitFromChange);
-            select.addEventListener('blur', commit);
-            select.addEventListener('keydown', event => {
-                containEditorSpatialNavigation(event);
-                if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-                    navigatingOptions = true;
-                    return;
-                }
-                handleEditorCommitCancelKeydown({
-                    cell,
-                    event,
-                    onCommit: commit,
-                    onCancel: closeWithCancel
-                });
-            });
-            select.addEventListener('keyup', event => {
-                if (event.key !== 'Escape' || closed) return;
-
-                event.preventDefault();
-                event.stopPropagation();
-                closeWithCancel();
-            });
-
-            onRendered(() => {
-                select.focus();
-
-                if (typeof select.showPicker !== 'function') return;
-
-                try {
-                    select.showPicker();
-                } catch {
-                    // Browsers may reject picker opening outside a trusted activation.
-                }
-            });
-            return select;
-        };
+    return editor;
 }
+
+/**
+ * Converts the public Select option contract into Tabulator List values.
+ *
+ * @param {object} [options] - Normalized Select options.
+ * @returns {Array&lt;{value: string, label: string}>} List values.
+ * @private
+ * @internal
+ */
+export const normalizeSelectValues = (options = {}) => {
+    const normalizedOptions = {
+        options: [],
+        allowEmpty: true,
+        emptyLabel: '',
+        valueField: 'value',
+        labelField: 'label',
+        ...options
+    };
+    const values = normalizedOptions.options.map(option => normalizeSelectOption(option, normalizedOptions));
+
+    if (normalizedOptions.allowEmpty) {
+        values.unshift({ value: '', label: String(normalizedOptions.emptyLabel ?? '') });
+    }
+
+    return values.map(option => ({ value: String(option.value ?? ''), label: String(option.label ?? '') }));
+};
 </code></pre>
         </article>
     </section>
@@ -155,7 +101,7 @@ export function select(options = {}) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Oct 04 2026 13:00:16 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Oct 04 2026 20:12:37 GMT+0200 (Ora legale dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

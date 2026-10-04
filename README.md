@@ -380,6 +380,11 @@ Reusable editors for common scenarios:
 * Lookup
 * Large text
 
+`AMB.editors.select()` keeps its existing options (`options`, `allowEmpty`,
+`emptyLabel`, `valueField`, and `labelField`) and uses Tabulator List
+internally. List selection commits with `Enter`; `Escape` cancels the pending
+selection and returns focus to the cell for immediate grid navigation.
+
 ### Keyboard support
 
 AMB Grid keeps keyboard behavior aligned across editable data cells,

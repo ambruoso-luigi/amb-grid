@@ -191,10 +191,10 @@ test.describe('React supplier lookup messages and status select', () => {
         await status.click();
         await expect(status).toBeFocused();
         await expect(status).not.toHaveClass(/tabulator-editing/);
-        await expect(status.locator('select.amb-cell-editor--select')).toHaveCount(0);
+        await expect(status.locator('.tabulator-edit-list')).toHaveCount(0);
         await status.dblclick();
-        await expect(status.locator('select.amb-cell-editor--select')).toBeVisible();
-        await expect(status.locator('select.amb-cell-editor--select')).toBeFocused();
+        await expect(page.locator('.tabulator-edit-list')).toBeVisible();
+        await expect(status.locator('input')).toBeFocused();
         await expect(status.locator('.amb-lookup-editor__input')).toHaveCount(0);
     });
 

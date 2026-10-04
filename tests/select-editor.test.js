@@ -1,163 +1,56 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { select } from '../src/lib/editors/select-editor.js';
+import { describe, expect, test, vi } from 'vitest';
+import { normalizeSelectValues, select } from '../src/lib/editors/select-editor.js';
+import { prepareColumnPipeline } from '../src/lib/table/column-pipeline.js';
 
-class SelectMock {
-    constructor({ showPicker } = {}) {
-        this.className = '';
-        this.children = [];
-        this.listeners = new Map();
-        this.value = '';
-        this.focus = vi.fn();
-        if (showPicker) this.showPicker = showPicker;
-    }
+describe('select List adapter', () => {
+    test('keeps the public factory contract and marks its internal declaration', () => {
+        const editor = select({ options: ['ACTIVE'] });
 
-    appendChild(child) { this.children.push(child); }
-    addEventListener(type, listener) {
-        this.listeners.set(type, [...(this.listeners.get(type) || []), listener]);
-    }
-    removeEventListener(type, listener) {
-        this.listeners.set(
-            type,
-            (this.listeners.get(type) || []).filter(candidate => candidate !== listener)
-        );
-    }
-    dispatch(type, event = {}) {
-        const result = {
-            preventDefault: vi.fn(), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn(), ...event
-        };
-        (this.listeners.get(type) || []).forEach(listener => listener(result));
-        return result;
-    }
-}
-
-describe('select editor keyboard close actions', () => {
-    const originalDocument = globalThis.document;
-    let pickerFactory;
-
-    beforeEach(() => {
-        pickerFactory = undefined;
-        globalThis.document = {
-            createElement: () => new SelectMock({ showPicker: pickerFactory?.() })
-        };
+        expect(typeof editor).toBe('function');
+        expect(editor._ambEditorType).toBe('select');
+        expect(editor._ambSelectConfig).toMatchObject({ options: ['ACTIVE'], allowEmpty: true });
     });
 
-    afterEach(() => {
-        globalThis.document = originalDocument;
-        vi.restoreAllMocks();
+    test('normalizes simple and object options as string List values', () => {
+        expect(normalizeSelectValues({
+            allowEmpty: false,
+            valueField: 'code',
+            labelField: 'name',
+            options: ['ACTIVE', { code: 12, name: 'Review' }]
+        })).toEqual([
+            { value: 'ACTIVE', label: 'ACTIVE' },
+            { value: '12', label: 'Review' }
+        ]);
     });
 
-    const createHarness = () => {
-        const success = vi.fn();
-        const cancel = vi.fn();
-        const editor = select({ options: ['one', 'two'] });
-        const control = editor({ getValue: () => 'one' }, callback => callback(), success, cancel);
-        return { control, success, cancel };
-    };
-
-    test('focuses and opens the native picker when supported', () => {
-        const showPicker = vi.fn();
-        pickerFactory = () => showPicker;
-
-        const { control } = createHarness();
-
-        expect(control.focus).toHaveBeenCalledOnce();
-        expect(showPicker).toHaveBeenCalledOnce();
+    test('adds the public empty option using emptyLabel', () => {
+        expect(normalizeSelectValues({ options: ['ACTIVE'], emptyLabel: 'Choose status' })).toEqual([
+            { value: '', label: 'Choose status' },
+            { value: 'ACTIVE', label: 'ACTIVE' }
+        ]);
     });
 
-    test('keeps the focused native select usable when showPicker is unavailable or rejected', () => {
-        pickerFactory = () => vi.fn(() => {
-            throw new Error('NotAllowedError');
+    test('converts only AMB Select columns to Tabulator List and preserves application callbacks', () => {
+        const edited = vi.fn();
+        const cancelled = vi.fn();
+        const applicationEditor = select({ options: [{ id: 'A', text: 'Active' }], allowEmpty: false, valueField: 'id', labelField: 'text' });
+        const pipeline = prepareColumnPipeline({ columns: [
+            { field: 'status', editor: applicationEditor, cellEdited: edited, cellEditCancelled: cancelled },
+            { field: 'notes', editor: 'textarea' }
+        ] });
+        const [status, notes] = pipeline.preparedDataColumns;
+
+        expect(pipeline.applicationColumns[0].editor).toBe(applicationEditor);
+        expect(status.editor).toBe('list');
+        expect(status.editorParams).toEqual({
+            values: [{ value: 'A', label: 'Active' }], autocomplete: false,
+            verticalNavigation: 'editor', clearable: false, emptyValue: ''
         });
+        expect(notes.editor).toBe('textarea');
 
-        expect(() => createHarness()).not.toThrow();
-        expect(createHarness().control.focus).toHaveBeenCalledOnce();
-    });
-
-    test('ArrowDown browses options without committing, then Enter commits once', async () => {
-        const { control, success, cancel } = createHarness();
-        const event = control.dispatch('keydown', { key: 'ArrowDown' });
-        control.value = 'two';
-        control.dispatch('change');
-
-        expect(event.stopPropagation).toHaveBeenCalledOnce();
-        expect(event.preventDefault).not.toHaveBeenCalled();
-        expect(success).not.toHaveBeenCalled();
-
-        control.dispatch('keydown', { key: 'Enter' });
-        control.dispatch('blur');
-
-        expect(success).toHaveBeenCalledOnce();
-        expect(success).toHaveBeenCalledWith('two');
-        expect(cancel).not.toHaveBeenCalled();
-    });
-
-    test('Escape cancels exactly once and prevents later blur commit', () => {
-        const { control, success, cancel } = createHarness();
-        control.dispatch('keydown', { key: 'Escape' });
-        control.dispatch('blur');
-        expect(cancel).toHaveBeenCalledTimes(1);
-        expect(success).not.toHaveBeenCalled();
-    });
-
-    test('Escape keyup cancels option navigation without a later lateral-key commit', () => {
-        const { control, success, cancel } = createHarness();
-        control.dispatch('keydown', { key: 'ArrowDown' });
-        control.value = 'two';
-        control.dispatch('change');
-        const lateralEvent = control.dispatch('keydown', { key: 'ArrowLeft' });
-        control.dispatch('keyup', { key: 'Escape' });
-        control.dispatch('blur');
-
-        expect(cancel).toHaveBeenCalledOnce();
-        expect(success).not.toHaveBeenCalled();
-        expect(lateralEvent.preventDefault).toHaveBeenCalledOnce();
-    });
-
-    test('a mouse selection commits after keyboard option navigation and a later blur does not duplicate it', () => {
-        const { control, success } = createHarness();
-        control.dispatch('keydown', { key: 'ArrowDown' });
-        control.value = 'two';
-        control.dispatch('change');
-        expect(success).not.toHaveBeenCalled();
-
-        control.dispatch('pointerdown');
-        control.value = 'two';
-        control.dispatch('change');
-        control.dispatch('blur');
-        expect(success).toHaveBeenCalledOnce();
-        expect(success).toHaveBeenCalledWith('two');
-    });
-
-    test('keeps the most recently committed value across a second cancelled session', () => {
-        let cellValue = 'ACTIVE';
-        const success = vi.fn(value => {
-            cellValue = value;
-        });
-        const cancel = vi.fn();
-        const editor = select({ options: ['ACTIVE', 'REVIEW'] });
-        const cell = { getValue: () => cellValue };
-
-        const firstControl = editor(cell, callback => callback(), success, cancel);
-        expect(firstControl.value).toBe('ACTIVE');
-        firstControl.dispatch('keydown', { key: 'ArrowDown' });
-        firstControl.value = 'REVIEW';
-        firstControl.dispatch('change');
-        firstControl.dispatch('keydown', { key: 'Enter' });
-
-        expect(cellValue).toBe('REVIEW');
-        expect(success).toHaveBeenCalledOnce();
-
-        const secondControl = editor(cell, callback => callback(), success, cancel);
-        expect(secondControl.value).toBe('REVIEW');
-        secondControl.dispatch('keydown', { key: 'ArrowUp' });
-        secondControl.value = 'ACTIVE';
-        secondControl.dispatch('change');
-        secondControl.dispatch('keyup', { key: 'Escape' });
-        secondControl.dispatch('change');
-        secondControl.dispatch('blur');
-
-        expect(cellValue).toBe('REVIEW');
-        expect(success).toHaveBeenCalledOnce();
-        expect(cancel).toHaveBeenCalledOnce();
+        status.cellEdited({ getElement: () => ({ isConnected: false }) });
+        status.cellEditCancelled({ getElement: () => ({ isConnected: false }) });
+        expect(edited).toHaveBeenCalledOnce();
+        expect(cancelled).toHaveBeenCalledOnce();
     });
 });
