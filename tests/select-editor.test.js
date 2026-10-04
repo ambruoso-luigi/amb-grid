@@ -99,15 +99,22 @@ describe('select editor keyboard close actions', () => {
         control.value = 'two';
         control.dispatch('change');
         control.dispatch('keyup', { key: 'Escape' });
-        control.dispatch('keydown', { key: 'ArrowLeft' });
+        const lateralEvent = control.dispatch('keydown', { key: 'ArrowLeft' });
         control.dispatch('blur');
 
         expect(cancel).toHaveBeenCalledOnce();
         expect(success).not.toHaveBeenCalled();
+        expect(lateralEvent.preventDefault).toHaveBeenCalledOnce();
     });
 
-    test('a mouse selection commits once and a later blur does not duplicate it', () => {
+    test('a mouse selection commits after keyboard option navigation and a later blur does not duplicate it', () => {
         const { control, success } = createHarness();
+        control.dispatch('keydown', { key: 'ArrowDown' });
+        control.value = 'two';
+        control.dispatch('change');
+        expect(success).not.toHaveBeenCalled();
+
+        control.dispatch('pointerdown');
         control.value = 'two';
         control.dispatch('change');
         control.dispatch('blur');

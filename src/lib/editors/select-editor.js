@@ -54,32 +54,45 @@ export function select(options = {}) {
             select.value = getInitialValue(cell);
 
             let closed = false;
-            let navigatingOptions = false;
+            let keyboardOptionNavigation = false;
+            let cancelling = false;
             const commit = () => {
-                if (closed) return;
+                if (closed || cancelling) return;
                 closed = true;
                 success(select.value);
             };
             const closeWithCancel = () => {
                 if (closed) return;
+                cancelling = true;
                 closed = true;
                 cancel();
                 scheduleEditorFocusRestore(cell);
             };
 
             const commitFromChange = () => {
-                if (navigatingOptions) return;
+                if (keyboardOptionNavigation) return;
 
                 commit();
                 scheduleEditorFocusRestore(cell);
             };
 
             select.addEventListener('change', commitFromChange);
-            select.addEventListener('blur', commit);
+            select.addEventListener('blur', () => {
+                if (keyboardOptionNavigation || cancelling) return;
+
+                commit();
+            });
+            select.addEventListener('pointerdown', () => {
+                keyboardOptionNavigation = false;
+            });
             select.addEventListener('keydown', event => {
                 containEditorSpatialNavigation(event);
                 if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-                    navigatingOptions = true;
+                    keyboardOptionNavigation = true;
+                    return;
+                }
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                    event.preventDefault();
                     return;
                 }
                 handleEditorCommitCancelKeydown({

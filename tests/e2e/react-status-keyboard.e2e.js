@@ -43,10 +43,40 @@ test('React Status: keyboard navigation, commit and cancel', async ({ page }) =>
     await expect(editor).toHaveValue('ACTIVE');
     await expect(editor.locator('option')).toHaveCount(3);
 
-    await page.keyboard.press('ArrowDown');
+    await editor.evaluate(select => {
+        window.__ambSelectEventTrace = [];
+        const record = event => {
+            const active = document.activeElement;
+            const cell = select.closest('.tabulator-cell');
 
-    await expect(status).toHaveClass(/tabulator-editing/);
-    await expect(editor).toBeFocused();
+            window.__ambSelectEventTrace.push({
+                type: event.type,
+                key: event.key || null,
+                value: select.value,
+                activeElement: {
+                    tagName: active?.tagName || null,
+                    className: String(active?.className || '')
+                },
+                editing: Boolean(cell?.classList.contains('tabulator-editing')),
+                connected: select.isConnected
+            });
+        };
+
+        ['keydown', 'keyup', 'input', 'change', 'blur', 'focusout'].forEach(type => {
+            select.addEventListener(type, record);
+        });
+    });
+
+    try {
+        await page.keyboard.press('ArrowDown');
+        await expect(status).toHaveClass(/tabulator-editing/);
+        await expect(editor).toBeFocused();
+    } catch (error) {
+        const trace = await page.evaluate(() => window.__ambSelectEventTrace);
+
+        console.error('React Status select event trace', JSON.stringify(trace));
+        throw error;
+    }
 
     await page.keyboard.press('Enter');
 
