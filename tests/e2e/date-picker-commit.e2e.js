@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 const openDatesExample = async page => {
     await page.goto('/');
@@ -67,9 +68,18 @@ test.describe('date picker commit regression', () => {
         const cell = pickerOnlyCell(page);
         const picker = page.locator('.datepicker.active');
         const compactCell = pickerRow(page).locator('.tabulator-cell[tabulator-field="compactDate"]');
+        const event = eventCell(page);
 
-        await eventCell(page).click();
-        await expect(eventCell(page)).toBeFocused();
+        await expect(page.locator('#dates-table')).toBeVisible();
+        await expect(pickerRow(page)).toBeVisible();
+        await event.scrollIntoViewIfNeeded();
+        try {
+            await event.click({ delay: 100 });
+            await expect(event).toBeFocused();
+        } catch (error) {
+            await reportFocusDiagnostics(page, event, 'Picker-only Event click failed', '#dates-table');
+            throw error;
+        }
         for (let step = 0; step < 5; step += 1) {
             await page.keyboard.press('ArrowRight');
         }

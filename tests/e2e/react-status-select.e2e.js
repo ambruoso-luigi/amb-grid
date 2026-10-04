@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 const firstInventoryRow = page => page
     .locator('.react-demo-grid .tabulator-row')
@@ -10,14 +11,21 @@ const cell = (page, field) => firstInventoryRow(page)
 
 test('React Status select remains open while browsing and restores focus after closing', async ({ page }) => {
     await page.goto('/#getting-started-react');
-    await expect(page.locator('.react-demo-grid-shell')).toHaveAttribute('aria-busy', 'false');
     await expect(firstInventoryRow(page)).toBeVisible();
+    await expect(page.locator('.react-demo-grid-shell')).toHaveAttribute('aria-busy', 'false');
 
     const itemCode = cell(page, 'itemCode');
     const status = cell(page, 'status');
 
-    await itemCode.click();
-    await expect(itemCode).toBeFocused();
+    await expect(itemCode).toBeVisible();
+    await expect.poll(() => itemCode.evaluate(element => element.isConnected)).toBe(true);
+    try {
+        await itemCode.click();
+        await expect(itemCode).toBeFocused();
+    } catch (error) {
+        await reportFocusDiagnostics(page, itemCode, 'React Status item-code click failed', '.react-demo-grid');
+        throw error;
+    }
     for (let step = 0; step < 5; step += 1) {
         await page.keyboard.press('ArrowRight');
     }
