@@ -65,9 +65,10 @@ test.describe('autocomplete last-row layout', () => {
 
         const before = await measureLayout(page);
 
-        await warehouse.dblclick();
+        await warehouse.dblclick({ delay: 100 });
         const input = warehouse.locator('input.amb-autocomplete-editor');
 
+        await expect(warehouse).toHaveClass(/tabulator-editing/);
         await expect(input).toBeVisible();
         await expect(input).toBeFocused();
         await input.fill('');

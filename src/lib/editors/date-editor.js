@@ -82,6 +82,10 @@ const createPickerOptions = options => {
         pickerOptions.maxDate = maxDate;
     }
 
+    if (options.mode === 'pickerOnly') {
+        pickerOptions.shortcutKeys = { toggle: null };
+    }
+
     return pickerOptions;
 };
 
@@ -98,6 +102,8 @@ const createPickerOptions = options => {
      * - In `pickerOnly`, `Escape` closes the picker and returns focus to the
      *   original cell in navigation mode without reopening editing; an
      *   external pointer close retains the pointer-selected focus destination.
+     *   The picker-only configuration disables the datepicker's own Escape
+     *   toggle so the grid handles this close action consistently.
      * - while the picker is open, arrow keys do not propagate to the grid,
      *   `Enter` is left to the picker when appropriate, and `Escape` preserves
      *   the configured manual or picker-only close behavior.
@@ -287,7 +293,6 @@ export function date(options = {}) {
                     cancel();
 
                     if (restoreFocus && normalizedOptions.mode === 'pickerOnly') {
-                        restoreCellFocusWithoutEditing();
                         scheduleEditorFocusRestore(cell);
                     }
                 };

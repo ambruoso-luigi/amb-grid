@@ -792,6 +792,15 @@ describe('date editor picker keyboard navigation', () => {
             'keydown',
             expect.any(Function)
         );
+        expect(datepicker.options.shortcutKeys).toEqual({ toggle: null });
+    });
+
+    test('manual picker keeps the datepicker Escape toggle configuration', () => {
+        const harness = createPickerHarness();
+        const datepicker = datepickerState.instances[0];
+
+        expect(harness.pickerButton).toBeTruthy();
+        expect(datepicker.options.shortcutKeys).toBeUndefined();
     });
 
     test('pickerOnly document Tab commits once, closes the picker, and navigates next', async () => {
@@ -1003,22 +1012,11 @@ describe('date editor picker keyboard navigation', () => {
     });
 
     test('pickerOnly Escape cancels once, removes picker listeners, and restores cell focus', async () => {
-        const internalCell = {};
-        const focusCellNoEvent = vi.fn();
         const harness = createPickerHarness({
             mode: 'pickerOnly',
             picker: false
         });
         const datepicker = datepickerState.instances[0];
-
-        harness.cell._getSelf = () => internalCell;
-        internalCell.table = {
-            modules: {
-                edit: {
-                    focusCellNoEvent
-                }
-            }
-        };
 
         await globalThis.document.dispatch('keydown', { key: 'Escape' });
         await flushDeferred();
@@ -1027,8 +1025,6 @@ describe('date editor picker keyboard navigation', () => {
         expect(harness.success).not.toHaveBeenCalled();
         expect(datepicker.destroy).toHaveBeenCalledOnce();
         expect(documentListeners).toHaveLength(0);
-        expect(focusCellNoEvent).toHaveBeenCalledOnce();
-        expect(focusCellNoEvent).toHaveBeenCalledWith(internalCell);
         expect(globalThis.document.activeElement).toBe(harness.cell.getElement());
         expect(datepicker.show).toHaveBeenCalledOnce();
         expect(harness.afterDateCell.edit).not.toHaveBeenCalled();

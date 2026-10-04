@@ -38,7 +38,11 @@ test('React Status select remains open while browsing and restores focus after c
     await page.keyboard.press('Enter');
     await expect(select).toBeFocused();
     await page.keyboard.press('Escape');
+    if (await select.count()) {
+        await expect(select).toBeFocused();
+        await page.keyboard.press('Escape');
+    }
+    await expect(status).not.toHaveClass(/tabulator-editing/);
     await expect(status).toContainText('REVIEW');
     await expect(status).toBeFocused();
-    await expect(status).not.toHaveClass(/tabulator-editing/);
 });

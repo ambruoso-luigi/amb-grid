@@ -450,6 +450,8 @@ normal editing lifecycle.
 * Native select editors focus and request their native option picker when the
   browser permits it. ArrowUp and ArrowDown browse options without committing;
   `Enter` confirms and `Escape` cancels, then focus returns to the source cell.
+  When the browser popup is open, its first `Escape` may close only that popup;
+  a subsequent `Escape` closes the editor.
 * `F2` activates an auxiliary control when the focused cell supports one;
   Lookup editors use it to open their search dialog. Lookup double click or
   `Enter` edits or commits the manual value instead of opening the dialog.
@@ -490,7 +492,8 @@ normal editing lifecycle.
   `Escape` to cancel. `manualWithPickerButton` uses `F2` (or its calendar
   button) to open the calendar; choosing a date returns to the manual input
   and requires `Enter` to commit. `pickerOnly` opens its calendar on double
-  click, `Enter`, or `F2`.
+  click, `Enter`, or `F2`; its Escape handling is owned by AMB Grid so focus
+  returns to the source cell after cancellation.
   `Tab`/`Shift+Tab` preserve sequential commit/navigation, and datepicker
   arrows remain local to the calendar.
 * A single click or keyboard navigation focuses a large-text cell without
