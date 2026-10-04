@@ -185,14 +185,63 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
         html: element.outerHTML,
       };
     };
+    const getListState = () => {
+      const container = document.querySelector<HTMLElement>('.tabulator-edit-list');
+
+      if (!container) {
+        return {
+          present: false,
+          visible: false,
+          options: [],
+          focusedElement: describeFocusedElement(),
+        };
+      }
+
+      const style = window.getComputedStyle(container);
+      const bounds = container.getBoundingClientRect();
+
+      return {
+        present: true,
+        visible: style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && Number.parseFloat(style.opacity || '1') > 0
+          && bounds.width > 0
+          && bounds.height > 0,
+        options: [...container.querySelectorAll('.tabulator-edit-list-item')]
+          .map(option => option.textContent?.trim() ?? ''),
+        focusedElement: describeFocusedElement(),
+      };
+    };
+    const restoreStatusCellFocus = (cell: ReturnType<typeof getStatusCell>) => {
+      requestAnimationFrame(() => {
+        if (!cell || cell.getField() !== 'status') return;
+
+        const element = cell.getElement();
+        const activeElement = document.activeElement;
+        const focusMovedElsewhere = activeElement
+          && activeElement !== document.body
+          && activeElement !== document.documentElement
+          && activeElement !== element;
+
+        if (!element.isConnected || element.classList.contains('tabulator-editing') || focusMovedElsewhere) return;
+
+        element.focus({ preventScroll: true });
+      });
+    };
     const recordListProbeEvent = (eventName: string, cell: ReturnType<typeof getStatusCell>) => {
       if (!cell || cell.getField() !== 'status') return;
 
       listProbeEvents.push({ eventName, ...getStatusCellState(cell) });
     };
     const onStatusCellEditing = (cell: ReturnType<typeof getStatusCell>) => recordListProbeEvent('cellEditing', cell);
-    const onStatusCellEdited = (cell: ReturnType<typeof getStatusCell>) => recordListProbeEvent('cellEdited', cell);
-    const onStatusCellEditCancelled = (cell: ReturnType<typeof getStatusCell>) => recordListProbeEvent('cellEditCancelled', cell);
+    const onStatusCellEdited = (cell: ReturnType<typeof getStatusCell>) => {
+      recordListProbeEvent('cellEdited', cell);
+      restoreStatusCellFocus(cell);
+    };
+    const onStatusCellEditCancelled = (cell: ReturnType<typeof getStatusCell>) => {
+      recordListProbeEvent('cellEditCancelled', cell);
+      restoreStatusCellFocus(cell);
+    };
 
     grid.table.on('cellEditing', onStatusCellEditing);
     grid.table.on('cellEdited', onStatusCellEdited);
@@ -213,6 +262,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
             editorParams: definition?.editorParams ?? null,
             editable,
             cell: getStatusCellState(cell),
+            list: getListState(),
             events: [...listProbeEvents],
           };
         },
