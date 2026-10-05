@@ -152,9 +152,34 @@ const restoreSelectCellFocus = cell => {
     Promise.resolve().then(restore);
 };
 
-const composeSelectCloseCallback = (callback, cell) => {
-    if (typeof callback === 'function') callback(cell);
-    restoreSelectCellFocus(cell);
+const composeSelectCloseCallback = (callback, ...args) => {
+    if (typeof callback === 'function') callback(...args);
+    restoreSelectCellFocus(args[0]);
+};
+
+const bindSelectEscape = cell => {
+    const bind = () => {
+        const input = cell?.getElement?.()
+            ?.querySelector?.('[data-amb-editor="select"]');
+
+        if (!input) return;
+
+        input.addEventListener('keydown', event => {
+            if (event.key !== 'Escape') return;
+
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            cell.cancelEdit?.();
+        }, true);
+    };
+
+    if (typeof globalThis.requestAnimationFrame === 'function') {
+        globalThis.requestAnimationFrame(bind);
+        return;
+    }
+
+    Promise.resolve().then(bind);
 };
 
 export const prepareSelectColumns = (columns = []) => {
@@ -165,6 +190,7 @@ export const prepareSelectColumns = (columns = []) => {
         if (getAmbEditorType(nextColumn) !== 'select') return nextColumn;
 
         const config = nextColumn.editor._ambSelectConfig || {};
+        const originalCellEditing = nextColumn.cellEditing;
         const originalCellEdited = nextColumn.cellEdited;
         const originalCellEditCancelled = nextColumn.cellEditCancelled;
 
@@ -174,10 +200,17 @@ export const prepareSelectColumns = (columns = []) => {
             autocomplete: false,
             verticalNavigation: 'editor',
             clearable: false,
-            emptyValue: ''
+            emptyValue: '',
+            elementAttributes: {
+                'data-amb-editor': 'select'
+            }
         };
-        nextColumn.cellEdited = cell => composeSelectCloseCallback(originalCellEdited, cell);
-        nextColumn.cellEditCancelled = cell => composeSelectCloseCallback(originalCellEditCancelled, cell);
+        nextColumn.cellEditing = (...args) => {
+            if (typeof originalCellEditing === 'function') originalCellEditing(...args);
+            bindSelectEscape(args[0]);
+        };
+        nextColumn.cellEdited = (...args) => composeSelectCloseCallback(originalCellEdited, ...args);
+        nextColumn.cellEditCancelled = (...args) => composeSelectCloseCallback(originalCellEditCancelled, ...args);
 
         return nextColumn;
     });

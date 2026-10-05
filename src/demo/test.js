@@ -14,6 +14,11 @@ let currentMultifieldLookupGrid = null;
 let currentAutocompleteGrid = null;
 let currentColumnCalculationsGrid = null;
 
+const withSelectProbe = rows => (rows || []).map((row, index) => ({
+    ...row,
+    selectProbe: ['ACTIVE', 'REVIEW', 'HOLD'][index % 3]
+}));
+
 const testLookupAutoCompleteOptions = {
     autoComplete: true,
     autoCompleteMinChars: 1,
@@ -364,7 +369,7 @@ const createGrid = async (selectionMode = 'single') => {
     });
     const statusDialog = new AMB.LookupDialog();
     const warehouseOptions = await fakeApi.getWarehouses();
-    const products = await fakeApi.getProducts();
+    const products = withSelectProbe(await fakeApi.getProducts());
     let grid = null;
 
     const tableOptions = {
@@ -497,6 +502,19 @@ const createGrid = async (selectionMode = 'single') => {
                 }
             },
             {
+                title: 'Select test',
+                field: 'selectProbe',
+                width: 130,
+                editor: AMB.editors.select({
+                    options: [
+                        { value: 'ACTIVE', label: 'Active' },
+                        { value: 'REVIEW', label: 'Review' },
+                        { value: 'HOLD', label: 'On hold' }
+                    ],
+                    allowEmpty: false
+                })
+            },
+            {
                 title: 'Last check date',
                 field: 'lastCheckDate',
                 width: 132,
@@ -589,6 +607,7 @@ const createGrid = async (selectionMode = 'single') => {
             warehouse: '',
             stockQuantity: 0,
             unitPrice: '',
+            selectProbe: 'ACTIVE',
             lastCheckDate: '',
             status: '',
             requiresInspection: false,
@@ -599,7 +618,7 @@ const createGrid = async (selectionMode = 'single') => {
     async function handleReload() {
         grid.feedback.clear();
 
-        const reloadedProducts = await fakeApi.getProducts();
+        const reloadedProducts = withSelectProbe(await fakeApi.getProducts());
 
         await grid.table.setData(reloadedProducts);
         showTestOutput('Reloaded rows', {
