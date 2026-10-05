@@ -21,7 +21,7 @@ All notable changes to AMB Grid are documented in this file.
 ### Fixed
 
 - Replaced the native Select editor implementation with the internal Tabulator
-  List adapter, preserving Select options and keyboard focus restoration.
+  List adapter, preserving Select options.
 
 - Corrected autocomplete dropdown placement for a final visible row.
 - Preserved editor caret and selection while normalizing uppercase or lowercase input.

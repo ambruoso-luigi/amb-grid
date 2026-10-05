@@ -8,17 +8,11 @@ import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { MUNICIPALITY_LOOKUP_COLUMNS } from './multifield-lookup-config.js';
 
 const output = document.querySelector('#test-output');
-const selectTraceOutput = document.querySelector('#select-test-trace');
 const selectionModeControl = document.querySelector('#selection-mode');
 let currentGrid = null;
 let currentMultifieldLookupGrid = null;
 let currentAutocompleteGrid = null;
 let currentColumnCalculationsGrid = null;
-
-const withSelectProbe = rows => (rows || []).map((row, index) => ({
-    ...row,
-    selectProbe: ['ACTIVE', 'REVIEW', 'HOLD'][index % 3]
-}));
 
 const testLookupAutoCompleteOptions = {
     autoComplete: true,
@@ -370,7 +364,7 @@ const createGrid = async (selectionMode = 'single') => {
     });
     const statusDialog = new AMB.LookupDialog();
     const warehouseOptions = await fakeApi.getWarehouses();
-    const products = withSelectProbe(await fakeApi.getProducts());
+    const products = await fakeApi.getProducts();
     let grid = null;
 
     const tableOptions = {
@@ -564,64 +558,15 @@ const createGrid = async (selectionMode = 'single') => {
                     rows: 10,
                     closeOnBackdropClick: false
                 })
-            },
-            {
-                title: 'Select test',
-                field: 'selectProbe',
-                width: 130,
-                editor: AMB.editors.select({
-                    options: [
-                        { value: 'ACTIVE', label: 'Active' },
-                        { value: 'REVIEW', label: 'Review' },
-                        { value: 'HOLD', label: 'On hold' }
-                    ],
-                    allowEmpty: false
-                })
             }
         ]
     };
 
     grid = AMB.table(tableOptions);
 
-    const selectTrace = [];
-    const renderSelectTrace = () => {
-        if (selectTraceOutput) selectTraceOutput.textContent = selectTrace.map(entry => JSON.stringify(entry)).join('\n') || 'Waiting for Select test events.';
-    };
-    const recordSelectTrace = (eventName, event, cell) => {
-        if (!cell || cell.getField?.() !== 'selectProbe') return;
-        const element = cell.getElement();
-        selectTrace.push({
-            eventName,
-            cellValue: cell.getValue(),
-            rowValue: cell.getRow().getData().selectProbe,
-            editing: element.classList.contains('tabulator-editing'),
-            popup: Boolean(document.querySelector('.tabulator-edit-list'))
-        });
-        renderSelectTrace();
-    };
-    const statusCell = () => grid.table.getRows()[0]?.getCell('selectProbe') || null;
-    const onSelectKeydown = event => {
-        if (!['Escape', 'Enter', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
-        const target = event.target;
-        if (!target?.closest?.('.tabulator-edit-list, .tabulator-cell[tabulator-field="selectProbe"]')) return;
-        recordSelectTrace(`keydown ${event.key}`, event, statusCell());
-    };
-    const onCellEditing = cell => recordSelectTrace('cellEditing', null, cell);
-    const onCellEdited = cell => recordSelectTrace('cellEdited', null, cell);
-    const onCellCancelled = cell => recordSelectTrace('cellEditCancelled', null, cell);
-    document.addEventListener('keydown', onSelectKeydown, true);
-    grid.table.on('cellEditing', onCellEditing);
-    grid.table.on('cellEdited', onCellEdited);
-    grid.table.on('cellEditCancelled', onCellCancelled);
-    renderSelectTrace();
-
     const originalDestroy = grid.destroy.bind(grid);
 
     grid.destroy = () => {
-        document.removeEventListener('keydown', onSelectKeydown, true);
-        grid.table.off('cellEditing', onCellEditing);
-        grid.table.off('cellEdited', onCellEdited);
-        grid.table.off('cellEditCancelled', onCellCancelled);
         statusDialog.destroy();
         originalDestroy();
     };
@@ -646,7 +591,6 @@ const createGrid = async (selectionMode = 'single') => {
             unitPrice: '',
             lastCheckDate: '',
             status: '',
-            selectProbe: 'ACTIVE',
             requiresInspection: false,
             notes: ''
         });
@@ -655,7 +599,7 @@ const createGrid = async (selectionMode = 'single') => {
     async function handleReload() {
         grid.feedback.clear();
 
-        const reloadedProducts = withSelectProbe(await fakeApi.getProducts());
+        const reloadedProducts = await fakeApi.getProducts();
 
         await grid.table.setData(reloadedProducts);
         showTestOutput('Reloaded rows', {

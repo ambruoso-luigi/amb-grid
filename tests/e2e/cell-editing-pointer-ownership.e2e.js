@@ -193,14 +193,12 @@ test.describe('cell editor pointer ownership', () => {
 
     test('keeps select editing active through pointer interaction and commits its choice', async ({ page }) => {
         const category = cell(page, 'category');
-        const select = category.locator('select.amb-cell-editor--select');
+        const list = page.locator('.tabulator-edit-list');
 
         await category.dblclick({ delay: 100 });
-        await expect(select).toBeFocused();
         await expect(category).toHaveClass(/tabulator-editing/);
-        await select.click();
-        await expect(category).toHaveClass(/tabulator-editing/);
-        await select.selectOption('C');
+        await expect(list).toBeVisible();
+        await list.locator('.tabulator-edit-list-item', { hasText: 'Gamma' }).click();
         await expect(category).toContainText('C');
         await expectNoEditors(page);
     });

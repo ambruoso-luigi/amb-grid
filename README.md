@@ -382,8 +382,7 @@ Reusable editors for common scenarios:
 
 `AMB.editors.select()` keeps its existing options (`options`, `allowEmpty`,
 `emptyLabel`, `valueField`, and `labelField`) and uses Tabulator List
-internally. List selection commits with `Enter`; `Escape` cancels the pending
-selection and returns focus to the cell for immediate grid navigation.
+internally.
 
 ### Keyboard support
 
@@ -452,12 +451,6 @@ normal editing lifecycle.
   `keyboardNavigation: { bindings: { commit: 'Ctrl+Enter', cancel: 'Escape' } }`.
   Lookup, date, checkbox, and large-text editors retain their dedicated
   keyboard semantics.
-* Native select editors focus and request their native option picker when the
-  browser permits it. ArrowUp and ArrowDown browse options without committing;
-  `Enter` confirms and `Escape` cancels, then focus returns to the source cell.
-  When the browser popup is open, its first `Escape` may close only that popup;
-  the editor also cancels from the delivered `keyup`, otherwise a subsequent
-  `Escape` closes it.
 * `F2` activates an auxiliary control when the focused cell supports one;
   Lookup editors use it to open their search dialog. Lookup double click or
   `Enter` edits or commits the manual value instead of opening the dialog.

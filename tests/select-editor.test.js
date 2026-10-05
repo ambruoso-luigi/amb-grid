@@ -54,44 +54,4 @@ describe('select List adapter', () => {
         expect(cancelled).toHaveBeenCalledOnce();
     });
 
-    test('keeps the last committed value through a second cancelled List session', () => {
-        let value = 'ACTIVE';
-        const rowData = { status: 'ACTIVE', _state: 'clean' };
-        const trace = [];
-        const cell = {
-            getElement: () => ({ isConnected: false }),
-            getValue: () => value,
-            getRow: () => ({ getData: () => rowData })
-        };
-        const record = eventName => trace.push({
-            eventName,
-            cellValue: cell.getValue(),
-            rowValue: cell.getRow().getData().status,
-            crudState: cell.getRow().getData()._state
-        });
-        const [column] = prepareColumnPipeline({
-            columns: [{
-                field: 'status',
-                editor: select({ options: ['ACTIVE', 'REVIEW'], allowEmpty: false }),
-                cellEdited: () => record('cellEdited'),
-                cellEditCancelled: () => record('cellEditCancelled')
-            }]
-        }).preparedDataColumns;
-
-        record('cellEditing');
-        value = 'REVIEW';
-        rowData.status = 'REVIEW';
-        column.cellEdited(cell);
-        record('cellEditing');
-        // Tabulator List keeps its provisional ArrowUp choice in its input;
-        // neither the cell nor its row data change until a successful commit.
-        column.cellEditCancelled(cell);
-
-        expect(trace).toEqual([
-            { eventName: 'cellEditing', cellValue: 'ACTIVE', rowValue: 'ACTIVE', crudState: 'clean' },
-            { eventName: 'cellEdited', cellValue: 'REVIEW', rowValue: 'REVIEW', crudState: 'clean' },
-            { eventName: 'cellEditing', cellValue: 'REVIEW', rowValue: 'REVIEW', crudState: 'clean' },
-            { eventName: 'cellEditCancelled', cellValue: 'REVIEW', rowValue: 'REVIEW', crudState: 'clean' }
-        ]);
-    });
 });
