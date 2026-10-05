@@ -224,8 +224,8 @@ describe('demo site navigation', () => {
         expect(main).not.toContain('id="main-demo"');
         expect(main).not.toContain('mountMainDemo();');
         expect(main).toContain('class="demo-video-preview demo-guide-video demo-hero__video"');
-        expect(main).toContain('href="https://youtu.be/4m0EZ4vPmT0"');
-        expect(main).toContain('src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg"');
+        expect(main).toContain('href="https://www.youtube.com/watch?v=2qhXHt0Upps"');
+        expect(main).toContain('src="https://i.ytimg.com/vi/2qhXHt0Upps/hqdefault.jpg"');
         expect(main).toContain('data-i18n="hero.videoLabel">Demo AMB Grid</span>');
         expect(main).toContain('data-i18n="video.youtube">YouTube</span>');
         expect(main).not.toContain('demo-guide-video__play');

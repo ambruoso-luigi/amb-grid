@@ -62,11 +62,13 @@ const focusInteractiveCandidate = (candidate, definition) => {
  * Focuses a cell while suppressing the table engine's focus-to-edit behavior.
  *
  * @param {object} cell - Cell component to focus.
+ * @param {object} [options] - Internal focus behavior.
+ * @param {boolean} [options.preventScroll=true] - Preserve the current viewport for focus restoration.
  * @returns {boolean} Whether focus was requested.
  * @private
  * @internal
  */
-export const focusCellWithoutEditing = cell => {
+export const focusCellWithoutEditing = (cell, { preventScroll = true } = {}) => {
     const cellElement = cell?.getElement?.();
 
     if (!cellElement || typeof cellElement.focus !== 'function') return false;
@@ -90,7 +92,7 @@ export const focusCellWithoutEditing = cell => {
 
     cellElement.addEventListener?.('focus', blockEditFocus, true);
     try {
-        cellElement.focus({ preventScroll: true });
+        cellElement.focus({ preventScroll });
     } catch {
         cellElement.focus();
     } finally {
@@ -210,7 +212,9 @@ export const focusNavigationCandidate = candidate => {
     const definition = getCellDefinition(candidate);
     if (!definition || !columnIsVisible(candidate?.getColumn?.())) return false;
     const metadata = getAmbColumnMetadata(definition);
-    return metadata.interactive ? focusInteractiveCandidate(candidate, definition) : focusCellWithoutEditing(candidate);
+    return metadata.interactive
+        ? focusInteractiveCandidate(candidate, definition)
+        : focusCellWithoutEditing(candidate, { preventScroll: false });
 };
 
 export const isEditableCandidate = candidate => {

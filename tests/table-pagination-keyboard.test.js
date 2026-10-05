@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { createKeyboardNavigationRuntime } from '../src/lib/table/keyboard-navigation-runtime.js';
 import {
     focusCellWithoutEditing,
+    focusNavigationCandidate,
     handleEditorCommitCancelKeydown
 } from '../src/lib/editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
@@ -587,6 +588,16 @@ describe('table pagination keyboard runtime', () => {
         expect(focusCellWithoutEditing(preserved)).toBe(true);
         expect(preserved.getElement().getAttribute('tabindex')).toBe('0');
         expect(globalThis.document.activeElement).toBe(preserved.getElement());
+    });
+
+    test('allows navigation focus to reveal its destination while focus restore preserves the viewport', () => {
+        const candidate = createCandidate({ editable: false });
+
+        expect(focusCellWithoutEditing(candidate)).toBe(true);
+        expect(candidate.getElement().focus).toHaveBeenLastCalledWith({ preventScroll: true });
+
+        expect(focusNavigationCandidate(candidate)).toBe(true);
+        expect(candidate.getElement().focus).toHaveBeenLastCalledWith({ preventScroll: false });
     });
 
     test('skips consecutive readonly cells with arrows while retaining focus-only activation', () => {

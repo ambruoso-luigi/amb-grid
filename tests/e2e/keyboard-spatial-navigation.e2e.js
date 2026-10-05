@@ -40,6 +40,26 @@ const activeCellField = page => page.evaluate(() => {
     return cell?.getAttribute('tabulator-field') || null;
 });
 
+const activeCellVisibility = page => page.evaluate(() => {
+    const active = document.activeElement;
+    const cell = active?.closest?.('.tabulator-cell');
+    const holder = cell?.closest?.('.tabulator')?.querySelector('.tabulator-tableholder');
+    if (!cell || !holder) return { visible: false, field: null, editing: false, scrollTop: null, scrollLeft: null };
+
+    const cellRect = cell.getBoundingClientRect();
+    const holderRect = holder.getBoundingClientRect();
+    return {
+        field: cell.getAttribute('tabulator-field'),
+        editing: cell.classList.contains('tabulator-editing'),
+        visible: cellRect.top >= holderRect.top
+            && cellRect.bottom <= holderRect.bottom
+            && cellRect.left >= holderRect.left
+            && cellRect.right <= holderRect.right,
+        scrollTop: holder.scrollTop,
+        scrollLeft: holder.scrollLeft
+    };
+});
+
 test.describe('keyboard spatial navigation', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/#getting-started-javascript');
@@ -81,6 +101,64 @@ test.describe('keyboard spatial navigation', () => {
         await expect.poll(() => currentPage(page)).toBe(penultimate);
         await expectNavigationFocus(lastVisibleItemCode(page));
         await expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
+    });
+
+    test('keeps the vertically navigated Product name cell visible', async ({ page }) => {
+        const pageSize = table(page).locator('.tabulator-page-size');
+        await expect(pageSize).toBeVisible();
+        await pageSize.selectOption('50');
+        await expect(pageSize).toHaveValue('50');
+
+        const start = table(page).locator('.tabulator-row').first()
+            .locator('.tabulator-cell[tabulator-field="productName"]');
+        await focusNavigationCell(page, start, 'vertical visibility start');
+        const initialScrollTop = await activeCellVisibility(page).then(state => state.scrollTop);
+
+        for (let index = 0; index < 12; index += 1) {
+            await page.keyboard.press('ArrowDown');
+            await expect.poll(() => activeCellVisibility(page).then(state => state.field)).toBe('productName');
+            await expect.poll(() => activeCellVisibility(page).then(state => state.visible)).toBe(true);
+            await expect.poll(() => activeCellVisibility(page).then(state => state.editing)).toBe(false);
+        }
+
+        await expect.poll(() => activeCellVisibility(page).then(state => state.scrollTop)).toBeGreaterThan(initialScrollTop);
+    });
+
+    test('keeps a normally focused cell visible during horizontal navigation in the technical grid', async ({ page }) => {
+        await page.goto('/test/');
+        const technicalTable = page.locator('#inventory-test-table');
+        const start = technicalTable.locator('.tabulator-row').first()
+            .locator('.tabulator-cell[tabulator-field="itemCode"]');
+        await expect(start).toBeVisible();
+        await focusNavigationCell(page, start, 'horizontal visibility start');
+        const initialScrollLeft = await activeCellVisibility(page).then(state => state.scrollLeft);
+
+        for (let index = 0; index < 9; index += 1) await page.keyboard.press('ArrowRight');
+
+        await expect.poll(() => activeCellVisibility(page).then(state => state.field)).toBe('notes');
+        await expect.poll(() => activeCellVisibility(page).then(state => state.visible)).toBe(true);
+        await expect.poll(() => activeCellVisibility(page).then(state => state.editing)).toBe(false);
+        await expect.poll(() => activeCellVisibility(page).then(state => state.scrollLeft)).toBeGreaterThan(initialScrollLeft);
+    });
+
+    test('keeps focus in the grid at the final row-action boundary', async ({ page }) => {
+        const lastPage = table(page).locator('.tabulator-page[data-page="last"]');
+        await expect(lastPage).toBeVisible();
+        await lastPage.click();
+
+        const firstCode = firstVisibleItemCode(page);
+        await focusNavigationCell(page, firstCode, 'row action boundary start');
+        await page.keyboard.press('ArrowLeft');
+        await expect.poll(() => page.evaluate(() => document.activeElement?.matches('.amb-row-action-button'))).toBe(true);
+
+        const visibleRows = await table(page).locator('.tabulator-row').count();
+        for (let index = 1; index < visibleRows; index += 1) await page.keyboard.press('ArrowDown');
+        await expect.poll(() => page.evaluate(() => document.activeElement?.matches('.amb-row-action-button'))).toBe(true);
+
+        await page.keyboard.press('ArrowDown');
+        await expect.poll(() => page.evaluate(() => document.activeElement?.matches('.amb-row-action-button'))).toBe(true);
+        await expect(await page.evaluate(() => document.activeElement === document.body)).toBe(false);
+        await expect(table(page).locator('.amb-row-action-button:focus')).toHaveCount(1);
     });
 
     for (const key of ['ArrowLeft', 'ArrowUp']) {
