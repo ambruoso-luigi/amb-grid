@@ -46,8 +46,12 @@ describe('select List adapter', () => {
         expect(status.editorParams).toEqual({
             values: [{ value: 'A', label: 'Active' }], autocomplete: false,
             verticalNavigation: 'editor', clearable: false, emptyValue: '',
-            elementAttributes: { 'data-amb-editor': 'select' }
+            elementAttributes: { 'data-amb-editor': 'select' },
+            itemFormatter: expect.any(Function)
         });
+        const optionElement = { setAttribute: vi.fn() };
+        expect(status.editorParams.itemFormatter('Active', 'A', {}, optionElement)).toBe('Active');
+        expect(optionElement.setAttribute).toHaveBeenCalledWith('data-amb-select-option', 'true');
         expect(notes.editor).toBe('textarea');
 
         status.cellEditing({ getElement: () => ({}) });

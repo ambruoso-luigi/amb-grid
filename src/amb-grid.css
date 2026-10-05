@@ -391,8 +391,17 @@
     text-align: right;
 }
 
-.amb-cell-editor--select {
-    cursor: pointer;
+.tabulator-edit-list-item[data-amb-select-option="true"].active:not(.focused) {
+    background: var(--amb-color-primary-soft);
+    box-shadow: inset 3px 0 0 var(--amb-color-primary);
+    color: var(--amb-color-text);
+}
+
+.tabulator-edit-list-item[data-amb-select-option="true"].focused,
+.tabulator-edit-list-item[data-amb-select-option="true"]:hover {
+    background: var(--amb-color-primary);
+    color: var(--amb-color-surface);
+    outline: 1px solid var(--amb-color-focus);
 }
 
 .amb-date-editor-picker-button {

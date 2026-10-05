@@ -203,6 +203,10 @@ export const prepareSelectColumns = (columns = []) => {
             emptyValue: '',
             elementAttributes: {
                 'data-amb-editor': 'select'
+            },
+            itemFormatter: (label, _value, _item, element) => {
+                element.setAttribute('data-amb-select-option', 'true');
+                return label;
             }
         };
         nextColumn.cellEditing = (...args) => {
