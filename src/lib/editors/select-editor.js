@@ -1,7 +1,7 @@
 import { normalizeSelectOption } from './shared.js';
 
 /**
- * Creates an AMB Select editor declaration backed internally by Tabulator List.
+ * Creates an AMB Select editor declaration.
  * Values and labels are normalized before the table runtime is created; the
  * public factory continues to accept the same Select options as before.
  *
@@ -11,7 +11,7 @@ import { normalizeSelectOption } from './shared.js';
  * @param {string} [options.emptyLabel=''] - Label for the empty option.
  * @param {string} [options.valueField='value'] - Value field for object options.
  * @param {string} [options.labelField='label'] - Label field for object options.
- * @returns {Function} AMB editor declaration transformed into Tabulator List by the table pipeline.
+ * @returns {Function} AMB editor declaration resolved internally by the table pipeline.
  */
 export function select(options = {}) {
     const normalizedOptions = {
@@ -33,7 +33,7 @@ export function select(options = {}) {
 }
 
 /**
- * Converts the public Select option contract into Tabulator List values.
+ * Converts the public Select option contract into internal list-editor values.
  *
  * @param {object} [options] - Normalized Select options.
  * @returns {Array<{value: string, label: string}>} List values.

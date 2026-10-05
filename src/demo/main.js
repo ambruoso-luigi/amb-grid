@@ -648,13 +648,13 @@ const renderShell = selectedId => {
                 </div>
                 <a id="video"
                     class="demo-video-preview demo-guide-video demo-hero__video"
-                    href="https://youtu.be/4m0EZ4vPmT0"
+                    href="https://www.youtube.com/watch?v=2qhXHt0Upps"
                     target="_blank"
                     rel="noopener noreferrer"
                     data-i18n-title="hero.videoOpen"
                     aria-label="Apri Demo AMB Grid su YouTube"
                 >
-                    <img class="demo-video-preview__image" src="https://i.ytimg.com/vi/4m0EZ4vPmT0/hqdefault.jpg" alt="" loading="eager">
+                    <img class="demo-video-preview__image" src="https://i.ytimg.com/vi/2qhXHt0Upps/hqdefault.jpg" alt="" loading="eager">
                     <span class="demo-video-preview__overlay" aria-hidden="true"></span>
                     <span class="demo-video-preview__title" data-i18n="hero.videoLabel">Demo AMB Grid</span>
                     <span class="demo-video-preview__destination">

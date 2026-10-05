@@ -381,8 +381,8 @@ Reusable editors for common scenarios:
 * Large text
 
 `AMB.editors.select()` keeps its existing options (`options`, `allowEmpty`,
-`emptyLabel`, `valueField`, and `labelField`) and uses Tabulator List
-internally.
+`emptyLabel`, `valueField`, and `labelField`) and uses the internal list
+editor.
 
 ### Keyboard support
 
