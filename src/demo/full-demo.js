@@ -250,7 +250,7 @@ export default async function fullDemo(app, options = {}) {
                 })}
                 <div class="demo-table-workbench">
                     <div class="demo-command-guide-host"></div>
-                    <div id="inventory-table" class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"></div>
+                    <div id="inventory-table" class="amb-demo-inventory-grid demo-business-grid"></div>
                 </div>
             </div>
         </div>

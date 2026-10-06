@@ -900,6 +900,7 @@ const renderGuide = () => {
     mountMainDemo('#javascript-demo', 'guide', {
         className: 'demo-showcase demo-showcase--large',
         compactHeader: true,
+        tableHeight: '480px',
         variant: 'showcase'
     });
     window.scrollTo(0, 0);
