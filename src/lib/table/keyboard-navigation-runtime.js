@@ -105,6 +105,7 @@ export const createKeyboardNavigationRuntime = ({
     }
 
     let transitionInProgress = false;
+    let verticalNavigationVersion = 0;
     let activeFinalizer = null;
     let destroyed = false;
     const pendingEditorCloseFinalizers = new Set();
@@ -521,8 +522,33 @@ export const createKeyboardNavigationRuntime = ({
         return null;
     };
 
+    const focusVerticalDestination = destination => {
+        const row = destination?.getRow?.();
+        const column = destination?.getColumn?.();
+        const field = destination?.getField?.();
+        const version = ++verticalNavigationVersion;
+
+        if (!row || (!column && !field)) return;
+
+        Promise.resolve(row.scrollTo?.('nearest', false))
+            .catch(() => undefined)
+            .then(nextFrame)
+            .then(() => {
+                if (destroyed || version !== verticalNavigationVersion) return;
+
+                const reacquired = row.getCell?.(field)
+                    || row.getCells?.().find(cell => cell.getColumn?.() === column)
+                    || row.getCells?.().find(cell => cell.getField?.() === field);
+
+                if (!isKeyboardOperationalCandidate(reacquired)) return;
+
+                focusCellWithoutEditing(reacquired);
+            });
+    };
+
     const navigateSpatially = (currentCell, direction) => {
         if (!currentCell || destroyed) return false;
+        if (direction === 'left' || direction === 'right') verticalNavigationVersion += 1;
         const context = {
             direction,
             cell: currentCell,
@@ -557,7 +583,14 @@ export const createKeyboardNavigationRuntime = ({
             }
             return true;
         }
-        if (getAmbColumnMetadata(destination.getColumn?.().getDefinition?.()).activateOnNavigationFocus) {
+        const destinationMetadata = getAmbColumnMetadata(destination.getColumn?.().getDefinition?.());
+        if (
+            (direction === 'up' || direction === 'down')
+            && !destinationMetadata.interactive
+            && !destinationMetadata.activateOnNavigationFocus
+        ) {
+            focusVerticalDestination(destination);
+        } else if (destinationMetadata.activateOnNavigationFocus) {
             if (destination.edit?.() === false) focusNavigationCandidate(destination);
         } else focusNavigationCandidate(destination);
         return true;
