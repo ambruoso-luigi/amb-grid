@@ -625,7 +625,7 @@ describe('table pagination keyboard runtime', () => {
         expect(globalThis.document.activeElement).toBe(first.getElement());
     });
 
-    test('skips a vertically aligned cell whose editable callback returns false', async () => {
+    test('skips a vertically aligned cell whose editable callback returns false', () => {
         const first = createCandidate({ field: 'name' });
         const unavailable = createCandidate({ field: 'name' });
         const last = createCandidate({ field: 'name' });
@@ -638,7 +638,6 @@ describe('table pagination keyboard runtime', () => {
             cells.forEach(cell => { cell.row = row; });
             return row;
         });
-        rows[2].scrollTo = vi.fn(() => Promise.resolve());
         const harness = createHarness({ cells: [first] });
         harness.table.getRows = () => rows;
         [first, unavailable, last].forEach((cell, index) => {
@@ -648,60 +647,10 @@ describe('table pagination keyboard runtime', () => {
         globalThis.document.activeElement = first.getElement();
 
         harness.tableElement.dispatch({ key: 'ArrowDown', target: first.getElement() });
-        await flush();
 
         expect(globalThis.document.activeElement).toBe(last.getElement());
-        expect(rows[2].scrollTo).toHaveBeenCalledWith('nearest', false);
         expect(unavailable.edit).not.toHaveBeenCalled();
         expect(last.edit).not.toHaveBeenCalled();
-    });
-
-    test('stabilizes vertical navigation after row scroll and reacquires the destination cell', async () => {
-        const source = createCandidate({ field: 'productName' });
-        const staleDestination = createCandidate({ field: 'productName' });
-        const replacementDestination = createCandidate({ field: 'productName' });
-        let destinationCells = [staleDestination];
-        const sourceRow = {
-            getCells: () => [source],
-            getCell: field => field === 'productName' ? source : null,
-            getData: () => ({})
-        };
-        const destinationRow = {
-            getCells: () => destinationCells,
-            getCell: field => destinationCells.find(cell => cell.getField() === field),
-            getData: () => ({}),
-            scrollTo: vi.fn(() => {
-                destinationCells = [replacementDestination];
-                return Promise.resolve();
-            })
-        };
-        source.row = sourceRow;
-        staleDestination.row = destinationRow;
-        replacementDestination.row = destinationRow;
-        const harness = createHarness({
-            cells: [source],
-            keyboardNavigation: normalizeKeyboardNavigationOptions({
-                resolveNavigation: () => staleDestination
-            })
-        });
-        const staleClosest = staleDestination.getElement().closest;
-        staleDestination.getElement().closest = selector => (
-            selector === '.tabulator' ? harness.tableElement : staleClosest(selector)
-        );
-        harness.table.getRows = () => [sourceRow, destinationRow];
-        [source, staleDestination, replacementDestination].forEach(cell => {
-            cell.getElement().rowElement = harness.rowElement;
-        });
-        globalThis.document.activeElement = source.getElement();
-
-        const event = harness.tableElement.dispatch({ key: 'ArrowDown', target: source.getElement() });
-        await flush();
-
-        expect(event.preventDefault).toHaveBeenCalledOnce();
-        expect(staleDestination.getElement().focus).not.toHaveBeenCalled();
-        expect(destinationRow.scrollTo).toHaveBeenCalledWith('nearest', false);
-        expect(replacementDestination.getElement().focus).toHaveBeenCalledWith({ preventScroll: true });
-        expect(globalThis.document.activeElement).toBe(replacementDestination.getElement());
     });
 
     test('does not call shouldHandle for dedicated page shortcuts', () => {

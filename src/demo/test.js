@@ -418,6 +418,7 @@ const createGrid = async (selectionMode = 'single') => {
         },
         data: products,
         layout: 'fitColumns',
+        height: '480px',
         pagination: true,
         paginationMode: 'local',
         paginationSize: 10,
