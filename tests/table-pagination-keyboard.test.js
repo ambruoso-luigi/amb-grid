@@ -398,7 +398,7 @@ describe('table pagination keyboard runtime', () => {
         expect(harness.table.off).toHaveBeenCalledWith('renderComplete', expect.any(Function));
     });
 
-    test('destroy releases a pending virtual-scroll render wait', async () => {
+    test('activates a virtualized page edge after scroll without a second renderComplete', async () => {
         const candidate = createCandidate();
         let harness;
         const row = {
@@ -409,20 +409,13 @@ describe('table pagination keyboard runtime', () => {
         harness = createHarness({ cells: [candidate], row });
         const transition = harness.runtime.transitionPage({
             direction: 'next',
-            destination: 'first'
+            destination: { edge: 'first', field: 'field', activation: 'focus' }
         });
 
         harness.table.emit('renderComplete');
-        await flush();
-        expect(row.scrollTo).toHaveBeenCalledOnce();
-        expect(harness.listenerCount('renderComplete')).toBeGreaterThan(1);
-
-        harness.runtime.destroy();
-
-        expect(await transition).toBe(false);
-        await flush();
-        expect(harness.listenerCount('renderComplete')).toBe(0);
-        expect(candidate.edit).not.toHaveBeenCalled();
+        expect(await transition).toBe(true);
+        expect(row.scrollTo).toHaveBeenCalledWith('top', true);
+        expect(candidate.getElement().focus).toHaveBeenCalledWith({ preventScroll: false });
     });
 
     test('uses centralized shortcuts and ignores Tab and Shift+Tab', () => {
@@ -625,10 +618,11 @@ describe('table pagination keyboard runtime', () => {
         expect(globalThis.document.activeElement).toBe(first.getElement());
     });
 
-    test('skips a vertically aligned cell whose editable callback returns false', () => {
+    test('skips unavailable vertical cells and reacquires the rendered destination', async () => {
         const first = createCandidate({ field: 'name' });
         const unavailable = createCandidate({ field: 'name' });
         const last = createCandidate({ field: 'name' });
+        const replacement = createCandidate({ field: 'name' });
         unavailable.getColumn().getDefinition().editable = () => false;
         const rows = [[first], [unavailable], [last]].map(cells => {
             const row = {
@@ -638,17 +632,31 @@ describe('table pagination keyboard runtime', () => {
             cells.forEach(cell => { cell.row = row; });
             return row;
         });
+        let finalCells = [last];
+        rows[2].getCells = () => finalCells;
+        rows[2].getCell = field => finalCells.find(cell => cell.getField() === field);
+        rows[2].scrollTo = vi.fn(() => {
+            finalCells = [replacement];
+            return Promise.resolve();
+        });
+        replacement.row = rows[2];
         const harness = createHarness({ cells: [first] });
         harness.table.getRows = () => rows;
         [first, unavailable, last].forEach((cell, index) => {
             cell.row = rows[index];
             cell.getElement().rowElement = harness.rowElement;
         });
+        replacement.row = rows[2];
+        replacement.getElement().rowElement = harness.rowElement;
         globalThis.document.activeElement = first.getElement();
 
         harness.tableElement.dispatch({ key: 'ArrowDown', target: first.getElement() });
+        await flush();
 
-        expect(globalThis.document.activeElement).toBe(last.getElement());
+        expect(rows[2].scrollTo).toHaveBeenCalledWith('nearest', false);
+        expect(last.getElement().focus).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(replacement.getElement());
+        expect(replacement.getElement().focus).toHaveBeenCalledWith({ preventScroll: true });
         expect(unavailable.edit).not.toHaveBeenCalled();
         expect(last.edit).not.toHaveBeenCalled();
     });

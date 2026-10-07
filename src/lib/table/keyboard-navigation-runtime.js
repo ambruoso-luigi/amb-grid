@@ -105,10 +105,10 @@ export const createKeyboardNavigationRuntime = ({
     }
 
     let transitionInProgress = false;
+    let verticalNavigationVersion = 0;
     let activeFinalizer = null;
     let destroyed = false;
     const pendingEditorCloseFinalizers = new Set();
-    const pendingRenderWaitFinalizers = new Set();
 
     const normalizeDestination = destination => (
         typeof destination === 'string'
@@ -223,27 +223,9 @@ export const createKeyboardNavigationRuntime = ({
         const destinationRow = edge === 'last'
             ? getLastPageRow() || getRenderedRows(edge)[0]
             : getRenderedRows(edge)[0];
-        const tableHolder = tableElement.querySelector?.('.tabulator-tableholder');
 
         if (typeof destinationRow?.scrollTo === 'function') {
-            const scrollBefore = tableHolder?.scrollTop;
-            let resolveScrollRender;
-            const scrollRender = new Promise(resolve => { resolveScrollRender = resolve; });
-            const handleScrollRender = () => resolveScrollRender();
-
-            pendingRenderWaitFinalizers.add(handleScrollRender);
-
-            try {
-                table.on?.('renderComplete', handleScrollRender);
-                await destinationRow.scrollTo(edge === 'last' ? 'bottom' : 'top', true);
-
-                if (tableHolder && tableHolder.scrollTop !== scrollBefore) {
-                    await scrollRender;
-                }
-            } finally {
-                pendingRenderWaitFinalizers.delete(handleScrollRender);
-                table.off?.('renderComplete', handleScrollRender);
-            }
+            await destinationRow.scrollTo(edge === 'last' ? 'bottom' : 'top', true);
         }
 
         if (destroyed) return false;
@@ -274,6 +256,28 @@ export const createKeyboardNavigationRuntime = ({
         if (!isAllowedByRowState(candidate)) return false;
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
         return isEditableCandidate(candidate);
+    };
+
+    const isLogicalVerticalCandidate = candidate => {
+        const definition = candidate?.getColumn?.()?.getDefinition?.() || {};
+        const metadata = getAmbColumnMetadata(definition);
+        if (metadata.interactive || metadata.activateOnNavigationFocus) return false;
+        if (!candidate?.getRow?.() || (!candidate?.getField?.() && !candidate?.getColumn?.())) return false;
+        if (!isAllowedByRowState(candidate)) return false;
+        if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
+        return isEditableCandidate(candidate);
+    };
+
+    const isCurrentGridCandidate = candidate => {
+        const element = candidate?.getElement?.();
+        const owner = element?.closest?.('.tabulator');
+        return Boolean(
+            element
+            && element.isConnected !== false
+            && tableElement.contains?.(element)
+            && (!owner || owner === tableElement)
+            && isKeyboardOperationalCandidate(candidate)
+        );
     };
 
     const isValidNavigationCell = candidate => {
@@ -516,13 +520,38 @@ export const createKeyboardNavigationRuntime = ({
             const targetRow = pageRows[index];
             const sameColumn = targetRow.getCells?.().find(cell => cell.getColumn?.() === column)
                 || (field ? targetRow.getCell?.(field) || targetRow.getCells?.().find(cell => cell.getField?.() === field) : null);
-            if (isKeyboardOperationalCandidate(sameColumn)) return sameColumn;
+            if (isLogicalVerticalCandidate(sameColumn) || isKeyboardOperationalCandidate(sameColumn)) return sameColumn;
         }
         return null;
     };
 
+    const focusVerticalDestination = destination => {
+        const row = destination?.getRow?.();
+        const column = destination?.getColumn?.();
+        const field = destination?.getField?.();
+        const version = ++verticalNavigationVersion;
+
+        if (!row || (!column && !field)) return;
+
+        Promise.resolve(row.scrollTo?.('nearest', false))
+            .catch(() => undefined)
+            .then(nextFrame)
+            .then(() => {
+                if (destroyed || version !== verticalNavigationVersion) return;
+
+                const reacquired = row.getCell?.(field)
+                    || row.getCells?.().find(cell => cell.getColumn?.() === column)
+                    || row.getCells?.().find(cell => cell.getField?.() === field);
+
+                if (!isCurrentGridCandidate(reacquired)) return;
+
+                focusCellWithoutEditing(reacquired);
+            });
+    };
+
     const navigateSpatially = (currentCell, direction) => {
         if (!currentCell || destroyed) return false;
+        if (direction === 'left' || direction === 'right') verticalNavigationVersion += 1;
         const context = {
             direction,
             cell: currentCell,
@@ -533,7 +562,10 @@ export const createKeyboardNavigationRuntime = ({
         let destination = navigationOptions.resolveNavigation?.(context);
         const customDestination = isValidNavigationCell(destination);
         if (!customDestination) destination = getSpatialDestination(currentCell, direction);
-        if (!isKeyboardOperationalCandidate(destination)) {
+        const verticalDestination = !customDestination
+            && (direction === 'up' || direction === 'down')
+            && isLogicalVerticalCandidate(destination);
+        if (!(verticalDestination || isKeyboardOperationalCandidate(destination))) {
             if (!customDestination && (direction === 'up' || direction === 'down')) {
                 const pageRows = getCurrentPageRows();
                 const rowIndex = pageRows.indexOf(currentCell.getRow?.());
@@ -557,7 +589,9 @@ export const createKeyboardNavigationRuntime = ({
             }
             return true;
         }
-        if (getAmbColumnMetadata(destination.getColumn?.().getDefinition?.()).activateOnNavigationFocus) {
+        if (verticalDestination) {
+            focusVerticalDestination(destination);
+        } else if (getAmbColumnMetadata(destination.getColumn?.().getDefinition?.()).activateOnNavigationFocus) {
             if (destination.edit?.() === false) focusNavigationCandidate(destination);
         } else focusNavigationCandidate(destination);
         return true;
@@ -856,7 +890,6 @@ export const createKeyboardNavigationRuntime = ({
         destroy() {
             destroyed = true;
             for (const finalize of [...pendingEditorCloseFinalizers]) finalize();
-            for (const finalize of [...pendingRenderWaitFinalizers]) finalize();
             activeFinalizer?.();
             unregisterCoordinator();
             unregisterKeyboardContext();
