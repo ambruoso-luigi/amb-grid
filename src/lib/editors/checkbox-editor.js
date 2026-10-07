@@ -37,6 +37,7 @@ const keyMatches = (event, keys) => keys.includes(event.key);
      * @param {string[]} [options.checkedKeys=['1','y','Y','s','S']] - Keys that set checked state.
      * @param {string[]} [options.uncheckedKeys=['0','n','N']] - Keys that set unchecked state.
      * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @alias editors.checkbox
      */
 export function checkbox(options = {}) {
         const hasCheckedLabel = Object.prototype.hasOwnProperty.call(options, 'checkedLabel');

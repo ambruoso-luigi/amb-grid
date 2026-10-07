@@ -54,3 +54,6 @@ destroys the controller before the component is removed.
 
 React owns and renders the container. AMB Grid owns the table DOM inside it;
 React should not render the grid rows or cells directly.
+
+In TSX, use the package declarations directly for the JavaScript/JSDoc API; no
+framework-specific wrapper is required.

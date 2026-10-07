@@ -91,6 +91,7 @@ import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, 
      * @param {LookupInvalidCodeHandler} [options.onInvalidCode] - Handle an invalid typed lookup code.
      * @param {object} [options.dialogOptions] - Options forwarded to `LookupDialog.open`. Editor-calculated title, columns, data, and search fields take precedence.
      * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @alias editors.lookup
      * @example
      * const products = AMB.lookup({
      *   valueField: 'sku',

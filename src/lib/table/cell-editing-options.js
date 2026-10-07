@@ -6,6 +6,8 @@ const VALID_MOUSE_TRIGGERS = new Set(['double-click', 'single-click']);
  *
  * @param {object|undefined} cellEditing - Public cell editing options.
  * @returns {{mouseTrigger: 'double-click'|'single-click'}} Normalized options.
+ * @private
+ * @internal
  */
 export const normalizeCellEditingOptions = cellEditing => {
     if (cellEditing === undefined) return { ...DEFAULT_OPTIONS };

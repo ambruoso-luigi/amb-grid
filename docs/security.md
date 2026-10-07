@@ -8,6 +8,11 @@ AMB Grid does not generate SQL queries, does not replace backend validation, and
 
 Textual formatters escape HTML by default. Values such as `<b>test</b>` or `<img src=x onerror=alert(1)>` must be displayed as text, not interpreted as HTML.
 
+This guarantee applies to AMB Grid's textual formatters. A custom application
+formatter that intentionally returns HTML remains the application's
+responsibility: never insert untrusted data as raw HTML without suitable
+sanitization.
+
 If intentional HTML rendering is introduced in the future, it must be explicit and documented as an advanced and unsafe-by-default capability. Plain text formatters should remain safe by default.
 
 ## SQL injection

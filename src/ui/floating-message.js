@@ -2,6 +2,9 @@ const MESSAGE_TYPES = new Set(['error', 'warning', 'info', 'success']);
 
 /**
  * Floating message shown near a target element.
+ *
+ * @private
+ * @internal
  */
 export class FloatingMessage {
     /**

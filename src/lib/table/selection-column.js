@@ -177,6 +177,8 @@ const syncSelectionInputs = table => {
  *
  * @param {object} [selectionColumn] - Selection column options.
  * @returns {object|null} Selection column controller, or null when disabled.
+ * @private
+ * @internal
  */
 export const createSelectionColumn = (selectionColumn = {}) => {
     const normalizedOptions = {

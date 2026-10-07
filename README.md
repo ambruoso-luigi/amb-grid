@@ -382,7 +382,10 @@ Reusable editors for common scenarios:
 
 `AMB.editors.select()` keeps its existing options (`options`, `allowEmpty`,
 `emptyLabel`, `valueField`, and `labelField`) and uses the internal list
-editor.
+editor. ArrowUp and ArrowDown navigate options, Enter confirms, and Escape
+cancels a pending option while retaining the last confirmed value; after it
+closes, normal grid navigation resumes and Tab/Shift+Tab retain their
+sequential flow.
 
 ### Keyboard support
 

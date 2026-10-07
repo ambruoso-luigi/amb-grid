@@ -122,6 +122,7 @@ const createPickerOptions = options => {
      * @param {boolean} [options.picker=false] - Backward-compatible shortcut for `mode: 'manualWithPickerButton'`.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @alias editors.date
      */
 export function date(options = {}) {
         const normalizedOptions = normalizeDateEditorOptions(options);

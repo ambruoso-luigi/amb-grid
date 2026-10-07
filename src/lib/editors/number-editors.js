@@ -105,6 +105,7 @@ const getDecimalInitialValue = (cell, options) => {
      * @param {number} [options.maxLength] - Native input maximum length.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @alias editors.integer
      */
 export function integer(options = {}) {
         const normalizedOptions = {
@@ -224,6 +225,7 @@ export function integer(options = {}) {
      * @param {number} [options.max] - Maximum accepted value.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @alias editors.decimal
      */
 export function decimal(options = {}) {
         const normalizedOptions = {

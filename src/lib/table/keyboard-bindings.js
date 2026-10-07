@@ -79,7 +79,12 @@ export const registerKeyboardNavigationContext = (table, context) => {
  */
 export const getKeyboardNavigationContext = table => keyboardContexts.get(table);
 
-/** Normalizes the public AMB Grid keyboard navigation configuration. */
+/**
+ * Normalizes the public AMB Grid keyboard navigation configuration.
+ *
+ * @private
+ * @internal
+ */
 export const normalizeKeyboardNavigationOptions = (keyboardNavigation = undefined) => {
     if (keyboardNavigation !== undefined && (keyboardNavigation === null || typeof keyboardNavigation !== 'object' || Array.isArray(keyboardNavigation))) {
         throw new TypeError('AMB.table: `keyboardNavigation` must be an object.');

@@ -48,6 +48,8 @@ const createDefaultActionIcon = action => {
  * @param {Function} getCrud - Returns the active CRUD helper.
  * @param {object} confirmDialog - Confirmation dialog adapter.
  * @returns {{column: object, updateRowButton: Function}} Row action column controller.
+ * @private
+ * @internal
  */
 export const createRowActionColumn = (rowActionColumn, getCrud, confirmDialog) => {
     const confirmDeleteMessage = rowActionColumn.confirmDeleteMessage || rowActionColumn.confirmMessage;

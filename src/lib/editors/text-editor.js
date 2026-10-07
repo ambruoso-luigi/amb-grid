@@ -11,6 +11,7 @@ import { containEditorSpatialNavigation, focusInput, getInitialValue, handleEdit
      * @param {number} [options.maxLength] - Native input maximum length.
      * @param {boolean} [options.selectOnFocus=false] - Select the full value when editing starts.
      * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @alias editors.text
      */
 export function text(options = {}) {
         return (cell, onRendered, success, cancel) => {

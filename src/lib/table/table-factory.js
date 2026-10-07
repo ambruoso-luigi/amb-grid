@@ -958,7 +958,6 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  *
  * @param {AMBTableOptions} options - AMB Grid options and supported internal-engine passthrough configuration.
  * @returns {AMBTableController} AMB table controller. Call `destroy()` when the owning page section, modal, tab, or view is disposed.
- *
  * Underscored fields on the returned controller are internal integration
  * objects and are not part of the stable public API.
  * @example
@@ -972,6 +971,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  *
  * // later, when the page section/modal/view is disposed
  * grid.destroy();
+ * @alias AMB.table
  */
 export function createTable(options = {}) {
     if (Object.prototype.hasOwnProperty.call(options, 'deleteColumn')) {

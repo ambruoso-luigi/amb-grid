@@ -12,6 +12,8 @@
  * @param {boolean} [options.caseSensitive=false] - Whether matching preserves case.
  * @param {boolean} [options.commitMatchedValue=true] - Commit the canonical list value when typed text matches.
  * @returns {object} Normalized autocomplete options.
+ * @private
+ * @internal
  */
 export const normalizeAutocompleteOptions = (options = {}) => {
     const normalizedOptions = {
@@ -42,6 +44,8 @@ export const normalizeAutocompleteOptions = (options = {}) => {
  * @param {*} value - Input value.
  * @param {object} [options] - Autocomplete options.
  * @returns {string} Normalized input.
+ * @private
+ * @internal
  */
 export const normalizeAutocompleteInput = (value, options = {}) => {
     const normalizedOptions = normalizeAutocompleteOptions(options);
@@ -57,6 +61,8 @@ export const normalizeAutocompleteInput = (value, options = {}) => {
  *
  * @param {Array<string>} values - Suggested values.
  * @returns {string[]} String suggestions.
+ * @private
+ * @internal
  */
 export const getAutocompleteSuggestionValues = values => {
     if (!Array.isArray(values)) return [];
@@ -72,6 +78,8 @@ export const getAutocompleteSuggestionValues = values => {
  * @param {*} value - Value to compare.
  * @param {object} [options] - Autocomplete options.
  * @returns {string} Comparable value.
+ * @private
+ * @internal
  */
 export const normalizeAutocompleteComparableValue = (value, options = {}) => {
     const normalizedOptions = normalizeAutocompleteOptions(options);
@@ -89,6 +97,8 @@ export const normalizeAutocompleteComparableValue = (value, options = {}) => {
  * @param {*} typedValue - Current typed value.
  * @param {object} [options] - Autocomplete options.
  * @returns {string|null} Canonical suggestion value, or `null`.
+ * @private
+ * @internal
  */
 export const findAutocompleteMatch = (values, typedValue, options = {}) => {
     const normalizedOptions = normalizeAutocompleteOptions(options);
@@ -145,10 +155,22 @@ export const createAutocompleteWidgetOptions = (values, options = {}) => {
     };
 };
 
+/**
+ * Return the cursor position used by the autocomplete input.
+ *
+ * @private
+ * @internal
+ */
 export const getAutocompleteCursorPosition = value => {
     return String(value ?? '').length;
 };
 
+/**
+ * Map a key to the autocomplete editor's internal action.
+ *
+ * @private
+ * @internal
+ */
 export const getAutocompleteKeyAction = key => {
     if (key === 'ArrowDown' || key === 'ArrowUp') {
         return {
@@ -199,6 +221,8 @@ export const getAutocompleteKeyAction = key => {
  * @param {Array<string>} [params.values=[]] - Canonical suggestion list.
  * @param {object} [params.options] - Autocomplete options.
  * @returns {{action: 'success', value: string}|{action: 'cancel'}} Commit result.
+ * @private
+ * @internal
  */
 export const resolveAutocompleteCommit = ({
     selectedValue,

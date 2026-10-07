@@ -6,6 +6,7 @@
   },
   "opts": {
     "destination": "docs",
-    "recurse": true
+    "recurse": true,
+    "readme": "docs/api-home.md"
   }
 }

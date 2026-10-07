@@ -24,6 +24,7 @@ let dialogSequence = 0;
      * @param {string} [options.resize='vertical'] - CSS resize value for the textarea.
      * @param {boolean} [options.closeOnBackdropClick=true] - Close the editor when the backdrop is pressed.
      * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @alias editors.largeText
      * @example
      * {
      *   title: 'Notes',

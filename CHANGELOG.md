@@ -22,10 +22,15 @@ All notable changes to AMB Grid are documented in this file.
 
 - Replaced the native Select implementation with the internal list-editor
   adapter while preserving the public Select contract.
-
+- Finalized Select Escape cancellation so a pending option cannot replace the
+  last confirmed value, and clarified the visual state of confirmed versus
+  currently navigated options.
+- Stabilized vertical navigation in fixed-height and virtualized grids,
+  retaining focus across virtual rows and page boundaries.
+- Kept geometric navigation destinations visible when focus moves.
 - Corrected autocomplete dropdown placement for a final visible row.
 - Preserved editor caret and selection while normalizing uppercase or lowercase input.
-- Restored CRUD error indicators after Tabulator rendering and pagination rebuild cells.
+- Restored CRUD error indicators after internal rendering and pagination rebuilds.
 - Preserved informational cell tooltips while clearing stale validation markers.
 - Prevented membership reconciliation from prematurely marking untouched empty fields in new rows as invalid.
 

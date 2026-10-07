@@ -5,6 +5,12 @@ import { normalizeSelectOption } from './shared.js';
  * Values and labels are normalized before the table runtime is created; the
  * public factory continues to accept the same Select options as before.
  *
+ * Keyboard behavior: ArrowUp and ArrowDown navigate options, Enter confirms
+ * the highlighted option, and Escape cancels a pending selection while
+ * retaining the last confirmed value. After closing, the cell returns to
+ * normal AMB Grid navigation; Tab and Shift+Tab continue the normal
+ * sequential grid flow.
+ *
  * @param {object} [options] - Select editor options.
  * @param {Array<string|object>} [options.options=[]] - Available options.
  * @param {boolean} [options.allowEmpty=true] - Add an empty option.
@@ -12,6 +18,7 @@ import { normalizeSelectOption } from './shared.js';
  * @param {string} [options.valueField='value'] - Value field for object options.
  * @param {string} [options.labelField='label'] - Label field for object options.
  * @returns {Function} AMB editor declaration resolved internally by the table pipeline.
+ * @alias editors.select
  */
 export function select(options = {}) {
     const normalizedOptions = {

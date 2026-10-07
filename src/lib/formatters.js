@@ -21,6 +21,8 @@ const stringifyValue = value => {
  *
  * @param {*} value - Value to stringify and escape.
  * @returns {string} HTML-escaped text.
+ * @private
+ * @internal
  */
 export const escapeHtmlText = value => {
     return stringifyValue(value)

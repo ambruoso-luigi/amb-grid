@@ -210,6 +210,7 @@ const createFloatingAutocomplete = ({
  * @param {boolean} [options.commitMatchedValue=true] - Commit the canonical list value when typed text exactly or partially matches a suggestion.
  * @param {string} [options.placeholder] - Native input placeholder.
  * @returns {Function} Grid editor function compatible with the internal table engine.
+ * @alias editors.autocomplete
  */
 export function autocomplete(values, options = {}) {
     const normalizedOptions = normalizeAutocompleteOptions(options);

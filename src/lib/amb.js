@@ -26,6 +26,7 @@ import { validators } from './validators.js';
  * @property {Function} FeedbackRegion - Accessible status region class.
  * @property {Function} ConfirmDialog - Confirmation dialog class.
  * @property {Function} SearchFiltersDialog - Search filter dialog class.
+ * @property {Function} table - Main grid factory. Call `AMB.table(options)` to create an `AMBTableController`.
  */
 export const AMB = {
     validators,
