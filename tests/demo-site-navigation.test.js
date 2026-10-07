@@ -534,6 +534,7 @@ describe('demo site navigation', () => {
 
     test('shares the default ten-row viewport and JavaScript-demo resize configuration', () => {
         const fullDemo = read('src/demo/full-demo.js');
+        const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');
         const exampleFiles = [
             'basic-crud',
@@ -546,7 +547,9 @@ describe('demo site navigation', () => {
             'parsers'
         ];
 
-        expect(fullDemo).toContain('class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"');
+        expect(fullDemo).toContain('class="amb-demo-inventory-grid demo-business-grid"');
+        expect(fullDemo).not.toContain('class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"');
+        expect(main).toContain("tableHeight: '480px'");
         expect(fullDemo).not.toContain('resizableColumnFit:');
         expect(css).toContain('.demo-panel .demo-business-grid--viewport .tabulator-tableholder');
         expect(css).toContain('--amb-demo-visible-rows: 10;');

@@ -290,7 +290,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(demoCss).toContain('.demo-panel .amb-toolbar__search {');
         expect(demoCss).toContain('body.demo-main-demo-active .teh-confirm-dialog__message');
         expect(demoCss).toContain('white-space: pre-line;');
-        expect(source).toContain('class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"');
+        expect(source).toContain('class="amb-demo-inventory-grid demo-business-grid"');
+        expect(source).not.toContain('class="amb-demo-inventory-grid demo-business-grid demo-business-grid--viewport"');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-tableholder,');
         expect(demoCss).toContain('.demo-panel .tabulator .tabulator-placeholder');
         expect(demoCss).toContain('--amb-demo-row-height: 36px;');
@@ -305,6 +306,8 @@ describe('Legacy-friendly warehouse demo', () => {
     test('supports a large showcase variant without changing the default API surface', () => {
         expect(source).toContain('compactHeader = false');
         expect(source).toContain('tableHeight = null');
+        expect(source).toContain('if (tableHeight) {');
+        expect(source).toContain('tableOptions.height = tableHeight');
         expect(source).toContain("variant && variant !== 'default' ? `demo-shell--${variant}` : ''");
         expect(source).toContain("compactHeader ? 'demo-shell--compact-header' : ''");
         expect(source).toContain("app.style.setProperty('--demo-table-height', tableHeight)");
