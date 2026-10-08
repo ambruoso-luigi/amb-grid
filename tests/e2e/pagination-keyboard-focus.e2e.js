@@ -60,6 +60,14 @@ const expectLookupEditor = async (page, code) => {
     await expect(target.locator('.amb-lookup-editor__input')).toBeFocused();
 };
 
+const openStatusLookupEditor = page => openEditorFromNavigation(
+    page,
+    rowCell(page, 'PRD-AB02', 'status'),
+    'Status lookup pagination setup',
+    '#inventory-table',
+    '.amb-lookup-editor__input'
+);
+
 const selectStatusDialogResult = async (page, value) => {
     await page.keyboard.press('F2');
     const dialog = page.locator('.amb-lookup-dialog');
@@ -107,9 +115,12 @@ test.describe('keyboard pagination focus', () => {
     });
 
     test('Shift+Tab exits the grid at the first absolute boundary', async ({ page }) => {
-        await cell(page, 'itemCode').click();
-        await cell(page, 'itemCode').dblclick({ delay: 100 });
-        await expectItemCodeEditor(page);
+        await openEditorFromNavigation(
+            page,
+            cell(page, 'itemCode'),
+            'Shift+Tab first boundary setup',
+            '#inventory-table'
+        );
         await page.keyboard.press('Shift+Tab');
         await expectFocusOutsideGrid(page);
     });
@@ -156,11 +167,7 @@ test.describe('keyboard pagination focus', () => {
     });
 
     test('preserves sequential navigation after a real lookup selection', async ({ page }) => {
-        const status = rowCell(page, 'PRD-AB02', 'status');
-        await expect(status).toBeVisible();
-        await status.click();
-        await expect(status).toBeFocused();
-        await status.dblclick({ delay: 100 });
+        await openStatusLookupEditor(page);
         await expectLookupEditor(page, 'PRD-AB02');
         await selectStatusDialogResult(page, 'A001');
         await expectLookupEditor(page, 'PRD-AB02');
@@ -168,9 +175,7 @@ test.describe('keyboard pagination focus', () => {
         await expect(rowCell(page, 'PRD-AB02', 'lastCheckDate')).toHaveClass(/tabulator-editing/);
 
         await page.keyboard.press('Escape');
-        await status.click();
-        await expect(status).toBeFocused();
-        await status.dblclick({ delay: 100 });
+        await openStatusLookupEditor(page);
         await expectLookupEditor(page, 'PRD-AB02');
         await selectStatusDialogResult(page, 'AB03');
         await expectLookupEditor(page, 'PRD-AB02');

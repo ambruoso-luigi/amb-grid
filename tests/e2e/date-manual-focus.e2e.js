@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { enterNavigationWithClick } from './helpers/focus-diagnostics.js';
 
 const openDatesExample = async page => {
     await page.goto('/');
@@ -25,8 +26,12 @@ test('manual date editors restore navigation focus after Enter and Escape', asyn
     for (const { field, rightSteps, value, temporaryValue } of cases) {
         const cell = dateCell(page, field);
 
-        await eventCell(page).click();
-        await expect(eventCell(page)).toBeFocused();
+        await enterNavigationWithClick(
+            page,
+            eventCell(page),
+            `Date navigation setup for ${field}`,
+            '#dates-table'
+        );
         for (let step = 0; step < rightSteps; step += 1) {
             await page.keyboard.press('ArrowRight');
         }
