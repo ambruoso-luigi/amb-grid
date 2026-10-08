@@ -68,7 +68,7 @@
     --amb-row-deleted-bg: #e5eaf0;
     --amb-row-saved-bg: #edf8f0;
     --amb-row-error-bg: #fff0f0;
-    --amb-cell-modified-bg: #ffdb7d;
+    --amb-cell-modified-bg: #ffe7aa;
     --amb-cell-error-bg: #ffdada;
     --amb-calc-row-bg: var(--amb-color-surface-muted);
     --amb-calc-row-color: var(--amb-color-text);
