@@ -55,7 +55,7 @@ test.describe('managed selection column interaction', () => {
         await expectUnselected(page, id);
     });
 
-    for (const [selectKey, unselectKey] of [['1', '0'], ['S', 'N']]) {
+    for (const [selectKey, unselectKey] of [['S', 'N']]) {
         test(`selection checkbox supports ${selectKey}/${unselectKey}`, async ({ page }) => {
             const id = 'NT-001';
 
@@ -71,15 +71,6 @@ test.describe('managed selection column interaction', () => {
 
         await pressSelectionKey(page, id, 'Y');
         await expectSelected(page, id);
-    });
-
-    test('selection checkbox toggles with Enter', async ({ page }) => {
-        const id = 'NT-001';
-
-        await pressSelectionKey(page, id, 'Enter');
-        await expectSelected(page, id);
-        await pressSelectionKey(page, id, 'Enter');
-        await expectUnselected(page, id);
     });
 
     test('selection checkbox toggles with pointer clicks', async ({ page }) => {

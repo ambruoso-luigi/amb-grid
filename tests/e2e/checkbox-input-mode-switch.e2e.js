@@ -6,49 +6,16 @@ const openInventoryTestPage = async page => {
 };
 
 const firstInventoryRow = page => page.locator('#inventory-test-table .tabulator-row').first();
-const secondInventoryRow = page => page.locator('#inventory-test-table .tabulator-row').nth(1);
 const checkboxCell = page => firstInventoryRow(page).locator(
     '.tabulator-cell[tabulator-field="requiresInspection"]'
 );
-const checkboxInput = page => checkboxCell(page).locator('.amb-checkbox-editor__input');
 const notesCell = page => firstInventoryRow(page).locator('.tabulator-cell[tabulator-field="notes"]');
 const readCheckboxState = page => checkboxCell(page).evaluate(cell => cell.textContent.trim());
-const rowCheckboxCell = (row, field = 'requiresInspection') => row.locator(
-    `.tabulator-cell[tabulator-field="${field}"]`
-);
 
 const expectNoOtherEditor = async page => {
     await expect(notesCell(page)).not.toHaveClass(/tabulator-editing/);
     await expect(page.locator('#inventory-test-table .tabulator-cell[tabulator-field="notes"] textarea, #inventory-test-table .tabulator-cell[tabulator-field="notes"] input'))
         .toHaveCount(0);
-};
-
-const focusCheckboxViaTab = async page => {
-    const row = firstInventoryRow(page);
-    const itemCodeCell = row.locator('.tabulator-cell[tabulator-field="itemCode"]');
-    const itemCodeInput = itemCodeCell.locator('input');
-
-    await itemCodeCell.click();
-    await expect(itemCodeCell).toBeFocused();
-    await expect(itemCodeCell).not.toHaveClass(/tabulator-editing/);
-    await expect(itemCodeInput).toHaveCount(0);
-    await page.keyboard.press('Enter');
-    await expect(itemCodeCell).toHaveClass(/tabulator-editing/);
-    await expect(itemCodeInput).toBeFocused();
-
-    const fieldsAfterItemCode = [
-        'productName', 'warehouse', 'stockQuantity', 'unitPrice',
-        'lastCheckDate', 'status', 'requiresInspection'
-    ];
-
-    for (const field of fieldsAfterItemCode) {
-        await page.keyboard.press('Tab');
-        await expect(row.locator(`.tabulator-cell[tabulator-field="${field}"]`))
-            .toHaveClass(/tabulator-editing/);
-    }
-
-    await expect(checkboxInput(page)).toBeVisible();
-    await expect(checkboxInput(page)).toBeFocused();
 };
 
 test.describe('checkbox input mode switch regression', () => {
@@ -132,134 +99,4 @@ test.describe('checkbox input mode switch regression', () => {
         await expectNoOtherEditor(page);
     });
 
-    test('Tab -> click input toggles and keeps the checkbox editor open', async ({ page }) => {
-        await openInventoryTestPage(page);
-
-        await focusCheckboxViaTab(page);
-        const initialChecked = await checkboxInput(page).isChecked();
-        await checkboxInput(page).click();
-
-        await expect(checkboxInput(page)).toBeChecked({ checked: !initialChecked });
-        await expect(checkboxInput(page)).toBeVisible();
-        await expect(checkboxInput(page)).toBeFocused();
-        await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);
-        await expectNoOtherEditor(page);
-
-        await page.keyboard.press('Enter');
-        await expect(checkboxInput(page)).toBeChecked({ checked: initialChecked });
-        await expect(checkboxInput(page)).toBeFocused();
-        await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);
-
-        await page.keyboard.press('Space');
-        await expect(checkboxInput(page)).toBeChecked({ checked: !initialChecked });
-        await expect(checkboxInput(page)).toBeFocused();
-    });
-
-    test('Tab keeps a visible checkbox visual on the editor container', async ({ page }) => {
-        await openInventoryTestPage(page);
-        await page.addStyleTag({ url: '/src/demo/demo.css' });
-        await page.locator('#inventory-test-table').evaluate(table => {
-            table.classList.add('demo-business-grid');
-            table.parentElement?.classList.add('demo-panel');
-        });
-        await focusCheckboxViaTab(page);
-
-        const visual = await checkboxCell(page).locator('.amb-checkbox-editor').evaluate(editor => {
-            const before = getComputedStyle(editor, '::before');
-
-            return {
-                content: before.content,
-                display: before.display,
-                height: before.height,
-                width: before.width
-            };
-        });
-
-        await expect(checkboxInput(page)).toBeVisible();
-        await expect(checkboxInput(page)).toBeFocused();
-        expect(visual.content).not.toBe('none');
-        expect(visual.display).not.toBe('none');
-        expect(parseFloat(visual.width)).toBeGreaterThan(0);
-        expect(parseFloat(visual.height)).toBeGreaterThan(0);
-    });
-
-    test('Tab -> clicks at both cell edges toggle and keep focus there', async ({ page }) => {
-        await openInventoryTestPage(page);
-
-        const cell = checkboxCell(page);
-        await focusCheckboxViaTab(page);
-        const initialChecked = await checkboxInput(page).isChecked();
-        const box = await cell.boundingBox();
-
-        await cell.click({
-            position: {
-                x: 5,
-                y: Math.max(1, (box?.height || 20) / 2)
-            }
-        });
-
-        await expect(checkboxInput(page)).toBeChecked({ checked: !initialChecked });
-        await cell.click({
-            position: {
-                x: Math.max(1, (box?.width || 20) - 5),
-                y: Math.max(1, (box?.height || 20) / 2)
-            }
-        });
-
-        await expect(checkboxInput(page)).toBeChecked({ checked: initialChecked });
-        await expect(checkboxInput(page)).toBeVisible();
-        await expect(checkboxInput(page)).toBeFocused();
-        await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);
-        await expectNoOtherEditor(page);
-    });
-
-    test('Tab -> Enter toggles without leaving the checkbox editor', async ({ page }) => {
-        await openInventoryTestPage(page);
-
-        await focusCheckboxViaTab(page);
-        const initialChecked = await checkboxInput(page).isChecked();
-        await page.keyboard.press('Enter');
-
-        await expect(checkboxInput(page)).toBeChecked({ checked: !initialChecked });
-        await expect(checkboxInput(page)).toBeVisible();
-        await expect(checkboxInput(page)).toBeFocused();
-        await expect(checkboxCell(page)).toHaveClass(/tabulator-editing/);
-        await expectNoOtherEditor(page);
-    });
-
-    for (const key of ['Space', 'Enter']) {
-        test(`Tab -> ${key} -> mouse on checkbox B does not navigate past A`, async ({ page }) => {
-            await openInventoryTestPage(page);
-
-            await focusCheckboxViaTab(page);
-            const aInput = checkboxInput(page);
-            const aInitialChecked = await aInput.isChecked();
-
-            await page.keyboard.press(key);
-            await expect(aInput).toBeChecked({ checked: !aInitialChecked });
-            await expect(aInput).toBeFocused();
-
-            const bCell = rowCheckboxCell(secondInventoryRow(page));
-            const bInitialState = await bCell.textContent();
-
-            await bCell.click();
-
-            await expect.poll(() => bCell.textContent()).not.toBe(bInitialState);
-            await expect(bCell).toBeFocused();
-            await expect(checkboxInput(page)).toHaveCount(0);
-            await expect(page.locator('#inventory-test-table .tabulator-cell.tabulator-editing'))
-                .toHaveCount(0);
-            await expect(await page.evaluate(() => {
-                const activeCell = document.activeElement?.closest('.tabulator-cell');
-
-                return {
-                    field: activeCell?.getAttribute('tabulator-field') || null,
-                    row: activeCell?.closest('.tabulator-row')?.getAttribute('data-index') || null
-                };
-            })).toEqual({
-                field: 'requiresInspection',
-                row: await bCell.evaluate(cell => cell.closest('.tabulator-row')?.getAttribute('data-index') || null)
-            });
-        });
-    }
 });

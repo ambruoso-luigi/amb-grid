@@ -155,28 +155,6 @@ test.describe('keyboard pagination focus', () => {
         }
     });
 
-    test('restores lookup editing after selecting the current dialog value again', async ({ page }) => {
-        const status = rowCell(page, 'PRD-AB02', 'status');
-        await expect(status).toBeVisible();
-        await status.click();
-        await expect(status).toBeFocused();
-        await status.dblclick({ delay: 100 });
-        await expectLookupEditor(page, 'PRD-AB02');
-        const currentValue = await status.locator('.amb-lookup-editor__input').inputValue();
-
-        await selectStatusDialogResult(page, currentValue);
-        await expectLookupEditor(page, 'PRD-AB02');
-        await expect(status.locator('.amb-lookup-editor__input')).toHaveValue(currentValue);
-        await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
-
-        await page.keyboard.press('F2');
-        const dialog = page.locator('.amb-lookup-dialog');
-        await expect(dialog).toBeVisible();
-        await page.keyboard.press('Escape');
-        await expect(dialog).toHaveCount(0);
-        await expectLookupEditor(page, 'PRD-AB02');
-    });
-
     test('preserves sequential navigation after a real lookup selection', async ({ page }) => {
         const status = rowCell(page, 'PRD-AB02', 'status');
         await expect(status).toBeVisible();

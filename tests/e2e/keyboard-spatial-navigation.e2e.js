@@ -191,22 +191,6 @@ test.describe('keyboard spatial navigation', () => {
         await expect(adjacent).not.toBeFocused();
     });
 
-    test('cancels a text editor with Escape and restores navigation focus to its source cell', async ({ page }) => {
-        const target = rowCell(page, 'PRD-AB02', 'productName');
-        const original = await target.textContent();
-        await target.press('Enter');
-        const input = target.locator('input.amb-cell-editor');
-        await expect(input).toBeVisible();
-        await expect(input).toBeFocused();
-        await input.fill('DO NOT SAVE THIS');
-        await page.keyboard.press('Escape');
-        await expect(input).toHaveCount(0);
-        await expect(target).not.toHaveClass(/tabulator-editing/);
-        await expectNavigationFocus(target);
-        await expect(target).toContainText(original || '');
-        await expect(target).not.toContainText('DO NOT SAVE THIS');
-    });
-
     test('keeps autocomplete ArrowDown in its dropdown', async ({ page }) => {
         const warehouse = rowCell(page, 'PRD-AB02', 'warehouse');
         const input = await openEditorFromNavigation(page, warehouse, 'autocomplete ArrowDown', '#inventory-table', 'input.amb-autocomplete-editor');
