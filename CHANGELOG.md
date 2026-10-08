@@ -4,6 +4,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-08
+
 ### Added
 
 - Added scoped validator metadata (`cell`, `row`, `field`, `grid`) and runtime `scope` / `dependsOn` registration.
