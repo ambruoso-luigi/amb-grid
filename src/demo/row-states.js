@@ -132,7 +132,6 @@ export default function rowStates(app) {
             onReload: handleReload
         },
         data: initialData.map(row => ({ ...row })),
-        errorStyle: { highlightRowOnCellError: true },
         layout: 'fitColumns',
         columns: [
             {
@@ -179,7 +178,14 @@ export default function rowStates(app) {
 
     crud = demo.crud;
     const reportDialog = createDemoReportDialog();
+    const partialSaveDialog = new AMB.ConfirmDialog({ title: 'Some rows contain errors' });
+    const serverRejectedRows = new Set();
     const originalDestroy = demo.destroy.bind(demo);
+    const onRenderComplete = () => {
+        syncServerErrorPresentation();
+        clearNativeErrorTitles();
+    };
+    demo.table.on('renderComplete', onRenderComplete);
     const runAfterEditSettled = callback => {
         if (
             document.activeElement
@@ -234,8 +240,26 @@ export default function rowStates(app) {
         });
     }
 
+    function syncServerErrorPresentation() {
+        demo.table.getRows().forEach(row => {
+            const data = row.getData();
+            const key = data.id ?? data._ambTempId;
+            const element = row.getElement();
+
+            if (serverRejectedRows.has(key)) element.setAttribute('data-demo-server-error', 'true');
+            else element.removeAttribute('data-demo-server-error');
+        });
+    }
+
+    function clearNativeErrorTitles() {
+        app.querySelectorAll('#row-states-table .tabulator-cell[data-cell-error="true"]')
+            .forEach(cell => cell.removeAttribute('title'));
+    }
+
     demo.destroy = () => {
+        demo.table.off('renderComplete', onRenderComplete);
         reportDialog.destroy();
+        partialSaveDialog.destroy();
         commandGuideToolbar.destroy();
         originalDestroy();
     };
@@ -253,16 +277,41 @@ export default function rowStates(app) {
         return runAfterEditSettled(saveChangedRows);
     }
 
-    function saveChangedRows() {
+    async function saveChangedRows() {
         demo.feedback.clear();
+        const validateResult = demo.validateChanges();
+        let payload = demo.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
 
-        crud.validateAll();
+        if (!payload.hasChanges) {
+            demo.feedback.show({ type: 'info', message: 'There are no changes to save.' });
+            return;
+        }
+        if (!payload.hasValidChanges && payload.hasInvalidChanges) {
+            demo.feedback.show({ type: 'warning', message: 'There are no valid changes to save. Correct the rows with errors first.' });
+            return;
+        }
+        if (payload.hasValidChanges && payload.hasInvalidChanges && payload.isPartialSave) {
+            const invalidRows = validateResult.rows.filter(row => !row.isValid)
+                .map(row => `Row ${row.rowNumber}: ${row.errors.map(error => error.field).join(', ')}`);
+            const confirmed = await partialSaveDialog.confirm({
+                message: ['Some rows contain errors and will not be saved.', 'Do you want to save only the valid rows?', '', 'Invalid rows:', ...invalidRows].join('\n'),
+                confirmText: 'Save valid rows',
+                cancelText: 'Cancel'
+            });
+            if (!confirmed) {
+                demo.feedback.show({ type: 'info', message: 'Save cancelled.' });
+                return;
+            }
+        }
         let report = crud.getStateReport();
         const restrictedRows = report.validChangedRows.filter(row => row.after.type === 'Restricted');
         restrictedRows.forEach(row => {
             crud.markCellError(row.key, 'type', 'The backend rejected this record because the selected type is restricted.');
+            serverRejectedRows.add(row.key);
         });
         refreshErrorCounts();
+        syncServerErrorPresentation();
+        clearNativeErrorTitles();
         report = crud.getStateReport();
         const generatedIds = report.validChangedRows
             .filter(row => row.state === 'new' && !row.id && row.tempId)
@@ -296,7 +345,8 @@ export default function rowStates(app) {
     // Restores the four valid persisted records and clears all demo state.
     async function resetToCleanBaseline() {
         errorCounts.clear();
-        await demo.table.setData(initialData.map(row => ({ ...row })));
+        serverRejectedRows.clear();
+        await demo.setData(initialData.map(row => ({ ...row })));
         refreshErrorCounts();
     }
 
@@ -304,11 +354,13 @@ export default function rowStates(app) {
         demo.feedback.clear();
         reportDialog.close();
         await resetToCleanBaseline();
-        crud.updateRowFields('REC-002', {
+        await demo.updateRow('REC-002', {
             description: 'Contract review awaiting approval'
         });
-        crud.deleteRow('REC-003');
-        crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' });
+        await demo.deleteRow('REC-003');
+        await demo.updateRow('REC-004', { type: '' });
+        demo.validateRow('REC-004');
+        await demo.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' });
         refreshErrorCounts();
     }
 

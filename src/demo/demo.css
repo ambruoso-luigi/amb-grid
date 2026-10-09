@@ -4019,9 +4019,13 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-panel .demo-row-states-grid .tabulator-row[data-row-error="true"],
-.demo-panel .demo-row-states-grid .tabulator-row[data-has-cell-error="true"],
 .demo-panel .demo-basic-crud-grid .tabulator-row[data-row-error="true"],
 .demo-panel .demo-basic-crud-grid .tabulator-row[data-has-cell-error="true"] {
+    background-color: #fde8e8 !important;
+    box-shadow: inset 4px 0 0 #c34c4c;
+}
+
+.demo-panel .demo-row-states-grid .tabulator-row[data-demo-server-error="true"] {
     background-color: #fde8e8 !important;
     box-shadow: inset 4px 0 0 #c34c4c;
 }

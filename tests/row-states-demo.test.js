@@ -80,8 +80,8 @@ describe('Row states demo', () => {
         expect(source).toContain("id: 'state-row-numbers'");
         expect(source).toContain("label: 'Row numbers'");
         expect(source).toContain('async function handleShowStates()');
-        expect(source).toContain("crud.updateRowFields('REC-002', {");
-        expect(source).toContain("crud.deleteRow('REC-003')");
+        expect(source).toContain("demo.updateRow('REC-002', {");
+        expect(source).toContain("demo.deleteRow('REC-003')");
         expect(source).toContain("crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' })");
         expect(source).toContain('crud.validateAll()');
         expect(source).toContain("AMB.editors.select({ options: ['Request', 'Contract', 'Procedure', 'Compliance', 'Restricted'] })");
