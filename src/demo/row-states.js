@@ -55,6 +55,8 @@ const buildRowNumbersReport = report => [
     })
 ];
 
+const plural = (count, singular, pluralForm = `${singular}s`) => `${count} ${count === 1 ? singular : pluralForm}`;
+
 export default function rowStates(app) {
     let nextId = 5;
     let crud = null;
@@ -310,6 +312,8 @@ export default function rowStates(app) {
             }
         }
         let report = crud.getStateReport();
+        const rowsBeingSaved = new Map(report.validChangedRows.map(row => [row.key, row]));
+        const frontendInvalidCount = payload.invalidChangedRows?.length || 0;
         const restrictedRows = report.validChangedRows.filter(row => row.after.type === 'Restricted');
         restrictedRows.forEach(row => {
             crud.markCellError(row.key, 'type', 'The backend rejected this record because the selected type is restricted.');
@@ -329,22 +333,16 @@ export default function rowStates(app) {
         crud.applyBackendIds(generatedIds);
 
         const result = crud.markValidChangesSaved();
-
-        if (!result.saved.length) {
-            demo.feedback.show({
-                type: restrictedRows.length ? 'warning' : 'info',
-                message: restrictedRows.length
-                    ? 'The backend rejected the restricted record. Correct its type before saving.'
-                    : result.skipped.length
-                    ? 'No valid changes could be marked as saved.'
-                    : 'There are no valid changes to save.'
-            });
-            return;
-        }
-
+        const deletedCount = result.saved.filter(row => rowsBeingSaved.get(row.key)?.state === 'deleted').length;
+        const savedCount = result.saved.length - deletedCount;
+        const parts = [];
+        if (savedCount) parts.push(`${plural(savedCount, 'row')} saved.`);
+        if (deletedCount) parts.push(`${plural(deletedCount, 'row')} deleted.`);
+        if (restrictedRows.length) parts.push(`${plural(restrictedRows.length, 'row')} ${restrictedRows.length === 1 ? 'was' : 'were'} rejected by the backend.`);
+        if (frontendInvalidCount) parts.push(`${plural(frontendInvalidCount, 'row')} with validation errors remain.`);
         demo.feedback.show({
-            type: 'success',
-            message: `${result.saved.length} row(s) marked as saved.`
+            type: restrictedRows.length ? 'error' : frontendInvalidCount ? 'warning' : 'success',
+            message: parts.join(' ') || 'There are no changes to save.'
         });
     }
 

@@ -11,7 +11,7 @@ test.describe('Row States lifecycle', () => {
     });
 
     test('keeps error messages in the floating message and opens partial save confirmation', async ({ page }) => {
-        await page.getByRole('button', { name: 'Show states' }).click();
+        await page.locator('#state-show-states').click();
         const invalidType = cell(page, 'REC-004', 'type');
         await expect(invalidType).toHaveAttribute('data-cell-error', 'true');
         await expect(invalidType).not.toHaveAttribute('title');
