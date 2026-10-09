@@ -25,6 +25,7 @@ const pressSelectionKey = async (page, id, key) => {
 test.describe('managed selection column interaction', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/src/demo/index.html#feature-examples');
+        await page.locator('[data-example="basic-crud"]').click();
         await expect(table(page)).toBeVisible();
         await expect(row(page, 'NT-001')).toBeVisible();
     });

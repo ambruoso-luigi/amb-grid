@@ -23,7 +23,7 @@ describe('Row states demo', () => {
     test('uses the standard row action column and a compact lifecycle scenario', () => {
         expect(source).toContain('rowActionColumn: {');
         expect(source).toContain('enabled: true');
-        expect(source.match(/\{ id: \d+, description:/g)).toHaveLength(4);
+        expect(source.match(/\{ id: 'REC-\d+', description:/g)).toHaveLength(4);
         expect(source).not.toContain("_state: 'clean'");
         expect(source).toContain("return crud.addRow({");
         expect(source).toContain("description: 'New lifecycle sample'");
@@ -80,10 +80,12 @@ describe('Row states demo', () => {
         expect(source).toContain("id: 'state-row-numbers'");
         expect(source).toContain("label: 'Row numbers'");
         expect(source).toContain('async function prepareInitialScenario()');
-        expect(source).toContain('crud.updateRowFields(2, {');
-        expect(source).toContain('crud.deleteRow(3)');
-        expect(source).toContain("crud.addRow({ id: null, description: 'New vendor risk assessment' })");
-        expect(source).toContain("crud.markCellError(4, 'description'");
+        expect(source).toContain("crud.updateRowFields('REC-002', {");
+        expect(source).toContain("crud.deleteRow('REC-003')");
+        expect(source).toContain("crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' })");
+        expect(source).toContain('crud.validateAll()');
+        expect(source).toContain("AMB.editors.select({ options: ['Request', 'Contract', 'Procedure', 'Compliance', 'Restricted'] })");
+        expect(source).toContain("crud.markCellError(row.key, 'type'");
         expect(source).toContain('function refreshErrorCounts()');
         expect(source).toContain("row.getCell('_ambErrorCount')");
         expect(source).toContain('refreshErrorCounts()');

@@ -234,6 +234,7 @@ test.describe('keyboard spatial navigation', () => {
 
     test('skips Basic CRUD readonly cells with geometric operational focus', async ({ page }) => {
         await page.goto('/src/demo/index.html#feature-examples');
+        await page.locator('[data-example="basic-crud"]').click();
         const basicTable = page.locator('#basic-table');
         const row = basicTable.locator('.tabulator-row').first();
         const title = row.locator('.tabulator-cell[tabulator-field="title"]');
@@ -241,8 +242,7 @@ test.describe('keyboard spatial navigation', () => {
         await focusNavigationCell(page, title, 'readonly cell');
 
         await page.keyboard.press('ArrowLeft');
-        await expect.poll(async () => ['id', '_ambTempId', '_ambRowNumber', '_state']
-            .includes(await activeCellField(page))).toBe(false);
+        await expect.poll(async () => (await activeCellField(page)) === 'id').toBe(false);
         await expect.poll(() => page.evaluate(() => document.activeElement?.matches('.amb-row-action-button')))
             .toBe(true);
 

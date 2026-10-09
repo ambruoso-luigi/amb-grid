@@ -54,6 +54,13 @@ export default function basicCrud(app) {
             summaryMeta: '4 fields · CRUD flow', summaryMetaKey: 'examples.basicCrud.guideMeta', summaryIcon: 'help', variant: 'technical',
             intro: 'Edit, insert, delete, rollback, and save work together. Row States introduces the lifecycle behind those actions.',
             introKey: 'examples.basicCrud.intro',
+            points: [
+                { title: 'Edit and add', titleKey: 'examples.basicCrud.point1Title', description: 'Edit existing records or create new rows.', descriptionKey: 'examples.basicCrud.detail1' },
+                { title: 'Delete and rollback', titleKey: 'examples.basicCrud.point2Title', description: 'Row actions apply the lifecycle introduced in Row States.', descriptionKey: 'examples.basicCrud.detail2' },
+                { title: 'Validate', titleKey: 'examples.basicCrud.point3Title', description: 'Changes are validated before saving.', descriptionKey: 'examples.basicCrud.detail3' },
+                { title: 'Payload', titleKey: 'examples.basicCrud.point4Title', description: 'Show payload separates inserted, updated, and deleted records.', descriptionKey: 'examples.basicCrud.detail4' },
+                { title: 'Save', titleKey: 'examples.basicCrud.point5Title', description: 'The demo simulates a backend response and realigns the baseline.', descriptionKey: 'examples.basicCrud.detail5' }
+            ],
             columns: [
                 { title: 'ID', titleKey: 'guides.basic.id.title', badge: 'PERSISTENT', description: 'Persistent identifier assigned to a saved note.', descriptionKey: 'guides.basic.id.description' },
                 { title: 'Title', titleKey: 'guides.basic.title.title', badge: 'TEXT', description: 'Required trimmed text with a minimum length of 3 characters.', descriptionKey: 'guides.basic.title.description' },

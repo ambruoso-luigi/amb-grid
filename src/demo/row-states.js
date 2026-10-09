@@ -51,7 +51,7 @@ const buildRowNumbersReport = report => [
     ...report.rows.map(row => {
         const identifier = row.id ?? row.tempId ?? 'unknown';
 
-        return `ID ${identifier} — row ${row.rowNumber ?? 'n/a'} — state ${row.state}`;
+        return `Record ID ${identifier} — Temp ID ${row.tempId ?? 'n/a'} — Row ${row.rowNumber ?? 'n/a'} — state ${row.state}`;
     })
 ];
 
@@ -60,10 +60,10 @@ export default function rowStates(app) {
     let crud = null;
     const errorCounts = new Map();
     const initialData = [
-        { id: 1, description: 'Approved service request' },
-        { id: 2, description: 'Contract review in progress' },
-        { id: 3, description: 'Superseded operations procedure' },
-        { id: 4, description: 'Compliance evidence requires review' }
+        { id: 'REC-001', description: 'Approved service request', type: 'Request' },
+        { id: 'REC-002', description: 'Contract review in progress', type: 'Contract' },
+        { id: 'REC-003', description: 'Superseded operations procedure', type: 'Procedure' },
+        { id: 'REC-004', description: 'Compliance evidence requires review', type: '' }
     ];
 
     app.innerHTML = `
@@ -81,12 +81,13 @@ export default function rowStates(app) {
                 { title: 'Save', titleKey: 'examples.rowStates.point5Title', description: 'Save assigns definitive IDs to new rows, confirms valid changes, and exposes saved through the real lifecycle.', descriptionKey: 'examples.rowStates.detail5' }
             ],
             columns: [
-                { title: 'ID', titleKey: 'guides.rowStates.id.title', badge: 'PERSISTENT', description: 'Readonly identifier for a row already known by the backend.', descriptionKey: 'guides.rowStates.id.description' },
+                { title: 'Record ID', titleKey: 'guides.rowStates.id.title', badge: 'PERSISTENT', description: 'Readonly identifier for a row already known by the backend.', descriptionKey: 'guides.rowStates.id.description' },
                 { title: 'Temp ID', titleKey: 'guides.rowStates.tempId.title', badge: 'TEMP', description: 'Readonly client identifier assigned to a new unsaved row.', descriptionKey: 'guides.rowStates.tempId.description' },
-                { title: '#', titleKey: 'guides.rowStates.rowNumber.title', badge: 'ROW NO.', description: 'Derived row number used by reports and validation feedback.', descriptionKey: 'guides.rowStates.rowNumber.description' },
+                { title: 'Row', titleKey: 'guides.rowStates.rowNumber.title', badge: 'ROW', description: 'Derived row number used by reports and validation feedback.', descriptionKey: 'guides.rowStates.rowNumber.description' },
                 { title: 'State', titleKey: 'guides.rowStates.state.title', badge: 'STATE', description: 'Shows clean, new, modified, deleted, or saved state.', descriptionKey: 'guides.rowStates.state.description' },
                 { title: 'Errors', titleKey: 'guides.rowStates.errors.title', badge: 'DERIVED', description: 'Readonly count of cell and row errors currently attached to the record.', descriptionKey: 'guides.rowStates.errors.description' },
-                { title: 'Description', titleKey: 'guides.rowStates.description.title', badge: 'TEXT', description: 'Trimmed editable description used to demonstrate lifecycle transitions.', descriptionKey: 'guides.rowStates.description.description' }
+                { title: 'Description', titleKey: 'guides.rowStates.description.title', badge: 'TEXT', description: 'Trimmed editable description used to demonstrate lifecycle transitions.', descriptionKey: 'guides.rowStates.description.description' },
+                { title: 'Type', titleKey: 'guides.rowStates.type.title', badge: 'SELECT', description: 'Required business type; Restricted is accepted locally but rejected by the simulated backend.', descriptionKey: 'guides.rowStates.type.description' }
             ]
         })}
         <div class="demo-table-workbench">
@@ -131,7 +132,7 @@ export default function rowStates(app) {
         layout: 'fitColumns',
         columns: [
             {
-                title: 'ID',
+                title: 'Record ID',
                 field: 'id',
                 minWidth: 68,
                 widthGrow: 0.4,
@@ -145,7 +146,7 @@ export default function rowStates(app) {
                 cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
-                title: '#',
+                title: 'Row',
                 field: '_ambRowNumber',
                 minWidth: 58,
                 widthGrow: 0.35,
@@ -166,7 +167,8 @@ export default function rowStates(app) {
                 formatter: formatErrorCount,
                 cssClass: 'demo-cell--passive demo-cell--derived'
             },
-            { title: 'Description', field: 'description', minWidth: 260, widthGrow: 2.4, editor: AMB.editors.text({ trim: true }) }
+            { title: 'Description', field: 'description', minWidth: 220, widthGrow: 1.8, editor: AMB.editors.text({ trim: true }), required: true, requiredMessage: 'Description is required', validation: { minLength: { value: 3, message: 'Description must be at least 3 characters' } } },
+            { title: 'Type', field: 'type', minWidth: 130, widthGrow: 0.8, editor: AMB.editors.select({ options: ['Request', 'Contract', 'Procedure', 'Compliance', 'Restricted'] }), required: true, requiredMessage: 'Type is required' }
         ]
     });
     commandGuideToolbar.mount();
@@ -238,7 +240,8 @@ export default function rowStates(app) {
         demo.feedback.clear();
         return crud.addRow({
             id: null,
-            description: 'New lifecycle sample'
+            description: 'New lifecycle sample',
+            type: 'Request'
         });
     }
 
@@ -249,12 +252,19 @@ export default function rowStates(app) {
     function saveChangedRows() {
         demo.feedback.clear();
 
-        const report = crud.getStateReport();
+        crud.validateAll();
+        let report = crud.getStateReport();
+        const restrictedRows = report.validChangedRows.filter(row => row.after.type === 'Restricted');
+        restrictedRows.forEach(row => {
+            crud.markCellError(row.key, 'type', 'The backend rejected this record because the selected type is restricted.');
+        });
+        refreshErrorCounts();
+        report = crud.getStateReport();
         const generatedIds = report.validChangedRows
             .filter(row => row.state === 'new' && !row.id && row.tempId)
             .map(row => ({
                 tempId: row.tempId,
-                id: nextId++
+                id: `REC-${String(nextId++).padStart(3, '0')}`
             }));
 
         crud.applyBackendIds(generatedIds);
@@ -281,12 +291,12 @@ export default function rowStates(app) {
     async function prepareInitialScenario() {
         errorCounts.clear();
         await demo.table.setData(initialData.map(row => ({ ...row })));
-        crud.updateRowFields(2, {
+        crud.updateRowFields('REC-002', {
             description: 'Contract review awaiting approval'
         });
-        crud.deleteRow(3);
-        crud.addRow({ id: null, description: 'New vendor risk assessment' });
-        crud.markCellError(4, 'description', 'Compliance evidence requires a source reference');
+        crud.deleteRow('REC-003');
+        crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' });
+        crud.validateAll();
         refreshErrorCounts();
     }
 
@@ -336,6 +346,8 @@ export default function rowStates(app) {
         });
     }
 
-    prepareInitialScenario();
+    demo.table.on('tableBuilt', () => {
+        prepareInitialScenario();
+    });
     return demo;
 }

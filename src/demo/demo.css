@@ -3978,6 +3978,16 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     --amb-row-error-bg: #fde7e7;
 }
 
+.demo-panel .demo-row-states-grid,
+.demo-panel .demo-basic-crud-grid {
+    --amb-cell-modified-bg: #ffe7aa;
+}
+
+.demo-panel .demo-row-states-grid .tabulator-cell[data-cell-state="modified"],
+.demo-panel .demo-basic-crud-grid .tabulator-cell[data-cell-state="modified"] {
+    background-color: var(--amb-cell-modified-bg) !important;
+}
+
 .demo-panel .demo-row-states-grid .tabulator-row[data-state="new"],
 .demo-panel .demo-basic-crud-grid .tabulator-row[data-state="new"] {
     background-color: #eaf3ff !important;

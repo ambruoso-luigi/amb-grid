@@ -318,6 +318,7 @@ const openInventoryDemo = async page => {
 
 const openBasicCrudDemo = async page => {
     await page.goto('/src/demo/index.html#feature-examples');
+    await page.locator('[data-example="basic-crud"]').click();
     await expect(page.locator('#basic-table.tabulator')).toBeVisible();
 };
 

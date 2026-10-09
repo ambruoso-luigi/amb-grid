@@ -97,7 +97,7 @@ describe('Public demo column guides', () => {
         const rowStates = read('src/demo/row-states.js');
         const basicCrud = read('src/demo/basic-crud.js');
 
-        ['ID', 'Temp ID', '#', 'State', 'Errors', 'Description'].forEach(title => {
+        ['Record ID', 'Temp ID', 'Row', 'State', 'Errors', 'Description', 'Type'].forEach(title => {
             expect(rowStates).toContain(`title: '${title}'`);
         });
         ['Item', 'Category', 'Owner', 'Note', 'Lifecycle'].forEach(title => {
