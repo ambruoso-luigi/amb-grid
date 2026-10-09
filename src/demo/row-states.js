@@ -188,10 +188,23 @@ export default function rowStates(app) {
         clearNativeErrorTitles();
     };
     demo.table.on('renderComplete', onRenderComplete);
+    const handleCrudErrorEvent = event => {
+        if (event?.cell?.field === 'type') {
+            const row = event.cell.getRow?.();
+            const data = row?.getData?.();
+            const key = data?.id ?? data?._ambTempId;
+
+            if (event.type === 'cell-error-cleared' && serverRejectedRows.has(key) && data?.type !== 'Restricted') {
+                serverRejectedRows.delete(key);
+                syncServerErrorPresentation();
+            }
+        }
+        refreshErrorCounts();
+        globalThis.setTimeout(clearNativeErrorTitles, 0);
+    };
     const crudUnsubscribers = ['cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared']
-        .map(eventName => demo.onCrud(eventName, () => {
-            refreshErrorCounts();
-            globalThis.setTimeout(clearNativeErrorTitles, 0);
+        .map(eventName => demo.onCrud(eventName, event => {
+            handleCrudErrorEvent({ ...event, type: eventName });
         }));
     const runAfterEditSettled = callback => {
         if (
@@ -333,6 +346,8 @@ export default function rowStates(app) {
         crud.applyBackendIds(generatedIds);
 
         const result = crud.markValidChangesSaved();
+        result.saved.forEach(row => serverRejectedRows.delete(row.key));
+        syncServerErrorPresentation();
         const deletedCount = result.saved.filter(row => rowsBeingSaved.get(row.key)?.state === 'deleted').length;
         const savedCount = result.saved.length - deletedCount;
         const parts = [];
