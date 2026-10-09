@@ -39,10 +39,10 @@ const buildStateReport = report => [
     ...buildErrorDetails(report),
     '',
     'Use Add row to create a new row.',
-    'Edit Item, Category, Owner, or Note to create a modified row.',
+    'Edit Description to create a modified row.',
     'Use the row action column to mark an existing row as deleted.',
     'Use Save to confirm valid changes and mark them as saved.',
-    'Use Create error to modify two rows and attach demo errors.'
+    'Errors remain distinct from the deleted lifecycle state.'
 ];
 
 const buildRowNumbersReport = report => [
@@ -56,51 +56,42 @@ const buildRowNumbersReport = report => [
 ];
 
 export default function rowStates(app) {
-    let nextId = 11;
+    let nextId = 5;
     let crud = null;
     const errorCounts = new Map();
     const initialData = [
-        { id: 1, item: 'Clean sample', category: 'Inventory', owner: 'Ops', note: 'Ready', _state: 'clean' },
-        { id: 2, item: 'Tracked sample', category: 'Quality', owner: 'QA', note: 'Editable', _state: 'clean' },
-        { id: 3, item: 'Review sample', category: 'Backoffice', owner: 'Admin', note: 'Pending', _state: 'clean' },
-        { id: 4, item: 'Reference sample', category: 'System', owner: 'System', note: 'Reference data', _state: 'clean' },
-        { id: 5, item: 'Audit sample', category: 'Compliance', owner: 'Audit', note: 'Needs review', _state: 'clean' },
-        { id: 6, item: 'Stable sample', category: 'Operations', owner: 'Ops', note: 'Stable', _state: 'clean' },
-        { id: 7, item: 'Planning sample', category: 'Scheduling', owner: 'PMO', note: 'Planned', _state: 'clean' },
-        { id: 8, item: 'Shipping sample', category: 'Logistics', owner: 'Dispatch', note: 'Queued', _state: 'clean' },
-        { id: 9, item: 'Billing sample', category: 'Finance', owner: 'Billing', note: 'Verified', _state: 'clean' },
-        { id: 10, item: 'Support sample', category: 'Service', owner: 'Support', note: 'Assigned', _state: 'clean' }
+        { id: 1, description: 'Approved service request' },
+        { id: 2, description: 'Contract review in progress' },
+        { id: 3, description: 'Superseded operations procedure' },
+        { id: 4, description: 'Compliance evidence requires review' }
     ];
 
     app.innerHTML = `
         <h2 data-i18n="examples.rowStates.title">Row states</h2>
-        <p class="demo-note" data-i18n="examples.rowStates.intro">Use the CRUD toolbar and row action column to explore how AMB Grid tracks each row through its lifecycle.</p>
+        <p class="demo-note" data-i18n="examples.rowStates.intro">How AMB Grid tracks each row through its lifecycle.</p>
         ${createDemoColumnGuide({
             summary: 'How row states work',
             summaryKey: 'examples.rowStates.detailsTitle',
-            summaryMeta: 'Clean · new · modified · deleted', summaryMetaKey: 'examples.rowStates.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Identity · transitions · rollback', summaryMetaKey: 'examples.rowStates.guideMeta', summaryIcon: 'help', variant: 'technical',
             points: [
-                { title: 'Lifecycle', titleKey: 'examples.rowStates.point1Title', description: 'clean is unchanged, new was added locally, and modified differs from its original data.', descriptionKey: 'examples.rowStates.detail1' },
-                { title: 'Delete', titleKey: 'examples.rowStates.point2Title', description: 'deleted marks an existing row for removal; a new unsaved row is removed directly.', descriptionKey: 'examples.rowStates.detail2' },
-                { title: 'Save', titleKey: 'examples.rowStates.point3Title', description: 'Save processes valid changes and exposes saved after application confirmation.', descriptionKey: 'examples.rowStates.detail3' },
-                { title: 'Rollback', titleKey: 'examples.rowStates.point4Title', description: 'Rollback restores original values and returns an edited row to clean.', descriptionKey: 'examples.rowStates.detail4' },
-                { title: 'Report', titleKey: 'examples.rowStates.point5Title', description: 'Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.', descriptionKey: 'examples.rowStates.detail5' }
+                { title: 'Identity', titleKey: 'examples.rowStates.point1Title', description: 'ID identifies persisted rows, Temp ID identifies unsaved rows, and row number remains a stable reference.', descriptionKey: 'examples.rowStates.detail1' },
+                { title: 'Transitions', titleKey: 'examples.rowStates.point2Title', description: 'Editing moves clean to modified, Add creates new, and Delete marks a persisted row deleted.', descriptionKey: 'examples.rowStates.detail2' },
+                { title: 'Rollback', titleKey: 'examples.rowStates.point3Title', description: 'Rollback restores the baseline values and the matching lifecycle state.', descriptionKey: 'examples.rowStates.detail3' },
+                { title: 'Errors', titleKey: 'examples.rowStates.point4Title', description: 'Errors belong to a row or cell and remain conceptually distinct from Deleted.', descriptionKey: 'examples.rowStates.detail4' },
+                { title: 'Save', titleKey: 'examples.rowStates.point5Title', description: 'Save assigns definitive IDs to new rows, confirms valid changes, and exposes saved through the real lifecycle.', descriptionKey: 'examples.rowStates.detail5' }
             ],
             columns: [
                 { title: 'ID', titleKey: 'guides.rowStates.id.title', badge: 'PERSISTENT', description: 'Readonly identifier for a row already known by the backend.', descriptionKey: 'guides.rowStates.id.description' },
                 { title: 'Temp ID', titleKey: 'guides.rowStates.tempId.title', badge: 'TEMP', description: 'Readonly client identifier assigned to a new unsaved row.', descriptionKey: 'guides.rowStates.tempId.description' },
                 { title: '#', titleKey: 'guides.rowStates.rowNumber.title', badge: 'ROW NO.', description: 'Derived row number used by reports and validation feedback.', descriptionKey: 'guides.rowStates.rowNumber.description' },
-                { title: 'Lifecycle', titleKey: 'guides.rowStates.lifecycle.title', badge: 'STATE', description: 'Shows clean, new, modified, deleted, or saved state.', descriptionKey: 'guides.rowStates.lifecycle.description' },
+                { title: 'State', titleKey: 'guides.rowStates.state.title', badge: 'STATE', description: 'Shows clean, new, modified, deleted, or saved state.', descriptionKey: 'guides.rowStates.state.description' },
                 { title: 'Errors', titleKey: 'guides.rowStates.errors.title', badge: 'DERIVED', description: 'Readonly count of cell and row errors currently attached to the record.', descriptionKey: 'guides.rowStates.errors.description' },
-                { title: 'Item', titleKey: 'guides.rowStates.item.title', badge: 'TEXT', description: 'Trimmed editable item name; editing it makes the row modified.', descriptionKey: 'guides.rowStates.item.description' },
-                { title: 'Category', titleKey: 'guides.rowStates.category.title', badge: 'TEXT', description: 'Trimmed editable business category.', descriptionKey: 'guides.rowStates.category.description' },
-                { title: 'Owner', titleKey: 'guides.rowStates.owner.title', badge: 'TEXT', description: 'Trimmed editable owner responsible for the item.', descriptionKey: 'guides.rowStates.owner.description' },
-                { title: 'Note', titleKey: 'guides.rowStates.note.title', badge: 'TEXT', description: 'Trimmed editable note used by the error and lifecycle scenarios.', descriptionKey: 'guides.rowStates.note.description' }
+                { title: 'Description', titleKey: 'guides.rowStates.description.title', badge: 'TEXT', description: 'Trimmed editable description used to demonstrate lifecycle transitions.', descriptionKey: 'guides.rowStates.description.description' }
             ]
         })}
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
-            <div id="row-states-table" class="demo-business-grid demo-business-grid--viewport"></div>
+            <div id="row-states-table" class="demo-business-grid demo-business-grid--viewport demo-row-states-grid"></div>
         </div>
     `;
 
@@ -118,12 +109,6 @@ export default function rowStates(app) {
                 'add',
                 'save',
                 'reload',
-                {
-                    id: 'state-error',
-                    label: 'Create error',
-                    title: 'Create demo errors',
-                    onClick: handleCreateError
-                },
                 {
                     id: 'state-report',
                     label: 'Report',
@@ -167,7 +152,7 @@ export default function rowStates(app) {
                 cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
-                title: 'Lifecycle',
+                title: 'State',
                 field: '_state',
                 minWidth: 92,
                 widthGrow: 0.6,
@@ -181,10 +166,7 @@ export default function rowStates(app) {
                 formatter: formatErrorCount,
                 cssClass: 'demo-cell--passive demo-cell--derived'
             },
-            { title: 'Item', field: 'item', minWidth: 125, widthGrow: 1.35, editor: AMB.editors.text({ trim: true }) },
-            { title: 'Category', field: 'category', minWidth: 105, widthGrow: 0.9, editor: AMB.editors.text({ trim: true }) },
-            { title: 'Owner', field: 'owner', minWidth: 90, widthGrow: 0.75, editor: AMB.editors.text({ trim: true }) },
-            { title: 'Note', field: 'note', minWidth: 140, widthGrow: 1.6, editor: AMB.editors.text({ trim: true }) }
+            { title: 'Description', field: 'description', minWidth: 260, widthGrow: 2.4, editor: AMB.editors.text({ trim: true }) }
         ]
     });
     commandGuideToolbar.mount();
@@ -256,10 +238,7 @@ export default function rowStates(app) {
         demo.feedback.clear();
         return crud.addRow({
             id: null,
-            item: 'New sample',
-            category: '',
-            owner: '',
-            note: ''
+            description: 'New lifecycle sample'
         });
     }
 
@@ -298,43 +277,28 @@ export default function rowStates(app) {
         });
     }
 
-    function handleCreateError() {
-        demo.feedback.clear();
-
-        crud.updateRowFields(1, {
-            note: 'Manual error injected in this row'
+    // Creates the small, real-lifecycle scenario used on first load and Reload.
+    async function prepareInitialScenario() {
+        errorCounts.clear();
+        await demo.table.setData(initialData.map(row => ({ ...row })));
+        crud.updateRowFields(2, {
+            description: 'Contract review awaiting approval'
         });
-        crud.markCellError(1, 'note', 'Manual demo error');
-
-        crud.updateRowFields(4, {
-            owner: 'Invalid owner',
-            note: 'Two demo errors injected'
-        });
-        crud.markCellError(4, 'owner', 'Owner is not valid for this demo');
-        crud.markCellError(4, 'note', 'Note requires review');
-
+        crud.deleteRow(3);
+        crud.addRow({ id: null, description: 'New vendor risk assessment' });
+        crud.markCellError(4, 'description', 'Compliance evidence requires a source reference');
         refreshErrorCounts();
-        demo.feedback.show({
-            type: 'warning',
-            message: 'Demo errors were added: row 1 has 1 error, row 4 has 2 errors. Affected rows are modified.'
-        });
     }
 
     async function handleReload() {
         demo.feedback.clear();
         reportDialog.close();
 
-        crud.getStateReport().rows.forEach(row => {
-            crud.rollbackRow(row.key);
-        });
-
-        errorCounts.clear();
-        nextId = 11;
-        await demo.table.setData(initialData.map(row => ({ ...row })));
-        refreshErrorCounts();
+        nextId = 5;
+        await prepareInitialScenario();
         demo.feedback.show({
             type: 'success',
-            message: 'Initial row states data reloaded.'
+            message: 'Initial lifecycle scenario reloaded.'
         });
     }
 
@@ -372,5 +336,6 @@ export default function rowStates(app) {
         });
     }
 
+    prepareInitialScenario();
     return demo;
 }

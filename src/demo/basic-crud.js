@@ -6,10 +6,6 @@ import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolba
 
 const formatArchivedCheckbox = createDemoCheckboxFormatter({ checkedValue: 'Y' });
 
-const countRowsByState = (report, state) => {
-    return report.rows.filter(row => row.state === state).length;
-};
-
 const buildPayloadReport = payload => [
     `Inserted rows: ${payload.changes.inserted.length}`,
     `Updated rows: ${payload.changes.updated.length}`,
@@ -18,15 +14,13 @@ const buildPayloadReport = payload => [
     `Can save: ${payload.canSave}`
 ];
 
-const buildStateReport = report => [
-    `Total rows: ${report.totalRows}`,
-    `Clean rows: ${countRowsByState(report, 'clean')}`,
-    `New rows: ${countRowsByState(report, 'new')}`,
-    `Modified rows: ${countRowsByState(report, 'modified')}`,
-    `Deleted rows: ${countRowsByState(report, 'deleted')}`,
-    `Saved rows: ${countRowsByState(report, 'saved')}`,
-    `Error rows: ${report.errorRowsCount}`,
-    `Can save: ${report.validChangedRowsCount > 0 && !report.hasErrors}`
+const buildStateReport = (report, payload) => [
+    `Total records: ${report.totalRows}`,
+    `Pending inserted: ${payload.changes.inserted.length}`,
+    `Pending updated: ${payload.changes.updated.length}`,
+    `Pending deleted: ${payload.changes.deleted.length}`,
+    `Rows with errors: ${report.errorRowsCount}`,
+    `Can save: ${payload.canSave}`
 ];
 
 export default function basicCrud(app) {
@@ -57,14 +51,11 @@ export default function basicCrud(app) {
         ${createDemoColumnGuide({
             summary: 'How Basic CRUD works',
             summaryKey: 'examples.basicCrud.detailsTitle',
-            summaryMeta: '7 fields · CRUD lifecycle', summaryMetaKey: 'examples.basicCrud.guideMeta', summaryIcon: 'help', variant: 'technical',
-            intro: 'Basic CRUD demonstrates the essential row lifecycle: editing existing records, adding new rows, validation, deletion or rollback, and generation of the save payload.',
+            summaryMeta: '4 fields · CRUD flow', summaryMetaKey: 'examples.basicCrud.guideMeta', summaryIcon: 'help', variant: 'technical',
+            intro: 'Edit, insert, delete, rollback, and save work together. Row States introduces the lifecycle behind those actions.',
             introKey: 'examples.basicCrud.intro',
             columns: [
                 { title: 'ID', titleKey: 'guides.basic.id.title', badge: 'PERSISTENT', description: 'Persistent identifier assigned to a saved note.', descriptionKey: 'guides.basic.id.description' },
-                { title: 'Temp ID', titleKey: 'guides.basic.tempId.title', badge: 'TEMP', description: 'Temporary identifier used by a new row before it is saved.', descriptionKey: 'guides.basic.tempId.description' },
-                { title: 'Row No.', titleKey: 'guides.basic.rowNumber.title', badge: 'ORDER', description: 'Stable application row number used by reports and feedback.', descriptionKey: 'guides.basic.rowNumber.description' },
-                { title: 'State', titleKey: 'guides.basic.state.title', badge: 'CRUD', description: 'Shows clean, new, modified, deleted, or saved lifecycle state.', descriptionKey: 'guides.basic.state.description' },
                 { title: 'Title', titleKey: 'guides.basic.title.title', badge: 'TEXT', description: 'Required trimmed text with a minimum length of 3 characters.', descriptionKey: 'guides.basic.title.description' },
                 { title: 'Tag', titleKey: 'guides.basic.tag.title', badge: 'TEXT', description: 'Required lowercase text, letters only, up to 12 characters.', descriptionKey: 'guides.basic.tag.description' },
                 { title: 'Archived', titleKey: 'guides.basic.archived.title', badge: 'BOOLEAN', description: 'Editable checkbox stored with the application values Y and N.', descriptionKey: 'guides.basic.archived.description' }
@@ -72,7 +63,7 @@ export default function basicCrud(app) {
         })}
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
-            <div id="basic-table" class="demo-business-grid demo-business-grid--viewport"></div>
+            <div id="basic-table" class="demo-business-grid demo-business-grid--viewport demo-basic-crud-grid"></div>
         </div>
     `;
 
@@ -123,9 +114,6 @@ export default function basicCrud(app) {
         layout: 'fitColumns',
         columns: [
             { title: 'ID', field: 'id', minWidth: 75, widthGrow: 0.55, cssClass: 'demo-cell--passive' },
-            { title: 'Temp ID', field: '_ambTempId', minWidth: 105, widthGrow: 0.75, cssClass: 'demo-cell--passive' },
-            { title: 'Row No.', field: '_ambRowNumber', minWidth: 78, widthGrow: 0.55, cssClass: 'demo-cell--passive' },
-            { title: 'State', field: '_state', minWidth: 88, widthGrow: 0.65, cssClass: 'demo-cell--passive' },
             {
                 title: 'Title',
                 field: 'title',
@@ -236,11 +224,12 @@ export default function basicCrud(app) {
 
     function handleShowReport() {
         const stateReport = crud.getStateReport();
+        const payload = crud.getSavePayload();
 
         reportDialog.open({
             title: 'Basic CRUD report',
-            reportLines: buildStateReport(stateReport),
-            jsonData: stateReport
+            reportLines: buildStateReport(stateReport, payload),
+            jsonData: { report: stateReport, payload }
         });
     }
 

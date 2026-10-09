@@ -304,6 +304,8 @@ describe('demo site navigation', () => {
         expect(featureConfig).toContain("id: 'autocomplete'");
         expect(featureConfig).toContain("id: 'multifield-lookup'");
         expect(featureConfig).toContain("id: 'row-states'");
+        expect(featureConfig.indexOf("id: 'row-states'")).toBeLessThan(featureConfig.indexOf("id: 'basic-crud'"));
+        expect(featureConfig.indexOf("id: 'basic-crud'")).toBeLessThan(featureConfig.indexOf("id: 'validation'"));
         expect(main).toContain("import columnCalculations from './column-calculations.js'");
         expect(featureConfig).toContain("id: 'column-calculations'");
         expect(main).toContain("import dates from './dates.js'");
@@ -381,11 +383,11 @@ describe('demo site navigation', () => {
     test('keeps public example disclosures bilingual without a redundant multifield introduction', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
-            ['basic-crud', 'basicCrud', '7 fields · CRUD lifecycle'],
+            ['basic-crud', 'basicCrud', '4 fields · CRUD flow'],
             ['validation', 'validation', 'Rules · errors · constraints'],
             ['autocomplete', 'autocomplete', 'Assisted input · suggestions'],
             ['multifield-lookup', 'multifieldLookup', 'Search · multi-field mapping'],
-            ['row-states', 'rowStates', 'Clean · new · modified · deleted'],
+            ['row-states', 'rowStates', 'Identity · transitions · rollback'],
             ['column-calculations', 'columnCalculations', 'Count · sum · avg · min · max'],
             ['dates', 'dates', 'Input · formats · datepicker'],
             ['parsers', 'parsers', 'Normalization · payload']
@@ -410,7 +412,7 @@ describe('demo site navigation', () => {
             expect(copy.match(new RegExp(`'examples\\.${key}\\.guideMeta'`, 'g'))).toHaveLength(2);
         });
 
-        expect(copy).toContain("'examples.basicCrud.guideMeta': '7 campi · lifecycle CRUD'");
+        expect(copy).toContain("'examples.basicCrud.guideMeta': '4 campi · flusso CRUD'");
         expect(copy).toContain("'examples.validation.guideMeta': 'Regole · errori · vincoli'");
         expect(copy).toContain("'examples.autocomplete.guideMeta': 'Input assistito · suggerimenti'");
         expect(copy).toContain("'examples.multifieldLookup.guideMeta': 'Ricerca · mapping multiplo'");
@@ -419,7 +421,7 @@ describe('demo site navigation', () => {
 
     test('uses one demo-only passive-cell policy across public mini examples', () => {
         const passiveCells = {
-            'basic-crud': { passive: 4, derived: 0 },
+            'basic-crud': { passive: 1, derived: 0 },
             validation: { passive: 1, derived: 0 },
             autocomplete: { passive: 1, derived: 0 },
             'multifield-lookup': { passive: 5, derived: 5 },
@@ -437,7 +439,7 @@ describe('demo site navigation', () => {
             expect(source).not.toContain('demo-cell--readonly');
         });
 
-        expect(Object.values(passiveCells).reduce((total, expected) => total + expected.passive, 0)).toBe(22);
+        expect(Object.values(passiveCells).reduce((total, expected) => total + expected.passive, 0)).toBe(19);
 
         const multifield = read('src/demo/multifield-lookup.js');
         expect(multifield.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)).toHaveLength(5);
@@ -614,7 +616,7 @@ describe('demo site navigation', () => {
         expect(featureSources.filter(source => source.includes('demo-validation-grid'))).toHaveLength(1);
     });
 
-    test('starts every public feature grid with at least ten coherent rows', () => {
+    test('starts feature grids with coherent datasets and a compact Row States laboratory', () => {
         const slices = {
             basic: read('src/demo/basic-crud.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
             validation: read('src/demo/validation.js').match(/const validationData = \[([\s\S]*?)\n\];/)[1],
@@ -635,7 +637,7 @@ describe('demo site navigation', () => {
             validation: 11,
             autocomplete: 10,
             multifield: 10,
-            rowStates: 10,
+            rowStates: 4,
             calculations: 10,
             dates: 10,
             parsers: 9

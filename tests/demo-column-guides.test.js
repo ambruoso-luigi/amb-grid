@@ -59,12 +59,12 @@ describe('Public demo column guides', () => {
         const exampleCopy = read('src/demo/example-copy.js');
         const main = read('src/demo/main.js');
         const requiredKeys = [
-            'guides.basic.tempId.description',
             'guides.validation.alias.description',
             'guides.validation.document.description',
             'guides.autocomplete.strict.description',
             'guides.multifield.municipality.description',
-            'guides.rowStates.lifecycle.description',
+            'guides.rowStates.state.description',
+            'guides.rowStates.description.description',
             'guides.dates.pickerOnly.description',
             'guides.parsers.output.description',
             'mainDemo.guide.summary',
@@ -90,6 +90,24 @@ describe('Public demo column guides', () => {
 
         referencedKeys.forEach(key => {
             expect(allCopy.match(new RegExp(`'${key.replace(/\./g, '\\.')}':`, 'g'))).toHaveLength(2);
+        });
+    });
+
+    test('keeps each guide aligned with its visible columns', () => {
+        const rowStates = read('src/demo/row-states.js');
+        const basicCrud = read('src/demo/basic-crud.js');
+
+        ['ID', 'Temp ID', '#', 'State', 'Errors', 'Description'].forEach(title => {
+            expect(rowStates).toContain(`title: '${title}'`);
+        });
+        ['Item', 'Category', 'Owner', 'Note', 'Lifecycle'].forEach(title => {
+            expect(rowStates).not.toContain(`title: '${title}'`);
+        });
+        ['ID', 'Title', 'Tag', 'Archived'].forEach(title => {
+            expect(basicCrud).toContain(`title: '${title}'`);
+        });
+        ['Temp ID', 'Row No.', 'State'].forEach(title => {
+            expect(basicCrud).not.toContain(`title: '${title}'`);
         });
     });
 

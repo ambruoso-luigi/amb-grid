@@ -20,13 +20,13 @@ describe('Row states demo', () => {
         expect(source).not.toContain('id="state-save"');
     });
 
-    test('uses the standard row action column and an expanded sample dataset', () => {
+    test('uses the standard row action column and a compact lifecycle scenario', () => {
         expect(source).toContain('rowActionColumn: {');
         expect(source).toContain('enabled: true');
-        expect(source.match(/\{ id: \d+, item:/g)).toHaveLength(10);
-        expect(source.match(/_state: 'clean'/g)).toHaveLength(10);
+        expect(source.match(/\{ id: \d+, description:/g)).toHaveLength(4);
+        expect(source).not.toContain("_state: 'clean'");
         expect(source).toContain("return crud.addRow({");
-        expect(source).toContain("item: 'New sample'");
+        expect(source).toContain("description: 'New lifecycle sample'");
         expect(source).toContain('crud.applyBackendIds(generatedIds)');
         expect(source).toContain('crud.markValidChangesSaved()');
     });
@@ -50,9 +50,9 @@ describe('Row states demo', () => {
             "summaryKey: 'examples.rowStates.detailsTitle'"
         );
         expect(source).not.toContain('<details class="demo-disclosure" open>');
-        expect(source).toContain('clean is unchanged, new was added locally, and modified differs from its original data.');
-        expect(source).toContain('deleted marks an existing row for removal; a new unsaved row is removed directly.');
-        expect(source).toContain("title: 'Lifecycle'");
+        expect(source).toContain('ID identifies persisted rows, Temp ID identifies unsaved rows');
+        expect(source).toContain('Errors belong to a row or cell and remain conceptually distinct from Deleted.');
+        expect(source).toContain("title: 'State'");
         expect(source).toContain("title: 'Errors'");
         expect(source).toContain("field: '_ambErrorCount'");
         expect(source).toContain('const errorCounts = new Map()');
@@ -67,7 +67,6 @@ describe('Row states demo', () => {
         expect(source).toContain('Cell errors: ${report.errors.cells.length}');
         expect(source).toContain('Row errors: ${report.errors.rows.length}');
         expect(source).toContain('buildErrorDetails(report)');
-        expect(source).toContain('Report summarizes lifecycle states and errors; Row numbers exposes the stable references used by feedback.');
         expect(
             source.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)
         ).toHaveLength(5);
@@ -75,26 +74,20 @@ describe('Row states demo', () => {
         expect(source).not.toContain("cssClass: 'amb-cell--readonly-passive");
     });
 
-    test('keeps report, row numbers, and error as clearly named custom actions', () => {
+    test('keeps report and row numbers as lifecycle-focused custom actions', () => {
         expect(source).toContain("id: 'state-report'");
         expect(source).toContain("label: 'Report'");
         expect(source).toContain("id: 'state-row-numbers'");
         expect(source).toContain("label: 'Row numbers'");
-        expect(source).toContain("id: 'state-error'");
-        expect(source).toContain("label: 'Create error'");
-        expect(source).toContain('crud.updateRowFields(1, {');
-        expect(source).toContain("crud.markCellError(1, 'note', 'Manual demo error')");
-        expect(source).toContain('crud.updateRowFields(4, {');
-        expect(source).toContain(
-            "crud.markCellError(4, 'owner', 'Owner is not valid for this demo')"
-        );
-        expect(source).toContain(
-            "crud.markCellError(4, 'note', 'Note requires review')"
-        );
+        expect(source).toContain('async function prepareInitialScenario()');
+        expect(source).toContain('crud.updateRowFields(2, {');
+        expect(source).toContain('crud.deleteRow(3)');
+        expect(source).toContain("crud.addRow({ id: null, description: 'New vendor risk assessment' })");
+        expect(source).toContain("crud.markCellError(4, 'description'");
         expect(source).toContain('function refreshErrorCounts()');
         expect(source).toContain("row.getCell('_ambErrorCount')");
         expect(source).toContain('refreshErrorCounts()');
-        expect(source).toContain('row 1 has 1 error, row 4 has 2 errors');
+        expect(source).toContain('prepareInitialScenario();');
     });
 
     test('settles active edits before Save and report actions read row state', () => {
@@ -107,15 +100,11 @@ describe('Row states demo', () => {
         expect(source).toContain('There are no valid changes to save.');
     });
 
-    test('reloads the initial clean data and clears demo error counts', () => {
+    test('reloads the initial lifecycle scenario and closes reports', () => {
         expect(source).toContain('async function handleReload()');
         expect(source).toContain('reportDialog.close()');
-        expect(source).toContain('crud.rollbackRow(row.key)');
-        expect(source).toContain('errorCounts.clear()');
-        expect(source).toContain('nextId = 11');
-        expect(source).toContain(
-            'await demo.table.setData(initialData.map(row => ({ ...row })))'
-        );
-        expect(source).toContain('Initial row states data reloaded.');
+        expect(source).toContain('nextId = 5');
+        expect(source).toContain('await prepareInitialScenario();');
+        expect(source).toContain('Initial lifecycle scenario reloaded.');
     });
 });
