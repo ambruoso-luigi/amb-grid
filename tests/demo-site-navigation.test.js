@@ -387,7 +387,7 @@ describe('demo site navigation', () => {
             ['validation', 'validation', 'Rules · errors · constraints'],
             ['autocomplete', 'autocomplete', 'Assisted input · suggestions'],
             ['multifield-lookup', 'multifieldLookup', 'Search · multi-field mapping'],
-            ['row-states', 'rowStates', 'Identity · transitions · rollback'],
+            ['row-states', 'rowStates', 'Identity · states · errors · save'],
             ['column-calculations', 'columnCalculations', 'Count · sum · avg · min · max'],
             ['dates', 'dates', 'Input · formats · datepicker'],
             ['parsers', 'parsers', 'Normalization · payload']

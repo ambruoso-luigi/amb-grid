@@ -3988,6 +3988,11 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     background-color: var(--amb-cell-modified-bg) !important;
 }
 
+.demo-panel .demo-row-states-grid .tabulator-cell[data-cell-error="true"] {
+    background-color: #f8cccc !important;
+    box-shadow: inset 0 -2px 0 #bd4242;
+}
+
 .demo-panel .demo-row-states-grid .tabulator-row[data-state="new"],
 .demo-panel .demo-basic-crud-grid .tabulator-row[data-state="new"] {
     background-color: #eaf3ff !important;

@@ -79,7 +79,7 @@ describe('Row states demo', () => {
         expect(source).toContain("label: 'Report'");
         expect(source).toContain("id: 'state-row-numbers'");
         expect(source).toContain("label: 'Row numbers'");
-        expect(source).toContain('async function prepareInitialScenario()');
+        expect(source).toContain('async function handleShowStates()');
         expect(source).toContain("crud.updateRowFields('REC-002', {");
         expect(source).toContain("crud.deleteRow('REC-003')");
         expect(source).toContain("crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' })");
@@ -89,7 +89,7 @@ describe('Row states demo', () => {
         expect(source).toContain('function refreshErrorCounts()');
         expect(source).toContain("row.getCell('_ambErrorCount')");
         expect(source).toContain('refreshErrorCounts()');
-        expect(source).toContain('prepareInitialScenario();');
+        expect(source).toContain('handleShowStates');
     });
 
     test('settles active edits before Save and report actions read row state', () => {
@@ -106,7 +106,7 @@ describe('Row states demo', () => {
         expect(source).toContain('async function handleReload()');
         expect(source).toContain('reportDialog.close()');
         expect(source).toContain('nextId = 5');
-        expect(source).toContain('await prepareInitialScenario();');
-        expect(source).toContain('Initial lifecycle scenario reloaded.');
+        expect(source).toContain('await resetToCleanBaseline();');
+        expect(source).toContain('Clean baseline reloaded.');
     });
 });

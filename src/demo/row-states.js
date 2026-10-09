@@ -63,7 +63,7 @@ export default function rowStates(app) {
         { id: 'REC-001', description: 'Approved service request', type: 'Request' },
         { id: 'REC-002', description: 'Contract review in progress', type: 'Contract' },
         { id: 'REC-003', description: 'Superseded operations procedure', type: 'Procedure' },
-        { id: 'REC-004', description: 'Compliance evidence requires review', type: '' }
+        { id: 'REC-004', description: 'Compliance evidence requires review', type: 'Compliance' }
     ];
 
     app.innerHTML = `
@@ -72,7 +72,9 @@ export default function rowStates(app) {
         ${createDemoColumnGuide({
             summary: 'How row states work',
             summaryKey: 'examples.rowStates.detailsTitle',
-            summaryMeta: 'Identity · transitions · rollback', summaryMetaKey: 'examples.rowStates.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.rowStates.guideMeta', summaryIcon: 'help', variant: 'technical',
+            intro: 'Row States keeps record identity, lifecycle state, and errors separate. The table starts clean: edit manually or use Show states to prepare examples.',
+            introKey: 'examples.rowStates.guideIntro',
             points: [
                 { title: 'Identity', titleKey: 'examples.rowStates.point1Title', description: 'ID identifies persisted rows, Temp ID identifies unsaved rows, and row number remains a stable reference.', descriptionKey: 'examples.rowStates.detail1' },
                 { title: 'Transitions', titleKey: 'examples.rowStates.point2Title', description: 'Editing moves clean to modified, Add creates new, and Delete marks a persisted row deleted.', descriptionKey: 'examples.rowStates.detail2' },
@@ -110,6 +112,7 @@ export default function rowStates(app) {
                 'add',
                 'save',
                 'reload',
+                { id: 'state-show-states', label: 'Show states', title: 'Show lifecycle examples', onClick: handleShowStates },
                 {
                     id: 'state-report',
                     label: 'Report',
@@ -129,6 +132,7 @@ export default function rowStates(app) {
             onReload: handleReload
         },
         data: initialData.map(row => ({ ...row })),
+        errorStyle: { highlightRowOnCellError: true },
         layout: 'fitColumns',
         columns: [
             {
@@ -289,16 +293,22 @@ export default function rowStates(app) {
         });
     }
 
-    // Creates the small, real-lifecycle scenario used on first load and Reload.
-    async function prepareInitialScenario() {
+    // Restores the four valid persisted records and clears all demo state.
+    async function resetToCleanBaseline() {
         errorCounts.clear();
         await demo.table.setData(initialData.map(row => ({ ...row })));
+        refreshErrorCounts();
+    }
+
+    async function handleShowStates() {
+        demo.feedback.clear();
+        reportDialog.close();
+        await resetToCleanBaseline();
         crud.updateRowFields('REC-002', {
             description: 'Contract review awaiting approval'
         });
         crud.deleteRow('REC-003');
         crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' });
-        crud.validateAll();
         refreshErrorCounts();
     }
 
@@ -307,10 +317,10 @@ export default function rowStates(app) {
         reportDialog.close();
 
         nextId = 5;
-        await prepareInitialScenario();
+        await resetToCleanBaseline();
         demo.feedback.show({
             type: 'success',
-            message: 'Initial lifecycle scenario reloaded.'
+            message: 'Clean baseline reloaded.'
         });
     }
 
@@ -348,8 +358,5 @@ export default function rowStates(app) {
         });
     }
 
-    demo.table.on('tableBuilt', () => {
-        prepareInitialScenario();
-    });
     return demo;
 }
