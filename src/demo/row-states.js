@@ -186,6 +186,11 @@ export default function rowStates(app) {
         clearNativeErrorTitles();
     };
     demo.table.on('renderComplete', onRenderComplete);
+    const crudUnsubscribers = ['cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared']
+        .map(eventName => demo.onCrud(eventName, () => {
+            refreshErrorCounts();
+            globalThis.setTimeout(clearNativeErrorTitles, 0);
+        }));
     const runAfterEditSettled = callback => {
         if (
             document.activeElement
@@ -258,6 +263,7 @@ export default function rowStates(app) {
 
     demo.destroy = () => {
         demo.table.off('renderComplete', onRenderComplete);
+        crudUnsubscribers.forEach(unsubscribe => unsubscribe?.());
         reportDialog.destroy();
         partialSaveDialog.destroy();
         commandGuideToolbar.destroy();
