@@ -273,8 +273,10 @@ export default function rowStates(app) {
 
         if (!result.saved.length) {
             demo.feedback.show({
-                type: 'info',
-                message: result.skipped.length
+                type: restrictedRows.length ? 'warning' : 'info',
+                message: restrictedRows.length
+                    ? 'The backend rejected the restricted record. Correct its type before saving.'
+                    : result.skipped.length
                     ? 'No valid changes could be marked as saved.'
                     : 'There are no valid changes to save.'
             });
