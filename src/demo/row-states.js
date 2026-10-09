@@ -189,13 +189,11 @@ export default function rowStates(app) {
     };
     demo.table.on('renderComplete', onRenderComplete);
     const handleCrudErrorEvent = event => {
-        if (event?.cell?.field === 'type') {
-            const row = event.cell.getRow?.();
-            const data = row?.getData?.();
-            const key = data?.id ?? data?._ambTempId;
+        if (event.type === 'cell-error-cleared' && event.field === 'type' && serverRejectedRows.has(event.key)) {
+            const data = event.row?.getData?.();
 
-            if (event.type === 'cell-error-cleared' && serverRejectedRows.has(key) && data?.type !== 'Restricted') {
-                serverRejectedRows.delete(key);
+            if (data?.type !== 'Restricted') {
+                serverRejectedRows.delete(event.key);
                 syncServerErrorPresentation();
             }
         }
