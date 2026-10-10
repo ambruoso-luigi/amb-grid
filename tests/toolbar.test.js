@@ -624,7 +624,7 @@ describe('AMB toolbar', () => {
         }
     });
 
-    test('normalizes selected fields and updates filter count and active state', async () => {
+    test('counts active search options and updates filter badge state', async () => {
         const harness = createHarness({
             buttons: ['add'],
             onAdd: vi.fn()
@@ -646,8 +646,10 @@ describe('AMB toolbar', () => {
                     filters: { enabled: true }
                 },
                 columns: [
+                    { field: 'id', title: 'ID' },
                     { field: 'title', title: 'Title' },
-                    { field: 'tag', title: 'Tag' }
+                    { field: 'tag', title: 'Tag' },
+                    { field: 'archived', title: 'Archived' }
                 ],
                 table,
                 floatingMessage,
@@ -658,7 +660,7 @@ describe('AMB toolbar', () => {
             const filtersCount = filtersButton.children[1];
 
             expect(searchController.getSearchState().selectedFields)
-                .toEqual(['title', 'tag']);
+                .toEqual(['id', 'title', 'tag', 'archived']);
             expect(filtersCount.hidden).toBe(true);
             expect(filtersButton.classList.contains(
                 'amb-toolbar__filters-button--active'
@@ -688,29 +690,72 @@ describe('AMB toolbar', () => {
                 })
             );
 
-            searchController.setSearchFields([]);
-            expect(searchController.getSearchState().selectedFields)
-                .toEqual(['title', 'tag']);
+            searchController.setSearchFields(['title', 'tag']);
+            expect(filtersCount.textContent).toBe('1');
+
+            searchController.setSearchFields(['id', 'title', 'tag']);
+            expect(filtersCount.textContent).toBe('1');
+
+            searchController.setSearchFields(['id', 'title', 'tag', 'archived']);
+            expect(filtersCount.hidden).toBe(true);
 
             searchController.setSearchOptions({ caseSensitive: true });
-            expect(filtersCount.hidden).toBe(true);
+            expect(filtersCount.hidden).toBe(false);
+            expect(filtersCount.textContent).toBe('1');
             expect(filtersButton.classList.contains(
                 'amb-toolbar__filters-button--active'
             )).toBe(true);
+
+            searchController.setSearchFields(['title']);
+            expect(filtersCount.textContent).toBe('2');
+
+            searchController.setSearchOptions({
+                wholeWord: true
+            });
+            expect(filtersCount.textContent).toBe('3');
+
+            searchController.setSearchFields(['id', 'title', 'tag', 'archived']);
+            expect(filtersCount.textContent).toBe('2');
 
             searchController.setSearchOptions({
                 caseSensitive: false,
-                wholeWord: true
+                wholeWord: false
             });
+            expect(filtersCount.hidden).toBe(true);
+
+            searchController.setSearchQuery('reminder');
+            expect(filtersCount.hidden).toBe(true);
+
+            searchController.setSearchFields(['title']);
+            expect(filtersCount.textContent).toBe('1');
+            searchController.setSearchFields([]);
+            expect(searchController.getSearchState().selectedFields)
+                .toEqual(['id', 'title', 'tag', 'archived']);
+            expect(filtersCount.hidden).toBe(true);
             expect(filtersButton.classList.contains(
                 'amb-toolbar__filters-button--active'
-            )).toBe(true);
+            )).toBe(false);
 
             searchController.destroy();
         } finally {
             harness.controller.destroy();
             harness.restore();
         }
+    });
+
+    test('keeps the Search Filters badge at its readable size', () => {
+        const css = fs.readFileSync(
+            new URL('../src/amb-grid.css', import.meta.url),
+            'utf8'
+        );
+        const badgeRule = css.match(/\.amb-toolbar__filters-count\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+
+        expect(badgeRule).toContain('font-size: 11px;');
+        expect(badgeRule).toContain('height: 20px;');
+        expect(badgeRule).toContain('min-width: 20px;');
+        expect(badgeRule).toContain('padding: 0 4px;');
+        expect(badgeRule).not.toContain('font-size: 9px;');
+        expect(badgeRule).not.toContain('height: 16px;');
     });
 
     test('can disable search filter status hover without disabling the filters dialog', async () => {
@@ -845,7 +890,7 @@ describe('AMB toolbar', () => {
         expect(dialogSource).toContain('wholeWord: wholeWordInput.checked');
     });
 
-    test('filters dialog returns selected fields and matching options', async () => {
+    test('filters dialog select all preserves matching options', async () => {
         const originalDocument = globalThis.document;
         const body = new ElementMock('body');
         const documentListeners = new Map();
@@ -879,14 +924,22 @@ describe('AMB toolbar', () => {
             dialog.wholeWordInput.checked = true;
 
             const panel = body.children[0].children[0];
+            const dialogBody = panel.children[2];
+            const selectAllButton = dialogBody.children[0].children[0];
             const footer = panel.children[3];
             const applyButton = footer.children[1];
+
+            await selectAllButton.dispatch('click');
+            expect(dialog.checkboxes.map(input => input.checked))
+                .toEqual([true, true]);
+            expect(dialog.caseSensitiveInput.checked).toBe(true);
+            expect(dialog.wholeWordInput.checked).toBe(true);
 
             await applyButton.dispatch('click');
 
             await expect(resultPromise).resolves.toEqual({
                 applied: true,
-                selectedFields: ['name'],
+                selectedFields: ['name', 'code'],
                 caseSensitive: true,
                 wholeWord: true
             });

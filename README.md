@@ -233,8 +233,10 @@ the search, but at least one column must remain selected. It also provides
 `grid.getSearchState()` returns the explicit selected-field list and matching
 options together with the query. Matching options can be changed
 programmatically with `grid.setSearchOptions({ caseSensitive, wholeWord })`.
-The Filters control is icon-only and shows a compact column count only when
-the search is restricted to a subset.
+The Filters control is icon-only and shows a compact badge for the number of
+search options active relative to their defaults: a restricted column scope,
+`Case sensitive`, and `Whole word`. The search text itself does not contribute
+to this count.
 
 When `toolbar` is omitted or set to `true`, the default Add, Reload, and Save
 buttons are rendered in a safe disabled state until callbacks are configured.

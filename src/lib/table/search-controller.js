@@ -208,19 +208,31 @@ export const createSearchController = ({
         return availableColumns.filter(column => selectedFields.has(column.field));
     };
 
+    const hasRestrictedSearchScope = () => {
+        const selectedFields = new Set(searchState.selectedFields);
+
+        return selectedFields.size !== allFields.length
+            || allFields.some(field => !selectedFields.has(field));
+    };
+
+    const getActiveSearchOptions = () => {
+        return Number(hasRestrictedSearchScope())
+            + Number(searchState.caseSensitive)
+            + Number(searchState.wholeWord);
+    };
+
     const updateFiltersButton = () => {
         if (!toolbar || !toolbar.filtersButton) return;
 
-        const count = searchState.selectedFields.length;
-        const restricted = count < allFields.length;
+        const activeSearchOptions = getActiveSearchOptions();
 
         if (toolbar.filtersCount) {
-            toolbar.filtersCount.textContent = String(count);
-            toolbar.filtersCount.hidden = !restricted;
+            toolbar.filtersCount.textContent = String(activeSearchOptions);
+            toolbar.filtersCount.hidden = activeSearchOptions === 0;
         }
         toolbar.filtersButton.classList?.toggle(
             'amb-toolbar__filters-button--active',
-            restricted || searchState.caseSensitive || searchState.wholeWord
+            activeSearchOptions > 0
         );
     };
 
@@ -358,7 +370,7 @@ export const createSearchController = ({
         if (!toolbar || !toolbar.filtersButton) return;
 
         const selectedColumns = getSelectedColumns();
-        const restricted = selectedColumns.length < availableColumns.length;
+        const restricted = hasRestrictedSearchScope();
         const optionMessages = [
             searchState.caseSensitive ? '- Case sensitive' : '',
             searchState.wholeWord ? '- Whole word' : ''
@@ -375,7 +387,7 @@ export const createSearchController = ({
 
         floatingMessage.scheduleShow(toolbar.filtersButton, {
             type: 'info',
-            title: 'Filters active',
+            title: 'Search options active',
             message: [
                 ...(restricted
                     ? [
