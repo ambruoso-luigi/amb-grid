@@ -816,8 +816,9 @@ describe('AMB toolbar', () => {
         expect(demoSource).toContain("'payload'");
         expect(demoSource).toContain("search: {");
         expect(demoSource).toContain("filters: {");
-        expect(demoSource).toContain("id: 'report'");
-        expect(demoSource).toContain("id: 'selected'");
+        expect(demoSource).toContain('commandGuideToolbar.button');
+        expect(demoSource).not.toContain("id: 'report'");
+        expect(demoSource).not.toContain("id: 'selected'");
         expect(demoSource).toContain("onReload: handleReload");
         expect(demoSource).toContain("message: 'Data reloaded.'");
         expect(demoSource).toContain(

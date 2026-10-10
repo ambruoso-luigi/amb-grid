@@ -383,7 +383,7 @@ describe('demo site navigation', () => {
     test('keeps public example disclosures bilingual without a redundant multifield introduction', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
-            ['basic-crud', 'basicCrud', '4 fields · CRUD flow'],
+            ['basic-crud', 'basicCrud', '4 fields · essential CRUD'],
             ['validation', 'validation', 'Rules · errors · constraints'],
             ['autocomplete', 'autocomplete', 'Assisted input · suggestions'],
             ['multifield-lookup', 'multifieldLookup', 'Search · multi-field mapping'],
@@ -532,6 +532,15 @@ describe('demo site navigation', () => {
         expect(basicCrud).toContain("cssClass: 'demo-business-checkbox-cell'");
         expect(basicCrud).not.toContain("checkedLabel: 'Yes'");
         expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
+    });
+
+    test('gives Basic CRUD cell errors precedence over modified state styling', () => {
+        const css = read('src/demo/demo.css');
+        const modifiedRule = '.demo-panel .demo-basic-crud-grid .tabulator-cell[data-cell-state="modified"]';
+        const errorRule = '.demo-panel .demo-basic-crud-grid .tabulator-cell[data-cell-error="true"]';
+
+        expect(css).toContain(errorRule);
+        expect(css.indexOf(errorRule)).toBeGreaterThan(css.indexOf(modifiedRule));
     });
 
     test('shares the default ten-row viewport and JavaScript-demo resize configuration', () => {

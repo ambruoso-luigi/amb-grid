@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const table = page => page.locator('#basic-table');
+const table = page => page.locator('#inventory-test-table');
 const row = (page, id) => table(page).locator('.tabulator-row').filter({ hasText: id });
 const cell = (page, id, field) => row(page, id)
     .locator(`.tabulator-cell[tabulator-field="${field}"]`);
@@ -24,31 +24,26 @@ const pressSelectionKey = async (page, id, key) => {
 
 test.describe('managed selection column interaction', () => {
     test.beforeEach(async ({ page }) => {
-        await page.goto('/src/demo/index.html#feature-examples');
-        await page.locator('[data-example="basic-crud"]').click();
+        await page.goto('/test/');
+        await page.locator('#selection-mode').selectOption('multiple');
         await expect(table(page)).toBeVisible();
-        await expect(row(page, 'NT-001')).toBeVisible();
+        await expect(row(page, 'PRD-A001')).toBeVisible();
     });
 
-    test('ordinary cells and the data checkbox never select their row', async ({ page }) => {
-        const id = 'NT-001';
+    test('ordinary cells never select their row', async ({ page }) => {
+        const id = 'PRD-A001';
 
         await expectUnselected(page, id);
-        await cell(page, id, 'title').click();
+        await cell(page, id, 'itemCode').click();
         await expectUnselected(page, id);
-        await cell(page, id, 'tag').click();
+        await cell(page, id, 'productName').click();
         await expectUnselected(page, id);
-        await cell(page, id, 'archived').click({ position: { x: 4, y: 4 } });
-        await expectUnselected(page, id);
-
-        await cell(page, id, 'archived').press('Space');
-        await expectUnselected(page, id);
-        await cell(page, id, 'archived').press('Enter');
+        await cell(page, id, 'selectProbe').click();
         await expectUnselected(page, id);
     });
 
     test('selection checkbox toggles with Space', async ({ page }) => {
-        const id = 'NT-001';
+        const id = 'PRD-A001';
 
         await pressSelectionKey(page, id, 'Space');
         await expectSelected(page, id);
@@ -58,7 +53,7 @@ test.describe('managed selection column interaction', () => {
 
     for (const [selectKey, unselectKey] of [['S', 'N']]) {
         test(`selection checkbox supports ${selectKey}/${unselectKey}`, async ({ page }) => {
-            const id = 'NT-001';
+            const id = 'PRD-A001';
 
             await pressSelectionKey(page, id, selectKey);
             await expectSelected(page, id);
@@ -68,14 +63,14 @@ test.describe('managed selection column interaction', () => {
     }
 
     test('selection checkbox supports Y', async ({ page }) => {
-        const id = 'NT-001';
+        const id = 'PRD-A001';
 
         await pressSelectionKey(page, id, 'Y');
         await expectSelected(page, id);
     });
 
     test('selection checkbox toggles with pointer clicks', async ({ page }) => {
-        const id = 'NT-001';
+        const id = 'PRD-A001';
         const input = selectionInput(page, id);
 
         await input.click();
@@ -90,11 +85,11 @@ test.describe('managed selection column interaction', () => {
         await expect(headerInput).toBeVisible();
         await headerInput.check();
         await expect(headerInput).toBeChecked();
-        await expect(row(page, 'NT-001')).toHaveClass(/tabulator-selected/);
-        await expect(row(page, 'NT-002')).toHaveClass(/tabulator-selected/);
+        await expect(row(page, 'PRD-A001')).toHaveClass(/tabulator-selected/);
+        await expect(row(page, 'PRD-AB02')).toHaveClass(/tabulator-selected/);
         await headerInput.uncheck();
         await expect(headerInput).not.toBeChecked();
-        await expect(row(page, 'NT-001')).not.toHaveClass(/tabulator-selected/);
-        await expect(row(page, 'NT-002')).not.toHaveClass(/tabulator-selected/);
+        await expect(row(page, 'PRD-A001')).not.toHaveClass(/tabulator-selected/);
+        await expect(row(page, 'PRD-AB02')).not.toHaveClass(/tabulator-selected/);
     });
 });

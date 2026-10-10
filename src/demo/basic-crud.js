@@ -40,12 +40,11 @@ export default function basicCrud(app) {
         ${createDemoColumnGuide({
             summary: 'How Basic CRUD works',
             summaryKey: 'examples.basicCrud.detailsTitle',
-            summaryMeta: '4 fields · CRUD flow', summaryMetaKey: 'examples.basicCrud.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: '4 fields · essential CRUD', summaryMetaKey: 'examples.basicCrud.guideMeta', summaryIcon: 'help', variant: 'technical',
             intro: 'This example uses the lifecycle introduced in Row States in a normal CRUD flow, focusing on operations, payload, and saving.',
             introKey: 'examples.basicCrud.guideIntro',
             points: [
-                { title: 'Edit and add', titleKey: 'examples.basicCrud.point1Title', description: 'Edit existing records or create new rows.', descriptionKey: 'examples.basicCrud.detail1' },
-                { title: 'Delete and rollback', titleKey: 'examples.basicCrud.point2Title', description: 'Row actions apply the lifecycle introduced in Row States.', descriptionKey: 'examples.basicCrud.detail2' },
+                { title: 'Manage records', titleKey: 'examples.basicCrud.point1Title', description: 'Edit, add, delete, or undo note changes.', descriptionKey: 'examples.basicCrud.detail1' },
                 { title: 'Save payload', titleKey: 'examples.basicCrud.point2Title', description: 'Show payload separates inserted, updated, and deleted records.', descriptionKey: 'examples.basicCrud.detail2' },
                 { title: 'Save', titleKey: 'examples.basicCrud.point3Title', description: 'The demo simulates a backend response and assigns final IDs.', descriptionKey: 'examples.basicCrud.detail3' },
                 { title: 'Reset', titleKey: 'examples.basicCrud.point4Title', description: 'Rollback restores one row while Reload resets the entire example.', descriptionKey: 'examples.basicCrud.detail4' }

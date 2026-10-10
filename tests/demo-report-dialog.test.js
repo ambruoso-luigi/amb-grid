@@ -25,7 +25,7 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain('Summary');
     });
 
-    test('uses the shared dialog for Basic CRUD show actions', () => {
+    test('uses the shared dialog for the Basic CRUD save payload action', () => {
         const source = readSource('../src/demo/basic-crud.js');
 
         expect(source).toContain(
@@ -34,8 +34,8 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain('id="basic-output"');
         expect(source).not.toContain('output.textContent = JSON.stringify');
         expect(source).toContain("title: 'Save payload'");
-        expect(source).toContain("title: 'Basic CRUD report'");
-        expect(source).toContain("title: 'Selected rows'");
+        expect(source).not.toContain("title: 'Basic CRUD report'");
+        expect(source).not.toContain("title: 'Selected rows'");
 
         const saveHandler = source.slice(source.indexOf('async function handleSave()'));
 

@@ -1,13 +1,13 @@
 export const demoColumnGuideTranslations = {
     it: {
         'guides.basic.id.title': 'ID',
-        'guides.basic.id.description': 'Identificatore persistente assegnato a una nota salvata.',
+        'guides.basic.id.description': 'Identificatore persistente del record. Per una nuova nota viene assegnato dal backend simulato al primo salvataggio.',
         'guides.basic.title.title': 'Titolo',
-        'guides.basic.title.description': 'Testo obbligatorio normalizzato con almeno 3 caratteri.',
+        'guides.basic.title.description': 'Titolo obbligatorio della nota.',
         'guides.basic.tag.title': 'Tag',
-        'guides.basic.tag.description': 'Testo obbligatorio in minuscolo, solo lettere, massimo 12 caratteri.',
+        'guides.basic.tag.description': 'Tag obbligatorio in lettere minuscole utilizzato per classificare la nota.',
         'guides.basic.archived.title': 'Archiviato',
-        'guides.basic.archived.description': 'Checkbox editabile memorizzata con i valori applicativi Y e N.',
+        'guides.basic.archived.description': 'Indica se la nota è archiviata; viene salvato con i valori applicativi Y/N.',
 
         'guides.validation.id.title': 'ID',
         'guides.validation.id.description': 'Identificatore persistente usato come contesto della validazione.',
@@ -123,13 +123,13 @@ export const demoColumnGuideTranslations = {
     },
     en: {
         'guides.basic.id.title': 'ID',
-        'guides.basic.id.description': 'Persistent identifier assigned to a saved note.',
+        'guides.basic.id.description': 'Persistent record identifier. New notes receive it from the simulated backend on their first save.',
         'guides.basic.title.title': 'Title',
-        'guides.basic.title.description': 'Required trimmed text with a minimum length of 3 characters.',
+        'guides.basic.title.description': 'Required note title.',
         'guides.basic.tag.title': 'Tag',
-        'guides.basic.tag.description': 'Required lowercase text, letters only, up to 12 characters.',
+        'guides.basic.tag.description': 'Required lowercase tag used to classify the note.',
         'guides.basic.archived.title': 'Archived',
-        'guides.basic.archived.description': 'Editable checkbox stored with the application values Y and N.',
+        'guides.basic.archived.description': 'Indicates whether the note is archived and is stored using the application values Y/N.',
 
         'guides.validation.id.title': 'ID',
         'guides.validation.id.description': 'Persistent row identifier used as validation context.',

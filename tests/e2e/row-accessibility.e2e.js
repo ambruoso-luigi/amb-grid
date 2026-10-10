@@ -1,12 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { enterNavigationWithClick } from './helpers/focus-diagnostics.js';
 
-const openBasicCrudDemo = async page => {
-    await page.goto('/src/demo/index.html#feature-examples');
-    await page.locator('[data-example="basic-crud"]').click();
-    await expect(page.locator('#basic-table.tabulator')).toBeVisible();
-};
-
 const openInventoryDemo = async (page, { publicEntry = false } = {}) => {
     await page.goto(publicEntry ? '/#getting-started-javascript' : '/src/demo/index.html#getting-started-javascript');
     await expect(page.locator('#inventory-table.tabulator')).toBeVisible();
@@ -17,10 +11,6 @@ const openValidationDemo = async page => {
     await page.goto('/src/demo/index.html#feature-examples');
     await page.locator('[data-example="validation"]').click();
     await expect(page.locator('#validation-table.tabulator')).toBeVisible();
-};
-
-const selectedRowCount = page => {
-    return page.locator('#basic-table .tabulator-row.tabulator-selected').count();
 };
 
 const getActiveGridFocus = page => {
@@ -44,14 +34,6 @@ const getActiveGridFocus = page => {
 };
 
 test.describe('row controls accessibility', () => {
-    test('Basic CRUD row selection supports pointer selection', async ({ page }) => {
-        await openBasicCrudDemo(page);
-        const firstSelection = page.locator('#basic-table .tabulator-row .amb-selection-column input[aria-label="Select Row"]').first();
-
-        await firstSelection.click();
-        await expect.poll(() => selectedRowCount(page)).toBe(1);
-    });
-
     test('main demo row actions activate delete and rollback without confirmation', async ({ page }) => {
         await openInventoryDemo(page, { publicEntry: true });
 
