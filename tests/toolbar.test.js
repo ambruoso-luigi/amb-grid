@@ -750,10 +750,10 @@ describe('AMB toolbar', () => {
         );
         const badgeRule = css.match(/\.amb-toolbar__filters-count\s*\{([\s\S]*?)\n\}/)?.[1] || '';
 
-        expect(badgeRule).toContain('font-size: 11px;');
-        expect(badgeRule).toContain('height: 20px;');
-        expect(badgeRule).toContain('min-width: 20px;');
-        expect(badgeRule).toContain('padding: 0 4px;');
+        expect(badgeRule).toContain('font-size: 13px;');
+        expect(badgeRule).toContain('height: 24px;');
+        expect(badgeRule).toContain('min-width: 24px;');
+        expect(badgeRule).toContain('padding: 0 5px;');
         expect(badgeRule).not.toContain('font-size: 9px;');
         expect(badgeRule).not.toContain('height: 16px;');
     });
