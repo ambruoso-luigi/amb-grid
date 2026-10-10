@@ -534,13 +534,30 @@ describe('demo site navigation', () => {
         expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
     });
 
-    test('gives Basic CRUD cell errors precedence over modified state styling', () => {
+    test('uses one lifecycle palette for Feature Examples with error precedence', () => {
         const css = read('src/demo/demo.css');
-        const modifiedRule = '.demo-panel .demo-basic-crud-grid .tabulator-cell[data-cell-state="modified"]';
-        const errorRule = '.demo-panel .demo-basic-crud-grid .tabulator-cell[data-cell-error="true"]';
+        const newRowRule = '#feature-example .tabulator-row[data-state="new"]';
+        const modifiedRowRule = '#feature-example .tabulator-row[data-state="modified"]';
+        const savedRowRule = '#feature-example .tabulator-row[data-state="saved"]';
+        const deletedRowRule = '#feature-example .tabulator-row[data-state="deleted"]';
+        const errorRowRule = '#feature-example .tabulator-row[data-row-error="true"]';
+        const modifiedCellRule = '#feature-example .tabulator-cell[data-cell-state="modified"]';
+        const errorCellRule = '#feature-example .tabulator-cell[data-cell-error="true"]';
 
-        expect(css).toContain(errorRule);
-        expect(css.indexOf(errorRule)).toBeGreaterThan(css.indexOf(modifiedRule));
+        expect(css).toContain(newRowRule);
+        expect(css).toContain(modifiedRowRule);
+        expect(css).toContain(savedRowRule);
+        expect(css).toContain(deletedRowRule);
+        expect(css).toContain(errorRowRule);
+        expect(css).toContain('background-color: #eaf3ff !important;');
+        expect(css).toContain('background-color: #fff5df !important;');
+        expect(css).toContain('background-color: #e8f5eb !important;');
+        expect(css).toContain('background-color: #e8edf2 !important;');
+        expect(css).toContain('background-color: #fde8e8 !important;');
+        expect(css).toContain('background-color: var(--amb-cell-modified-bg) !important;');
+        expect(css).toContain(errorCellRule);
+        expect(css).toContain('background-color: #f8cccc !important;');
+        expect(css.indexOf(errorCellRule)).toBeGreaterThan(css.indexOf(modifiedCellRule));
     });
 
     test('shares the default ten-row viewport and JavaScript-demo resize configuration', () => {
