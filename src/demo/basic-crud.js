@@ -9,18 +9,7 @@ const formatArchivedCheckbox = createDemoCheckboxFormatter({ checkedValue: 'Y' }
 const buildPayloadReport = payload => [
     `Inserted rows: ${payload.changes.inserted.length}`,
     `Updated rows: ${payload.changes.updated.length}`,
-    `Deleted rows: ${payload.changes.deleted.length}`,
-    `Has changes: ${payload.hasChanges}`,
-    `Can save: ${payload.canSave}`
-];
-
-const buildStateReport = (report, payload) => [
-    `Total records: ${report.totalRows}`,
-    `Pending inserted: ${payload.changes.inserted.length}`,
-    `Pending updated: ${payload.changes.updated.length}`,
-    `Pending deleted: ${payload.changes.deleted.length}`,
-    `Rows with errors: ${report.errorRowsCount}`,
-    `Can save: ${payload.canSave}`
+    `Deleted rows: ${payload.changes.deleted.length}`
 ];
 
 export default function basicCrud(app) {
@@ -52,14 +41,14 @@ export default function basicCrud(app) {
             summary: 'How Basic CRUD works',
             summaryKey: 'examples.basicCrud.detailsTitle',
             summaryMeta: '4 fields · CRUD flow', summaryMetaKey: 'examples.basicCrud.guideMeta', summaryIcon: 'help', variant: 'technical',
-            intro: 'Edit, insert, delete, rollback, and save work together. Row States introduces the lifecycle behind those actions.',
-            introKey: 'examples.basicCrud.intro',
+            intro: 'This example uses the lifecycle introduced in Row States in a normal CRUD flow, focusing on operations, payload, and saving.',
+            introKey: 'examples.basicCrud.guideIntro',
             points: [
                 { title: 'Edit and add', titleKey: 'examples.basicCrud.point1Title', description: 'Edit existing records or create new rows.', descriptionKey: 'examples.basicCrud.detail1' },
                 { title: 'Delete and rollback', titleKey: 'examples.basicCrud.point2Title', description: 'Row actions apply the lifecycle introduced in Row States.', descriptionKey: 'examples.basicCrud.detail2' },
-                { title: 'Validate', titleKey: 'examples.basicCrud.point3Title', description: 'Changes are validated before saving.', descriptionKey: 'examples.basicCrud.detail3' },
-                { title: 'Payload', titleKey: 'examples.basicCrud.point4Title', description: 'Show payload separates inserted, updated, and deleted records.', descriptionKey: 'examples.basicCrud.detail4' },
-                { title: 'Save', titleKey: 'examples.basicCrud.point5Title', description: 'The demo simulates a backend response and realigns the baseline.', descriptionKey: 'examples.basicCrud.detail5' }
+                { title: 'Save payload', titleKey: 'examples.basicCrud.point2Title', description: 'Show payload separates inserted, updated, and deleted records.', descriptionKey: 'examples.basicCrud.detail2' },
+                { title: 'Save', titleKey: 'examples.basicCrud.point3Title', description: 'The demo simulates a backend response and assigns final IDs.', descriptionKey: 'examples.basicCrud.detail3' },
+                { title: 'Reset', titleKey: 'examples.basicCrud.point4Title', description: 'Rollback restores one row while Reload resets the entire example.', descriptionKey: 'examples.basicCrud.detail4' }
             ],
             columns: [
                 { title: 'ID', titleKey: 'guides.basic.id.title', badge: 'PERSISTENT', description: 'Persistent identifier assigned to a saved note.', descriptionKey: 'guides.basic.id.description' },
@@ -83,26 +72,12 @@ export default function basicCrud(app) {
             confirmRollbackMessage: 'Rollback this note?',
             confirmRemoveNewMessage: 'Remove this new note?'
         },
-        selectionColumn: {
-            enabled: true,
-            mode: 'multiple'
-        },
         toolbar: {
             buttons: [
                 'add',
                 'reload',
                 'save',
                 'payload',
-                {
-                    id: 'report',
-                    label: 'Show report',
-                    onClick: handleShowReport
-                },
-                {
-                    id: 'selected',
-                    label: 'Show selected',
-                    onClick: handleShowSelected
-                },
                 commandGuideToolbar.button
             ],
             onAdd: handleAdd,
@@ -214,7 +189,8 @@ export default function basicCrud(app) {
 
     async function handleReload() {
         nextNoteNumber = 11;
-        await demo.table.setData(initialData.map(row => ({ ...row })));
+        reportDialog.close();
+        await demo.setData(initialData.map(row => ({ ...row })));
         demo.feedback.show({
             type: 'success',
             message: 'Data reloaded.'
@@ -229,32 +205,6 @@ export default function basicCrud(app) {
         });
     }
 
-    function handleShowReport() {
-        const stateReport = crud.getStateReport();
-        const payload = crud.getSavePayload();
-
-        reportDialog.open({
-            title: 'Basic CRUD report',
-            reportLines: buildStateReport(stateReport, payload),
-            jsonData: { report: stateReport, payload }
-        });
-    }
-
-    function handleShowSelected() {
-        const selectedRows = demo.getSelectedRows();
-        const selectedIds = selectedRows
-            .map(row => row.id || row._ambTempId)
-            .filter(Boolean);
-
-        reportDialog.open({
-            title: 'Selected rows',
-            reportLines: [
-                `Selected rows: ${selectedRows.length}`,
-                `Selected IDs: ${selectedIds.length ? selectedIds.join(', ') : 'none'}`
-            ],
-            jsonData: selectedRows
-        });
-    }
 
     async function handleSave() {
         const validateResult = crud.validateAll();

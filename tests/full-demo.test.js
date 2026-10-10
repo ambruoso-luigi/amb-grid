@@ -214,7 +214,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('partialSaveDialog.destroy()');
         expect(source).not.toContain('createDemoRowActionColumn');
         expect(basicCrudSource).toContain('rowActionColumn: {');
-        expect(basicCrudSource).toContain('selectionColumn: {');
+        expect(basicCrudSource).not.toContain('selectionColumn: {');
     });
 
     test('keeps the Notes large text editor open when its backdrop is clicked', () => {

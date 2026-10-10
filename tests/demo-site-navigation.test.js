@@ -412,7 +412,7 @@ describe('demo site navigation', () => {
             expect(copy.match(new RegExp(`'examples\\.${key}\\.guideMeta'`, 'g'))).toHaveLength(2);
         });
 
-        expect(copy).toContain("'examples.basicCrud.guideMeta': '4 campi · flusso CRUD'");
+        expect(copy).toContain("'examples.basicCrud.guideMeta': '4 campi · CRUD essenziale'");
         expect(copy).toContain("'examples.validation.guideMeta': 'Regole · errori · vincoli'");
         expect(copy).toContain("'examples.autocomplete.guideMeta': 'Input assistito · suggerimenti'");
         expect(copy).toContain("'examples.multifieldLookup.guideMeta': 'Ricerca · mapping multiplo'");
