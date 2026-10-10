@@ -195,6 +195,7 @@ export default function rowStates(app) {
             if (data?.type !== 'Restricted') {
                 serverRejectedRows.delete(event.key);
                 syncServerErrorPresentation();
+                syncServerRejectedFeedback();
             }
         }
         refreshErrorCounts();
@@ -266,6 +267,18 @@ export default function rowStates(app) {
 
             if (serverRejectedRows.has(key)) element.setAttribute('data-demo-server-error', 'true');
             else element.removeAttribute('data-demo-server-error');
+        });
+    }
+
+    function syncServerRejectedFeedback() {
+        if (!serverRejectedRows.size) {
+            demo.feedback.clear();
+            return;
+        }
+
+        demo.feedback.show({
+            type: 'error',
+            message: `${plural(serverRejectedRows.size, 'row')} ${serverRejectedRows.size === 1 ? 'was' : 'were'} rejected by the backend.`
         });
     }
 
