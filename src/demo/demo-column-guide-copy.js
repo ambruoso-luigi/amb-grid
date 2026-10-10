@@ -27,6 +27,7 @@ export const demoColumnGuideTranslations = {
         'guides.validation.iban.description': 'IBAN italiano maiuscolo validato nel formato da 27 caratteri.',
         'guides.validation.document.title': 'Passaporto/Documento',
         'guides.validation.document.description': 'Esempio di validazione personalizzata: oltre al formato alfanumerico, una funzione definita dallo sviluppatore rifiuta i documenti con prefisso riservato TMP.',
+        'guides.validation.document.emphasis': 'validazione personalizzata',
 
         'guides.autocomplete.id.title': 'ID',
         'guides.autocomplete.id.description': 'Identificatore persistente della riga di esempio.',
@@ -149,6 +150,7 @@ export const demoColumnGuideTranslations = {
         'guides.validation.iban.description': 'Uppercase Italian IBAN validated in its 27-character format.',
         'guides.validation.document.title': 'Passport/Document',
         'guides.validation.document.description': 'Example of custom validation: in addition to the alphanumeric format rule, a developer-defined function rejects document numbers using the reserved TMP prefix.',
+        'guides.validation.document.emphasis': 'custom validation',
 
         'guides.autocomplete.id.title': 'ID',
         'guides.autocomplete.id.description': 'Persistent identifier for the example row.',

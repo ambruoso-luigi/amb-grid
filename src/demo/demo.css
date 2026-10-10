@@ -354,6 +354,11 @@ a {
     overflow-wrap: anywhere;
 }
 
+.demo-text-accent {
+    color: var(--amb-site-blue-strong);
+    font-weight: 600;
+}
+
 .demo-hero__text {
     color: #344b64;
     font-size: clamp(17px, 1.6vw, 21px);

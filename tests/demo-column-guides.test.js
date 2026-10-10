@@ -29,7 +29,8 @@ describe('Public demo column guides', () => {
                 titleKey: 'guide.name',
                 badge: 'TEXT',
                 description: 'Editable text.',
-                descriptionKey: 'guide.name.description'
+                descriptionKey: 'guide.name.description',
+                descriptionEmphasisKey: 'guide.name.emphasis'
             }]
         });
 
@@ -41,6 +42,7 @@ describe('Public demo column guides', () => {
         expect(markup).not.toContain('data-i18n="guide.name"');
         expect(markup).toContain('class="demo-column-guide__badge"');
         expect(markup).toContain('class="demo-column-guide__description"');
+        expect(markup).toContain('data-i18n-emphasis="guide.name.emphasis"');
     });
 
     test('is used by all eight mini-examples and the JavaScript demo', () => {
@@ -61,6 +63,7 @@ describe('Public demo column guides', () => {
         const requiredKeys = [
             'guides.validation.alias.description',
             'guides.validation.document.description',
+            'guides.validation.document.emphasis',
             'guides.autocomplete.strict.description',
             'guides.multifield.municipality.description',
             'guides.rowStates.state.description',
@@ -83,7 +86,7 @@ describe('Public demo column guides', () => {
         const referencedKeys = new Set(demos.flatMap(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 
-            return [...source.matchAll(/(?:summaryKey|introKey|titleKey|descriptionKey): '([^']+)'/g)]
+            return [...source.matchAll(/(?:summaryKey|introKey|titleKey|descriptionKey|descriptionEmphasisKey): '([^']+)'/g)]
                 .map(([, key]) => key);
         }));
         const allCopy = `${copy}\n${exampleCopy}`;
@@ -195,6 +198,8 @@ describe('Public Validation demo controller usage', () => {
         expect(source).toContain('AMB.validators.custom');
         expect(source).toContain('hasReservedDocumentPrefix');
         expect(source).toContain("badge: 'CUSTOM'");
+        expect(source).toContain("descriptionEmphasisKey: 'examples.validation.detail1Emphasis'");
+        expect(source).toContain("descriptionEmphasisKey: 'guides.validation.document.emphasis'");
         expect(source).toContain('developer-defined function rejects document numbers using the reserved TMP prefix.');
         expect(source).toContain('Validation shows built-in rules and custom validations defined by the developer.');
         expect(source).toContain('Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.');

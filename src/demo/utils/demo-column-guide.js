@@ -7,11 +7,12 @@ const escapeHtml = value => String(value ?? '')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const renderTranslatedText = ({ tag, key, text, className = '' }) => {
+const renderTranslatedText = ({ tag, key, emphasisKey = '', text, className = '' }) => {
     const classAttribute = className ? ` class="${escapeHtml(className)}"` : '';
     const i18nAttribute = key ? ` data-i18n="${escapeHtml(key)}"` : '';
+    const emphasisAttribute = emphasisKey ? ` data-i18n-emphasis="${escapeHtml(emphasisKey)}"` : '';
 
-    return `<${tag}${classAttribute}${i18nAttribute}>${escapeHtml(text)}</${tag}>`;
+    return `<${tag}${classAttribute}${i18nAttribute}${emphasisAttribute}>${escapeHtml(text)}</${tag}>`;
 };
 
 const renderPoints = points => {
@@ -21,7 +22,7 @@ const renderPoints = points => {
         <ul class="demo-explanation-list demo-explanation-list--compact">
             ${points.map(point => `<li>
                 ${renderTranslatedText({ tag: 'strong', key: point.titleKey, text: point.title })}
-                ${renderTranslatedText({ tag: 'span', key: point.descriptionKey, text: point.description })}
+                ${renderTranslatedText({ tag: 'span', key: point.descriptionKey, emphasisKey: point.descriptionEmphasisKey, text: point.description })}
             </li>`).join('')}
         </ul>`;
 };
@@ -38,6 +39,7 @@ const renderColumns = (columns, className = '') => `
             ${renderTranslatedText({
                 tag: 'small',
                 key: column.descriptionKey,
+                emphasisKey: column.descriptionEmphasisKey,
                 text: column.description,
                 className: 'demo-column-guide__description'
             })}

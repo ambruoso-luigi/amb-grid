@@ -521,7 +521,26 @@ const applyI18n = () => {
         : 'AMB Grid - Legacy-friendly demo';
 
     root.querySelectorAll('[data-i18n]').forEach(element => {
-        element.textContent = getText(element.dataset.i18n);
+        const text = getText(element.dataset.i18n);
+        const emphasisKey = element.getAttribute('data-i18n-emphasis');
+        const emphasis = emphasisKey
+            ? getText(emphasisKey)
+            : '';
+        const emphasisStart = emphasis ? text.indexOf(emphasis) : -1;
+
+        if (emphasisStart === -1) {
+            element.textContent = text;
+            return;
+        }
+
+        const accent = document.createElement('span');
+        accent.className = 'demo-text-accent';
+        accent.textContent = emphasis;
+        element.replaceChildren(
+            document.createTextNode(text.slice(0, emphasisStart)),
+            accent,
+            document.createTextNode(text.slice(emphasisStart + emphasis.length))
+        );
     });
 
     root.querySelectorAll('[data-i18n-title]').forEach(element => {

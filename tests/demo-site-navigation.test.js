@@ -562,11 +562,40 @@ describe('demo site navigation', () => {
 
     test('explains built-in and custom validation rules in both languages', () => {
         const copy = read('src/demo/example-copy.js');
+        const guideCopy = read('src/demo/demo-column-guide-copy.js');
+        const validation = read('src/demo/validation.js');
+        const main = read('src/demo/main.js');
+        const css = read('src/demo/demo.css');
+        const applyI18nSource = main.slice(
+            main.indexOf('const applyI18n = () => {'),
+            main.indexOf('const setActiveExample =')
+        );
 
         expect(copy).toContain("'examples.validation.intro': 'Validation mostra regole integrate e validazioni personalizzate definite dallo sviluppatore.");
         expect(copy).toContain("'examples.validation.detail1': 'I campi mostrano validatori integrati come required, unique, lunghezza, pattern e formato, ma possono anche usare regole custom definite dallo sviluppatore.'");
         expect(copy).toContain("'examples.validation.intro': 'Validation shows built-in rules and custom validations defined by the developer.");
         expect(copy).toContain("'examples.validation.detail1': 'Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.'");
+        [
+            'examples.validation.introEmphasis',
+            'examples.validation.detail1Emphasis'
+        ].forEach(key => {
+            expect(copy.match(new RegExp(`'${key.replace(/\./g, '\\.')}':`, 'g'))).toHaveLength(2);
+        });
+        expect(guideCopy.match(/'guides\.validation\.document\.emphasis':/g)).toHaveLength(2);
+        expect(validation).toContain('data-i18n-emphasis="examples.validation.introEmphasis"');
+        expect(validation).toContain("descriptionEmphasisKey: 'examples.validation.detail1Emphasis'");
+        expect(validation).toContain("descriptionEmphasisKey: 'guides.validation.document.emphasis'");
+        expect(validation).toContain("badge: 'CUSTOM'");
+        expect(css).toContain('.demo-text-accent');
+        expect(css).toContain('color: var(--amb-site-blue-strong);');
+        expect(css).toContain('font-weight: 600;');
+        expect(applyI18nSource).toContain('data-i18n-emphasis');
+        expect(applyI18nSource).toContain('document.createTextNode');
+        expect(applyI18nSource).toContain("document.createElement('span')");
+        expect(applyI18nSource).toContain('element.replaceChildren(');
+        expect(applyI18nSource).not.toContain('innerHTML');
+        expect(copy).not.toContain('<span class=');
+        expect(guideCopy).not.toContain('<span class=');
     });
 
     test('shares the default ten-row viewport and JavaScript-demo resize configuration', () => {

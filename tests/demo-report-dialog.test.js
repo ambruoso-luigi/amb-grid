@@ -123,7 +123,7 @@ describe('demo report dialog integration', () => {
         });
 
         expect(validationSource).toContain(
-            'The toolbar can create intentional errors, open the report, or reset the data.'
+            'Validation shows built-in rules and custom validations defined by the developer. Edit the data or use Create anomalies to inspect errors, reports, and correction.'
         );
         expect(validationSource).toContain(
             "summaryKey: 'examples.validation.detailsTitle'"
