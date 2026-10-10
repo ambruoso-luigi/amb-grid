@@ -7,6 +7,7 @@ import {
     getAutocompleteKeyAction,
     getAutocompleteSuggestionValues,
     normalizeAutocompleteComparableValue,
+    normalizeAutocompleteLiveComparableValue,
     normalizeAutocompleteOptions,
     resolveAutocompleteCommit
 } from '../src/lib/editors/autocomplete-editor-utils.js';
@@ -875,6 +876,26 @@ describe('autocomplete editor lifecycle', () => {
         }
     });
 
+    test('does not replace a trailing live space with an unrelated suggestion', () => {
+        const harness = createEditorHarness(
+            { trimInput: true, allowCustomValue: true },
+            '',
+            ['Finance']
+        );
+
+        try {
+            harness.input.value = 'F';
+            harness.input.dispatch('input', { inputType: 'insertText' });
+            expect(harness.input.value).toBe('Finance');
+
+            harness.input.value = 'F ';
+            harness.input.dispatch('input', { inputType: 'insertText' });
+            expect(harness.input.value).toBe('F ');
+        } finally {
+            harness.restore();
+        }
+    });
+
     test.each([
         ['B'],
         ['b']
@@ -1529,6 +1550,18 @@ describe('autocomplete suggestions', () => {
         expect(findAutocompleteMatch(['Finance'], 'fina')).toBe('Finance');
     });
 
+    test('preserves whitespace in live comparable values', () => {
+        expect(normalizeAutocompleteLiveComparableValue('F ')).toBe('f ');
+        expect(normalizeAutocompleteLiveComparableValue('F ', {
+            caseSensitive: true
+        })).toBe('F ');
+        expect(findAutocompleteMatch(['Finance'], 'F ')).toBeNull();
+        expect(findAutocompleteMatch([
+            'Human Resources',
+            'Human Relations'
+        ], 'Human ')).toBe('Human Resources');
+    });
+
     test('filters Awesomplete suggestions with the configured case sensitivity', () => {
         const insensitiveOptions = createAutocompleteWidgetOptions(['Finance'], {});
         const sensitiveOptions = createAutocompleteWidgetOptions(['Finance'], {
@@ -1538,6 +1571,18 @@ describe('autocomplete suggestions', () => {
         expect(insensitiveOptions.filter({ value: 'Finance' }, 'fina')).toBe(true);
         expect(sensitiveOptions.filter({ value: 'Finance' }, 'fina')).toBe(false);
         expect(sensitiveOptions.filter({ value: 'Finance' }, 'Fina')).toBe(true);
+    });
+
+    test('filters dropdown suggestions with semantic live spaces', () => {
+        const options = createAutocompleteWidgetOptions([
+            'Finance',
+            'Human Resources',
+            'Human Relations'
+        ], {});
+
+        expect(options.filter({ value: 'Finance' }, 'F ')).toBe(false);
+        expect(options.filter({ value: 'Human Resources' }, 'Human ')).toBe(true);
+        expect(options.filter({ value: 'Human Relations' }, 'Human ')).toBe(true);
     });
 
     test('keeps maxOptions limiting the rendered dropdown', () => {

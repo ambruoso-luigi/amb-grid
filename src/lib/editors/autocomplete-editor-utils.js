@@ -5,7 +5,7 @@
  * @param {boolean} [options.allowEmpty=true] - Allow saving an empty string.
  * @param {boolean} [options.allowCustomValue=false] - Allow values not present in the suggestions.
  * @param {'commitRaw'|'cancel'} [options.invalidBehavior='commitRaw'] - Behavior for typed values without a match.
- * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit and comparison.
+ * @param {boolean} [options.trimInput=true] - Trim selected and typed text on commit; live suggestion matching preserves typed whitespace.
  * @param {number} [options.maxOptions=10] - Maximum matching suggestions shown.
  * @param {number} [options.dropdownWidth=420] - Preferred floating suggestion width in pixels.
  * @param {number} [options.dropdownZIndex=10050] - Stacking order of the floating suggestion dropdown.
@@ -91,6 +91,27 @@ export const normalizeAutocompleteComparableValue = (value, options = {}) => {
 };
 
 /**
+ * Normalize a live input value for autocomplete matching without changing its
+ * whitespace. Commit normalization remains handled by normalizeAutocompleteInput.
+ *
+ * @param {*} value - Live input value to compare.
+ * @param {object} [options] - Autocomplete options.
+ * @returns {string} Comparable live value.
+ * @private
+ * @internal
+ */
+export const normalizeAutocompleteLiveComparableValue = (value, options = {}) => {
+    const normalizedOptions = normalizeAutocompleteOptions(options);
+    const stringValue = value === null || value === undefined
+        ? ''
+        : String(value);
+
+    return normalizedOptions.caseSensitive
+        ? stringValue
+        : stringValue.toLowerCase();
+};
+
+/**
  * Find the first canonical suggestion whose prefix matches the typed value.
  *
  * @param {Array<string>} values - Suggested values.
@@ -102,14 +123,12 @@ export const normalizeAutocompleteComparableValue = (value, options = {}) => {
  */
 export const findAutocompleteMatch = (values, typedValue, options = {}) => {
     const normalizedOptions = normalizeAutocompleteOptions(options);
-    const normalizedTypedValue = normalizeAutocompleteInput(typedValue, normalizedOptions);
-
-    if (normalizedTypedValue === '') return null;
-
-    const comparableTypedValue = normalizeAutocompleteComparableValue(
-        normalizedTypedValue,
+    const comparableTypedValue = normalizeAutocompleteLiveComparableValue(
+        typedValue,
         normalizedOptions
     );
+
+    if (comparableTypedValue === '') return null;
 
     return getAutocompleteSuggestionValues(values).find(value => {
         return normalizeAutocompleteComparableValue(value, normalizedOptions)
@@ -141,7 +160,12 @@ export const createAutocompleteWidgetOptions = (values, options = {}) => {
                 ? text.value
                 : text;
 
-            if (normalizeAutocompleteInput(input, normalizedOptions) === '') {
+            const comparableInput = normalizeAutocompleteLiveComparableValue(
+                input,
+                normalizedOptions
+            );
+
+            if (comparableInput === '') {
                 return true;
             }
 
@@ -149,7 +173,7 @@ export const createAutocompleteWidgetOptions = (values, options = {}) => {
                 suggestionValue,
                 normalizedOptions
             ).startsWith(
-                normalizeAutocompleteComparableValue(input, normalizedOptions)
+                comparableInput
             );
         }
     };
