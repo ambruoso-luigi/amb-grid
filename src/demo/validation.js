@@ -221,14 +221,14 @@ const anomalyPatches = [
 export default function validation(app) {
     app.innerHTML = `
         <h2 data-i18n="examples.validation.title">Validation</h2>
-        <p class="demo-note" data-i18n="examples.validation.intro">Most validations run when you leave an edited cell. The toolbar can create intentional errors, open the report, or reset the data.</p>
+        <p class="demo-note" data-i18n="examples.validation.intro">Validation shows built-in rules and custom validations defined by the developer. Edit the data or use Create anomalies to inspect errors, reports, and correction.</p>
         ${createDemoColumnGuide({
             summary: 'How validation works',
             summaryKey: 'examples.validation.detailsTitle',
             summaryMeta: 'Rules · errors · constraints', summaryMetaKey: 'examples.validation.guideMeta', summaryIcon: 'help', variant: 'technical',
             className: 'demo-column-guide--validation',
             points: [
-                { title: 'Field rules', titleKey: 'examples.validation.point1Title', description: 'Fields demonstrate required, unique, length, pattern, and format rules.', descriptionKey: 'examples.validation.detail1' },
+                { title: 'Field rules', titleKey: 'examples.validation.point1Title', description: 'Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.', descriptionKey: 'examples.validation.detail1' },
                 { title: 'Visible errors', titleKey: 'examples.validation.point2Title', description: 'Leaving an invalid edited cell associates feedback with that cell and row.', descriptionKey: 'examples.validation.detail2' },
                 { title: 'Valid and invalid data', titleKey: 'examples.validation.point3Title', description: 'Create anomalies makes the contrast visible; the report lists the rules that failed.', descriptionKey: 'examples.validation.detail3' },
                 { title: 'Payload and save', titleKey: 'examples.validation.point4Title', description: 'Invalid changed rows cannot enter the save-ready portion of the payload.', descriptionKey: 'examples.validation.detail4' },
@@ -242,7 +242,7 @@ export default function validation(app) {
                 { title: 'Partita IVA', titleKey: 'guides.validation.vat.title', badge: 'VAT', description: 'Accepts exactly 11 numeric digits.', descriptionKey: 'guides.validation.vat.description' },
                 { title: 'CF or P.IVA', titleKey: 'guides.validation.combined.title', badge: 'ANY OF', description: 'Accepts either a valid Codice Fiscale or an 11-digit VAT number.', descriptionKey: 'guides.validation.combined.description' },
                 { title: 'Italian IBAN', titleKey: 'guides.validation.iban.title', badge: 'IBAN', description: 'Uppercase Italian IBAN validated in its 27-character format.', descriptionKey: 'guides.validation.iban.description' },
-                { title: 'Passport/Document', titleKey: 'guides.validation.document.title', badge: 'CUSTOM', description: 'Requires 6–20 alphanumeric characters and rejects the reserved TMP prefix.', descriptionKey: 'guides.validation.document.description' }
+                { title: 'Passport/Document', titleKey: 'guides.validation.document.title', badge: 'CUSTOM', description: 'Example of custom validation: in addition to the alphanumeric format rule, a developer-defined function rejects document numbers using the reserved TMP prefix.', descriptionKey: 'guides.validation.document.description' }
             ]
         })}
         <div class="demo-table-workbench">

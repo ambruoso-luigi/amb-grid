@@ -122,7 +122,7 @@ describe('Public demo column guides', () => {
         const fullDemo = read('src/demo/full-demo.js');
 
         expect(validation).toContain('Required, unique ignoring case, and between 3 and 20 characters.');
-        expect(validation).toContain('rejects the reserved TMP prefix.');
+        expect(validation).toContain('developer-defined function rejects document numbers using the reserved TMP prefix.');
         expect(validationGuide).toContain("className: 'demo-column-guide--validation'");
         expect(validationGuide.match(/badge: '/g)).toHaveLength(8);
         expect(multifield).toContain("badge: 'MASTER'");
@@ -193,5 +193,14 @@ describe('Public Validation demo controller usage', () => {
         expect(source).toMatch(/required:\s*\{\s*message: 'Alias is required'/);
         expect(source).toContain('AMB.validators.anyOf');
         expect(source).toContain('AMB.validators.custom');
+        expect(source).toContain('hasReservedDocumentPrefix');
+        expect(source).toContain("badge: 'CUSTOM'");
+        expect(source).toContain('developer-defined function rejects document numbers using the reserved TMP prefix.');
+        expect(source).toContain('Validation shows built-in rules and custom validations defined by the developer.');
+        expect(source).toContain('Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.');
+
+        const guideCopy = read('src/demo/demo-column-guide-copy.js');
+        expect(guideCopy).toContain('una funzione definita dallo sviluppatore rifiuta i documenti con prefisso riservato TMP.');
+        expect(guideCopy).toContain('a developer-defined function rejects document numbers using the reserved TMP prefix.');
     });
 });

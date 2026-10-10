@@ -560,6 +560,15 @@ describe('demo site navigation', () => {
         expect(css.indexOf(errorCellRule)).toBeGreaterThan(css.indexOf(modifiedCellRule));
     });
 
+    test('explains built-in and custom validation rules in both languages', () => {
+        const copy = read('src/demo/example-copy.js');
+
+        expect(copy).toContain("'examples.validation.intro': 'Validation mostra regole integrate e validazioni personalizzate definite dallo sviluppatore.");
+        expect(copy).toContain("'examples.validation.detail1': 'I campi mostrano validatori integrati come required, unique, lunghezza, pattern e formato, ma possono anche usare regole custom definite dallo sviluppatore.'");
+        expect(copy).toContain("'examples.validation.intro': 'Validation shows built-in rules and custom validations defined by the developer.");
+        expect(copy).toContain("'examples.validation.detail1': 'Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.'");
+    });
+
     test('shares the default ten-row viewport and JavaScript-demo resize configuration', () => {
         const fullDemo = read('src/demo/full-demo.js');
         const main = read('src/demo/main.js');
