@@ -312,16 +312,12 @@ export default function multifieldLookup(app) {
         toolbar: {
             buttons: [
                 'add',
+                'reload',
                 'payload',
-                {
-                    id: 'reset-data',
-                    label: 'Reset data',
-                    title: 'Reset municipality demo data',
-                    onClick: handleResetData
-                },
                 commandGuideToolbar.button
             ],
             onAdd: handleAddRow,
+            onReload: handleReload,
             onPayload: handleShowPayload
         },
         layout: 'fitColumns',
@@ -389,12 +385,13 @@ export default function multifieldLookup(app) {
         return grid.crud.addRow(createEmptyMunicipalityRow());
     }
 
-    async function handleResetData() {
+    async function handleReload() {
         grid.feedback.clear();
-        await grid.table.setData(createInitialData());
+        reportDialog.close();
+        await grid.setData(createInitialData());
         grid.feedback.show({
             type: 'success',
-            message: 'Municipality demo data reset.'
+            message: 'Municipality demo data reloaded.'
         });
     }
 

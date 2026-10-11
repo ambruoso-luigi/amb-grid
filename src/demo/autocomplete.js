@@ -159,6 +159,7 @@ export default function autocomplete(app) {
         selector: '#autocomplete-table',
         toolbar: {
             buttons: [
+                'reload',
                 {
                     id: 'validate-autocomplete',
                     label: 'Validate autocomplete',
@@ -171,14 +172,9 @@ export default function autocomplete(app) {
                     title: 'Create invalid strict autocomplete values',
                     onClick: handleCreateAutocompleteAnomalies
                 },
-                {
-                    id: 'reset-autocomplete',
-                    label: 'Reset data',
-                    title: 'Reset autocomplete demo data',
-                    onClick: handleResetAutocomplete
-                },
                 commandGuideToolbar.button
-            ]
+            ],
+            onReload: handleReload
         },
         data: createAutocompleteData(),
         layout: 'fitColumns',
@@ -298,12 +294,13 @@ export default function autocomplete(app) {
         });
     }
 
-    async function handleResetAutocomplete() {
+    async function handleReload() {
         demo.feedback.clear();
-        await demo.table.setData(createAutocompleteData());
+        reportDialog.close();
+        await demo.setData(createAutocompleteData());
         demo.feedback.show({
             type: 'success',
-            message: 'Autocomplete demo data reset.'
+            message: 'Autocomplete demo data reloaded.'
         });
     }
 

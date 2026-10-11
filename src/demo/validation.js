@@ -267,12 +267,7 @@ export default function validation(app) {
         },
         toolbar: {
             buttons: [
-                {
-                    id: 'create-anomalies',
-                    label: 'Create anomalies',
-                    title: 'Create intentional validation errors',
-                    onClick: handleCreateAnomalies
-                },
+                'reload',
                 {
                     id: 'show-report',
                     label: 'Show report',
@@ -280,15 +275,16 @@ export default function validation(app) {
                     onClick: handleShowReport
                 },
                 {
-                    id: 'reset-data',
-                    label: 'Reset data',
-                    title: 'Reset validation demo data',
-                    onClick: handleResetData
+                    id: 'create-anomalies',
+                    label: 'Create anomalies',
+                    title: 'Create intentional validation errors',
+                    onClick: handleCreateAnomalies
                 },
                 commandGuideToolbar.button
-            ]
+            ],
+            onReload: handleReload
         },
-        data: validationData,
+        data: validationData.map(row => ({ ...row })),
         layout: 'fitColumns',
         columns: [
             { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.45, cssClass: 'demo-cell--passive' },
@@ -451,16 +447,13 @@ export default function validation(app) {
         openValidationReport();
     }
 
-    async function handleResetData() {
+    async function handleReload() {
         demo.feedback.clear();
-        demo.getStateReport().rows.forEach(row => {
-            demo.rollbackRow(row.key);
-        });
-
-        await new Promise(resolve => window.setTimeout(resolve, 0));
+        reportDialog.close();
+        await demo.setData(validationData.map(row => ({ ...row })));
         demo.feedback.show({
             type: 'success',
-            message: 'Validation demo data reset.'
+            message: 'Validation demo data reloaded.'
         });
     }
 

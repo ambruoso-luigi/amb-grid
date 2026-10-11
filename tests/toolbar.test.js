@@ -874,6 +874,75 @@ describe('AMB toolbar', () => {
         expect(demoSource).not.toContain('id="action-show-selected"');
     });
 
+    test('keeps feature-example reloads on the public data lifecycle', () => {
+        const readDemo = name => fs.readFileSync(
+            new URL(`../src/demo/${name}.js`, import.meta.url),
+            'utf8'
+        );
+        const multifield = readDemo('multifield-lookup');
+        const autocomplete = readDemo('autocomplete');
+        const validation = readDemo('validation');
+
+        expect(multifield).toContain('await grid.setData(createInitialData());');
+        expect(multifield).not.toContain('grid.table.setData(');
+        expect(multifield).not.toContain("id: 'reset-data'");
+        expect(autocomplete).toContain('await demo.setData(createAutocompleteData());');
+        expect(autocomplete).not.toContain('demo.table.setData(');
+        expect(autocomplete).not.toContain("id: 'reset-autocomplete'");
+        expect(validation).toContain('data: validationData.map(row => ({ ...row }))');
+        expect(validation).toContain('await demo.setData(validationData.map(row => ({ ...row })));');
+        expect(validation).not.toContain('demo.getStateReport().rows.forEach');
+        expect(validation).not.toContain("id: 'reset-data'");
+    });
+
+    test('keeps the feature-example toolbar action order', () => {
+        const readDemo = name => fs.readFileSync(
+            new URL(`../src/demo/${name}.js`, import.meta.url),
+            'utf8'
+        );
+        const expectOrder = (source, actions) => {
+            const positions = actions.map(action => source.indexOf(action));
+
+            positions.forEach(position => expect(position).toBeGreaterThan(-1));
+            positions.slice(1).forEach((position, index) => {
+                expect(position).toBeGreaterThan(positions[index]);
+            });
+        };
+
+        expectOrder(readDemo('row-states'), [
+            "'add'",
+            "'save'",
+            "'reload'",
+            "id: 'state-show-states'",
+            'commandGuideToolbar.button'
+        ]);
+        expectOrder(readDemo('basic-crud'), [
+            "'add'",
+            "'save'",
+            "'payload'",
+            "'reload'",
+            'commandGuideToolbar.button'
+        ]);
+        expectOrder(readDemo('validation'), [
+            "'reload'",
+            "id: 'show-report'",
+            "id: 'create-anomalies'",
+            'commandGuideToolbar.button'
+        ]);
+        expectOrder(readDemo('autocomplete'), [
+            "'reload'",
+            "id: 'validate-autocomplete'",
+            "id: 'create-autocomplete-anomalies'",
+            'commandGuideToolbar.button'
+        ]);
+        expectOrder(readDemo('multifield-lookup'), [
+            "'add'",
+            "'reload'",
+            "'payload'",
+            'commandGuideToolbar.button'
+        ]);
+    });
+
     test('documents the extended filters dialog controls in its source', () => {
         const dialogSource = fs.readFileSync(
             new URL('../src/ui/search-filters-dialog.js', import.meta.url),

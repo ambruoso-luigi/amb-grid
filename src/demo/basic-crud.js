@@ -74,9 +74,9 @@ export default function basicCrud(app) {
         toolbar: {
             buttons: [
                 'add',
-                'reload',
                 'save',
                 'payload',
+                'reload',
                 commandGuideToolbar.button
             ],
             onAdd: handleAdd,
