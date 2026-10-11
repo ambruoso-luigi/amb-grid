@@ -201,7 +201,7 @@ export class CellMessageBinder {
 
     _handleCellError({ row, field, cell, message } = {}) {
         const cellElement = cell?.getElement?.();
-        const errorRow = row || cell?.getRow?.();
+        const errorRow = row || cell?.getRow?.() || this._getRow(cellElement);
         const errorField = field || cell?.getField?.() || cellElement?.getAttribute?.('tabulator-field')
             || cellElement?.dataset?.lookupField || cellElement?.dataset?.largeTextField;
 
@@ -219,7 +219,7 @@ export class CellMessageBinder {
 
     _handleCellErrorCleared({ row, field, cell } = {}) {
         const cellElement = cell?.getElement?.();
-        const errorRow = row || cell?.getRow?.();
+        const errorRow = row || cell?.getRow?.() || this._getRow(cellElement);
         const errorField = field || cell?.getField?.() || cellElement?.getAttribute?.('tabulator-field')
             || cellElement?.dataset?.lookupField || cellElement?.dataset?.largeTextField;
 
