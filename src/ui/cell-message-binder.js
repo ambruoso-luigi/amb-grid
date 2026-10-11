@@ -60,7 +60,11 @@ export class CellMessageBinder {
     resolveValidationMessage(cellElement) {
         if (!this.options.validationErrors) return null;
 
-        const message = this.validationMessages.get(cellElement);
+        const row = this._getRow(cellElement);
+        const field = cellElement?.getAttribute?.('tabulator-field');
+        const message = row && field
+            ? this.validationMessages.get(row)?.get(field)
+            : null;
 
         return message ? { type: 'error', title: 'Validation error', message } : null;
     }
@@ -195,22 +199,36 @@ export class CellMessageBinder {
         if (this.activeSource) this._renderActive();
     }
 
-    _handleCellError({ cell, message } = {}) {
+    _handleCellError({ row, field, cell, message } = {}) {
         const cellElement = cell?.getElement?.();
+        const errorRow = row || cell?.getRow?.();
+        const errorField = field || cell?.getField?.() || cellElement?.getAttribute?.('tabulator-field')
+            || cellElement?.dataset?.lookupField || cellElement?.dataset?.largeTextField;
 
-        if (!cellElement) return;
+        if (!cellElement || !errorRow || !errorField) return;
 
         cellElement.removeAttribute?.('title');
-        if (this.options.validationErrors) this.validationMessages.set(cellElement, message);
+        if (this.options.validationErrors) {
+            const messages = this.validationMessages.get(errorRow) || new Map();
+
+            messages.set(errorField, message);
+            this.validationMessages.set(errorRow, messages);
+        }
         if (cellElement === this.focusCell || cellElement === this.pointerCell) this._renderActive();
     }
 
-    _handleCellErrorCleared({ cell } = {}) {
+    _handleCellErrorCleared({ row, field, cell } = {}) {
         const cellElement = cell?.getElement?.();
+        const errorRow = row || cell?.getRow?.();
+        const errorField = field || cell?.getField?.() || cellElement?.getAttribute?.('tabulator-field')
+            || cellElement?.dataset?.lookupField || cellElement?.dataset?.largeTextField;
 
-        if (!cellElement) return;
+        if (!cellElement || !errorRow || !errorField) return;
 
-        this.validationMessages.delete(cellElement);
+        const messages = this.validationMessages.get(errorRow);
+
+        messages?.delete(errorField);
+        if (messages?.size === 0) this.validationMessages.delete(errorRow);
         if (cellElement === this.focusCell || cellElement === this.pointerCell) this._renderActive();
     }
 
