@@ -107,7 +107,9 @@ export const createDemoReportDialog = () => {
     const overlay = document.createElement('div');
     const panel = document.createElement('div');
     const header = document.createElement('div');
+    const titleGroup = document.createElement('div');
     const title = document.createElement('h3');
+    const api = document.createElement('div');
     const tabs = document.createElement('div');
     const reportButton = document.createElement('button');
     const jsonButton = document.createElement('button');
@@ -126,8 +128,11 @@ export const createDemoReportDialog = () => {
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', titleId);
     header.className = 'demo-report-dialog__header';
+    titleGroup.className = 'demo-report-dialog__title-group';
     title.id = titleId;
     title.className = 'demo-report-dialog__title';
+    api.className = 'demo-report-dialog__api';
+    api.hidden = true;
     tabs.className = 'demo-report-dialog__tabs';
     tabs.setAttribute('role', 'tablist');
     tabs.setAttribute('aria-label', 'Report views');
@@ -154,7 +159,8 @@ export const createDemoReportDialog = () => {
     closeButton.innerHTML = `${demoIcon('arrowRight')}<span>Close</span>`;
 
     tabs.append(reportButton, jsonButton);
-    header.append(title, tabs);
+    titleGroup.append(title, api);
+    header.append(titleGroup, tabs);
     content.append(report, json);
     actions.append(closeButton);
     panel.append(header, content, actions);
@@ -204,6 +210,25 @@ export const createDemoReportDialog = () => {
 
     const showReport = () => setView('report');
     const showJson = () => setView('json');
+    const renderApiMethods = apiMethods => {
+        const methods = Array.isArray(apiMethods)
+            ? apiMethods.filter(Boolean)
+            : [];
+
+        api.replaceChildren();
+        api.hidden = methods.length === 0;
+
+        if (api.hidden) return;
+
+        const label = document.createElement('span');
+        const methodList = document.createElement('span');
+
+        label.className = 'demo-report-dialog__api-label';
+        label.textContent = 'API';
+        methodList.className = 'demo-report-dialog__api-methods';
+        methodList.textContent = methods.map(String).join(' · ');
+        api.append(label, methodList);
+    };
 
     reportButton.addEventListener('click', showReport);
     jsonButton.addEventListener('click', showJson);
@@ -215,10 +240,12 @@ export const createDemoReportDialog = () => {
             title: dialogTitle = 'Report',
             reportText = '',
             reportLines,
-            jsonData = null
+            jsonData = null,
+            apiMethods
         } = {}) {
             previouslyFocusedElement = document.activeElement;
             title.textContent = dialogTitle;
+            renderApiMethods(apiMethods);
             report.textContent = normalizeReportText({ reportText, reportLines });
             const serializedJson = JSON.stringify(jsonData, null, 2);
 

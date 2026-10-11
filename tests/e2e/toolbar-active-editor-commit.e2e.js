@@ -6,7 +6,7 @@ const firstCell = (page, tableSelector, field) => page
     .locator(`.tabulator-cell[tabulator-field="${field}"]`);
 
 test.describe('toolbar active editor commit', () => {
-    test('Validate uses the value still being edited in the main demo', async ({ page }) => {
+    test('Save validates the value still being edited in the main demo', async ({ page }) => {
         await page.goto('/src/demo/index.html#getting-started-javascript');
 
         const table = page.locator('#inventory-table');
@@ -19,7 +19,7 @@ test.describe('toolbar active editor commit', () => {
 
         await expect(editor).toBeFocused();
         await editor.fill('x');
-        await page.locator('#javascript-demo .amb-toolbar__button--validate').click();
+        await page.locator('#javascript-demo .amb-toolbar__button--save').click();
 
         await expect(editor).toHaveCount(0);
         await expect(productName).toContainText('x');

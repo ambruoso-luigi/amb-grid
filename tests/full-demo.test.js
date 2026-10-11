@@ -134,14 +134,38 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('includes the current public selection in the state report', () => {
+        const stateReportSource = source.slice(
+            source.indexOf('function openStateReport()'),
+            source.indexOf('function openValidationReport(')
+        );
+
         expect(source).toContain("selectedRows: 'Righe selezionate'");
         expect(source).toContain("selectedRows: 'Selected rows'");
         expect(source).toContain('const selectedRows = demo.getSelectedData()');
         expect(source).not.toContain('demo.table.getSelectedData()');
+        expect(stateReportSource).toContain('const report = demo.getStateReport()');
+        expect(stateReportSource).not.toContain('crud.getStateReport()');
+        expect(stateReportSource).toContain("'grid.getStateReport()'");
+        expect(stateReportSource).toContain("'grid.getSelectedData()'");
         expect(source).toContain("`${t('selectedRows')}: ${selectedRows.length}`");
         expect(source).toContain('selection: {');
         expect(source).toContain('count: selectedRows.length');
         expect(source).toContain('selectedRows.map(({ itemCode, productName }) => ({');
+    });
+
+    test('labels manual payload and state inspectors with their public APIs', () => {
+        const payloadReportSource = source.slice(
+            source.indexOf('function openPayloadReport('),
+            source.indexOf('function openStateReport()')
+        );
+
+        expect(payloadReportSource).toContain("apiMethods: ['grid.getSavePayload()']");
+        expect(payloadReportSource).toContain('jsonData: payload');
+        expect(payloadReportSource).not.toContain('selectedRows');
+        expect(demoCss).toContain('.demo-panel--javascript .amb-toolbar__button--save');
+        expect(demoCss).toContain('.demo-panel--javascript .amb-toolbar__button--add');
+        expect(demoCss).toContain('.demo-panel--javascript .amb-toolbar__button--reload');
+        expect(demoCss).toContain('.demo-panel--javascript .amb-toolbar__button--payload');
     });
 
     test('reloads table data through fake API without browser reload', () => {

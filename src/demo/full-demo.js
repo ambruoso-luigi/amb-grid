@@ -563,13 +563,14 @@ export default async function fullDemo(app, options = {}) {
     })) {
         reportDialog.open({
             title: t('payloadTitle'),
+            apiMethods: ['grid.getSavePayload()'],
             reportLines: buildPayloadReport(payload),
             jsonData: payload
         });
     }
 
     function openStateReport() {
-        const report = crud.getStateReport();
+        const report = demo.getStateReport();
         const selectedRows = demo.getSelectedData();
         const payload = demo.getSavePayload({
             savePolicy: DEMO_SAVE_POLICY,
@@ -578,6 +579,10 @@ export default async function fullDemo(app, options = {}) {
 
         reportDialog.open({
             title: t('reportTitle'),
+            apiMethods: [
+                'grid.getStateReport()',
+                'grid.getSelectedData()'
+            ],
             reportLines: buildStateReport(report, payload, selectedRows),
             jsonData: {
                 report,

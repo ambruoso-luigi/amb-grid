@@ -20,6 +20,12 @@ describe('demo report dialog integration', () => {
         expect(source).toContain('report.hidden = !showReport');
         expect(source).toContain('json.hidden = showReport');
         expect(source).toContain('JSON.stringify(jsonData, null, 2)');
+        expect(source).toContain('apiMethods');
+        expect(source).toContain('const renderApiMethods = apiMethods =>');
+        expect(source).toContain('api.hidden = methods.length === 0');
+        expect(source).toContain('api.replaceChildren()');
+        expect(source).toContain("label.textContent = 'API'");
+        expect(source).toContain("methodList.textContent = methods.map(String).join(' · ')");
         expect(source).toContain("panel.setAttribute('role', 'dialog')");
         expect(source).toContain("panel.setAttribute('aria-modal', 'true')");
         expect(source).not.toContain('Summary');
@@ -169,6 +175,9 @@ describe('demo report dialog integration', () => {
         expect(demoCss).toContain('.demo-report-dialog__report');
         expect(demoCss).toContain('.demo-report-dialog__json');
         expect(demoCss).toContain('.demo-report-dialog__tab.is-active');
+        expect(demoCss).toContain('.demo-report-dialog__api');
+        expect(demoCss).toContain('.demo-report-dialog__api-label');
+        expect(demoCss).toContain('.demo-report-dialog__api-methods');
         expect(demoCss).toContain('.demo-report-dialog__report[hidden]');
         expect(libraryCss).not.toContain('.demo-report-dialog');
     });
