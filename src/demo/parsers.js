@@ -48,7 +48,7 @@ const parserExamples = [
     { id: 6, type: 'Time', parserKey: 'time', parserName: 'timeToPayload()', input: '9:05', description: 'Time normalized to HH:MM:SS.' },
     { id: 7, type: 'Boolean', parserKey: 'boolean', parserName: 'booleanToPayload({ trueValue: \'Y\', falseValue: \'N\' })', input: true, description: 'Application boolean converted to a configured backend value.' },
     { id: 8, type: 'Empty to null', parserKey: 'emptyToNull', parserName: 'emptyToNull()', input: '   ', description: 'Whitespace-only input becomes a real null value.', acceptsNull: true },
-    { id: 9, type: 'Custom', parserKey: 'custom', parserName: 'custom(priority => ...)', input: 'High', description: 'Application-defined parser for a business-specific rule.' }
+    { id: 9, type: 'Custom', parserKey: 'custom', parserName: 'custom(priority => ...)', input: 'High', description: 'Application-defined rule that converts a business priority into the value expected by the payload.' }
 ];
 
 const feedbackCopy = {
@@ -66,7 +66,11 @@ const parserRowCopy = {
         time: ['Ora', 'Ora normalizzata nel formato HH:MM:SS.'],
         boolean: ['Booleano', 'Booleano applicativo convertito nel valore backend configurato.'],
         emptyToNull: ['Vuoto a null', 'Un input di soli spazi diventa un vero valore null.'],
-        custom: ['Personalizzato', 'Regola applicativa personalizzata che converte una priorità business nel valore previsto dal payload.']
+        custom: [
+            'Personalizzato',
+            'Regola applicativa personalizzata che converte una priorità business nel valore previsto dal payload.',
+            'Regola applicativa personalizzata'
+        ]
     },
     en: {
         decimal: ['Decimal', 'Visual decimal to payload decimal string.'],
@@ -77,7 +81,11 @@ const parserRowCopy = {
         time: ['Time', 'Time normalized to HH:MM:SS.'],
         boolean: ['Boolean', 'Application boolean converted to a configured backend value.'],
         emptyToNull: ['Empty to null', 'Whitespace-only input becomes a real null value.'],
-        custom: ['Custom', 'Application-defined rule that converts a business priority into the value expected by the payload.']
+        custom: [
+            'Custom',
+            'Application-defined rule that converts a business priority into the value expected by the payload.',
+            'Application-defined rule'
+        ]
     }
 };
 
@@ -114,7 +122,27 @@ const formatParserType = cell => {
 };
 
 const formatParserDescription = cell => {
-    return getParserRowText(cell.getRow().getData())[1];
+    const [, description, emphasis] = getParserRowText(cell.getRow().getData());
+
+    if (!emphasis) return description;
+
+    const emphasisIndex = description.indexOf(emphasis);
+
+    if (emphasisIndex < 0) return description;
+
+    const wrapper = document.createElement('span');
+    const accent = document.createElement('span');
+    const afterEmphasis = description.slice(emphasisIndex + emphasis.length);
+
+    accent.className = 'demo-text-accent';
+    accent.textContent = emphasis;
+    wrapper.append(
+        document.createTextNode(description.slice(0, emphasisIndex)),
+        accent,
+        document.createTextNode(afterEmphasis)
+    );
+
+    return wrapper;
 };
 
 const formatParsedValue = cell => {
@@ -169,24 +197,24 @@ export default function parsers(app) {
         columns: [
             { title: 'ID', field: 'id', minWidth: 58, widthGrow: 0.35, cssClass: 'demo-cell--passive' },
             {
-                title: 'Type', field: 'type', minWidth: 150, widthGrow: 1.05,
+                title: 'Type', field: 'type', minWidth: 150, widthGrow: 1.0,
                 editable: false,
                 formatter: formatParserType,
                 cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
-                title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.5,
+                title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.25,
                 editor: parserInputEditor,
                 cellEdited: handleInputEdited
             },
             {
-                title: 'Parsed value', field: 'parsedValue', minWidth: 190, widthGrow: 1.45,
+                title: 'Parsed value', field: 'parsedValue', minWidth: 190, widthGrow: 1.20,
                 editable: false,
                 formatter: formatParsedValue,
                 cssClass: 'demo-cell--passive demo-cell--derived'
             },
             {
-                title: 'Description', field: 'description', minWidth: 210, widthGrow: 1.8,
+                title: 'Description', field: 'description', minWidth: 300, widthGrow: 2.60,
                 editable: false,
                 formatter: formatParserDescription,
                 cssClass: 'demo-cell--passive'

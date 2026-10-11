@@ -85,7 +85,7 @@ export const demoColumnGuideTranslations = {
         'guides.parsers.type.title': 'Tipo',
         'guides.parsers.type.description': 'Identifica la trasformazione e il relativo parser pubblico.',
         'guides.parsers.input.title': 'Input',
-        'guides.parsers.input.description': 'Valore visuale inserito e modificato dallâ€™utente.',
+        'guides.parsers.input.description': "Valore visuale inserito e modificato dall'utente.",
         'guides.parsers.output.title': 'Valore elaborato',
         'guides.parsers.output.description': 'Risultato normalizzato prodotto dal parser, incluso un vero null.',
         'guides.parsers.description.title': 'Descrizione',

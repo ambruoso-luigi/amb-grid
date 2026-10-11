@@ -50,6 +50,9 @@ describe('Public Parsers demo integration', () => {
         expect(source).toContain('const priorityParser = AMB.parsers.custom');
         expect(source).toContain("input: 'High'");
         expect(source).toContain("parserKey: 'custom'");
+        expect(source).toContain("High: 'H'");
+        expect(source).toContain("Medium: 'M'");
+        expect(source).toContain("Low: 'L'");
         expect(source).not.toMatch(/AMB\.parsers\.(trim|uppercase|removeSpaces|digitsOnly|ibanToPayload|fiscalCodeToPayload)/);
     });
 
@@ -96,5 +99,37 @@ describe('Public Parsers demo integration', () => {
         expect(source).toContain('they do not replace validation or business rules');
         expect(source).toContain("window.addEventListener('amb-demo-language-change'");
         expect(source).toContain("window.removeEventListener('amb-demo-language-change'");
+    });
+
+    test('emphasizes only the application-defined part of the custom parser description', () => {
+        const descriptionFormatter = source.slice(
+            source.indexOf('const formatParserDescription'),
+            source.indexOf('const formatParsedValue')
+        );
+
+        expect(source).toContain("parserKey: 'custom'");
+        expect(source).toContain('Regola applicativa personalizzata');
+        expect(source).toContain('Application-defined rule');
+        expect(descriptionFormatter).toContain("accent.className = 'demo-text-accent'");
+        expect(descriptionFormatter).toContain('document.createElement(\'span\')');
+        expect(descriptionFormatter).toContain('document.createTextNode(');
+        expect(descriptionFormatter).not.toContain('innerHTML');
+    });
+
+    test('keeps the parser columns readable while widening Description', () => {
+        expect(source).toContain("title: 'Type', field: 'type', minWidth: 150, widthGrow: 1.0");
+        expect(source).toContain("title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.25");
+        expect(source).toContain("title: 'Parsed value', field: 'parsedValue', minWidth: 190, widthGrow: 1.20");
+        expect(source).toContain("title: 'Description', field: 'description', minWidth: 300, widthGrow: 2.60");
+    });
+
+    test('keeps the Italian parser input guide free of mojibake', () => {
+        const guideCopy = readFileSync(
+            new URL('../src/demo/demo-column-guide-copy.js', import.meta.url),
+            'utf8'
+        );
+
+        expect(guideCopy).toContain("Valore visuale inserito e modificato dall'utente.");
+        expect(guideCopy).not.toContain('dallâ€™utente');
     });
 });
