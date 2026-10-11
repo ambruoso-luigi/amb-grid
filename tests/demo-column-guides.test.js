@@ -192,7 +192,9 @@ describe('Public Validation demo controller usage', () => {
         expect(source).toContain('demo.updateRow(id, patch)');
         expect(source).toContain('demo.validateChanges()');
         expect(source).toContain('demo.getStateReport()');
-        expect(source).toContain('demo.rollbackRow(row.key)');
+        expect(source).toContain(
+            'demo.setData(validationData.map(row => ({ ...row })))'
+        );
         expect(source).toMatch(/required:\s*\{\s*message: 'Alias is required'/);
         expect(source).toContain('AMB.validators.anyOf');
         expect(source).toContain('AMB.validators.custom');

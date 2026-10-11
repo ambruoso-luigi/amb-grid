@@ -66,10 +66,11 @@ describe('demo report dialog integration', () => {
         );
         expect(source).toContain("label: 'Validate autocomplete'");
         expect(source).toContain("label: 'Create anomalies'");
-        expect(source).toContain("label: 'Reset data'");
+        expect(source).toContain("'reload'");
+        expect(source).toContain('onReload: handleReload');
         expect(source).toContain("title: 'Autocomplete validation report'");
         expect(source).toContain('data: createAutocompleteData()');
-        expect(source).toContain('await demo.table.setData(createAutocompleteData())');
+        expect(source).toContain('await demo.setData(createAutocompleteData())');
         expect(source).toContain('reportDialog.destroy()');
         expect(source).not.toContain('id="autocomplete-output"');
         expect(source).not.toContain('id="action-create-autocomplete-anomalies"');
@@ -90,10 +91,9 @@ describe('demo report dialog integration', () => {
         expect(toolbarSource).toContain("label: 'Create anomalies'");
         expect(toolbarSource).toContain("id: 'show-report'");
         expect(toolbarSource).toContain("label: 'Show report'");
-        expect(toolbarSource).toContain("id: 'reset-data'");
-        expect(toolbarSource).toContain("label: 'Reset data'");
+        expect(toolbarSource).toContain("'reload'");
+        expect(toolbarSource).toContain('onReload: handleReload');
         expect(toolbarSource).not.toContain("'add'");
-        expect(toolbarSource).not.toContain("'reload'");
         expect(toolbarSource).not.toContain("'save'");
         expect(source).not.toContain('id="action-validate-changes"');
         expect(source).not.toContain('id="action-full-table-audit"');
@@ -104,8 +104,10 @@ describe('demo report dialog integration', () => {
         expect(createAnomaliesHandler).toContain(
             'Anomalies created. Check highlighted cells or open the report.'
         );
-        expect(source).toContain('demo.rollbackRow(row.key)');
-        expect(source).toContain("message: 'Validation demo data reset.'");
+        expect(source).toContain(
+            'await demo.setData(validationData.map(row => ({ ...row })));'
+        );
+        expect(source).toContain("message: 'Validation demo data reloaded.'");
     });
 
     test('keeps demo guidance compact in closed disclosures', () => {
