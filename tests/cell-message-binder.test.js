@@ -26,6 +26,7 @@ const createHarness = () => {
     const tableListeners = new Map();
     const documentListeners = new Map();
     const crudHandlers = new Map();
+    const cellErrors = [];
     const unsubscribes = [];
     const tableElement = {
         addEventListener: vi.fn((name, handler) => tableListeners.set(name, handler)),
@@ -48,6 +49,8 @@ const createHarness = () => {
         getRow: vi.fn(element => rows.get(element) || null)
     };
     const crudHelper = {
+        options: { idField: 'id', tempIdField: '_ambTempId' },
+        getCellErrors: () => cellErrors,
         on: vi.fn((name, handler) => {
             crudHandlers.set(name, handler);
             const unsubscribe = vi.fn();
@@ -80,6 +83,7 @@ const createHarness = () => {
     return {
         binder,
         crudHandlers,
+        cellErrors,
         documentListeners,
         floatingMessage,
         makeCell,
@@ -207,17 +211,42 @@ describe('CellMessageBinder', () => {
         if (dataset.lookupField) setLookupMetadata(data, 'status', 'A', lowerMessage);
 
         harness.tableElement.dispatch('focusin', { target: target.cellElement });
+        harness.cellErrors.push({ key: undefined, field: dataset.lookupField || dataset.largeTextField, message: 'Required' });
         harness.crudHandlers.get('cell-error')({ cell: target.cell, message: 'Required' });
         expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(
             target.cellElement,
             expect.objectContaining({ type: 'error', message: 'Required' })
         );
 
+        harness.cellErrors.length = 0;
         harness.crudHandlers.get('cell-error-cleared')({ cell: target.cell });
         expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(
             target.cellElement,
             expect.objectContaining({ message: lowerMessage })
         );
+    });
+
+    test('resolves CRUD validation after a rerender replaces both row and cell components', () => {
+        const harness = createHarness();
+        const first = harness.makeCell({ id: 4, type: '' }, { field: 'type' });
+
+        harness.cellErrors.push({ key: 4, field: 'type', message: 'Type is required' });
+        expect(harness.binder.resolveValidationMessage(first.cellElement))
+            .toMatchObject({ type: 'error', message: 'Type is required' });
+
+        const rerendered = harness.makeCell({ id: 4, type: '' }, { field: 'type' });
+
+        expect(harness.binder.resolveValidationMessage(rerendered.cellElement))
+            .toMatchObject({ type: 'error', message: 'Type is required' });
+        harness.tableElement.dispatch('pointermove', { target: rerendered.cellElement });
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenLastCalledWith(
+            rerendered.cellElement,
+            expect.objectContaining({ message: 'Type is required' })
+        );
+
+        harness.cellErrors.length = 0;
+        harness.crudHandlers.get('cell-error-cleared')({ cell: rerendered.cell });
+        expect(harness.binder.resolveValidationMessage(rerendered.cellElement)).toBeNull();
     });
 
     test('dialog focus hides messages and destroy removes delegated listeners', () => {

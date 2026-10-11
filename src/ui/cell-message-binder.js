@@ -19,7 +19,6 @@ export class CellMessageBinder {
             lookupDescriptions: lookupDescriptions !== false,
             largeTextPreviews: largeTextPreviews !== false
         };
-        this.validationMessages = new WeakMap();
         this.pointerCell = null;
         this.pointerMessageKey = null;
         this.focusCell = null;
@@ -62,11 +61,23 @@ export class CellMessageBinder {
 
         const row = this._getRow(cellElement);
         const field = cellElement?.getAttribute?.('tabulator-field');
-        const message = row && field
-            ? this.validationMessages.get(row)?.get(field)
-            : null;
+        const key = this._getRowKey(row);
+        const message = this.crudHelper?.getCellErrors?.().find(error => {
+            return error.key === key && error.field === field;
+        })?.message;
 
         return message ? { type: 'error', title: 'Validation error', message } : null;
+    }
+
+    _getRowKey(row) {
+        const data = row?.getData?.() || {};
+        const idField = this.crudHelper?.options?.idField || 'id';
+        const tempIdField = this.crudHelper?.options?.tempIdField || '_ambTempId';
+        const id = data[idField];
+
+        return id === null || id === undefined || id === ''
+            ? data[tempIdField]
+            : id;
     }
 
     resolveLookupDescription(cellElement) {
@@ -199,36 +210,19 @@ export class CellMessageBinder {
         if (this.activeSource) this._renderActive();
     }
 
-    _handleCellError({ row, field, cell, message } = {}) {
+    _handleCellError({ cell } = {}) {
         const cellElement = cell?.getElement?.();
-        const errorRow = row || cell?.getRow?.() || this._getRow(cellElement);
-        const errorField = field || cell?.getField?.() || cellElement?.getAttribute?.('tabulator-field')
-            || cellElement?.dataset?.lookupField || cellElement?.dataset?.largeTextField;
 
-        if (!cellElement || !errorRow || !errorField) return;
+        if (!cellElement) return;
 
         cellElement.removeAttribute?.('title');
-        if (this.options.validationErrors) {
-            const messages = this.validationMessages.get(errorRow) || new Map();
-
-            messages.set(errorField, message);
-            this.validationMessages.set(errorRow, messages);
-        }
         if (cellElement === this.focusCell || cellElement === this.pointerCell) this._renderActive();
     }
 
-    _handleCellErrorCleared({ row, field, cell } = {}) {
+    _handleCellErrorCleared({ cell } = {}) {
         const cellElement = cell?.getElement?.();
-        const errorRow = row || cell?.getRow?.() || this._getRow(cellElement);
-        const errorField = field || cell?.getField?.() || cellElement?.getAttribute?.('tabulator-field')
-            || cellElement?.dataset?.lookupField || cellElement?.dataset?.largeTextField;
 
-        if (!cellElement || !errorRow || !errorField) return;
-
-        const messages = this.validationMessages.get(errorRow);
-
-        messages?.delete(errorField);
-        if (messages?.size === 0) this.validationMessages.delete(errorRow);
+        if (!cellElement) return;
         if (cellElement === this.focusCell || cellElement === this.pointerCell) this._renderActive();
     }
 
