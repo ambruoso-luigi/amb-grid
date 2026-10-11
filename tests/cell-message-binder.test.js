@@ -67,6 +67,10 @@ const createHarness = () => {
         const cellElement = createNode('tabulator-cell', rowElement);
         cellElement.insideTable = true;
         Object.assign(cellElement.dataset, dataset);
+        cellElement.attributes['tabulator-field'] = dataset.field
+            || dataset.lookupField
+            || dataset.largeTextField
+            || 'value';
         const row = { getData: () => data };
         const cell = { getElement: () => cellElement };
         rows.set(rowElement, row);
