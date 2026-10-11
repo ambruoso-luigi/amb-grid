@@ -10,7 +10,7 @@ export default function columnCalculations(app) {
 
     app.innerHTML = `
         <h2 data-i18n="examples.columnCalculations.title">Column calculations</h2>
-        <p class="demo-note" data-i18n="examples.columnCalculations.intro">Edit the business values and see each aggregate update in its own column.</p>
+        <p class="demo-note" data-i18n="examples.columnCalculations.intro" data-i18n-emphasis="examples.columnCalculations.introEmphasis">Column calculations shows built-in aggregates and custom calculations defined by the developer, updated directly in their respective columns when the data changes.</p>
         ${createDemoColumnGuide({
             summary: 'How column calculations work',
             summaryKey: 'examples.columnCalculations.detailsTitle',
@@ -18,13 +18,13 @@ export default function columnCalculations(app) {
             intro: 'AMB Grid displays aggregate values in the calculation row. Each result uses its own column values and updates when the data changes.',
             introKey: 'examples.columnCalculations.detailsText',
             points: [
-                { title: 'Own column', titleKey: 'examples.columnCalculations.point1Title', description: 'Every calculation receives only the values from the column where it is displayed.', descriptionKey: 'examples.columnCalculations.detail1' },
+                { title: 'Own column', titleKey: 'examples.columnCalculations.point1Title', description: 'Each calculation receives the values from its own column. In addition to built-in aggregates, the developer can provide a custom calculation function.', descriptionKey: 'examples.columnCalculations.detail1', descriptionEmphasisKey: 'examples.columnCalculations.detail1Emphasis' },
                 { title: 'Live updates', titleKey: 'examples.columnCalculations.point2Title', description: 'Edit, add, delete, or undo and the corresponding aggregates follow the active rows.', descriptionKey: 'examples.columnCalculations.detail2' },
                 { title: 'Built-in row', titleKey: 'examples.columnCalculations.point3Title', description: 'The calculation row keeps aggregates in the grid without external manual summaries.', descriptionKey: 'examples.columnCalculations.detail3' }
             ],
             columns: [
                 { title: 'ID', titleKey: 'examples.columnCalculations.id', badge: 'COUNT', description: 'COUNT returns the number of rows.', descriptionKey: 'examples.columnCalculations.idCalc' },
-                { title: 'Product', titleKey: 'examples.columnCalculations.product', badge: 'PRINT', description: 'The custom calculation counts product names containing "print".', descriptionKey: 'examples.columnCalculations.productCalc' },
+                { title: 'Product', titleKey: 'examples.columnCalculations.product', badge: 'PRINT', description: 'Example of a custom calculation: a developer-defined function counts product names containing “print”.', descriptionKey: 'examples.columnCalculations.productCalc', descriptionEmphasisKey: 'examples.columnCalculations.productCalcEmphasis' },
                 { title: 'Category', titleKey: 'examples.columnCalculations.category', badge: 'UNIQUE', description: 'UNIQUE counts the distinct categories.', descriptionKey: 'examples.columnCalculations.categoryCalc' },
                 { title: 'Quantity', titleKey: 'examples.columnCalculations.quantity', badge: 'SUM', description: 'SUM adds all quantities.', descriptionKey: 'examples.columnCalculations.quantityCalc' },
                 { title: 'Unit price', titleKey: 'examples.columnCalculations.unitPrice', badge: 'AVG', description: 'AVG calculates the average unit price.', descriptionKey: 'examples.columnCalculations.unitPriceCalc' },
