@@ -6,6 +6,8 @@ const cell = (page, id, field) => row(page, id)
     .locator(`.tabulator-cell[tabulator-field="${field}"]`);
 const selectionInput = (page, id) => row(page, id)
     .locator('.amb-selection-column__input');
+const selectionCell = (page, id) => row(page, id)
+    .locator('.tabulator-cell.amb-selection-column');
 
 const expectUnselected = async (page, id) => {
     await expect(row(page, id)).not.toHaveClass(/tabulator-selected/);
@@ -39,6 +41,18 @@ test.describe('managed selection column interaction', () => {
         await cell(page, id, 'productName').click();
         await expectUnselected(page, id);
         await cell(page, id, 'selectProbe').click();
+        await expectUnselected(page, id);
+    });
+
+    test('free space in the selection cell toggles without enabling ordinary row selection', async ({ page }) => {
+        const id = 'PRD-A001';
+
+        await selectionCell(page, id).click({ position: { x: 3, y: 10 } });
+        await expectSelected(page, id);
+        await selectionCell(page, id).click({ position: { x: 3, y: 10 } });
+        await expectUnselected(page, id);
+
+        await cell(page, id, 'productName').click();
         await expectUnselected(page, id);
     });
 

@@ -9,6 +9,10 @@ const mainDemoSource = fs.readFileSync(
     new URL('../src/demo/main.js', import.meta.url),
     'utf8'
 );
+const demoColumnGuideCopySource = fs.readFileSync(
+    new URL('../src/demo/demo-column-guide-copy.js', import.meta.url),
+    'utf8'
+);
 const basicCrudSource = fs.readFileSync(
     new URL('../src/demo/basic-crud.js', import.meta.url),
     'utf8'
@@ -47,14 +51,16 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("summaryDescription: 'Editing, validation, lookup and saving'");
         expect(source).toContain("summaryDescriptionKey: 'mainDemo.guide.summaryDescription'");
         expect(source).toContain("title: 'Edit and add'");
-        expect(source).toContain("title: 'Row actions'");
+        expect(source).toContain("title: 'Selection and row actions'");
         expect(source).toContain("title: 'Validation and lookup'");
         expect(source).toContain("title: 'Payload and save'");
         expect(source).toContain("title: 'Search and filters'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'Come funziona questa tabella'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validazione, lookup e salvataggio'");
+        expect(demoColumnGuideCopySource).toContain("'mainDemo.guide.actions.title': 'Selezione e azioni riga'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'How this table works'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validation, lookup and saving'");
+        expect(demoColumnGuideCopySource).toContain("'mainDemo.guide.actions.title': 'Selection and row actions'");
         expect(source).toContain('bindDemoColumnGuideAnimations, createDemoColumnGuide');
         expect(source).toContain('const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app)');
         expect(source).toContain('destroyColumnGuideAnimations();');
@@ -101,10 +107,23 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('reportDialog.destroy()');
     });
 
+    test('includes the current public selection in the state report', () => {
+        expect(source).toContain("selectedRows: 'Righe selezionate'");
+        expect(source).toContain("selectedRows: 'Selected rows'");
+        expect(source).toContain('const selectedRows = demo.getSelectedData()');
+        expect(source).not.toContain('demo.table.getSelectedData()');
+        expect(source).toContain("`${t('selectedRows')}: ${selectedRows.length}`");
+        expect(source).toContain('selection: {');
+        expect(source).toContain('count: selectedRows.length');
+        expect(source).toContain('selectedRows.map(({ itemCode, productName }) => ({');
+    });
+
     test('reloads table data through fake API without browser reload', () => {
         expect(source).toContain('async function handleReload()');
         expect(source).toContain('const reloadedProducts = await fakeApi.getProducts()');
-        expect(source).toContain('await demo.table.setData(reloadedProducts)');
+        expect(source).toContain('await demo.setData(reloadedProducts)');
+        expect(source).toContain('demo.clearSelection()');
+        expect(source).not.toContain('demo.table.setData(reloadedProducts)');
         expect(source).toContain("message: t('reloaded')");
         expect(source).not.toContain('location.reload');
         expect(source).not.toContain('window.location');
@@ -178,14 +197,18 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('setTimeout');
     });
 
-    test('uses the standard row action column as the first grid column', () => {
+    test('uses selection, then the standard row action column, before business columns', () => {
         const tableColumnsSource = source.slice(source.indexOf('const tableOptions = {'));
+        const selectionColumnIndex = tableColumnsSource.indexOf('selectionColumn: {');
         const rowActionColumnIndex = tableColumnsSource.indexOf('rowActionColumn: {');
         const itemCodeIndex = tableColumnsSource.indexOf("title: 'Item code'");
 
+        expect(selectionColumnIndex).toBeGreaterThan(-1);
         expect(rowActionColumnIndex).toBeGreaterThan(-1);
         expect(itemCodeIndex).toBeGreaterThan(-1);
+        expect(selectionColumnIndex).toBeLessThan(rowActionColumnIndex);
         expect(rowActionColumnIndex).toBeLessThan(itemCodeIndex);
+        expect(tableColumnsSource).toContain("mode: 'multiple'");
         expect(source).not.toContain('createDemoRowActionColumn');
         expect(source).not.toContain("field: '_demoRowActions'");
         expect(source).toContain('enabled: true');

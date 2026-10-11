@@ -756,6 +756,10 @@
     width: 15px;
 }
 
+.amb-selection-column {
+    cursor: pointer;
+}
+
 .amb-selection-column input[type="checkbox"],
 .amb-selection-checkbox {
     cursor: pointer;

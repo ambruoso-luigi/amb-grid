@@ -201,7 +201,18 @@ export const createSelectionColumn = (selectionColumn = {}) => {
         editor: createSelectionEditor(isMultiple),
         titleFormatter: isMultiple ? 'rowSelection' : () => '',
         titleFormatterParams: isMultiple ? { rowRange: 'active' } : undefined,
-        formatter: createSelectionFormatter(isMultiple)
+        formatter: createSelectionFormatter(isMultiple),
+        cellClick(event, cell) {
+            if (event?.target?.closest?.(SELECTION_INPUT_SELECTOR)) return;
+
+            const row = cell && typeof cell.getRow === 'function'
+                ? cell.getRow()
+                : null;
+
+            if (toggleRowSelection(row, isMultiple)) {
+                syncRowSelectionInput(row);
+            }
+        }
     };
 
     setAmbColumnMetadata(column, {

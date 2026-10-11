@@ -92,6 +92,84 @@ describe('selection column keyboard access', () => {
         expect(row.select).toHaveBeenCalledOnce();
     });
 
+    test('clicking free space in the selection cell toggles the row selection', () => {
+        const controller = createSelectionColumn({ enabled: true });
+        let selected = false;
+        const input = { checked: false };
+        const row = {
+            isSelected: () => selected,
+            select: vi.fn(() => { selected = true; }),
+            deselect: vi.fn(() => { selected = false; }),
+            getElement: () => ({
+                querySelector: () => input
+            })
+        };
+        const cell = createSelectionCell(controller, row, input);
+        const freeSpaceClick = { target: { closest: () => null } };
+
+        controller.column.cellClick(freeSpaceClick, cell);
+        expect(selected).toBe(true);
+        expect(input.checked).toBe(true);
+
+        controller.column.cellClick(freeSpaceClick, cell);
+        expect(selected).toBe(false);
+        expect(input.checked).toBe(false);
+    });
+
+    test('checkbox clicks toggle once and are ignored by the selection cell handler', () => {
+        const controller = createSelectionColumn({ enabled: true });
+        let selected = false;
+        const row = {
+            isSelected: () => selected,
+            select: vi.fn(() => { selected = true; }),
+            deselect: vi.fn(() => { selected = false; })
+        };
+        const input = renderSelectionInput(controller, row, renderedInput => {
+            row.getElement = () => ({
+                querySelector: () => renderedInput
+            });
+
+            return createSelectionCell(controller, row, renderedInput);
+        });
+        const cell = createSelectionCell(controller, row, input);
+
+        input.checked = true;
+        input.dispatch('change');
+        controller.column.cellClick({ target: input }, cell);
+
+        expect(row.select).toHaveBeenCalledOnce();
+        expect(row.deselect).not.toHaveBeenCalled();
+        expect(input.checked).toBe(true);
+    });
+
+    test('single mode keeps one selected row when selection cells are clicked', () => {
+        const controller = createSelectionColumn({ enabled: true, mode: 'single' });
+        let firstSelected = false;
+        let secondSelected = false;
+        const table = {
+            deselectRow: vi.fn(() => {
+                firstSelected = false;
+                secondSelected = false;
+            })
+        };
+        const createRow = (isSelected, setSelected) => ({
+            getTable: () => table,
+            isSelected,
+            select: vi.fn(() => setSelected(true)),
+            deselect: vi.fn(() => setSelected(false))
+        });
+        const first = createRow(() => firstSelected, value => { firstSelected = value; });
+        const second = createRow(() => secondSelected, value => { secondSelected = value; });
+        const freeSpaceClick = { target: { closest: () => null } };
+
+        controller.column.cellClick(freeSpaceClick, createCell(first));
+        controller.column.cellClick(freeSpaceClick, createCell(second));
+
+        expect(firstSelected).toBe(false);
+        expect(secondSelected).toBe(true);
+        expect(table.deselectRow).toHaveBeenCalledTimes(2);
+    });
+
     test('Enter toggles the row selection through the Tabulator row API', () => {
         const controller = createSelectionColumn({ enabled: true });
         let selected = false;

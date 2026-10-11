@@ -28,6 +28,7 @@ const messages = {
         validChangedRows: 'Righe modificate valide',
         invalidChangedRows: 'Righe modificate non valide',
         errorRows: 'Righe con errori',
+        selectedRows: 'Righe selezionate',
         savePolicy: 'Policy',
         partialSave: 'Salvataggio parziale',
         partialSaveAvailable: 'Salvataggio parziale disponibile',
@@ -63,6 +64,7 @@ const messages = {
         validChangedRows: 'Valid changed rows',
         invalidChangedRows: 'Invalid changed rows',
         errorRows: 'Rows with errors',
+        selectedRows: 'Selected rows',
         savePolicy: 'Policy',
         partialSave: 'Partial save',
         partialSaveAvailable: 'Partial save available',
@@ -140,10 +142,11 @@ const buildPayloadReport = payload => [
     `${t('canSave')}: ${payload.canSave}`
 ];
 
-const buildStateReport = (report, payload) => [
+const buildStateReport = (report, payload, selectedRows) => [
     t('stateReport'),
     '',
     `${t('totalRows')}: ${report.totalRows}`,
+    `${t('selectedRows')}: ${selectedRows.length}`,
     `Clean: ${countRowsByState(report, 'clean')}`,
     `New: ${countRowsByState(report, 'new')}`,
     `Modified: ${countRowsByState(report, 'modified')}`,
@@ -231,7 +234,7 @@ export default async function fullDemo(app, options = {}) {
                     introKey: 'mainDemo.guide.intro',
                     points: [
                         { title: 'Edit and add', titleKey: 'mainDemo.guide.edit.title', description: 'Edit cells directly or use Add Row to create a new local product.', descriptionKey: 'mainDemo.guide.edit.description' },
-                        { title: 'Row actions', titleKey: 'mainDemo.guide.actions.title', description: 'Clean and saved rows show Delete, modified or deleted rows show Rollback, and new rows show Remove new.', descriptionKey: 'mainDemo.guide.actions.description' },
+                        { title: 'Selection and row actions', titleKey: 'mainDemo.guide.actions.title', description: 'The checkbox selects one or more products; the row action column provides Delete, Rollback, and Remove new according to the row state.', descriptionKey: 'mainDemo.guide.actions.description' },
                         { title: 'Validation and lookup', titleKey: 'mainDemo.guide.validation.title', description: 'Field rules validate edits; autocomplete and lookup editors guide controlled selections.', descriptionKey: 'mainDemo.guide.validation.description' },
                         { title: 'Payload and save', titleKey: 'mainDemo.guide.save.title', description: 'The payload separates inserted, updated and deleted records. If some changed rows contain errors, Save can persist the valid changes after confirmation while invalid rows remain pending.', descriptionKey: 'mainDemo.guide.save.description' },
                         { title: 'Search and filters', titleKey: 'mainDemo.guide.search.title', description: 'Search and filter controls narrow the visible inventory without changing the underlying data.', descriptionKey: 'mainDemo.guide.search.description' }
@@ -282,6 +285,10 @@ export default async function fullDemo(app, options = {}) {
 
     const tableOptions = {
         selector: '#inventory-table',
+        selectionColumn: {
+            enabled: true,
+            mode: 'multiple'
+        },
         rowActionColumn: {
             enabled: true,
             width: 55,
@@ -565,6 +572,7 @@ export default async function fullDemo(app, options = {}) {
 
     function openStateReport() {
         const report = crud.getStateReport();
+        const selectedRows = demo.getSelectedData();
         const payload = demo.getSavePayload({
             savePolicy: DEMO_SAVE_POLICY,
             includeInvalid: true
@@ -572,8 +580,18 @@ export default async function fullDemo(app, options = {}) {
 
         reportDialog.open({
             title: t('reportTitle'),
-            reportLines: buildStateReport(report, payload),
-            jsonData: { report, payload }
+            reportLines: buildStateReport(report, payload, selectedRows),
+            jsonData: {
+                report,
+                payload,
+                selection: {
+                    count: selectedRows.length,
+                    rows: selectedRows.map(({ itemCode, productName }) => ({
+                        itemCode,
+                        productName
+                    }))
+                }
+            }
         });
     }
 
@@ -613,7 +631,8 @@ export default async function fullDemo(app, options = {}) {
 
         const reloadedProducts = await fakeApi.getProducts();
 
-        await demo.table.setData(reloadedProducts);
+        await demo.setData(reloadedProducts);
+        demo.clearSelection();
         demo.feedback.show({
             type: 'success',
             message: t('reloaded')
