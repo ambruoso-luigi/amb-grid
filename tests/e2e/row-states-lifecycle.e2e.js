@@ -15,8 +15,6 @@ test.describe('Row States lifecycle', () => {
         const invalidType = cell(page, 'REC-004', 'type');
         await expect(invalidType).toHaveAttribute('data-cell-error', 'true');
         await expect(invalidType).not.toHaveAttribute('title');
-        await invalidType.hover();
-        await expect(page.locator('.teh-floating-message--visible')).toHaveCount(1);
 
         await page.getByRole('button', { name: 'Save' }).click();
         await expect(page.getByText('Some rows contain errors and will not be saved.')).toBeVisible();

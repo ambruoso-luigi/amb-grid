@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 const requiredDepartmentCell = page => page.locator('#autocomplete-table .tabulator-row')
     .filter({ hasText: 'Prepare onboarding pack' })
@@ -14,10 +15,13 @@ test.describe('autocomplete live space input', () => {
     test('preserves a trailing space and continues compound suggestions', async ({ page }) => {
         const cell = requiredDepartmentCell(page);
 
-        await cell.dblclick({ delay: 100 });
-        const input = cell.locator('input.amb-autocomplete-editor');
-
-        await expect(input).toBeFocused();
+        const input = await openEditorFromNavigation(
+            page,
+            cell,
+            'autocomplete live space input',
+            '#autocomplete-table',
+            'input.amb-autocomplete-editor'
+        );
         await input.fill('');
         await input.pressSequentially('F');
         await expect(input).toHaveValue('Finance');
