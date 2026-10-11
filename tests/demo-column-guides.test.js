@@ -135,7 +135,8 @@ describe('Public demo column guides', () => {
         expect(fullDemo).toContain('matching PRD-A001 format and unique ignoring case.');
         expect(fullDemo).toContain('Required integer with a minimum value of zero.');
         expect(fullDemo).toContain('Required status selected from a searchable lookup dialog.');
-        expect(fullDemo).toContain('Clean and saved rows show Delete, modified or deleted rows show Rollback, and new rows show Remove new.');
+        expect(fullDemo).toContain('Selection and row actions');
+        expect(fullDemo).toContain('The checkbox selects one or more products; the row action column provides Delete, Rollback, and Remove new according to the row state.');
     });
 
     test('uses only shared responsive guide classes in demo CSS', () => {

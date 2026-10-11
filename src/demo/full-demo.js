@@ -308,26 +308,24 @@ export default async function fullDemo(app, options = {}) {
                 'reload',
                 'save',
                 'payload',
-                'validate',
+                {
+                    id: 'show-report',
+                    label: 'Report',
+                    title: 'Show state report',
+                    onClick: handleShowReport
+                },
                 {
                     id: 'demo-command-guide',
                     label: commandGuideCopy[getLanguage()].trigger.label,
                     title: commandGuideCopy[getLanguage()].trigger.title,
                     icon: demoIcon('help'),
                     onClick: handleCommandGuide
-                },
-                {
-                    id: 'show-report',
-                    label: 'Report',
-                    title: 'Show state report',
-                    onClick: handleShowReport
                 }
             ],
             onAdd: handleAdd,
             onReload: handleReload,
             onSave: handleSave,
-            onPayload: handleShowPayload,
-            onValidate: handleValidate
+            onPayload: handleShowPayload
         },
         data: products,
         layout: 'fitColumns',
@@ -645,16 +643,6 @@ export default async function fullDemo(app, options = {}) {
 
     function handleShowReport() {
         openStateReport();
-    }
-
-    function handleValidate() {
-        const validateResult = demo.validate();
-
-        openValidationReport(validateResult);
-        demo.feedback.show({
-            type: validateResult.isValid ? 'success' : 'warning',
-            message: validateResult.isValid ? t('validationValid') : t('validationInvalid')
-        });
     }
 
     async function handleSave() {

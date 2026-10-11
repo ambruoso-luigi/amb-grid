@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { describe, expect, test } from 'vitest';
+import { createDemoColumnGuide } from '../src/demo/utils/demo-column-guide.js';
 
 const source = fs.readFileSync(
     new URL('../src/demo/full-demo.js', import.meta.url),
@@ -76,23 +77,48 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('uses the AMB Grid toolbar instead of external action buttons', () => {
-        expect(source).toContain('toolbar: {');
-        expect(source).toContain("buttons: [");
-        expect(source).toContain("'add'");
-        expect(source).toContain("'reload'");
-        expect(source).toContain("'save'");
-        expect(source).toContain("'payload'");
-        expect(source).toContain("'validate'");
-        expect(source).toContain("id: 'show-report'");
+        const toolbarSource = source.slice(
+            source.indexOf('toolbar: {'),
+            source.indexOf('data: products')
+        );
+        const actionOrder = [
+            "'add'",
+            "'reload'",
+            "'save'",
+            "'payload'",
+            "id: 'show-report'",
+            "id: 'demo-command-guide'"
+        ].map(action => toolbarSource.indexOf(action));
+
+        expect(toolbarSource).toContain('buttons: [');
+        actionOrder.forEach(index => expect(index).toBeGreaterThan(-1));
+        actionOrder.slice(1).forEach((index, position) => {
+            expect(index).toBeGreaterThan(actionOrder[position]);
+        });
+        expect(toolbarSource).not.toContain("'validate'");
+        expect(toolbarSource).not.toContain('onValidate:');
         expect(source).toContain('onAdd: handleAdd');
         expect(source).toContain('onReload: handleReload');
         expect(source).toContain('onSave: handleSave');
         expect(source).toContain('onPayload: handleShowPayload');
-        expect(source).toContain('onValidate: handleValidate');
+        expect(source).not.toContain('function handleValidate()');
         expect(source).not.toContain('id="add-product"');
         expect(source).not.toContain('id="save-products"');
         expect(source).not.toContain('id="product-report"');
         expect(source).not.toContain('<pre class="demo-output" id="inventory-output">');
+    });
+
+    test('keeps validation in Save and the main disclosure closed by default', () => {
+        const guideMarkup = createDemoColumnGuide({
+            summary: 'How this table works',
+            columns: []
+        });
+
+        expect(source).toContain('demo.validateChanges()');
+        expect(source).toContain('openPayloadReport(');
+        expect(source).toContain('openStateReport()');
+        expect(guideMarkup).toContain('<details class="demo-disclosure">');
+        expect(guideMarkup).not.toContain('<details class="demo-disclosure" open>');
     });
 
     test('uses the shared report dialog for payload, validation, report, and save result', () => {
@@ -249,7 +275,6 @@ describe('Legacy-friendly warehouse demo', () => {
     test('uses valid-only payloads and confirms a partial save before sending it', () => {
         expect(source).toContain("const DEMO_SAVE_POLICY = 'valid-only'");
         expect(source).toContain('const validateResult = demo.validateChanges()');
-        expect(source).toContain('const validateResult = demo.validate()');
         expect(source).toContain('savePolicy: DEMO_SAVE_POLICY');
         expect(source).toContain('includeInvalid: true');
         expect(source).toContain('payload.hasChanges === false');
