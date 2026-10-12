@@ -5,6 +5,7 @@ test('shows the English installation hero and preserves language navigation', as
     await page.goto('/install/');
     await expect(page.locator('#site-navbar')).toBeVisible();
     await expect(page.locator('.installation-hero')).toBeVisible();
+    await expect(page.locator('.installation-hero .demo-brand__logo')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Bring AMB Grid into your project' })).toBeVisible();
     await expect(page.locator('.installation-hero').getByRole('link', { name: 'npm / ESM' })).toBeVisible();
     await expect(page.locator('.installation-hero').getByRole('link', { name: 'Download standalone bundle' })).toBeVisible();

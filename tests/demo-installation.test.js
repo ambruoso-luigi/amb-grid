@@ -14,6 +14,8 @@ describe('installation page', () => {
         expect(html).toContain('id="site-navbar"');
         expect(source).toContain("mountSiteNavbar(document.querySelector('#site-navbar')");
         expect(source).toContain('renderDemoFooter({');
+        expect(source).toContain("import { renderDemoBrand } from './demo-brand.js'");
+        expect(source).toContain("renderDemoBrand({ href: '/#top' })");
         expect(source).toContain("id=\"npm\"");
         expect(source).toContain("id=\"standalone\"");
         expect(source).toContain('AMB.table');
@@ -26,12 +28,16 @@ describe('installation page', () => {
         expect(source).toContain("hero: 'Bring AMB Grid into your project'");
         expect(source).toContain('Installa AMB Grid con npm nei progetti moderni');
         expect(source).toContain('Install AMB Grid with npm in modern projects');
-        expect(source).toContain('class="installation-hero__content"');
-        expect(source).toContain('class="installation-hero__media"');
+        expect(source).toContain('class="demo-hero installation-hero"');
+        expect(source).toContain('class="demo-hero__brand"');
+        expect(source).toContain('class="demo-hero__body"');
+        expect(source).toContain('class="demo-hero__content"');
+        expect(source).toContain('class="demo-hero__actions"');
+        expect(source).toContain('demo-hero__video');
         expect(source).toContain('href="#npm"');
         expect(source).toContain('href="#standalone"');
         expect(source).toContain('Installation guide');
-        expect(source).toContain('demo-video-preview installation-video-preview');
+        expect(source).toContain('demo-video-preview demo-guide-video demo-hero__video installation-video-preview');
         expect(source).toContain('demo-video-preview__image');
         expect(source).toContain('demo-video-preview__overlay');
         expect(source).toContain('demoYoutubeIcon');
@@ -42,9 +48,9 @@ describe('installation page', () => {
 
         const css = read('src/demo/installation.css');
         expect(css).not.toContain('max-width: 1120px');
-        expect(css).toContain('grid-template-columns: minmax(0, 1fr) minmax(290px, 430px)');
-        expect(css).toContain('font-size: clamp(34px, 5.2vw, 66px)');
-        expect(css).toContain('@media (max-width: 1100px)');
+        expect(css).toContain('.installation-hero { margin-top: 18px; }');
+        expect(css).not.toContain('background: linear-gradient');
+        expect(css).not.toContain('padding: clamp(24px, 4vw, 52px)');
         expect(css).not.toContain('installation-video-preview__terminal');
     });
 
