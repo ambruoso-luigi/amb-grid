@@ -20,7 +20,7 @@ describe('installation page', () => {
         expect(source).not.toContain('Tabulator');
         expect(source).toContain('packageJson.version');
         expect(source).toContain('amb-grid-legacy-${version}.zip');
-        expect(source).toContain('const INSTALLATION_VIDEO_URL = null');
+        expect(source).toContain("const INSTALLATION_VIDEO_URL = 'https://www.youtube.com/watch?v=2qhXHt0Upps'");
         expect(source).toContain("kicker: 'INSTALLATION & DOWNLOAD'");
         expect(source).toContain("hero: 'Porta AMB Grid nel tuo progetto'");
         expect(source).toContain("hero: 'Bring AMB Grid into your project'");
@@ -30,17 +30,22 @@ describe('installation page', () => {
         expect(source).toContain('class="installation-hero__media"');
         expect(source).toContain('href="#npm"');
         expect(source).toContain('href="#standalone"');
-        expect(source).toContain('Installation video coming soon');
-        expect(source).toContain('Video di installazione in arrivo');
         expect(source).toContain('Installation guide');
+        expect(source).toContain('demo-video-preview installation-video-preview');
+        expect(source).toContain('demo-video-preview__image');
+        expect(source).toContain('demo-video-preview__overlay');
+        expect(source).toContain('demoYoutubeIcon');
+        expect(source).not.toContain('installation-video-preview__terminal');
+        expect(source).not.toContain('installation-video-preview__packages');
+        expect(source).not.toContain('installation-video-preview__grid');
         expect(source).not.toContain('href="#"');
 
         const css = read('src/demo/installation.css');
-        expect(css).toContain('grid-template-columns: minmax(0, 1.55fr) minmax(280px, .9fr)');
-        expect(css).toContain('.installation-video-preview--link');
-        expect(css).toContain(':focus-visible');
-        expect(css).toContain('@media (prefers-reduced-motion: reduce)');
-        expect(css).toContain('grid-template-columns: minmax(0, 1fr)');
+        expect(css).not.toContain('max-width: 1120px');
+        expect(css).toContain('grid-template-columns: minmax(0, 1fr) minmax(290px, 430px)');
+        expect(css).toContain('font-size: clamp(34px, 5.2vw, 66px)');
+        expect(css).toContain('@media (max-width: 1100px)');
+        expect(css).not.toContain('installation-video-preview__terminal');
     });
 
     test('persists the shared language preference', () => {

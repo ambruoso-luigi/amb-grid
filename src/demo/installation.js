@@ -3,6 +3,7 @@ import './installation.css';
 import packageJson from '../../package.json';
 import { renderDemoFooter } from './demo-footer.js';
 import { readDemoLanguage } from './demo-language-switch.js';
+import { demoYoutubeIcon } from './demo-icons.js';
 import { mountSiteNavbar } from './components/site-navbar.js';
 
 const root = document.querySelector('#app');
@@ -10,7 +11,7 @@ const version = packageJson.version;
 const releaseTag = `v${version}`;
 const zipName = `amb-grid-legacy-${version}.zip`;
 const zipUrl = `https://github.com/ambruoso-luigi/amb-grid/releases/download/${releaseTag}/${zipName}`;
-const INSTALLATION_VIDEO_URL = null;
+const INSTALLATION_VIDEO_URL = 'https://www.youtube.com/watch?v=2qhXHt0Upps';
 let language = readDemoLanguage();
 mountSiteNavbar(document.querySelector('#site-navbar'), { onLanguageChange: next => { language = next; render(); } });
 
@@ -21,12 +22,12 @@ const copy = {
 Object.assign(copy.it, {
     description: 'Installa AMB Grid con npm nei progetti moderni oppure usa il bundle standalone in applicazioni browser, server-rendered ed esistenti.',
     intro: 'Installa AMB Grid con npm nei progetti moderni oppure usa il bundle standalone in applicazioni browser, server-rendered ed esistenti.',
-    videoLabel: 'Guida all\'installazione', videoStatus: 'Video di installazione in arrivo', videoLink: 'Apri la guida video di installazione'
+    videoLabel: 'Guida all\'installazione', videoLink: 'Apri la guida di installazione su YouTube'
 });
 Object.assign(copy.en, {
     description: 'Install AMB Grid with npm in modern projects or use the standalone bundle in browser, server-rendered and existing applications.',
     kicker: 'INSTALLATION & DOWNLOAD', intro: 'Install AMB Grid with npm in modern projects or use the standalone bundle in browser, server-rendered and existing applications.',
-    videoLabel: 'Installation guide', videoStatus: 'Installation video coming soon', videoLink: 'Open the installation video guide'
+    videoLabel: 'Installation guide', videoLink: 'Open the installation guide on YouTube'
 });
 const text = key => copy[language][key];
 const npmPublishingNote = () => language === 'it'
@@ -36,12 +37,12 @@ const code = value => value.includes("from 'amb-grid'")
     ? npmPublishingNote()
     : `<pre class="installation-code"><code>${value}</code></pre>`;
 
-const renderInstallationVideoPreview = () => {
-    const preview = `<span class="installation-video-preview__frame" aria-hidden="true"><span class="installation-video-preview__terminal">$ npm install amb-grid</span><span class="installation-video-preview__packages"><i></i><i></i><i></i></span><span class="installation-video-preview__grid"><i></i><i></i><i></i><i></i><i></i><i></i></span></span><span class="installation-video-preview__copy"><strong>${text('videoLabel')}</strong><span>npm · ESM · Standalone</span><small>${text('videoStatus')}</small></span>`;
-    return INSTALLATION_VIDEO_URL
-        ? `<a class="installation-video-preview installation-video-preview--link" href="${INSTALLATION_VIDEO_URL}" target="_blank" rel="noreferrer" aria-label="${text('videoLink')}">${preview}<span class="installation-video-preview__play" aria-hidden="true">▶</span></a>`
-        : `<aside class="installation-video-preview" aria-label="${text('videoLabel')}">${preview}</aside>`;
+const getYoutubeThumbnail = url => {
+    const videoId = new URL(url).searchParams.get('v');
+    return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '';
 };
+
+const renderInstallationVideoPreview = () => `<a class="demo-video-preview installation-video-preview" href="${INSTALLATION_VIDEO_URL}" target="_blank" rel="noreferrer" aria-label="${text('videoLink')}"><img class="demo-video-preview__image" src="${getYoutubeThumbnail(INSTALLATION_VIDEO_URL)}" alt=""><span class="demo-video-preview__overlay"></span><span class="demo-video-preview__title">${text('videoLabel')}</span><span class="demo-video-preview__destination"><span class="demo-video-preview__brand">${demoYoutubeIcon({ className: 'demo-video-preview__brand-icon', size: 17 })}</span>YouTube</span></a>`;
 
 const render = () => {
     root.innerHTML = `<main class="installation-page site-container">

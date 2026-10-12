@@ -8,9 +8,9 @@ test('shows the English installation hero and preserves language navigation', as
     await expect(page.getByRole('heading', { name: 'Bring AMB Grid into your project' })).toBeVisible();
     await expect(page.locator('.installation-hero').getByRole('link', { name: 'npm / ESM' })).toBeVisible();
     await expect(page.locator('.installation-hero').getByRole('link', { name: 'Download standalone bundle' })).toBeVisible();
-    await expect(page.getByText('Installation video coming soon', { exact: true })).toBeVisible();
     await expect(page.locator('.installation-video-preview')).toHaveCount(1);
-    expect(await page.locator('.installation-video-preview').evaluate(element => element.tagName)).toBe('ASIDE');
+    await expect(page.locator('.installation-video-preview')).toHaveAttribute('href', 'https://www.youtube.com/watch?v=2qhXHt0Upps');
+    expect(await page.locator('.installation-video-preview').evaluate(element => element.tagName)).toBe('A');
     await expect(page.getByText('Standalone / ZIP', { exact: true })).toBeVisible();
     await page.locator('#site-navbar .demo-brand').click();
     await expect(page).toHaveURL(/\/#top$/);
