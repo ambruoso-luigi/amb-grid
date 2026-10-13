@@ -4,7 +4,7 @@ import packageJson from '../../package.json';
 import { renderDemoFooter } from './demo-footer.js';
 import { renderDemoBrand } from './demo-brand.js';
 import { readDemoLanguage } from './demo-language-switch.js';
-import { demoYoutubeIcon } from './demo-icons.js';
+import { demoIcon, demoYoutubeIcon } from './demo-icons.js';
 import { mountSiteNavbar } from './components/site-navbar.js';
 
 const root = document.querySelector('#app');
@@ -17,51 +17,39 @@ let language = readDemoLanguage();
 mountSiteNavbar(document.querySelector('#site-navbar'), { onLanguageChange: next => { language = next; render(); } });
 
 const copy = {
-    it: { title: 'AMB Grid - Installazione e download', description: 'Usa npm nei progetti moderni oppure scarica il bundle standalone per applicazioni browser e server-rendered.', hero: 'Installa AMB Grid', intro: 'Usa npm nei progetti moderni oppure scarica il bundle standalone per applicazioni browser e server-rendered.', videoLabel: 'Guida all\'installazione', videoLink: 'Apri la guida di installazione su YouTube', npm: 'npm / ESM', npmText: 'Consigliato per progetti con npm e bundler moderni.', npmStatus: 'Package non ancora pubblicato su npm.', npmNote: 'Il percorso seguente sarà disponibile quando il package verrà pubblicato.', zip: 'Standalone / ZIP', zipText: 'Bundle autonomo per pagine senza bundler.', download: 'Scarica bundle standalone', methods: 'Scegli come installare', standalone: 'Installazione standalone', first: 'Primo avvio', next: 'AMB Grid è pronta.', guide: 'Continua con la guida JavaScript', frameworks: 'Usi un framework?' },
-    en: { title: 'AMB Grid - Installation and download', description: 'Use npm in modern projects or download the standalone bundle for browser and server-rendered applications.', hero: 'Install AMB Grid', intro: 'Use npm in modern projects or download the standalone bundle for browser and server-rendered applications.', videoLabel: 'Installation guide', videoLink: 'Open the installation guide on YouTube', npm: 'npm / ESM', npmText: 'Recommended for projects with npm and modern bundlers.', npmStatus: 'Package not yet published on npm.', npmNote: 'This path will be available when the package is published.', zip: 'Standalone / ZIP', zipText: 'Self-contained bundle for pages without a bundler.', download: 'Download standalone bundle', methods: 'Choose how to install', standalone: 'Standalone installation', first: 'First start', next: 'AMB Grid is ready.', guide: 'Continue with the JavaScript guide', frameworks: 'Using a framework?' }
+    it: {
+        title: 'AMB Grid - Installazione e download', description: 'Usa npm nei progetti moderni oppure scarica il bundle standalone per applicazioni browser e server-rendered.',
+        hero: 'Installa AMB Grid', intro: 'Usa npm nei progetti moderni oppure scarica il bundle standalone per applicazioni browser e server-rendered.',
+        videoLabel: 'Guida all\'installazione', videoLink: 'Apri la guida di installazione su YouTube', npm: 'npm / ESM', download: 'Scarica bundle standalone',
+        modesKicker: 'Due modalità, una sola API', modesTitle: 'Usare AMB Grid con JavaScript', modesText: 'AMB Grid si integra direttamente in JavaScript ed è framework-agnostic: usa il package npm in un progetto moderno oppure il bundle UMD in una pagina browser o server-rendered.',
+        modernText: 'La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con installazione e aggiornamenti gestiti da npm.', installLabel: 'Installazione', importLabel: 'Import',
+        browserText: 'Per pagine browser, server-rendered e applicazioni esistenti che non richiedono npm, bundler o framework.', assetsLabel: 'Caricamento asset', globalLabel: 'Global pubblico',
+        bundleText: 'Il bundle UMD è pronto per l’uso standalone: carica soltanto gli asset AMB Grid indicati qui sopra.', bundleContents: 'Nel bundle:',
+        verify: 'Verifica l\'installazione', guide: 'Continua con la guida JavaScript', next: 'AMB Grid è pronta.'
+    },
+    en: {
+        title: 'AMB Grid - Installation and download', description: 'Use npm in modern projects or download the standalone bundle for browser and server-rendered applications.',
+        hero: 'Install AMB Grid', intro: 'Use npm in modern projects or download the standalone bundle for browser and server-rendered applications.',
+        videoLabel: 'Installation guide', videoLink: 'Open the installation guide on YouTube', npm: 'npm / ESM', download: 'Download standalone bundle',
+        modesKicker: 'Two modes, one API', modesTitle: 'Use AMB Grid with JavaScript', modesText: 'AMB Grid integrates directly with JavaScript and remains framework-agnostic: use the npm package in a modern project or the UMD bundle in a browser or server-rendered page.',
+        modernText: 'The natural choice for Vite, bundlers, and modern JavaScript applications, with installation and updates managed by npm.', installLabel: 'Install', importLabel: 'Import',
+        browserText: 'For browser pages, server-rendered applications, and existing systems that do not need npm, a bundler, or a framework.', assetsLabel: 'Load assets', globalLabel: 'Public global',
+        bundleText: 'The UMD bundle is ready for standalone use: load only the AMB Grid assets shown above.', bundleContents: 'In the bundle:',
+        verify: 'Verify the installation', guide: 'Continue with the JavaScript guide', next: 'AMB Grid is ready.'
+    }
 };
 const text = key => copy[language][key];
-const code = (value, compact = false) => `<pre class="demo-code-block${compact ? ' demo-code-block--compact' : ''} installation-code"><code>${value}</code></pre>`;
-const npmPublishingNote = () => `<p class="installation-status">${text('npmStatus')}</p><p>${text('npmNote')}</p>`;
+const code = value => `<pre class="demo-code-block demo-code-block--compact"><code>${value}</code></pre>`;
 
-const npmCode = () => code(`<span class="syntax-command">npm install</span> <span class="syntax-string">amb-grid</span>
-
-<span class="syntax-keyword">import</span> { <span class="syntax-api">AMB</span> } <span class="syntax-keyword">from</span> <span class="syntax-string">'amb-grid'</span>;
-<span class="syntax-keyword">import</span> <span class="syntax-string">'amb-grid/style.css'</span>;`, true);
-const standaloneCode = () => code(`&lt;<span class="syntax-tag">link</span> <span class="syntax-attr">rel</span>=<span class="syntax-string">"stylesheet"</span> <span class="syntax-attr">href</span>=<span class="syntax-string">"./amb-grid/amb-grid.css"</span>&gt;
-&lt;<span class="syntax-tag">script</span> <span class="syntax-attr">src</span>=<span class="syntax-string">"./amb-grid/amb-grid.umd.js"</span>&gt;&lt;/<span class="syntax-tag">script</span>&gt;
-
-<span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
-  <span class="syntax-property">selector</span>: <span class="syntax-string">'#grid'</span>,
-  <span class="syntax-property">data</span>,
-  <span class="syntax-property">columns</span>
-});`);
-const firstStartCode = () => code(`<span class="syntax-keyword">const</span> data = [
-  {
-    <span class="syntax-property">id</span>: <span class="syntax-number">1</span>,
-    <span class="syntax-property">name</span>: <span class="syntax-string">'Notebook'</span>,
-    <span class="syntax-property">quantity</span>: <span class="syntax-number">4</span>
-  },
-  {
-    <span class="syntax-property">id</span>: <span class="syntax-number">2</span>,
-    <span class="syntax-property">name</span>: <span class="syntax-string">'Monitor'</span>,
-    <span class="syntax-property">quantity</span>: <span class="syntax-number">2</span>
-  }
+const verificationCode = () => code(`<span class="syntax-keyword">const</span> data = [
+  { <span class="syntax-property">id</span>: <span class="syntax-number">1</span>, <span class="syntax-property">name</span>: <span class="syntax-string">'Notebook'</span> },
+  { <span class="syntax-property">id</span>: <span class="syntax-number">2</span>, <span class="syntax-property">name</span>: <span class="syntax-string">'Monitor'</span> }
 ];
 
 <span class="syntax-keyword">const</span> columns = [
   {
     <span class="syntax-property">title</span>: <span class="syntax-string">'Nome'</span>,
-    <span class="syntax-property">field</span>: <span class="syntax-string">'name'</span>,
-    <span class="syntax-property">editor</span>: <span class="syntax-api">AMB.editors</span>.<span class="syntax-function">text</span>()
-  },
-  {
-    <span class="syntax-property">title</span>: <span class="syntax-string">'Quantità'</span>,
-    <span class="syntax-property">field</span>: <span class="syntax-string">'quantity'</span>,
-    <span class="syntax-property">editor</span>: <span class="syntax-api">AMB.editors</span>.<span class="syntax-function">integer</span>({
-      <span class="syntax-property">allowEmpty</span>: <span class="syntax-keyword">false</span>
-    }),
-    <span class="syntax-property">formatter</span>: <span class="syntax-api">AMB.formatters</span>.<span class="syntax-function">integer</span>()
+    <span class="syntax-property">field</span>: <span class="syntax-string">'name'</span>
   }
 ];
 
@@ -80,14 +68,31 @@ const renderInstallationVideoPreview = () => `<a class="demo-video-preview demo-
 const render = () => {
     root.innerHTML = `<main class="installation-page site-container">
       <header class="demo-hero installation-hero"><div class="demo-hero__brand">${renderDemoBrand({ href: '/#top' })}</div><div class="demo-hero__body"><div class="demo-hero__content"><h1>${text('hero')}</h1><p class="demo-hero__text">${text('intro')}</p><div class="demo-hero__actions"><a class="demo-button demo-button--secondary" href="#npm">${text('npm')}</a><a class="demo-button demo-button--primary" href="#standalone">${text('download')}</a></div></div></div>${renderInstallationVideoPreview()}</header>
-      <section class="installation-paths" aria-label="${text('methods')}"><article class="installation-path"><h2>${text('npm')}</h2><p>${text('npmText')}</p><span class="installation-badge">ESM · TypeScript</span></article><article class="installation-path"><h2>${text('zip')}</h2><p>${text('zipText')}</p><span class="installation-badge">UMD · ${releaseTag}</span><p><a href="${zipUrl}">${text('download')}</a><br><small>${zipName}<br>GitHub Release ${releaseTag}</small></p></article></section>
-      <section class="installation-details"><article class="installation-detail" id="npm"><h2>${text('npm')}</h2>${npmPublishingNote()}${npmCode()}</article><article class="installation-detail" id="standalone"><h2>${text('standalone')}</h2>${standaloneCode()}<p><a href="https://github.com/ambruoso-luigi/amb-grid/releases">${language === 'it' ? 'Vedi tutte le release su GitHub →' : 'View all releases on GitHub →'}</a></p></article><article class="installation-detail installation-detail--wide"><h2>${text('first')}</h2>${firstStartCode()}<p><strong>${language === 'it' ? 'Contenuto ZIP' : 'ZIP contents'}</strong></p>${code(`amb-grid/
-├── amb-grid.umd.js
-├── amb-grid.css
-├── README.md
-├── LICENSE
-└── VERSION.txt`, true)}</article></section>
-      <section class="installation-next"><h2>${text('next')}</h2><p><a href="/#getting-started-javascript">${text('guide')} →</a></p><h3>${text('frameworks')}</h3><div class="installation-frameworks"><a href="/#getting-started-javascript">JavaScript →</a><a href="/#getting-started-react">React →</a><span>Vue — ${language === 'it' ? 'in arrivo' : 'coming soon'}</span><span>Angular — ${language === 'it' ? 'in arrivo' : 'coming soon'}</span></div></section>
+      <section class="demo-guide-section demo-guide-integration installation-modes" aria-labelledby="installation-modes-title">
+        <div class="demo-section-heading"><p class="demo-kicker">${text('modesKicker')}</p><h2 id="installation-modes-title">${text('modesTitle')}</h2><p class="demo-note">${text('modesText')}</p></div>
+        <div class="demo-guide-classic-layout">
+          <article class="demo-guide-mode-card demo-guide-mode-card--modern" id="npm">
+            <div class="demo-guide-mode-card__header"><span class="demo-guide-mode-card__icon">${demoIcon('modern', { size: 24 })}</span><span class="demo-guide-badge">npm + ESM</span></div>
+            <div class="demo-guide-mode-card__body"><h3>Modern JavaScript / npm</h3><p class="demo-note">${text('modernText')}</p>
+              <span class="demo-guide-code-label">${text('installLabel')}</span>${code(`<span class="syntax-command">npm install</span> <span class="syntax-string">amb-grid</span>`)}
+              <span class="demo-guide-code-label">${text('importLabel')}</span>${code(`<span class="syntax-keyword">import</span> { <span class="syntax-api">AMB</span> } <span class="syntax-keyword">from</span> <span class="syntax-string">'amb-grid'</span>;
+<span class="syntax-keyword">import</span> <span class="syntax-string">'amb-grid/style.css'</span>;`)}
+            </div>
+          </article>
+          <article class="demo-guide-mode-card demo-guide-mode-card--legacy" id="standalone">
+            <div class="demo-guide-mode-card__header"><span class="demo-guide-mode-card__icon">${demoIcon('legacy', { size: 24 })}</span><span class="demo-guide-badge demo-guide-badge--legacy">Standalone</span></div>
+            <div class="demo-guide-mode-card__body"><h3>Browser / standalone</h3><p class="demo-note">${text('browserText')}</p>
+              <span class="demo-guide-code-label">${text('assetsLabel')}</span>${code(`&lt;<span class="syntax-tag">link</span> <span class="syntax-attr">rel</span>=<span class="syntax-string">"stylesheet"</span> <span class="syntax-attr">href</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.css"</span>&gt;
+&lt;<span class="syntax-tag">script</span> <span class="syntax-attr">src</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.umd.js"</span>&gt;&lt;/<span class="syntax-tag">script</span>&gt;`)}
+              <span class="demo-guide-code-label">${text('globalLabel')}</span>${code(`<span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({ ... });`)}
+              <p class="demo-guide-mode-note">${text('bundleText')}</p>
+              <div class="installation-bundle"><a href="${zipUrl}">${text('download')} →</a><span>${zipName} · GitHub Release ${releaseTag}</span><p>${text('bundleContents')} <code>amb-grid.umd.js</code> · <code>amb-grid.css</code> · <code>README.md</code> · <code>LICENSE</code> · <code>VERSION.txt</code></p></div>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="installation-verification" aria-labelledby="installation-verification-title"><h2 id="installation-verification-title">${text('verify')}</h2>${verificationCode()}<a class="installation-guide-link" href="/#getting-started-javascript">${text('guide')} →</a></section>
+      <section class="installation-next" aria-labelledby="installation-next-title"><h2 id="installation-next-title">${text('next')}</h2><nav class="installation-frameworks" aria-label="${text('next')}"><a href="/#getting-started-javascript">JavaScript →</a><a href="/#getting-started-react">React →</a><a href="/#framework-integrations">Vue →</a><a href="/#framework-integrations">Angular →</a></nav></section>
       ${renderDemoFooter({ demoHref: '/#javascript-demo', examplesHref: '/#feature-examples', guideHref: '/#getting-started-javascript' })}</main>`;
     document.documentElement.lang = language;
     document.title = text('title');
