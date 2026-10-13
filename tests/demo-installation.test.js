@@ -24,6 +24,7 @@ describe('installation page', () => {
     test('has two modes, release download, simple verification, and next steps', () => {
         const source = read('src/demo/installation.js');
         const css = read('src/demo/installation.css');
+        const developmentVersion = JSON.parse(read('package.json')).version;
         for (const fragment of [
             'Due modalità, una sola API', 'Two modes, one API',
             'demo-guide-integration installation-modes', 'demo-guide-classic-layout',
@@ -32,8 +33,15 @@ describe('installation page', () => {
             'Modern JavaScript / npm', 'Browser / standalone',
             'npm install', "'amb-grid/style.css'", './vendor/amb-grid/amb-grid.css',
             './vendor/amb-grid/amb-grid.umd.js', 'demo-guide-mode-note',
-            'packageJson.version', 'amb-grid-legacy-${version}.zip',
-            'GitHub Release ${releaseTag}', 'README.md', 'LICENSE', 'VERSION.txt',
+            "publishedReleaseVersion = '0.6.0'", 'amb-grid-legacy-${publishedReleaseVersion}.zip',
+            'GitHub Release ${releaseTag}', 'Contenuto ZIP', 'ZIP contents',
+            'amb-grid/', '├── amb-grid.umd.js', '├── amb-grid.css',
+            '├── README.md', '├── LICENSE', '└── VERSION.txt',
+            'installation-download', 'installation-all-releases',
+            'https://github.com/ambruoso-luigi/amb-grid/releases',
+            'assetPlacement', 'Estrai lo ZIP nella cartella ./vendor/',
+            'Extract the ZIP into ./vendor/',
+            'id</span>=<span class="syntax-string">"grid"',
             String.raw`Verifica l\'installazione`, 'Verify the installation',
             'href="/#getting-started-javascript"', 'href="/#getting-started-react"',
             'Vue →', 'Angular →'
@@ -41,6 +49,9 @@ describe('installation page', () => {
         for (const fragment of ['AMB.editors', 'AMB.formatters', 'Package not yet published', 'Package non ancora pubblicato', 'coming soon', 'in arrivo', 'installation-paths']) {
             expect(source).not.toContain(fragment);
         }
+        expect(source).not.toContain('amb-grid-legacy-${version}.zip');
+        expect(source).not.toContain('packageJson.version');
+        expect(developmentVersion).toBe('0.7.0');
         expect(css).not.toMatch(/^\.demo-guide-mode-card\s*\{/m);
         expect(css).not.toMatch(/^\.demo-code-block\s*\{/m);
     });

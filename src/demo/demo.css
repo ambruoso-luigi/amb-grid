@@ -2111,11 +2111,17 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     font-weight: 700;
 }
 
+.demo-guide-app-css,
 .demo-guide-next {
     border-top: 1px solid #dbe5ef;
     padding: clamp(22px, 3vw, 34px) 0;
 }
 
+.demo-guide-app-css .demo-code-block {
+    max-width: 720px;
+}
+
+.demo-guide-app-css h3,
 .demo-guide-next h3 {
     font-size: clamp(20px, 2.6vw, 26px);
     line-height: 1.12;

@@ -23,6 +23,10 @@ for (const language of ['it', 'en']) {
         await expect(steps.nth(2).locator('code')).toContainText('AMB.table');
         await expect(steps.nth(3).locator('code')).toContainText('getSavePayload');
         await expect(steps.nth(3).locator('code')).toContainText('payload.changes');
+        const appCss = guide.locator('.demo-guide-app-css');
+        await expect(appCss.getByRole('heading', { name: language === 'it' ? 'CSS applicativo facoltativo' : 'Optional application CSS' })).toBeVisible();
+        await expect(appCss.locator('code')).toContainText('.inventory-page');
+        await expect(appCss.locator('code')).toContainText('#grid');
         await expect(page.locator('#javascript-integration')).toHaveCount(0);
         await expect(page.locator('.demo-guide-mode-card')).toHaveCount(0);
         await expect(guide).not.toContainText('npm install');

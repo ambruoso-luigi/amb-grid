@@ -1,6 +1,5 @@
 import './demo.css';
 import './installation.css';
-import packageJson from '../../package.json';
 import { renderDemoFooter } from './demo-footer.js';
 import { renderDemoBrand } from './demo-brand.js';
 import { readDemoLanguage } from './demo-language-switch.js';
@@ -8,9 +7,9 @@ import { demoIcon, demoYoutubeIcon } from './demo-icons.js';
 import { mountSiteNavbar } from './components/site-navbar.js';
 
 const root = document.querySelector('#app');
-const version = packageJson.version;
-const releaseTag = `v${version}`;
-const zipName = `amb-grid-legacy-${version}.zip`;
+const publishedReleaseVersion = '0.6.0';
+const releaseTag = `v${publishedReleaseVersion}`;
+const zipName = `amb-grid-legacy-${publishedReleaseVersion}.zip`;
 const zipUrl = `https://github.com/ambruoso-luigi/amb-grid/releases/download/${releaseTag}/${zipName}`;
 const INSTALLATION_VIDEO_URL = 'https://www.youtube.com/watch?v=2qhXHt0Upps';
 let language = readDemoLanguage();
@@ -24,7 +23,9 @@ const copy = {
         modesKicker: 'Due modalità, una sola API', modesTitle: 'Usare AMB Grid con JavaScript', modesText: 'AMB Grid si integra direttamente in JavaScript ed è framework-agnostic: usa il package npm in un progetto moderno oppure il bundle UMD in una pagina browser o server-rendered.',
         modernText: 'La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con installazione e aggiornamenti gestiti da npm.', installLabel: 'Installazione', importLabel: 'Import',
         browserText: 'Per pagine browser, server-rendered e applicazioni esistenti che non richiedono npm, bundler o framework.', assetsLabel: 'Caricamento asset', globalLabel: 'Global pubblico',
-        bundleText: 'Il bundle UMD è pronto per l’uso standalone: carica soltanto gli asset AMB Grid indicati qui sopra.', bundleContents: 'Nel bundle:',
+        bundleText: 'Il bundle UMD è pronto per l’uso standalone: carica soltanto gli asset AMB Grid indicati qui sopra.', bundleContents: 'Contenuto ZIP',
+        assetPlacement: 'Estrai lo ZIP nella cartella ./vendor/: i file saranno in ./vendor/amb-grid/, come nei percorsi qui sopra.', allReleases: 'Vedi tutte le release su GitHub →',
+        htmlLabel: 'HTML', javascriptLabel: 'JavaScript',
         verify: 'Verifica l\'installazione', guide: 'Continua con la guida JavaScript', next: 'AMB Grid è pronta.'
     },
     en: {
@@ -34,7 +35,9 @@ const copy = {
         modesKicker: 'Two modes, one API', modesTitle: 'Use AMB Grid with JavaScript', modesText: 'AMB Grid integrates directly with JavaScript and remains framework-agnostic: use the npm package in a modern project or the UMD bundle in a browser or server-rendered page.',
         modernText: 'The natural choice for Vite, bundlers, and modern JavaScript applications, with installation and updates managed by npm.', installLabel: 'Install', importLabel: 'Import',
         browserText: 'For browser pages, server-rendered applications, and existing systems that do not need npm, a bundler, or a framework.', assetsLabel: 'Load assets', globalLabel: 'Public global',
-        bundleText: 'The UMD bundle is ready for standalone use: load only the AMB Grid assets shown above.', bundleContents: 'In the bundle:',
+        bundleText: 'The UMD bundle is ready for standalone use: load only the AMB Grid assets shown above.', bundleContents: 'ZIP contents',
+        assetPlacement: 'Extract the ZIP into ./vendor/: the files will be in ./vendor/amb-grid/, matching the paths above.', allReleases: 'View all releases on GitHub →',
+        htmlLabel: 'HTML', javascriptLabel: 'JavaScript',
         verify: 'Verify the installation', guide: 'Continue with the JavaScript guide', next: 'AMB Grid is ready.'
     }
 };
@@ -86,12 +89,17 @@ const render = () => {
 &lt;<span class="syntax-tag">script</span> <span class="syntax-attr">src</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.umd.js"</span>&gt;&lt;/<span class="syntax-tag">script</span>&gt;`)}
               <span class="demo-guide-code-label">${text('globalLabel')}</span>${code(`<span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({ ... });`)}
               <p class="demo-guide-mode-note">${text('bundleText')}</p>
-              <div class="installation-bundle"><a href="${zipUrl}">${text('download')} →</a><span>${zipName} · GitHub Release ${releaseTag}</span><p>${text('bundleContents')} <code>amb-grid.umd.js</code> · <code>amb-grid.css</code> · <code>README.md</code> · <code>LICENSE</code> · <code>VERSION.txt</code></p></div>
+              <div class="installation-bundle"><a class="demo-button demo-button--primary installation-download" href="${zipUrl}">${text('download')} →</a><span>${zipName} · GitHub Release ${releaseTag}</span><a class="installation-all-releases" href="https://github.com/ambruoso-luigi/amb-grid/releases">${text('allReleases')}</a><p class="installation-asset-placement">${text('assetPlacement')}</p><h4>${text('bundleContents')}</h4>${code(`amb-grid/
+├── amb-grid.umd.js
+├── amb-grid.css
+├── README.md
+├── LICENSE
+└── VERSION.txt`)}</div>
             </div>
           </article>
         </div>
       </section>
-      <section class="installation-verification" aria-labelledby="installation-verification-title"><h2 id="installation-verification-title">${text('verify')}</h2>${verificationCode()}<a class="installation-guide-link" href="/#getting-started-javascript">${text('guide')} →</a></section>
+      <section class="installation-verification" aria-labelledby="installation-verification-title"><h2 id="installation-verification-title">${text('verify')}</h2><span class="demo-guide-code-label">${text('htmlLabel')}</span>${code(`&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;`)}<span class="demo-guide-code-label">${text('javascriptLabel')}</span>${verificationCode()}<a class="installation-guide-link" href="/#getting-started-javascript">${text('guide')} →</a></section>
       <section class="installation-next" aria-labelledby="installation-next-title"><h2 id="installation-next-title">${text('next')}</h2><nav class="installation-frameworks" aria-label="${text('next')}"><a href="/#getting-started-javascript">JavaScript →</a><a href="/#getting-started-react">React →</a><a href="/#framework-integrations">Vue →</a><a href="/#framework-integrations">Angular →</a></nav></section>
       ${renderDemoFooter({ demoHref: '/#javascript-demo', examplesHref: '/#feature-examples', guideHref: '/#getting-started-javascript' })}</main>`;
     document.documentElement.lang = language;

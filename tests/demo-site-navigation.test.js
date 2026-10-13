@@ -159,6 +159,11 @@ describe('demo site navigation', () => {
         }
         expect(guide).toContain('getSavePayload');
         expect(guide).toContain('class="syntax-function">table</span>');
+        expect(guide).toContain('demo-guide-app-css');
+        expect(guide).toContain('syntax-selector">.inventory-page');
+        expect(guide).toContain('syntax-selector">#grid');
+        expect(main).toContain("'guide.appCss.title': 'CSS applicativo facoltativo'");
+        expect(main).toContain("'guide.appCss.title': 'Optional application CSS'");
         expect(guide).not.toContain('npm install');
         expect(guide).not.toContain("'amb-grid'</span>");
         expect(guide).not.toContain("'amb-grid/style.css'");

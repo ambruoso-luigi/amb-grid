@@ -128,6 +128,17 @@ export default function gettingStartedJavaScript(app) {
                     </article>
 
                 </div>
+                <div class="demo-guide-app-css">
+                    <h3 data-i18n="guide.appCss.title">CSS applicativo facoltativo</h3>
+                    <p class="demo-note" data-i18n="guide.appCss.text">Se usi un wrapper .inventory-page, puoi gestire la spaziatura della pagina separatamente dallo stylesheet di AMB Grid.</p>
+                    <pre class="demo-code-block demo-code-block--compact"><code><span class="syntax-selector">.inventory-page</span> {
+  <span class="syntax-property">padding</span>: <span class="syntax-number">24px</span>;
+}
+
+<span class="syntax-selector">#grid</span> {
+  <span class="syntax-property">margin-top</span>: <span class="syntax-number">16px</span>;
+}</code></pre>
+                </div>
                 <div class="demo-guide-next">
                     <h3 data-i18n="guide.next.title">Prossimi passi</h3>
                     <p class="demo-note" data-i18n="guide.next.text">Rivedi la demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.</p>

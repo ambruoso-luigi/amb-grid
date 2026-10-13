@@ -5,13 +5,17 @@
 .installation-modes { padding-left: 0; padding-right: 0; }
 .installation-modes .demo-guide-mode-card { scroll-margin-top: 20px; }
 .installation-bundle { border-top: 1px solid var(--amb-site-border); margin-top: 20px; padding-top: 16px; }
-.installation-bundle a, .installation-guide-link { color: #1d5f99; font-weight: 700; }
-.installation-bundle > span { color: var(--amb-site-muted); display: block; font-size: 13px; margin-top: 5px; overflow-wrap: anywhere; }
-.installation-bundle p { color: var(--amb-site-muted); font-size: 12px; line-height: 1.7; margin: 12px 0 0; }
-.installation-bundle code { font-size: inherit; }
+.installation-bundle .installation-download { color: #fff; font-weight: 700; }
+.installation-bundle > span { color: var(--amb-site-muted); display: block; font-size: 13px; margin-top: 10px; overflow-wrap: anywhere; }
+.installation-bundle .installation-all-releases, .installation-guide-link { color: #1d5f99; font-weight: 700; }
+.installation-all-releases { display: inline-block; font-size: 13px; margin-top: 10px; }
+.installation-bundle .installation-asset-placement { color: var(--amb-site-muted); font-size: 13px; line-height: 1.5; margin: 16px 0 0; }
+.installation-bundle h4 { color: var(--amb-site-navy); font-size: 15px; margin: 18px 0 0; }
+.installation-bundle .demo-code-block { margin-top: 10px; }
 .installation-verification, .installation-next { border-top: 1px solid var(--amb-site-border); padding: clamp(30px, 4vw, 48px) 0; }
 .installation-verification h2, .installation-next h2 { color: var(--amb-site-navy); margin: 0 0 20px; }
 .installation-verification .demo-code-block { max-width: 760px; }
+.installation-verification .demo-guide-code-label { margin-top: 16px; }
 .installation-guide-link { display: inline-block; margin-top: 14px; }
 .installation-frameworks { display: flex; flex-wrap: wrap; gap: 10px; }
 .installation-frameworks a { border: 1px solid var(--amb-site-border); border-radius: 999px; color: #1d5f99; font-weight: 700; padding: 8px 14px; text-decoration: none; }
