@@ -139,26 +139,37 @@ describe('demo site navigation', () => {
         expect(main).toContain("variant: 'showcase'");
     });
 
-    test('documents the current npm and standalone JavaScript integrations', () => {
+    test('keeps installation in its own page and localizes four API steps', () => {
         const guide = read('src/demo/getting-started-javascript.js');
         const main = read('src/demo/main.js');
-
-        expect(guide).toContain('id="javascript-integration"');
-        expect(main).toContain("'guide.integration.title': 'Usare AMB Grid con JavaScript'");
-        expect(main).toContain("'guide.integration.title': 'Use AMB Grid with JavaScript'");
-        expect(main).toContain("'guide.integration.modernTitle': 'Modern JavaScript / npm'");
-        expect(main).toContain("'guide.integration.browserTitle': 'Browser / standalone'");
-        expect(guide).toContain('class="demo-guide-mode-card');
-        expect(guide).toContain('class="demo-guide-badge');
-        expect(guide).toContain('class="demo-guide-code-section');
-        expect(guide).toContain("<span class=\"syntax-api\">AMB</span> } <span class=\"syntax-keyword\">from</span> <span class=\"syntax-string\">'amb-grid'</span>");
-        expect(guide).toContain("<span class=\"syntax-keyword\">import</span> <span class=\"syntax-string\">'amb-grid/style.css'</span>");
-        expect(guide).toContain('./vendor/amb-grid/amb-grid.css');
-        expect(guide).toContain('./vendor/amb-grid/amb-grid.umd.js');
-        expect(guide).toContain('<span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({ ... });');
-        expect(guide).not.toContain('classic-html-js-css-integration');
-        expect(main).not.toContain('Futura build browser');
-        expect(main).not.toContain('Planned browser bundle');
+        expect(guide).toContain('href="/install/"');
+        expect(main).toContain("'guide.installPrompt': 'Devi ancora installare AMB Grid?'");
+        expect(main).toContain("'guide.installPrompt': 'Need to install AMB Grid first?'");
+        expect(main).toContain("'guide.installLink': 'Vai alla pagina Installazione →'");
+        expect(main).toContain("'guide.installLink': 'Go to the Installation page →'");
+        for (const [step, it, en] of [
+            [1, 'Prepara il container', 'Prepare the container'],
+            [2, 'Definisci dati e colonne', 'Define data and columns'],
+            [3, 'Crea la griglia CRUD', 'Create the CRUD grid'],
+            [4, 'Leggi il payload', 'Read the payload']
+        ]) {
+            expect(guide).toContain(`data-i18n="guide.step${step}.title"`);
+            expect(main).toContain(`'guide.step${step}.title': '${it}'`);
+            expect(main).toContain(`'guide.step${step}.title': '${en}'`);
+        }
+        expect(guide).toContain('getSavePayload');
+        expect(guide).toContain('class="syntax-function">table</span>');
+        expect(guide).not.toContain('npm install');
+        expect(guide).not.toContain("'amb-grid'</span>");
+        expect(guide).not.toContain("'amb-grid/style.css'");
+        expect(guide).not.toContain('javascript-integration');
+        expect(guide).not.toContain('demo-guide-mode-card');
+        expect(guide).not.toContain('demo-guide-code-section');
+        expect(guide).not.toContain('guide.step5.');
+        expect(guide).not.toContain('guide.step6.');
+        expect(main).not.toContain('guide.integration.');
+        expect(main).not.toContain('guide.step5.');
+        expect(main).not.toContain('guide.step6.');
     });
 
     test('gives the JavaScript guide a localized framework identity in its hero', () => {

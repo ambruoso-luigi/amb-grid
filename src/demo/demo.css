@@ -2100,6 +2100,28 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     gap: 0;
 }
 
+.demo-guide-install-link {
+    color: var(--amb-site-muted);
+    font-size: 14px;
+    margin: 12px 0 0;
+}
+
+.demo-guide-install-link a {
+    color: var(--amb-site-blue);
+    font-weight: 700;
+}
+
+.demo-guide-next {
+    border-top: 1px solid #dbe5ef;
+    padding: clamp(22px, 3vw, 34px) 0;
+}
+
+.demo-guide-next h3 {
+    font-size: clamp(20px, 2.6vw, 26px);
+    line-height: 1.12;
+    margin-bottom: 8px;
+}
+
 .demo-guide-step {
     border-top: 1px solid #dbe5ef;
     display: grid;
