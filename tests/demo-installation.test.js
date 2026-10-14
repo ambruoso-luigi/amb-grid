@@ -30,7 +30,8 @@ describe('installation page', () => {
             'demo-guide-integration installation-modes', 'installation-modes__panel',
             'installation-mode installation-mode--modern', 'installation-mode installation-mode--legacy',
             "demoIcon('modern'", "demoIcon('legacy'", "demoIcon('validation'",
-            'installation-mode__content', 'installation-verification__layout',
+            'installation-mode__content--modern', 'installation-mode__content--standalone', 'installation-verification__layout',
+            'installation-code-group', 'installation-section-description',
             'installation-section-header', 'installation-section-header__identity',
             'bothModes: \'Entrambe le modalità\'', 'bothModes: \'Both modes\'',
             'Modern JavaScript / npm', 'Browser / standalone',
@@ -48,6 +49,9 @@ describe('installation page', () => {
             String.raw`Verifica l\'installazione`, 'Verify the installation',
             'installation-verification__copy', 'installation-verification__example',
             'frameworkOverview', 'Panoramica framework', 'Framework overview',
+            'nextText: \'Ora puoi continuare con la guida specifica per il tuo ambiente di sviluppo.\'',
+            'nextText: \'You can now continue with the guide for your development environment.\'',
+            'dedicatedGuide: \'Guida dedicata\'', 'dedicatedGuide: \'Dedicated guide\'',
             'href="/#getting-started-javascript"', 'href="/#getting-started-react"',
             'Vue →', 'Angular →'
         ]) expect(source).toContain(fragment);
@@ -71,11 +75,16 @@ describe('installation page', () => {
         expect(source).toContain('Dopo aver caricato AMB Grid');
         expect(source).toContain('After loading AMB Grid');
         expect(css).toContain('.installation-modes__panel { background: #fff; border:');
+        expect(css).toContain('.installation-modes__intro .demo-kicker {');
+        expect(css).toContain('.installation-modes__intro .demo-note {');
         expect(css).toContain('.installation-mode, .installation-verification { border-bottom:');
         expect(css).toContain('.installation-mode--modern { --mode-accent: var(--amb-site-blue-strong)');
         expect(css).toContain('.installation-mode--legacy { --mode-accent: #16806f');
         expect(css).toContain('.installation-verification { --mode-accent: var(--amb-site-navy)');
         expect(css).toContain('.installation-mode__content, .installation-verification__layout { display: grid;');
+        expect(css).toContain('.installation-mode__content--standalone, .installation-verification__layout { grid-template-columns:');
+        expect(css).toContain('.installation-page .demo-guide-code-label {');
+        expect(css).toContain('.installation-bundle .demo-code-block { font-size: 12px;');
         expect(css).toContain('@media (max-width: 900px) { .installation-mode__content, .installation-verification__layout { grid-template-columns: minmax(0, 1fr); } }');
         expect(css).not.toMatch(/^\.demo-guide-mode-card\s*\{/m);
         expect(css).not.toMatch(/^\.demo-code-block\s*\{/m);

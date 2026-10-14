@@ -20,6 +20,9 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(panel).toBeVisible();
     await expect(panel.locator(':scope > *')).toHaveCount(5);
     await expect(panel.locator(':scope > .installation-modes__intro')).toContainText('Two modes, one API');
+    const intro = panel.locator('.installation-modes__intro');
+    expect(Number.parseFloat(await intro.locator('.demo-kicker').evaluate(element => getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(14);
+    expect(Number.parseFloat(await intro.locator('.demo-note').evaluate(element => getComputedStyle(element).maxWidth))).toBeGreaterThanOrEqual(950);
     await expect(panel.locator(':scope > .installation-mode')).toHaveCount(2);
     await expect(panel.locator(':scope > .installation-mode').nth(0)).toHaveAttribute('id', 'npm');
     await expect(panel.locator(':scope > .installation-mode').nth(1)).toHaveAttribute('id', 'standalone');
@@ -45,8 +48,22 @@ test('shows the English installation flow and its links', async ({ page }) => {
     for (const section of [modern, standalone]) {
         expect(await section.locator('.installation-mode__content').evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(2);
     }
-    await expect(modern.locator('.installation-mode__summary')).toContainText('The natural choice');
-    await expect(standalone.locator('.installation-mode__summary')).toContainText('For browser pages');
+    await expect(modern.locator(':scope > .installation-section-description')).toContainText('The natural choice');
+    await expect(standalone.locator(':scope > .installation-section-description')).toContainText('For browser pages');
+    await expect(modern.locator('.installation-code-group')).toHaveCount(2);
+    await expect(modern.locator('.installation-code-group').nth(0).locator('.demo-guide-code-label')).toHaveText('Install');
+    await expect(modern.locator('.installation-code-group').nth(1).locator('.demo-guide-code-label')).toHaveText('Import');
+    await expect(standalone.locator('.installation-mode__content--standalone > .installation-bundle')).toHaveCount(1);
+    await expect(standalone.locator('.installation-mode__content--standalone > .installation-mode__details')).toHaveCount(1);
+    for (const label of await page.locator('.installation-page .demo-guide-code-label').all()) {
+        const style = await label.evaluate(element => {
+            const computed = getComputedStyle(element);
+            return { background: computed.backgroundColor, radius: computed.borderRadius, fontSize: Number.parseFloat(computed.fontSize) };
+        });
+        expect(style.background).toBe('rgba(0, 0, 0, 0)');
+        expect(style.radius).toBe('0px');
+        expect(style.fontSize).toBeGreaterThanOrEqual(13);
+    }
     await expect(modern.locator('pre').first()).toContainText('npm install amb-grid');
     await expect(modern.locator('pre').last()).toContainText("import { AMB } from 'amb-grid'");
     await expect(modern.locator('pre').last()).toContainText("import 'amb-grid/style.css'");
@@ -67,6 +84,7 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(bundle).toContainText('Extract the ZIP into ./vendor/');
     await expect(bundle.getByRole('heading', { name: 'ZIP contents' })).toBeVisible();
     await expect(bundle.locator('pre')).toHaveText('amb-grid/\n├── amb-grid.umd.js\n├── amb-grid.css\n├── README.md\n├── LICENSE\n└── VERSION.txt');
+    expect(Number.parseFloat(await bundle.locator('pre').evaluate(element => getComputedStyle(element).fontSize))).toBeLessThanOrEqual(13);
     await expect(page.locator('.installation-page a[href*="amb-grid-legacy-0.7.0.zip"]')).toHaveCount(0);
 
     const verification = page.locator('.installation-verification');
@@ -75,6 +93,7 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(verification.locator('.installation-section-header .demo-guide-badge')).toHaveText('Both modes');
     await expect(verification).toContainText('After loading AMB Grid');
     await expect(verification).toContainText('component lifecycle.');
+    await expect(verification.locator(':scope > .installation-section-description')).toBeVisible();
     expect(await verification.locator('.installation-verification__layout').evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(2);
     await expect(verification.locator('.installation-verification__copy .demo-guide-code-label')).toHaveText('HTML');
     await expect(verification.locator('.installation-verification__example .demo-guide-code-label')).toHaveText('JavaScript');
@@ -84,13 +103,21 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(verification.locator('pre').last()).not.toContainText('AMB.editors');
     await expect(verification.locator('pre').last()).not.toContainText('AMB.formatters');
     await expect(verification.getByRole('link', { name: 'Continue with the JavaScript guide →' })).toHaveAttribute('href', '/#getting-started-javascript');
+    expect(await verification.evaluate(element => Array.from(element.children).map(child => child.className))).toEqual(['installation-section-header', 'demo-note installation-section-description', 'installation-verification__layout', 'installation-guide-link']);
     await expect(page.locator('.installation-frameworks a')).toHaveCount(4);
     await expect(page.locator('.installation-frameworks a').nth(0)).toHaveAttribute('href', '/#getting-started-javascript');
     await expect(page.locator('.installation-frameworks a').nth(1)).toHaveAttribute('href', '/#getting-started-react');
     await expect(page.locator('.installation-frameworks a').nth(2)).toHaveAttribute('href', '/#framework-integrations');
     await expect(page.locator('.installation-frameworks a').nth(3)).toHaveAttribute('href', '/#framework-integrations');
-    await expect(page.locator('.installation-frameworks small')).toHaveText(['Framework overview', 'Framework overview']);
+    await expect(page.locator('.installation-frameworks small')).toHaveText(['Dedicated guide', 'Dedicated guide', 'Framework overview', 'Framework overview']);
     await expect(panel.locator('.installation-next').getByRole('heading', { name: 'AMB Grid is ready.' })).toBeVisible();
+    await expect(panel.locator('.installation-next .demo-note')).toHaveText('You can now continue with the guide for your development environment.');
+    const frameworkLinks = page.locator('.installation-frameworks a');
+    const linkStyles = await frameworkLinks.evaluateAll(elements => elements.map(element => {
+        const computed = getComputedStyle(element);
+        return { minHeight: computed.minHeight, padding: computed.padding, radius: computed.borderRadius, fontSize: computed.fontSize };
+    }));
+    expect(linkStyles.every(style => JSON.stringify(style) === JSON.stringify(linkStyles[0]))).toBe(true);
     await expect(page.getByText('Package not yet published on npm.')).toHaveCount(0);
     await expect(page.locator('.installation-page').getByText('coming soon')).toHaveCount(0);
 
@@ -113,7 +140,8 @@ test('shows the Italian ZIP instructions and verification container', async ({ p
     await expect(page.locator('.installation-verification')).toContainText('Dopo aver caricato AMB Grid');
     await expect(page.locator('.installation-verification .demo-guide-badge')).toHaveText('Entrambe le modalità');
     await expect(page.locator('.installation-next').getByRole('heading', { name: 'AMB Grid è pronta.' })).toBeVisible();
-    await expect(page.locator('.installation-frameworks small')).toHaveText(['Panoramica framework', 'Panoramica framework']);
+    await expect(page.locator('.installation-frameworks small')).toHaveText(['Guida dedicata', 'Guida dedicata', 'Panoramica framework', 'Panoramica framework']);
+    await expect(page.locator('.installation-next .demo-note')).toHaveText('Ora puoi continuare con la guida specifica per il tuo ambiente di sviluppo.');
 });
 
 test('stacks internal columns and keeps code scrolling inside blocks on mobile', async ({ page }) => {
