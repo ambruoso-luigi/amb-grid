@@ -27,8 +27,9 @@ describe('installation page', () => {
         const developmentVersion = JSON.parse(read('package.json')).version;
         for (const fragment of [
             'Due modalità, una sola API', 'Two modes, one API',
-            'demo-guide-integration installation-modes', 'demo-guide-classic-layout',
-            'demo-guide-mode-card--modern', 'demo-guide-mode-card--legacy',
+            'demo-guide-integration installation-modes', 'installation-modes__panel',
+            'installation-mode installation-mode--modern', 'installation-mode installation-mode--legacy',
+            'installation-mode__number">01', 'installation-mode__number">02',
             "demoIcon('modern'", "demoIcon('legacy'",
             'Modern JavaScript / npm', 'Browser / standalone',
             'npm install', "'amb-grid/style.css'", './vendor/amb-grid/amb-grid.css',
@@ -43,6 +44,8 @@ describe('installation page', () => {
             'Extract the ZIP into ./vendor/',
             'id</span>=<span class="syntax-string">"grid"',
             String.raw`Verifica l\'installazione`, 'Verify the installation',
+            'installation-verification__copy', 'installation-verification__example',
+            'frameworkOverview', 'Panoramica framework', 'Framework overview',
             'href="/#getting-started-javascript"', 'href="/#getting-started-react"',
             'Vue →', 'Angular →'
         ]) expect(source).toContain(fragment);
@@ -52,6 +55,20 @@ describe('installation page', () => {
         expect(source).not.toContain('amb-grid-legacy-${version}.zip');
         expect(source).not.toContain('packageJson.version');
         expect(developmentVersion).toBe('0.7.0');
+        expect(source).not.toContain('demo-guide-classic-layout');
+        expect(source).not.toContain('demo-guide-mode-card demo-guide-mode-card--');
+        expect(source.indexOf('id="npm"')).toBeLessThan(source.indexOf('id="standalone"'));
+        expect(source).toContain('AMB Grid è indipendente dal framework utilizzato.');
+        expect(source).toContain('AMB Grid is framework-agnostic.');
+        expect(source).toContain('Dopo aver caricato AMB Grid');
+        expect(source).toContain('After loading AMB Grid');
+        expect(css).toContain('.installation-modes__panel { background: #fff; border:');
+        expect(css).toContain('.installation-mode + .installation-mode { border-top:');
+        expect(css).toContain('.installation-mode--modern { --mode-accent: var(--amb-site-blue-strong)');
+        expect(css).toContain('.installation-mode--legacy { --mode-accent: #16806f');
+        expect(css).toContain('.installation-verification { display: grid;');
+        expect(css).toContain('@media (max-width: 900px) { .installation-verification { grid-template-columns: minmax(0, 1fr); } }');
+        expect(css).not.toContain('max-width: 760px;');
         expect(css).not.toMatch(/^\.demo-guide-mode-card\s*\{/m);
         expect(css).not.toMatch(/^\.demo-code-block\s*\{/m);
     });

@@ -12,8 +12,21 @@ test('shows the English installation flow and its links', async ({ page }) => {
     expect(await page.locator('.installation-page').evaluate(element => getComputedStyle(element).paddingRight)).toBe('0px');
 
     await expect(page.getByText('Two modes, one API')).toBeVisible();
+    await expect(page.getByText('AMB Grid is framework-agnostic.', { exact: false })).toBeVisible();
+    const panel = page.locator('.installation-modes__panel');
+    await expect(panel).toBeVisible();
+    await expect(panel.locator(':scope > .installation-mode')).toHaveCount(2);
+    await expect(panel.locator(':scope > .installation-mode').nth(0)).toHaveAttribute('id', 'npm');
+    await expect(panel.locator(':scope > .installation-mode').nth(1)).toHaveAttribute('id', 'standalone');
+    await expect(page.locator('.installation-modes .demo-guide-mode-card')).toHaveCount(0);
     const modern = page.locator('#npm');
     const standalone = page.locator('#standalone');
+    await expect(modern.locator('.installation-mode__number')).toHaveText('01');
+    await expect(standalone.locator('.installation-mode__number')).toHaveText('02');
+    expect(await modern.evaluate((element, other) => element.compareDocumentPosition(document.querySelector(other)) & Node.DOCUMENT_POSITION_FOLLOWING, '#standalone')).toBeTruthy();
+    expect(await panel.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none');
+    expect(await modern.evaluate(element => getComputedStyle(element).boxShadow)).toBe('none');
+    expect(await standalone.evaluate(element => getComputedStyle(element).boxShadow)).toBe('none');
     await expect(modern.getByRole('heading', { name: 'Modern JavaScript / npm' })).toBeVisible();
     await expect(standalone.getByRole('heading', { name: 'Browser / standalone' })).toBeVisible();
     await expect(modern.locator('pre').first()).toContainText('npm install amb-grid');
@@ -38,12 +51,22 @@ test('shows the English installation flow and its links', async ({ page }) => {
 
     const verification = page.locator('.installation-verification');
     await expect(verification.getByRole('heading', { name: 'Verify the installation' })).toBeVisible();
+    await expect(verification).toContainText('After loading AMB Grid');
+    await expect(verification).toContainText('component lifecycle.');
+    expect(await verification.evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(2);
+    await expect(verification.locator('.installation-verification__copy .demo-guide-code-label')).toHaveText('HTML');
+    await expect(verification.locator('.installation-verification__example .demo-guide-code-label')).toHaveText('JavaScript');
     await expect(verification.locator('pre').first()).toContainText('<div id="grid"></div>');
     await expect(verification.locator('pre').last()).toContainText('AMB.table');
     await expect(verification.locator('pre').last()).not.toContainText('AMB.editors');
     await expect(verification.locator('pre').last()).not.toContainText('AMB.formatters');
     await expect(verification.getByRole('link', { name: 'Continue with the JavaScript guide →' })).toHaveAttribute('href', '/#getting-started-javascript');
     await expect(page.locator('.installation-frameworks a')).toHaveCount(4);
+    await expect(page.locator('.installation-frameworks a').nth(0)).toHaveAttribute('href', '/#getting-started-javascript');
+    await expect(page.locator('.installation-frameworks a').nth(1)).toHaveAttribute('href', '/#getting-started-react');
+    await expect(page.locator('.installation-frameworks a').nth(2)).toHaveAttribute('href', '/#framework-integrations');
+    await expect(page.locator('.installation-frameworks a').nth(3)).toHaveAttribute('href', '/#framework-integrations');
+    await expect(page.locator('.installation-frameworks small')).toHaveText(['Framework overview', 'Framework overview']);
     await expect(page.getByText('Package not yet published on npm.')).toHaveCount(0);
     await expect(page.locator('.installation-page').getByText('coming soon')).toHaveCount(0);
 
@@ -63,4 +86,17 @@ test('shows the Italian ZIP instructions and verification container', async ({ p
     await expect(standalone.getByRole('heading', { name: 'Contenuto ZIP' })).toBeVisible();
     await expect(standalone.locator('.installation-asset-placement')).toContainText('Estrai lo ZIP nella cartella ./vendor/');
     await expect(page.locator('.installation-verification pre').first()).toContainText('<div id="grid"></div>');
+    await expect(page.locator('.installation-verification')).toContainText('Dopo aver caricato AMB Grid');
+    await expect(page.locator('.installation-frameworks small')).toHaveText(['Panoramica framework', 'Panoramica framework']);
+});
+
+test('stacks the verification and keeps code scrolling inside blocks on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/install/');
+    const panel = page.locator('.installation-modes__panel');
+    await expect(panel.locator(':scope > .installation-mode')).toHaveCount(2);
+    const verification = page.locator('.installation-verification');
+    expect(await verification.evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await expect(page.locator('#standalone .installation-bundle pre')).toBeVisible();
 });

@@ -20,25 +20,27 @@ const copy = {
         title: 'AMB Grid - Installazione e download', description: 'Usa npm nei progetti moderni oppure scarica il bundle standalone per applicazioni browser e server-rendered.',
         hero: 'Installa AMB Grid', intro: 'Usa npm nei progetti moderni oppure scarica il bundle standalone per applicazioni browser e server-rendered.',
         videoLabel: 'Guida all\'installazione', videoLink: 'Apri la guida di installazione su YouTube', npm: 'npm / ESM', download: 'Scarica bundle standalone',
-        modesKicker: 'Due modalità, una sola API', modesTitle: 'Usare AMB Grid con JavaScript', modesText: 'AMB Grid si integra direttamente in JavaScript ed è framework-agnostic: usa il package npm in un progetto moderno oppure il bundle UMD in una pagina browser o server-rendered.',
+        modesKicker: 'Due modalità, una sola API', modesTitle: 'Usare AMB Grid con JavaScript', modesText: 'AMB Grid è indipendente dal framework utilizzato. Nei progetti moderni, inclusi React, Vue e Angular, l\'installazione tramite npm/ESM è comune; cambia soltanto il modo in cui la griglia viene integrata nel ciclo di vita del framework. Per pagine tradizionali o applicazioni senza bundler è disponibile il bundle standalone.',
         modernText: 'La scelta naturale per Vite, bundler e applicazioni JavaScript moderne, con installazione e aggiornamenti gestiti da npm.', installLabel: 'Installazione', importLabel: 'Import',
         browserText: 'Per pagine browser, server-rendered e applicazioni esistenti che non richiedono npm, bundler o framework.', assetsLabel: 'Caricamento asset', globalLabel: 'Global pubblico',
         bundleText: 'Il bundle UMD è pronto per l’uso standalone: carica soltanto gli asset AMB Grid indicati qui sopra.', bundleContents: 'Contenuto ZIP',
         assetPlacement: 'Estrai lo ZIP nella cartella ./vendor/: i file saranno in ./vendor/amb-grid/, come nei percorsi qui sopra.', allReleases: 'Vedi tutte le release su GitHub →',
         htmlLabel: 'HTML', javascriptLabel: 'JavaScript',
-        verify: 'Verifica l\'installazione', guide: 'Continua con la guida JavaScript', next: 'AMB Grid è pronta.'
+        verify: 'Verifica l\'installazione', verifyText: 'Dopo aver caricato AMB Grid, crea un contenitore HTML e inizializza una tabella con pochi dati. Se la griglia viene visualizzata correttamente, l\'installazione è pronta. Questo esempio utilizza JavaScript diretto; nei framework la creazione della griglia va collegata al ciclo di vita del componente.',
+        guide: 'Continua con la guida JavaScript', next: 'AMB Grid è pronta.', frameworkOverview: 'Panoramica framework'
     },
     en: {
         title: 'AMB Grid - Installation and download', description: 'Use npm in modern projects or download the standalone bundle for browser and server-rendered applications.',
         hero: 'Install AMB Grid', intro: 'Use npm in modern projects or download the standalone bundle for browser and server-rendered applications.',
         videoLabel: 'Installation guide', videoLink: 'Open the installation guide on YouTube', npm: 'npm / ESM', download: 'Download standalone bundle',
-        modesKicker: 'Two modes, one API', modesTitle: 'Use AMB Grid with JavaScript', modesText: 'AMB Grid integrates directly with JavaScript and remains framework-agnostic: use the npm package in a modern project or the UMD bundle in a browser or server-rendered page.',
+        modesKicker: 'Two modes, one API', modesTitle: 'Use AMB Grid with JavaScript', modesText: 'AMB Grid is framework-agnostic. Modern projects, including React, Vue, and Angular, share the same npm/ESM installation process; only the integration with each framework\'s component lifecycle differs. A standalone bundle is also available for traditional browser pages and applications without a bundler.',
         modernText: 'The natural choice for Vite, bundlers, and modern JavaScript applications, with installation and updates managed by npm.', installLabel: 'Install', importLabel: 'Import',
         browserText: 'For browser pages, server-rendered applications, and existing systems that do not need npm, a bundler, or a framework.', assetsLabel: 'Load assets', globalLabel: 'Public global',
         bundleText: 'The UMD bundle is ready for standalone use: load only the AMB Grid assets shown above.', bundleContents: 'ZIP contents',
         assetPlacement: 'Extract the ZIP into ./vendor/: the files will be in ./vendor/amb-grid/, matching the paths above.', allReleases: 'View all releases on GitHub →',
         htmlLabel: 'HTML', javascriptLabel: 'JavaScript',
-        verify: 'Verify the installation', guide: 'Continue with the JavaScript guide', next: 'AMB Grid is ready.'
+        verify: 'Verify the installation', verifyText: 'After loading AMB Grid, create an HTML container and initialize a table with a small dataset. If the grid renders correctly, the installation is ready. This example uses plain JavaScript; in frameworks, grid initialization must be connected to the component lifecycle.',
+        guide: 'Continue with the JavaScript guide', next: 'AMB Grid is ready.', frameworkOverview: 'Framework overview'
     }
 };
 const text = key => copy[language][key];
@@ -73,18 +75,18 @@ const render = () => {
       <header class="demo-hero installation-hero"><div class="demo-hero__brand">${renderDemoBrand({ href: '/#top' })}</div><div class="demo-hero__body"><div class="demo-hero__content"><h1>${text('hero')}</h1><p class="demo-hero__text">${text('intro')}</p><div class="demo-hero__actions"><a class="demo-button demo-button--secondary" href="#npm">${text('npm')}</a><a class="demo-button demo-button--primary" href="#standalone">${text('download')}</a></div></div></div>${renderInstallationVideoPreview()}</header>
       <section class="demo-guide-section demo-guide-integration installation-modes" aria-labelledby="installation-modes-title">
         <div class="demo-section-heading"><p class="demo-kicker">${text('modesKicker')}</p><h2 id="installation-modes-title">${text('modesTitle')}</h2><p class="demo-note">${text('modesText')}</p></div>
-        <div class="demo-guide-classic-layout">
-          <article class="demo-guide-mode-card demo-guide-mode-card--modern" id="npm">
-            <div class="demo-guide-mode-card__header"><span class="demo-guide-mode-card__icon">${demoIcon('modern', { size: 24 })}</span><span class="demo-guide-badge">npm + ESM</span></div>
-            <div class="demo-guide-mode-card__body"><h3>Modern JavaScript / npm</h3><p class="demo-note">${text('modernText')}</p>
+        <div class="installation-modes__panel">
+          <article class="installation-mode installation-mode--modern" id="npm">
+            <div class="demo-guide-mode-card__header"><div class="installation-mode__identity"><span class="installation-mode__number">01</span><span class="demo-guide-mode-card__icon">${demoIcon('modern', { size: 24 })}</span><h3>Modern JavaScript / npm</h3></div><span class="demo-guide-badge">npm + ESM</span></div>
+            <div class="demo-guide-mode-card__body"><p class="demo-note">${text('modernText')}</p>
               <span class="demo-guide-code-label">${text('installLabel')}</span>${code(`<span class="syntax-command">npm install</span> <span class="syntax-string">amb-grid</span>`)}
               <span class="demo-guide-code-label">${text('importLabel')}</span>${code(`<span class="syntax-keyword">import</span> { <span class="syntax-api">AMB</span> } <span class="syntax-keyword">from</span> <span class="syntax-string">'amb-grid'</span>;
 <span class="syntax-keyword">import</span> <span class="syntax-string">'amb-grid/style.css'</span>;`)}
             </div>
           </article>
-          <article class="demo-guide-mode-card demo-guide-mode-card--legacy" id="standalone">
-            <div class="demo-guide-mode-card__header"><span class="demo-guide-mode-card__icon">${demoIcon('legacy', { size: 24 })}</span><span class="demo-guide-badge demo-guide-badge--legacy">Standalone</span></div>
-            <div class="demo-guide-mode-card__body"><h3>Browser / standalone</h3><p class="demo-note">${text('browserText')}</p>
+          <article class="installation-mode installation-mode--legacy" id="standalone">
+            <div class="demo-guide-mode-card__header"><div class="installation-mode__identity"><span class="installation-mode__number">02</span><span class="demo-guide-mode-card__icon">${demoIcon('legacy', { size: 24 })}</span><h3>Browser / standalone</h3></div><span class="demo-guide-badge demo-guide-badge--legacy">Standalone</span></div>
+            <div class="demo-guide-mode-card__body"><p class="demo-note">${text('browserText')}</p>
               <span class="demo-guide-code-label">${text('assetsLabel')}</span>${code(`&lt;<span class="syntax-tag">link</span> <span class="syntax-attr">rel</span>=<span class="syntax-string">"stylesheet"</span> <span class="syntax-attr">href</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.css"</span>&gt;
 &lt;<span class="syntax-tag">script</span> <span class="syntax-attr">src</span>=<span class="syntax-string">"./vendor/amb-grid/amb-grid.umd.js"</span>&gt;&lt;/<span class="syntax-tag">script</span>&gt;`)}
               <span class="demo-guide-code-label">${text('globalLabel')}</span>${code(`<span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({ ... });`)}
@@ -99,8 +101,8 @@ const render = () => {
           </article>
         </div>
       </section>
-      <section class="installation-verification" aria-labelledby="installation-verification-title"><h2 id="installation-verification-title">${text('verify')}</h2><span class="demo-guide-code-label">${text('htmlLabel')}</span>${code(`&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;`)}<span class="demo-guide-code-label">${text('javascriptLabel')}</span>${verificationCode()}<a class="installation-guide-link" href="/#getting-started-javascript">${text('guide')} →</a></section>
-      <section class="installation-next" aria-labelledby="installation-next-title"><h2 id="installation-next-title">${text('next')}</h2><nav class="installation-frameworks" aria-label="${text('next')}"><a href="/#getting-started-javascript">JavaScript →</a><a href="/#getting-started-react">React →</a><a href="/#framework-integrations">Vue →</a><a href="/#framework-integrations">Angular →</a></nav></section>
+      <section class="installation-verification" aria-labelledby="installation-verification-title"><div class="installation-verification__copy"><h2 id="installation-verification-title">${text('verify')}</h2><p class="demo-note">${text('verifyText')}</p><span class="demo-guide-code-label">${text('htmlLabel')}</span>${code(`&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;`)}<a class="installation-guide-link" href="/#getting-started-javascript">${text('guide')} →</a></div><div class="installation-verification__example"><span class="demo-guide-code-label">${text('javascriptLabel')}</span>${verificationCode()}</div></section>
+      <section class="installation-next" aria-labelledby="installation-next-title"><h2 id="installation-next-title">${text('next')}</h2><nav class="installation-frameworks" aria-label="${text('next')}"><a href="/#getting-started-javascript">JavaScript →</a><a href="/#getting-started-react">React →</a><a href="/#framework-integrations">Vue → <small>${text('frameworkOverview')}</small></a><a href="/#framework-integrations">Angular → <small>${text('frameworkOverview')}</small></a></nav></section>
       ${renderDemoFooter({ demoHref: '/#javascript-demo', examplesHref: '/#feature-examples', guideHref: '/#getting-started-javascript' })}</main>`;
     document.documentElement.lang = language;
     document.title = text('title');
