@@ -21,7 +21,7 @@ describe('installation page', () => {
         expect(css).toMatch(/\.installation-page\s*\{[^}]*padding:\s*0 0 48px/);
     });
 
-    test('has two modes, release download, simple verification, and next steps', () => {
+    test('keeps installation content in one panel with the published release', () => {
         const source = read('src/demo/installation.js');
         const css = read('src/demo/installation.css');
         const developmentVersion = JSON.parse(read('package.json')).version;
@@ -29,8 +29,10 @@ describe('installation page', () => {
             'Due modalità, una sola API', 'Two modes, one API',
             'demo-guide-integration installation-modes', 'installation-modes__panel',
             'installation-mode installation-mode--modern', 'installation-mode installation-mode--legacy',
-            'installation-mode__number">01', 'installation-mode__number">02',
-            "demoIcon('modern'", "demoIcon('legacy'",
+            "demoIcon('modern'", "demoIcon('legacy'", "demoIcon('validation'",
+            'installation-mode__content', 'installation-verification__layout',
+            'installation-section-header', 'installation-section-header__identity',
+            'bothModes: \'Entrambe le modalità\'', 'bothModes: \'Both modes\'',
             'Modern JavaScript / npm', 'Browser / standalone',
             'npm install', "'amb-grid/style.css'", './vendor/amb-grid/amb-grid.css',
             './vendor/amb-grid/amb-grid.umd.js', 'demo-guide-mode-note',
@@ -57,18 +59,24 @@ describe('installation page', () => {
         expect(developmentVersion).toBe('0.7.0');
         expect(source).not.toContain('demo-guide-classic-layout');
         expect(source).not.toContain('demo-guide-mode-card demo-guide-mode-card--');
+        expect(source).not.toContain('installation-mode__number');
+        expect(source.indexOf('installation-modes__panel')).toBeLessThan(source.indexOf('installation-modes__intro'));
+        expect(source.indexOf('installation-modes__intro')).toBeLessThan(source.indexOf('id="npm"'));
         expect(source.indexOf('id="npm"')).toBeLessThan(source.indexOf('id="standalone"'));
+        expect(source.indexOf('id="standalone"')).toBeLessThan(source.indexOf('class="installation-verification"'));
+        expect(source.indexOf('class="installation-verification"')).toBeLessThan(source.indexOf('class="installation-next"'));
+        expect(source.indexOf('class="installation-next"')).toBeLessThan(source.indexOf('${renderDemoFooter({'));
         expect(source).toContain('AMB Grid è indipendente dal framework utilizzato.');
         expect(source).toContain('AMB Grid is framework-agnostic.');
         expect(source).toContain('Dopo aver caricato AMB Grid');
         expect(source).toContain('After loading AMB Grid');
         expect(css).toContain('.installation-modes__panel { background: #fff; border:');
-        expect(css).toContain('.installation-mode + .installation-mode { border-top:');
+        expect(css).toContain('.installation-mode, .installation-verification { border-bottom:');
         expect(css).toContain('.installation-mode--modern { --mode-accent: var(--amb-site-blue-strong)');
         expect(css).toContain('.installation-mode--legacy { --mode-accent: #16806f');
-        expect(css).toContain('.installation-verification { display: grid;');
-        expect(css).toContain('@media (max-width: 900px) { .installation-verification { grid-template-columns: minmax(0, 1fr); } }');
-        expect(css).not.toContain('max-width: 760px;');
+        expect(css).toContain('.installation-verification { --mode-accent: var(--amb-site-navy)');
+        expect(css).toContain('.installation-mode__content, .installation-verification__layout { display: grid;');
+        expect(css).toContain('@media (max-width: 900px) { .installation-mode__content, .installation-verification__layout { grid-template-columns: minmax(0, 1fr); } }');
         expect(css).not.toMatch(/^\.demo-guide-mode-card\s*\{/m);
         expect(css).not.toMatch(/^\.demo-code-block\s*\{/m);
     });
