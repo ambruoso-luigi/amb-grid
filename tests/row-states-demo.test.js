@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 const source = fs.readFileSync(
     new URL('../src/demo/row-states.js', import.meta.url),
     'utf8'
-);
+).replace(/\r\n/g, '\n');
 
 describe('Row states demo', () => {
     test('uses the AMB toolbar and standard CRUD actions without loose buttons', () => {
@@ -75,15 +75,21 @@ describe('Row states demo', () => {
     });
 
     test('keeps report and row numbers as lifecycle-focused custom actions', () => {
+        const showStates = source.slice(source.indexOf('async function handleShowStates()'), source.indexOf('async function handleReload()'));
         expect(source).toContain("id: 'state-report'");
         expect(source).toContain("label: 'Report'");
         expect(source).toContain("id: 'state-row-numbers'");
         expect(source).toContain("label: 'Row numbers'");
         expect(source).toContain('async function handleShowStates()');
-        expect(source).toContain("demo.updateRow('REC-002', {");
-        expect(source).toContain("demo.deleteRow('REC-003')");
-        expect(source).toContain("demo.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' })");
-        expect(source).toContain("demo.validateRow('REC-004')");
+        expect(showStates).toContain('await resetToCleanBaseline();');
+        expect(showStates).toContain("await demo.updateRow('REC-002', {\n            type: 'Procedure'\n        });");
+        expect(showStates).toContain("await demo.deleteRow('REC-003')");
+        expect(showStates).toContain("await demo.updateRow('REC-004', {\n            description: ''\n        });");
+        expect(showStates).toContain("await demo.validateRow('REC-004')");
+        expect(showStates).toContain("await demo.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' })");
+        expect(showStates).toContain('refreshErrorCounts();');
+        expect(showStates).not.toContain("type: ''");
+        expect(source).toContain("Clear Description to trigger its required-field error; after Reload, edit REC-004 and Save to reproduce it.");
         expect(source).toContain("AMB.editors.select({ options: ['Request', 'Contract', 'Procedure', 'Compliance', 'Restricted'] })");
         expect(source).toContain("crud.markCellError(row.key, 'type'");
         expect(source).toContain('function refreshErrorCounts()');

@@ -39,7 +39,8 @@ const buildStateReport = report => [
     ...buildErrorDetails(report),
     '',
     'Use Add row to create a new row.',
-    'Edit Description to create a modified row.',
+    'Change Type to create a modified row.',
+    'Clear Description to trigger its required-field error; after Reload, edit REC-004 and Save to reproduce it.',
     'Use the row action column to mark an existing row as deleted.',
     'Use Save to confirm valid changes and mark them as saved.',
     'Errors remain distinct from the deleted lifecycle state.'
@@ -385,11 +386,13 @@ export default function rowStates(app) {
         reportDialog.close();
         await resetToCleanBaseline();
         await demo.updateRow('REC-002', {
-            description: 'Contract review awaiting approval'
+            type: 'Procedure'
         });
         await demo.deleteRow('REC-003');
-        await demo.updateRow('REC-004', { type: '' });
-        demo.validateRow('REC-004');
+        await demo.updateRow('REC-004', {
+            description: ''
+        });
+        await demo.validateRow('REC-004');
         await demo.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' });
         refreshErrorCounts();
     }
