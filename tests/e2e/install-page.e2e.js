@@ -46,7 +46,7 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(modern.locator('.installation-section-header .demo-guide-badge')).toHaveText('npm + ESM');
     await expect(standalone.locator('.installation-section-header .demo-guide-badge')).toHaveText('Standalone');
     for (const section of [modern, standalone]) {
-        expect(await section.locator('.installation-mode__content').evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(2);
+        expect(await section.locator('.installation-mode__content').evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(1);
     }
     await expect(modern.locator(':scope > .installation-section-description')).toContainText('The natural choice');
     await expect(standalone.locator(':scope > .installation-section-description')).toContainText('For browser pages');
@@ -55,6 +55,7 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(modern.locator('.installation-code-group').nth(1).locator('.demo-guide-code-label')).toHaveText('Import');
     await expect(standalone.locator('.installation-mode__content--standalone > .installation-bundle')).toHaveCount(1);
     await expect(standalone.locator('.installation-mode__content--standalone > .installation-mode__details')).toHaveCount(1);
+    expect(await standalone.locator('.installation-mode__content--standalone').evaluate(element => Array.from(element.children).map(child => child.className))).toEqual(['installation-bundle', 'installation-mode__details']);
     for (const label of await page.locator('.installation-page .demo-guide-code-label').all()) {
         const style = await label.evaluate(element => {
             const computed = getComputedStyle(element);
@@ -94,7 +95,7 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(verification).toContainText('After loading AMB Grid');
     await expect(verification).toContainText('component lifecycle.');
     await expect(verification.locator(':scope > .installation-section-description')).toBeVisible();
-    expect(await verification.locator('.installation-verification__layout').evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(2);
+    expect(await verification.locator('.installation-verification__layout').evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(1);
     await expect(verification.locator('.installation-verification__copy .demo-guide-code-label')).toHaveText('HTML');
     await expect(verification.locator('.installation-verification__example .demo-guide-code-label')).toHaveText('JavaScript');
     await expect(verification.locator('pre').first()).toContainText('<div id="grid"></div>');
@@ -144,16 +145,25 @@ test('shows the Italian ZIP instructions and verification container', async ({ p
     await expect(page.locator('.installation-next .demo-note')).toHaveText('Ora puoi continuare con la guida specifica per il tuo ambiente di sviluppo.');
 });
 
-test('stacks internal columns and keeps code scrolling inside blocks on mobile', async ({ page }) => {
+test('keeps the guide centered and every section vertical from desktop to mobile', async ({ page }) => {
     await page.goto('/install/');
     const panel = page.locator('.installation-modes__panel');
     await expect(panel.locator(':scope > *')).toHaveCount(5);
-    for (const width of [768, 375]) {
+    for (const width of [1920, 1366, 768, 375]) {
         await page.setViewportSize({ width, height: 812 });
         for (const selector of ['#npm .installation-mode__content', '#standalone .installation-mode__content', '.installation-verification__layout']) {
             expect(await panel.locator(selector).evaluate(element => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)).toBe(1);
         }
+        const geometry = await page.evaluate(() => {
+            const guide = document.querySelector('.installation-modes').getBoundingClientRect();
+            const hero = document.querySelector('.installation-hero').getBoundingClientRect();
+            return { guideWidth: guide.width, guideLeft: guide.left, guideRight: guide.right, heroWidth: hero.width, viewportWidth: window.innerWidth };
+        });
+        expect(geometry.guideWidth).toBeLessThanOrEqual(1101);
+        expect(Math.abs(geometry.guideLeft - (geometry.viewportWidth - geometry.guideRight))).toBeLessThanOrEqual(1);
+        if (width === 1920) expect(geometry.heroWidth).toBeGreaterThan(geometry.guideWidth);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
     }
     await expect(page.locator('#standalone .installation-bundle pre')).toBeVisible();
+    expect(await page.locator('#standalone .installation-mode__details pre').first().evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
 });
