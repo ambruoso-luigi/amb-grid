@@ -11,6 +11,7 @@
     "dev": "ng serve",
     "prebuild": "npm --prefix ../.. run build:dist",
     "build": "ng build",
+    "build:site": "ng build",
     "pretypecheck": "npm --prefix ../.. run build:types",
     "typecheck": "ngc -p tsconfig.app.json --noEmit"
   },

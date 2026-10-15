@@ -31,16 +31,18 @@ describe('demo site navigation', () => {
         expect(main).toContain("'frameworks.vue.meta': 'Composition API · TypeScript'");
         expect(main).toContain("'frameworks.vue.description': 'Integra AMB Grid con la Composition API usando il lifecycle del componente Vue.'");
         expect(main).toContain("'frameworks.vue.description': 'Integrate AMB Grid with the Composition API through the Vue component lifecycle.'");
-        expect(main).toContain("'frameworks.angular.meta': 'TypeScript · Component lifecycle'");
-        expect(main).toContain("'frameworks.angular.description': 'Integra AMB Grid nel ciclo di vita del componente Angular, con inizializzazione e cleanup corretti.'");
-        expect(main).toContain("'frameworks.angular.description': 'Integrate AMB Grid into the Angular component lifecycle with proper initialization and cleanup.'");
+        expect(main).toContain("'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid'");
+        expect(main).toContain("'frameworks.angular.description': 'Apri Live Multi-Asset Portfolio, la demo Angular di un portfolio finanziario simulato.'");
+        expect(main).toContain("'frameworks.angular.description': 'Open Live Multi-Asset Portfolio, the Angular demo of a simulated financial portfolio.'");
+        expect(main).toContain("'frameworks.angular.cta': 'Apri demo Angular'");
+        expect(main).toContain("'frameworks.angular.cta': 'Open Angular demo'");
         expect(main).toContain('href="#getting-started-react"');
         expect(main).toContain("window.location.hash === '#getting-started-react'");
         expect(main).toContain("import('../../examples/react-demo/src/mount.tsx')");
         expect(main).toContain('currentReactDemoUnmount();');
         expect(main).toContain('id="react-demo-root"');
         expect(main).toContain('<article class="demo-framework-card demo-framework-card--vue card');
-        expect(main).toContain('<article class="demo-framework-card demo-framework-card--angular card');
+        expect(main).toContain('<a class="demo-framework-card demo-framework-card--angular card bg-base-100 border shadow-sm transition" href="/angular/">');
         expect(main).not.toContain('demo-framework-card__badge');
         expect(main).not.toContain('demo-framework-card__arrow');
         expect(main).toContain('demo-framework-card__meta');
@@ -54,7 +56,8 @@ describe('demo site navigation', () => {
         const icons = read('src/demo/demo-icons.js');
 
         expect(frameworkCards).not.toContain('href="#feature-examples"');
-        expect(frameworkCards.match(/data-i18n="frameworks\.cta"/g)).toHaveLength(4);
+        expect(frameworkCards.match(/data-i18n="frameworks\.cta"/g)).toHaveLength(3);
+        expect(frameworkCards).toContain('data-i18n="frameworks.angular.cta"');
         expect(frameworkHeading).toContain('demo-frameworks__heading-copy');
         expect(main.slice(frameworkSectionStart, frameworkGridEnd)).not.toContain('href="/install/"');
         expect(frameworkCards.match(/demoIcon\('guide'/g)).toHaveLength(4);

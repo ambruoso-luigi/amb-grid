@@ -11,6 +11,7 @@ describe('shared site navbar', () => {
         expect(navbar).toContain('href="/#top"');
         expect(navbar).toContain('href="/#getting-started-javascript"');
         expect(navbar).toContain('href="/#getting-started-react"');
+        expect(navbar).toContain('href="/angular/" data-navbar-route="angular"');
         expect(navbar).toContain('href="/#feature-examples"');
         expect(navbar).toContain('href="/docs/index.html"');
         expect(navbar).toContain('href="/#video"');
@@ -26,6 +27,10 @@ describe('shared site navbar', () => {
         expect(navbar).toContain('renderNavbarDemoIcon');
         expect(navbar).not.toContain('frameworkIcon');
         expect(navbar).toContain('class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"');
+        expect(navbar).toContain("angular: 'Angular · Portfolio multiasset'");
+        expect(navbar).toContain("angular: 'Angular · Multi-Asset Portfolio'");
+        expect(navbar).toContain("querySelector('[data-demo-label=\"angular\"]')");
+        expect(navbar).toContain("window.location.pathname === '/angular/' ? 'angular'");
         expect(navbar).toContain('class="site-navbar__dropdown-label"');
         expect(navbar).toContain('data-demo-future');
         expect(navbar).toContain("querySelector('[data-demo-label=\"examples\"]')");
@@ -37,7 +42,7 @@ describe('shared site navbar', () => {
         expect(navbar).toContain("event.key === 'Escape'");
         expect(navbar).toContain('amb-demo-language-change');
         expect(navbar).toContain('currentRoute');
-        expect(navbar).toContain("['#feature-examples', '#getting-started-javascript', '#getting-started-react']");
+        expect(navbar).toContain("['#feature-examples', '#getting-started-javascript', '#getting-started-react', 'angular']");
         expect(navbar).toContain('site-navbar__main-nav');
         expect(navbar).toContain('site-navbar__utilities');
         expect(navbar).toContain('site-navbar__github');

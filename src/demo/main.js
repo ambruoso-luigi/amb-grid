@@ -64,8 +64,9 @@ const translations = {
         'frameworks.react.description': 'Integra AMB Grid nel lifecycle del componente React, con mount e cleanup corretti.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
         'frameworks.vue.description': 'Integra AMB Grid con la Composition API usando il lifecycle del componente Vue.',
-        'frameworks.angular.meta': 'TypeScript · Component lifecycle',
-        'frameworks.angular.description': 'Integra AMB Grid nel ciclo di vita del componente Angular, con inizializzazione e cleanup corretti.',
+        'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid',
+        'frameworks.angular.description': 'Apri Live Multi-Asset Portfolio, la demo Angular di un portfolio finanziario simulato.',
+        'frameworks.angular.cta': 'Apri demo Angular',
         'mainDemo.kicker': 'Demo principale · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
         'mainDemo.description': 'Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.',
@@ -221,8 +222,9 @@ const translations = {
         'frameworks.react.description': 'Integrate AMB Grid into the React component lifecycle with proper mounting and cleanup.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
         'frameworks.vue.description': 'Integrate AMB Grid with the Composition API through the Vue component lifecycle.',
-        'frameworks.angular.meta': 'TypeScript · Component lifecycle',
-        'frameworks.angular.description': 'Integrate AMB Grid into the Angular component lifecycle with proper initialization and cleanup.',
+        'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid',
+        'frameworks.angular.description': 'Open Live Multi-Asset Portfolio, the Angular demo of a simulated financial portfolio.',
+        'frameworks.angular.cta': 'Open Angular demo',
         'mainDemo.kicker': 'Main demo · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
         'mainDemo.description': 'Classic management demo for server-rendered and legacy-friendly contexts: edit products, validate data, and prepare the backend payload in the same flow.',
@@ -695,20 +697,20 @@ const renderShell = selectedId => {
                             <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span></span>
                         </span>
                     </article>
-                    <article class="demo-framework-card demo-framework-card--angular card bg-base-100 border shadow-sm transition">
+                    <a class="demo-framework-card demo-framework-card--angular card bg-base-100 border shadow-sm transition" href="/angular/">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('angular')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
-                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">TypeScript · Component lifecycle</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Integra AMB Grid nel ciclo di vita del componente Angular, con inizializzazione e cleanup corretti.</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">Angular · TypeScript · AMB Grid</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Apri Live Multi-Asset Portfolio, la demo Angular di un portfolio finanziario simulato.</span>
                         </span>
                         <span class="demo-framework-card__footer" aria-hidden="true">
-                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
+                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.angular.cta">Apri demo Angular</span></span>
                             <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span></span>
                         </span>
-                    </article>
+                    </a>
                 </div>
             </section>
 

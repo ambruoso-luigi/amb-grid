@@ -11,6 +11,7 @@ node_modules
 dist
 dist-lib
 dist-ssr
+public/angular/
 release-artifacts/
 *.local
 

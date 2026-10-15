@@ -24,12 +24,17 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             examples/react-demo/package-lock.json
+            examples/angular-demo/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Install React demo dependencies
         run: npm ci --prefix examples/react-demo --ignore-scripts
+
+      - name: Install Angular demo dependencies
+        if: matrix.node-version == 24
+        run: npm ci --prefix examples/angular-demo
 
       - name: Run tests
         run: npm test
@@ -45,8 +50,16 @@ jobs:
         if: matrix.node-version == 24
         run: npm run build:dist
 
+      - name: Stage Angular demo
+        if: matrix.node-version == 24
+        run: npm run site:angular
+
       - name: Build
         run: npm run build
+
+      - name: Verify Angular site output
+        if: matrix.node-version == 24
+        run: npm run site:angular:check
 
       - name: Check framework examples
         if: matrix.node-version == 24
@@ -80,6 +93,7 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             examples/react-demo/package-lock.json
+            examples/angular-demo/package-lock.json
 
       - name: Install dependencies
         run: npm ci
