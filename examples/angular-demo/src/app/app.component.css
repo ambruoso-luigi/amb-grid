@@ -1,0 +1,341 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.portfolio-page {
+  width: min(100% - 32px, 1824px);
+  margin: 0 auto;
+  padding: clamp(16px, 2.2vw, 32px) 0;
+}
+
+.portfolio-hero {
+  display: grid;
+  grid-template-areas: "brand video" "content video";
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 430px);
+  column-gap: clamp(24px, 4vw, 56px);
+  row-gap: clamp(42px, 5.5vw, 92px);
+  align-items: start;
+  min-height: min(720px, calc(100svh - 64px));
+  padding: clamp(24px, 4vw, 56px);
+  overflow: hidden;
+  border: 1px solid #d8dee8;
+  border-top: 4px solid #a73555;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(16 41 80 / 9%);
+}
+
+.portfolio-hero__brand {
+  grid-area: brand;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 22px;
+  animation: enter-up 600ms backwards;
+}
+
+.portfolio-hero__brand img {
+  display: block;
+  width: clamp(270px, 28.8vw, 450px);
+  max-width: 100%;
+  height: auto;
+}
+
+.portfolio-hero__edition {
+  padding: 8px 12px;
+  border: 1px solid #e9bdca;
+  border-radius: 999px;
+  background: #fde9ef;
+  color: #a73555;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.portfolio-hero__content {
+  grid-area: content;
+  max-width: 870px;
+  min-width: 0;
+  animation: enter-up 700ms 90ms backwards;
+}
+
+.portfolio-hero__eyebrow,
+.portfolio-hero__detail-label,
+.video-preview__caption-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.portfolio-hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  color: #a73555;
+}
+
+.portfolio-hero__eyebrow span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.portfolio-hero h1 {
+  max-width: 900px;
+  margin: 0;
+  color: #102950;
+  font-size: clamp(42px, 5vw, 76px);
+  font-weight: 760;
+  letter-spacing: -.055em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.portfolio-hero h1 span {
+  color: #a73555;
+}
+
+.portfolio-hero__description {
+  max-width: 690px;
+  margin: 24px 0 0;
+  color: #425571;
+  font-size: clamp(17px, 1.45vw, 21px);
+  line-height: 1.55;
+}
+
+.portfolio-hero__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px clamp(32px, 4vw, 72px);
+  margin-top: clamp(36px, 4vw, 60px);
+  padding-top: 24px;
+  border-top: 1px solid #e5eaf1;
+}
+
+.portfolio-hero__detail-label {
+  display: block;
+  margin-bottom: 12px;
+  color: #667996;
+}
+
+.portfolio-hero__assets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.portfolio-hero__assets li {
+  padding: 7px 11px;
+  border: 1px solid #e9bdca;
+  border-radius: 6px;
+  background: #fde9ef;
+  color: #7f2944;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.portfolio-hero__stack {
+  margin: 0;
+  color: #102950;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.portfolio-hero__stack span {
+  padding: 0 3px;
+  color: #a73555;
+}
+
+.video-preview {
+  grid-area: video;
+  align-self: center;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 2px solid #e9bdca;
+  border-radius: 12px;
+  background: #102950;
+  box-shadow: 0 20px 44px rgb(16 41 80 / 18%);
+  color: #fff;
+  text-decoration: none;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  animation: enter-up 700ms 180ms backwards;
+}
+
+.video-preview:hover {
+  transform: translateY(-3px);
+  border-color: #a73555;
+  box-shadow: 0 24px 48px rgb(16 41 80 / 24%);
+}
+
+.video-preview:focus-visible {
+  outline: 3px solid #a73555;
+  outline-offset: 4px;
+}
+
+.video-preview__media {
+  display: block;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+}
+
+.video-preview__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-preview__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 60px;
+  height: 60px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #a73555;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
+  transform: translate(-50%, -50%);
+  transition: background 180ms ease, scale 180ms ease;
+}
+
+.video-preview:hover .video-preview__play {
+  background: #892b47;
+  scale: 1.07;
+}
+
+.video-preview__caption {
+  display: grid;
+  gap: 4px;
+}
+
+.video-preview__footer {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 16px;
+}
+
+.video-preview__caption-kicker {
+  color: #ffdbe6;
+}
+
+.video-preview__caption-title {
+  font-size: 21px;
+  font-weight: 750;
+}
+
+.video-preview__destination {
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.video-preview__destination span {
+  display: inline-block;
+  margin-left: 3px;
+  transition: transform 180ms ease;
+}
+
+.video-preview:hover .video-preview__destination span {
+  transform: translate(2px, -2px);
+}
+
+@keyframes enter-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1100px) {
+  .portfolio-hero {
+    grid-template-areas: "brand" "content" "video";
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    row-gap: clamp(28px, 4vw, 48px);
+  }
+
+  .video-preview {
+    align-self: start;
+    max-width: 640px;
+  }
+}
+
+@media (max-width: 640px) {
+  .portfolio-page {
+    width: min(100% - 24px, 1824px);
+    padding: 12px 0;
+  }
+
+  .portfolio-hero {
+    padding: 22px;
+    border-radius: 12px;
+  }
+
+  .portfolio-hero__brand img {
+    width: min(234px, 100%);
+  }
+
+  .portfolio-hero h1 {
+    font-size: clamp(36px, 10vw, 48px);
+  }
+
+  .portfolio-hero__description {
+    margin-top: 18px;
+    font-size: 16px;
+  }
+
+  .portfolio-hero__details {
+    margin-top: 30px;
+  }
+
+  .video-preview__footer {
+    padding: 12px;
+  }
+
+  .video-preview__caption-title {
+    font-size: 16px;
+  }
+
+  .video-preview__play {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-hero__brand,
+  .portfolio-hero__content,
+  .video-preview {
+    animation: none;
+  }
+
+  .video-preview,
+  .video-preview__play,
+  .video-preview__destination span {
+    transition: none;
+  }
+
+  .video-preview:hover,
+  .video-preview:hover .video-preview__destination span {
+    transform: none;
+  }
+
+  .video-preview:hover .video-preview__play {
+    scale: 1;
+  }
+}

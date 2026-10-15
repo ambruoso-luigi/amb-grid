@@ -15,6 +15,13 @@
             "browser": "src/main.ts",
             "index": "src/index.html",
             "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
+              }
+            ],
             "styles": ["amb-grid/style.css", "src/styles.css"],
             "outputPath": "dist/angular-demo"
           },
