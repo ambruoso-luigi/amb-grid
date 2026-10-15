@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "sourceMap": true,
+    "declaration": false,
+    "esModuleInterop": true
+  },
+  "angularCompilerOptions": {
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  }
+}

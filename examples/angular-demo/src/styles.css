@@ -1,0 +1,25 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #17212f;
+  background: #f7f9fc;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.bootstrap-screen {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.bootstrap-screen h1,
+.bootstrap-screen p {
+  margin: 0;
+}
