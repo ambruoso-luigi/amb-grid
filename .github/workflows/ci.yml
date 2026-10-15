@@ -41,12 +41,12 @@ jobs:
         if: matrix.node-version == 22
         run: npm run build:lib
 
-      - name: Build
-        run: npm run build
-
       - name: Build distribution
         if: matrix.node-version == 24
         run: npm run build:dist
+
+      - name: Build
+        run: npm run build
 
       - name: Check framework examples
         if: matrix.node-version == 24
