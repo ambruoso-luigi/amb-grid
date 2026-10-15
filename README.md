@@ -19,6 +19,12 @@ This repository is available early to collect feedback and validate design decis
 
 [Changelog](CHANGELOG.md)
 
+## Development
+
+Node.js 24 LTS is the reference version for local development and builds
+(`.nvmrc`). Compatibility with other Node.js versions depends on CI coverage
+and the project's dependencies.
+
 ## Installation
 
 Install AMB Grid in your application:

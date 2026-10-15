@@ -7,6 +7,10 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
 
     steps:
       - name: Checkout
@@ -15,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: npm
           cache-dependency-path: |
             package-lock.json
@@ -34,10 +38,31 @@ jobs:
         run: npm run test:types
 
       - name: Build library package
+        if: matrix.node-version == 22
         run: npm run build:lib
 
       - name: Build
         run: npm run build
+
+      - name: Build distribution
+        if: matrix.node-version == 24
+        run: npm run build:dist
+
+      - name: Check framework examples
+        if: matrix.node-version == 24
+        run: npm run examples:frameworks:check
+
+      - name: Smoke test package
+        if: matrix.node-version == 24
+        run: npm run package:smoke
+
+      - name: Check legacy package
+        if: matrix.node-version == 24
+        run: npm run legacy:package:check
+
+      - name: Smoke test legacy bundle
+        if: matrix.node-version == 24
+        run: npm run legacy:smoke
 
   e2e:
     runs-on: ubuntu-latest
@@ -50,7 +75,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: |
             package-lock.json
