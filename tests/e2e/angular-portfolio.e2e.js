@@ -109,6 +109,9 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     await expect(quantity).not.toHaveClass(/tabulator-editing/);
     await expect(quantity).toHaveText('17');
     await expect(cell(apple, 'price')).toHaveText(priceText);
+    await quantity.dblclick({ delay: 100 });
+    await expect(quantity.locator('input')).toBeVisible();
+    await quantity.locator('input').press('Escape');
 
     near(await moneyIn(cell(apple, 'value')), valueBefore + price);
     near(await moneyIn(totalCell(page, 'value')), totalBefore + price);
@@ -145,6 +148,13 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await dialog.locator('.amb-lookup-dialog__button--primary').click();
     await expect(dialog).toBeHidden();
 
+    const instrument = cell(first, 'instrument');
+    const reopenedInput = instrument.locator('.amb-lookup-editor__input');
+    await expect(reopenedInput).toBeVisible();
+    await expect(reopenedInput).toHaveValue('NVIDIA Corp.');
+    await expect(reopenedInput).toBeFocused();
+    await reopenedInput.press('Escape');
+    await expect(instrument).not.toHaveClass(/tabulator-editing/);
     await expect(first.locator('.portfolio-grid__instrument strong')).toHaveText('NVIDIA Corp.');
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('NVDA');
     await expect(cell(first, 'type')).toHaveText('Stock');
@@ -162,7 +172,21 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     near(await moneyIn(totalCell(page, 'value')), totalBefore - oldValue + newValue);
     near(await moneyIn(totalCell(page, 'profitLoss')), totalProfitBefore - oldProfit + newProfit);
 
-    const microsoftDialog = await openInstrumentLookup(page, holding(page, 'MSFT'));
+    await portfolio(page).locator('.portfolio-grid__pause').click();
+    await instrument.focus();
+    await expect(instrument).toBeFocused();
+    const liveTotal = await totalCell(page, 'value').innerText();
+    await expect.poll(() => totalCell(page, 'value').innerText()).not.toBe(liveTotal);
+    await expect(instrument).toBeFocused();
+    await expect(instrument.locator('.portfolio-grid__instrument strong')).toHaveText('NVIDIA Corp.');
+    await expect(instrument.locator('.portfolio-grid__instrument small')).toHaveText('NVDA');
+    await expect(cell(first, 'type')).toHaveText('Stock');
+    await expect(holdings(page)).toHaveCount(14);
+    await pauseMarket(page);
+
+    const microsoft = holdings(page).nth(1);
+    await expect(microsoft.locator('.portfolio-grid__instrument small')).toHaveText('MSFT');
+    const microsoftDialog = await openInstrumentLookup(page, microsoft);
     await microsoftDialog.locator('.amb-lookup-dialog__search').fill('AAPL');
     const releasedApple = microsoftDialog.locator('.amb-lookup-dialog__row').filter({ hasText: 'AAPL' });
     await expect(releasedApple).toHaveCount(1);

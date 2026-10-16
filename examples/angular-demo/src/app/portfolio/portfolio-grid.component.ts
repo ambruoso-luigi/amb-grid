@@ -32,6 +32,8 @@ interface EditedCell {
   getRow(): { getData(): HoldingsRow };
 }
 
+type InstrumentSelection = NonNullable<ReturnType<typeof instrumentSelectionPatch>>;
+
 const instrumentsById = new Map(INSTRUMENT_CATALOG.map((instrument) => [instrument.id, instrument]));
 
 function initialRows(): HoldingsRow[] {
@@ -134,8 +136,10 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   private timer: ReturnType<typeof setInterval> | null = null;
   private cursor = 0;
   private activeLookupKey: string | null = null;
-  private readonly approvedSelection = new Map<string, string>();
+  private readonly pendingSelections = new Map<string, InstrumentSelection>();
   private readonly editingRows = new Set<string>();
+  private readonly pendingRefreshes = new Set<string>();
+  private readonly onGridFocusOut = () => queueMicrotask(() => this.flushPendingRefreshes());
   private readonly onVisibilityChange = () => {
     if (document.hidden) this.stopTimer();
     else this.startTimer();
@@ -217,14 +221,9 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
             this.lookupError.set(`${record.name} is already in the portfolio. Choose another instrument.`);
             return null;
           }
-          const updated = row.instrumentId === record.id
-            ? cell.getRow()
-            : this.grid.updateRow(key, selection);
-          if (updated) {
-            this.approvedSelection.set(key, record.name);
-            this.lookupError.set('');
-          }
-          return updated;
+          this.pendingSelections.set(key, selection);
+          this.lookupError.set('');
+          return cell.getRow();
         },
       },
     }) as Record<string, unknown>;
@@ -237,10 +236,10 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       success: (value: string) => void, cancel: () => void,
     ) => originalEditor(cell, onRendered, (value) => {
       const key = positionKey(cell.getRow().getData());
-      const approved = this.approvedSelection.get(key);
-      this.approvedSelection.delete(key);
-      if (approved === value) success(value);
+      const selection = this.pendingSelections.get(key);
+      if (selection?.instrument === value) success(value);
       else cancel();
+      this.pendingSelections.delete(key);
     }, cancel);
     this.grid = AMB.table({
       selector: this.gridHost.nativeElement,
@@ -340,20 +339,26 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
         const row = cell.getRow().getData();
         const key = positionKey(row);
+        if (cell.getField() === 'instrument') {
+          const selection = this.pendingSelections.get(key);
+          this.pendingSelections.delete(key);
+          if (selection && this.grid) this.grid.updateRow(key, selection);
+          this.activeLookupKey = null;
+        }
         this.finishEditing(key);
-        if (cell.getField() === 'instrument') this.activeLookupKey = null;
       }
     });
     this.grid.on('cellEditCancelled', (event: unknown) => {
       const cell = event as EditedCell;
       if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
-        this.finishEditing(positionKey(cell.getRow().getData()));
+        this.finishEditing(positionKey(cell.getRow().getData()), false);
         if (cell.getField() === 'instrument') {
-          this.approvedSelection.delete(positionKey(cell.getRow().getData()));
+          this.pendingSelections.delete(positionKey(cell.getRow().getData()));
           this.activeLookupKey = null;
         }
       }
     });
+    this.gridHost.nativeElement.addEventListener('focusout', this.onGridFocusOut);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     this.startTimer();
   }
@@ -386,17 +391,35 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     this.market.advance(nextIds);
     for (const row of rows) {
       const key = positionKey(row);
-      if (key && nextIds.includes(row.instrumentId) && !this.editingRows.has(key)) this.grid.reformatRow(key);
+      if (key && nextIds.includes(row.instrumentId)) this.pendingRefreshes.add(key);
     }
+    this.flushPendingRefreshes();
     this.grid.recalc();
   }
 
-  private finishEditing(positionId: string | null): void {
+  private flushPendingRefreshes(): void {
+    if (!this.grid) return;
+    for (const key of this.pendingRefreshes) {
+      const row = this.grid.getRow(key);
+      if (this.editingRows.has(key) || this.activeLookupKey === key ||
+          (row && row.getElement().contains(document.activeElement))) continue;
+      this.grid.reformatRow(key);
+      this.pendingRefreshes.delete(key);
+    }
+  }
+
+  private finishEditing(positionId: string | null, changed = true): void {
     if (!positionId) return;
     this.editingRows.delete(positionId);
+    if (!changed) {
+      queueMicrotask(() => this.flushPendingRefreshes());
+      return;
+    }
     queueMicrotask(() => {
       if (this.grid && !this.editingRows.has(positionId)) {
         this.grid.reformatRow(positionId);
+        this.pendingRefreshes.delete(positionId);
+        this.flushPendingRefreshes();
         this.grid.recalc();
       }
     });
@@ -405,9 +428,11 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   /** Releases the timer, document listener, lookup dialog and AMB-owned grid DOM. */
   ngOnDestroy(): void {
     this.stopTimer();
+    this.gridHost.nativeElement.removeEventListener('focusout', this.onGridFocusOut);
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.editingRows.clear();
-    this.approvedSelection.clear();
+    this.pendingSelections.clear();
+    this.pendingRefreshes.clear();
     this.activeLookupKey = null;
     this.lookupDialog.destroy();
     this.grid?.destroy();
