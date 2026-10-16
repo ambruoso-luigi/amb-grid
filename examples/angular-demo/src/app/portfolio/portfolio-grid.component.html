@@ -3,9 +3,12 @@
     <div>
       <p class="portfolio-grid__eyebrow">Portfolio / Holdings</p>
       <h2 id="portfolio-holdings-title">Portfolio Holdings</h2>
-      <p>14 posizioni multiasset. Modifica Quantity per ricalcolare Value e P/L.</p>
+      <p>14 posizioni multiasset. Modifica Quantity per ricalcolare Value e P/L con le quotazioni simulate.</p>
     </div>
-    <span class="portfolio-grid__simulated">Dati simulati · EUR</span>
+    <div class="portfolio-grid__market">
+      <span class="portfolio-grid__simulated" [class.is-paused]="!live()"><span class="portfolio-grid__status-dot" aria-hidden="true"></span>Simulated live market · EUR</span>
+      <button class="portfolio-grid__pause" type="button" (click)="toggleMarket()" [attr.aria-label]="live() ? 'Metti in pausa il mercato simulato' : 'Riprendi il mercato simulato'">{{ live() ? 'Pause' : 'Resume' }}</button>
+    </div>
   </div>
   <div class="portfolio-grid__scroll" role="region" aria-label="Portfolio Holdings, scorri orizzontalmente per altre colonne" tabindex="0">
     <div #gridHost class="portfolio-grid__table"></div>
