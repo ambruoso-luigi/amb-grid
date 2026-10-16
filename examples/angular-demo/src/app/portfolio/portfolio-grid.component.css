@@ -88,6 +88,28 @@
 .portfolio-grid__pause:hover { border-color: #a73555; color: #a73555; }
 .portfolio-grid__pause:focus-visible { outline: 3px solid #a73555; outline-offset: 3px; }
 
+.portfolio-grid__add {
+  padding: 8px 13px;
+  border: 1px solid #a73555;
+  border-radius: 7px;
+  background: #a73555;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.portfolio-grid__add:hover { background: #8e2e4a; }
+.portfolio-grid__add:focus-visible { outline: 3px solid #102950; outline-offset: 3px; }
+
+.portfolio-grid__error {
+  margin: -8px 0 16px;
+  color: #8e2e4a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .portfolio-grid__scroll {
   max-width: 100%;
   overflow-x: auto;
@@ -160,10 +182,37 @@
 
 .portfolio-grid__instrument {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
   line-height: 1.25;
 }
+
+.portfolio-grid__instrument.is-empty { color: #65738a; }
+
+.portfolio-grid__instrument-icon {
+  display: inline-grid;
+  flex: 0 0 30px;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e8eef7;
+  color: #102950;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.portfolio-grid__instrument-icon.is-etf { background: #eeeafb; color: #514489; }
+.portfolio-grid__instrument-icon.is-bond { background: #e7f1ef; color: #28605b; }
+.portfolio-grid__instrument-icon.is-crypto { background: #fde9ef; color: #8e2e4a; }
+
+.portfolio-grid__instrument-icon img { display: none; width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.portfolio-grid__instrument-icon.has-image { font-size: 0; }
+.portfolio-grid__instrument-icon.has-image img { display: block; }
+
+.portfolio-grid__instrument-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 
 .portfolio-grid__instrument strong {
   font-weight: 700;
@@ -174,6 +223,21 @@
   font-size: 11px;
   letter-spacing: .03em;
 }
+
+.portfolio-grid__type {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e8eef7;
+  color: #102950;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.portfolio-grid__type.is-etf { background: #eeeafb; color: #514489; }
+.portfolio-grid__type.is-bond { background: #e7f1ef; color: #28605b; }
+.portfolio-grid__type.is-crypto { background: #fde9ef; color: #8e2e4a; }
 
 .portfolio-grid__movement.is-positive { color: #167149; }
 .portfolio-grid__movement.is-negative { color: #a73555; }
