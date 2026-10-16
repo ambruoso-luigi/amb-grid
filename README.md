@@ -97,6 +97,13 @@ controller, and call `destroy()` during component cleanup:
 - [Vue](examples/frameworks/vue.md)
 - [Angular](examples/frameworks/angular.md)
 
+The [Angular portfolio demo](examples/angular-demo/README.md) keeps 14 fixed
+holdings and edits only Instrument and Quantity. Its Multifield Lookup excludes
+instruments held by other rows, while simulated quotes update the Timeline and
+financial values without changing CRUD data. An AMB Grid bottom calculation row
+shows portfolio value, P/L and overall return; a collapsible guide explains the
+integration. The demo exposes no full CRUD controls.
+
 ## Minimal example
 
 Add a container to the page:

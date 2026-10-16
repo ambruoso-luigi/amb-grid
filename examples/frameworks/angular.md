@@ -70,3 +70,10 @@ releases the AMB Grid controller when Angular removes the component.
 
 Angular owns the component and its container. AMB Grid owns the table DOM
 inside that container; the Angular template does not render rows or cells.
+
+The [live portfolio demo](../angular-demo/README.md) applies this lifecycle to
+14 fixed positions. It edits Instrument and Quantity, filters occupied
+instruments in a Multifield Lookup, and exposes no full CRUD controls. Simulated
+quotes stay outside the grid's CRUD rows; custom `bottomCalc` functions read
+current quotes and `grid.recalc()` refreshes the integrated totals. A collapsible
+guide in the page explains the interaction and visual formatting.

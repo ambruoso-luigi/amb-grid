@@ -4,8 +4,8 @@ import { demoIcon } from '../demo-icons.js';
 import { readDemoLanguage, renderDemoLanguageSwitch, syncDemoLanguageSwitch, writeDemoLanguage } from '../demo-language-switch.js';
 
 const labels = {
-    it: { home: 'Home', demo: 'Demo', javascript: 'JavaScript', react: 'React', angular: 'Angular · Portfolio multiasset', examples: 'Esempi funzionali', documentation: 'Documentazione', video: 'Video', install: 'Installazione', menu: 'Apri menu', closeMenu: 'Chiudi menu', future: 'In arrivo' },
-    en: { home: 'Home', demo: 'Demo', javascript: 'JavaScript', react: 'React', angular: 'Angular · Multi-Asset Portfolio', examples: 'Feature examples', documentation: 'Documentation', video: 'Video', install: 'Installation', menu: 'Open menu', closeMenu: 'Close menu', future: 'Coming soon' }
+    it: { home: 'Home', demo: 'Demo', javascript: 'JavaScript', react: 'React', angular: 'Angular', examples: 'Esempi funzionali', documentation: 'Documentazione', video: 'Video', install: 'Installazione', menu: 'Apri menu', closeMenu: 'Chiudi menu', future: 'In arrivo' },
+    en: { home: 'Home', demo: 'Demo', javascript: 'JavaScript', react: 'React', angular: 'Angular', examples: 'Feature examples', documentation: 'Documentation', video: 'Video', install: 'Installation', menu: 'Open menu', closeMenu: 'Close menu', future: 'Coming soon' }
 };
 
 const currentRoute = () => window.location.pathname === '/angular/' ? 'angular' : window.location.pathname === '/install/' ? 'install' : window.location.hash || '#top';

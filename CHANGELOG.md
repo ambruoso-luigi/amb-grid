@@ -4,6 +4,11 @@ All notable changes to AMB Grid are documented in this file.
 
 ## [Unreleased]
 
+- Consolidated the Angular portfolio demo around 14 fixed positions with
+  exclusive instrument lookup, selective Instrument and Quantity editing,
+  simulated quotes, live bottom calculations, and an integrated guide.
+- Shortened the Angular site navigation label to `Angular`.
+
 ## [0.7.0] - 2026-10-08
 
 ### Added

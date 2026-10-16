@@ -11,16 +11,14 @@ import {
 import { AMB } from 'amb-grid';
 import { INSTRUMENT_CATALOG } from './instrument-catalog';
 import { categoryClass, INSTRUMENT_FAVICONS, tickerMonogram } from './instrument-identity';
-import { filterInstruments, isDuplicateInstrument, positionKey } from './instrument-lookup';
+import { availableInstruments, instrumentSelectionPatch, isDuplicateInstrument, positionKey } from './instrument-lookup';
 import { MarketSimulator, TIMELINE_CAPACITY } from './market-simulator';
-import { calculatePosition } from './portfolio-calculations';
+import { calculatePortfolioTotals, calculatePosition } from './portfolio-calculations';
 import { INITIAL_POSITIONS, INITIAL_QUOTES } from './portfolio-seed';
-import type { AssetCategory } from './portfolio.models';
+import type { AssetCategory, Instrument } from './portfolio.models';
 
 interface HoldingsRow {
-  id: string | null;
-  _ambTempId?: string;
-  _state?: string;
+  id: string;
   instrumentId: string;
   instrument: string;
   ticker: string;
@@ -136,6 +134,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   private timer: ReturnType<typeof setInterval> | null = null;
   private cursor = 0;
   private activeLookupKey: string | null = null;
+  private readonly approvedSelection = new Map<string, string>();
   private readonly editingRows = new Set<string>();
   private readonly onVisibilityChange = () => {
     if (document.hidden) this.stopTimer();
@@ -154,6 +153,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     }, this.quoteFor(row));
   }
 
+  /** Creates the AMB-owned table once the Angular host exists and connects the simulated market. */
   ngAfterViewInit(): void {
     const instrumentDialog = {
       open: async (options: object) => {
@@ -165,7 +165,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           return null;
         }
         this.lookupError.set('');
-        this.grid.crud.updateRowFields(key, { averageCost: this.market.quoteFor(record.id).price });
         return record;
       },
     };
@@ -177,10 +176,15 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         { field: 'category', title: 'Type', visible: true, width: 110 },
       ],
       search: { fields: ['ticker', 'name', 'category', 'isin'] },
-      load: ({ query }: { query: string }) => filterInstruments(INSTRUMENT_CATALOG, query),
+      cache: { enabled: false },
+      load: ({ query }: { query: string }) => availableInstruments(
+        INSTRUMENT_CATALOG, this.grid?.getData() as HoldingsRow[] ?? initialRows(), this.activeLookupKey ?? '', query,
+      ),
     });
     const multifield = AMB.multifieldLookup({
       id: 'portfolio-instrument', lookup,
+      clearDependentsOnInvalidMaster: false,
+      clearDependentsOnEmptyMaster: false,
       masterField: {
         field: 'instrument', from: 'name', title: 'Instrument', required: true,
         autocomplete: false, dialog: true,
@@ -191,29 +195,65 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         { field: 'type', from: 'category', title: 'Type', visibleInGrid: true, visibleInLookup: true, searchable: true, required: true },
       ],
     });
+    const instrumentColumn = multifield.masterColumn({
+      minWidth: 260, widthGrow: 2.4,
+      dialog: instrumentDialog,
+      formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => instrumentCell(cell.getRow().getData()),
+      editorOptions: {
+        dialogTitle: 'Select a portfolio instrument',
+        searchPlaceholder: 'Search name, ticker, category or ISIN...',
+        autoComplete: false,
+        search: { fields: ['ticker', 'name', 'category', 'isin'] },
+        mapToRow: { instrumentId: 'id', ticker: 'ticker', type: 'category' },
+        dialogOptions: { destroyOnClose: true, pagination: { enabled: false } },
+        applyRecord: (cell: EditedCell, _patch: Partial<HoldingsRow>, record: Instrument | null) => {
+          if (!record || !this.grid) return null;
+          const row = cell.getRow().getData();
+          const key = positionKey(row);
+          const selection = instrumentSelectionPatch(
+            this.grid.getData() as HoldingsRow[], key, record, this.market.quoteFor(record.id).price,
+          );
+          if (!selection) {
+            this.lookupError.set(`${record.name} is already in the portfolio. Choose another instrument.`);
+            return null;
+          }
+          const updated = row.instrumentId === record.id
+            ? cell.getRow()
+            : this.grid.updateRow(key, selection);
+          if (updated) {
+            this.approvedSelection.set(key, record.name);
+            this.lookupError.set('');
+          }
+          return updated;
+        },
+      },
+    }) as Record<string, unknown>;
+    const originalEditor = instrumentColumn['editor'] as (
+      cell: EditedCell, onRendered: (callback: () => void) => void,
+      success: (value: string) => void, cancel: () => void,
+    ) => HTMLElement;
+    instrumentColumn['editor'] = (
+      cell: EditedCell, onRendered: (callback: () => void) => void,
+      success: (value: string) => void, cancel: () => void,
+    ) => originalEditor(cell, onRendered, (value) => {
+      const key = positionKey(cell.getRow().getData());
+      const approved = this.approvedSelection.get(key);
+      this.approvedSelection.delete(key);
+      if (approved === value) success(value);
+      else cancel();
+    }, cancel);
     this.grid = AMB.table({
       selector: this.gridHost.nativeElement,
       data: initialRows(),
       index: 'id',
       layout: 'fitColumns',
       toolbar: false,
-      rowActionColumn: { enabled: true, width: 48, actions: { delete: false, rollback: false, removeNew: true } },
+      rowActionColumn: { enabled: false },
       columns: [
-        multifield.masterColumn({
-          minWidth: 260, widthGrow: 2.4,
-          dialog: instrumentDialog,
-          editable: (cell: { getRow(): { getData(): HoldingsRow } }) => cell.getRow().getData()._state === 'new',
-          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => instrumentCell(cell.getRow().getData()),
-          editorOptions: {
-            dialogTitle: 'Select a portfolio instrument',
-            searchPlaceholder: 'Search name, ticker or category...',
-            autoComplete: false,
-            search: { fields: ['ticker', 'name', 'category', 'isin'] },
-            // The lookup editor commits the master field; CRUD applies only dependent fields here.
-            mapToRow: { instrumentId: 'id', ticker: 'ticker', type: 'category' },
-            dialogOptions: { destroyOnClose: true, pagination: { enabled: false } },
-          },
-        }) as Record<string, unknown>,
+        { ...instrumentColumn,
+          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => `TOTAL — ${rows.length} posizioni`,
+          bottomCalcFormatter: (cell: { getValue(): string }) => cell.getValue(),
+        },
         multifield.dependentColumn('instrumentId') as Record<string, unknown>,
         multifield.dependentColumn('ticker') as Record<string, unknown>,
         {
@@ -236,7 +276,10 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           const row = cell.getRow().getData();
           return row.instrumentId ? euro.format(this.quoteFor(row).price) : '—';
         } },
-        { title: 'Change %', field: 'changePercent', minWidth: 112, widthGrow: 0.9, hozAlign: 'right', headerSort: false, formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
+        { title: 'Change %', field: 'changePercent', minWidth: 112, widthGrow: 0.9, hozAlign: 'right', headerSort: false,
+          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).returnPercent,
+          bottomCalcFormatter: (cell: { getValue(): number }) => signedValue(cell.getValue(), `Return ${percent.format(cell.getValue())}%`),
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
           const row = cell.getRow().getData();
           if (!row.instrumentId) return '—';
           const value = this.derivedFor(row).changePercent;
@@ -265,11 +308,17 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           formatter: (cell: { getValue(): number }) => quantity.format(cell.getValue()),
           cssClass: 'portfolio-grid__editable',
         },
-        { title: 'Value', field: 'value', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false, formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
+        { title: 'Value', field: 'value', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
+          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).value,
+          bottomCalcFormatter: (cell: { getValue(): number }) => euro.format(cell.getValue()),
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
           const row = cell.getRow().getData();
           return row.instrumentId ? euro.format(this.derivedFor(row).value) : '—';
         } },
-        { title: 'P/L', field: 'profitLoss', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false, formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
+        { title: 'P/L', field: 'profitLoss', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
+          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).profitLoss,
+          bottomCalcFormatter: (cell: { getValue(): number }) => signedValue(cell.getValue(), euro.format(cell.getValue())),
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
           const row = cell.getRow().getData();
           if (!row.instrumentId) return '—';
           const value = this.derivedFor(row).profitLoss;
@@ -291,17 +340,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
         const row = cell.getRow().getData();
         const key = positionKey(row);
-        if (cell.getField() === 'instrument' && key && row.instrumentId && this.grid) {
-          if (isDuplicateInstrument(this.grid.getData() as HoldingsRow[], row.instrumentId, key)) {
-            this.lookupError.set(`${row.instrument} is already in the portfolio. Choose another instrument.`);
-            this.grid.crud.updateRowFields(key, {
-              instrumentId: '', instrument: '', ticker: '', type: '', averageCost: 0,
-            });
-          } else if (row.averageCost === 0) {
-            this.lookupError.set('');
-            this.grid.crud.updateRowFields(key, { averageCost: this.quoteFor(row).price });
-          }
-        }
         this.finishEditing(key);
         if (cell.getField() === 'instrument') this.activeLookupKey = null;
       }
@@ -310,10 +348,12 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       const cell = event as EditedCell;
       if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
         this.finishEditing(positionKey(cell.getRow().getData()));
-        if (cell.getField() === 'instrument') this.activeLookupKey = null;
+        if (cell.getField() === 'instrument') {
+          this.approvedSelection.delete(positionKey(cell.getRow().getData()));
+          this.activeLookupKey = null;
+        }
       }
     });
-    this.grid.on('dataChanged', () => this.synchronizeNewPositions());
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     this.startTimer();
   }
@@ -322,40 +362,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     this.live.update((current) => !current);
     if (this.live()) this.startTimer();
     else this.stopTimer();
-  }
-
-  async addPosition(): Promise<void> {
-    if (!this.grid) return;
-    this.lookupError.set('');
-    await this.grid.crud.addRow({
-      id: null, instrumentId: '', instrument: '', ticker: '', type: '',
-      quantity: 1, averageCost: 0,
-    });
-  }
-
-  private synchronizeNewPositions(): void {
-    if (!this.grid) return;
-    const rows = this.grid.getData() as HoldingsRow[];
-    const seen = new Set<string>();
-    for (const row of rows) {
-      const key = positionKey(row);
-      const instrumentId = row.instrumentId;
-      if (!instrumentId) continue;
-      if (row._state !== 'new' || !key) {
-        seen.add(instrumentId);
-        continue;
-      }
-      if (seen.has(instrumentId)) {
-        this.lookupError.set(`${row.instrument} is already in the portfolio. Choose another instrument.`);
-        this.grid.crud.updateRowFields(key, {
-          instrumentId: '', instrument: '', ticker: '', type: '', averageCost: 0,
-        });
-      } else if (row.averageCost === 0) {
-        this.lookupError.set('');
-        this.grid.crud.updateRowFields(key, { averageCost: this.quoteFor(row).price });
-      }
-      seen.add(instrumentId);
-    }
   }
 
   private startTimer(): void {
@@ -382,20 +388,26 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       const key = positionKey(row);
       if (key && nextIds.includes(row.instrumentId) && !this.editingRows.has(key)) this.grid.reformatRow(key);
     }
+    this.grid.recalc();
   }
 
   private finishEditing(positionId: string | null): void {
     if (!positionId) return;
     this.editingRows.delete(positionId);
     queueMicrotask(() => {
-      if (this.grid && !this.editingRows.has(positionId)) this.grid.reformatRow(positionId);
+      if (this.grid && !this.editingRows.has(positionId)) {
+        this.grid.reformatRow(positionId);
+        this.grid.recalc();
+      }
     });
   }
 
+  /** Releases the timer, document listener, lookup dialog and AMB-owned grid DOM. */
   ngOnDestroy(): void {
     this.stopTimer();
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.editingRows.clear();
+    this.approvedSelection.clear();
     this.activeLookupKey = null;
     this.lookupDialog.destroy();
     this.grid?.destroy();

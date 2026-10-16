@@ -27,8 +27,7 @@ describe('shared site navbar', () => {
         expect(navbar).toContain('renderNavbarDemoIcon');
         expect(navbar).not.toContain('frameworkIcon');
         expect(navbar).toContain('class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"');
-        expect(navbar).toContain("angular: 'Angular · Portfolio multiasset'");
-        expect(navbar).toContain("angular: 'Angular · Multi-Asset Portfolio'");
+        expect(navbar.match(/angular: 'Angular'/g)).toHaveLength(2);
         expect(navbar).toContain("querySelector('[data-demo-label=\"angular\"]')");
         expect(navbar).toContain("window.location.pathname === '/angular/' ? 'angular'");
         expect(navbar).toContain('class="site-navbar__dropdown-label"');

@@ -88,20 +88,29 @@
 .portfolio-grid__pause:hover { border-color: #a73555; color: #a73555; }
 .portfolio-grid__pause:focus-visible { outline: 3px solid #a73555; outline-offset: 3px; }
 
-.portfolio-grid__add {
-  padding: 8px 13px;
-  border: 1px solid #a73555;
-  border-radius: 7px;
-  background: #a73555;
-  color: #fff;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
+.portfolio-grid__guide {
+  margin: 0 0 20px;
+  border: 1px solid #e7d4db;
+  border-radius: 10px;
+  background: #fdf8fa;
+  color: #102950;
 }
 
-.portfolio-grid__add:hover { background: #8e2e4a; }
-.portfolio-grid__add:focus-visible { outline: 3px solid #102950; outline-offset: 3px; }
+.portfolio-grid__guide summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 20px;
+  padding: 13px 16px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.portfolio-grid__guide summary:focus-visible { outline: 3px solid #a73555; outline-offset: 2px; }
+.portfolio-grid__guide summary small { color: #8e2e4a; font-size: 12px; font-weight: 600; }
+.portfolio-grid__guide-content { padding: 0 16px 14px; line-height: 1.5; }
+.portfolio-grid__guide-content p { margin: 10px 0; }
+.portfolio-grid__guide-content strong { color: #8e2e4a; }
 
 .portfolio-grid__error {
   margin: -8px 0 16px;
@@ -152,6 +161,16 @@
 .portfolio-grid .tabulator-row:hover {
   background: #fdf5f7;
 }
+
+.portfolio-grid .tabulator-calcs-bottom {
+  border-top: 2px solid #a73555;
+  background: #f5f0f4;
+  color: #102950;
+  font-weight: 800;
+}
+
+.portfolio-grid .tabulator-calcs-bottom .tabulator-cell { text-align: right; }
+.portfolio-grid .tabulator-calcs-bottom .tabulator-cell:first-child { text-align: left; color: #8e2e4a; }
 
 .portfolio-grid .tabulator-cell {
   padding: 12px 10px;

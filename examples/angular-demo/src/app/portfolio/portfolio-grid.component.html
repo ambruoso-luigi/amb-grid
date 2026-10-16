@@ -3,14 +3,26 @@
     <div>
       <p class="portfolio-grid__eyebrow">Portfolio / Holdings</p>
       <h2 id="portfolio-holdings-title">Portfolio Holdings</h2>
-      <p>Posizioni multiasset con quotazioni simulate. Aggiungi uno strumento o modifica Quantity per ricalcolare Value e P/L.</p>
+      <p>14 posizioni multiasset fisse con quotazioni simulate. Modifica Instrument o Quantity per aggiornare valori e totali.</p>
     </div>
     <div class="portfolio-grid__market">
       <span class="portfolio-grid__simulated" [class.is-paused]="!live()"><span class="portfolio-grid__status-dot" aria-hidden="true"></span>Simulated live market · EUR</span>
       <button class="portfolio-grid__pause" type="button" (click)="toggleMarket()" [attr.aria-label]="live() ? 'Metti in pausa il mercato simulato' : 'Riprendi il mercato simulato'">{{ live() ? 'Pause' : 'Resume' }}</button>
-      <button class="portfolio-grid__add" type="button" (click)="addPosition()">Add Position</button>
     </div>
   </div>
+  <details class="portfolio-grid__guide">
+    <summary>
+      <span>Come funziona questa tabella</span>
+      <small>Angular · Editing selettivo · Quotazioni simulate · Calcoli</small>
+    </summary>
+    <div class="portfolio-grid__guide-content">
+      <p><strong>Integrazione Angular.</strong> <code>ngAfterViewInit()</code> crea <code>AMB.table()</code> nel contenitore Angular; <code>ngOnDestroy()</code> chiama <code>grid.destroy()</code>. Angular gestisce il componente, AMB Grid il DOM della tabella.</p>
+      <p><strong>Consultazione ed editing selettivo.</strong> Le 14 posizioni sono fisse: solo Instrument e Quantity sono modificabili. Non sono esposti comandi CRUD.</p>
+      <p><strong>Quotazioni simulate.</strong> Price, Change %, Value, P/L e Timeline seguono il mercato simulato; Pause e Resume fermano e riprendono gli aggiornamenti. Non sono dati finanziari reali.</p>
+      <p><strong>Personalizzazione grafica.</strong> Icone con fallback, ticker, badge, formatter, colori e mini-grafici rendono leggibili categorie e andamento.</p>
+      <p><strong>Totali e rendimento.</strong> La riga finale calcola valore, costo complessivo, P/L e rendimento del portafoglio dalle quotazioni correnti.</p>
+    </div>
+  </details>
   @if (lookupError()) {
     <p class="portfolio-grid__error" role="alert">{{ lookupError() }}</p>
   }

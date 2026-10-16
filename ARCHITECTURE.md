@@ -221,6 +221,15 @@ AMB.table(...)
 
 Framework integrations follow the same model rather than introducing framework-specific grid ownership. React creates the grid after mount and destroys it during effect cleanup; Vue maps creation and destruction to its mount/unmount lifecycle; Angular creates the grid after the view exists and destroys it from the component lifecycle.
 
+The Angular portfolio demo keeps 14 fixed holdings in application data. Angular
+creates the AMB table in `ngAfterViewInit()` and releases its dialog, timer,
+visibility listener, and grid in `ngOnDestroy()`. AMB Grid owns the table DOM and
+its internal CRUD tracking; the demo exposes only Instrument and Quantity edits,
+without full CRUD controls. The application filters occupied lookup instruments
+and checks uniqueness again on selection. Simulated quotes remain outside CRUD
+rows, while custom bottom calculations read current quotes for value, P/L and
+overall return. A collapsible guide describes this integration in the page.
+
 ### Resource lifecycle
 
 Resources created for one AMB Grid instance are released through that instance's `grid.destroy()`.

@@ -1,4 +1,4 @@
-# Angular demo data
+# Angular live portfolio demo
 
 The portfolio catalog and initial positions are simulated data. Prices, average
 costs, and previous closes are in EUR; no market feed or FX conversion is used.
@@ -10,9 +10,36 @@ Calculations in `src/app/portfolio/portfolio-calculations.ts` use:
 - P/L = Quantity × (Price − Average Cost)
 - Change % = (Price − Previous Close) / Previous Close × 100
 - Portfolio Value = sum of position Values
+- Portfolio Cost = sum of Quantity × Average Cost
+- Portfolio P/L = Portfolio Value − Portfolio Cost
+- Overall Return % = Portfolio P/L / Portfolio Cost × 100 (zero when cost is zero)
 
 Invalid numeric inputs throw `RangeError`. Change % is `null` when Previous Close
-is zero. Calculations do not round; formatting belongs to the future UI.
+is zero. Calculations do not round; the UI formats EUR and percentages.
+
+## Holdings and editing
+
+`INITIAL_POSITIONS` contains exactly 14 fixed positions. Instrument and Quantity
+are the only editable columns; all other columns are for consultation. The UI
+has no Add, Delete, Save, Reload, Payload or Rollback controls, though AMB Grid
+continues its internal CRUD tracking for user edits. The 50-instrument simulated
+catalog is searched by ticker, name, category and optional ISIN through
+`AMB.lookup()`, `AMB.multifieldLookup()` and `AMB.LookupDialog`.
+
+Before each lookup load, the demo excludes instruments held by other positions.
+It excludes the edited row from the occupied set, disables lookup caching and
+checks uniqueness again before applying a record. Rejected choices preserve the
+previous row. A valid replacement keeps the position ID, updates instrument
+identity fields and sets Average Cost to the current simulated price, so P/L
+starts near zero. Fractional Crypto Quantity is kept; a switch to Stock, ETF or
+Bond rounds up to a positive whole unit. Quantity edits require a finite
+positive value, with fractions allowed only for Crypto.
+
+The integrated AMB Grid bottom calculation row shows `TOTAL — 14 posizioni`,
+portfolio Value, P/L and overall Return %. Custom calculations read the current
+market store rather than summing virtual formatter fields. `grid.recalc()` runs
+after user edits and market ticks. The initially closed, keyboard-accessible
+“Come funziona questa tabella” panel explains the lifecycle and presentation.
 
 ## Serve within the AMB Grid site
 
@@ -42,5 +69,9 @@ the timer also stops while the browser tab is hidden.
 
 Live Price, Change %, Value, P/L and Timeline are rendered from the market store.
 They do not enter AMB Grid CRUD data or its save payload. Sorting on these live
-columns is disabled, and the demo offers no export of live values. Quantity
-remains the user-edited CRUD field.
+columns is disabled, and the demo offers no export of live values. Market ticks
+use `grid.reformatRow()` and `grid.recalc()` without changing row states or
+snapshots. Pause stops quotes, while manual edits still refresh totals. Angular
+creates the table in `ngAfterViewInit()` and destroys the grid, dialog, timer and
+visibility listener in `ngOnDestroy()`; Angular owns the host and AMB Grid owns
+the table DOM.
