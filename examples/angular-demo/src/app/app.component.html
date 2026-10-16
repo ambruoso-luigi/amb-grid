@@ -2,30 +2,31 @@
   <header class="portfolio-hero" aria-labelledby="hero-title">
     <div class="portfolio-hero__brand">
       <img src="assets/amb-grid-logo.png" alt="AMB Grid" width="450" height="70" />
-      <span class="portfolio-hero__edition">Angular edition</span>
     </div>
 
     <div class="portfolio-hero__content">
-      <p class="portfolio-hero__eyebrow">Portfolio concept <span aria-hidden="true"></span> Angular 22</p>
-      <h1 id="hero-title">Live Multi-Asset <span>Portfolio</span></h1>
-      <p class="portfolio-hero__description">
-        Una demo per un portfolio finanziario simulato, costruita con Angular e AMB Grid.
-      </p>
+      <div class="portfolio-identity">
+        <span class="portfolio-identity__logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" focusable="false">
+            <path d="M32 3 57 12l-4 34-21 15L11 46 7 12 32 3Z" fill="currentColor" />
+            <path d="m32 13-14 34h6l3-8h10l3 8h6L32 13Zm0 12 3 9h-6l3-9Z" fill="#fff" />
+          </svg>
+        </span>
+        <span class="portfolio-identity__copy">
+          <strong>Integrazione Angular</strong>
+          <small>Angular 22 + TypeScript</small>
+        </span>
+      </div>
 
-      <div class="portfolio-hero__details">
-        <div class="portfolio-hero__detail">
-          <span class="portfolio-hero__detail-label">Asset universe</span>
-          <ul class="portfolio-hero__assets" aria-label="Categorie previste">
-            <li>Stocks</li>
-            <li>ETF</li>
-            <li>Bonds</li>
-            <li>Crypto</li>
-          </ul>
-        </div>
-        <div class="portfolio-hero__detail">
-          <span class="portfolio-hero__detail-label">Built with</span>
-          <p class="portfolio-hero__stack">Angular <span>+</span> TypeScript <span>+</span> AMB Grid</p>
-        </div>
+      <div class="portfolio-hero__intro">
+        <h1 id="hero-title">Live Multi-Asset <span>Portfolio</span></h1>
+        <p>Un portfolio finanziario simulato, realizzato con Angular e AMB Grid.</p>
+        <ul class="portfolio-hero__assets" aria-label="Categorie del portfolio">
+          <li>Stocks</li>
+          <li>ETF</li>
+          <li>Bonds</li>
+          <li>Crypto</li>
+        </ul>
       </div>
     </div>
 
@@ -36,25 +37,20 @@
       rel="noopener noreferrer"
       aria-label="Apri la demo video di AMB Grid su YouTube (nuova scheda)"
     >
-      <span class="video-preview__media">
-        <img
-          class="video-preview__image"
-          src="https://i.ytimg.com/vi/2qhXHt0Upps/hqdefault.jpg"
-          alt=""
-          loading="eager"
-        />
-        <span class="video-preview__play" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" focusable="false" aria-hidden="true">
-            <path d="M8 5.5v13l10-6.5z" />
-          </svg>
-        </span>
-      </span>
-      <span class="video-preview__footer">
-        <span class="video-preview__caption">
-          <span class="video-preview__caption-kicker">Video overview</span>
-          <span class="video-preview__caption-title">AMB Grid demo</span>
-        </span>
-        <span class="video-preview__destination">YouTube <span aria-hidden="true">↗</span></span>
+      <img
+        class="video-preview__image"
+        src="https://i.ytimg.com/vi/2qhXHt0Upps/hqdefault.jpg"
+        alt=""
+        loading="eager"
+      />
+      <span class="video-preview__overlay" aria-hidden="true"></span>
+      <span class="video-preview__title">Demo AMB Grid</span>
+      <span class="video-preview__destination">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M21.58 7.19a2.99 2.99 0 0 0-2.1-2.12C17.62 4.57 12 4.57 12 4.57s-5.62 0-7.48.5a2.99 2.99 0 0 0-2.1 2.12A31.2 31.2 0 0 0 1.92 12c0 1.62.2 3.23.5 4.81a2.99 2.99 0 0 0 2.1 2.12c1.86.5 7.48.5 7.48.5s5.62 0 7.48-.5a2.99 2.99 0 0 0 2.1-2.12c.3-1.58.5-3.19.5-4.81 0-1.62-.2-3.23-.5-4.81Z" fill="currentColor" />
+          <path d="m10 15.5 5.2-3.5L10 8.5v7Z" fill="#fff" />
+        </svg>
+        YouTube
       </span>
     </a>
   </header>
