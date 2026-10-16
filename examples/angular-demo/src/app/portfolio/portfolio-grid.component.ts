@@ -33,6 +33,8 @@ interface EditedCell {
 }
 
 type InstrumentSelection = NonNullable<ReturnType<typeof instrumentSelectionPatch>>;
+type LiveField = 'timeline' | 'price' | 'changePercent' | 'value' | 'profitLoss';
+const LIVE_FIELDS: readonly LiveField[] = ['timeline', 'price', 'changePercent', 'value', 'profitLoss'];
 
 const instrumentsById = new Map(INSTRUMENT_CATALOG.map((instrument) => [instrument.id, instrument]));
 
@@ -55,12 +57,6 @@ function initialRows(): HoldingsRow[] {
 const euro = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const quantity = new Intl.NumberFormat('en-IE', { maximumFractionDigits: 8 });
 const percent = new Intl.NumberFormat('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'always' });
-
-function escaped(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  })[character] ?? character);
-}
 
 function signedValue(value: number | null, formatted: string): string {
   const className = value === null || value === 0 ? 'is-neutral' : value > 0 ? 'is-positive' : 'is-negative';
@@ -101,22 +97,6 @@ function instrumentCell(row: HoldingsRow): HTMLElement {
   return wrapper;
 }
 
-function timelineSvg(history: readonly number[], ticker: string, previousClose: number): string {
-  const low = Math.min(...history);
-  const high = Math.max(...history);
-  const spread = Math.max(high - low, previousClose * 0.001);
-  const base = low - spread * 0.15;
-  const scale = spread * 1.3;
-  const latest = history.at(-1) ?? previousClose;
-  const direction = latest >= previousClose ? 'is-positive' : 'is-negative';
-  const bars = history.map((price, index) => {
-    const height = Math.max(3, Math.min(34, ((price - base) / scale) * 34));
-    const x = index * 4;
-    return `<rect class="${index === history.length - 1 ? 'is-latest' : ''}" x="${x}" y="${36 - height}" width="2.7" height="${height}" rx="1"/>`;
-  }).join('');
-  return `<svg class="portfolio-grid__timeline ${direction}" viewBox="0 0 ${TIMELINE_CAPACITY * 4} 36" role="img" aria-label="${escaped(ticker)}: andamento simulato degli ultimi ${history.length} campioni">${bars}</svg>`;
-}
-
 @Component({
   selector: 'app-portfolio-grid',
   standalone: true,
@@ -137,9 +117,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   private cursor = 0;
   private activeLookupKey: string | null = null;
   private readonly pendingSelections = new Map<string, InstrumentSelection>();
-  private readonly editingRows = new Set<string>();
-  private readonly pendingRefreshes = new Set<string>();
-  private readonly onGridFocusOut = () => queueMicrotask(() => this.flushPendingRefreshes());
   private readonly onVisibilityChange = () => {
     if (document.hidden) this.stopTimer();
     else this.startTimer();
@@ -155,6 +132,84 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     return calculatePosition({
       id, instrumentId: row.instrumentId, quantity: row.quantity, averageCost: row.averageCost,
     }, this.quoteFor(row));
+  }
+
+  private liveCell(row: HoldingsRow, field: LiveField): HTMLElement {
+    const content = document.createElement('span');
+    content.dataset['portfolioLive'] = field;
+    this.paintLiveCell(content, row, field);
+    return content;
+  }
+
+  private paintLiveCell(content: HTMLElement, row: HoldingsRow, field: LiveField): void {
+    if (!row.instrumentId) {
+      content.textContent = '—';
+      content.className = '';
+      return;
+    }
+    if (field === 'timeline') {
+      this.paintTimeline(content, row);
+      return;
+    }
+    if (field === 'price') {
+      content.textContent = euro.format(this.quoteFor(row).price);
+      return;
+    }
+    const derived = this.derivedFor(row);
+    if (field === 'value') {
+      content.textContent = euro.format(derived.value);
+      return;
+    }
+    const value = field === 'changePercent' ? derived.changePercent : derived.profitLoss;
+    content.className = `portfolio-grid__movement ${value === null || value === 0 ? 'is-neutral' : value > 0 ? 'is-positive' : 'is-negative'}`;
+    content.textContent = field === 'changePercent'
+      ? value === null ? '—' : `${percent.format(value)}%`
+      : euro.format(derived.profitLoss);
+  }
+
+  private paintTimeline(content: HTMLElement, row: HoldingsRow): void {
+    const namespace = 'http://www.w3.org/2000/svg';
+    let svg = content.querySelector('svg');
+    if (!svg) {
+      content.textContent = '';
+      svg = document.createElementNS(namespace, 'svg');
+      svg.setAttribute('viewBox', `0 0 ${TIMELINE_CAPACITY * 4} 36`);
+      svg.setAttribute('role', 'img');
+      content.append(svg);
+    }
+    const history = this.market.historyFor(row.instrumentId);
+    const previousClose = this.quoteFor(row).previousClose;
+    const low = Math.min(...history);
+    const high = Math.max(...history);
+    const spread = Math.max(high - low, previousClose * 0.001);
+    const base = low - spread * 0.15;
+    const scale = spread * 1.3;
+    svg.setAttribute('class', `portfolio-grid__timeline ${history.at(-1)! >= previousClose ? 'is-positive' : 'is-negative'}`);
+    svg.setAttribute('aria-label', `${row.ticker}: andamento simulato degli ultimi ${history.length} campioni`);
+    while (svg.children.length < history.length) svg.append(document.createElementNS(namespace, 'rect'));
+    while (svg.children.length > history.length) svg.lastElementChild?.remove();
+    history.forEach((price, index) => {
+      const bar = svg.children[index]!;
+      const height = Math.max(3, Math.min(34, ((price - base) / scale) * 34));
+      bar.setAttribute('class', index === history.length - 1 ? 'is-latest' : '');
+      bar.setAttribute('x', String(index * 4));
+      bar.setAttribute('y', String(36 - height));
+      bar.setAttribute('width', '2.7');
+      bar.setAttribute('height', String(height));
+      bar.setAttribute('rx', '1');
+    });
+  }
+
+  private refreshLiveCells(row: HoldingsRow): void {
+    if (!this.grid) return;
+    const key = positionKey(row);
+    if (!key) return;
+    for (const field of LIVE_FIELDS) {
+      const cell = this.grid.getCellElement(key, field) as Element | false;
+      if (!cell) continue;
+      const content = cell.querySelector<HTMLElement>(`[data-portfolio-live="${field}"]`);
+      if (content) this.paintLiveCell(content, row, field);
+    }
   }
 
   /** Creates the AMB-owned table once the Angular host exists and connects the simulated market. */
@@ -257,12 +312,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         multifield.dependentColumn('ticker') as Record<string, unknown>,
         {
           title: 'Timeline', field: 'timeline', minWidth: 154, widthGrow: 1.2, headerSort: false,
-          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
-            const row = cell.getRow().getData();
-            return row.instrumentId
-              ? timelineSvg(this.market.historyFor(row.instrumentId), row.ticker, this.quoteFor(row).previousClose)
-              : '—';
-          },
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'timeline'),
         },
         multifield.dependentColumn('type', {
           minWidth: 92, widthGrow: 0.7,
@@ -271,19 +321,12 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
             return type ? `<span class="portfolio-grid__type ${categoryClass(type)}">${type}</span>` : '—';
           },
         }) as Record<string, unknown>,
-        { title: 'Price', field: 'price', minWidth: 118, widthGrow: 1, hozAlign: 'right', headerSort: false, formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
-          const row = cell.getRow().getData();
-          return row.instrumentId ? euro.format(this.quoteFor(row).price) : '—';
-        } },
+        { title: 'Price', field: 'price', minWidth: 118, widthGrow: 1, hozAlign: 'right', headerSort: false,
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'price') },
         { title: 'Change %', field: 'changePercent', minWidth: 112, widthGrow: 0.9, hozAlign: 'right', headerSort: false,
           bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).returnPercent,
           bottomCalcFormatter: (cell: { getValue(): number }) => signedValue(cell.getValue(), `Return ${percent.format(cell.getValue())}%`),
-          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
-          const row = cell.getRow().getData();
-          if (!row.instrumentId) return '—';
-          const value = this.derivedFor(row).changePercent;
-          return signedValue(value, value === null ? '—' : `${percent.format(value)}%`);
-        } },
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'changePercent') },
         {
           title: 'Quantity', field: 'quantity', minWidth: 112, widthGrow: 0.9, hozAlign: 'right',
           editor: (cell: EditedCell, onRendered: (callback: () => void) => void, success: (value: number) => void, cancel: () => void) => {
@@ -310,29 +353,17 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         { title: 'Value', field: 'value', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
           bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).value,
           bottomCalcFormatter: (cell: { getValue(): number }) => euro.format(cell.getValue()),
-          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
-          const row = cell.getRow().getData();
-          return row.instrumentId ? euro.format(this.derivedFor(row).value) : '—';
-        } },
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'value') },
         { title: 'P/L', field: 'profitLoss', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
           bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).profitLoss,
           bottomCalcFormatter: (cell: { getValue(): number }) => signedValue(cell.getValue(), euro.format(cell.getValue())),
-          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => {
-          const row = cell.getRow().getData();
-          if (!row.instrumentId) return '—';
-          const value = this.derivedFor(row).profitLoss;
-          return signedValue(value, euro.format(value));
-        } },
+          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'profitLoss') },
       ],
     });
 
     this.grid.on('cellEditing', (event: unknown) => {
       const cell = event as EditedCell;
-      if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
-        const key = positionKey(cell.getRow().getData());
-        if (key) this.editingRows.add(key);
-        if (cell.getField() === 'instrument') this.activeLookupKey = key;
-      }
+      if (cell.getField() === 'instrument') this.activeLookupKey = positionKey(cell.getRow().getData());
     });
     this.grid.on('cellEdited', (event: unknown) => {
       const cell = event as EditedCell;
@@ -345,20 +376,19 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           if (selection && this.grid) this.grid.updateRow(key, selection);
           this.activeLookupKey = null;
         }
-        this.finishEditing(key);
+        this.refreshLiveCells(row);
+        this.grid?.recalc();
       }
     });
     this.grid.on('cellEditCancelled', (event: unknown) => {
       const cell = event as EditedCell;
       if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
-        this.finishEditing(positionKey(cell.getRow().getData()), false);
         if (cell.getField() === 'instrument') {
           this.pendingSelections.delete(positionKey(cell.getRow().getData()));
           this.activeLookupKey = null;
         }
       }
     });
-    this.gridHost.nativeElement.addEventListener('focusout', this.onGridFocusOut);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     this.startTimer();
   }
@@ -390,49 +420,16 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     this.cursor = (this.cursor + nextIds.length) % heldInstrumentIds.length;
     this.market.advance(nextIds);
     for (const row of rows) {
-      const key = positionKey(row);
-      if (key && nextIds.includes(row.instrumentId)) this.pendingRefreshes.add(key);
+      if (nextIds.includes(row.instrumentId)) this.refreshLiveCells(row);
     }
-    this.flushPendingRefreshes();
     this.grid.recalc();
-  }
-
-  private flushPendingRefreshes(): void {
-    if (!this.grid) return;
-    for (const key of this.pendingRefreshes) {
-      const row = this.grid.getRow(key);
-      if (this.editingRows.has(key) || this.activeLookupKey === key ||
-          (row && row.getElement().contains(document.activeElement))) continue;
-      this.grid.reformatRow(key);
-      this.pendingRefreshes.delete(key);
-    }
-  }
-
-  private finishEditing(positionId: string | null, changed = true): void {
-    if (!positionId) return;
-    this.editingRows.delete(positionId);
-    if (!changed) {
-      queueMicrotask(() => this.flushPendingRefreshes());
-      return;
-    }
-    queueMicrotask(() => {
-      if (this.grid && !this.editingRows.has(positionId)) {
-        this.grid.reformatRow(positionId);
-        this.pendingRefreshes.delete(positionId);
-        this.flushPendingRefreshes();
-        this.grid.recalc();
-      }
-    });
   }
 
   /** Releases the timer, document listener, lookup dialog and AMB-owned grid DOM. */
   ngOnDestroy(): void {
     this.stopTimer();
-    this.gridHost.nativeElement.removeEventListener('focusout', this.onGridFocusOut);
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
-    this.editingRows.clear();
     this.pendingSelections.clear();
-    this.pendingRefreshes.clear();
     this.activeLookupKey = null;
     this.lookupDialog.destroy();
     this.grid?.destroy();

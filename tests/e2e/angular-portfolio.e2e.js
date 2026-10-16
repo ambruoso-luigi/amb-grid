@@ -68,6 +68,38 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
         const current = await prices.allTextContents();
         return current.some((price, index) => price !== initialPrices[index]);
     }).toBe(true);
+    const apple = holding(page, 'AAPL');
+    const instrument = cell(apple, 'instrument');
+    await instrument.focus();
+    await expect(instrument).toBeFocused();
+    const focusedNode = await instrument.elementHandle();
+    const before = Object.fromEntries(await Promise.all(
+        ['price', 'changePercent', 'value', 'profitLoss'].map(async field => [field, await cell(apple, field).innerText()]),
+    ));
+    const timelineBefore = await cell(apple, 'timeline').locator('svg').getAttribute('aria-label');
+    const barsBefore = await cell(apple, 'timeline').locator('rect').evaluateAll(bars => bars.map(bar => bar.getAttribute('height')));
+    const rowState = await apple.getAttribute('data-state');
+    await expect.poll(() => cell(apple, 'price').innerText()).not.toBe(before.price);
+    for (const field of ['changePercent', 'value', 'profitLoss']) {
+        await expect(cell(apple, field)).not.toHaveText(before[field]);
+    }
+    await expect(cell(apple, 'timeline').locator('svg')).toHaveAttribute('aria-label', timelineBefore);
+    await expect(cell(apple, 'timeline').locator('rect')).toHaveCount(32);
+    await expect.poll(async () => {
+        const bars = await cell(apple, 'timeline').locator('rect').evaluateAll(items => items.map(item => item.getAttribute('height')));
+        return bars.some((height, index) => height !== barsBefore[index]);
+    }).toBe(true);
+    expect(await instrument.evaluate((node, original) => node === original, focusedNode)).toBe(true);
+    await expect(instrument).toBeFocused();
+    expect(await apple.getAttribute('data-state')).toBe(rowState);
+    await expect.poll(async () => {
+        const rowValues = await holdings(page).locator('.tabulator-cell[tabulator-field="value"]').allTextContents();
+        return Math.abs(await moneyIn(totalCell(page, 'value')) - rowValues.reduce((sum, value) => sum + money(value), 0));
+    }).toBeLessThan(0.2);
+    await summary.focus();
+    const priceOutsideGrid = await cell(apple, 'price').innerText();
+    await expect.poll(() => cell(apple, 'price').innerText()).not.toBe(priceOutsideGrid);
+    expect(await apple.getAttribute('data-state')).toBe(rowState);
     await pauseMarket(page);
     const pausedPrices = await prices.allTextContents();
     let changedWhilePaused = false;
@@ -121,6 +153,19 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     const totalProfit = await moneyIn(totalCell(page, 'profitLoss'));
     near(percent(await totalCell(page, 'changePercent').innerText()), totalProfit / (totalValue - totalProfit) * 100, 0.02);
     await expect(holdings(page)).toHaveCount(14);
+
+    await portfolio(page).locator('.portfolio-grid__pause').click();
+    await quantity.dblclick({ delay: 100 });
+    const liveInput = quantity.locator('input');
+    await expect(liveInput).toBeFocused();
+    const editorNode = await liveInput.elementHandle();
+    const livePrice = await cell(apple, 'price').innerText();
+    await expect.poll(() => cell(apple, 'price').innerText()).not.toBe(livePrice);
+    await expect(liveInput).toHaveValue(/^17(?:[,.]0+)?$/);
+    await expect(liveInput).toBeFocused();
+    expect(await liveInput.evaluate((node, original) => node === original, editorNode)).toBe(true);
+    await liveInput.press('Escape');
+    await pauseMarket(page);
 });
 
 test('Multifield Lookup replaces one holding, excludes duplicates and releases its old instrument', async ({ page }) => {
@@ -171,6 +216,8 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     near(newProfit, 0, 0.02);
     near(await moneyIn(totalCell(page, 'value')), totalBefore - oldValue + newValue);
     near(await moneyIn(totalCell(page, 'profitLoss')), totalProfitBefore - oldProfit + newProfit);
+    const modifiedState = await first.getAttribute('data-state');
+    expect(modifiedState).toBe('modified');
 
     await portfolio(page).locator('.portfolio-grid__pause').click();
     await instrument.focus();
@@ -182,6 +229,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expect(instrument.locator('.portfolio-grid__instrument small')).toHaveText('NVDA');
     await expect(cell(first, 'type')).toHaveText('Stock');
     await expect(holdings(page)).toHaveCount(14);
+    expect(await first.getAttribute('data-state')).toBe(modifiedState);
     await pauseMarket(page);
 
     const microsoft = holdings(page).nth(1);
