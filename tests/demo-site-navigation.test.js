@@ -108,7 +108,7 @@ describe('demo site navigation', () => {
         const navbar = read('src/demo/components/site-navbar.js');
         const language = read('src/demo/demo-language-switch.js');
         const brand = read('src/demo/demo-brand.js');
-        const css = read('src/demo/demo.css');
+        const css = read('src/demo/components/site-navbar.css');
         const logo = statSync(new URL('../src/demo/amb-grid-logo.png', import.meta.url));
 
         expect(main).toContain("import { mountSiteNavbar } from './components/site-navbar.js';");
@@ -290,7 +290,7 @@ describe('demo site navigation', () => {
     test('uses a minimal visual language switch without flags', () => {
         const navbar = read('src/demo/components/site-navbar.js');
         const language = read('src/demo/demo-language-switch.js');
-        const css = read('src/demo/demo.css');
+        const css = read('src/demo/components/site-navbar.css');
         const combined = `${navbar}\n${language}`;
 
         expect(combined).toContain('class="language-switch');
