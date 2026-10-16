@@ -76,7 +76,8 @@ const editCell = async (row, field, value) => {
     await input.fill(value);
     await input.press('Enter');
     await expect(cell).not.toHaveClass(/tabulator-editing/);
-    await expect(input).toHaveCount(0);
+    await expect(input).toBeHidden();
+    await expect(cell).toHaveText(value);
     await expect(cell).toBeFocused();
 };
 
