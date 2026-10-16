@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import { test } from 'vitest';
 import { filterInstruments, isDuplicateInstrument, positionKey } from './instrument-lookup.ts';
 import { categoryClass, INSTRUMENT_FAVICONS, tickerMonogram } from './instrument-identity.ts';
 
