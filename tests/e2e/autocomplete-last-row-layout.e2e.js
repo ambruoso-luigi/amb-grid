@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 const measureLayout = page => page.evaluate(() => {
     const root = document.querySelector('#inventory-table');
@@ -65,8 +66,9 @@ test.describe('autocomplete last-row layout', () => {
 
         const before = await measureLayout(page);
 
-        await warehouse.dblclick({ delay: 100 });
-        const input = warehouse.locator('input.amb-autocomplete-editor');
+        const input = await openEditorFromNavigation(
+            page, warehouse, 'last-row Warehouse', '#inventory-table', 'input.amb-autocomplete-editor'
+        );
 
         await expect(warehouse).toHaveClass(/tabulator-editing/);
         await expect(input).toBeVisible();
