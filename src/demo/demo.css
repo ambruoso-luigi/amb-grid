@@ -230,94 +230,6 @@ a {
     grid-area: video;
 }
 
-.demo-brand {
-    align-items: center;
-    display: inline-flex;
-    flex: 0 0 auto;
-    text-decoration: none;
-}
-
-.demo-brand__logo {
-    display: block;
-    height: auto;
-    max-width: min(468px, 47vw);
-    object-fit: contain;
-    transition: filter 180ms ease, transform 180ms ease;
-    width: clamp(270px, 28.8vw, 450px);
-}
-
-.demo-brand:hover .demo-brand__logo {
-    filter: drop-shadow(0 7px 14px rgb(16 35 63 / 10%));
-    transform: translateY(-1px);
-}
-
-.language-switch {
-    align-items: center;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    display: inline-flex;
-    gap: 8px;
-    padding: 0;
-    width: fit-content;
-}
-
-.language-switch__label {
-    background: transparent;
-    border: 0;
-    border-radius: 999px;
-    color: #7b8797;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 650;
-    line-height: 1;
-    min-width: 25px;
-    padding: 4px 0;
-    text-align: center;
-    transition: color 160ms ease;
-}
-
-.language-switch__label.is-active {
-    color: #102950;
-    font-weight: 750;
-}
-
-.language-switch__control {
-    background: #e2e8f0;
-    border: 1px solid #cbd5e1;
-    border-radius: 9999px;
-    cursor: pointer;
-    display: block;
-    height: 23px;
-    overflow: hidden;
-    padding: 0;
-    position: relative;
-    transition: background 160ms ease, border-color 160ms ease;
-    width: 44px;
-}
-
-.language-switch__control:hover {
-    background: #d8e0ea;
-    border-color: #94a3b8;
-}
-
-.language-switch__knob {
-    background: #102950;
-    border: 0;
-    border-radius: 999px;
-    box-shadow: 0 1px 3px rgb(16 41 80 / 22%);
-    height: 17px;
-    left: 2px;
-    position: absolute;
-    top: 2px;
-    transition: transform 180ms ease;
-    width: 17px;
-}
-
-.language-switch.is-it .language-switch__knob {
-    transform: translateX(23px);
-}
-
 .demo-hero__content {
     align-self: center;
     min-width: 0;
@@ -455,8 +367,6 @@ a {
 .demo-button:focus-visible,
 .toolbar button:focus-visible,
 .demo-menu-button:focus-visible,
-.language-switch__label:focus-visible,
-.language-switch__control:focus-visible,
 .demo-report-dialog__button:focus-visible,
 .demo-report-dialog__tab:focus-visible,
 .demo-disclosure__summary:focus-visible {

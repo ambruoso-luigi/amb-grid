@@ -17,4 +17,16 @@ if (!/src="main-[^"/]+\.js"/.test(index) ||
   throw new Error('Angular JavaScript or CSS bundle is missing from the page');
 }
 await access(resolve(browserRoot, 'assets/amb-grid-logo.png'));
-console.log('dist/angular contains the Angular page, bundles and logo asset.');
+if (!index.includes('<header id="site-navbar"></header>') ||
+    index.includes('portfolio-page__home')) {
+  throw new Error('Angular page is missing its shared navbar mount point or still has the old Home link');
+}
+for (const asset of ['navbar.js', 'amb-grid-logo.png']) {
+  await access(resolve(browserRoot, 'navbar', asset));
+}
+const navbarCss = index.match(/href="\/angular\/navbar\/([^"/]+\.css)"/);
+if (!navbarCss || !index.includes('src="/angular/navbar/navbar.js"')) {
+  throw new Error('Angular page does not load the shared navbar bundles');
+}
+await access(resolve(browserRoot, 'navbar', navbarCss[1]));
+console.log('dist/angular contains the Angular page, bundles, shared navbar and logo assets.');

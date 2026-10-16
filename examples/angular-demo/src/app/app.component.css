@@ -9,31 +9,6 @@
   padding: clamp(16px, 2.2vw, 32px) 0;
 }
 
-.portfolio-page__home {
-  display: flex;
-  width: fit-content;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px auto;
-  color: #a73555;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: color 180ms ease;
-}
-
-.portfolio-page__home:hover {
-  color: #7f2944;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.portfolio-page__home:focus-visible {
-  outline: 3px solid #a73555;
-  outline-offset: 4px;
-  border-radius: 2px;
-}
-
 .portfolio-hero {
   display: grid;
   grid-template-areas: "brand video" "content video";
@@ -343,10 +318,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .portfolio-page__home {
-    transition: none;
-  }
-
   .portfolio-hero__brand,
   .portfolio-hero__content,
   .video-preview {
