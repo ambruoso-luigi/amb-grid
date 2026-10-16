@@ -54,6 +54,10 @@ npm ci --prefix examples/angular-demo
 starts Vite. Open `http://localhost:5173/angular/`. After Angular source changes,
 restart this command to rebuild the staged page.
 
+The focused browser check is `tests/e2e/angular-portfolio.e2e.js`. Before running
+it locally, stage `/angular/` with `npm run site:angular`; the CI `e2e` job installs
+the Angular workspace and runs the same staging script before Playwright.
+
 For production, run `npm run build:site` and then `npm run preview`. The Angular
 CLI output is staged in the ignored `public/angular/` directory before Vite copies
 it to `dist/angular/`. Both routes serve Angular from `/angular/`; the standalone

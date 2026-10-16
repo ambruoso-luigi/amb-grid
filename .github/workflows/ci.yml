@@ -104,6 +104,12 @@ jobs:
       - name: Install React demo dependencies
         run: npm ci --prefix examples/react-demo --ignore-scripts
 
+      - name: Install Angular demo dependencies
+        run: npm ci --prefix examples/angular-demo
+
+      - name: Stage Angular demo
+        run: npm run site:angular
+
       - name: Install Playwright browser
         run: npx playwright install --with-deps chrome
 
