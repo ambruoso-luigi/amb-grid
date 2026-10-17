@@ -162,6 +162,23 @@
   background: #fdf5f7;
 }
 
+.portfolio-grid .tabulator-row[data-state="modified"] {
+  background-color: var(--amb-row-clean-bg, #fff) !important;
+  box-shadow: none;
+}
+
+.portfolio-grid .tabulator-row[data-state="modified"][data-amb-row-parity="even"] {
+  background-color: var(--amb-row-clean-alt-bg, #f7f8fa) !important;
+}
+
+.portfolio-grid .tabulator-row[data-state="modified"]:hover {
+  background-color: #fdf5f7 !important;
+}
+
+.portfolio-grid .tabulator-row[data-state="modified"] .tabulator-cell[data-cell-state="modified"]:not([data-cell-error="true"]) {
+  background-color: transparent !important;
+}
+
 .portfolio-grid .tabulator-calcs-bottom {
   border-top: 2px solid #a73555;
   background: #f5f0f4;

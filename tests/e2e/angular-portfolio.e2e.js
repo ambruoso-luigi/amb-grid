@@ -6,6 +6,8 @@ const holdings = page => table(page).locator('.tabulator-tableholder .tabulator-
 const cell = (row, field) => row.locator(`.tabulator-cell[tabulator-field="${field}"]`);
 const totalCell = (page, field) => table(page).locator(`.tabulator-calcs-bottom .tabulator-cell[tabulator-field="${field}"]`);
 const holding = (page, ticker) => holdings(page).filter({ has: page.locator('.portfolio-grid__instrument small', { hasText: ticker }) });
+const floatingMessage = page => page.locator('.teh-floating-message');
+const floatingBody = page => floatingMessage(page).locator('.teh-floating-message__body');
 const money = text => Number(text.replace(/[^\d.,-]/g, '').replaceAll(',', ''));
 const percent = text => Number(text.match(/[+-]?\d+(?:\.\d+)?/)?.[0]);
 const moneyIn = async locator => money(await locator.innerText());
@@ -34,6 +36,35 @@ const openInstrumentLookup = async (page, row) => {
     await expect(dialog).toBeVisible();
     return dialog;
 };
+
+test('Initial lookup descriptions and F2 work without opening an editor first', async ({ page }) => {
+    await openPortfolio(page);
+    const apple = cell(holdings(page).first(), 'instrument');
+    const microsoft = cell(holdings(page).nth(1), 'instrument');
+    await apple.hover();
+    await expect(floatingMessage(page)).toHaveClass(/teh-floating-message--visible/);
+    await expect(floatingBody(page)).toHaveText('AAPL');
+    await microsoft.hover();
+    await expect(floatingBody(page)).toHaveText('MSFT');
+    await apple.focus();
+    await expect(apple).toBeFocused();
+    await expect(floatingBody(page)).toHaveText('AAPL');
+
+    await apple.press('F2');
+    const dialog = page.locator('.amb-lookup-dialog');
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    const editor = apple.locator('.amb-lookup-editor__input');
+    await expect(editor).toHaveValue('Apple Inc.');
+    await editor.press('F2');
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await editor.press('Escape');
+    await expect(apple.locator('.portfolio-grid__instrument small')).toHaveText('AAPL');
+    await expect(apple).toBeFocused();
+});
 
 test('Angular portfolio renders fixed holdings, integrated totals, guide and live market', async ({ page }) => {
     await openPortfolio(page);
@@ -141,6 +172,19 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     await expect(quantity).not.toHaveClass(/tabulator-editing/);
     await expect(quantity).toHaveText('17');
     await expect(cell(apple, 'price')).toHaveText(priceText);
+    await expect(apple).toHaveAttribute('data-state', 'modified');
+    await page.mouse.move(0, 0);
+    const cleanPeer = holdings(page).nth(2);
+    const rowColor = await apple.evaluate(element => getComputedStyle(element).backgroundColor);
+    expect(rowColor).toBe(await cleanPeer.evaluate(element => getComputedStyle(element).backgroundColor));
+    expect(await apple.evaluate(element => getComputedStyle(element).boxShadow)).toBe('none');
+    expect(await quantity.evaluate(element => getComputedStyle(element).backgroundColor))
+        .toBe(await cell(cleanPeer, 'quantity').evaluate(element => getComputedStyle(element).backgroundColor));
+    await quantity.evaluate(element => element.setAttribute('data-cell-error', 'true'));
+    expect(await quantity.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(
+        await cell(cleanPeer, 'quantity').evaluate(element => getComputedStyle(element).backgroundColor),
+    );
+    await quantity.evaluate(element => element.removeAttribute('data-cell-error'));
     await quantity.dblclick({ delay: 100 });
     await expect(quantity.locator('input')).toBeVisible();
     await quantity.locator('input').press('Escape');
@@ -202,6 +246,9 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expect(instrument).not.toHaveClass(/tabulator-editing/);
     await expect(first.locator('.portfolio-grid__instrument strong')).toHaveText('NVIDIA Corp.');
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('NVDA');
+    await instrument.hover();
+    await expect(floatingMessage(page)).toHaveClass(/teh-floating-message--visible/);
+    await expect(floatingBody(page)).toHaveText('NVDA');
     await expect(cell(first, 'type')).toHaveText('Stock');
     await expect(holding(page, 'AAPL')).toHaveCount(0);
     await expect(holding(page, 'MSFT')).toHaveCount(1);

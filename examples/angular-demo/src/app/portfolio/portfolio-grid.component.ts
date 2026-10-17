@@ -236,9 +236,10 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       ],
       search: { fields: ['ticker', 'name', 'category', 'isin'] },
       cache: { enabled: false },
-      load: ({ query }: { query: string }) => availableInstruments(
-        INSTRUMENT_CATALOG, this.grid?.getData() as HoldingsRow[] ?? initialRows(), this.activeLookupKey ?? '', query,
-      ),
+      load: ({ query, rowData }: { query: string; rowData?: object }) => {
+        const key = this.activeLookupKey ?? (rowData && 'id' in rowData && typeof rowData.id === 'string' ? rowData.id : '');
+        return availableInstruments(INSTRUMENT_CATALOG, this.grid?.getData() as HoldingsRow[] ?? initialRows(), key, query);
+      },
     });
     const multifield = AMB.multifieldLookup({
       id: 'portfolio-instrument', lookup,
@@ -282,11 +283,16 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         },
       },
     }) as Record<string, unknown>;
-    const originalEditor = instrumentColumn['editor'] as (
+    type LookupEditor = ((
       cell: EditedCell, onRendered: (callback: () => void) => void,
       success: (value: string) => void, cancel: () => void,
-    ) => HTMLElement;
-    instrumentColumn['editor'] = (
+    ) => HTMLElement) & {
+      _ambEditorType?: string;
+      _ambLookupConfig?: object;
+      _ambCapabilities?: { auxiliary?: boolean };
+    };
+    const originalEditor = instrumentColumn['editor'] as LookupEditor;
+    const guardedEditor: LookupEditor = (
       cell: EditedCell, onRendered: (callback: () => void) => void,
       success: (value: string) => void, cancel: () => void,
     ) => originalEditor(cell, onRendered, (value) => {
@@ -296,6 +302,10 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       else cancel();
       this.pendingSelections.delete(key);
     }, cancel);
+    guardedEditor._ambEditorType = originalEditor._ambEditorType;
+    guardedEditor._ambLookupConfig = originalEditor._ambLookupConfig;
+    guardedEditor._ambCapabilities = originalEditor._ambCapabilities;
+    instrumentColumn['editor'] = guardedEditor;
     this.grid = AMB.table({
       selector: this.gridHost.nativeElement,
       data: initialRows(),
