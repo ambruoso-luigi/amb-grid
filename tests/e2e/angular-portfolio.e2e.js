@@ -4,13 +4,15 @@ const portfolio = page => page.locator('.portfolio-grid');
 const table = page => portfolio(page).locator('.portfolio-grid__table');
 const holdings = page => table(page).locator('.tabulator-tableholder .tabulator-row');
 const cell = (row, field) => row.locator(`.tabulator-cell[tabulator-field="${field}"]`);
-const totalCell = (page, field) => table(page).locator(`.tabulator-calcs-bottom .tabulator-cell[tabulator-field="${field}"]`);
+const totalCell = (page, field) => table(page).locator(`.tabulator-calcs-top .tabulator-cell[tabulator-field="${field}"]`);
 const holding = (page, ticker) => holdings(page).filter({ has: page.locator('.portfolio-grid__instrument small', { hasText: ticker }) });
 const floatingMessage = page => page.locator('.teh-floating-message');
 const floatingBody = page => floatingMessage(page).locator('.teh-floating-message__body');
 const money = text => Number(text.replace(/[^\d.,-]/g, '').replaceAll(',', ''));
 const percent = text => Number(text.match(/[+-]?\d+(?:\.\d+)?/)?.[0]);
 const moneyIn = async locator => money(await locator.innerText());
+const totalMoneyIn = (page, field) => moneyIn(totalCell(page, field).locator('.amb-calc-value'));
+const totalReturnIn = async page => percent(await totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return').innerText());
 const near = (actual, expected, tolerance = 0.05) => expect(Math.abs(actual - expected)).toBeLessThan(tolerance);
 
 const openPortfolio = async page => {
@@ -74,11 +76,17 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
 
     await expect(portfolio(page).locator('.amb-toolbar, .amb-row-action-button')).toHaveCount(0);
     await expect(portfolio(page).getByRole('button', { name: /^(Add|Delete|Save|Reload|Rollback|Payload)/i })).toHaveCount(0);
-    await expect(table(page).locator('.tabulator-calcs-bottom')).toHaveCount(1);
-    await expect(totalCell(page, 'instrument')).toHaveText('TOTAL — 14 posizioni');
-    await expect(totalCell(page, 'value')).toHaveText(/€[\d,]+\.\d{2}/);
-    await expect(totalCell(page, 'profitLoss')).toHaveText(/-?€[\d,]+\.\d{2}/);
-    await expect(totalCell(page, 'changePercent')).toHaveText(/Return [+-]\d+\.\d{2}%/);
+    await expect(table(page).locator('.tabulator-calcs-top')).toHaveCount(1);
+    await expect(table(page).locator('.tabulator-calcs-bottom')).toHaveCount(0);
+    await expect(table(page).locator('.tabulator-header .tabulator-calcs-top')).toHaveCount(1);
+    await expect(totalCell(page, 'instrument').locator('.amb-calc-label')).toHaveText('POSIZIONI');
+    await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
+    await expect(totalCell(page, 'value').locator('.amb-calc-label')).toHaveText('VALORE TOTALE');
+    await expect(totalCell(page, 'value').locator('.amb-calc-value')).toHaveText(/€[\d,]+\.\d{2}/);
+    await expect(totalCell(page, 'profitLoss').locator('.amb-calc-label')).toHaveText('P/L TOTALE');
+    await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/[+-]?€[\d,]+\.\d{2}/);
+    await expect(totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return')).toHaveText(/[+-]?\d+\.\d{2}%/);
+    await expect(totalCell(page, 'changePercent')).toBeEmpty();
 
     const guide = portfolio(page).locator('.portfolio-grid__guide');
     const summary = guide.locator('summary');
@@ -125,13 +133,16 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
     expect(await apple.getAttribute('data-state')).toBe(rowState);
     await expect.poll(async () => {
         const rowValues = await holdings(page).locator('.tabulator-cell[tabulator-field="value"]').allTextContents();
-        return Math.abs(await moneyIn(totalCell(page, 'value')) - rowValues.reduce((sum, value) => sum + money(value), 0));
+        return Math.abs(await totalMoneyIn(page, 'value') - rowValues.reduce((sum, value) => sum + money(value), 0));
     }).toBeLessThan(0.2);
     await summary.focus();
     const priceOutsideGrid = await cell(apple, 'price').innerText();
     await expect.poll(() => cell(apple, 'price').innerText()).not.toBe(priceOutsideGrid);
     expect(await apple.getAttribute('data-state')).toBe(rowState);
     await pauseMarket(page);
+    const pausedTotal = await totalMoneyIn(page, 'value');
+    const pausedProfit = await totalMoneyIn(page, 'profitLoss');
+    near(await totalReturnIn(page), pausedProfit / (pausedTotal - pausedProfit) * 100, 0.02);
     const pausedPrices = await prices.allTextContents();
     let changedWhilePaused = false;
     const pausedAt = Date.now();
@@ -140,12 +151,14 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
         changedWhilePaused ||= current.some((price, index) => price !== pausedPrices[index]);
         return Date.now() - pausedAt >= 1200 ? (changedWhilePaused ? 'changed' : 'stable') : 'observing';
     }, { intervals: [200], timeout: 3000 }).toBe('stable');
+    near(await totalMoneyIn(page, 'value'), pausedTotal);
     await expect(holding(page, 'AAPL').locator('.portfolio-grid__timeline rect')).toHaveCount(32);
     await portfolio(page).locator('.portfolio-grid__pause').click();
     await expect.poll(async () => {
         const current = await prices.allTextContents();
         return current.some((price, index) => price !== pausedPrices[index]);
     }).toBe(true);
+    await expect.poll(() => totalMoneyIn(page, 'value')).not.toBe(pausedTotal);
     await expect(holdings(page)).toHaveCount(14);
 });
 
@@ -159,8 +172,8 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     const price = money(priceText);
     const valueBefore = await moneyIn(cell(apple, 'value'));
     const profitBefore = await moneyIn(cell(apple, 'profitLoss'));
-    const totalBefore = await moneyIn(totalCell(page, 'value'));
-    const totalProfitBefore = await moneyIn(totalCell(page, 'profitLoss'));
+    const totalBefore = await totalMoneyIn(page, 'value');
+    const totalProfitBefore = await totalMoneyIn(page, 'profitLoss');
     const averageCost = (valueBefore - profitBefore) / 16;
 
     const quantity = cell(apple, 'quantity');
@@ -190,12 +203,12 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     await quantity.locator('input').press('Escape');
 
     near(await moneyIn(cell(apple, 'value')), valueBefore + price);
-    near(await moneyIn(totalCell(page, 'value')), totalBefore + price);
+    near(await totalMoneyIn(page, 'value'), totalBefore + price);
     near(await moneyIn(cell(apple, 'profitLoss')), profitBefore + price - averageCost);
-    near(await moneyIn(totalCell(page, 'profitLoss')), totalProfitBefore + price - averageCost);
-    const totalValue = await moneyIn(totalCell(page, 'value'));
-    const totalProfit = await moneyIn(totalCell(page, 'profitLoss'));
-    near(percent(await totalCell(page, 'changePercent').innerText()), totalProfit / (totalValue - totalProfit) * 100, 0.02);
+    near(await totalMoneyIn(page, 'profitLoss'), totalProfitBefore + price - averageCost);
+    const totalValue = await totalMoneyIn(page, 'value');
+    const totalProfit = await totalMoneyIn(page, 'profitLoss');
+    near(await totalReturnIn(page), totalProfit / (totalValue - totalProfit) * 100, 0.02);
     await expect(holdings(page)).toHaveCount(14);
 
     await portfolio(page).locator('.portfolio-grid__pause').click();
@@ -220,8 +233,8 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     const oldValue = await moneyIn(cell(first, 'value'));
     const oldProfit = await moneyIn(cell(first, 'profitLoss'));
     const oldPrice = await moneyIn(cell(first, 'price'));
-    const totalBefore = await moneyIn(totalCell(page, 'value'));
-    const totalProfitBefore = await moneyIn(totalCell(page, 'profitLoss'));
+    const totalBefore = await totalMoneyIn(page, 'value');
+    const totalProfitBefore = await totalMoneyIn(page, 'profitLoss');
 
     const dialog = await openInstrumentLookup(page, first);
     const search = dialog.locator('.amb-lookup-dialog__search');
@@ -261,8 +274,11 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     const newProfit = await moneyIn(cell(first, 'profitLoss'));
     near(newValue, 16 * await moneyIn(cell(first, 'price')), 0.1);
     near(newProfit, 0, 0.02);
-    near(await moneyIn(totalCell(page, 'value')), totalBefore - oldValue + newValue);
-    near(await moneyIn(totalCell(page, 'profitLoss')), totalProfitBefore - oldProfit + newProfit);
+    near(await totalMoneyIn(page, 'value'), totalBefore - oldValue + newValue);
+    near(await totalMoneyIn(page, 'profitLoss'), totalProfitBefore - oldProfit + newProfit);
+    const replacementTotal = await totalMoneyIn(page, 'value');
+    const replacementProfit = await totalMoneyIn(page, 'profitLoss');
+    near(await totalReturnIn(page), replacementProfit / (replacementTotal - replacementProfit) * 100, 0.02);
     const modifiedState = await first.getAttribute('data-state');
     expect(modifiedState).toBe('modified');
 

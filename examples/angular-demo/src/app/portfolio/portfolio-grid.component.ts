@@ -58,9 +58,23 @@ const euro = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR'
 const quantity = new Intl.NumberFormat('en-IE', { maximumFractionDigits: 8 });
 const percent = new Intl.NumberFormat('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'always' });
 
-function signedValue(value: number | null, formatted: string): string {
-  const className = value === null || value === 0 ? 'is-neutral' : value > 0 ? 'is-positive' : 'is-negative';
-  return `<span class="portfolio-grid__movement ${className}">${formatted}</span>`;
+function profitSummary(cell: { getValue(): ReturnType<typeof calculatePortfolioTotals> }): HTMLElement {
+  const totals = cell.getValue();
+  const summary = document.createElement('span');
+  summary.className = `amb-calc-content portfolio-grid__top-summary portfolio-grid__top-summary--profit ${
+    totals.profitLoss === 0 ? 'is-neutral' : totals.profitLoss > 0 ? 'is-positive' : 'is-negative'
+  }`;
+  const label = document.createElement('span');
+  label.className = 'amb-calc-label';
+  label.textContent = 'P/L TOTALE';
+  const amount = document.createElement('span');
+  amount.className = 'amb-calc-value';
+  amount.textContent = `${totals.profitLoss > 0 ? '+' : ''}${euro.format(totals.profitLoss)}`;
+  const result = document.createElement('span');
+  result.className = 'portfolio-grid__top-return';
+  result.textContent = `${totals.returnPercent === 0 ? '0.00' : percent.format(totals.returnPercent)}%`;
+  summary.append(label, amount, result);
+  return summary;
 }
 
 function instrumentCell(row: HoldingsRow): HTMLElement {
@@ -306,17 +320,22 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     guardedEditor._ambLookupConfig = originalEditor._ambLookupConfig;
     guardedEditor._ambCapabilities = originalEditor._ambCapabilities;
     instrumentColumn['editor'] = guardedEditor;
+    const initialHoldings = initialRows();
+    const allHoldings = () => (this.grid?.getData() as HoldingsRow[] | undefined) ?? initialHoldings;
+    const portfolioTotals = () => calculatePortfolioTotals(allHoldings(), (id) => this.market.quoteFor(id));
     this.grid = AMB.table({
       selector: this.gridHost.nativeElement,
-      data: initialRows(),
+      data: initialHoldings,
       index: 'id',
       layout: 'fitColumns',
       toolbar: false,
       rowActionColumn: { enabled: false },
       columns: [
         { ...instrumentColumn,
-          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => `TOTAL — ${rows.length} posizioni`,
-          bottomCalcFormatter: (cell: { getValue(): string }) => cell.getValue(),
+          topCalc: () => allHoldings().length,
+          topCalcFormatter: AMB.formatters.calculation({
+            label: 'POSIZIONI', className: 'portfolio-grid__top-summary portfolio-grid__top-summary--count',
+          }),
         },
         multifield.dependentColumn('instrumentId') as Record<string, unknown>,
         multifield.dependentColumn('ticker') as Record<string, unknown>,
@@ -334,8 +353,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         { title: 'Price', field: 'price', minWidth: 118, widthGrow: 1, hozAlign: 'right', headerSort: false,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'price') },
         { title: 'Change %', field: 'changePercent', minWidth: 112, widthGrow: 0.9, hozAlign: 'right', headerSort: false,
-          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).returnPercent,
-          bottomCalcFormatter: (cell: { getValue(): number }) => signedValue(cell.getValue(), `Return ${percent.format(cell.getValue())}%`),
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'changePercent') },
         {
           title: 'Quantity', field: 'quantity', minWidth: 112, widthGrow: 0.9, hozAlign: 'right',
@@ -361,12 +378,15 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           cssClass: 'portfolio-grid__editable',
         },
         { title: 'Value', field: 'value', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
-          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).value,
-          bottomCalcFormatter: (cell: { getValue(): number }) => euro.format(cell.getValue()),
+          topCalc: () => portfolioTotals().value,
+          topCalcFormatter: AMB.formatters.calculation({
+            label: 'VALORE TOTALE', className: 'portfolio-grid__top-summary portfolio-grid__top-summary--value',
+            formatValue: (value: number) => euro.format(value),
+          }),
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'value') },
         { title: 'P/L', field: 'profitLoss', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
-          bottomCalc: (_values: unknown[], rows: HoldingsRow[]) => calculatePortfolioTotals(rows, (id) => this.market.quoteFor(id)).profitLoss,
-          bottomCalcFormatter: (cell: { getValue(): number }) => signedValue(cell.getValue(), euro.format(cell.getValue())),
+          topCalc: () => portfolioTotals(),
+          topCalcFormatter: profitSummary,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'profitLoss') },
       ],
     });

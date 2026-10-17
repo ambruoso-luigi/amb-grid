@@ -179,15 +179,74 @@
   background-color: transparent !important;
 }
 
-.portfolio-grid .tabulator-calcs-bottom {
-  border-top: 2px solid #a73555;
-  background: #f5f0f4;
-  color: #102950;
-  font-weight: 800;
+.portfolio-grid .tabulator-header .tabulator-calcs-holder,
+.portfolio-grid .tabulator-header .tabulator-calcs-top {
+  background: #eaf2f8 !important;
 }
 
-.portfolio-grid .tabulator-calcs-bottom .tabulator-cell { text-align: right; }
-.portfolio-grid .tabulator-calcs-bottom .tabulator-cell:first-child { text-align: left; color: #8e2e4a; }
+.portfolio-grid .tabulator-header .tabulator-calcs-holder {
+  border-top: 1px solid #bed2e1;
+  border-bottom: 1px solid #bed2e1;
+}
+
+.portfolio-grid .tabulator-calcs-top .amb-calc-cell {
+  display: inline-flex;
+  align-items: center;
+  min-height: 60px;
+  padding: 8px 10px;
+  border-right-color: #cfdfeb;
+  box-sizing: border-box;
+}
+
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  border-left: 2px solid #7598b5;
+  padding-left: 8px;
+  line-height: 1.1;
+}
+
+.portfolio-grid .tabulator-calcs-top .amb-calc-label {
+  color: #516e85;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.portfolio-grid .tabulator-calcs-top .amb-calc-value {
+  color: #102950;
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.portfolio-grid .tabulator-calcs-top .tabulator-cell[tabulator-field="value"],
+.portfolio-grid .tabulator-calcs-top .tabulator-cell[tabulator-field="profitLoss"] {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--value,
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit {
+  align-items: flex-end;
+}
+
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-positive .amb-calc-value,
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-positive .portfolio-grid__top-return { color: #167149; }
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-negative .amb-calc-value,
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-negative .portfolio-grid__top-return { color: #a73555; }
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-neutral .amb-calc-value,
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-neutral .portfolio-grid__top-return { color: #52627a; }
+
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-return {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 
 .portfolio-grid .tabulator-cell {
   padding: 12px 10px;
