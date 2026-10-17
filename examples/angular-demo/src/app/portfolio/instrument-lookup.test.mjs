@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 import { availableInstruments, filterInstruments, isDuplicateInstrument, positionKey } from './instrument-lookup.ts';
-import { categoryClass, INSTRUMENT_FAVICONS, tickerMonogram } from './instrument-identity.ts';
+import { categoryClass, instrumentIdentity, tickerMonogram } from './instrument-identity.ts';
 
 const catalog = [
   { id: 'stock-apple', ticker: 'AAPL', name: 'Apple Inc.', category: 'Stock' },
@@ -34,9 +34,28 @@ test('availability excludes other holdings and responds to replacement without m
   assert.equal(Object.hasOwn(catalog[0], 'usato'), false);
 });
 
-test('icon fallback uses a local monogram and category; remote icons are explicitly mapped', () => {
+test('instrument identity maps local marks, bond flags and reliable fallbacks', () => {
   assert.equal(tickerMonogram('EU36-SIM'), 'EU');
   assert.equal(categoryClass('Bond'), 'is-bond');
-  assert.equal(INSTRUMENT_FAVICONS['stock-aapl'], 'https://www.apple.com/favicon.ico');
-  assert.equal(INSTRUMENT_FAVICONS['bond-eu'], undefined);
+  assert.equal(categoryClass(''), 'is-unselected');
+  assert.deepEqual(instrumentIdentity('stock-aapl', 'AAPL'), {
+    logo: 'assets/instruments/apple.svg', fallback: 'AA', wide: false,
+  });
+  assert.equal(instrumentIdentity('stock-nvda', 'NVDA').logo, 'assets/instruments/nvidia.svg');
+  assert.equal(instrumentIdentity('etf-vwce', 'VWCE').logo, 'assets/instruments/vanguard.svg');
+  assert.equal(instrumentIdentity('etf-vuaa', 'VUAA').logo, 'assets/instruments/vanguard.svg');
+  assert.equal(instrumentIdentity('etf-cspx', 'CSPX').logo, 'assets/instruments/ishares.png');
+  assert.equal(instrumentIdentity('etf-aggh', 'AGGH').logo, 'assets/instruments/ishares.png');
+  assert.equal(instrumentIdentity('bond-italy-2030', 'IT30-SIM').logo, 'assets/instruments/flag-it.svg');
+  assert.equal(instrumentIdentity('bond-germany-2032', 'DE32-SIM').logo, 'assets/instruments/flag-de.svg');
+  assert.equal(instrumentIdentity('bond-eu-2036', 'EU36-SIM').logo, 'assets/instruments/flag-eu.svg');
+  for (const [id, flag] of [
+    ['bond-italy-2035', 'it'], ['bond-france-2031', 'fr'], ['bond-spain-2033', 'es'],
+    ['bond-us-2034', 'us'], ['bond-netherlands-2030', 'nl'],
+    ['bond-eib-2032', 'eu'], ['bond-enel-2031', 'it'],
+  ]) {
+    assert.equal(instrumentIdentity(id, 'BOND').logo, `assets/instruments/flag-${flag}.svg`);
+  }
+  assert.deepEqual(instrumentIdentity('etf-xgle', 'XGLE'), { logo: undefined, fallback: 'XG', wide: false });
+  assert.deepEqual(instrumentIdentity('unknown', 'TEST'), { logo: undefined, fallback: 'TE', wide: false });
 });

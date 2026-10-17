@@ -7,6 +7,13 @@ const cell = (row, field) => row.locator(`.tabulator-cell[tabulator-field="${fie
 const totalCell = (page, field) => table(page).locator(`.tabulator-calcs-top .tabulator-cell[tabulator-field="${field}"]`);
 const holding = (page, ticker) => holdings(page).filter({ has: page.locator('.portfolio-grid__instrument small', { hasText: ticker }) });
 const icon = (page, ticker) => holding(page, ticker).locator('.portfolio-grid__instrument-icon');
+const expectLoadedIcon = async (page, ticker, asset) => {
+    const image = icon(page, ticker).locator('img');
+    await expect(image).toBeVisible();
+    await expect(image).toHaveAttribute('src', `assets/instruments/${asset}`);
+    expect(await image.evaluate(element => element.complete && element.naturalWidth > 0
+        && new URL(element.src).origin === location.origin)).toBe(true);
+};
 const floatingMessage = page => page.locator('.teh-floating-message');
 const floatingBody = page => floatingMessage(page).locator('.teh-floating-message__body');
 const money = text => Number(text.replace(/[^\d.,-]/g, '').replaceAll(',', ''));
@@ -79,16 +86,16 @@ test('Initial lookup descriptions and F2 work without opening an editor first', 
 
 test('Angular portfolio renders fixed holdings, integrated totals, guide and live market', async ({ page }) => {
     await openPortfolio(page);
-    for (const ticker of ['MSFT', 'ASML', 'SAP', 'BTC', 'ETH', 'SOL']) {
-        const image = icon(page, ticker).locator('img');
-        await expect(image).toBeVisible();
-        expect(await image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+    for (const [ticker, asset] of [
+        ['AAPL', 'apple.svg'], ['MSFT', 'microsoft.svg'], ['ASML', 'asml.svg'],
+        ['SAP', 'sap.svg'], ['ENEL', 'enel.png'], ['VWCE', 'vanguard.svg'],
+        ['CSPX', 'ishares.png'], ['AGGH', 'ishares.png'], ['IT30-SIM', 'flag-it.svg'],
+        ['DE32-SIM', 'flag-de.svg'], ['EU36-SIM', 'flag-eu.svg'],
+        ['BTC', 'bitcoin.svg'], ['ETH', 'ethereum.svg'], ['SOL', 'solana.svg'],
+    ]) {
+        await expectLoadedIcon(page, ticker, asset);
     }
-    await expect(holdings(page).locator('.portfolio-grid__instrument-icon img')).toHaveCount(6);
-    await expect(icon(page, 'AAPL')).toHaveText('AA');
-    await expect(icon(page, 'IT30-SIM')).toHaveText('IT');
-    await expect(icon(page, 'DE32-SIM')).toHaveText('DE');
-    await expect(icon(page, 'EU36-SIM')).toHaveText('EU');
+    await expect(holdings(page).locator('.portfolio-grid__instrument-icon img')).toHaveCount(14);
     await page.locator('#site-navbar .site-navbar__demo > button').click();
     await expect(page.locator('#site-navbar [data-demo-label="angular"]')).toBeVisible();
     await expect(page.locator('#site-navbar [data-demo-label="angular"]')).toHaveText('Angular');
@@ -249,7 +256,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await pauseMarket(page);
     const first = holdings(page).first();
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('AAPL');
-    await expect(icon(page, 'AAPL')).toHaveText('AA');
+    await expectLoadedIcon(page, 'AAPL', 'apple.svg');
     const oldValue = await moneyIn(cell(first, 'value'));
     const oldProfit = await moneyIn(cell(first, 'profitLoss'));
     const oldPrice = await moneyIn(cell(first, 'price'));
@@ -279,8 +286,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expect(instrument).not.toHaveClass(/tabulator-editing/);
     await expect(first.locator('.portfolio-grid__instrument strong')).toHaveText('NVIDIA Corp.');
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('NVDA');
-    await expect(icon(page, 'NVDA')).toHaveText('NV');
-    await expect(icon(page, 'NVDA').locator('img')).toHaveCount(0);
+    await expectLoadedIcon(page, 'NVDA', 'nvidia.svg');
     await instrument.hover();
     await expect(floatingMessage(page)).toHaveClass(/teh-floating-message--visible/);
     await expect(floatingBody(page)).toHaveText('NVDA');

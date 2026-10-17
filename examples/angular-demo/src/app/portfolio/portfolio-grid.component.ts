@@ -90,6 +90,7 @@ function instrumentCell(row: HoldingsRow): HTMLElement {
   icon.className = `portfolio-grid__instrument-icon ${categoryClass(row.type)}`;
   const identity = instrumentIdentity(row.instrumentId, row.ticker);
   icon.textContent = identity.fallback;
+  if (identity.wide) icon.classList.add('is-wide');
   if (identity.logo) {
     const image = document.createElement('img');
     image.alt = '';
