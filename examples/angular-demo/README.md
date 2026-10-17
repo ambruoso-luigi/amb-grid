@@ -35,11 +35,15 @@ starts near zero. Fractional Crypto Quantity is kept; a switch to Stock, ETF or
 Bond rounds up to a positive whole unit. Quantity edits require a finite
 positive value, with fractions allowed only for Crypto.
 
-The integrated AMB Grid bottom calculation row shows `TOTAL — 14 posizioni`,
-portfolio Value, P/L and overall Return %. Custom calculations read the current
+The integrated AMB Grid `topCalc` row shows `POSIZIONI` (14), portfolio Value,
+and P/L with overall Return % beneath it. Custom calculations read the current
 market store rather than summing virtual formatter fields. `grid.recalc()` runs
 after user edits and market ticks. The initially closed, keyboard-accessible
 “Come funziona questa tabella” panel explains the lifecycle and presentation.
+
+Instrument icons use local SVGs where suitable, with an immediate text fallback
+that remains visible if an image fails to load or the demo is offline. Asset
+sources and use conditions are recorded in `src/assets/instruments/SOURCES.md`.
 
 ## Serve within the AMB Grid site
 
@@ -74,7 +78,7 @@ the timer also stops while the browser tab is hidden.
 Live Price, Change %, Value, P/L and Timeline are rendered from the market store.
 They do not enter AMB Grid CRUD data or its save payload. Sorting on these live
 columns is disabled, and the demo offers no export of live values. Market ticks
-use `grid.reformatRow()` and `grid.recalc()` without changing row states or
+update the five financial cells granularly and call `grid.recalc()` without changing row states or
 snapshots. Pause stops quotes, while manual edits still refresh totals. Angular
 creates the table in `ngAfterViewInit()` and destroys the grid, dialog, timer and
 visibility listener in `ngOnDestroy()`; Angular owns the host and AMB Grid owns

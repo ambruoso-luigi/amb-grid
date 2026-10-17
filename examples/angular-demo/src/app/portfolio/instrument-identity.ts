@@ -1,17 +1,24 @@
 import type { AssetCategory } from './portfolio.models';
 
-/** Explicit official-site favicons. The monogram remains visible if a request fails or is offline. */
-export const INSTRUMENT_FAVICONS: Readonly<Record<string, string>> = Object.freeze({
-  'stock-aapl': 'https://www.apple.com/favicon.ico',
-  'stock-msft': 'https://www.microsoft.com/favicon.ico',
-  'stock-nvda': 'https://www.nvidia.com/favicon.ico',
-  'stock-sap': 'https://www.sap.com/favicon.ico',
-  'stock-asml': 'https://www.asml.com/favicon.ico',
-  'etf-vwce': 'https://www.vanguard.com/favicon.ico',
-  'etf-cspx': 'https://www.ishares.com/favicon.ico',
-  'etf-aggh': 'https://www.ishares.com/favicon.ico',
-  'crypto-btc': 'https://bitcoin.org/favicon.png',
-  'crypto-eth': 'https://ethereum.org/favicon.ico',
+interface InstrumentIdentity {
+  readonly logo?: string;
+  readonly fallback?: string;
+}
+
+/** Local assets and distinctive text fallbacks are keyed by catalog ID, including lookup replacements. */
+const IDENTITIES: Readonly<Record<string, InstrumentIdentity>> = Object.freeze({
+  'stock-msft': { logo: 'microsoft.svg' },
+  'stock-asml': { logo: 'asml.svg' },
+  'stock-sap': { logo: 'sap.svg' },
+  'etf-vwce': { fallback: 'VW' },
+  'etf-cspx': { fallback: 'CS' },
+  'etf-aggh': { fallback: 'AG' },
+  'bond-italy-2030': { fallback: 'IT' },
+  'bond-germany-2032': { fallback: 'DE' },
+  'bond-eu-2036': { fallback: 'EU' },
+  'crypto-btc': { logo: 'bitcoin.svg', fallback: '₿' },
+  'crypto-eth': { logo: 'ethereum.svg', fallback: 'Ξ' },
+  'crypto-sol': { logo: 'solana.svg', fallback: 'SOL' },
 });
 
 export function tickerMonogram(ticker: string): string {
@@ -20,4 +27,12 @@ export function tickerMonogram(ticker: string): string {
 
 export function categoryClass(category: AssetCategory | ''): string {
   return category ? `is-${category.toLowerCase()}` : 'is-unselected';
+}
+
+export function instrumentIdentity(id: string, ticker: string): { logo?: string; fallback: string } {
+  const identity = IDENTITIES[id];
+  return {
+    logo: identity?.logo ? `assets/instruments/${identity.logo}` : undefined,
+    fallback: identity?.fallback ?? tickerMonogram(ticker),
+  };
 }

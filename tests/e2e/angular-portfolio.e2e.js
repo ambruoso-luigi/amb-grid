@@ -6,6 +6,7 @@ const holdings = page => table(page).locator('.tabulator-tableholder .tabulator-
 const cell = (row, field) => row.locator(`.tabulator-cell[tabulator-field="${field}"]`);
 const totalCell = (page, field) => table(page).locator(`.tabulator-calcs-top .tabulator-cell[tabulator-field="${field}"]`);
 const holding = (page, ticker) => holdings(page).filter({ has: page.locator('.portfolio-grid__instrument small', { hasText: ticker }) });
+const icon = (page, ticker) => holding(page, ticker).locator('.portfolio-grid__instrument-icon');
 const floatingMessage = page => page.locator('.teh-floating-message');
 const floatingBody = page => floatingMessage(page).locator('.teh-floating-message__body');
 const money = text => Number(text.replace(/[^\d.,-]/g, '').replaceAll(',', ''));
@@ -40,7 +41,15 @@ const openInstrumentLookup = async (page, row) => {
 };
 
 test('Initial lookup descriptions and F2 work without opening an editor first', async ({ page }) => {
+    let logoRequestFailed = false;
+    await page.route('**/assets/instruments/sap.svg', async route => {
+        logoRequestFailed = true;
+        await route.abort();
+    });
     await openPortfolio(page);
+    await expect.poll(() => logoRequestFailed).toBe(true);
+    await expect(icon(page, 'SAP')).toHaveText('SA');
+    await expect(icon(page, 'SAP').locator('img')).toHaveCount(0);
     const apple = cell(holdings(page).first(), 'instrument');
     const microsoft = cell(holdings(page).nth(1), 'instrument');
     await apple.hover();
@@ -70,6 +79,16 @@ test('Initial lookup descriptions and F2 work without opening an editor first', 
 
 test('Angular portfolio renders fixed holdings, integrated totals, guide and live market', async ({ page }) => {
     await openPortfolio(page);
+    for (const ticker of ['MSFT', 'ASML', 'SAP', 'BTC', 'ETH', 'SOL']) {
+        const image = icon(page, ticker).locator('img');
+        await expect(image).toBeVisible();
+        expect(await image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+    }
+    await expect(holdings(page).locator('.portfolio-grid__instrument-icon img')).toHaveCount(6);
+    await expect(icon(page, 'AAPL')).toHaveText('AA');
+    await expect(icon(page, 'IT30-SIM')).toHaveText('IT');
+    await expect(icon(page, 'DE32-SIM')).toHaveText('DE');
+    await expect(icon(page, 'EU36-SIM')).toHaveText('EU');
     await page.locator('#site-navbar .site-navbar__demo > button').click();
     await expect(page.locator('#site-navbar [data-demo-label="angular"]')).toBeVisible();
     await expect(page.locator('#site-navbar [data-demo-label="angular"]')).toHaveText('Angular');
@@ -230,6 +249,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await pauseMarket(page);
     const first = holdings(page).first();
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('AAPL');
+    await expect(icon(page, 'AAPL')).toHaveText('AA');
     const oldValue = await moneyIn(cell(first, 'value'));
     const oldProfit = await moneyIn(cell(first, 'profitLoss'));
     const oldPrice = await moneyIn(cell(first, 'price'));
@@ -259,6 +279,8 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expect(instrument).not.toHaveClass(/tabulator-editing/);
     await expect(first.locator('.portfolio-grid__instrument strong')).toHaveText('NVIDIA Corp.');
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('NVDA');
+    await expect(icon(page, 'NVDA')).toHaveText('NV');
+    await expect(icon(page, 'NVDA').locator('img')).toHaveCount(0);
     await instrument.hover();
     await expect(floatingMessage(page)).toHaveClass(/teh-floating-message--visible/);
     await expect(floatingBody(page)).toHaveText('NVDA');

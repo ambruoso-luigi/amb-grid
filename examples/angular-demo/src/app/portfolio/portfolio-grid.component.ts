@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { AMB } from 'amb-grid';
 import { INSTRUMENT_CATALOG } from './instrument-catalog';
-import { categoryClass, INSTRUMENT_FAVICONS, tickerMonogram } from './instrument-identity';
+import { categoryClass, instrumentIdentity } from './instrument-identity';
 import { availableInstruments, instrumentSelectionPatch, isDuplicateInstrument, positionKey } from './instrument-lookup';
 import { MarketSimulator, TIMELINE_CAPACITY } from './market-simulator';
 import { calculatePortfolioTotals, calculatePosition } from './portfolio-calculations';
@@ -88,16 +88,18 @@ function instrumentCell(row: HoldingsRow): HTMLElement {
 
   const icon = document.createElement('span');
   icon.className = `portfolio-grid__instrument-icon ${categoryClass(row.type)}`;
-  icon.textContent = tickerMonogram(row.ticker);
-  const favicon = INSTRUMENT_FAVICONS[row.instrumentId];
-  if (favicon) {
+  const identity = instrumentIdentity(row.instrumentId, row.ticker);
+  icon.textContent = identity.fallback;
+  if (identity.logo) {
     const image = document.createElement('img');
     image.alt = '';
-    image.loading = 'lazy';
-    image.addEventListener('load', () => icon.classList.add('has-image'), { once: true });
-    image.addEventListener('error', () => image.remove(), { once: true });
-    image.src = favicon;
-    icon.append(image);
+    image.onload = () => {
+      image.onload = image.onerror = null;
+      icon.append(image);
+      icon.classList.add('has-image');
+    };
+    image.onerror = () => { image.onload = image.onerror = null; };
+    image.src = identity.logo;
   }
 
   const text = document.createElement('span');
