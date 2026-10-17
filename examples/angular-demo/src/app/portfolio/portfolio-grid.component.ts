@@ -54,7 +54,8 @@ function initialRows(): HoldingsRow[] {
   });
 }
 
-const euro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// The installed TypeScript Intl declarations still type useGrouping as boolean.
+const euro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' as unknown as boolean });
 const quantity = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 8 });
 const percent = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' });
 

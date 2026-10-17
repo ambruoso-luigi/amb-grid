@@ -25,6 +25,7 @@ const moneyIn = async locator => money(await locator.innerText());
 const totalMoneyIn = (page, field) => moneyIn(totalCell(page, field).locator('.amb-calc-value'));
 const totalReturnIn = async page => percent(await totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return').innerText());
 const near = (actual, expected, tolerance = 0.05) => expect(Math.abs(actual - expected)).toBeLessThan(tolerance);
+const rowBackground = row => row.evaluate(element => getComputedStyle(element).backgroundColor);
 const instrumentNamePositions = page => holdings(page).locator('.portfolio-grid__instrument strong')
     .evaluateAll(names => names.map(name => name.getBoundingClientRect().x));
 const expectAlignedNames = async page => {
@@ -130,6 +131,7 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
     await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
     await expect(totalCell(page, 'value').locator('.amb-calc-label')).toHaveText('VALORE TOTALE');
     await expect(totalCell(page, 'value').locator('.amb-calc-value')).toHaveText(/\d{1,3}(?:\.\d{3})+,\d{2}\s*€/);
+    await expect(cell(holding(page, 'AAPL'), 'value')).toHaveText(/^\d\.\d{3},\d{2}\s*€$/);
     await expect(totalCell(page, 'profitLoss').locator('.amb-calc-label')).toHaveText('P/L TOTALE');
     await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/[+-]?[\d.]+,\d{2}\s*€/);
     await expect(totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return')).toHaveText(/[+-]?[\d.]+,\d{2}%/);
@@ -237,9 +239,29 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     await expect(apple).toHaveAttribute('data-state', 'modified');
     await page.mouse.move(0, 0);
     const cleanPeer = holdings(page).nth(2);
-    const rowColor = await apple.evaluate(element => getComputedStyle(element).backgroundColor);
-    expect(rowColor).toBe(await cleanPeer.evaluate(element => getComputedStyle(element).backgroundColor));
+    const rowColor = await rowBackground(apple);
+    expect(rowColor).toBe(await rowBackground(cleanPeer));
     expect(await apple.evaluate(element => getComputedStyle(element).boxShadow)).toBe('none');
+    await cleanPeer.hover();
+    expect(await rowBackground(cleanPeer)).toBe('rgb(253, 245, 247)');
+    await apple.hover();
+    expect(await rowBackground(apple)).toBe('rgb(253, 245, 247)');
+    expect(await rowBackground(cleanPeer)).toBe(rowColor);
+    await page.mouse.move(0, 0);
+    expect(await rowBackground(apple)).toBe(rowColor);
+    await apple.evaluate(element => element.setAttribute('data-row-error', 'true'));
+    await apple.hover();
+    expect(await rowBackground(apple)).toBe('rgb(255, 240, 240)');
+    expect(await apple.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none');
+    await apple.evaluate(element => element.removeAttribute('data-row-error'));
+    await cleanPeer.evaluate(element => element.setAttribute('data-has-cell-error', 'true'));
+    await cleanPeer.hover();
+    expect(await rowBackground(cleanPeer)).toBe('rgb(255, 240, 240)');
+    await cleanPeer.evaluate(element => element.removeAttribute('data-has-cell-error'));
+    await page.mouse.move(0, 0);
+    expect(await rowBackground(cleanPeer)).toBe(rowColor);
+    await expect(apple).toHaveAttribute('data-state', 'modified');
+    await expect(cleanPeer).toHaveAttribute('data-state', 'clean');
     expect(await quantity.evaluate(element => getComputedStyle(element).backgroundColor))
         .toBe(await cell(cleanPeer, 'quantity').evaluate(element => getComputedStyle(element).backgroundColor));
     await quantity.evaluate(element => element.setAttribute('data-cell-error', 'true'));
@@ -272,6 +294,32 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     expect(await liveInput.evaluate((node, original) => node === original, editorNode)).toBe(true);
     await liveInput.press('Escape');
     await pauseMarket(page);
+});
+
+test('four-digit profit and loss totals keep Italian grouping for both signs', async ({ page }) => {
+    await openPortfolio(page);
+    await pauseMarket(page);
+    const asml = holding(page, 'ASML');
+    const oldProfit = await moneyIn(cell(asml, 'profitLoss'));
+    const totalBefore = await totalMoneyIn(page, 'profitLoss');
+    expect(oldProfit).toBeLessThan(0);
+    await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/^\+\d\.\d{3},\d{2}\s*€$/);
+
+    const units = Math.ceil((totalBefore - oldProfit + 1500) / -(oldProfit / 5));
+    const quantity = cell(asml, 'quantity');
+    await quantity.dblclick({ delay: 100 });
+    await quantity.locator('input').fill(String(units));
+    await quantity.locator('input').press('Enter');
+    await expect(asml).toHaveAttribute('data-state', 'modified');
+    await expect(quantity).toHaveText(String(units));
+    await expect(cell(asml, 'profitLoss')).toHaveText(/^-\d\.\d{3},\d{2}\s*€$/);
+    await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/^-\d\.\d{3},\d{2}\s*€$/);
+    const newProfit = await moneyIn(cell(asml, 'profitLoss'));
+    near(newProfit, oldProfit / 5 * units);
+    near(await totalMoneyIn(page, 'profitLoss'), totalBefore - oldProfit + newProfit);
+    const totalValue = await totalMoneyIn(page, 'value');
+    const rowValues = await holdings(page).locator('.tabulator-cell[tabulator-field="value"]').allTextContents();
+    near(totalValue, rowValues.reduce((sum, value) => sum + money(value), 0), 0.2);
 });
 
 test('Multifield Lookup replaces one holding, excludes duplicates and releases its old instrument', async ({ page }) => {

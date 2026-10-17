@@ -158,10 +158,6 @@
   background: #fafbfc;
 }
 
-.portfolio-grid .tabulator-row:hover {
-  background: #fdf5f7;
-}
-
 .portfolio-grid .tabulator-row[data-state="modified"] {
   background-color: var(--amb-row-clean-bg, #fff) !important;
   box-shadow: none;
@@ -171,8 +167,16 @@
   background-color: var(--amb-row-clean-alt-bg, #f7f8fa) !important;
 }
 
-.portfolio-grid .tabulator-row[data-state="modified"]:hover {
+.portfolio-grid .tabulator-row:not([data-row-error="true"]):not([data-has-cell-error="true"]):hover {
   background-color: #fdf5f7 !important;
+}
+
+.portfolio-grid .tabulator-row[data-state]:is([data-row-error="true"], [data-has-cell-error="true"]) {
+  background-color: var(--amb-row-error-bg, #fff0f0) !important;
+}
+
+.portfolio-grid .tabulator-row[data-row-error="true"] {
+  box-shadow: inset 3px 0 0 var(--amb-color-danger);
 }
 
 .portfolio-grid .tabulator-row[data-state="modified"] .tabulator-cell[data-cell-state="modified"]:not([data-cell-error="true"]) {
