@@ -54,25 +54,42 @@ function initialRows(): HoldingsRow[] {
   });
 }
 
-const euro = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const quantity = new Intl.NumberFormat('en-IE', { maximumFractionDigits: 8 });
-const percent = new Intl.NumberFormat('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'always' });
+const euro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const quantity = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 8 });
+const percent = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' });
+
+function displayedAtTwoDecimals(value: number): number {
+  return Math.abs(value) < 0.005 ? 0 : value;
+}
+
+function formatEuro(value: number): string {
+  return euro.format(displayedAtTwoDecimals(value));
+}
+
+function formatPercent(value: number): string {
+  return `${percent.format(displayedAtTwoDecimals(value))}%`;
+}
+
+function movementClass(value: number | null): string {
+  const displayed = value === null ? 0 : displayedAtTwoDecimals(value);
+  return displayed === 0 ? 'is-neutral' : displayed > 0 ? 'is-positive' : 'is-negative';
+}
 
 function profitSummary(cell: { getValue(): ReturnType<typeof calculatePortfolioTotals> }): HTMLElement {
   const totals = cell.getValue();
   const summary = document.createElement('span');
   summary.className = `amb-calc-content portfolio-grid__top-summary portfolio-grid__top-summary--profit ${
-    totals.profitLoss === 0 ? 'is-neutral' : totals.profitLoss > 0 ? 'is-positive' : 'is-negative'
+    movementClass(totals.profitLoss)
   }`;
   const label = document.createElement('span');
   label.className = 'amb-calc-label';
   label.textContent = 'P/L TOTALE';
   const amount = document.createElement('span');
   amount.className = 'amb-calc-value';
-  amount.textContent = `${totals.profitLoss > 0 ? '+' : ''}${euro.format(totals.profitLoss)}`;
+  amount.textContent = `${displayedAtTwoDecimals(totals.profitLoss) > 0 ? '+' : ''}${formatEuro(totals.profitLoss)}`;
   const result = document.createElement('span');
   result.className = 'portfolio-grid__top-return';
-  result.textContent = `${totals.returnPercent === 0 ? '0.00' : percent.format(totals.returnPercent)}%`;
+  result.textContent = formatPercent(totals.returnPercent);
   summary.append(label, amount, result);
   return summary;
 }
@@ -169,19 +186,19 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       return;
     }
     if (field === 'price') {
-      content.textContent = euro.format(this.quoteFor(row).price);
+      content.textContent = formatEuro(this.quoteFor(row).price);
       return;
     }
     const derived = this.derivedFor(row);
     if (field === 'value') {
-      content.textContent = euro.format(derived.value);
+      content.textContent = formatEuro(derived.value);
       return;
     }
     const value = field === 'changePercent' ? derived.changePercent : derived.profitLoss;
-    content.className = `portfolio-grid__movement ${value === null || value === 0 ? 'is-neutral' : value > 0 ? 'is-positive' : 'is-negative'}`;
+    content.className = `portfolio-grid__movement ${movementClass(value)}`;
     content.textContent = field === 'changePercent'
-      ? value === null ? '—' : `${percent.format(value)}%`
-      : euro.format(derived.profitLoss);
+      ? value === null ? '—' : formatPercent(value)
+      : formatEuro(derived.profitLoss);
   }
 
   private paintTimeline(content: HTMLElement, row: HoldingsRow): void {
@@ -384,7 +401,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           topCalc: () => portfolioTotals().value,
           topCalcFormatter: AMB.formatters.calculation({
             label: 'VALORE TOTALE', className: 'portfolio-grid__top-summary portfolio-grid__top-summary--value',
-            formatValue: (value: number) => euro.format(value),
+            formatValue: (value: number) => formatEuro(value),
           }),
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'value') },
         { title: 'P/L', field: 'profitLoss', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,

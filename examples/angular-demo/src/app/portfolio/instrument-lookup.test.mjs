@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'vitest';
+import { INSTRUMENT_CATALOG } from './instrument-catalog.ts';
 import { availableInstruments, filterInstruments, isDuplicateInstrument, positionKey } from './instrument-lookup.ts';
 import { categoryClass, instrumentIdentity, tickerMonogram } from './instrument-identity.ts';
 
@@ -57,5 +59,31 @@ test('instrument identity maps local marks, bond flags and reliable fallbacks', 
     assert.equal(instrumentIdentity(id, 'BOND').logo, `assets/instruments/flag-${flag}.svg`);
   }
   assert.deepEqual(instrumentIdentity('etf-xgle', 'XGLE'), { logo: undefined, fallback: 'XG', wide: false });
+  assert.deepEqual(instrumentIdentity('crypto-avax', 'AVAX'), { logo: undefined, fallback: 'AV', wide: false });
+  assert.equal(instrumentIdentity('stock-googl', 'GOOGL').logo, 'assets/instruments/google.svg');
+  assert.equal(instrumentIdentity('stock-jpm', 'JPM').logo, 'assets/instruments/jpmorgan.svg');
+  assert.equal(instrumentIdentity('crypto-xrp', 'XRP').logo, 'assets/instruments/xrp.svg');
   assert.deepEqual(instrumentIdentity('unknown', 'TEST'), { logo: undefined, fallback: 'TE', wide: false });
+});
+
+test('all 50 catalog identities use existing local assets or documented fallbacks', () => {
+  assert.equal(INSTRUMENT_CATALOG.length, 50);
+  const fallbacks = [];
+  for (const instrument of INSTRUMENT_CATALOG) {
+    const identity = instrumentIdentity(instrument.id, instrument.ticker);
+    assert.ok(identity.fallback, instrument.id);
+    if (!identity.logo) {
+      fallbacks.push(instrument.id);
+      continue;
+    }
+    assert.match(identity.logo, /^assets\/instruments\/[a-z0-9-]+\.(?:svg|png)$/);
+    const asset = new URL(`../../${identity.logo}`, import.meta.url);
+    assert.ok(existsSync(asset), `${instrument.id}: ${asset.pathname}`);
+    if (identity.logo.endsWith('.svg')) {
+      const svg = readFileSync(asset, 'utf8');
+      assert.match(svg, /<svg\b/);
+      assert.doesNotMatch(svg, /<(?:script|foreignObject)\b|(?:href|src)=["']https?:/i);
+    }
+  }
+  assert.deepEqual(fallbacks, ['etf-xgle', 'crypto-avax']);
 });

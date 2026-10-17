@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { INSTRUMENT_CATALOG } from '../../examples/angular-demo/src/app/portfolio/instrument-catalog.ts';
+import { instrumentIdentity } from '../../examples/angular-demo/src/app/portfolio/instrument-identity.ts';
 
 const portfolio = page => page.locator('.portfolio-grid');
 const table = page => portfolio(page).locator('.portfolio-grid__table');
@@ -16,12 +18,20 @@ const expectLoadedIcon = async (page, ticker, asset) => {
 };
 const floatingMessage = page => page.locator('.teh-floating-message');
 const floatingBody = page => floatingMessage(page).locator('.teh-floating-message__body');
-const money = text => Number(text.replace(/[^\d.,-]/g, '').replaceAll(',', ''));
-const percent = text => Number(text.match(/[+-]?\d+(?:\.\d+)?/)?.[0]);
+const italianNumber = text => Number(text.replace(/[^\d.,+-]/g, '').replaceAll('.', '').replace(',', '.'));
+const money = text => italianNumber(text);
+const percent = text => italianNumber(text.replace('%', ''));
 const moneyIn = async locator => money(await locator.innerText());
 const totalMoneyIn = (page, field) => moneyIn(totalCell(page, field).locator('.amb-calc-value'));
 const totalReturnIn = async page => percent(await totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return').innerText());
 const near = (actual, expected, tolerance = 0.05) => expect(Math.abs(actual - expected)).toBeLessThan(tolerance);
+const instrumentNamePositions = page => holdings(page).locator('.portfolio-grid__instrument strong')
+    .evaluateAll(names => names.map(name => name.getBoundingClientRect().x));
+const expectAlignedNames = async page => {
+    const positions = await instrumentNamePositions(page);
+    expect(positions).toHaveLength(14);
+    expect(Math.max(...positions) - Math.min(...positions)).toBeLessThan(1);
+};
 
 const openPortfolio = async page => {
     const response = await page.goto('/angular/');
@@ -96,6 +106,17 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
         await expectLoadedIcon(page, ticker, asset);
     }
     await expect(holdings(page).locator('.portfolio-grid__instrument-icon img')).toHaveCount(14);
+    const catalogAssets = new Set(INSTRUMENT_CATALOG.map(({ id, ticker }) => instrumentIdentity(id, ticker).logo).filter(Boolean));
+    for (const asset of catalogAssets) {
+        const response = await page.request.get(new URL(asset, page.url()).href);
+        expect(response.ok(), asset).toBe(true);
+        expect(response.headers()['content-type'], asset).toMatch(/^image\/(?:svg\+xml|png)/);
+    }
+    await expectAlignedNames(page);
+    const wideIcon = icon(page, 'VWCE');
+    expect((await wideIcon.boundingBox()).width).toBe(56);
+    await expect(cell(holding(page, 'BTC'), 'quantity')).toHaveText('0,075');
+    await expect(cell(holding(page, 'ETH'), 'quantity')).toHaveText('1,35');
     await page.locator('#site-navbar .site-navbar__demo > button').click();
     await expect(page.locator('#site-navbar [data-demo-label="angular"]')).toBeVisible();
     await expect(page.locator('#site-navbar [data-demo-label="angular"]')).toHaveText('Angular');
@@ -108,10 +129,12 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
     await expect(totalCell(page, 'instrument').locator('.amb-calc-label')).toHaveText('POSIZIONI');
     await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
     await expect(totalCell(page, 'value').locator('.amb-calc-label')).toHaveText('VALORE TOTALE');
-    await expect(totalCell(page, 'value').locator('.amb-calc-value')).toHaveText(/€[\d,]+\.\d{2}/);
+    await expect(totalCell(page, 'value').locator('.amb-calc-value')).toHaveText(/\d{1,3}(?:\.\d{3})+,\d{2}\s*€/);
     await expect(totalCell(page, 'profitLoss').locator('.amb-calc-label')).toHaveText('P/L TOTALE');
-    await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/[+-]?€[\d,]+\.\d{2}/);
-    await expect(totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return')).toHaveText(/[+-]?\d+\.\d{2}%/);
+    await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/[+-]?[\d.]+,\d{2}\s*€/);
+    await expect(totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return')).toHaveText(/[+-]?[\d.]+,\d{2}%/);
+    expect((await table(page).locator('.portfolio-grid__movement, .portfolio-grid__top-return').allTextContents())
+        .every(text => !text.includes('-0,00%'))).toBe(true);
     await expect(totalCell(page, 'changePercent')).toBeEmpty();
 
     const guide = portfolio(page).locator('.portfolio-grid__guide');
@@ -287,6 +310,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expect(first.locator('.portfolio-grid__instrument strong')).toHaveText('NVIDIA Corp.');
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('NVDA');
     await expectLoadedIcon(page, 'NVDA', 'nvidia.svg');
+    await expectAlignedNames(page);
     await instrument.hover();
     await expect(floatingMessage(page)).toHaveClass(/teh-floating-message--visible/);
     await expect(floatingBody(page)).toHaveText('NVDA');
@@ -295,7 +319,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expect(holding(page, 'MSFT')).toHaveCount(1);
     await expect(holding(page, 'NVDA')).toHaveCount(1);
     await expect(holdings(page)).toHaveCount(14);
-    await expect(cell(first, 'price')).toHaveText(/€[\d,]+\.\d{2}/);
+    await expect(cell(first, 'price')).toHaveText(/\d+,\d{2}\s*€/);
     expect(await moneyIn(cell(first, 'price'))).not.toBe(oldPrice);
     await expect(cell(first, 'timeline').locator('svg[aria-label*="NVDA"] rect')).toHaveCount(32);
     const newValue = await moneyIn(cell(first, 'value'));
