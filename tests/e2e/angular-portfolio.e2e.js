@@ -75,6 +75,94 @@ const expectNvidiaIdentity = async (page, { zeroProfit = true } = {}) => {
     return price;
 };
 
+for (const filtered of [false, true]) {
+    test(`Instrument name autocomplete commits with Tab ${filtered ? 'under portfolio filters' : 'without filters'}`, async ({ page }) => {
+        await openPortfolio(page);
+        await pauseMarket(page);
+        const totalBefore = await totalMoneyIn(page, 'value');
+        const profitBefore = await totalMoneyIn(page, 'profitLoss');
+        const oldValue = await moneyIn(cell(holding(page, 'AAPL'), 'value'));
+        const oldProfit = await moneyIn(cell(holding(page, 'AAPL'), 'profitLoss'));
+        if (filtered) {
+            await categoryChip(page, 'Azioni').click();
+            await searchPositions(page).fill('AAPL');
+        }
+        const instrument = cell(holdings(page).first(), 'instrument');
+        await instrument.dblclick({ delay: 100 });
+        const input = instrument.locator('.amb-lookup-editor__input');
+        await input.fill('NVI');
+        await expect(input).toHaveValue('NVIDIA Corp.');
+        expect(await input.evaluate(element => [element.selectionStart, element.selectionEnd]))
+            .toEqual([3, 'NVIDIA Corp.'.length]);
+        await input.press('Tab');
+        await expect(table(page).locator('.amb-lookup-editor__input')).toHaveCount(0);
+        if (filtered) {
+            await expect(holdings(page)).toHaveCount(0);
+            await expect(positionCount(page)).toHaveText('0 di 14 posizioni');
+            await searchPositions(page).fill('NVDA');
+        } else {
+            const quantityInput = cell(holding(page, 'NVDA'), 'quantity').locator('input');
+            await expect(quantityInput).toBeFocused();
+            await quantityInput.press('Escape');
+        }
+        await expectNvidiaIdentity(page);
+        await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
+        await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
+        near(await totalMoneyIn(page, 'value'), totalBefore - oldValue + await moneyIn(cell(holding(page, 'NVDA'), 'value')));
+        near(await totalMoneyIn(page, 'profitLoss'), profitBefore - oldProfit);
+        if (!filtered) await searchPositions(page).fill('NVDA');
+        await portfolio(page).getByRole('button', { name: 'Azzera filtri' }).click();
+        await expect(holdings(page)).toHaveCount(14);
+        await expectNvidiaIdentity(page);
+        await expect(holding(page, 'MSFT')).toHaveCount(1);
+    });
+}
+
+test('Instrument autocomplete excludes occupied names, preserves current values and cancels suggestions', async ({ page }) => {
+    await openPortfolio(page);
+    await pauseMarket(page);
+    const instrument = cell(holdings(page).first(), 'instrument');
+    const input = instrument.locator('.amb-lookup-editor__input');
+    const totalBefore = await totalMoneyIn(page, 'value');
+    await instrument.dblclick({ delay: 100 });
+    await input.fill('Microso');
+    await input.press('Tab');
+    await expect(input).toBeHidden();
+    await expect(holding(page, 'AAPL')).toHaveCount(1);
+    await expect(holding(page, 'MSFT')).toHaveCount(1);
+    const quantityInput = cell(holdings(page).first(), 'quantity').locator('input');
+    await expect(quantityInput).toBeFocused();
+    await quantityInput.press('Escape');
+    await instrument.dblclick({ delay: 100 });
+    await input.fill('App');
+    await expect(input).toHaveValue('Apple Inc.');
+    await input.press('Enter');
+    await expect(input).toBeHidden();
+    await instrument.dblclick({ delay: 100 });
+    await input.fill('NVI');
+    await expect(input).toHaveValue('NVIDIA Corp.');
+    await input.press('Escape');
+    await expect(input).toBeHidden();
+    await expect(instrument.locator('strong')).toHaveText('Apple Inc.');
+    await expectLoadedIcon(page, 'AAPL', 'apple.svg');
+    await expect(holdings(page).first()).toHaveAttribute('data-state', 'clean');
+    near(await totalMoneyIn(page, 'value'), totalBefore);
+    await instrument.dblclick({ delay: 100 });
+    await input.fill('NVDA');
+    await input.press('F2');
+    const dialog = page.locator('.amb-lookup-dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.locator('.amb-lookup-dialog__search').fill('NVDA');
+    await expect(dialog.locator('.amb-lookup-dialog__row').filter({ hasText: 'NVDA' })).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('NVDA');
+    await input.press('Escape');
+    await expect(instrument.locator('small')).toHaveText('AAPL');
+    await expect(holdings(page)).toHaveCount(14);
+});
+
 test('Financial styling preserves top totals, accessible Quantity and mobile scrolling', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1440, height: 1000 });

@@ -26,6 +26,9 @@ continues its internal CRUD tracking for user edits. The 50-instrument simulated
 catalog is searched by ticker, name, category and optional ISIN through
 `AMB.lookup()`, `AMB.multifieldLookup()` and `AMB.LookupDialog`.
 
+Instrument completes name prefixes inline; Tab accepts the suggested name.
+F2 opens the Lookup Dialog for the full search, including ticker and ISIN.
+
 Before each lookup load, the demo excludes instruments held by other positions.
 It excludes the edited row from the occupied set, disables lookup caching and
 checks uniqueness again before applying a record. Rejected choices preserve the

@@ -353,7 +353,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       clearDependentsOnEmptyMaster: false,
       masterField: {
         field: 'instrument', from: 'name', title: 'Instrument', required: true,
-        autocomplete: false, dialog: true,
+        autocomplete: true, dialog: true,
       },
       dependentFields: [
         { field: 'instrumentId', from: 'id', title: 'Instrument ID', visibleInGrid: false, visibleInLookup: false, searchable: false, required: true },
@@ -368,7 +368,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       editorOptions: {
         dialogTitle: 'Select a portfolio instrument',
         searchPlaceholder: 'Search name, ticker, category or ISIN...',
-        autoComplete: false,
+        autoComplete: true,
         search: { fields: ['ticker', 'name', 'category', 'isin'] },
         mapToRow: { instrumentId: 'id', ticker: 'ticker', type: 'category' },
         dialogOptions: { destroyOnClose: true, pagination: { enabled: false } },
@@ -405,8 +405,9 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       const key = positionKey(cell.getRow().getData());
       const selection = this.pendingSelections.get(key);
       if (selection?.instrument === value) {
+        const { instrument: _instrument, ...dependentPatch } = selection;
+        this.grid?.updateRow(key, dependentPatch);
         success(value);
-        this.grid?.updateRow(key, selection);
         if (this.filterInstalled) this.pendingIdentityFormats.add(key);
         if (this.filterInstalled) this.grid?.refreshFilter();
         this.updateCounts();
