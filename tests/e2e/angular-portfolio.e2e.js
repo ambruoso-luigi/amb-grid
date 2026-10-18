@@ -175,8 +175,8 @@ test('Financial styling preserves top totals, accessible Quantity and mobile scr
     expect(firstRow.y).toBeGreaterThanOrEqual(totals.y + totals.height);
     await expect(table(page).locator('.tabulator-calcs-top')).toHaveCSS('background-color', 'rgb(234, 242, 248)');
     const color = locator => locator.evaluate(element => getComputedStyle(element).color);
-    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-positive').first())).toBe('rgb(32, 116, 82)');
-    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-negative').first())).toBe('rgb(156, 54, 80)');
+    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-positive').first())).toBe('rgb(22, 113, 73)');
+    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-negative').first())).toBe('rgb(184, 59, 75)');
     const latestBar = holding(page, 'AAPL').locator('.portfolio-grid__timeline rect.is-latest');
     await expect(latestBar).toHaveCSS('opacity', '1');
     await expect(latestBar).toHaveCSS('animation-name', 'none');
@@ -184,7 +184,7 @@ test('Financial styling preserves top totals, accessible Quantity and mobile scr
     const quantity = cell(holding(page, 'AAPL'), 'quantity');
     await quantity.focus();
     await expect(quantity).toBeFocused();
-    await expect(quantity).toHaveCSS('outline-color', 'rgb(55, 108, 153)');
+    await expect(quantity).toHaveCSS('outline-color', 'rgb(37, 99, 166)');
     await expect(quantity).toHaveCSS('outline-width', '2px');
     await quantity.dblclick({ delay: 100 });
     await expect(quantity.locator('input')).toBeFocused();
@@ -583,9 +583,9 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     expect(rowColor).toBe(await rowBackground(cleanPeer));
     expect(await apple.evaluate(element => getComputedStyle(element).boxShadow)).toBe('none');
     await cleanPeer.hover();
-    expect(await rowBackground(cleanPeer)).toBe('rgb(253, 245, 247)');
+    expect(await rowBackground(cleanPeer)).toBe('rgb(237, 244, 250)');
     await apple.hover();
-    expect(await rowBackground(apple)).toBe('rgb(253, 245, 247)');
+    expect(await rowBackground(apple)).toBe('rgb(237, 244, 250)');
     expect(await rowBackground(cleanPeer)).toBe(rowColor);
     await page.mouse.move(0, 0);
     expect(await rowBackground(apple)).toBe(rowColor);

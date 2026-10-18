@@ -229,7 +229,7 @@
 }
 
 .portfolio-grid .tabulator-row:not([data-row-error="true"]):not([data-has-cell-error="true"]):hover {
-  background-color: #fdf5f7 !important;
+  background-color: #edf4fa !important;
 }
 
 .portfolio-grid .tabulator-row[data-state]:is([data-row-error="true"], [data-has-cell-error="true"]) {
@@ -315,9 +315,9 @@
 }
 
 .portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-positive .amb-calc-value,
-.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-positive .portfolio-grid__top-return { color: #207452; }
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-positive .portfolio-grid__top-return { color: #167149; }
 .portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-negative .amb-calc-value,
-.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-negative .portfolio-grid__top-return { color: #9c3650; }
+.portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-negative .portfolio-grid__top-return { color: #b83b4b; }
 .portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-neutral .amb-calc-value,
 .portfolio-grid .tabulator-calcs-top .portfolio-grid__top-summary--profit.is-neutral .portfolio-grid__top-return { color: #52627a; }
 
@@ -334,6 +334,8 @@
 
 .portfolio-grid .tabulator-cell:is([tabulator-field="price"], [tabulator-field="changePercent"], [tabulator-field="quantity"], [tabulator-field="value"], [tabulator-field="profitLoss"]) {
   font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  text-align: right;
 }
 
 .portfolio-grid .tabulator-tableholder .tabulator-cell[tabulator-field="price"] {
@@ -356,11 +358,11 @@
   height: 36px;
   margin: -2px 0;
   overflow: visible;
-  fill: #a73555;
+  fill: #52627a;
 }
 
-.portfolio-grid__timeline.is-positive rect { fill: #207452; }
-.portfolio-grid__timeline.is-negative rect { fill: #9c3650; }
+.portfolio-grid__timeline.is-positive rect { fill: #167149; }
+.portfolio-grid__timeline.is-negative rect { fill: #b83b4b; }
 .portfolio-grid__timeline rect { opacity: .68; }
 .portfolio-grid__timeline rect.is-latest { opacity: 1; animation: timeline-enter 260ms ease-out; }
 
@@ -435,22 +437,22 @@
 .portfolio-grid__type.is-bond { background: #e7f1ef; color: #28605b; }
 .portfolio-grid__type.is-crypto { background: #fde9ef; color: #8e2e4a; }
 
-.portfolio-grid__movement.is-positive { color: #207452; }
-.portfolio-grid__movement.is-negative { color: #9c3650; }
+.portfolio-grid__movement.is-positive { color: #167149; }
+.portfolio-grid__movement.is-negative { color: #b83b4b; }
 .portfolio-grid__movement.is-neutral { color: #52627a; }
 
 .portfolio-grid .portfolio-grid__editable {
-  color: #23556a;
+  color: #102950;
   font-weight: 600;
   cursor: text;
 }
 
 .portfolio-grid .tabulator-row:not([data-row-error="true"]):not([data-has-cell-error="true"]) .portfolio-grid__editable:not([data-cell-error="true"]):not(.tabulator-editing):hover {
-  background-color: #edf4f9 !important;
+  background-color: #edf4fa !important;
 }
 
 .portfolio-grid .tabulator-row .portfolio-grid__editable:not([data-cell-error="true"]):not(.tabulator-editing):focus {
-  outline: 2px solid #376c99;
+  outline: 2px solid #2563a6;
   outline-offset: -2px;
 }
 
@@ -459,8 +461,24 @@
 }
 
 .portfolio-grid .portfolio-grid__editable:not([data-cell-error="true"]) .amb-cell-editor {
-  border-color: #376c99;
+  border-color: #2563a6;
   background: #fff;
   color: #102950;
-  box-shadow: 0 0 0 2px rgb(55 108 153 / 15%);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px rgb(37 99 166 / 15%);
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"].tabulator-editing:not([data-cell-error="true"]) {
+  background-color: #e6eff7 !important;
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"]:not(.tabulator-editing):focus {
+  outline: 2px solid #2563a6;
+  outline-offset: -2px;
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"]:not([data-cell-error="true"]) .amb-lookup-editor__input:focus {
+  border-color: #2563a6;
+  box-shadow: 0 0 0 2px rgb(37 99 166 / 15%);
 }
