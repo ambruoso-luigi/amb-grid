@@ -75,6 +75,46 @@ const expectNvidiaIdentity = async (page, { zeroProfit = true } = {}) => {
     return price;
 };
 
+test('Financial styling preserves top totals, accessible Quantity and mobile scrolling', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await openPortfolio(page);
+    await pauseMarket(page);
+    const title = await table(page).locator('.tabulator-col[tabulator-field="instrument"] .tabulator-col-title').boundingBox();
+    const totals = await table(page).locator('.tabulator-calcs-top').boundingBox();
+    const firstRow = await holdings(page).first().boundingBox();
+    expect(totals.y).toBeGreaterThanOrEqual(title.y + title.height);
+    expect(firstRow.y).toBeGreaterThanOrEqual(totals.y + totals.height);
+    await expect(table(page).locator('.tabulator-calcs-top')).toHaveCSS('background-color', 'rgb(234, 242, 248)');
+    const color = locator => locator.evaluate(element => getComputedStyle(element).color);
+    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-positive').first())).toBe('rgb(32, 116, 82)');
+    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-negative').first())).toBe('rgb(156, 54, 80)');
+    const latestBar = holding(page, 'AAPL').locator('.portfolio-grid__timeline rect.is-latest');
+    await expect(latestBar).toHaveCSS('opacity', '1');
+    await expect(latestBar).toHaveCSS('animation-name', 'none');
+    await page.screenshot({ path: test.info().outputPath('portfolio-desktop.png'), fullPage: true });
+    const quantity = cell(holding(page, 'AAPL'), 'quantity');
+    await quantity.focus();
+    await expect(quantity).toBeFocused();
+    await expect(quantity).toHaveCSS('outline-color', 'rgb(55, 108, 153)');
+    await expect(quantity).toHaveCSS('outline-width', '2px');
+    await quantity.dblclick({ delay: 100 });
+    await expect(quantity.locator('input')).toBeFocused();
+    await expect(quantity).toHaveCSS('background-color', 'rgb(230, 239, 247)');
+    await quantity.locator('input').press('Escape');
+    await expect(quantity).not.toHaveClass(/tabulator-editing/);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+    const scroll = portfolio(page).locator('.portfolio-grid__scroll');
+    expect(await scroll.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+    await scroll.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+    await totalCell(page, 'profitLoss').scrollIntoViewIfNeeded();
+    await expect(totalCell(page, 'profitLoss')).toBeInViewport();
+    await scroll.evaluate(element => { element.scrollLeft = 0; });
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.screenshot({ path: test.info().outputPath('portfolio-mobile.png'), fullPage: true });
+});
+
 test('Instrument replacement keeps the full NVIDIA identity without filters', async ({ page }) => {
     await openPortfolio(page);
     await pauseMarket(page);
