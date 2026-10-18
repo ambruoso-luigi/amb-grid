@@ -31,6 +31,8 @@ small-size star scaling are noted below.
 `cocacola.svg` keeps its original path and color; only its viewBox is cropped to
 frame the horizontal wordmark. `flag-eu.svg` keeps the source flag and twelve
 stars, with the stars enlarged for the small portfolio cell.
+`apple.svg` keeps its original path and color; a viewBox adds a small margin
+around the full silhouette and leaf.
 
 New files were retrieved on 2026-10-17. XGLE retains a ticker fallback: the
 catalog identifies Xtrackers, but no independently redistributable current

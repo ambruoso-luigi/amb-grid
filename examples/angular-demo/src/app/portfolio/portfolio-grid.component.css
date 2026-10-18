@@ -191,15 +191,16 @@
 }
 
 .portfolio-grid .tabulator-header {
-  border-bottom: 2px solid #7494b0;
-  background: #f1f6fa;
+  border-bottom: 3px solid #5c7fa1;
+  background: #d9e6f2;
   color: #102950;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .portfolio-grid .tabulator-header .tabulator-col {
-  border-right-color: #e5ecf2;
-  background: #f1f6fa;
+  border-right-color: #c2d3e2;
+  background: #d9e6f2;
 }
 
 .portfolio-grid .tabulator-header .tabulator-col .tabulator-col-content {
@@ -207,7 +208,24 @@
 }
 
 .portfolio-grid .tabulator-header .tabulator-col.tabulator-sortable:hover {
-  background: #e7eff6;
+  background: #ccdeed;
+}
+
+.portfolio-grid .tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {
+  border-bottom-color: #607f9d;
+}
+
+.portfolio-grid .tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="ascending"] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {
+  border-bottom-color: #102950;
+}
+
+.portfolio-grid .tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="descending"] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {
+  border-top-color: #102950;
+}
+
+.portfolio-grid .tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-content .tabulator-col-sorter .tabulator-arrow:hover {
+  border-bottom-color: #102950;
+  border-top-color: #102950;
 }
 
 .portfolio-grid .tabulator-row {
@@ -413,6 +431,7 @@
 .portfolio-grid__instrument-icon.is-flag { width: 52px; height: 39px; border: 1px solid #dce4ec; background: #f8fafc; }
 
 .portfolio-grid__instrument-icon img { display: block; width: 100%; height: 100%; padding: 3px; box-sizing: border-box; object-fit: contain; background: #f8fafc; }
+.portfolio-grid__instrument-icon img[src$="/apple.svg"] { padding: 5px; }
 .portfolio-grid__instrument-icon.is-flag img { padding: 0; background: transparent; }
 .portfolio-grid__instrument-icon.is-ishares { align-content: center; gap: 1px; }
 .portfolio-grid__instrument-icon.is-ishares img { height: 22px; padding: 1px 2px 0; }

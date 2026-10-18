@@ -41,16 +41,20 @@ test('instrument identity maps local marks, bond flags and reliable fallbacks', 
   assert.equal(categoryClass('Bond'), 'is-bond');
   assert.equal(categoryClass(''), 'is-unselected');
   assert.deepEqual(instrumentIdentity('stock-aapl', 'AAPL'), {
-    logo: 'assets/instruments/apple.svg', fallback: 'AA', wide: false,
+    logo: 'assets/instruments/apple.svg', fallback: 'AA', wide: false, flag: false, fundTicker: undefined,
   });
   assert.equal(instrumentIdentity('stock-nvda', 'NVDA').logo, 'assets/instruments/nvidia.svg');
   assert.equal(instrumentIdentity('etf-vwce', 'VWCE').logo, 'assets/instruments/vanguard.svg');
   assert.equal(instrumentIdentity('etf-vuaa', 'VUAA').logo, 'assets/instruments/vanguard.svg');
-  assert.equal(instrumentIdentity('etf-cspx', 'CSPX').logo, 'assets/instruments/ishares.png');
+  assert.deepEqual(instrumentIdentity('etf-cspx', 'CSPX'), {
+    logo: 'assets/instruments/ishares.png', fallback: 'CS', wide: true, flag: false, fundTicker: 'CSPX',
+  });
   assert.equal(instrumentIdentity('etf-aggh', 'AGGH').logo, 'assets/instruments/ishares.png');
   assert.equal(instrumentIdentity('bond-italy-2030', 'IT30-SIM').logo, 'assets/instruments/flag-it.svg');
   assert.equal(instrumentIdentity('bond-germany-2032', 'DE32-SIM').logo, 'assets/instruments/flag-de.svg');
-  assert.equal(instrumentIdentity('bond-eu-2036', 'EU36-SIM').logo, 'assets/instruments/flag-eu.svg');
+  assert.deepEqual(instrumentIdentity('bond-eu-2036', 'EU36-SIM'), {
+    logo: 'assets/instruments/flag-eu.svg', fallback: 'EU', wide: false, flag: true, fundTicker: undefined,
+  });
   for (const [id, flag] of [
     ['bond-italy-2035', 'it'], ['bond-france-2031', 'fr'], ['bond-spain-2033', 'es'],
     ['bond-us-2034', 'us'], ['bond-netherlands-2030', 'nl'],
@@ -58,12 +62,12 @@ test('instrument identity maps local marks, bond flags and reliable fallbacks', 
   ]) {
     assert.equal(instrumentIdentity(id, 'BOND').logo, `assets/instruments/flag-${flag}.svg`);
   }
-  assert.deepEqual(instrumentIdentity('etf-xgle', 'XGLE'), { logo: undefined, fallback: 'XG', wide: false });
-  assert.deepEqual(instrumentIdentity('crypto-avax', 'AVAX'), { logo: undefined, fallback: 'AV', wide: false });
+  assert.deepEqual(instrumentIdentity('etf-xgle', 'XGLE'), { logo: undefined, fallback: 'XG', wide: false, flag: false, fundTicker: undefined });
+  assert.deepEqual(instrumentIdentity('crypto-avax', 'AVAX'), { logo: undefined, fallback: 'AV', wide: false, flag: false, fundTicker: undefined });
   assert.equal(instrumentIdentity('stock-googl', 'GOOGL').logo, 'assets/instruments/google.svg');
   assert.equal(instrumentIdentity('stock-jpm', 'JPM').logo, 'assets/instruments/jpmorgan.svg');
   assert.equal(instrumentIdentity('crypto-xrp', 'XRP').logo, 'assets/instruments/xrp.svg');
-  assert.deepEqual(instrumentIdentity('unknown', 'TEST'), { logo: undefined, fallback: 'TE', wide: false });
+  assert.deepEqual(instrumentIdentity('unknown', 'TEST'), { logo: undefined, fallback: 'TE', wide: false, flag: false, fundTicker: undefined });
 });
 
 test('all 50 catalog identities use existing local assets or documented fallbacks', () => {
