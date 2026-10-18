@@ -42,9 +42,9 @@ const openPortfolio = async page => {
 
 const pauseMarket = async page => {
     const control = portfolio(page).locator('.portfolio-grid__pause');
-    await expect(control).toHaveText('Pause');
+    await expect(control).toHaveAttribute('aria-label', 'Metti in pausa le quotazioni simulate');
     await control.click();
-    await expect(control).toHaveText('Resume');
+    await expect(control).toHaveAttribute('aria-label', 'Riprendi le quotazioni simulate');
 };
 
 const searchPositions = page => portfolio(page).getByRole('searchbox', { name: 'Cerca posizioni' });
@@ -97,7 +97,7 @@ for (const filtered of [false, true]) {
         await expect(table(page).locator('.amb-lookup-editor__input')).toHaveCount(0);
         if (filtered) {
             await expect(holdings(page)).toHaveCount(0);
-            await expect(positionCount(page)).toHaveText('0 di 14 posizioni');
+            await expect(positionCount(page)).toHaveText('Nessun risultato');
             await searchPositions(page).fill('NVDA');
         } else {
             const quantityInput = cell(holding(page, 'NVDA'), 'quantity').locator('input');
@@ -226,7 +226,7 @@ test('Instrument replacement keeps the full NVIDIA identity without filters', as
 test('Search and category chips combine, clear independently, and report empty results', async ({ page }) => {
     await openPortfolio(page);
     await pauseMarket(page);
-    await expect(positionCount(page)).toHaveText('14 di 14 posizioni');
+    await expect(positionCount(page)).toHaveCount(0);
     await expect(categoryChip(page, 'Tutti')).toHaveAttribute('aria-pressed', 'true');
     await searchPositions(page).fill('apple');
     await expect(holdings(page)).toHaveCount(1);
@@ -246,11 +246,11 @@ test('Search and category chips combine, clear independently, and report empty r
     await expect(categoryChip(page, 'Azioni')).toHaveAttribute('aria-pressed', 'false');
     await expect(holdings(page)).toHaveCount(1);
     await expect(holding(page, 'VWCE')).toHaveCount(1);
-    await expect(positionCount(page)).toHaveText('1 di 14 posizioni');
+    await expect(positionCount(page)).toHaveText('1 risultato');
     await categoryChip(page, 'Crypto').click();
     await expect(searchPositions(page)).toHaveValue('Vanguard');
     await expect(holdings(page)).toHaveCount(0);
-    await expect(positionCount(page)).toHaveText('0 di 14 posizioni');
+    await expect(positionCount(page)).toHaveText('Nessun risultato');
     await expect(portfolio(page).getByRole('status')).toContainText('Nessuna posizione corrisponde alla ricerca.');
     await portfolio(page).getByRole('button', { name: 'Cancella ricerca' }).click();
     await expect(holdings(page)).toHaveCount(3);
@@ -260,7 +260,7 @@ test('Search and category chips combine, clear independently, and report empty r
     await expect(searchPositions(page)).toHaveValue('');
     await expect(categoryChip(page, 'Tutti')).toHaveAttribute('aria-pressed', 'true');
     await expect(holdings(page)).toHaveCount(14);
-    await expect(positionCount(page)).toHaveText('14 di 14 posizioni');
+    await expect(positionCount(page)).toHaveCount(0);
     await categoryChip(page, 'Obbligazioni').click();
     await expect(holdings(page)).toHaveCount(3);
     await categoryChip(page, 'Tutti').click();
@@ -373,7 +373,7 @@ test('Replacing an instrument reevaluates filters and hidden positions receive l
         await editingInput.press('Escape');
     }
     await expect(holdings(page)).toHaveCount(0);
-    await expect(positionCount(page)).toHaveText('0 di 14 posizioni');
+    await expect(positionCount(page)).toHaveText('Nessun risultato');
     await searchPositions(page).fill('NVDA');
     const initialNvidiaPrice = await expectNvidiaIdentity(page);
     await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
