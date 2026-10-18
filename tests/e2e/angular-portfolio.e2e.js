@@ -48,6 +48,10 @@ const pauseMarket = async page => {
     await expect(control).toHaveText('Resume');
 };
 
+const searchPositions = page => portfolio(page).getByRole('searchbox', { name: 'Cerca posizioni' });
+const categoryChip = (page, label) => portfolio(page).getByRole('group', { name: 'Filtra per categoria' }).getByRole('button', { name: label, exact: true });
+const positionCount = page => portfolio(page).locator('.portfolio-grid__count');
+
 const openInstrumentLookup = async (page, row) => {
     const instrument = cell(row, 'instrument');
     await instrument.dblclick({ delay: 100 });
@@ -57,6 +61,121 @@ const openInstrumentLookup = async (page, row) => {
     await expect(dialog).toBeVisible();
     return dialog;
 };
+
+test('Search and category chips combine, clear independently, and report empty results', async ({ page }) => {
+    await openPortfolio(page);
+    await pauseMarket(page);
+    await expect(positionCount(page)).toHaveText('14 di 14 posizioni');
+    await expect(categoryChip(page, 'Tutti')).toHaveAttribute('aria-pressed', 'true');
+    await searchPositions(page).fill('apple');
+    await expect(holdings(page)).toHaveCount(1);
+    await expect(holding(page, 'AAPL')).toHaveCount(1);
+    await searchPositions(page).fill('  aApL  ');
+    await expect(holdings(page)).toHaveCount(1);
+    await searchPositions(page).fill('ETF');
+    await expect(holdings(page)).toHaveCount(3);
+    await searchPositions(page).fill('Bond');
+    await expect(holdings(page)).toHaveCount(3);
+    await searchPositions(page).fill('BTC');
+    await expect(holding(page, 'BTC')).toHaveCount(1);
+    await searchPositions(page).fill('Vanguard');
+    await categoryChip(page, 'ETF').click();
+    await expect(categoryChip(page, 'ETF')).toHaveAttribute('aria-pressed', 'true');
+    await expect(categoryChip(page, 'Tutti')).toHaveAttribute('aria-pressed', 'false');
+    await expect(categoryChip(page, 'Azioni')).toHaveAttribute('aria-pressed', 'false');
+    await expect(holdings(page)).toHaveCount(1);
+    await expect(holding(page, 'VWCE')).toHaveCount(1);
+    await expect(positionCount(page)).toHaveText('1 di 14 posizioni');
+    await categoryChip(page, 'Crypto').click();
+    await expect(searchPositions(page)).toHaveValue('Vanguard');
+    await expect(holdings(page)).toHaveCount(0);
+    await expect(positionCount(page)).toHaveText('0 di 14 posizioni');
+    await expect(portfolio(page).getByRole('status')).toContainText('Nessuna posizione corrisponde alla ricerca.');
+    await portfolio(page).getByRole('button', { name: 'Cancella ricerca' }).click();
+    await expect(holdings(page)).toHaveCount(3);
+    await expect(categoryChip(page, 'Crypto')).toHaveAttribute('aria-pressed', 'true');
+    await searchPositions(page).fill('zzz-no-match');
+    await portfolio(page).getByRole('button', { name: 'Azzera filtri' }).first().click();
+    await expect(searchPositions(page)).toHaveValue('');
+    await expect(categoryChip(page, 'Tutti')).toHaveAttribute('aria-pressed', 'true');
+    await expect(holdings(page)).toHaveCount(14);
+    await expect(positionCount(page)).toHaveText('14 di 14 posizioni');
+    await categoryChip(page, 'Obbligazioni').click();
+    await expect(holdings(page)).toHaveCount(3);
+    await categoryChip(page, 'Tutti').click();
+    await expect(holdings(page)).toHaveCount(14);
+    await expect(portfolio(page).getByRole('button', { name: /^(Add|Delete|Save|Reload|Rollback|Payload)/i })).toHaveCount(0);
+});
+
+test('Filtered quantity edit changes global totals and preserves CRUD, tooltips and F2', async ({ page }) => {
+    await openPortfolio(page);
+    await pauseMarket(page);
+    const totalBefore = await totalMoneyIn(page, 'value');
+    const profitBefore = await totalMoneyIn(page, 'profitLoss');
+    await categoryChip(page, 'Azioni').click();
+    await expect(holdings(page)).toHaveCount(5);
+    near(await totalMoneyIn(page, 'value'), totalBefore);
+    near(await totalMoneyIn(page, 'profitLoss'), profitBefore);
+    await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
+    const apple = holding(page, 'AAPL');
+    const price = await moneyIn(cell(apple, 'price'));
+    const oldValue = await moneyIn(cell(apple, 'value'));
+    const oldProfit = await moneyIn(cell(apple, 'profitLoss'));
+    const quantity = cell(apple, 'quantity');
+    await quantity.dblclick({ delay: 100 });
+    await quantity.locator('input').fill('17');
+    await quantity.locator('input').press('Enter');
+    await expect(quantity).toHaveText('17');
+    await expect(apple).toHaveAttribute('data-state', 'modified');
+    near(await totalMoneyIn(page, 'value'), totalBefore + price);
+    near(await totalMoneyIn(page, 'profitLoss'), profitBefore + oldProfit / 16);
+    near(await moneyIn(cell(apple, 'value')), oldValue + price);
+    await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
+    await cell(apple, 'instrument').hover();
+    await expect(floatingBody(page)).toHaveText('AAPL');
+    await cell(apple, 'instrument').focus();
+    await cell(apple, 'instrument').press('F2');
+    await expect(page.locator('.amb-lookup-dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(apple).toHaveAttribute('data-state', 'modified');
+});
+
+test('Replacing an instrument reevaluates filters and hidden positions receive live quotes', async ({ page }) => {
+    await openPortfolio(page);
+    await pauseMarket(page);
+    await searchPositions(page).fill('AAPL');
+    const apple = holdings(page).first();
+    const dialog = await openInstrumentLookup(page, apple);
+    await dialog.locator('.amb-lookup-dialog__search').fill('NVDA');
+    await dialog.locator('.amb-lookup-dialog__row').filter({ hasText: 'NVDA' }).click();
+    await dialog.locator('.amb-lookup-dialog__button--primary').click();
+    await expect(dialog).toBeHidden();
+    const editingInput = holdings(page).first().locator('.amb-lookup-editor__input');
+    if (await editingInput.isVisible()) {
+        await expect(editingInput).toHaveValue('NVIDIA Corp.');
+        await editingInput.press('Escape');
+    }
+    await expect(holdings(page)).toHaveCount(0);
+    await expect(positionCount(page)).toHaveText('0 di 14 posizioni');
+    await searchPositions(page).fill('NVDA');
+    await expect(holding(page, 'NVDA')).toHaveCount(1);
+    await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
+    await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
+    await searchPositions(page).fill('BTC');
+    const oldPrice = await cell(holding(page, 'BTC'), 'price').innerText();
+    await categoryChip(page, 'ETF').click();
+    await expect(holdings(page)).toHaveCount(0);
+    await portfolio(page).locator('.portfolio-grid__pause').click();
+    await page.waitForTimeout(4000);
+    await pauseMarket(page);
+    await categoryChip(page, 'Tutti').click();
+    await expect(holding(page, 'BTC')).toHaveCount(1);
+    await expect(cell(holding(page, 'BTC'), 'price')).not.toHaveText(oldPrice);
+    await expect(holding(page, 'NVDA')).toHaveCount(0);
+    await portfolio(page).getByRole('button', { name: 'Azzera filtri' }).click();
+    await expect(holdings(page)).toHaveCount(14);
+    await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
+});
 
 test('Initial lookup descriptions and F2 work without opening an editor first', async ({ page }) => {
     let logoRequestFailed = false;

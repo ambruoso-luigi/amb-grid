@@ -34,7 +34,15 @@ interface EditedCell {
 
 type InstrumentSelection = NonNullable<ReturnType<typeof instrumentSelectionPatch>>;
 type LiveField = 'timeline' | 'price' | 'changePercent' | 'value' | 'profitLoss';
+type CategoryFilter = AssetCategory | null;
 const LIVE_FIELDS: readonly LiveField[] = ['timeline', 'price', 'changePercent', 'value', 'profitLoss'];
+const CATEGORY_FILTERS: readonly { label: string; value: CategoryFilter }[] = [
+  { label: 'Tutti', value: null },
+  { label: 'Azioni', value: 'Stock' },
+  { label: 'ETF', value: 'ETF' },
+  { label: 'Obbligazioni', value: 'Bond' },
+  { label: 'Crypto', value: 'Crypto' },
+];
 
 const instrumentsById = new Map(INSTRUMENT_CATALOG.map((instrument) => [instrument.id, instrument]));
 
@@ -145,6 +153,11 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
 
   readonly live = signal(true);
   readonly lookupError = signal('');
+  readonly searchQuery = signal('');
+  readonly categoryFilter = signal<CategoryFilter>(null);
+  readonly visibleCount = signal(INITIAL_POSITIONS.length);
+  readonly totalCount = signal(INITIAL_POSITIONS.length);
+  readonly categoryFilters = CATEGORY_FILTERS;
   private readonly market = new MarketSimulator(INSTRUMENT_CATALOG, INITIAL_QUOTES);
   private readonly lookupDialog = new AMB.LookupDialog();
   private grid: ReturnType<typeof AMB.table> | null = null;
@@ -152,6 +165,14 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   private cursor = 0;
   private activeLookupKey: string | null = null;
   private readonly pendingSelections = new Map<string, InstrumentSelection>();
+  private filterInstalled = false;
+  private readonly matchesFilters = (data: object): boolean => {
+    const row = data as HoldingsRow;
+    const category = this.categoryFilter();
+    const query = this.searchQuery().trim().toLocaleLowerCase();
+    return (category === null || row.type === category)
+      && (!query || [row.instrument, row.ticker, row.type].some((value) => value.toLocaleLowerCase().includes(query)));
+  };
   private readonly onVisibilityChange = () => {
     if (document.hidden) this.stopTimer();
     else this.startTimer();
@@ -159,6 +180,43 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
 
   private quoteFor(row: HoldingsRow) {
     return this.market.quoteFor(row.instrumentId);
+  }
+
+  setSearch(query: string): void {
+    this.searchQuery.set(query);
+    this.applyFilters();
+  }
+
+  setCategory(category: CategoryFilter): void {
+    this.categoryFilter.set(category);
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.searchQuery.set('');
+    this.categoryFilter.set(null);
+    this.applyFilters();
+  }
+
+  private updateCounts(): void {
+    if (!this.grid) return;
+    this.totalCount.set(this.grid.getData().length);
+    this.visibleCount.set(this.grid.getDataCount('active'));
+  }
+
+  private applyFilters(): void {
+    if (!this.grid) return;
+    if (!this.searchQuery().trim() && this.categoryFilter() === null) {
+      if (this.filterInstalled) this.grid.clearFilter();
+      this.filterInstalled = false;
+    } else if (this.filterInstalled) {
+      this.grid.refreshFilter();
+    } else {
+      this.grid.setFilter(this.matchesFilters);
+      this.filterInstalled = true;
+    }
+    this.updateCounts();
+    for (const row of this.grid.getData('active') as HoldingsRow[]) this.refreshLiveCells(row);
   }
 
   private derivedFor(row: HoldingsRow) {
@@ -426,6 +484,11 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           this.pendingSelections.delete(key);
           if (selection && this.grid) this.grid.updateRow(key, selection);
           this.activeLookupKey = null;
+          if (this.filterInstalled) this.grid?.refreshFilter();
+          this.updateCounts();
+          if (this.grid) {
+            for (const visible of this.grid.getData('active') as HoldingsRow[]) this.refreshLiveCells(visible);
+          }
         }
         this.refreshLiveCells(row);
         this.grid?.recalc();

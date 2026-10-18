@@ -41,6 +41,12 @@ market store rather than summing virtual formatter fields. `grid.recalc()` runs
 after user edits and market ticks. The initially closed, keyboard-accessible
 “Come funziona questa tabella” panel explains the lifecycle and presentation.
 
+The toolbar searches the 14 held positions by instrument name, ticker or category.
+Its mutually exclusive category chips combine with the query; the clear-search
+button removes only the query, while “Azzera filtri” restores all positions.
+AMB Grid filters the displayed rows and supplies the visible count. The topCalc
+totals continue to use all positions, including those hidden by a filter.
+
 Instrument icons use local SVGs where suitable, with an immediate text fallback
 that remains visible if an image fails to load or the demo is offline. Asset
 sources and use conditions are recorded in `src/assets/instruments/SOURCES.md`.

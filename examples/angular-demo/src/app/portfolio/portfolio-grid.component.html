@@ -18,6 +18,7 @@
     <div class="portfolio-grid__guide-content">
       <p><strong>Integrazione Angular.</strong> <code>ngAfterViewInit()</code> crea <code>AMB.table()</code> nel contenitore Angular; <code>ngOnDestroy()</code> chiama <code>grid.destroy()</code>. Angular gestisce il componente, AMB Grid il DOM della tabella.</p>
       <p><strong>Consultazione ed editing selettivo.</strong> Le 14 posizioni sono fisse: solo Instrument e Quantity sono modificabili. Non sono esposti comandi CRUD.</p>
+      <p><strong>Ricerca e categorie.</strong> La ricerca filtra le posizioni visualizzate per nome, ticker o categoria; i chip selezionano una categoria. I totali superiori restano riferiti all'intero portafoglio.</p>
       <p><strong>Quotazioni simulate.</strong> Price, Change %, Value, P/L e Timeline seguono il mercato simulato; Pause e Resume fermano e riprendono gli aggiornamenti. Non sono dati finanziari reali.</p>
       <p><strong>Personalizzazione grafica.</strong> Icone con fallback, ticker, badge, formatter, colori e mini-grafici rendono leggibili categorie e andamento.</p>
       <p><strong>Totali e rendimento.</strong> La riga superiore calcola valore, costo complessivo, P/L e rendimento del portafoglio dalle quotazioni correnti.</p>
@@ -25,6 +26,30 @@
   </details>
   @if (lookupError()) {
     <p class="portfolio-grid__error" role="alert">{{ lookupError() }}</p>
+  }
+  <div class="portfolio-grid__toolbar" aria-label="Filtri delle posizioni">
+    <div class="portfolio-grid__search">
+      <svg class="portfolio-grid__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg>
+      <input type="search" aria-label="Cerca posizioni" placeholder="Cerca strumento, ticker o categoria…" [value]="searchQuery()" (input)="setSearch($any($event.target).value)" />
+      @if (searchQuery()) {
+        <button type="button" class="portfolio-grid__clear-search" aria-label="Cancella ricerca" (click)="setSearch('')">×</button>
+      }
+    </div>
+    <div class="portfolio-grid__chips" role="group" aria-label="Filtra per categoria">
+      @for (filter of categoryFilters; track filter.label) {
+        <button type="button" class="portfolio-grid__chip" [class.is-active]="categoryFilter() === filter.value" [attr.aria-pressed]="categoryFilter() === filter.value" (click)="setCategory(filter.value)">{{ filter.label }}</button>
+      }
+    </div>
+    <span class="portfolio-grid__count" aria-live="polite">{{ visibleCount() }} di {{ totalCount() }} posizioni</span>
+    @if (searchQuery() || categoryFilter() !== null) {
+      <button type="button" class="portfolio-grid__reset" (click)="clearFilters()">Azzera filtri</button>
+    }
+  </div>
+  @if (visibleCount() === 0) {
+    <div class="portfolio-grid__empty" role="status">
+      <span>Nessuna posizione corrisponde alla ricerca.</span>
+      <button type="button" (click)="clearFilters()">Azzera filtri</button>
+    </div>
   }
   <div class="portfolio-grid__scroll" role="region" aria-label="Portfolio Holdings, scorri orizzontalmente per altre colonne" tabindex="0">
     <div #gridHost class="portfolio-grid__table"></div>
