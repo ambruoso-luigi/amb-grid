@@ -379,9 +379,14 @@
   display: grid;
   grid-template-columns: 60px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
   line-height: 1.25;
+}
+
+.portfolio-grid .tabulator-tableholder .tabulator-cell[tabulator-field="instrument"] {
+  padding-top: 7px;
+  padding-bottom: 7px;
 }
 
 .portfolio-grid__instrument.is-empty { color: #65738a; }
@@ -389,8 +394,8 @@
 .portfolio-grid__instrument-icon {
   display: inline-grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   justify-self: center;
   overflow: hidden;
   border-radius: 8px;
@@ -413,12 +418,20 @@
 .portfolio-grid__instrument-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 
 .portfolio-grid__instrument strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #102950;
+  font-size: 14px;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.portfolio-grid__instrument-meta { display: flex; align-items: center; min-width: 0; gap: 6px; white-space: nowrap; }
 
 .portfolio-grid__instrument small {
   color: #65738a;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: .03em;
 }
 

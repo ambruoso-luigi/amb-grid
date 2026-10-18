@@ -16,8 +16,7 @@ const expectLoadedIcon = async (page, ticker, asset) => {
     expect(await image.evaluate(element => element.complete && element.naturalWidth > 0
         && new URL(element.src).origin === location.origin)).toBe(true);
 };
-const floatingMessage = page => page.locator('.teh-floating-message');
-const floatingBody = page => floatingMessage(page).locator('.teh-floating-message__body');
+const visibleFloatingMessage = page => page.locator('.teh-floating-message--visible');
 const italianNumber = text => Number(text.replace(/[^\d.,+-]/g, '').replaceAll('.', '').replace(',', '.'));
 const money = text => italianNumber(text);
 const percent = text => italianNumber(text.replace('%', ''));
@@ -294,7 +293,7 @@ test('Filtered quantity edit changes global totals and preserves CRUD, tooltips 
     near(await moneyIn(cell(apple, 'value')), oldValue + price);
     await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
     await cell(apple, 'instrument').hover();
-    await expect(floatingBody(page)).toHaveText('AAPL');
+    await expect(visibleFloatingMessage(page)).toHaveCount(0);
     await cell(apple, 'instrument').focus();
     await cell(apple, 'instrument').press('F2');
     await expect(page.locator('.amb-lookup-dialog')).toBeVisible();
@@ -398,7 +397,7 @@ test('Replacing an instrument reevaluates filters and hidden positions receive l
     await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
 });
 
-test('Initial lookup descriptions and F2 work without opening an editor first', async ({ page }) => {
+test('Initial Instrument cells omit descriptions and F2 works without opening an editor first', async ({ page }) => {
     let logoRequestFailed = false;
     await page.route('**/assets/instruments/sap.svg', async route => {
         logoRequestFailed = true;
@@ -411,13 +410,14 @@ test('Initial lookup descriptions and F2 work without opening an editor first', 
     const apple = cell(holdings(page).first(), 'instrument');
     const microsoft = cell(holdings(page).nth(1), 'instrument');
     await apple.hover();
-    await expect(floatingMessage(page)).toHaveClass(/teh-floating-message--visible/);
-    await expect(floatingBody(page)).toHaveText('AAPL');
+    await expect(apple).not.toHaveAttribute('data-lookup-field', /.+/);
+    await expect(visibleFloatingMessage(page)).toHaveCount(0);
     await microsoft.hover();
-    await expect(floatingBody(page)).toHaveText('MSFT');
+    await expect(microsoft).not.toHaveAttribute('data-lookup-field', /.+/);
+    await expect(visibleFloatingMessage(page)).toHaveCount(0);
     await apple.focus();
     await expect(apple).toBeFocused();
-    await expect(floatingBody(page)).toHaveText('AAPL');
+    await expect(visibleFloatingMessage(page)).toHaveCount(0);
 
     await apple.press('F2');
     const dialog = page.locator('.amb-lookup-dialog');
@@ -700,8 +700,8 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expectLoadedIcon(page, 'NVDA', 'nvidia.svg');
     await expectAlignedNames(page);
     await instrument.hover();
-    await expect(floatingMessage(page)).toHaveClass(/teh-floating-message--visible/);
-    await expect(floatingBody(page)).toHaveText('NVDA');
+    await expect(instrument).not.toHaveAttribute('data-lookup-field', /.+/);
+    await expect(visibleFloatingMessage(page)).toHaveCount(0);
     await expect(cell(first, 'type')).toHaveText('Stock');
     await expect(holding(page, 'AAPL')).toHaveCount(0);
     await expect(holding(page, 'MSFT')).toHaveCount(1);

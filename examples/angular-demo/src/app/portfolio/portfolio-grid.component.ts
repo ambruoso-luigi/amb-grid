@@ -133,9 +133,12 @@ function instrumentCell(row: HoldingsRow): HTMLElement {
   text.className = 'portfolio-grid__instrument-text';
   const name = document.createElement('strong');
   name.textContent = row.instrument;
+  const meta = document.createElement('span');
+  meta.className = 'portfolio-grid__instrument-meta';
   const ticker = document.createElement('small');
   ticker.textContent = row.ticker;
-  text.append(name, ticker);
+  meta.append(ticker);
+  text.append(name, meta);
   wrapper.append(icon, text);
   return wrapper;
 }
@@ -369,6 +372,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         dialogTitle: 'Select a portfolio instrument',
         searchPlaceholder: 'Search name, ticker, category or ISIN...',
         autoComplete: true,
+        showDescription: false,
         search: { fields: ['ticker', 'name', 'category', 'isin'] },
         mapToRow: { instrumentId: 'id', ticker: 'ticker', type: 'category' },
         dialogOptions: { destroyOnClose: true, pagination: { enabled: false } },
