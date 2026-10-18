@@ -62,6 +62,40 @@ const openInstrumentLookup = async (page, row) => {
     return dialog;
 };
 
+const expectNvidiaIdentity = async (page, { zeroProfit = true } = {}) => {
+    const nvidia = holding(page, 'NVDA');
+    await expect(nvidia).toHaveCount(1);
+    await expect(cell(nvidia, 'instrument').locator('strong')).toHaveText('NVIDIA Corp.');
+    await expect(cell(nvidia, 'instrument').locator('small')).toHaveText('NVDA');
+    await expectLoadedIcon(page, 'NVDA', 'nvidia.svg');
+    await expect(cell(nvidia, 'type')).toHaveText('Stock');
+    const price = await moneyIn(cell(nvidia, 'price'));
+    near(await moneyIn(cell(nvidia, 'value')), 16 * price, 0.1);
+    if (zeroProfit) near(await moneyIn(cell(nvidia, 'profitLoss')), 0, 0.02);
+    return price;
+};
+
+test('Instrument replacement keeps the full NVIDIA identity without filters', async ({ page }) => {
+    await openPortfolio(page);
+    await pauseMarket(page);
+    const dialog = await openInstrumentLookup(page, holdings(page).first());
+    await dialog.locator('.amb-lookup-dialog__search').fill('NVDA');
+    await dialog.locator('.amb-lookup-dialog__row').filter({ hasText: 'NVDA' }).click();
+    await dialog.locator('.amb-lookup-dialog__button--primary').click();
+    await expect(dialog).toBeHidden();
+    const editor = cell(holdings(page).first(), 'instrument').locator('.amb-lookup-editor__input');
+    await expect(editor).toHaveValue('NVIDIA Corp.');
+    await editor.press('Escape');
+    await expectNvidiaIdentity(page);
+    await searchPositions(page).fill('AAPL');
+    await expect(holdings(page)).toHaveCount(0);
+    await searchPositions(page).fill('nvidia');
+    await expectNvidiaIdentity(page);
+    await portfolio(page).getByRole('button', { name: 'Azzera filtri' }).click();
+    await expect(holdings(page)).toHaveCount(14);
+    await expectNvidiaIdentity(page);
+});
+
 test('Search and category chips combine, clear independently, and report empty results', async ({ page }) => {
     await openPortfolio(page);
     await pauseMarket(page);
@@ -75,7 +109,7 @@ test('Search and category chips combine, clear independently, and report empty r
     await searchPositions(page).fill('ETF');
     await expect(holdings(page)).toHaveCount(3);
     await searchPositions(page).fill('Bond');
-    await expect(holdings(page)).toHaveCount(3);
+    await expect(holdings(page)).toHaveCount(4);
     await searchPositions(page).fill('BTC');
     await expect(holding(page, 'BTC')).toHaveCount(1);
     await searchPositions(page).fill('Vanguard');
@@ -158,7 +192,7 @@ test('Replacing an instrument reevaluates filters and hidden positions receive l
     await expect(holdings(page)).toHaveCount(0);
     await expect(positionCount(page)).toHaveText('0 di 14 posizioni');
     await searchPositions(page).fill('NVDA');
-    await expect(holding(page, 'NVDA')).toHaveCount(1);
+    const initialNvidiaPrice = await expectNvidiaIdentity(page);
     await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
     await expect(totalCell(page, 'instrument').locator('.amb-calc-value')).toHaveText('14');
     await searchPositions(page).fill('BTC');
@@ -174,6 +208,9 @@ test('Replacing an instrument reevaluates filters and hidden positions receive l
     await expect(holding(page, 'NVDA')).toHaveCount(0);
     await portfolio(page).getByRole('button', { name: 'Azzera filtri' }).click();
     await expect(holdings(page)).toHaveCount(14);
+    const currentNvidiaPrice = await expectNvidiaIdentity(page, { zeroProfit: false });
+    near(await moneyIn(cell(holding(page, 'NVDA'), 'profitLoss')),
+        16 * (currentNvidiaPrice - initialNvidiaPrice), 0.1);
     await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
 });
 

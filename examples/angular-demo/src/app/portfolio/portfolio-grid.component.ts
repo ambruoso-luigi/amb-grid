@@ -165,6 +165,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   private cursor = 0;
   private activeLookupKey: string | null = null;
   private readonly pendingSelections = new Map<string, InstrumentSelection>();
+  private readonly pendingIdentityFormats = new Set<string>();
   private filterInstalled = false;
   private readonly matchesFilters = (data: object): boolean => {
     const row = data as HoldingsRow;
@@ -204,6 +205,18 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     this.visibleCount.set(this.grid.getDataCount('active'));
   }
 
+  private refreshVisibleRows(): void {
+    if (!this.grid) return;
+    for (const row of this.grid.getData('active') as HoldingsRow[]) {
+      const key = positionKey(row);
+      if (this.pendingIdentityFormats.has(key)) {
+        this.grid.reformatRow(key);
+        this.pendingIdentityFormats.delete(key);
+      }
+      this.refreshLiveCells(row);
+    }
+  }
+
   private applyFilters(): void {
     if (!this.grid) return;
     if (!this.searchQuery().trim() && this.categoryFilter() === null) {
@@ -216,7 +229,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       this.filterInstalled = true;
     }
     this.updateCounts();
-    for (const row of this.grid.getData('active') as HoldingsRow[]) this.refreshLiveCells(row);
+    this.refreshVisibleRows();
   }
 
   private derivedFor(row: HoldingsRow) {
@@ -391,10 +404,24 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     ) => originalEditor(cell, onRendered, (value) => {
       const key = positionKey(cell.getRow().getData());
       const selection = this.pendingSelections.get(key);
-      if (selection?.instrument === value) success(value);
-      else cancel();
+      if (selection?.instrument === value) {
+        success(value);
+        this.grid?.updateRow(key, selection);
+        if (this.filterInstalled) this.pendingIdentityFormats.add(key);
+        if (this.filterInstalled) this.grid?.refreshFilter();
+        this.updateCounts();
+        this.refreshVisibleRows();
+        this.grid?.recalc();
+      } else {
+        cancel();
+      }
       this.pendingSelections.delete(key);
-    }, cancel);
+      this.activeLookupKey = null;
+    }, () => {
+      this.pendingSelections.delete(positionKey(cell.getRow().getData()));
+      this.activeLookupKey = null;
+      cancel();
+    });
     guardedEditor._ambEditorType = originalEditor._ambEditorType;
     guardedEditor._ambLookupConfig = originalEditor._ambLookupConfig;
     guardedEditor._ambCapabilities = originalEditor._ambCapabilities;
@@ -478,17 +505,8 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       const cell = event as EditedCell;
       if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
         const row = cell.getRow().getData();
-        const key = positionKey(row);
         if (cell.getField() === 'instrument') {
-          const selection = this.pendingSelections.get(key);
-          this.pendingSelections.delete(key);
-          if (selection && this.grid) this.grid.updateRow(key, selection);
           this.activeLookupKey = null;
-          if (this.filterInstalled) this.grid?.refreshFilter();
-          this.updateCounts();
-          if (this.grid) {
-            for (const visible of this.grid.getData('active') as HoldingsRow[]) this.refreshLiveCells(visible);
-          }
         }
         this.refreshLiveCells(row);
         this.grid?.recalc();
@@ -544,6 +562,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     this.stopTimer();
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.pendingSelections.clear();
+    this.pendingIdentityFormats.clear();
     this.activeLookupKey = null;
     this.lookupDialog.destroy();
     this.grid?.destroy();
