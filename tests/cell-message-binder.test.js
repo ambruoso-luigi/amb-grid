@@ -15,6 +15,8 @@ const createNode = (className = '', parent = null) => {
         closest(selector) {
             if (selector === '.tabulator-cell' && classes.has('tabulator-cell')) return node;
             if (selector === '.tabulator-row' && classes.has('tabulator-row')) return node;
+            if (selector === '.tabulator-calcs, .amb-calc-row'
+                && (classes.has('tabulator-calcs') || classes.has('amb-calc-row'))) return node;
             if (selector.includes('[role="dialog"]') && node.attributes.role === 'dialog') return node;
             return parent?.closest?.(selector) || null;
         }
@@ -43,10 +45,11 @@ const createHarness = () => {
         }),
         dispatch(name, event) { documentListeners.get(name)?.(event); }
     };
-    const rows = new Map();
+    const rows = [];
     const table = {
         element: tableElement,
-        getRow: vi.fn(element => rows.get(element) || null)
+        getRow: vi.fn(() => { throw new Error('getRow does not accept DOM elements'); }),
+        getRows: vi.fn(() => rows)
     };
     const crudHelper = {
         options: { idField: 'id', tempIdField: '_ambTempId' },
@@ -65,8 +68,8 @@ const createHarness = () => {
     };
     const binder = new CellMessageBinder({ table, tableElement, crudHelper, floatingMessage });
 
-    const makeCell = (data, dataset = {}) => {
-        const rowElement = createNode('tabulator-row');
+    const makeCell = (data, dataset = {}, { rowClass = 'tabulator-row', registered = true } = {}) => {
+        const rowElement = createNode(rowClass);
         const cellElement = createNode('tabulator-cell', rowElement);
         cellElement.insideTable = true;
         Object.assign(cellElement.dataset, dataset);
@@ -74,9 +77,9 @@ const createHarness = () => {
             || dataset.lookupField
             || dataset.largeTextField
             || 'value';
-        const row = { getData: () => data };
+        const row = { getData: () => data, getElement: () => rowElement };
         const cell = { getElement: () => cellElement };
-        rows.set(rowElement, row);
+        if (registered) rows.push(row);
         return { cell, cellElement, row, rowElement };
     };
 
@@ -87,6 +90,7 @@ const createHarness = () => {
         documentListeners,
         floatingMessage,
         makeCell,
+        table,
         tableElement,
         tableListeners,
         unsubscribes
@@ -98,6 +102,57 @@ describe('CellMessageBinder', () => {
 
     beforeEach(() => vi.restoreAllMocks());
     afterEach(() => { globalThis.document = originalDocument; });
+
+    test('resolves data cells through RowComponents without passing DOM elements to getRow', () => {
+        const harness = createHarness();
+        const target = harness.makeCell({ id: 7, notes: 'Complete note' }, { largeTextField: 'notes' });
+
+        harness.tableElement.dispatch('pointermove', { target: target.cellElement });
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenCalledWith(
+            target.cellElement,
+            expect.objectContaining({ message: 'Complete note' })
+        );
+        harness.tableElement.dispatch('focusin', { target: target.cellElement });
+        expect(harness.floatingMessage.show).toHaveBeenCalledWith(
+            target.cellElement,
+            expect.objectContaining({ message: 'Complete note' })
+        );
+        expect(harness.table.getRows).toHaveBeenCalled();
+        expect(harness.table.getRow).not.toHaveBeenCalled();
+    });
+
+    test.each(['tabulator-row tabulator-calcs', 'tabulator-row amb-calc-row'])(
+        'ignores calculation cells in %s for pointer and keyboard messages', rowClass => {
+            const harness = createHarness();
+            const target = harness.makeCell({ id: 4, notes: 'Calculation' },
+                { largeTextField: 'notes' }, { rowClass });
+            harness.cellErrors.push({ key: 4, field: 'notes', message: 'Invalid calculation' });
+
+            harness.tableElement.dispatch('pointermove', { target: target.cellElement });
+            harness.tableElement.dispatch('focusin', { target: target.cellElement });
+
+            expect(harness.binder.resolveCellMessage(target.cellElement)).toBeNull();
+            expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+            expect(harness.floatingMessage.scheduleShow).not.toHaveBeenCalled();
+            expect(harness.table.getRows).not.toHaveBeenCalled();
+            expect(harness.table.getRow).not.toHaveBeenCalled();
+        }
+    );
+
+    test('ignores a data-shaped row without a RowComponent', () => {
+        const harness = createHarness();
+        const target = harness.makeCell({ status: 'A' }, { lookupField: 'status' }, { registered: false });
+        setLookupMetadata(target.row.getData(), 'status', 'A', 'Unregistered');
+        harness.cellErrors.push({ key: undefined, field: 'status', message: 'Stale error' });
+
+        harness.tableElement.dispatch('pointermove', { target: target.cellElement });
+        harness.tableElement.dispatch('focusin', { target: target.cellElement });
+
+        expect(harness.binder.resolveCellMessage(target.cellElement)).toBeNull();
+        expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+        expect(harness.floatingMessage.scheduleShow).not.toHaveBeenCalled();
+        expect(harness.table.getRow).not.toHaveBeenCalled();
+    });
 
     test('the most recent real pointer or keyboard interaction owns lookup messages', () => {
         const harness = createHarness();

@@ -333,6 +333,7 @@ export function createMultifieldLookup(options = {}) {
             };
         const {
             dialog: _dialog,
+            editorOptions,
             validation,
             validator,
             cssClass,
@@ -365,7 +366,7 @@ export function createMultifieldLookup(options = {}) {
                     masterValue: value
                 }),
                 ...autocompleteOptions,
-                ...(columnOptions.editorOptions || {})
+                ...(editorOptions || {})
             }),
             validation: {
                 ...validation

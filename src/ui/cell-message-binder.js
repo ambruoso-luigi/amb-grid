@@ -48,11 +48,10 @@ export class CellMessageBinder {
     }
 
     _getRow(cellElement) {
+        if (cellElement?.closest?.('.tabulator-calcs, .amb-calc-row')) return null;
         const rowElement = cellElement?.closest?.('.tabulator-row');
 
         if (!rowElement) return null;
-        if (typeof this.table?.getRow === 'function') return this.table.getRow(rowElement) || null;
-
         return this.table?.getRows?.().find(row => row.getElement?.() === rowElement) || null;
     }
 
@@ -60,6 +59,7 @@ export class CellMessageBinder {
         if (!this.options.validationErrors) return null;
 
         const row = this._getRow(cellElement);
+        if (!row) return null;
         const field = cellElement?.getAttribute?.('tabulator-field');
         const key = this._getRowKey(row);
         const message = this.crudHelper?.getCellErrors?.().find(error => {

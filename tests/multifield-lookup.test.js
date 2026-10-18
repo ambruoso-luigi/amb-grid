@@ -385,6 +385,7 @@ describe('AMB.multifieldLookup', () => {
 
         expect(multifieldLookup.lookup.caseSensitive).toBe(false);
         expect(column.editor._ambLookupConfig.caseSensitive).toBe(true);
+        expect(column).not.toHaveProperty('editorOptions');
     });
 
     test('masterColumn forwards showDescription through editorOptions', () => {
@@ -396,6 +397,22 @@ describe('AMB.multifieldLookup', () => {
         });
 
         expect(column.editor._ambLookupConfig.showDescription).toBe(false);
+        expect(column).not.toHaveProperty('editorOptions');
+    });
+
+    test('masterColumn keeps editor overrides out of the column definition', () => {
+        const multifieldLookup = createMunicipalityMultifieldLookup();
+        const column = multifieldLookup.masterColumn({
+            width: 240,
+            editorOptions: { caseSensitive: true, showDescription: false, autoCompleteMinChars: 3 }
+        });
+
+        expect(column.width).toBe(240);
+        expect(column).not.toHaveProperty('editorOptions');
+        expect(column.editor._ambLookupConfig).toMatchObject({
+            caseSensitive: true,
+            showDescription: false
+        });
     });
 
     test('case-insensitive Multifield Lookup autocomplete applies one canonical master and dependent patch', async () => {
