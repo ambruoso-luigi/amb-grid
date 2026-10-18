@@ -455,7 +455,7 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
     }
     await expectAlignedNames(page);
     const wideIcon = icon(page, 'VWCE');
-    expect((await wideIcon.boundingBox()).width).toBe(56);
+    expect((await wideIcon.boundingBox()).width).toBe(60);
     await expect(cell(holding(page, 'BTC'), 'quantity')).toHaveText('0,075');
     await expect(cell(holding(page, 'ETH'), 'quantity')).toHaveText('1,35');
     await page.locator('#site-navbar .site-navbar__demo > button').click();

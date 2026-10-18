@@ -68,11 +68,15 @@ export function categoryClass(category: AssetCategory | ''): string {
   return category ? `is-${category.toLowerCase()}` : 'is-unselected';
 }
 
-export function instrumentIdentity(id: string, ticker: string): { logo?: string; fallback: string; wide: boolean } {
+export function instrumentIdentity(id: string, ticker: string): {
+  logo?: string; fallback: string; wide: boolean; flag: boolean; fundTicker?: string;
+} {
   const identity = IDENTITIES[id];
   return {
     logo: identity?.logo ? `assets/instruments/${identity.logo}` : undefined,
     fallback: identity?.fallback ?? tickerMonogram(ticker),
     wide: identity?.wide ?? false,
+    flag: identity?.logo?.startsWith('flag-') ?? false,
+    fundTicker: identity?.logo === 'ishares.png' ? ticker : undefined,
   };
 }

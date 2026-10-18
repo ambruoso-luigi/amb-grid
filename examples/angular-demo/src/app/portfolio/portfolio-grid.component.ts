@@ -117,12 +117,20 @@ function instrumentCell(row: HoldingsRow): HTMLElement {
   const identity = instrumentIdentity(row.instrumentId, row.ticker);
   icon.textContent = identity.fallback;
   if (identity.wide) icon.classList.add('is-wide');
+  if (identity.flag) icon.classList.add('is-flag');
+  if (identity.fundTicker) icon.classList.add('is-ishares');
   if (identity.logo) {
     const image = document.createElement('img');
     image.alt = '';
     image.onload = () => {
       image.onload = image.onerror = null;
       icon.append(image);
+      if (identity.fundTicker) {
+        const badge = document.createElement('span');
+        badge.className = 'portfolio-grid__fund-ticker';
+        badge.textContent = identity.fundTicker;
+        icon.append(badge);
+      }
       icon.classList.add('has-image');
     };
     image.onerror = () => { image.onload = image.onerror = null; };
@@ -365,7 +373,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       ],
     });
     const instrumentColumn = multifield.masterColumn({
-      minWidth: 260, widthGrow: 2.4,
+      minWidth: 275, widthGrow: 2.4,
       dialog: instrumentDialog,
       formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => instrumentCell(cell.getRow().getData()),
       editorOptions: {

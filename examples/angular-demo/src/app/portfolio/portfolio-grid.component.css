@@ -377,7 +377,7 @@
 
 .portfolio-grid__instrument {
   display: grid;
-  grid-template-columns: 60px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   min-width: 0;
@@ -408,11 +408,15 @@
 .portfolio-grid__instrument-icon.is-etf { background: #eeeafb; color: #514489; }
 .portfolio-grid__instrument-icon.is-bond { background: #e7f1ef; color: #28605b; }
 .portfolio-grid__instrument-icon.is-crypto { background: #fde9ef; color: #8e2e4a; }
-.portfolio-grid__instrument-icon.is-wide { width: 56px; }
+.portfolio-grid__instrument-icon.is-wide { width: 60px; }
 .portfolio-grid__instrument-icon.is-bond { background: #f8fafc; }
+.portfolio-grid__instrument-icon.is-flag { width: 52px; height: 39px; border: 1px solid #dce4ec; background: #f8fafc; }
 
 .portfolio-grid__instrument-icon img { display: block; width: 100%; height: 100%; padding: 3px; box-sizing: border-box; object-fit: contain; background: #f8fafc; }
-.portfolio-grid__instrument-icon.is-bond img { padding: 2px; }
+.portfolio-grid__instrument-icon.is-flag img { padding: 0; background: transparent; }
+.portfolio-grid__instrument-icon.is-ishares { align-content: center; gap: 1px; }
+.portfolio-grid__instrument-icon.is-ishares img { height: 22px; padding: 1px 2px 0; }
+.portfolio-grid__fund-ticker { color: #102950; font-size: 10px; font-weight: 800; letter-spacing: .03em; line-height: 13px; }
 .portfolio-grid__instrument-icon.has-image { font-size: 0; }
 
 .portfolio-grid__instrument-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }

@@ -3,7 +3,8 @@
 These files identify instruments in the simulated portfolio. The demo does not
 claim sponsorship or endorsement by any issuer or foundation. The marks remain
 subject to their owners' trademark rules; the copyright status below concerns
-the image files, not trademark rights. Colors and proportions are preserved.
+the image files, not trademark rights. Colors are preserved; local framing and
+small-size star scaling are noted below.
 
 | File | Source and conditions |
 | --- | --- |
@@ -26,6 +27,10 @@ the image files, not trademark rights. Colors and proportions are preserved.
 | `nestle.svg` | [Wikimedia Commons, Nestlé textlogo.svg](https://commons.wikimedia.org/wiki/File:Nestl%C3%A9_textlogo.svg); Commons identifies the text logo as public domain and flags trademark rights. |
 | `lvmh.svg` | [Wikimedia Commons, LVMH logo.svg](https://commons.wikimedia.org/wiki/File:LVMH_logo.svg); Commons identifies the text logo as public domain and flags trademark rights. |
 | `google.svg`, `meta.svg`, `tesla.svg`, `cocacola.svg`, `visa.svg`, `mastercard.svg`, `cardano.svg`, `xrp.svg`, `polkadot.svg`, `chainlink.svg`, `litecoin.svg`, `bitcoincash.svg` | [Simple Icons 16.35.0](https://github.com/simple-icons/simple-icons/tree/v16.35.0/icons), corresponding SVGs and brand colors from `data/simple-icons.json`. The package is published under CC0, but its [disclaimer](https://github.com/simple-icons/simple-icons/blob/develop/DISCLAIMER.md) says this does not establish the copyright status of every individual icon; issuer trademarks and linked brand guidelines still apply. Used only to identify the catalog entry, without an endorsement claim. `xrp.svg` identifies XRP; the separate Ripple company icon is not substituted for it. |
+
+`cocacola.svg` keeps its original path and color; only its viewBox is cropped to
+frame the horizontal wordmark. `flag-eu.svg` keeps the source flag and twelve
+stars, with the stars enlarged for the small portfolio cell.
 
 New files were retrieved on 2026-10-17. XGLE retains a ticker fallback: the
 catalog identifies Xtrackers, but no independently redistributable current
