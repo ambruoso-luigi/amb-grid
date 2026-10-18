@@ -33,7 +33,9 @@ previous row. A valid replacement keeps the position ID, updates instrument
 identity fields and sets Average Cost to the current simulated price, so P/L
 starts near zero. Fractional Crypto Quantity is kept; a switch to Stock, ETF or
 Bond rounds up to a positive whole unit. Quantity edits require a finite
-positive value, with fractions allowed only for Crypto.
+positive value. Stock, ETF and Bond use Integer editors; Crypto uses a Decimal
+editor with up to eight fractional digits. Non-Crypto fractional input is rejected
+without rounding or reinterpreting its digits.
 
 The integrated AMB Grid `topCalc` row shows `POSIZIONI` (14), portfolio Value,
 and P/L with overall Return % beneath it. Custom calculations read the current

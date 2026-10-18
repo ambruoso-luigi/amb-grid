@@ -6,7 +6,14 @@ All notable changes to AMB Grid are documented in this file.
 
 - Consolidated the Angular portfolio demo around 14 fixed positions with
   exclusive instrument lookup, selective Instrument and Quantity editing,
-  simulated quotes, live bottom calculations, and an integrated guide.
+  simulated quotes, global live `topCalc` totals, and an integrated guide.
+- Added combined portfolio search and category filters, preserving complete
+  Instrument identity when a replacement is committed under an active filter.
+  Quantity uses Integer editors for Stock, ETF and Bond, and Decimal editors
+  with up to eight fractional digits for Crypto; F2/Escape tests follow the
+  dialog and editor lifecycle.
+- Fixed Multifield Lookup `editorOptions` leaking into column definitions and
+  Floating Messages attempting to resolve calculation rows as data rows.
 - Shortened the Angular site navigation label to `Angular`.
 
 ## [0.7.0] - 2026-10-08

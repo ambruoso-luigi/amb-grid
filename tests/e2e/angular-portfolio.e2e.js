@@ -171,7 +171,63 @@ test('Filtered quantity edit changes global totals and preserves CRUD, tooltips 
     await cell(apple, 'instrument').press('F2');
     await expect(page.locator('.amb-lookup-dialog')).toBeVisible();
     await page.keyboard.press('Escape');
+    await expect(page.locator('.amb-lookup-dialog')).toBeHidden();
+    const instrument = cell(holdings(page).first(), 'instrument');
+    const editor = instrument.locator('.amb-lookup-editor__input');
+    await expect(editor).toBeVisible();
+    await expect(editor).toBeFocused();
+    await editor.press('Escape');
+    await expect(instrument).not.toHaveClass(/tabulator-editing/);
+    await expect(instrument.locator('.portfolio-grid__instrument small')).toHaveText('AAPL');
+    await expect(cell(apple, 'quantity')).toHaveText('17');
     await expect(apple).toHaveAttribute('data-state', 'modified');
+});
+
+test('Quantity editors use integers for Stock, ETF and Bond and retain eight Crypto decimals', async ({ page }) => {
+    test.setTimeout(60000);
+    await openPortfolio(page);
+    await pauseMarket(page);
+    for (const ticker of ['AAPL', 'VWCE', 'IT30-SIM']) {
+        const row = holding(page, ticker);
+        const quantity = cell(row, 'quantity');
+        const original = await quantity.innerText();
+        const totalBefore = await totalMoneyIn(page, 'value');
+        for (const invalid of ['17,5', '17,00000001', '17.5', '0']) {
+            await quantity.dblclick({ delay: 100 });
+            const input = quantity.locator('input');
+            await expect(input).toHaveAttribute('inputmode', 'numeric');
+            await expect(input).toHaveValue(/^\d+$/);
+            await input.fill(invalid);
+            await input.press('Enter');
+            await expect(quantity).not.toHaveClass(/tabulator-editing/);
+            await expect(quantity).toHaveText(original);
+            await expect(row).toHaveAttribute('data-state', 'clean');
+            near(await totalMoneyIn(page, 'value'), totalBefore);
+        }
+        await quantity.dblclick({ delay: 100 });
+        await quantity.locator('input').fill('17');
+        await quantity.locator('input').press('Enter');
+        await expect(quantity).toHaveText('17');
+        await expect(row).toHaveAttribute('data-state', 'modified');
+        await quantity.dblclick({ delay: 100 });
+        await expect(quantity.locator('input')).toHaveValue('17');
+        await quantity.locator('input').fill('18');
+        await quantity.locator('input').press('Escape');
+        await expect(quantity).toHaveText('17');
+    }
+    const bitcoin = holding(page, 'BTC');
+    const quantity = cell(bitcoin, 'quantity');
+    const totalBefore = await totalMoneyIn(page, 'value');
+    const oldValue = await moneyIn(cell(bitcoin, 'value'));
+    await quantity.dblclick({ delay: 100 });
+    await expect(quantity.locator('input')).toHaveAttribute('inputmode', 'decimal');
+    await quantity.locator('input').fill('0,12345678');
+    await quantity.locator('input').press('Enter');
+    await expect(quantity).toHaveText('0,12345678');
+    await expect(bitcoin).toHaveAttribute('data-state', 'modified');
+    near(await moneyIn(cell(bitcoin, 'value')), 0.12345678 * await moneyIn(cell(bitcoin, 'price')));
+    near(await totalMoneyIn(page, 'value'), totalBefore - oldValue + await moneyIn(cell(bitcoin, 'value')));
+    await expect(holdings(page)).toHaveCount(14);
 });
 
 test('Replacing an instrument reevaluates filters and hidden positions receive live quotes', async ({ page }) => {

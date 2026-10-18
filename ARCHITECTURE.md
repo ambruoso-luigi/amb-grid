@@ -227,8 +227,10 @@ visibility listener, and grid in `ngOnDestroy()`. AMB Grid owns the table DOM an
 its internal CRUD tracking; the demo exposes only Instrument and Quantity edits,
 without full CRUD controls. The application filters occupied lookup instruments
 and checks uniqueness again on selection. Simulated quotes remain outside CRUD
-rows, while custom bottom calculations read current quotes for value, P/L and
-overall return. A collapsible guide describes this integration in the page.
+rows. The upper `topCalc` row shows position count and reads current quotes for
+value, P/L and overall return across the entire portfolio, including positions
+hidden by the display filters. A collapsible guide describes this integration
+in the page.
 
 ### Resource lifecycle
 

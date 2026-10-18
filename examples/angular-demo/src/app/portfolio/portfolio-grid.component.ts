@@ -463,16 +463,24 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         {
           title: 'Quantity', field: 'quantity', minWidth: 112, widthGrow: 0.9, hozAlign: 'right',
           editor: (cell: EditedCell, onRendered: (callback: () => void) => void, success: (value: number) => void, cancel: () => void) => {
-            const decimalEditor = AMB.editors.decimal({ decimalDigits: 8, integerDigits: 10, allowEmpty: false, min: Number.MIN_VALUE });
-            return decimalEditor(cell, onRendered, (value: unknown) => {
-              const type = cell.getRow().getData().type;
+            const isCrypto = cell.getRow().getData().type === 'Crypto';
+            const quantityEditor = isCrypto
+              ? AMB.editors.decimal({ decimalDigits: 8, integerDigits: 10, allowEmpty: false, min: Number.MIN_VALUE })
+              : AMB.editors.integer({ maxLength: 10, allowEmpty: false, min: 1, max: 9999999999 });
+            const input = quantityEditor(cell, onRendered, (value: unknown) => {
               if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0 ||
-                  (type !== 'Crypto' && !Number.isInteger(value))) {
+                  (!isCrypto && (!Number.isInteger(value) || !/^\d{1,10}$/.test(input.value)))) {
                 cancel();
                 return;
               }
               success(value);
-            }, cancel);
+            }, cancel) as HTMLInputElement;
+            if (!isCrypto) {
+              input.addEventListener('input', (event) => {
+                if (!/^\d{0,10}$/.test(input.value)) event.stopImmediatePropagation();
+              }, { capture: true });
+            }
+            return input;
           },
           required: true,
           validation: { number: true },
