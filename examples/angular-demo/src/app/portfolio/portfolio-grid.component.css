@@ -207,7 +207,8 @@
 }
 
 .portfolio-grid__table {
-  min-width: 940px;
+  width: 100%;
+  min-width: 0;
 }
 
 .portfolio-grid .tabulator {
