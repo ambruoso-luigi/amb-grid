@@ -464,13 +464,18 @@
   white-space: nowrap;
 }
 
-.portfolio-grid__instrument-meta { display: flex; align-items: center; min-width: 0; gap: 6px; white-space: nowrap; }
+.portfolio-grid__instrument-meta { display: flex; align-items: center; min-width: 0; gap: 5px; overflow: hidden; white-space: nowrap; }
 
 .portfolio-grid__instrument small {
-  color: #65738a;
+  flex: none;
+  color: #355571;
   font-size: 12px;
+  font-weight: 700;
   letter-spacing: .03em;
 }
+
+.portfolio-grid__instrument-separator { flex: none; color: #91a5b8; font-size: 11px; }
+.portfolio-grid__instrument-subtitle { min-width: 0; overflow: hidden; color: #65738a; font-size: 11px; text-overflow: ellipsis; }
 
 .portfolio-grid__type {
   display: inline-flex;

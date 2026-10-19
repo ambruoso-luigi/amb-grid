@@ -146,6 +146,16 @@ function instrumentCell(row: HoldingsRow): HTMLElement {
   const ticker = document.createElement('small');
   ticker.textContent = row.ticker;
   meta.append(ticker);
+  const subtitle = instrumentsById.get(row.instrumentId)?.subtitle;
+  if (subtitle) {
+    const separator = document.createElement('span');
+    separator.className = 'portfolio-grid__instrument-separator';
+    separator.textContent = '·';
+    const detail = document.createElement('span');
+    detail.className = 'portfolio-grid__instrument-subtitle';
+    detail.textContent = subtitle;
+    meta.append(separator, detail);
+  }
   text.append(name, meta);
   wrapper.append(icon, text);
   return wrapper;

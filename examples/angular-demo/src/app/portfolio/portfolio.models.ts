@@ -5,6 +5,7 @@ export interface Instrument {
   readonly ticker: string;
   readonly name: string;
   readonly category: AssetCategory;
+  readonly subtitle?: string;
   /** Simulated EUR price; for bonds, EUR per EUR 100 nominal lot. */
   readonly initialPrice: number;
   readonly isin?: string;
