@@ -1,4 +1,6 @@
 .portfolio-grid {
+  --amb-color-focus: #2563a6;
+  --amb-focus-ring: 0 0 0 3px rgb(37 99 166 / 18%);
   --amb-row-clean-bg: #fff;
   --amb-row-clean-alt-bg: #f7fafc;
   display: block;
@@ -110,7 +112,8 @@
   font-weight: 700;
 }
 
-.portfolio-grid__guide summary:focus-visible { outline: 3px solid #a73555; outline-offset: 2px; }
+.portfolio-grid__guide summary:hover { color: #2563a6; }
+.portfolio-grid__guide summary:focus-visible { outline: 3px solid #2563a6; outline-offset: 2px; }
 .portfolio-grid__guide summary small { color: #8e2e4a; font-size: 12px; font-weight: 600; }
 .portfolio-grid__guide-content { padding: 0 16px 14px; line-height: 1.5; }
 .portfolio-grid__guide-content p { margin: 10px 0; }
@@ -149,6 +152,7 @@
   color: #3d648a;
 }
 
+.portfolio-grid__search:hover { border-color: #9fbdd6; }
 .portfolio-grid__search:focus-within {
   border-color: #2563a6;
   outline: 2px solid rgb(37 99 166 / 18%);
@@ -159,6 +163,7 @@
 .portfolio-grid__search input::-webkit-search-cancel-button { display: none; }
 .portfolio-grid__search input::placeholder { color: #65738a; }
 .portfolio-grid__clear-search { border: 0; background: transparent; color: #65738a; font-size: 20px; line-height: 1; cursor: pointer; }
+.portfolio-grid__clear-search:hover { color: #102950; }
 .portfolio-grid__chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .portfolio-grid__chip { min-height: 38px; padding: 7px 11px; border: 1px solid #c8d7e5; border-radius: 999px; background: #fff; color: #52627a; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
 .portfolio-grid__chip:not(.is-active):hover { border-color: #9fbdd6; background: #e8f2fa; color: #102950; }
@@ -166,19 +171,28 @@
 .portfolio-grid__chip:focus-visible, .portfolio-grid__clear-search:focus-visible, .portfolio-grid__reset:focus-visible, .portfolio-grid__empty button:focus-visible { outline: 2px solid #2563a6; outline-offset: 2px; }
 .portfolio-grid__count { color: #52627a; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .portfolio-grid__reset { border: 0; background: transparent; color: #2563a6; font: inherit; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+.portfolio-grid__reset:hover, .portfolio-grid__empty button:hover { color: #102950; }
 .portfolio-grid__empty button { border: 0; background: transparent; color: #2563a6; font: inherit; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; }
 .portfolio-grid__spacer { flex: 1 1 0; min-width: 0; }
 .portfolio-grid__empty { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; padding: 13px 16px; border: 1px solid #e7d4db; border-radius: 9px; background: #fdf8fa; color: #102950; font-size: 13px; }
 
 @media (max-width: 1100px) {
   .portfolio-grid__search { flex: 1 1 300px; }
+  .portfolio-grid__chips { flex: 1 1 auto; }
+  .portfolio-grid__spacer { display: none; }
+  .portfolio-grid__market { margin-left: auto; }
 }
 
 @media (max-width: 640px) {
   .portfolio-grid__search { flex: 1 1 100%; min-width: 0; }
   .portfolio-grid__chips { flex: 1 1 100%; }
-  .portfolio-grid__spacer { display: none; }
-  .portfolio-grid__market { margin-left: auto; }
+  .portfolio-grid__chip { min-height: 40px; }
+  .portfolio-grid .amb-lookup-editor__button { flex-basis: 40px; min-height: 40px; }
+}
+
+.amb-lookup-dialog {
+  --amb-color-focus: #2563a6;
+  --amb-focus-ring: 0 0 0 3px rgb(37 99 166 / 18%);
 }
 
 .portfolio-grid__scroll {
@@ -488,7 +502,7 @@
 }
 
 .portfolio-grid__instrument-separator { flex: none; color: #91a5b8; font-size: 11px; }
-.portfolio-grid__instrument-subtitle { min-width: 0; overflow: hidden; color: #65738a; font-size: 11px; text-overflow: ellipsis; }
+.portfolio-grid__instrument-subtitle { min-width: 0; overflow: hidden; color: #52627a; font-size: 12px; text-overflow: ellipsis; }
 
 .portfolio-grid__type {
   display: inline-flex;

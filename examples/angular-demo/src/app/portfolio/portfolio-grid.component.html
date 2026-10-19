@@ -12,12 +12,12 @@
       <small>Angular · Editing selettivo · Quotazioni simulate · Calcoli</small>
     </summary>
     <div class="portfolio-grid__guide-content">
-      <p><strong>Integrazione Angular.</strong> <code>ngAfterViewInit()</code> crea <code>AMB.table()</code> nel contenitore Angular; <code>ngOnDestroy()</code> chiama <code>grid.destroy()</code>. Angular gestisce il componente, AMB Grid il DOM della tabella.</p>
-      <p><strong>Consultazione ed editing selettivo.</strong> Le 14 posizioni sono fisse: solo Instrument e Quantity sono modificabili. Non sono esposti comandi CRUD.</p>
-      <p><strong>Ricerca e categorie.</strong> La ricerca filtra le posizioni visualizzate per nome, ticker o categoria; i chip selezionano una categoria. I totali superiori restano riferiti all'intero portafoglio.</p>
-      <p><strong>Quotazioni simulate.</strong> Price, Change %, Value, P/L e Timeline seguono il mercato simulato; Pause e Resume fermano e riprendono gli aggiornamenti. Non sono dati finanziari reali.</p>
-      <p><strong>Personalizzazione grafica.</strong> Icone con fallback, ticker, badge, formatter, colori e mini-grafici rendono leggibili categorie e andamento.</p>
-      <p><strong>Totali e rendimento.</strong> La riga superiore calcola valore, costo complessivo, P/L e rendimento del portafoglio dalle quotazioni correnti.</p>
+      <p><strong>Integrazione Angular.</strong> Angular gestisce il componente e il suo ciclo di vita; AMB Grid gestisce la tabella.</p>
+      <p><strong>Editing selettivo.</strong> Solo Instrument e Quantity sono modificabili. Instrument offre autocomplete per nome e ricerca completa con F2.</p>
+      <p><strong>Ricerca e filtri.</strong> Cerca per nome, ticker o categoria e usa i chip rapidi. Il contatore compare solo quando un filtro è attivo.</p>
+      <p><strong>Feed simulato.</strong> Le quotazioni provengono da un simulatore locale in memoria. L'interfaccia potrebbe collegarsi a un feed WebSocket, ma questa demo non ha una connessione WebSocket reale.</p>
+      <p><strong>Personalizzazione grafica.</strong> Loghi locali, ticker, informazioni secondarie permanenti, badge, Timeline e formattazione finanziaria aiutano a leggere le posizioni.</p>
+      <p><strong>Totali dinamici.</strong> La riga superiore mostra il valore, il P/L e il rendimento dell'intero portafoglio, anche quando i filtri nascondono alcune posizioni.</p>
     </div>
   </details>
   @if (lookupError()) {
