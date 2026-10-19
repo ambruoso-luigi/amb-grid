@@ -102,9 +102,19 @@ const mergeCssClass = (...classes) => {
  */
 
 /**
+ * @callback AMBMultifieldApplyRecord
+ * @param {{getRow: () => {getData: () => object}, getField: () => string}} cell - Edited master cell.
+ * @param {object} patch - Fields mapped from the selected record.
+ * @param {object} record - Complete selected lookup record.
+ * @param {object|undefined} rowData - Copy of current row data, when available.
+ * @returns {object|undefined|null|false} Patch fields to merge, `undefined` to accept mapped fields, or `null`/`false` to reject without changing the row.
+ */
+
+/**
  * @typedef {{
  *   caseSensitive?: boolean,
  *   showDescription?: boolean,
+ *   applyRecord?: AMBMultifieldApplyRecord,
  *   [key: string]: unknown
  * }} AMBMultifieldEditorOptions
  */
@@ -223,6 +233,11 @@ const mergeCssClass = (...classes) => {
  * "which external record is attached to this row, and which row fields must
  * be updated together?". The mapping is explicit: every `{ from, field }`
  * pair maps `lookupRecord[from]` to `row[field]`.
+ * `masterColumn({ editorOptions: { applyRecord } })` can inspect a selected record
+ * and the current row before any change. Return patch fields to merge with the
+ * mapped fields, `undefined` to accept them unchanged, or `null`/`false` to
+ * reject and leave the editor open. The callback is not called on cancel or for invalid typed values.
+ * AMB Grid applies an accepted patch once through its validation and CRUD cycle.
  *
  * Keyboard behavior is inherited from the lookup editor: when the master cell
  * is closed, `Enter` opens the lookup dialog and `Tab`/`Shift+Tab` navigate

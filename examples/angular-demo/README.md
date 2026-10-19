@@ -28,6 +28,10 @@ catalog is searched by ticker, name, category and optional ISIN through
 
 Instrument completes name prefixes inline; Tab accepts the suggested name.
 F2 opens the Lookup Dialog for the full search, including ticker and ISIN.
+The Instrument column uses `multifieldLookup().masterColumn()` directly. Its
+public `editorOptions.applyRecord` callback checks the selected record against
+the current holdings and returns the complete portfolio patch, or `null` to
+reject a duplicate. AMB Grid applies an accepted patch through its CRUD cycle.
 
 Before each lookup load, the demo excludes instruments held by other positions.
 It excludes the edited row from the occupied set, disables lookup caching and

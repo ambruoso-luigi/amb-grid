@@ -415,6 +415,89 @@ describe('AMB.multifieldLookup', () => {
         });
     });
 
+    test('public applyRecord extends a selected record before one row update', async () => {
+        const originalDocument = globalThis.document;
+        globalThis.document = { createElement };
+
+        try {
+            const decide = vi.fn((_cell, _patch, _record, rowData) => ({
+                quantity: rowData.quantity + 1
+            }));
+            const harness = createMultifieldLookupEditorHarness({
+                columnOptions: { editorOptions: { applyRecord: decide } },
+                initialRowData: { quantity: 2 }
+            });
+
+            harness.input.value = 'Milano';
+            await harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(decide).toHaveBeenCalledOnce();
+            expect(decide).toHaveBeenCalledWith(
+                harness.cell,
+                expect.objectContaining({ municipality: 'Milano', province: 'MI' }),
+                milanoRecord,
+                expect.objectContaining({ municipality: '', quantity: 2 })
+            );
+            expect(harness.applyRecord).toHaveBeenCalledOnce();
+            expect(harness.applyRecord).toHaveBeenCalledWith(
+                harness.cell,
+                expect.objectContaining({ municipality: 'Milano', province: 'MI', quantity: 3 }),
+                milanoRecord
+            );
+            expect(harness.rowData.quantity).toBe(3);
+            expect(harness.success).toHaveBeenCalledWith('Milano');
+        } finally {
+            globalThis.document = originalDocument;
+        }
+    });
+
+    test('public applyRecord can reject without a partial row update', async () => {
+        const originalDocument = globalThis.document;
+        globalThis.document = { createElement };
+
+        try {
+            const decide = vi.fn(() => null);
+            const harness = createMultifieldLookupEditorHarness({
+                columnOptions: { editorOptions: { applyRecord: decide } }
+            });
+            const before = { ...harness.rowData };
+
+            harness.input.value = 'Milano';
+            await harness.input.dispatch('keydown', { key: 'Enter' });
+
+            expect(decide).toHaveBeenCalledOnce();
+            expect(harness.applyRecord).not.toHaveBeenCalled();
+            expect(harness.rowData).toEqual(before);
+            expect(harness.success).not.toHaveBeenCalled();
+            expect(harness.cancel).not.toHaveBeenCalled();
+        } finally {
+            globalThis.document = originalDocument;
+        }
+    });
+
+    test('cancelling a Multifield Lookup skips the selection callback and row update', async () => {
+        const originalDocument = globalThis.document;
+        globalThis.document = { createElement };
+
+        try {
+            const decide = vi.fn(() => undefined);
+            const harness = createMultifieldLookupEditorHarness({
+                columnOptions: { editorOptions: { applyRecord: decide } }
+            });
+            const before = { ...harness.rowData };
+
+            harness.input.value = 'Milano';
+            await harness.input.dispatch('keydown', { key: 'Escape' });
+
+            expect(decide).not.toHaveBeenCalled();
+            expect(harness.applyRecord).not.toHaveBeenCalled();
+            expect(harness.rowData).toEqual(before);
+            expect(harness.cancel).toHaveBeenCalledOnce();
+        } finally {
+            globalThis.document = originalDocument;
+        }
+    });
+
     test('case-insensitive Multifield Lookup autocomplete applies one canonical master and dependent patch', async () => {
         const originalDocument = globalThis.document;
 

@@ -356,6 +356,34 @@ describe('lookup editor blur commits', () => {
         expect(harness.success).toHaveBeenCalledWith('REPAIR');
     });
 
+    test('public applyRecord runs before the CRUD patch and preserves error handlers', async () => {
+        const decide = vi.fn((_cell, _patch, _record, rowData) => ({
+            previousStatus: rowData.status
+        }));
+        const harness = createHarness({
+            options: {
+                mapToRow: { status: 'id', statusDescription: 'description' },
+                applyRecord: decide
+            }
+        });
+
+        harness.input.value = 'repair';
+        await harness.input.dispatch('blur');
+
+        expect(decide).toHaveBeenCalledWith(
+            harness.cell,
+            { status: 'REPAIR', statusDescription: 'Under repair' },
+            records[1],
+            { id: 1, status: 'ACTIVE' }
+        );
+        expect(harness.applyRecord).toHaveBeenCalledOnce();
+        expect(harness.rowData).toEqual(expect.objectContaining({
+            status: 'REPAIR', statusDescription: 'Under repair', previousStatus: 'ACTIVE'
+        }));
+        expect(harness.clearInvalid).toHaveBeenCalledWith(harness.cell);
+        expect(harness.success).toHaveBeenCalledWith('REPAIR');
+    });
+
     test('an invalid mapped lookup value clears stale dependent fields', async () => {
         const harness = createHarness({
             options: {

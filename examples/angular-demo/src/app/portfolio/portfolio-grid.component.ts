@@ -32,7 +32,6 @@ interface EditedCell {
   getRow(): { getData(): HoldingsRow };
 }
 
-type InstrumentSelection = NonNullable<ReturnType<typeof instrumentSelectionPatch>>;
 type LiveField = 'timeline' | 'price' | 'changePercent' | 'value' | 'profitLoss';
 type CategoryFilter = AssetCategory | null;
 const LIVE_FIELDS: readonly LiveField[] = ['timeline', 'price', 'changePercent', 'value', 'profitLoss'];
@@ -185,7 +184,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   private timer: ReturnType<typeof setInterval> | null = null;
   private cursor = 0;
   private activeLookupKey: string | null = null;
-  private readonly pendingSelections = new Map<string, InstrumentSelection>();
   private readonly pendingIdentityFormats = new Set<string>();
   private filterInstalled = false;
   private readonly matchesFilters = (data: object): boolean => {
@@ -392,63 +390,37 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         autoComplete: true,
         showDescription: false,
         search: { fields: ['ticker', 'name', 'category', 'isin'] },
-        mapToRow: { instrumentId: 'id', ticker: 'ticker', type: 'category' },
         dialogOptions: { destroyOnClose: true, pagination: { enabled: false } },
-        applyRecord: (cell: EditedCell, _patch: Partial<HoldingsRow>, record: Instrument | null) => {
-          if (!record || !this.grid) return null;
-          const row = cell.getRow().getData();
+        applyRecord: (cell, _patch, record) => {
+          if (!this.grid) return null;
+          const instrument = record as Instrument;
+          const row = cell.getRow().getData() as HoldingsRow;
           const key = positionKey(row);
           const selection = instrumentSelectionPatch(
-            this.grid.getData() as HoldingsRow[], key, record, this.market.quoteFor(record.id).price,
+            this.grid.getData() as HoldingsRow[], key, instrument, this.market.quoteFor(instrument.id).price,
           );
           if (!selection) {
-            this.lookupError.set(`${record.name} is already in the portfolio. Choose another instrument.`);
+            this.lookupError.set(`${instrument.name} is already in the portfolio. Choose another instrument.`);
             return null;
           }
-          this.pendingSelections.set(key, selection);
           this.lookupError.set('');
-          return cell.getRow();
+          queueMicrotask(() => {
+            if (!this.grid) return;
+            const current = (this.grid.getData() as HoldingsRow[]).find((item) => positionKey(item) === key);
+            if (current?.instrumentId !== instrument.id) return;
+            if (this.filterInstalled) {
+              this.pendingIdentityFormats.add(key);
+              this.grid.refreshFilter();
+            }
+            this.updateCounts();
+            this.refreshVisibleRows();
+            this.grid.recalc();
+            this.activeLookupKey = null;
+          });
+          return selection;
         },
       },
-    }) as Record<string, unknown>;
-    type LookupEditor = ((
-      cell: EditedCell, onRendered: (callback: () => void) => void,
-      success: (value: string) => void, cancel: () => void,
-    ) => HTMLElement) & {
-      _ambEditorType?: string;
-      _ambLookupConfig?: object;
-      _ambCapabilities?: { auxiliary?: boolean };
-    };
-    const originalEditor = instrumentColumn['editor'] as LookupEditor;
-    const guardedEditor: LookupEditor = (
-      cell: EditedCell, onRendered: (callback: () => void) => void,
-      success: (value: string) => void, cancel: () => void,
-    ) => originalEditor(cell, onRendered, (value) => {
-      const key = positionKey(cell.getRow().getData());
-      const selection = this.pendingSelections.get(key);
-      if (selection?.instrument === value) {
-        const { instrument: _instrument, ...dependentPatch } = selection;
-        this.grid?.updateRow(key, dependentPatch);
-        success(value);
-        if (this.filterInstalled) this.pendingIdentityFormats.add(key);
-        if (this.filterInstalled) this.grid?.refreshFilter();
-        this.updateCounts();
-        this.refreshVisibleRows();
-        this.grid?.recalc();
-      } else {
-        cancel();
-      }
-      this.pendingSelections.delete(key);
-      this.activeLookupKey = null;
-    }, () => {
-      this.pendingSelections.delete(positionKey(cell.getRow().getData()));
-      this.activeLookupKey = null;
-      cancel();
     });
-    guardedEditor._ambEditorType = originalEditor._ambEditorType;
-    guardedEditor._ambLookupConfig = originalEditor._ambLookupConfig;
-    guardedEditor._ambCapabilities = originalEditor._ambCapabilities;
-    instrumentColumn['editor'] = guardedEditor;
     const initialHoldings = initialRows();
     const allHoldings = () => (this.grid?.getData() as HoldingsRow[] | undefined) ?? initialHoldings;
     const portfolioTotals = () => calculatePortfolioTotals(allHoldings(), (id) => this.market.quoteFor(id));
@@ -534,23 +506,16 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     });
     this.grid.on('cellEdited', (event: unknown) => {
       const cell = event as EditedCell;
-      if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
+      if (cell.getField() === 'quantity') {
         const row = cell.getRow().getData();
-        if (cell.getField() === 'instrument') {
-          this.activeLookupKey = null;
-        }
         this.refreshLiveCells(row);
         this.grid?.recalc();
       }
+      if (cell.getField() === 'instrument') this.activeLookupKey = null;
     });
     this.grid.on('cellEditCancelled', (event: unknown) => {
       const cell = event as EditedCell;
-      if (cell.getField() === 'quantity' || cell.getField() === 'instrument') {
-        if (cell.getField() === 'instrument') {
-          this.pendingSelections.delete(positionKey(cell.getRow().getData()));
-          this.activeLookupKey = null;
-        }
-      }
+      if (cell.getField() === 'instrument') this.activeLookupKey = null;
     });
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     this.startTimer();
@@ -592,7 +557,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopTimer();
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
-    this.pendingSelections.clear();
     this.pendingIdentityFormats.clear();
     this.activeLookupKey = null;
     this.lookupDialog.destroy();

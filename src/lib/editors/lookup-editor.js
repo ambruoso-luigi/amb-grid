@@ -49,6 +49,15 @@ import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, 
  * @returns {void}
  */
 
+/**
+ * @callback LookupApplyRecordHandler
+ * @param {{getRow: () => {getData: () => object}, getField: () => string}} cell - Edited grid cell.
+ * @param {object} patch - Fields mapped from the selected lookup record.
+ * @param {object} record - Complete selected lookup record.
+ * @param {object|undefined} rowData - Copy of the current row data, when available.
+ * @returns {object|undefined|null|false} Additional or replacement fields to merge into the mapped patch; `undefined` accepts it unchanged, while `null` or `false` rejects the selection.
+ */
+
     /**
      * Lookup code editor with a text input and search dialog button.
      *
@@ -87,10 +96,11 @@ import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, 
      * @param {object[]} [options.dialogColumns] - Fallback dialog columns when the lookup does not define columns.
      * @param {string} [options.searchPlaceholder='Search...'] - Placeholder shown in the lookup dialog search input.
      * @param {Object<string, string>} [options.mapToRow] - Mapping from grid row fields to lookup record fields.
+     * @param {LookupApplyRecordHandler} [options.applyRecord] - Inspect a selected record and row before any update. Return a patch to merge with mapped fields, `undefined` to accept them unchanged, or `null`/`false` to reject without changing the row; rejection leaves the editor open. Not called on cancel or for invalid typed values. AMB Grid applies the accepted patch through its normal validation and CRUD cycle.
      * @param {LookupOpenDialogHandler} [options.onOpenDialog] - Handle opening the lookup dialog.
      * @param {LookupInvalidCodeHandler} [options.onInvalidCode] - Handle an invalid typed lookup code.
      * @param {object} [options.dialogOptions] - Options forwarded to `LookupDialog.open`. Editor-calculated title, columns, data, and search fields take precedence.
-     * @returns {Function} Grid editor function compatible with the internal table engine.
+     * @returns {Function} AMB Grid lookup editor function.
      * @alias editors.lookup
      * @example
      * const products = AMB.lookup({
@@ -126,6 +136,7 @@ export function lookup(lookupInstance, options = {}) {
             dialogOptions: {},
             ...options
         };
+        let runtimeApplyRecord = null;
         normalizedOptions.showDescription = normalizedOptions.showDescription !== false;
         const keyField = lookupInstance && lookupInstance.keyField;
         const valueField = lookupInstance && lookupInstance.valueField
@@ -349,12 +360,27 @@ export function lookup(lookupInstance, options = {}) {
                     patch[rowField] = completeRecord[recordField];
                 });
 
+                let acceptedPatch = patch;
                 if (typeof normalizedOptions.applyRecord === 'function') {
-                    return normalizedOptions.applyRecord(cell, patch, completeRecord);
+                    const decision = normalizedOptions.applyRecord(
+                        cell, { ...patch }, completeRecord,
+                        rowData && { ...rowData }
+                    );
+                    if (decision === null || decision === false) return null;
+                    if (decision !== undefined) {
+                        if (typeof decision !== 'object' || Array.isArray(decision)) {
+                            throw new TypeError('Lookup applyRecord must return a patch, undefined, null, or false');
+                        }
+                        acceptedPatch = { ...patch, ...decision };
+                    }
+                }
+
+                if (typeof runtimeApplyRecord === 'function') {
+                    return runtimeApplyRecord(cell, acceptedPatch, completeRecord);
                 }
 
                 if (row && typeof row.update === 'function') {
-                    return row.update(patch);
+                    return row.update(acceptedPatch);
                 }
 
                 return null;
@@ -363,8 +389,8 @@ export function lookup(lookupInstance, options = {}) {
             const applyMappedPatch = patch => {
                 if (!patch || typeof patch !== 'object') return null;
 
-                if (typeof normalizedOptions.applyRecord === 'function') {
-                    return normalizedOptions.applyRecord(cell, patch, null);
+                if (typeof runtimeApplyRecord === 'function') {
+                    return runtimeApplyRecord(cell, patch, null);
                 }
 
                 if (row && typeof row.update === 'function') {
@@ -911,7 +937,7 @@ export function lookup(lookupInstance, options = {}) {
         editor._ambSetLookupErrorHandlers = handlers => {
             normalizedOptions.markInvalid = handlers.markInvalid;
             normalizedOptions.clearInvalid = handlers.clearInvalid;
-            normalizedOptions.applyRecord = handlers.applyRecord;
+            runtimeApplyRecord = handlers.applyRecord;
         };
 
         return editor;
