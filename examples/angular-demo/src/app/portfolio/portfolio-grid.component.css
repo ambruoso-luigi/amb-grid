@@ -374,7 +374,7 @@
   border-right-color: #eef2f6;
 }
 
-.portfolio-grid .tabulator-cell:is([tabulator-field="price"], [tabulator-field="changePercent"], [tabulator-field="quantity"], [tabulator-field="value"], [tabulator-field="profitLoss"]) {
+.portfolio-grid .tabulator-cell:is([tabulator-field="price"], [tabulator-field="quantity"], [tabulator-field="value"], [tabulator-field="profitLoss"]) {
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   text-align: right;
@@ -383,11 +383,6 @@
 .portfolio-grid .tabulator-tableholder .tabulator-cell[tabulator-field="price"] {
   color: #203e5c;
   font-weight: 500;
-}
-
-.portfolio-grid .tabulator-tableholder .tabulator-cell[tabulator-field="changePercent"] {
-  font-size: 13px;
-  font-weight: 650;
 }
 
 .portfolio-grid .tabulator-tableholder .tabulator-cell[tabulator-field="quantity"] {
@@ -403,9 +398,58 @@
 }
 
 .portfolio-grid .tabulator-tableholder .tabulator-cell[tabulator-field="profitLoss"] {
+  color: #102950;
   font-size: 14px;
   font-weight: 700;
 }
+
+.portfolio-grid__profit-loss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: max-content;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.portfolio-grid__profit-amount {
+  flex: none;
+  color: #102950;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.portfolio-grid__daily-change {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.portfolio-grid__daily-change.is-positive { color: #167149; border-color: #c6e8d7; background: #ecf8f1; }
+.portfolio-grid__daily-change.is-negative { color: #b83b4b; border-color: #f0cdd3; background: #fdf1f3; }
+.portfolio-grid__daily-change.is-neutral { color: #52627a; border-color: #dce5ed; background: #f3f6f9; }
+
+.portfolio-grid__daily-change svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.portfolio-grid__daily-change.is-neutral svg { display: none; }
 
 .portfolio-grid__timeline {
   display: block;
@@ -514,10 +558,6 @@
 .portfolio-grid__type.is-etf { background: #eeeafb; color: #514489; }
 .portfolio-grid__type.is-bond { background: #e7f1ef; color: #28605b; }
 .portfolio-grid__type.is-crypto { background: #fde9ef; color: #8e2e4a; }
-
-.portfolio-grid__movement.is-positive { color: #167149; }
-.portfolio-grid__movement.is-negative { color: #b83b4b; }
-.portfolio-grid__movement.is-neutral { color: #52627a; }
 
 .portfolio-grid .portfolio-grid__editable {
   color: #102950;

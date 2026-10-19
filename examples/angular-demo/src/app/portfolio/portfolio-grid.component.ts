@@ -32,9 +32,9 @@ interface EditedCell {
   getRow(): { getData(): HoldingsRow };
 }
 
-type LiveField = 'timeline' | 'price' | 'changePercent' | 'value' | 'profitLoss';
+type LiveField = 'timeline' | 'price' | 'value' | 'profitLoss';
 type CategoryFilter = AssetCategory | null;
-const LIVE_FIELDS: readonly LiveField[] = ['timeline', 'price', 'changePercent', 'value', 'profitLoss'];
+const LIVE_FIELDS: readonly LiveField[] = ['timeline', 'price', 'value', 'profitLoss'];
 const CATEGORY_FILTERS: readonly { label: string; value: CategoryFilter }[] = [
   { label: 'Tutti', value: null },
   { label: 'Azioni', value: 'Stock' },
@@ -81,6 +81,38 @@ function formatPercent(value: number): string {
 function movementClass(value: number | null): string {
   const displayed = value === null ? 0 : displayedAtTwoDecimals(value);
   return displayed === 0 ? 'is-neutral' : displayed > 0 ? 'is-positive' : 'is-negative';
+}
+
+function paintProfitLoss(content: HTMLElement, derived: ReturnType<typeof calculatePosition>): void {
+  if (!content.classList.contains('portfolio-grid__profit-loss')) {
+    content.className = 'portfolio-grid__profit-loss';
+    const amount = document.createElement('span');
+    amount.className = 'portfolio-grid__profit-amount';
+    const pill = document.createElement('span');
+    pill.className = 'portfolio-grid__daily-change';
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('viewBox', '0 0 16 16');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.append(document.createElementNS('http://www.w3.org/2000/svg', 'path'));
+    const percentage = document.createElement('span');
+    percentage.className = 'portfolio-grid__daily-change-value';
+    pill.append(icon, percentage);
+    content.replaceChildren(amount, pill);
+  }
+
+  const amount = content.querySelector<HTMLElement>('.portfolio-grid__profit-amount')!;
+  const pill = content.querySelector<HTMLElement>('.portfolio-grid__daily-change')!;
+  const icon = pill.querySelector<SVGPathElement>('path')!;
+  const percentage = pill.querySelector<HTMLElement>('.portfolio-grid__daily-change-value')!;
+  amount.textContent = `${displayedAtTwoDecimals(derived.profitLoss) > 0 ? '+' : ''}${formatEuro(derived.profitLoss)}`;
+  const change = derived.changePercent;
+  const direction = movementClass(change);
+  pill.className = `portfolio-grid__daily-change ${direction}`;
+  percentage.textContent = change === null ? '—' : formatPercent(change);
+  pill.setAttribute('aria-label', `Variazione giornaliera ${change === null ? 'non disponibile' : formatPercent(change)}`);
+  icon.setAttribute('d', direction === 'is-positive'
+    ? 'M2 11 6 7 9 9 14 4 M10 4h4v4'
+    : direction === 'is-negative' ? 'M2 5 6 9 9 7 14 12 M10 12h4V8' : '');
 }
 
 function profitSummary(cell: { getValue(): ReturnType<typeof calculatePortfolioTotals> }): HTMLElement {
@@ -285,11 +317,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       content.textContent = formatEuro(derived.value);
       return;
     }
-    const value = field === 'changePercent' ? derived.changePercent : derived.profitLoss;
-    content.className = `portfolio-grid__movement ${movementClass(value)}`;
-    content.textContent = field === 'changePercent'
-      ? value === null ? '—' : formatPercent(value)
-      : formatEuro(derived.profitLoss);
+    paintProfitLoss(content, derived);
   }
 
   private paintTimeline(content: HTMLElement, row: HoldingsRow): void {
@@ -453,8 +481,6 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         }) as Record<string, unknown>,
         { title: 'Price', field: 'price', minWidth: 118, widthGrow: 1, hozAlign: 'right', headerSort: false,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'price') },
-        { title: 'Change %', field: 'changePercent', minWidth: 112, widthGrow: 0.9, hozAlign: 'right', headerSort: false,
-          formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'changePercent') },
         {
           title: 'Quantity', field: 'quantity', minWidth: 112, widthGrow: 0.9, hozAlign: 'right',
           editor: (cell: EditedCell, onRendered: (callback: () => void) => void, success: (value: number) => void, cancel: () => void) => {
@@ -493,7 +519,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
             formatValue: (value: number) => formatEuro(value),
           }),
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'value') },
-        { title: 'P/L', field: 'profitLoss', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
+        { title: 'P/L · Δ giorno', field: 'profitLoss', minWidth: 210, widthGrow: 1.6, hozAlign: 'right', headerSort: false,
           topCalc: () => portfolioTotals(),
           topCalcFormatter: profitSummary,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'profitLoss') },
