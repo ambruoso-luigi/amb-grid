@@ -524,6 +524,8 @@ export function lookup(lookupInstance, options = {}) {
 
                 try {
                     const item = await findExactItem(normalizedInitialValue);
+                    if (closed) return;
+
                     const metadataValue = item
                         ? getCanonicalItemValue(item)
                         : normalizedInitialValue;
@@ -534,6 +536,8 @@ export function lookup(lookupInstance, options = {}) {
                     });
                     setCellLookupDescription(description);
                 } catch (error) {
+                    if (closed) return;
+
                     console.error('Lookup metadata initialization failed', error);
                     setLookupMetadata(rowData, field, normalizedInitialValue, '', {
                         setInitial: true
@@ -543,6 +547,8 @@ export function lookup(lookupInstance, options = {}) {
             };
 
             const commit = async () => {
+                if (closed) return;
+
                 const value = getValue();
 
                 input.value = value;
@@ -558,6 +564,7 @@ export function lookup(lookupInstance, options = {}) {
 
                     try {
                         item = await findExactItem(value);
+                        if (closed) return;
 
                         if (item) {
                             const canonicalValue = getCanonicalItemValue(item);
@@ -580,6 +587,8 @@ export function lookup(lookupInstance, options = {}) {
                             setCellLookupDescription('');
                         }
                     } catch (error) {
+                        if (closed) return;
+
                         console.error('Lookup validation failed', error);
                     }
 
@@ -610,6 +619,7 @@ export function lookup(lookupInstance, options = {}) {
 
                 try {
                     const item = await findExactItem(value);
+                    if (closed) return;
 
                     if (item) {
                         const canonicalValue = getCanonicalItemValue(item);
@@ -621,6 +631,8 @@ export function lookup(lookupInstance, options = {}) {
                         return;
                     }
                 } catch (error) {
+                    if (closed) return;
+
                     console.error('Lookup validation failed', error);
                     closeWithCancel();
                     return;
@@ -800,6 +812,7 @@ export function lookup(lookupInstance, options = {}) {
                         searchFields,
                         searchPlaceholder: normalizedOptions.searchPlaceholder || 'Search...'
                     });
+                    if (closed) return;
 
                     if (!selected) return;
 
@@ -885,7 +898,7 @@ export function lookup(lookupInstance, options = {}) {
                 });
             });
             input.addEventListener('blur', () => {
-                if (dialogOpen || tabCommitInProgress) return;
+                if (closed || dialogOpen || tabCommitInProgress) return;
 
                 if (normalizedOptions.validateOnBlur) {
                     return commit();

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { lookup as createLookupEditor } from '../src/lib/editors/lookup-editor.js';
-import { getLookupMetadata } from '../src/lib/lookup-metadata.js';
+import { getLookupMetadata, setLookupMetadata } from '../src/lib/lookup-metadata.js';
 import { invokeCellAuxiliaryAction } from '../src/lib/table/keyboard-auxiliary.js';
 
 const records = [
@@ -184,6 +184,14 @@ const flushDeferred = () => new Promise(resolve => {
     globalThis.setTimeout(resolve, 0);
 });
 
+const createDeferred = () => {
+    let resolve;
+    const promise = new Promise(complete => {
+        resolve = complete;
+    });
+    return { promise, resolve };
+};
+
 const openLookupDialog = async cell => {
     expect(invokeCellAuxiliaryAction(cell, {})).toBe(true);
     await Promise.resolve();
@@ -224,6 +232,62 @@ describe('lookup editor blur commits', () => {
     afterEach(() => {
         globalThis.document = originalDocument;
         vi.restoreAllMocks();
+    });
+
+    test('Escape cancels a pending asynchronous blur commit without applying its record', async () => {
+        const deferred = createDeferred();
+        const load = vi.fn(({ query }) => query === 'REPAIR'
+            ? deferred.promise
+            : records.filter(record => record.id.includes(query)));
+        const harness = createHarness({
+            load,
+            options: { mapToRow: { status: 'id', statusDescription: 'description' } }
+        });
+        harness.rowData.statusDescription = 'Active';
+        setLookupMetadata(harness.rowData, 'status', 'ACTIVE', 'Active', { setInitial: true });
+        const originalMetadata = structuredClone(getLookupMetadata(harness.rowData, 'status'));
+
+        harness.input.value = 'repair';
+        const pendingBlur = harness.input.dispatch('blur');
+        expect(load).toHaveBeenCalledWith(expect.objectContaining({ query: 'REPAIR' }));
+        await harness.input.dispatch('keydown', { key: 'Escape' });
+        deferred.resolve([records[1]]);
+        await pendingBlur;
+
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.applyRecord).not.toHaveBeenCalled();
+        expect(harness.rowData.status).toBe('ACTIVE');
+        expect(harness.rowData.statusDescription).toBe('Active');
+        expect(getLookupMetadata(harness.rowData, 'status')).toEqual(originalMetadata);
+    });
+
+    test('Escape before blur prevents a later asynchronous commit', async () => {
+        const deferred = createDeferred();
+        const load = vi.fn(({ query }) => query === 'REPAIR'
+            ? deferred.promise
+            : records.filter(record => record.id.includes(query)));
+        const harness = createHarness({
+            load,
+            options: { mapToRow: { status: 'id', statusDescription: 'description' } }
+        });
+        harness.rowData.statusDescription = 'Active';
+        setLookupMetadata(harness.rowData, 'status', 'ACTIVE', 'Active', { setInitial: true });
+        const originalMetadata = structuredClone(getLookupMetadata(harness.rowData, 'status'));
+
+        harness.input.value = 'repair';
+        await harness.input.dispatch('keydown', { key: 'Escape' });
+        const laterBlur = harness.input.dispatch('blur');
+        deferred.resolve([records[1]]);
+        await laterBlur;
+
+        expect(load).not.toHaveBeenCalledWith(expect.objectContaining({ query: 'REPAIR' }));
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.applyRecord).not.toHaveBeenCalled();
+        expect(harness.rowData.status).toBe('ACTIVE');
+        expect(harness.rowData.statusDescription).toBe('Active');
+        expect(getLookupMetadata(harness.rowData, 'status')).toEqual(originalMetadata);
     });
 
     test('cancels an unchanged valid value without marking it invalid', async () => {
