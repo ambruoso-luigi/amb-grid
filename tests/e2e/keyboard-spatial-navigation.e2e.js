@@ -96,6 +96,12 @@ test.describe('keyboard spatial navigation', () => {
         await expect.poll(() => currentPage(page)).toBeGreaterThan(await penultimate);
         await expectNavigationFocus(firstVisibleItemCode(page));
         await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+        // The destination can receive focus before the page transition releases its guard.
+        // Activation verifies that focus across two animation frames.
+        await page.evaluate(() => new Promise(resolve => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+        }));
+        await expectNavigationFocus(firstVisibleItemCode(page));
 
         await page.keyboard.press('ArrowUp');
         await expect.poll(() => currentPage(page)).toBe(penultimate);
