@@ -196,14 +196,10 @@
 }
 
 .portfolio-grid__scroll {
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-}
-
-.portfolio-grid__scroll:focus-visible {
-  outline: 3px solid #2563a6;
-  outline-offset: 3px;
+  overflow-x: clip;
 }
 
 .portfolio-grid__table {
@@ -217,6 +213,11 @@
   background: #fff;
   color: #102950;
   font-size: 13px;
+}
+
+.portfolio-grid .tabulator .tabulator-tableholder:focus-visible {
+  outline: 3px solid #2563a6;
+  outline-offset: -3px;
 }
 
 .portfolio-grid .tabulator-header {
