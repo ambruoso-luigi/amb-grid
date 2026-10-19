@@ -21,6 +21,11 @@ const italianNumber = text => Number(text.replace(/[^\d.,+-]/g, '').replaceAll('
 const money = text => italianNumber(text);
 const percent = text => italianNumber(text.replace('%', ''));
 const moneyIn = async locator => money(await locator.innerText());
+const profitAmount = row => cell(row, 'profitLoss').locator('.portfolio-grid__profit-amount');
+const dailyChangePill = row => cell(row, 'profitLoss').locator('.portfolio-grid__daily-change');
+const dailyChangeValue = row => dailyChangePill(row).locator('.portfolio-grid__daily-change-value');
+const profitMoneyIn = row => moneyIn(profitAmount(row));
+const dailyPercentIn = async row => percent(await dailyChangeValue(row).innerText());
 const totalMoneyIn = (page, field) => moneyIn(totalCell(page, field).locator('.amb-calc-value'));
 const totalReturnIn = async page => percent(await totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return').innerText());
 const near = (actual, expected, tolerance = 0.05) => expect(Math.abs(actual - expected)).toBeLessThan(tolerance);
@@ -70,7 +75,7 @@ const expectNvidiaIdentity = async (page, { zeroProfit = true } = {}) => {
     await expect(cell(nvidia, 'type')).toHaveText('Stock');
     const price = await moneyIn(cell(nvidia, 'price'));
     near(await moneyIn(cell(nvidia, 'value')), 16 * price, 0.1);
-    if (zeroProfit) near(await moneyIn(cell(nvidia, 'profitLoss')), 0, 0.02);
+    if (zeroProfit) near(await profitMoneyIn(nvidia), 0, 0.02);
     return price;
 };
 
@@ -81,7 +86,7 @@ for (const filtered of [false, true]) {
         const totalBefore = await totalMoneyIn(page, 'value');
         const profitBefore = await totalMoneyIn(page, 'profitLoss');
         const oldValue = await moneyIn(cell(holding(page, 'AAPL'), 'value'));
-        const oldProfit = await moneyIn(cell(holding(page, 'AAPL'), 'profitLoss'));
+        const oldProfit = await profitMoneyIn(holding(page, 'AAPL'));
         if (filtered) {
             await categoryChip(page, 'Azioni').click();
             await searchPositions(page).fill('AAPL');
@@ -177,8 +182,13 @@ test('Financial styling preserves top totals, accessible Quantity and mobile scr
     expect(firstRow.y).toBeGreaterThanOrEqual(totals.y + totals.height);
     await expect(table(page).locator('.tabulator-calcs-top')).toHaveCSS('background-color', 'rgb(234, 242, 248)');
     const color = locator => locator.evaluate(element => getComputedStyle(element).color);
-    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-positive').first())).toBe('rgb(22, 113, 73)');
-    expect(await color(portfolio(page).locator('.portfolio-grid__movement.is-negative').first())).toBe('rgb(184, 59, 75)');
+    expect(await color(portfolio(page).locator('.portfolio-grid__daily-change.is-positive').first())).toBe('rgb(22, 113, 73)');
+    expect(await color(portfolio(page).locator('.portfolio-grid__daily-change.is-negative').first())).toBe('rgb(184, 59, 75)');
+    await expect(profitAmount(holding(page, 'AAPL'))).toHaveCSS('color', 'rgb(16, 41, 80)');
+    const pillBox = await dailyChangePill(holding(page, 'AAPL')).boundingBox();
+    const amountBox = await profitAmount(holding(page, 'AAPL')).boundingBox();
+    expect(amountBox.x - (pillBox.x + pillBox.width)).toBeGreaterThan(0);
+    expect(amountBox.x - (pillBox.x + pillBox.width)).toBeLessThanOrEqual(10);
     const latestBar = holding(page, 'AAPL').locator('.portfolio-grid__timeline rect.is-latest');
     await expect(latestBar).toHaveCSS('opacity', '1');
     await expect(latestBar).toHaveCSS('animation-name', 'none');
@@ -284,7 +294,7 @@ test('Filtered quantity edit changes global totals and preserves CRUD, tooltips 
     const apple = holding(page, 'AAPL');
     const price = await moneyIn(cell(apple, 'price'));
     const oldValue = await moneyIn(cell(apple, 'value'));
-    const oldProfit = await moneyIn(cell(apple, 'profitLoss'));
+    const oldProfit = await profitMoneyIn(apple);
     const quantity = cell(apple, 'quantity');
     await quantity.dblclick({ delay: 100 });
     await quantity.locator('input').fill('17');
@@ -395,7 +405,7 @@ test('Replacing an instrument reevaluates filters and hidden positions receive l
     await portfolio(page).getByRole('button', { name: 'Azzera filtri' }).click();
     await expect(holdings(page)).toHaveCount(14);
     const currentNvidiaPrice = await expectNvidiaIdentity(page, { zeroProfit: false });
-    near(await moneyIn(cell(holding(page, 'NVDA'), 'profitLoss')),
+    near(await profitMoneyIn(holding(page, 'NVDA')),
         16 * (currentNvidiaPrice - initialNvidiaPrice), 0.1);
     await expect(holding(page, 'NVDA')).toHaveAttribute('data-state', 'modified');
 });
@@ -478,9 +488,13 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
     await expect(totalCell(page, 'profitLoss').locator('.amb-calc-label')).toHaveText('P/L TOTALE');
     await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/[+-]?[\d.]+,\d{2}\s*€/);
     await expect(totalCell(page, 'profitLoss').locator('.portfolio-grid__top-return')).toHaveText(/[+-]?[\d.]+,\d{2}%/);
-    expect((await table(page).locator('.portfolio-grid__movement, .portfolio-grid__top-return').allTextContents())
+    expect((await table(page).locator('.portfolio-grid__daily-change-value, .portfolio-grid__top-return').allTextContents())
         .every(text => !text.includes('-0,00%'))).toBe(true);
-    await expect(totalCell(page, 'changePercent')).toBeEmpty();
+    await expect(table(page).locator('.tabulator-col[tabulator-field="changePercent"]')).toHaveCount(0);
+    await expect(table(page).locator('.tabulator-col[tabulator-field="profitLoss"]')).toHaveCount(1);
+    await expect(table(page).locator('.tabulator-col[tabulator-field="profitLoss"] .tabulator-col-title')).toHaveText('P/L · Δ giorno');
+    await expect(holdings(page).locator('.portfolio-grid__profit-amount')).toHaveCount(14);
+    await expect(holdings(page).locator('.portfolio-grid__daily-change')).toHaveCount(14);
 
     const guide = portfolio(page).locator('.portfolio-grid__guide');
     const summary = guide.locator('summary');
@@ -506,16 +520,17 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
     await instrument.focus();
     await expect(instrument).toBeFocused();
     const focusedNode = await instrument.elementHandle();
-    const before = Object.fromEntries(await Promise.all(
-        ['price', 'changePercent', 'value', 'profitLoss'].map(async field => [field, await cell(apple, field).innerText()]),
-    ));
+    const priceBefore = await cell(apple, 'price').innerText();
+    const valueBefore = await cell(apple, 'value').innerText();
+    const profitBefore = await profitAmount(apple).innerText();
+    const dailyBefore = await dailyPercentIn(apple);
     const timelineBefore = await cell(apple, 'timeline').locator('svg').getAttribute('aria-label');
     const barsBefore = await cell(apple, 'timeline').locator('rect').evaluateAll(bars => bars.map(bar => bar.getAttribute('height')));
     const rowState = await apple.getAttribute('data-state');
-    await expect.poll(() => cell(apple, 'price').innerText()).not.toBe(before.price);
-    for (const field of ['changePercent', 'value', 'profitLoss']) {
-        await expect(cell(apple, field)).not.toHaveText(before[field]);
-    }
+    await expect.poll(() => cell(apple, 'price').innerText()).not.toBe(priceBefore);
+    await expect(cell(apple, 'value')).not.toHaveText(valueBefore);
+    await expect(profitAmount(apple)).not.toHaveText(profitBefore);
+    await expect.poll(() => dailyPercentIn(apple)).not.toBe(dailyBefore);
     await expect(cell(apple, 'timeline').locator('svg')).toHaveAttribute('aria-label', timelineBefore);
     await expect(cell(apple, 'timeline').locator('rect')).toHaveCount(32);
     await expect.poll(async () => {
@@ -565,7 +580,7 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
     const priceText = await cell(apple, 'price').innerText();
     const price = money(priceText);
     const valueBefore = await moneyIn(cell(apple, 'value'));
-    const profitBefore = await moneyIn(cell(apple, 'profitLoss'));
+    const profitBefore = await profitMoneyIn(apple);
     const totalBefore = await totalMoneyIn(page, 'value');
     const totalProfitBefore = await totalMoneyIn(page, 'profitLoss');
     const averageCost = (valueBefore - profitBefore) / 16;
@@ -618,7 +633,7 @@ test('Quantity edits recalculate row and weighted portfolio totals while paused'
 
     near(await moneyIn(cell(apple, 'value')), valueBefore + price);
     near(await totalMoneyIn(page, 'value'), totalBefore + price);
-    near(await moneyIn(cell(apple, 'profitLoss')), profitBefore + price - averageCost);
+    near(await profitMoneyIn(apple), profitBefore + price - averageCost);
     near(await totalMoneyIn(page, 'profitLoss'), totalProfitBefore + price - averageCost);
     const totalValue = await totalMoneyIn(page, 'value');
     const totalProfit = await totalMoneyIn(page, 'profitLoss');
@@ -643,7 +658,7 @@ test('four-digit profit and loss totals keep Italian grouping for both signs', a
     await openPortfolio(page);
     await pauseMarket(page);
     const asml = holding(page, 'ASML');
-    const oldProfit = await moneyIn(cell(asml, 'profitLoss'));
+    const oldProfit = await profitMoneyIn(asml);
     const totalBefore = await totalMoneyIn(page, 'profitLoss');
     expect(oldProfit).toBeLessThan(0);
     await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/^\+\d\.\d{3},\d{2}\s*€$/);
@@ -655,9 +670,9 @@ test('four-digit profit and loss totals keep Italian grouping for both signs', a
     await quantity.locator('input').press('Enter');
     await expect(asml).toHaveAttribute('data-state', 'modified');
     await expect(quantity).toHaveText(String(units));
-    await expect(cell(asml, 'profitLoss')).toHaveText(/^-\d\.\d{3},\d{2}\s*€$/);
+    await expect(profitAmount(asml)).toHaveText(/^-\d\.\d{3},\d{2}\s*€$/);
     await expect(totalCell(page, 'profitLoss').locator('.amb-calc-value')).toHaveText(/^-\d\.\d{3},\d{2}\s*€$/);
-    const newProfit = await moneyIn(cell(asml, 'profitLoss'));
+    const newProfit = await profitMoneyIn(asml);
     near(newProfit, oldProfit / 5 * units);
     near(await totalMoneyIn(page, 'profitLoss'), totalBefore - oldProfit + newProfit);
     const totalValue = await totalMoneyIn(page, 'value');
@@ -672,7 +687,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     await expect(first.locator('.portfolio-grid__instrument small')).toHaveText('AAPL');
     await expectLoadedIcon(page, 'AAPL', 'apple.svg');
     const oldValue = await moneyIn(cell(first, 'value'));
-    const oldProfit = await moneyIn(cell(first, 'profitLoss'));
+    const oldProfit = await profitMoneyIn(first);
     const oldPrice = await moneyIn(cell(first, 'price'));
     const totalBefore = await totalMoneyIn(page, 'value');
     const totalProfitBefore = await totalMoneyIn(page, 'profitLoss');
@@ -714,7 +729,7 @@ test('Multifield Lookup replaces one holding, excludes duplicates and releases i
     expect(await moneyIn(cell(first, 'price'))).not.toBe(oldPrice);
     await expect(cell(first, 'timeline').locator('svg[aria-label*="NVDA"] rect')).toHaveCount(32);
     const newValue = await moneyIn(cell(first, 'value'));
-    const newProfit = await moneyIn(cell(first, 'profitLoss'));
+    const newProfit = await profitMoneyIn(first);
     near(newValue, 16 * await moneyIn(cell(first, 'price')), 0.1);
     near(newProfit, 0, 0.02);
     near(await totalMoneyIn(page, 'value'), totalBefore - oldValue + newValue);

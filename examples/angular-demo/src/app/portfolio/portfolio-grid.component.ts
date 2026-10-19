@@ -97,7 +97,7 @@ function paintProfitLoss(content: HTMLElement, derived: ReturnType<typeof calcul
     const percentage = document.createElement('span');
     percentage.className = 'portfolio-grid__daily-change-value';
     pill.append(icon, percentage);
-    content.replaceChildren(amount, pill);
+    content.replaceChildren(pill, amount);
   }
 
   const amount = content.querySelector<HTMLElement>('.portfolio-grid__profit-amount')!;

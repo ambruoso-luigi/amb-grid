@@ -406,10 +406,9 @@
 .portfolio-grid__profit-loss {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  min-width: max-content;
+  justify-content: flex-start;
+  gap: 7px;
+  max-width: 100%;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
