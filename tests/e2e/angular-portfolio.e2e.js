@@ -137,6 +137,9 @@ test('Instrument autocomplete excludes occupied names, preserves current values 
     await expect(input).toHaveValue('Apple Inc.');
     await input.press('Enter');
     await expect(input).toBeHidden();
+    await expect(instrument.locator('strong')).toHaveText('Apple Inc.');
+    await expect(instrument.locator('small')).toHaveText('AAPL');
+    await expect(holdings(page).first()).toHaveAttribute('data-state', 'clean');
     await instrument.dblclick({ delay: 100 });
     await input.fill('NVI');
     await expect(input).toHaveValue('NVIDIA Corp.');
