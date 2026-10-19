@@ -195,16 +195,10 @@
   --amb-focus-ring: 0 0 0 3px rgb(37 99 166 / 18%);
 }
 
-.portfolio-grid__scroll {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: clip;
-}
-
 .portfolio-grid__table {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
 }
 
 .portfolio-grid .tabulator {

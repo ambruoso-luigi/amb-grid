@@ -192,7 +192,7 @@ test('Financial styling preserves top totals, accessible Quantity and mobile scr
     await expect(quantity).not.toHaveClass(/tabulator-editing/);
     await page.setViewportSize({ width: 390, height: 844 });
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
-    const scroll = portfolio(page).locator('.portfolio-grid__scroll');
+    const scroll = table(page).locator('.tabulator-tableholder');
     expect(await scroll.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
     await scroll.evaluate(element => { element.scrollLeft = element.scrollWidth; });
     await totalCell(page, 'profitLoss').scrollIntoViewIfNeeded();
