@@ -475,16 +475,16 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'timeline'),
         },
         multifield.dependentColumn('type', {
-          minWidth: 92, widthGrow: 0.7,
+          minWidth: 92, widthGrow: 0.7, hozAlign: 'center', headerHozAlign: 'center',
           formatter: (cell: { getValue(): AssetCategory | '' }) => {
             const type = cell.getValue();
             return type ? `<span class="portfolio-grid__type ${categoryClass(type)}">${type}</span>` : '—';
           },
         }) as Record<string, unknown>,
-        { title: 'Price', field: 'price', minWidth: 118, widthGrow: 1, hozAlign: 'right', headerSort: false,
+        { title: 'Price', field: 'price', minWidth: 118, widthGrow: 1, hozAlign: 'right', headerHozAlign: 'right', headerSort: false,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'price') },
         {
-          title: 'Quantity', field: 'quantity', minWidth: 112, widthGrow: 0.9, hozAlign: 'right',
+          title: 'Quantity', field: 'quantity', minWidth: 112, widthGrow: 0.9, hozAlign: 'right', headerHozAlign: 'right',
           editor: (cell: EditedCell, onRendered: (callback: () => void) => void, success: (value: number) => void, cancel: () => void) => {
             const isCrypto = cell.getRow().getData().type === 'Crypto';
             const quantityEditor = isCrypto
@@ -514,14 +514,14 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           formatter: (cell: { getValue(): number }) => quantity.format(cell.getValue()),
           cssClass: 'portfolio-grid__editable',
         },
-        { title: 'Value', field: 'value', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerSort: false,
+        { title: 'Value', field: 'value', minWidth: 132, widthGrow: 1.1, hozAlign: 'right', headerHozAlign: 'right', headerSort: false,
           topCalc: () => portfolioTotals().value,
           topCalcFormatter: AMB.formatters.calculation({
             label: 'VALORE TOTALE', className: 'portfolio-grid__top-summary portfolio-grid__top-summary--value',
             formatValue: (value: number) => formatEuro(value),
           }),
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'value') },
-        { title: 'P/L · Δ giorno', field: 'profitLoss', minWidth: 210, widthGrow: 1.6, hozAlign: 'right', headerSort: false,
+        { title: 'P/L · Δ giorno', field: 'profitLoss', minWidth: 210, widthGrow: 1.6, hozAlign: 'right', headerHozAlign: 'right', headerSort: false,
           topCalc: () => portfolioTotals(),
           topCalcFormatter: profitSummary,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'profitLoss') },
