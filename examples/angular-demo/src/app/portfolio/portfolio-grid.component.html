@@ -12,12 +12,12 @@
       <small>Angular · Editing selettivo · Quotazioni simulate · Calcoli</small>
     </summary>
     <div class="portfolio-grid__guide-content">
-      <p><strong>Integrazione Angular.</strong> Angular gestisce il componente e il suo ciclo di vita; AMB Grid gestisce la tabella.</p>
-      <p><strong>Editing selettivo.</strong> Solo Instrument e Quantity sono modificabili. Instrument offre autocomplete per nome e ricerca completa con F2.</p>
-      <p><strong>Ricerca e filtri.</strong> Cerca per nome, ticker o categoria e usa i chip rapidi. Il contatore compare solo quando un filtro è attivo.</p>
-      <p><strong>Feed simulato.</strong> Le quotazioni provengono da un simulatore locale in memoria. L'interfaccia potrebbe collegarsi a un feed WebSocket, ma questa demo non ha una connessione WebSocket reale.</p>
-      <p><strong>Personalizzazione grafica.</strong> Loghi locali, ticker, informazioni secondarie permanenti, badge, Timeline e formattazione finanziaria aiutano a leggere le posizioni.</p>
-      <p><strong>Totali dinamici.</strong> La riga superiore mostra il valore, il P/L e il rendimento dell'intero portafoglio, anche quando i filtri nascondono alcune posizioni.</p>
+      <p><strong>Integrazione Angular.</strong> Angular gestisce il componente e il suo ciclo di vita; AMB Grid gestisce la tabella e le sue funzionalità.</p>
+      <p><strong>Editing selettivo.</strong> Solo Instrument e Quantity sono modificabili. Instrument offre autocomplete e lookup completo con F2. Le modifiche aggiornano i valori derivati e i totali.</p>
+      <p><strong>Toolbar integrata.</strong> Cerca per nome, ticker o categoria e usa i filtri rapidi per tipologia di strumento. Con ricerca o filtri attivi compaiono contatore e azzeramento; Live/Pause controlla il simulatore.</p>
+      <p><strong>P/L · Δ giorno.</strong> La pill colorata mostra la variazione percentuale rispetto alla chiusura precedente; l'importo in euro indica il P/L rispetto al costo medio della posizione. I due valori possono avere segni differenti. Quotazioni e variazioni provengono da un simulatore locale in memoria.</p>
+      <p><strong>Personalizzazione grafica.</strong> Loghi locali, ticker, informazioni secondarie permanenti, badge e formattazione finanziaria aiutano a leggere le posizioni. La Timeline mostra gli ultimi 32 campioni simulati: ogni barra è verde se supera la chiusura precedente, rossa se è inferiore, neutra se è sostanzialmente invariata.</p>
+      <p><strong>Totali dinamici.</strong> La riga superiore mostra valore totale, P/L monetario complessivo e rendimento percentuale rispetto al costo. I totali considerano tutte le 14 posizioni, anche quando ricerca o filtri ne nascondono alcune.</p>
     </div>
   </details>
   @if (lookupError()) {
