@@ -13,7 +13,7 @@ import { INSTRUMENT_CATALOG } from './instrument-catalog';
 import { categoryClass, instrumentIdentity } from './instrument-identity';
 import { availableInstruments, instrumentSelectionPatch, isDuplicateInstrument, positionKey } from './instrument-lookup';
 import { MarketSimulator, TIMELINE_CAPACITY } from './market-simulator';
-import { calculatePortfolioTotals, calculatePosition } from './portfolio-calculations';
+import { calculateChangePercent, calculatePortfolioTotals, calculatePosition } from './portfolio-calculations';
 import { INITIAL_POSITIONS, INITIAL_QUOTES } from './portfolio-seed';
 import type { AssetCategory, Instrument } from './portfolio.models';
 
@@ -326,7 +326,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     if (!svg) {
       content.textContent = '';
       svg = document.createElementNS(namespace, 'svg');
-      svg.setAttribute('viewBox', `0 0 ${TIMELINE_CAPACITY * 4} 36`);
+      svg.setAttribute('viewBox', '0 0 200 36');
       svg.setAttribute('role', 'img');
       content.append(svg);
     }
@@ -337,17 +337,18 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     const spread = Math.max(high - low, previousClose * 0.001);
     const base = low - spread * 0.15;
     const scale = spread * 1.3;
-    svg.setAttribute('class', `portfolio-grid__timeline ${history.at(-1)! >= previousClose ? 'is-positive' : 'is-negative'}`);
+    svg.setAttribute('class', 'portfolio-grid__timeline');
     svg.setAttribute('aria-label', `${row.ticker}: andamento simulato degli ultimi ${history.length} campioni`);
     while (svg.children.length < history.length) svg.append(document.createElementNS(namespace, 'rect'));
     while (svg.children.length > history.length) svg.lastElementChild?.remove();
     history.forEach((price, index) => {
       const bar = svg.children[index]!;
       const height = Math.max(3, Math.min(34, ((price - base) / scale) * 34));
-      bar.setAttribute('class', index === history.length - 1 ? 'is-latest' : '');
-      bar.setAttribute('x', String(index * 4));
+      const direction = movementClass(calculateChangePercent(price, previousClose));
+      bar.setAttribute('class', index === history.length - 1 ? `${direction} is-latest` : direction);
+      bar.setAttribute('x', String(index * (200 / TIMELINE_CAPACITY)));
       bar.setAttribute('y', String(36 - height));
-      bar.setAttribute('width', '2.7');
+      bar.setAttribute('width', '4.5');
       bar.setAttribute('height', String(height));
       bar.setAttribute('rx', '1');
     });
@@ -469,7 +470,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         multifield.dependentColumn('instrumentId') as Record<string, unknown>,
         multifield.dependentColumn('ticker') as Record<string, unknown>,
         {
-          title: 'Timeline', field: 'timeline', minWidth: 154, widthGrow: 1.2, headerSort: false,
+          title: 'Timeline', field: 'timeline', minWidth: 220, widthGrow: 1.6, headerSort: false,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'timeline'),
         },
         multifield.dependentColumn('type', {

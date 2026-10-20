@@ -452,15 +452,16 @@
 
 .portfolio-grid__timeline {
   display: block;
-  width: 128px;
+  width: 200px;
   height: 36px;
   margin: -2px 0;
   overflow: visible;
   fill: #52627a;
 }
 
-.portfolio-grid__timeline.is-positive rect { fill: #167149; }
-.portfolio-grid__timeline.is-negative rect { fill: #b83b4b; }
+.portfolio-grid__timeline rect.is-positive { fill: #167149; }
+.portfolio-grid__timeline rect.is-negative { fill: #b83b4b; }
+.portfolio-grid__timeline rect.is-neutral { fill: #52627a; }
 .portfolio-grid__timeline rect { opacity: .68; }
 .portfolio-grid__timeline rect.is-latest { opacity: 1; animation: timeline-enter 260ms ease-out; }
 
