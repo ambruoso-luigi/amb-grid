@@ -126,16 +126,24 @@
   font-weight: 700;
 }
 
+.portfolio-grid__surface {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #d8e2eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
 .portfolio-grid__toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-bottom: 16px;
   padding: 10px 14px;
-  border: 1px solid #dce6f0;
-  border-radius: 9px;
-  background: #f4f8fc;
+  border-bottom: 1px solid #e3eaf1;
+  border-radius: 9px 9px 0 0;
+  background: #fafcfe;
 }
 
 .portfolio-grid__search {
@@ -164,7 +172,7 @@
 .portfolio-grid__search input::placeholder { color: #65738a; }
 .portfolio-grid__clear-search { border: 0; background: transparent; color: #65738a; font-size: 20px; line-height: 1; cursor: pointer; }
 .portfolio-grid__clear-search:hover { color: #102950; }
-.portfolio-grid__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.portfolio-grid__chips { display: flex; flex-wrap: wrap; min-width: 0; gap: 6px; }
 .portfolio-grid__chip { min-height: 38px; padding: 7px 11px; border: 1px solid #c8d7e5; border-radius: 999px; background: #fff; color: #52627a; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
 .portfolio-grid__chip:not(.is-active):hover { border-color: #9fbdd6; background: #e8f2fa; color: #102950; }
 .portfolio-grid__chip.is-active { border-color: #102950; background: #102950; color: #fff; }
@@ -174,7 +182,7 @@
 .portfolio-grid__reset:hover, .portfolio-grid__empty button:hover { color: #102950; }
 .portfolio-grid__empty button { border: 0; background: transparent; color: #2563a6; font: inherit; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; }
 .portfolio-grid__spacer { flex: 1 1 0; min-width: 0; }
-.portfolio-grid__empty { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; padding: 13px 16px; border: 1px solid #e7d4db; border-radius: 9px; background: #fdf8fa; color: #102950; font-size: 13px; }
+.portfolio-grid__empty { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #e3eaf1; background: #fdf8fa; color: #102950; font-size: 13px; }
 
 @media (max-width: 1100px) {
   .portfolio-grid__search { flex: 1 1 300px; }
@@ -202,8 +210,8 @@
 }
 
 .portfolio-grid .tabulator {
-  border: 1px solid #d8e2eb;
-  border-radius: 10px;
+  border: 0;
+  border-radius: 0 0 9px 9px;
   background: #fff;
   color: #102950;
   font-size: 13px;

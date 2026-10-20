@@ -23,40 +23,42 @@
   @if (lookupError()) {
     <p class="portfolio-grid__error" role="alert">{{ lookupError() }}</p>
   }
-  <div class="portfolio-grid__toolbar" role="group" aria-label="Controlli del portafoglio">
-    <div class="portfolio-grid__search">
-      <svg class="portfolio-grid__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg>
-      <input type="search" aria-label="Cerca posizioni" placeholder="Cerca strumento, ticker o categoria..." [value]="searchQuery()" (input)="setSearch($any($event.target).value)" />
-      @if (searchQuery()) {
-        <button type="button" class="portfolio-grid__clear-search" aria-label="Cancella ricerca" (click)="setSearch('')">×</button>
-      }
-    </div>
-    <div class="portfolio-grid__chips" role="group" aria-label="Filtra per categoria">
-      @for (filter of categoryFilters; track filter.label) {
-        <button type="button" class="portfolio-grid__chip" [class.is-active]="categoryFilter() === filter.value" [attr.aria-pressed]="categoryFilter() === filter.value" (click)="setCategory(filter.value)">{{ filter.label }}</button>
-      }
-    </div>
-    @if (searchQuery().trim() || categoryFilter() !== null) {
-      <span class="portfolio-grid__count" aria-live="polite">{{ visibleCount() === 0 ? 'Nessun risultato' : visibleCount() === 1 ? '1 risultato' : visibleCount() + ' risultati' }}</span>
-      <button type="button" class="portfolio-grid__reset" (click)="clearFilters()">Azzera filtri</button>
-    }
-    <span class="portfolio-grid__spacer" aria-hidden="true"></span>
-    <div class="portfolio-grid__market">
-      <span class="portfolio-grid__simulated" [class.is-paused]="!live()" aria-live="polite"><span class="portfolio-grid__status-dot" aria-hidden="true"></span>{{ live() ? 'LIVE · SIMULATED' : 'PAUSED · SIMULATED' }}</span>
-      <button class="portfolio-grid__pause" type="button" (click)="toggleMarket()" [attr.aria-label]="live() ? 'Metti in pausa le quotazioni simulate' : 'Riprendi le quotazioni simulate'">
-        @if (live()) {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
-        } @else {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+  <div class="portfolio-grid__surface">
+    <div class="portfolio-grid__toolbar" role="group" aria-label="Controlli del portafoglio">
+      <div class="portfolio-grid__search">
+        <svg class="portfolio-grid__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg>
+        <input type="search" aria-label="Cerca posizioni" placeholder="Cerca strumento, ticker o categoria..." [value]="searchQuery()" (input)="setSearch($any($event.target).value)" />
+        @if (searchQuery()) {
+          <button type="button" class="portfolio-grid__clear-search" aria-label="Cancella ricerca" (click)="setSearch('')">×</button>
         }
-      </button>
+      </div>
+      <div class="portfolio-grid__chips" role="group" aria-label="Filtra per categoria">
+        @for (filter of categoryFilters; track filter.label) {
+          <button type="button" class="portfolio-grid__chip" [class.is-active]="categoryFilter() === filter.value" [attr.aria-pressed]="categoryFilter() === filter.value" (click)="setCategory(filter.value)">{{ filter.label }}</button>
+        }
+      </div>
+      @if (searchQuery().trim() || categoryFilter() !== null) {
+        <span class="portfolio-grid__count" aria-live="polite">{{ visibleCount() === 0 ? 'Nessun risultato' : visibleCount() === 1 ? '1 risultato' : visibleCount() + ' risultati' }}</span>
+        <button type="button" class="portfolio-grid__reset" (click)="clearFilters()">Azzera filtri</button>
+      }
+      <span class="portfolio-grid__spacer" aria-hidden="true"></span>
+      <div class="portfolio-grid__market">
+        <span class="portfolio-grid__simulated" [class.is-paused]="!live()" aria-live="polite"><span class="portfolio-grid__status-dot" aria-hidden="true"></span>{{ live() ? 'LIVE · SIMULATED' : 'PAUSED · SIMULATED' }}</span>
+        <button class="portfolio-grid__pause" type="button" (click)="toggleMarket()" [attr.aria-label]="live() ? 'Metti in pausa le quotazioni simulate' : 'Riprendi le quotazioni simulate'">
+          @if (live()) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+          }
+        </button>
+      </div>
     </div>
+    @if (visibleCount() === 0) {
+      <div class="portfolio-grid__empty" role="status">
+        <span>Nessuna posizione corrisponde alla ricerca.</span>
+        <button type="button" (click)="clearFilters()">Azzera filtri</button>
+      </div>
+    }
+    <div #gridHost class="portfolio-grid__table" aria-label="Portfolio Holdings"></div>
   </div>
-  @if (visibleCount() === 0) {
-    <div class="portfolio-grid__empty" role="status">
-      <span>Nessuna posizione corrisponde alla ricerca.</span>
-      <button type="button" (click)="clearFilters()">Azzera filtri</button>
-    </div>
-  }
-  <div #gridHost class="portfolio-grid__table" aria-label="Portfolio Holdings"></div>
 </section>
