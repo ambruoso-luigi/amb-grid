@@ -587,12 +587,21 @@
 }
 
 .portfolio-grid .portfolio-grid__editable:not([data-cell-error="true"]) .amb-cell-editor {
-  border-color: #2563a6;
+  border: 1px solid #9fb5c9;
+  border-radius: 7px;
   background: #fff;
   color: #102950;
+  font-size: 14px;
+  font-weight: 600;
   text-align: right;
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 0 0 2px rgb(37 99 166 / 15%);
+  padding: 5px 10px;
+  box-shadow: none;
+}
+
+.portfolio-grid .portfolio-grid__editable:not([data-cell-error="true"]) .amb-cell-editor:focus {
+  border-color: #2563a6;
+  box-shadow: 0 0 0 2px rgb(37 99 166 / 18%);
 }
 
 .portfolio-grid .tabulator-cell[tabulator-field="instrument"].tabulator-editing:not([data-cell-error="true"]) {
@@ -604,7 +613,59 @@
   outline-offset: -2px;
 }
 
-.portfolio-grid .tabulator-cell[tabulator-field="instrument"]:not([data-cell-error="true"]) .amb-lookup-editor__input:focus {
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"]:not([data-cell-error="true"]) .amb-lookup-editor {
+  box-sizing: border-box;
+  max-width: 100%;
+  border: 1px solid #9fb5c9;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"]:not([data-cell-error="true"]) .amb-lookup-editor:focus-within {
   border-color: #2563a6;
   box-shadow: 0 0 0 2px rgb(37 99 166 / 15%);
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"]:not([data-cell-error="true"]) .amb-lookup-editor__input {
+  box-sizing: border-box;
+  min-width: 0;
+  border: 0;
+  border-radius: 6px 0 0 6px;
+  background: #fff;
+  color: #102950;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 5px 10px;
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"]:not([data-cell-error="true"]) .amb-lookup-editor__input:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"] .amb-lookup-editor__button {
+  box-sizing: border-box;
+  flex: 0 0 40px;
+  min-width: 40px;
+  border: 0;
+  border-left: 1px solid #c8d7e5;
+  border-radius: 0 6px 6px 0;
+  background-color: #eff6fc;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%232563a6'%20stroke-width='2'%20stroke-linecap='round'%3E%3Ccircle%20cx='10.75'%20cy='10.75'%20r='6.75'/%3E%3Cpath%20d='m16%2016%205%205'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  color: #102950;
+  font-size: 0;
+  box-shadow: none;
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"] .amb-lookup-editor__button:hover {
+  background-color: #e1eef9;
+}
+
+.portfolio-grid .tabulator-cell[tabulator-field="instrument"] .amb-lookup-editor__button:focus-visible {
+  outline: 2px solid #2563a6;
+  outline-offset: -3px;
+  box-shadow: none;
 }

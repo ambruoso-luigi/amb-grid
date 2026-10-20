@@ -414,6 +414,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       dialog: instrumentDialog,
       formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => instrumentCell(cell.getRow().getData()),
       editorOptions: {
+        buttonText: 'Apri ricerca strumenti',
         dialogTitle: 'Select a portfolio instrument',
         searchPlaceholder: 'Search name, ticker, category or ISIN...',
         autoComplete: true,
