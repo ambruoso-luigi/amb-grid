@@ -3,6 +3,7 @@
 @import './ui/lookup-dialog.css';
 @import './ui/search-filters-dialog.css';
 @import './ui/feedback-region.css';
+@import './lib/image.css';
 
 :root {
     --amb-font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

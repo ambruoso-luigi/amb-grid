@@ -13,6 +13,7 @@ let currentGrid = null;
 let currentMultifieldLookupGrid = null;
 let currentAutocompleteGrid = null;
 let currentColumnCalculationsGrid = null;
+let currentImageFormatterGrid = null;
 
 const withSelectProbe = rows => (rows || []).map((row, index) => ({
     ...row,
@@ -1158,6 +1159,32 @@ const mountColumnCalculationsGrid = () => {
     currentColumnCalculationsGrid = createColumnCalculationsGrid();
 };
 
+const createImageFormatterGrid = () => AMB.table({
+    selector: '#image-formatter-test-table',
+    data: [
+        { id: 1, description: 'Immagine singola', images: null, imageCount: 0, testCase: 'In attesa delle fotografie' },
+        { id: 2, description: 'Multi-immagine', images: [], imageCount: 0, testCase: 'In attesa delle fotografie' },
+        { id: 3, description: 'Verticale e orizzontale', images: null, imageCount: 0, testCase: 'In attesa delle fotografie' },
+        { id: 4, description: 'Thumbnail distinta', images: [], imageCount: 0, testCase: 'In attesa delle fotografie' },
+        { id: 5, description: 'Raccolta vuota', images: [], imageCount: 0, testCase: 'Placeholder non interattivo' },
+        { id: 6, description: 'URL non valido', images: [{ src: 'javascript:alert(1)' }], imageCount: 0, testCase: 'Elemento escluso' },
+        { id: 7, description: 'Metadati mancanti', images: [{ src: '' }], imageCount: 0, testCase: 'Elemento escluso; fotografie in attesa' }
+    ],
+    layout: 'fitColumns',
+    columns: [
+        { title: 'ID', field: 'id', width: 70 },
+        { title: 'Description', field: 'description', width: 220 },
+        { title: 'Images', field: 'images', formatter: AMB.formatters.image(), width: 140 },
+        { title: 'Image Count', field: 'imageCount', width: 130 },
+        { title: 'Test Case', field: 'testCase', widthGrow: 1 }
+    ]
+});
+
+const mountImageFormatterGrid = () => {
+    currentImageFormatterGrid?.destroy();
+    currentImageFormatterGrid = createImageFormatterGrid();
+};
+
 selectionModeControl?.addEventListener('change', () => {
     mountGrid().catch(error => {
         console.error(error);
@@ -1173,6 +1200,7 @@ const mountTestPage = async () => {
     await mountMultifieldLookupGrid();
     mountAutocompleteGrid();
     mountColumnCalculationsGrid();
+    mountImageFormatterGrid();
 };
 
 mountTestPage().catch(error => {

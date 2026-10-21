@@ -11,6 +11,21 @@ const testHtml = fs.readFileSync(
 );
 
 describe('technical test page', () => {
+    test('mounts the isolated image grid using only empty or invalid fixtures', () => {
+        expect(testHtml).toContain('Image Formatter &amp; Multi-Image Viewer');
+        expect(testHtml).toContain('id="image-formatter-test-table"');
+        expect(testSource).toContain("selector: '#image-formatter-test-table'");
+        expect(testSource).toContain('formatter: AMB.formatters.image()');
+        expect(testSource).toContain('mountImageFormatterGrid();');
+        expect(testSource).toContain("images: [{ src: 'javascript:alert(1)' }]");
+        expect(testSource).toContain('In attesa delle fotografie');
+        expect(testSource).not.toContain("images: [{ src: 'https://");
+        expect(testHtml).toContain('id="inventory-test-table"');
+        expect(testHtml).toContain('id="multifield-lookup-test-table"');
+        expect(testHtml).toContain('id="autocomplete-test-table"');
+        expect(testHtml).toContain('id="column-calculations-test-table"');
+    });
+
     test('uses the standard AMB selection column with switchable mode', () => {
         expect(testSource).toContain('selectionColumn: {');
         expect(testSource).toContain('enabled: true');

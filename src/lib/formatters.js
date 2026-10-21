@@ -1,4 +1,49 @@
 import { parsers } from './parsers.js';
+import { renderImage } from './image-renderer.js';
+
+/**
+ * @typedef {object} ImageItem
+ * @property {string} src - Relative or HTTP(S) image URL.
+ * @property {string} [thumbnail] - Optional thumbnail URL.
+ * @property {string} [alt] - Alternative text.
+ * @property {string} [caption] - Text caption reserved for image presentation.
+ */
+
+/** @typedef {string|ImageItem|ImageItem[]|null|undefined} ImageValue */
+
+/**
+ * @typedef {object} ImageFormatterOptions
+ * @property {number} [width=48] - Thumbnail width in pixels.
+ * @property {number} [height=68] - Thumbnail height in pixels.
+ * @property {'contain'|'cover'} [fit='contain'] - Thumbnail sizing mode.
+ * @property {boolean} [preview=true] - Reserved for a later preview interaction.
+ * @property {boolean} [viewer=true] - Reserved for a later image viewer interaction.
+ */
+
+const normalizeImageOptions = options => {
+    if (!options || typeof options !== 'object' || Array.isArray(options)) {
+        throw new TypeError('Image formatter options must be an object');
+    }
+
+    const normalized = { width: 48, height: 68, fit: 'contain', preview: true, viewer: true, ...options };
+    for (const key of Object.keys(options)) {
+        if (!['width', 'height', 'fit', 'preview', 'viewer'].includes(key)) {
+            throw new TypeError(`Unknown image formatter option: ${key}`);
+        }
+    }
+    if (!Number.isFinite(normalized.width) || normalized.width <= 0
+        || !Number.isFinite(normalized.height) || normalized.height <= 0) {
+        throw new TypeError('Image width and height must be positive finite numbers');
+    }
+    if (normalized.fit !== 'contain' && normalized.fit !== 'cover') {
+        throw new TypeError('Image fit must be contain or cover');
+    }
+    if (typeof normalized.preview !== 'boolean' || typeof normalized.viewer !== 'boolean') {
+        throw new TypeError('Image preview and viewer must be booleans');
+    }
+
+    return normalized;
+};
 
 const isEmptyValue = value => {
     return value === null
@@ -39,6 +84,18 @@ export const escapeHtmlText = value => {
  * @namespace formatters
  */
 export const formatters = {
+    /**
+     * Render a cell's image collection as a thumbnail or a non-interactive placeholder.
+     * Preview and viewer options reserve the future contract; they add no controls yet.
+     *
+     * @param {ImageFormatterOptions} [options={}] - Image presentation options.
+     * @returns {(cell: {getValue: () => ImageValue}) => HTMLElement} Image cell formatter.
+     */
+    image(options = {}) {
+        const normalizedOptions = normalizeImageOptions(options);
+        return cell => renderImage(cell.getValue(), normalizedOptions);
+    },
+
     /**
      * Plain text formatter.
      *
