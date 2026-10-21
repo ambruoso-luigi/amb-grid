@@ -15,6 +15,11 @@ const STEP_SIZE: Readonly<Record<AssetCategory, number>> = Object.freeze({
   Crypto: 0.006,
 });
 
+const ASML_ID = 'stock-asml';
+const ASML_OSCILLATION = 0.008;
+const ASML_PHASE_STEP = 0.8;
+const ASML_REVERSION = 0.25;
+
 /** Deterministic xorshift32; a zero seed is replaced to avoid its fixed point. */
 export class SeededRandom {
   private state: number;
@@ -37,6 +42,7 @@ interface MarketEntry {
   readonly category: AssetCategory;
   quote: SimulatedQuote;
   history: number[];
+  tick: number;
 }
 
 /** In-memory simulated EUR market. No grid or Angular dependency. */
@@ -57,13 +63,14 @@ export class MarketSimulator {
       const history = [quote.price];
       let earlier = quote.price;
       for (let index = 1; index < TIMELINE_CAPACITY; index += 1) {
-        earlier = this.walk(earlier, quote.previousClose, category);
+        earlier = this.walk(earlier, quote.previousClose, category, quote.instrumentId, -index);
         history.unshift(earlier);
       }
       this.entries.set(quote.instrumentId, {
         category,
         quote: { ...quote },
         history,
+        tick: 0,
       });
     }
   }
@@ -84,17 +91,20 @@ export class MarketSimulator {
     for (const instrumentId of instrumentIds) {
       const entry = this.entries.get(instrumentId);
       if (!entry) throw new Error(`Unknown instrument ${instrumentId}`);
-      const price = this.walk(entry.quote.price, entry.quote.previousClose, entry.category);
+      entry.tick += 1;
+      const price = this.walk(entry.quote.price, entry.quote.previousClose, entry.category, instrumentId, entry.tick);
       entry.quote = { ...entry.quote, price };
       entry.history.push(price);
       if (entry.history.length > TIMELINE_CAPACITY) entry.history.shift();
     }
   }
 
-  private walk(price: number, previousClose: number, category: AssetCategory): number {
+  private walk(price: number, previousClose: number, category: AssetCategory, instrumentId: string, tick: number): number {
     const band = MARKET_BANDS[category];
     const noise = (this.random.next() * 2 - 1) * previousClose * STEP_SIZE[category];
-    const reversion = (previousClose - price) * 0.035;
+    const reversion = instrumentId === ASML_ID
+      ? (previousClose * (1 + ASML_OSCILLATION * Math.sin(tick * ASML_PHASE_STEP)) - price) * ASML_REVERSION
+      : (previousClose - price) * 0.035;
     const lower = Math.max(0, previousClose * (1 - band));
     const upper = previousClose * (1 + band);
     return Math.min(upper, Math.max(lower, price + noise + reversion));
