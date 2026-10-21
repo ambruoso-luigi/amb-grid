@@ -127,6 +127,7 @@ export const SUPPORT_NAMESPACE_MEMBERS = {
         'allOf'
     ],
     formatters: [
+        'image',
         'text',
         'uppercase',
         'lowercase',
