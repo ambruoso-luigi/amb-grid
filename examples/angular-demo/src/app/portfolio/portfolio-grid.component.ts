@@ -35,6 +35,9 @@ interface EditedCell {
 type LiveField = 'timeline' | 'price' | 'value' | 'profitLoss';
 type CategoryFilter = AssetCategory | null;
 const LIVE_FIELDS: readonly LiveField[] = ['timeline', 'price', 'value', 'profitLoss'];
+const TIMELINE_WIDTH = 212;
+const TIMELINE_HEIGHT = 38;
+const TIMELINE_BAR_WIDTH = 4.8;
 const CATEGORY_FILTERS: readonly { label: string; value: CategoryFilter }[] = [
   { label: 'Tutti', value: null },
   { label: 'Azioni', value: 'Stock' },
@@ -326,7 +329,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     if (!svg) {
       content.textContent = '';
       svg = document.createElementNS(namespace, 'svg');
-      svg.setAttribute('viewBox', '0 0 200 36');
+      svg.setAttribute('viewBox', `0 0 ${TIMELINE_WIDTH} ${TIMELINE_HEIGHT}`);
       svg.setAttribute('role', 'img');
       content.append(svg);
     }
@@ -343,12 +346,12 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     while (svg.children.length > history.length) svg.lastElementChild?.remove();
     history.forEach((price, index) => {
       const bar = svg.children[index]!;
-      const height = Math.max(3, Math.min(34, ((price - base) / scale) * 34));
+      const height = Math.max(4, Math.min(36, ((price - base) / scale) * 36));
       const direction = movementClass(calculateChangePercent(price, previousClose));
       bar.setAttribute('class', index === history.length - 1 ? `${direction} is-latest` : direction);
-      bar.setAttribute('x', String(index * (200 / TIMELINE_CAPACITY)));
-      bar.setAttribute('y', String(36 - height));
-      bar.setAttribute('width', '4.5');
+      bar.setAttribute('x', String(index * (TIMELINE_WIDTH / TIMELINE_CAPACITY)));
+      bar.setAttribute('y', String(TIMELINE_HEIGHT - height));
+      bar.setAttribute('width', String(TIMELINE_BAR_WIDTH));
       bar.setAttribute('height', String(height));
       bar.setAttribute('rx', '1');
     });
@@ -471,7 +474,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
         multifield.dependentColumn('instrumentId') as Record<string, unknown>,
         multifield.dependentColumn('ticker') as Record<string, unknown>,
         {
-          title: 'Timeline', field: 'timeline', minWidth: 220, widthGrow: 1.6, headerSort: false,
+          title: 'Timeline', field: 'timeline', minWidth: 230, widthGrow: 1.6, headerSort: false,
           formatter: (cell: { getRow(): { getData(): HoldingsRow } }) => this.liveCell(cell.getRow().getData(), 'timeline'),
         },
         multifield.dependentColumn('type', {
