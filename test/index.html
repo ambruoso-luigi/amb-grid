@@ -117,10 +117,30 @@
         </table>
         <div id="column-calculations-test-table"></div>
       </section>
-      <section class="test-section" aria-labelledby="image-formatter-test-title">
+      <section class="test-section image-lab" aria-labelledby="image-formatter-test-title">
         <h2 id="image-formatter-test-title">Image Formatter &amp; Multi-Image Viewer</h2>
-        <p>Fotografie in attesa: la griglia mostra per ora solo raccolte vuote e casi negativi. Anteprima e viewer arriveranno in una fase successiva.</p>
+        <p>Laboratorio con fotografie locali: confronta formati, raccolte, metadati e casi negativi. Image Count indica le immagini valide; +N indica quelle successive alla prima. La risorsa mancante è intenzionale: Vite può rispondere con HTML 200 anziché 404; il caricamento dell’immagine deve comunque fallire senza errori JavaScript.</p>
+        <fieldset class="image-lab-controls">
+          <legend>Griglia A — opzioni e lifecycle</legend>
+          <label><input id="image-lab-preview" type="checkbox" checked> Preview enabled</label>
+          <label><input id="image-lab-viewer" type="checkbox" checked> Viewer enabled</label>
+          <button id="image-lab-recreate" type="button">Recreate grid A</button>
+          <button id="image-lab-destroy" type="button">Destroy grid A</button>
+          <button id="image-lab-restore" type="button" disabled>Restore grid A</button>
+          <button id="image-lab-update" type="button">Update data</button>
+          <button id="image-lab-reset" type="button">Restore original data</button>
+        </fieldset>
+        <p id="image-lab-status" class="image-lab-status" role="status" aria-live="polite" aria-atomic="true">Preparazione laboratorio.</p>
+        <div class="image-lab-guide">
+          <p><strong>Mouse:</strong> hover per l’anteprima, click per aprire; wheel per zoom, drag per pan dopo l’ingrandimento e click sulle miniature per navigare. Per il pan evita il tooltip percentuale centrale mentre è visibile.</p>
+          <p><strong>Tastiera:</strong> Tab sulla thumbnail, Enter o Space per aprire; Tab / Shift+Tab tra i controlli, frecce per navigare, Escape per chiudere e tornare al trigger.</p>
+          <p><strong>Touch da provare su dispositivo reale:</strong> tap, swipe, pinch zoom, pan dopo zoom, chiusura e riapertura rapida. La simulazione mobile non certifica le gesture fisiche.</p>
+        </div>
+        <p class="image-lab-note">Le opzioni ricreano soltanto A mantenendo i dati correnti. Update data sostituisce la foto della riga 01; Restore original data ripristina tutte le fixture. Durante la modale i controlli sottostanti sono inattivi.</p>
         <div id="image-formatter-test-table"></div>
+        <h3 id="image-secondary-test-title">Griglia B — isolamento</h3>
+        <p>Una foto e una raccolta indipendenti dalle opzioni di A. Prova B dopo aver distrutto o ricreato A; deve esistere una sola modale fotografica.</p>
+        <div id="image-secondary-test-table" aria-labelledby="image-secondary-test-title"></div>
       </section>
       <section aria-labelledby="test-output-title">
         <h2 id="test-output-title">Technical output</h2>

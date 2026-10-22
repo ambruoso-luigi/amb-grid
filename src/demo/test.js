@@ -14,6 +14,7 @@ let currentMultifieldLookupGrid = null;
 let currentAutocompleteGrid = null;
 let currentColumnCalculationsGrid = null;
 let currentImageFormatterGrid = null;
+let currentImageSecondaryGrid = null;
 
 const withSelectProbe = rows => (rows || []).map((row, index) => ({
     ...row,
@@ -1159,31 +1160,128 @@ const mountColumnCalculationsGrid = () => {
     currentColumnCalculationsGrid = createColumnCalculationsGrid();
 };
 
+const imageLabPhotos = {
+    landscape: { src: '/test/images/landscape-01.jpg', alt: 'Campo di stelle e galassie', caption: 'Orizzontale · 1600 × 900' },
+    coffee: { src: '/test/images/landscape-02.jpg', alt: 'Tazza di caffè su un tavolo', caption: 'Orizzontale · 1200 × 800' },
+    portrait: { src: '/test/images/portrait-01.jpg', alt: 'Ritratto in tuta spaziale', caption: 'Verticale · 800 × 1200' },
+    catPortrait: { src: '/test/images/portrait-02.jpg', alt: 'Ritaglio verticale di un gatto', caption: 'Verticale · 700 × 1100' },
+    square: { src: '/test/images/square-01.jpg', alt: 'Ritratto quadrato in tuta spaziale', caption: 'Quadrata · 1000 × 1000' },
+    panorama: { src: '/test/images/panorama-01.jpg', alt: 'Razzo tra le torri di lancio', caption: 'Panorama · 3000 × 700' },
+    large: { src: '/test/images/large-01.jpg', alt: 'Primo piano di un gatto', caption: 'Alta risoluzione · 4000 × 2667' }
+};
+const labPhoto = name => ({ ...imageLabPhotos[name] });
+const labRow = (id, description, images, imageCount, testCase) => ({ id, description, images, imageCount, testCase });
+const createImageLabRows = () => [
+    labRow(1, 'Single image', imageLabPhotos.landscape.src, 1, 'Stringa URL · preview, zoom, chiusura e focus'),
+    labRow(2, 'Image object', labPhoto('coffee'), 1, 'Oggetto con alt e caption'),
+    labRow(3, 'Multi-image gallery', ['landscape', 'portrait', 'square', 'panorama', 'coffee'].map(labPhoto), 5, '5 immagini · +4 · miniature, navigazione ed estremi'),
+    labRow(4, 'Mixed orientation', ['landscape', 'portrait', 'catPortrait'].map(labPhoto), 3, 'Orizzontale e verticali · proporzioni e posizione'),
+    labRow(5, 'Square / panoramic', ['square', 'panorama'].map(labPhoto), 2, 'Quadrata e panorama · contain, reset e fit'),
+    labRow(6, 'High-resolution image', labPhoto('large'), 1, '4000 × 2667 · wheel zoom, pan, bordi e reset'),
+    labRow(7, 'Distinct thumbnail', { ...labPhoto('large'), thumbnail: imageLabPhotos.catPortrait.src }, 1, 'Ritaglio verticale del gatto nella cella; originale grande nel viewer'),
+    labRow(8, 'Empty collection', [], 0, 'Array vuoto · placeholder non interattivo'),
+    labRow(9, 'Null value', null, 0, 'Null · placeholder non interattivo'),
+    labRow(10, 'Invalid URL', { src: 'javascript:window.__imageLabUnsafe = true' }, 0, 'Schema escluso · nessuna esecuzione'),
+    labRow(11, 'Missing image', { src: '/test/images/intentionally-missing.jpg', alt: 'Risorsa intenzionalmente assente' }, 1, 'URL assente · 404 o fallback HTML di Vite · errore di caricamento'),
+    labRow(12, 'Mixed valid / invalid', [labPhoto('coffee'), { src: '' }, null, { src: 'javascript:window.__imageLabUnsafe = true' }, labPhoto('panorama')], 2, '5 elementi grezzi, 2 validi · +1'),
+    labRow(13, 'Missing optional metadata', { src: imageLabPhotos.portrait.src }, 1, 'Senza metadati · nome file come testo alternativo nel viewer'),
+    labRow(14, 'Special characters', {
+        src: imageLabPhotos.large.src,
+        alt: 'Gatto <img src=x onerror="window.__imageLabUnsafe=true"> & "occhi"',
+        caption: '<script>window.__imageLabUnsafe=true</script> & "dettaglio"'
+    }, 1, 'Alt e caption come testo · nessun markup eseguito'),
+    labRow(15, 'Single valid after filtering', [null, { src: 'javascript:window.__imageLabUnsafe=true' }, labPhoto('square'), { src: '' }], 1, '4 elementi grezzi, 1 valido · nessun badge +N')
+];
+const imageLabControls = Object.fromEntries(['preview', 'viewer', 'recreate', 'destroy', 'restore', 'update', 'reset', 'status']
+    .map(name => [name, document.querySelector(`#image-lab-${name}`)]));
+let imageLabRows = createImageLabRows();
+let imageLabModified = false;
+let imageLabBusy = false;
+
+const syncImageLabState = message => {
+    const mounted = Boolean(currentImageFormatterGrid);
+    for (const name of ['preview', 'viewer', 'recreate']) imageLabControls[name].disabled = imageLabBusy;
+    for (const name of ['destroy', 'update']) imageLabControls[name].disabled = imageLabBusy || !mounted;
+    imageLabControls.restore.disabled = imageLabBusy || mounted;
+    imageLabControls.reset.disabled = imageLabBusy || !mounted || !imageLabModified;
+    const options = `Preview ${imageLabControls.preview.checked ? 'attiva' : 'disattiva'}; viewer ${imageLabControls.viewer.checked ? 'attivo' : 'disattivo'}`;
+    imageLabControls.status.textContent = `${message} ${options}. Dati ${imageLabModified ? 'aggiornati' : 'originali'}. Griglia B indipendente.`;
+};
+
 const createImageFormatterGrid = () => AMB.table({
     selector: '#image-formatter-test-table',
-    data: [
-        { id: 1, description: 'Immagine singola', images: null, imageCount: 0, testCase: 'In attesa delle fotografie' },
-        { id: 2, description: 'Multi-immagine', images: [], imageCount: 0, testCase: 'In attesa delle fotografie' },
-        { id: 3, description: 'Verticale e orizzontale', images: null, imageCount: 0, testCase: 'In attesa delle fotografie' },
-        { id: 4, description: 'Thumbnail distinta', images: [], imageCount: 0, testCase: 'In attesa delle fotografie' },
-        { id: 5, description: 'Raccolta vuota', images: [], imageCount: 0, testCase: 'Placeholder non interattivo' },
-        { id: 6, description: 'URL non valido', images: [{ src: 'javascript:alert(1)' }], imageCount: 0, testCase: 'Elemento escluso' },
-        { id: 7, description: 'Metadati mancanti', images: [{ src: '' }], imageCount: 0, testCase: 'Elemento escluso; fotografie in attesa' }
-    ],
+    data: structuredClone(imageLabRows),
+    toolbar: false,
     layout: 'fitColumns',
     columns: [
-        { title: 'ID', field: 'id', width: 70 },
-        { title: 'Description', field: 'description', width: 220 },
-        { title: 'Images', field: 'images', formatter: AMB.formatters.image(), width: 140 },
-        { title: 'Image Count', field: 'imageCount', width: 130 },
-        { title: 'Test Case', field: 'testCase', widthGrow: 1 }
+        { title: 'ID', field: 'id', width: 65 },
+        { title: 'Description', field: 'description', width: 210 },
+        { title: 'Images', field: 'images', formatter: AMB.formatters.image({
+            preview: imageLabControls.preview.checked,
+            viewer: imageLabControls.viewer.checked
+        }), width: 110 },
+        { title: 'Image Count', field: 'imageCount', width: 140 },
+        { title: 'Test Case', field: 'testCase', minWidth: 280, widthGrow: 1, formatter: AMB.formatters.text() }
     ]
 });
 
 const mountImageFormatterGrid = () => {
     currentImageFormatterGrid?.destroy();
     currentImageFormatterGrid = createImageFormatterGrid();
+    syncImageLabState('Griglia A creata.');
 };
+
+const mountImageSecondaryGrid = () => {
+    currentImageSecondaryGrid?.destroy();
+    currentImageSecondaryGrid = AMB.table({
+        selector: '#image-secondary-test-table',
+        toolbar: false,
+        data: [
+            labRow(1, 'B · singola', labPhoto('coffee'), 1, 'Indipendente da A'),
+            labRow(2, 'B · raccolta', ['panorama', 'catPortrait'].map(labPhoto), 2, 'Due immagini')
+        ],
+        layout: 'fitColumns',
+        columns: [
+            { title: 'Description', field: 'description', minWidth: 140 },
+            { title: 'Images', field: 'images', formatter: AMB.formatters.image(), width: 110 },
+            { title: 'Image Count', field: 'imageCount', width: 140 }
+        ]
+    });
+};
+
+const updateImageLabData = async restore => {
+    if (!currentImageFormatterGrid || imageLabBusy) return;
+    imageLabBusy = true;
+    syncImageLabState('Aggiornamento in corso.');
+    try {
+        const rows = restore ? createImageLabRows() : imageLabRows.map(row => row.id === 1
+            ? { ...row, images: labPhoto('panorama'), testCase: 'Dato aggiornato tramite updateData · cella riformattata' }
+            : row);
+        if (restore) await currentImageFormatterGrid.replaceData(structuredClone(rows));
+        else await currentImageFormatterGrid.updateData([structuredClone(rows[0])]);
+        imageLabRows = rows;
+        imageLabModified = !restore;
+        imageLabBusy = false;
+        syncImageLabState(restore ? 'Fixture originali ripristinate.' : 'Riga 01 aggiornata.');
+    } catch (error) {
+        imageLabBusy = false;
+        syncImageLabState(`Aggiornamento non riuscito: ${error.message}`);
+    }
+};
+
+for (const name of ['preview', 'viewer']) imageLabControls[name].addEventListener('change', () => {
+    if (currentImageFormatterGrid) mountImageFormatterGrid();
+    else syncImageLabState('Opzioni pronte per il ripristino di A.');
+});
+imageLabControls.recreate.addEventListener('click', mountImageFormatterGrid);
+imageLabControls.restore.addEventListener('click', mountImageFormatterGrid);
+imageLabControls.destroy.addEventListener('click', () => {
+    currentImageFormatterGrid?.destroy();
+    currentImageFormatterGrid = null;
+    syncImageLabState('Griglia A distrutta.');
+});
+imageLabControls.update.addEventListener('click', () => updateImageLabData(false));
+imageLabControls.reset.addEventListener('click', () => updateImageLabData(true));
 
 selectionModeControl?.addEventListener('change', () => {
     mountGrid().catch(error => {
@@ -1201,6 +1299,7 @@ const mountTestPage = async () => {
     mountAutocompleteGrid();
     mountColumnCalculationsGrid();
     mountImageFormatterGrid();
+    mountImageSecondaryGrid();
 };
 
 mountTestPage().catch(error => {

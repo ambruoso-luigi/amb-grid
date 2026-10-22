@@ -57,3 +57,101 @@ body {
     border-radius: 4px;
     padding: 2px 4px;
 }
+
+.image-lab {
+    min-width: 0;
+}
+
+.image-lab-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid #ccd6e0;
+    border-radius: 4px;
+    background: #fff;
+    min-width: 0;
+}
+
+.image-lab-controls legend {
+    padding: 0 6px;
+    font-weight: 600;
+}
+
+.image-lab-controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.image-lab-controls button {
+    padding: 8px 12px;
+    border: 1px solid #9aaabd;
+    border-radius: 4px;
+    color: inherit;
+    background: #f7f9fb;
+    font: inherit;
+    cursor: pointer;
+}
+
+.image-lab-controls button:disabled {
+    opacity: .5;
+    cursor: default;
+}
+
+.image-lab-controls :focus-visible {
+    outline: 3px solid #2769a5;
+    outline-offset: 2px;
+}
+
+.image-lab-status {
+    padding: 10px 12px;
+    border-left: 3px solid #557a9b;
+    background: #eaf0f6;
+}
+
+.image-lab-guide {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.image-lab-guide p {
+    margin-bottom: 0;
+}
+
+.image-lab-note {
+    color: #475569;
+    font-size: 14px;
+}
+
+#image-formatter-test-table,
+#image-secondary-test-table {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#image-secondary-test-table {
+    max-width: 620px;
+}
+
+.image-lab .amb-image-placeholder {
+    white-space: normal;
+}
+
+.image-lab .amb-image:has(.amb-image-placeholder) {
+    width: 90px !important;
+}
+
+@media (max-width: 600px) {
+    .image-lab-controls {
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .image-lab-controls label {
+        flex-basis: 100%;
+    }
+}
