@@ -6,7 +6,7 @@ import { renderImage } from './image-renderer.js';
  * @property {string} src - Relative or HTTP(S) image URL.
  * @property {string} [thumbnail] - Optional thumbnail URL.
  * @property {string} [alt] - Alternative text.
- * @property {string} [caption] - Text caption reserved for image presentation.
+ * @property {string} [caption] - Text caption shown with the image count in the viewer.
  */
 
 /** @typedef {string|ImageItem|ImageItem[]|null|undefined} ImageValue */
@@ -16,8 +16,8 @@ import { renderImage } from './image-renderer.js';
  * @property {number} [width=48] - Thumbnail width in pixels.
  * @property {number} [height=68] - Thumbnail height in pixels.
  * @property {'contain'|'cover'} [fit='contain'] - Thumbnail sizing mode.
- * @property {boolean} [preview=true] - Show the original image on pointer hover or keyboard focus.
- * @property {boolean} [viewer=true] - Reserved for a later image viewer interaction.
+ * @property {boolean} [preview=true] - Show the first image on pointer hover or keyboard focus.
+ * @property {boolean} [viewer=true] - Open a single image or gallery from the thumbnail.
  */
 
 const normalizeImageOptions = options => {
@@ -85,8 +85,10 @@ export const escapeHtmlText = value => {
  */
 export const formatters = {
     /**
-     * Render a cell's image collection as a thumbnail or a non-interactive placeholder.
-     * Preview shows the original image on hover or focus; viewer remains reserved.
+     * Render a cell's first valid image as a thumbnail, with a count for additional images.
+     * Accept a URL string, an image object, or an array of image objects; empty or invalid
+     * values show a placeholder. Preview opens on hover or focus, while the viewer opens
+     * a single image or gallery on activation.
      *
      * @param {ImageFormatterOptions} [options={}] - Image presentation options.
      * @returns {(cell: {getValue: () => ImageValue}) => HTMLElement} Image cell formatter.

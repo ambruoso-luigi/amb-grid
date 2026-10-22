@@ -535,6 +535,45 @@ percentage precision from the stored ratio precision and hides trailing zeros
 by default. `AMB.formatters.percent(decimals)` remains available when fixed
 display precision is required.
 
+#### Image Formatter
+
+Use `AMB.formatters.image()` for an image URL string, an object with `src` and
+optional `thumbnail`, `alt`, and `caption`, or an array of such objects. The
+cell shows the first valid image as a thumbnail and a `+N` badge for additional
+valid images. `thumbnail` supplies the small cell image; `src` supplies the
+original. The optional `caption` appears with the image count in the viewer.
+
+```js
+const grid = AMB.table({
+    selector: '#products',
+    data: [
+        { id: 1, photos: '/images/front.jpg' },
+        { id: 2, photos: {
+            src: '/images/detail.jpg',
+            thumbnail: '/images/detail-small.jpg',
+            alt: 'Detail',
+            caption: 'Side view'
+        } },
+        { id: 3, photos: [
+            { src: '/images/first.jpg', alt: 'Front' },
+            { src: '/images/second.jpg', alt: 'Back' }
+        ] }
+    ],
+    columns: [
+        { title: 'ID', field: 'id' },
+        { title: 'Photos', field: 'photos', formatter: AMB.formatters.image() }
+    ]
+});
+```
+
+`preview: true` (the default) shows the first image on pointer hover or keyboard
+focus; `preview: false` disables that preview. `viewer: true` (the default)
+opens the image or gallery from the thumbnail; `viewer: false` disables opening
+it without disabling the preview. Press `Enter` or `Space` on the thumbnail to
+open the viewer, use the arrow keys or its controls to navigate, and press
+`Escape` to close it. Null, empty, or invalid values show a placeholder; invalid
+entries in a collection are skipped.
+
 ### Column calculations
 
 AMB Grid supports top and bottom column calculations directly in column
@@ -1167,5 +1206,8 @@ events, or UI coordination.
 ## License
 
 Licensed under the Apache License 2.0.
+
+The included third-party component is attributed under its MIT license in
+[`VIEWERJS-LICENSE.txt`](VIEWERJS-LICENSE.txt).
 
 Copyright © 2026 Luigi Ambruoso.
