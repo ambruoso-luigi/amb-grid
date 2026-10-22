@@ -47,10 +47,13 @@ export const getAmbColumnMetadata = definition => {
     // Retain support for pre-sidecar definitions supplied by an existing
     // runtime while AMB itself no longer emits these keys to Tabulator.
     return {
-        interactive: definition?._ambInteractive === true,
+        interactive: definition?._ambInteractive === true
+            || (!definition?.editor && definition?.formatter?._ambFormatterType === 'image'),
         managedColumn: definition?._ambManagedColumn,
         focusSelector: definition?._ambFocusSelector
-            || definition?._ambInteractiveSelector,
+            || definition?._ambInteractiveSelector
+            || (!definition?.editor && definition?.formatter?._ambFormatterType === 'image'
+                ? '.amb-image--viewable, .amb-image--previewable' : undefined),
         keyboardFocusOnly: definition?._ambKeyboardFocusOnly === true,
         auxiliaryAction: definition?.editor?._ambCapabilities?.auxiliary === true,
         activateOnNavigationFocus: definition?.editor?._ambCapabilities?.activateOnNavigationFocus === true,

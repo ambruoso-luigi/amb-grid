@@ -41,17 +41,6 @@ body {
     padding: 4px 8px;
 }
 
-#test-output {
-    min-height: 180px;
-    margin: 0;
-    padding: 16px;
-    overflow: auto;
-    border: 1px solid #ccd6e0;
-    background: #fff;
-    color: #111827;
-    font: 13px/1.5 Consolas, "Liberation Mono", monospace;
-}
-
 .test-calc-highlight {
     background: #fff2bd;
     border-radius: 4px;

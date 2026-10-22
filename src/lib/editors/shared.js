@@ -49,12 +49,17 @@ const focusInteractiveCandidate = (candidate, definition) => {
         && typeof cellElement.querySelector === 'function'
         ? cellElement.querySelector(selector)
         : null;
-    if (selector && !selectedTarget) return false;
+    if (selector && !selectedTarget) {
+        return definition?.formatter?._ambFormatterType === 'image'
+            ? focusCellWithoutEditing(candidate, { preventScroll: false })
+            : false;
+    }
     const focusTarget = selectedTarget || cellElement;
 
     if (!focusTarget || typeof focusTarget.focus !== 'function') return false;
 
     focusTarget.focus();
+    focusTarget.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     return true;
 };
 
@@ -98,6 +103,7 @@ export const focusCellWithoutEditing = (cell, { preventScroll = true } = {}) => 
     } finally {
         cellElement.removeEventListener?.('focus', blockEditFocus, true);
     }
+    if (!preventScroll) cellElement.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
 
     return true;
 };
@@ -249,12 +255,24 @@ export const isEditableCandidate = candidate => {
     );
 };
 
+// Read-only data cells participate in navigation without pretending to own an
+// editor. Explicitly disabled columns retain their existing skip behavior.
+export const isNavigationCandidate = candidate => {
+    if (isEditableCandidate(candidate)) return true;
+    const definition = getCellDefinition(candidate);
+    if (!definition || definition.editor || !columnIsVisible(candidate?.getColumn?.())) return false;
+    if (definition.editable === false) return false;
+    return typeof definition.editable !== 'function' || definition.editable(candidate) !== false;
+};
+
 export const navigateToCandidate = candidate => {
     if (!isEditableCandidate(candidate)) return false;
 
     const definition = getCellDefinition(candidate);
 
     const metadata = getAmbColumnMetadata(definition);
+
+    if (!definition.editor) return focusNavigationCandidate(candidate);
 
     if (metadata.keyboardFocusOnly === true) {
         return focusCellWithoutEditing(candidate);

@@ -136,21 +136,26 @@ test('calculation pagination, filtering, sorting and public APIs stay coherent',
     }).click();
     await expectOrderIndependentCalculations(page);
 
+    const resultsMessage = page.waitForEvent('console', message => (
+        message.type() === 'debug' && message.text().startsWith('Risultati calcoli ')
+    ));
     await page.getByRole('button', {
         name: 'Mostra risultati calcoli',
         exact: true
     }).click();
-    const outputText = await page.locator('#test-output').textContent();
-    const calculationResults = JSON.parse(outputText.split('\n\n')[1]);
+    const calculationResults = await (await resultsMessage).args()[1].jsonValue();
 
     expect(calculationResults.top.id).toBe(30);
     expect(Number(calculationResults.top.unitPrice)).toBeCloseTo(152.8643, 4);
 
+    const recalculatedMessage = page.waitForEvent('console', message => (
+        message.type() === 'debug' && message.text().startsWith('Risultati ricalcolati ')
+    ));
     await page.getByRole('button', {
         name: 'Ricalcola risultati',
         exact: true
     }).click();
-    await expect(page.locator('#test-output')).toContainText('Risultati ricalcolati');
+    await recalculatedMessage;
     await expectOrderIndependentCalculations(page);
     await expectTopCalculationClasses(page);
     await expectAverageFormatterClasses(page);

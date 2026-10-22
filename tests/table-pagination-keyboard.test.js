@@ -569,6 +569,56 @@ describe('table pagination keyboard runtime', () => {
         expect(last.edit).not.toHaveBeenCalled();
     });
 
+    test('navigates readonly cells and image controls without invoking editors', () => {
+        const first = createCandidate({ field: 'first' });
+        const readonly = createCandidate({ field: 'description' });
+        const image = createCandidate({ field: 'images' });
+        delete first.getColumn().getDefinition().editor;
+        delete readonly.getColumn().getDefinition().editor;
+        delete image.getColumn().getDefinition().editor;
+        image.getColumn().getDefinition().formatter = Object.assign(() => {}, { _ambFormatterType: 'image' });
+        const control = {
+            focus: vi.fn(() => { globalThis.document.activeElement = control; }),
+            scrollIntoView: vi.fn()
+        };
+        image.getElement().querySelector = vi.fn(() => control);
+        const harness = createHarness({ cells: [first, readonly, image] });
+        globalThis.document.activeElement = first.getElement();
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
+        expect(globalThis.document.activeElement).toBe(readonly.getElement());
+        harness.tableElement.dispatch({ key: 'Enter', target: readonly.getElement() });
+        expect(readonly.edit).not.toHaveBeenCalled();
+        harness.tableElement.dispatch({ key: 'Tab', target: readonly.getElement() });
+        expect(globalThis.document.activeElement).toBe(control);
+        expect(control.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest' });
+        expect(image.edit).not.toHaveBeenCalled();
+        harness.runtime.destroy();
+    });
+
+    test('focuses empty or passive image cells without inventing a control', () => {
+        const image = createCandidate({ field: 'images' });
+        delete image.getColumn().getDefinition().editor;
+        image.getColumn().getDefinition().formatter = Object.assign(() => {}, { _ambFormatterType: 'image' });
+        image.getElement().querySelector = vi.fn(() => null);
+        expect(focusNavigationCandidate(image)).toBe(true);
+        expect(globalThis.document.activeElement).toBe(image.getElement());
+        expect(image.edit).not.toHaveBeenCalled();
+    });
+
+    test('retains passive-column skipping in mixed editable grids', () => {
+        const first = createCandidate({ field: 'first' });
+        const passive = createCandidate({ field: 'id' });
+        delete passive.getColumn().getDefinition().editor;
+        const last = createCandidate({ field: 'last' });
+        const harness = createHarness({ cells: [first, passive, last] });
+        globalThis.document.activeElement = first.getElement();
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
+        expect(globalThis.document.activeElement).toBe(last.getElement());
+        expect(passive.getElement().focus).not.toHaveBeenCalled();
+        expect(last.edit).not.toHaveBeenCalled();
+        harness.runtime.destroy();
+    });
+
     test('makes an unfocusable cell programmatically focusable without changing existing tabindex', () => {
         const unfocusable = createCandidate({ editable: false });
         const preserved = createCandidate({ editable: false });

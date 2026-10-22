@@ -7,7 +7,6 @@ import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { MUNICIPALITY_LOOKUP_COLUMNS } from './multifield-lookup-config.js';
 
-const output = document.querySelector('#test-output');
 const selectionModeControl = document.querySelector('#selection-mode');
 let currentGrid = null;
 let currentMultifieldLookupGrid = null;
@@ -324,9 +323,7 @@ const filterMunicipalities = (records, query) => {
 };
 
 const showTestOutput = (title, data) => {
-    if (!output) return;
-
-    output.textContent = `${title}\n\n${JSON.stringify(data, null, 2)}`;
+    console.debug(title, data);
 };
 
 const countRowsByState = (report, state) => {
@@ -860,8 +857,7 @@ const createMultifieldLookupGrid = async () => {
 
     if (tableMount) {
         showTestOutput('Multifield Lookup municipality dataset loaded', {
-            rows: municipalities.length,
-            definition: municipalityMultifieldLookup
+            rows: municipalities.length
         });
     }
 
@@ -1161,33 +1157,33 @@ const mountColumnCalculationsGrid = () => {
 };
 
 const imageLabPhotos = {
-    landscape: { src: '/test/images/landscape-01.jpg', alt: 'Campo di stelle e galassie', caption: 'Orizzontale · 1600 × 900' },
-    coffee: { src: '/test/images/landscape-02.jpg', alt: 'Tazza di caffè su un tavolo', caption: 'Orizzontale · 1200 × 800' },
-    portrait: { src: '/test/images/portrait-01.jpg', alt: 'Ritratto in tuta spaziale', caption: 'Verticale · 800 × 1200' },
-    catPortrait: { src: '/test/images/portrait-02.jpg', alt: 'Ritaglio verticale di un gatto', caption: 'Verticale · 700 × 1100' },
-    square: { src: '/test/images/square-01.jpg', alt: 'Ritratto quadrato in tuta spaziale', caption: 'Quadrata · 1000 × 1000' },
-    panorama: { src: '/test/images/panorama-01.jpg', alt: 'Razzo tra le torri di lancio', caption: 'Panorama · 3000 × 700' },
-    large: { src: '/test/images/large-01.jpg', alt: 'Primo piano di un gatto', caption: 'Alta risoluzione · 4000 × 2667' }
+    landscape: { src: '/test/images/landscape-01.jpg', alt: 'Lago alpino, chalet e montagne innevate', caption: 'Lago alpino · 1600 × 900' },
+    sunflowers: { src: '/test/images/landscape-02.jpg', alt: 'Campo di girasoli e paesaggio rurale', caption: 'Girasoli · 1200 × 800' },
+    portrait: { src: '/test/images/portrait-01.jpg', alt: 'Tucano tropicale nella vegetazione', caption: 'Tucano · 800 × 1200' },
+    village: { src: '/test/images/portrait-02.jpg', alt: 'Strada di borgo storico con bicicletta', caption: 'Borgo storico · 700 × 1100' },
+    square: { src: '/test/images/square-01.jpg', alt: 'Fotocamera, cartina e oggetti da viaggio', caption: 'Oggetti da viaggio · 1000 × 1000' },
+    panorama: { src: '/test/images/panorama-01.jpg', alt: 'Panorama urbano con grattacieli e ponti', caption: 'Panorama urbano · 3000 × 700' },
+    large: { src: '/test/images/large-01.jpg', alt: 'Mercato all’aperto con frutta e persone', caption: 'Mercato all’aperto · 4000 × 2667' }
 };
 const labPhoto = name => ({ ...imageLabPhotos[name] });
 const labRow = (id, description, images, imageCount, testCase) => ({ id, description, images, imageCount, testCase });
 const createImageLabRows = () => [
     labRow(1, 'Single image', imageLabPhotos.landscape.src, 1, 'Stringa URL · preview, zoom, chiusura e focus'),
-    labRow(2, 'Image object', labPhoto('coffee'), 1, 'Oggetto con alt e caption'),
+    labRow(2, 'Image object', labPhoto('sunflowers'), 1, 'Girasoli · oggetto con alt e caption'),
     labRow(3, 'Multi-image gallery', ['landscape', 'portrait', 'panorama', 'square', 'large'].map(labPhoto), 5, '5 immagini · +4 · orientamenti, navigazione ed estremi'),
-    labRow(4, 'Mixed orientation', ['landscape', 'portrait', 'catPortrait'].map(labPhoto), 3, 'Orizzontale e verticali · proporzioni e posizione'),
+    labRow(4, 'Mixed orientation', ['landscape', 'portrait', 'village'].map(labPhoto), 3, 'Lago, tucano e borgo · proporzioni e posizione'),
     labRow(5, 'Square / panoramic', ['square', 'panorama'].map(labPhoto), 2, 'Quadrata e panorama · contain, reset e fit'),
-    labRow(6, 'High-resolution image', labPhoto('large'), 1, '4000 × 2667 · wheel zoom, pan, bordi e reset'),
-    labRow(7, 'Distinct thumbnail', { ...labPhoto('large'), thumbnail: '/test/images/large-01-thumb.jpg' }, 1, 'Thumbnail autentica 320 × 213; originale 4000 × 2667 nel viewer'),
+    labRow(6, 'High-resolution image', labPhoto('large'), 1, 'Mercato 4000 × 2667 · wheel zoom, pan, bordi e reset'),
+    labRow(7, 'Distinct thumbnail', { ...labPhoto('landscape'), thumbnail: '/test/images/thumb-landscape-01.jpg' }, 1, 'Miniatura lago 320 × 180; originale 1600 × 900 nel viewer'),
     labRow(8, 'Empty collection', [], 0, 'Array vuoto · placeholder non interattivo'),
     labRow(9, 'Null value', null, 0, 'Null · placeholder non interattivo'),
     labRow(10, 'Invalid URL', { src: 'javascript:window.__imageLabUnsafe = true' }, 0, 'Schema escluso · nessuna esecuzione'),
     labRow(11, 'Missing image', { src: '/test/images/intentionally-missing.jpg', alt: 'Risorsa intenzionalmente assente' }, 1, 'URL assente · 404 o fallback HTML di Vite · errore di caricamento'),
-    labRow(12, 'Mixed valid / invalid', [labPhoto('coffee'), { src: '' }, null, { src: 'javascript:window.__imageLabUnsafe = true' }, labPhoto('panorama')], 2, '5 elementi grezzi, 2 validi · +1'),
+    labRow(12, 'Mixed valid / invalid', [labPhoto('sunflowers'), { src: '' }, null, { src: 'javascript:window.__imageLabUnsafe = true' }, labPhoto('panorama')], 2, 'Girasoli e panorama · 5 elementi grezzi, 2 validi · +1'),
     labRow(13, 'Missing optional metadata', { src: imageLabPhotos.portrait.src }, 1, 'Senza metadati · nome file come testo alternativo nel viewer'),
     labRow(14, 'Special characters', {
         src: imageLabPhotos.large.src,
-        alt: 'Gatto <img src=x onerror="window.__imageLabUnsafe=true"> & "occhi"',
+        alt: 'Mercato <img src=x onerror="window.__imageLabUnsafe=true"> & "frutta"',
         caption: '<script>window.__imageLabUnsafe=true</script> & "dettaglio"'
     }, 1, 'Alt e caption come testo · nessun markup eseguito'),
     labRow(15, 'Single valid after filtering', [null, { src: 'javascript:window.__imageLabUnsafe=true' }, labPhoto('square'), { src: '' }], 1, '4 elementi grezzi, 1 valido · nessun badge +N')
@@ -1239,8 +1235,8 @@ const mountImageSecondaryGrid = () => {
         selectionColumn: { enabled: true, mode: 'multiple' },
         toolbar: false,
         data: [
-            labRow(1, 'B · singola', labPhoto('coffee'), 1, 'Indipendente da A'),
-            labRow(2, 'B · raccolta', ['panorama', 'catPortrait'].map(labPhoto), 2, 'Due immagini')
+            labRow(1, 'B · singola', labPhoto('sunflowers'), 1, 'Girasoli · indipendente da A'),
+            labRow(2, 'B · raccolta', ['panorama', 'village'].map(labPhoto), 2, 'Panorama urbano e borgo')
         ],
         layout: 'fitColumns',
         columns: [

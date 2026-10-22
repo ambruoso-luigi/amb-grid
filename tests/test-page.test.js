@@ -11,6 +11,11 @@ const testHtml = fs.readFileSync(
 );
 
 describe('technical test page', () => {
+    test('keeps diagnostics in the console without a Technical output panel', () => {
+        expect(testHtml).not.toMatch(/test-output|Technical output/);
+        expect(testSource).not.toContain("querySelector('#test-output')");
+        expect(testSource).toContain('console.debug(title, data)');
+    });
     test('mounts the image laboratory with photographic scenarios, controls and two isolated grids', () => {
         const imageSection = testHtml.match(
             /<section\b[^>]*aria-labelledby\s*=\s*["']image-formatter-test-title["'][^>]*>[\s\S]*?<\/section>/

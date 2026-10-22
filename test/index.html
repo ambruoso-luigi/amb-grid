@@ -133,7 +133,7 @@
         <p id="image-lab-status" class="image-lab-status" role="status" aria-live="polite" aria-atomic="true">Preparazione laboratorio.</p>
         <div class="image-lab-guide">
           <p><strong>Mouse:</strong> hover per l’anteprima, click per aprire; wheel per zoom, drag sulla fotografia per pan dopo l’ingrandimento e click sulle miniature per navigare. Il pan funziona anche dalla zona centrale mentre la percentuale di zoom è visibile.</p>
-          <p><strong>Tastiera:</strong> Tab sulla thumbnail, Enter o Space per aprire; Tab / Shift+Tab tra i controlli, frecce per navigare, Escape per chiudere e tornare al trigger.</p>
+          <p><strong>Tastiera:</strong> Tab per entrare nella griglia, frecce per spostarsi tra celle e immagini senza cambiare la selezione; Space sulla checkbox seleziona la riga. Sulla thumbnail, Enter o Space apre il viewer; nella modale Tab / Shift+Tab sposta tra i controlli, le frecce cambiano immagine ed Escape chiude e torna al trigger.</p>
           <p><strong>Touch da provare su dispositivo reale:</strong> tap, swipe, pinch zoom, pan dopo zoom, chiusura e riapertura rapida. La simulazione mobile non certifica le gesture fisiche.</p>
         </div>
         <p class="image-lab-note">Le opzioni ricreano soltanto A mantenendo i dati correnti. Update data sostituisce la foto della riga 01; Restore original data ripristina tutte le fixture. Durante la modale i controlli sottostanti sono inattivi.</p>
@@ -141,10 +141,6 @@
         <h3 id="image-secondary-test-title">Griglia B — isolamento</h3>
         <p>Una foto e una raccolta indipendenti dalle opzioni di A. Prova B dopo aver distrutto o ricreato A; deve esistere una sola modale fotografica.</p>
         <div id="image-secondary-test-table" aria-labelledby="image-secondary-test-title"></div>
-      </section>
-      <section aria-labelledby="test-output-title">
-        <h2 id="test-output-title">Technical output</h2>
-        <pre id="test-output">Ready.</pre>
       </section>
     </main>
     <script type="module" src="/src/demo/test.js"></script>

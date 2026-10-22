@@ -52,7 +52,7 @@ button.amb-image {
     line-height: 1.3;
 }
 
-.amb-image--previewable:focus-visible {
+.amb-image:focus-visible {
     outline: 2px solid var(--amb-color-focus, #315f8f);
     outline-offset: 2px;
 }

@@ -3,6 +3,7 @@ import {
     focusCellWithoutEditing,
     focusNavigationCandidate,
     isEditableCandidate,
+    isNavigationCandidate,
     navigateToCandidate
 } from '../editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from './keyboard-shortcuts.js';
@@ -48,7 +49,7 @@ const isCandidateActuallyActive = (candidate, focusOnly = false) => {
         return activeElement === element || Boolean(element.contains?.(activeElement));
     }
 
-    if (metadata.interactive && !definition.editor) {
+    if (!definition.editor) {
         return activeElement === element || Boolean(element.contains?.(activeElement));
     }
 
@@ -189,7 +190,7 @@ export const createKeyboardNavigationRuntime = ({
 
     const activateCandidate = async (candidate, destination) => {
         const focusOnly = normalizeDestination(destination).activation === 'focus';
-        const result = focusOnly ? focusNavigationCandidate(candidate) : navigateToCandidate(candidate);
+        const result = focusOnly ? focusNavigationCandidate(candidate) : navigateCandidate(candidate);
         const activeImmediately = isCandidateActuallyActive(candidate, focusOnly);
         if (!result) return { active: false, activeImmediately };
 
@@ -255,7 +256,23 @@ export const createKeyboardNavigationRuntime = ({
         if (!element || !isDataRowElement(rowElement)) return false;
         if (!isAllowedByRowState(candidate)) return false;
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
-        return isEditableCandidate(candidate);
+        // A display-only grid needs cell navigation even though it has no
+        // data editors. Mixed editable grids retain their established skip
+        // behavior for passive columns; image controls are interactive there.
+        const displayOnly = !(candidate?.getRow?.()?.getCells?.() || []).some(cell => {
+            const column = cell.getColumn?.()?.getDefinition?.() || {};
+            return column.editor && !getAmbColumnMetadata(column).managedColumn;
+        });
+        return navigationEnabled && displayOnly
+            ? isNavigationCandidate(candidate)
+            : isEditableCandidate(candidate);
+    };
+
+    const navigateCandidate = candidate => {
+        if (!candidate?.getColumn?.()?.getDefinition?.().editor && isKeyboardOperationalCandidate(candidate)) {
+            return focusNavigationCandidate(candidate);
+        }
+        return navigateToCandidate(candidate);
     };
 
     const isLogicalVerticalCandidate = candidate => {
@@ -265,7 +282,7 @@ export const createKeyboardNavigationRuntime = ({
         if (!candidate?.getRow?.() || (!candidate?.getField?.() && !candidate?.getColumn?.())) return false;
         if (!isAllowedByRowState(candidate)) return false;
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
-        return isEditableCandidate(candidate);
+        return isKeyboardOperationalCandidate(candidate);
     };
 
     const isCurrentGridCandidate = candidate => {
@@ -668,7 +685,7 @@ export const createKeyboardNavigationRuntime = ({
         }
 
         if (enter) {
-            if (!activeCell || !isEditableCandidate(activeCell)) return;
+            if (!activeCell || !activeDefinition.editor || !isEditableCandidate(activeCell)) return;
             event.preventDefault();
             event.stopPropagation?.();
             event.stopImmediatePropagation?.();
@@ -734,15 +751,16 @@ export const createKeyboardNavigationRuntime = ({
                 event.preventDefault();
                 event.stopPropagation?.();
                 event.stopImmediatePropagation?.();
-                navigateToCandidate(managedOriginTarget);
+                navigateCandidate(managedOriginTarget);
                 return;
             }
             if (currentIndex === -1) return;
-            if ((focusOnly || targetFocusOnly) && !atPageBoundary) {
+            if ((focusOnly || targetFocusOnly || !activeDefinition.editor
+                || (targetCandidate && !targetCandidate.getColumn?.()?.getDefinition?.().editor)) && !atPageBoundary) {
                 event.preventDefault();
                 event.stopPropagation?.();
                 event.stopImmediatePropagation?.();
-                navigateToCandidate(targetCandidate);
+                navigateCandidate(targetCandidate);
                 return;
             }
             if (!atPageBoundary) return;

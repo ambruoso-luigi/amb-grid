@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-const assets = ['landscape-01.jpg', 'landscape-02.jpg', 'large-01.jpg', 'large-01-thumb.jpg', 'panorama-01.jpg', 'portrait-01.jpg', 'portrait-02.jpg', 'square-01.jpg'];
+const assets = ['landscape-01.jpg', 'landscape-02.jpg', 'large-01.jpg', 'thumb-landscape-01.jpg', 'panorama-01.jpg', 'portrait-01.jpg', 'portrait-02.jpg', 'square-01.jpg'];
+const assetSizes = [[1600, 900], [1200, 800], [4000, 2667], [320, 180], [3000, 700], [800, 1200], [700, 1100], [1000, 1000]];
 const counts = [1, 1, 5, 3, 2, 1, 1, 0, 0, 0, 1, 2, 1, 1, 1];
 const row = (page, id) => page.locator('#image-formatter-test-table .tabulator-row').filter({
     has: page.locator('[tabulator-field="id"]').filter({ hasText: new RegExp(`^${id}$`) })
@@ -27,21 +28,199 @@ const close = async page => {
     await expect(viewer(page)).toHaveCount(0);
 };
 const programmaticGridAction = (page, action, rows) => page.evaluate(async ({ action, rows }) => {
-    const { imageLabTestHarness } = await import('/src/demo/test.js');
+    // Reuse the module actually mounted by Vite, including its HMR timestamp.
+    // Importing a second URL would initialize another pair of grids.
+    const source = document.querySelector('script[type="module"][src*="/src/demo/test.js"]').src;
+    const { imageLabTestHarness } = await import(source);
     await imageLabTestHarness[action](rows);
 }, { action, rows });
 
+const tabUntil = async (page, target, limit = 110) => {
+    for (let index = 0; index < limit; index += 1) {
+        await page.keyboard.press('Tab');
+        if (await target.evaluate(element => element === document.activeElement)) return;
+    }
+    await expect(target).toBeFocused();
+};
+const imageCell = (page, id) => row(page, id).locator('[tabulator-field="images"]');
+const expectKeyboardFocus = async target => {
+    await expect(target).toBeFocused();
+    expect(await target.evaluate(element => {
+        const style = getComputedStyle(element);
+        return style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) >= 2;
+    })).toBe(true);
+};
+const enterImageGridWithTab = async page => {
+    await load(page);
+    await page.goto('/test/#image-lab-recreate');
+    await expect(row(page, 1)).toBeAttached();
+    await expect(page.locator('#image-lab-recreate')).toBeFocused();
+    await tabUntil(page, row(page, 1).locator('.amb-selection-column'));
+    await page.keyboard.press('ArrowRight');
+    await expect(row(page, 1).locator('[tabulator-field="id"]')).toBeFocused();
+};
+
+test.describe('keyboard-only image laboratory', () => {
+    test('reaches readonly cells, selects independently and opens the gallery from real keyboard focus', async ({ page }) => {
+        await enterImageGridWithTab(page);
+        await page.keyboard.press('ArrowLeft');
+        await expect(row(page, 1).locator('.amb-selection-column__input')).toBeFocused();
+        await page.keyboard.press('Space');
+        await expect(row(page, 1)).toHaveClass(/tabulator-selected/);
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowRight');
+        await expectKeyboardFocus(row(page, 1).locator('[tabulator-field="description"]'));
+        for (const key of ['Enter', 'Space']) {
+            await page.keyboard.press(key);
+            await expect(viewer(page)).toHaveCount(0);
+            await expect(row(page, 1).locator('.tabulator-editing')).toHaveCount(0);
+        }
+        await page.keyboard.press('Tab');
+        await expectKeyboardFocus(trigger(page, 1));
+        await page.keyboard.press('ArrowDown');
+        await expectKeyboardFocus(trigger(page, 2));
+        await page.keyboard.press('ArrowUp');
+        await expectKeyboardFocus(trigger(page, 1));
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown');
+        await expectKeyboardFocus(trigger(page, 3));
+        for (const key of ['Enter', 'Space']) {
+            await page.keyboard.press(key);
+            await expect(viewer(page)).toHaveCount(1);
+            await page.keyboard.press('ArrowRight');
+            await expect(viewer(page).getByRole('status')).toContainText('Immagine 2 di 5');
+            expect(await viewer(page).evaluate(element => element.contains(document.activeElement))).toBe(true);
+            await page.keyboard.press('ArrowLeft');
+            await expect(viewer(page).getByRole('status')).toContainText('Immagine 1 di 5');
+            await close(page);
+            await expectKeyboardFocus(trigger(page, 3));
+        }
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('Shift+Tab');
+        await expect(row(page, 3).locator('[tabulator-field="id"]')).toBeFocused();
+        await expect(row(page, 1)).toHaveClass(/tabulator-selected/);
+        await expect(page.locator('#image-formatter-test-table .tabulator-selected')).toHaveCount(1);
+        await expect(page.locator('#image-secondary-test-table .tabulator-selected')).toHaveCount(0);
+        await expect(page.locator('#image-formatter-test-table .tabulator-editing')).toHaveCount(0);
+    });
+
+    test('keeps keyboard navigation local to B and releases A focus on recreation', async ({ page }) => {
+        await enterImageGridWithTab(page);
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('Space');
+        const b = page.locator('#image-secondary-test-table');
+        const firstB = b.locator('.tabulator-row').first();
+        await tabUntil(page, firstB.locator('.amb-selection-column'));
+        await page.keyboard.press('ArrowRight');
+        await expect(firstB.locator('[tabulator-field="description"]')).toBeFocused();
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('Space');
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowRight');
+        await expectKeyboardFocus(firstB.locator('.amb-image'));
+        await page.keyboard.press('Enter');
+        await close(page);
+        await expect(firstB.locator('.amb-image')).toBeFocused();
+        await page.keyboard.press('ArrowDown');
+        await expect(b.locator('.tabulator-row').nth(1).locator('.amb-image')).toBeFocused();
+        await expect(b.locator('.tabulator-selected')).toHaveCount(1);
+        await expect(row(page, 1)).toHaveClass(/tabulator-selected/);
+
+        // Return to the external controls with keyboard navigation only.
+        for (let index = 0; index < 110; index += 1) {
+            await page.keyboard.press('Shift+Tab');
+            if (await page.locator('#image-lab-destroy').evaluate(element => element === document.activeElement)) break;
+        }
+        await expect(page.locator('#image-lab-destroy')).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(page.locator('#image-formatter-test-table .tabulator-row')).toHaveCount(0);
+        await page.keyboard.press('Tab');
+        await expect(page.locator('#image-lab-restore')).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(row(page, 1)).toBeAttached();
+        await tabUntil(page, row(page, 1).locator('.amb-selection-column'));
+        for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowRight');
+        await expectKeyboardFocus(trigger(page, 1));
+        await page.keyboard.press('Space');
+        await close(page);
+        await expect(trigger(page, 1)).toBeFocused();
+        await expect(page.locator('#image-formatter-test-table .tabulator-selected')).toHaveCount(0);
+        await expect(b.locator('.tabulator-selected')).toHaveCount(1);
+        await expect(page.locator('.amb-image-viewer-source')).toHaveCount(0);
+    });
+
+    test('handles preview-only, passive and invalid image cells without editors or false activation', async ({ page }) => {
+        await load(page);
+        await page.goto('/test/#image-lab-viewer');
+        await expect(row(page, 1)).toBeAttached();
+        await expect(page.locator('#image-lab-viewer')).toBeFocused();
+        await page.keyboard.press('Space');
+        await expect(page.locator('#image-lab-viewer')).not.toBeChecked();
+        await tabUntil(page, row(page, 1).locator('.amb-selection-column'));
+        for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowRight');
+        const preview = row(page, 1).locator('.amb-image--previewable');
+        await expectKeyboardFocus(preview);
+        await expect(page.locator('.amb-image-preview')).toHaveCount(1);
+        for (const key of ['Enter', 'Space']) {
+            await page.keyboard.press(key);
+            await expect(viewer(page)).toHaveCount(0);
+        }
+        for (let id = 2; id <= 10; id += 1) {
+            await page.keyboard.press('ArrowDown');
+            await expect(id < 8 ? row(page, id).locator('.amb-image') : imageCell(page, id)).toBeFocused();
+        }
+        for (const key of ['Enter', 'Space']) await page.keyboard.press(key);
+        await expect(viewer(page)).toHaveCount(0);
+        await expect(imageCell(page, 10).locator('button, [tabindex]')).toHaveCount(0);
+        await expect(page.locator('#image-formatter-test-table .tabulator-editing')).toHaveCount(0);
+
+        for (let index = 0; index < 110; index += 1) {
+            await page.keyboard.press('Shift+Tab');
+            if (await page.locator('#image-lab-preview').evaluate(element => element === document.activeElement)) break;
+        }
+        await expect(page.locator('#image-lab-preview')).toBeFocused();
+        await page.keyboard.press('Space');
+        await tabUntil(page, row(page, 1).locator('.amb-selection-column'));
+        for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowRight');
+        await expectKeyboardFocus(imageCell(page, 1));
+        await expect(imageCell(page, 1).locator('button, [tabindex]')).toHaveCount(0);
+        for (const key of ['Enter', 'Space']) await page.keyboard.press(key);
+        await expect(viewer(page)).toHaveCount(0);
+        await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    });
+
+    test('reveals and outlines the active thumbnail while scrolling horizontally on mobile', async ({ page }, testInfo) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await enterImageGridWithTab(page);
+        await page.keyboard.press('ArrowRight');
+        await page.keyboard.press('ArrowRight');
+        await expectKeyboardFocus(trigger(page, 1));
+        await expect.poll(() => trigger(page, 1).evaluate(element => {
+            const box = element.getBoundingClientRect();
+            const holder = element.closest('.tabulator').querySelector('.tabulator-tableholder').getBoundingClientRect();
+            return box.left >= holder.left && box.right <= holder.right
+                && box.left >= 0 && box.right <= innerWidth;
+        })).toBe(true);
+        await page.keyboard.press('ArrowDown');
+        await expectKeyboardFocus(trigger(page, 2));
+        await page.screenshot({ path: testInfo.outputPath('keyboard-mobile.png') });
+        await page.keyboard.press('Enter');
+        await close(page);
+        await expectKeyboardFocus(trigger(page, 2));
+    });
+});
+
 test('photographs, fixture counts and other technical grids render correctly', async ({ page, request }, testInfo) => {
     await load(page);
-    for (const name of assets) {
+    for (const [index, name] of assets.entries()) {
         const response = await request.get(`/test/images/${name}`);
         expect(response.status()).toBe(200);
         expect(await page.evaluate(src => new Promise(resolve => {
             const image = new Image();
-            image.onload = () => resolve(image.naturalWidth > 0 && image.naturalHeight > 0);
+            image.onload = () => resolve([image.naturalWidth, image.naturalHeight]);
             image.onerror = () => resolve(false);
             image.src = src;
-        }), `/test/images/${name}`)).toBe(true);
+        }), `/test/images/${name}`)).toEqual(assetSizes[index]);
     }
     for (let id = 1; id <= counts.length; id += 1) {
         await expect(row(page, id).locator('[tabulator-field="imageCount"]')).toHaveText(String(counts[id - 1]));
@@ -93,13 +272,13 @@ test('single and gallery keyboard flow, metadata, navigation and distinct thumbn
     await viewer(page).getByRole('button', { name: 'Immagine 1 di 5', exact: true }).click();
     await expect(viewer(page).getByLabel('Precedente', { exact: true })).toHaveAttribute('aria-disabled', 'true');
     await close(page);
-    await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/large-01-thumb.jpg');
+    await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/thumb-landscape-01.jpg');
     await trigger(page, 7).click();
-    await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('src', '/test/images/large-01.jpg');
+    await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await close(page);
     await trigger(page, 2).click();
-    await expect(viewer(page).getByRole('status')).toContainText('Orizzontale · 1200 × 800');
-    await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('alt', 'Tazza di caffè su un tavolo');
+    await expect(viewer(page).getByRole('status')).toContainText('Girasoli · 1200 × 800');
+    await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('alt', 'Campo di girasoli e paesaggio rurale');
     await close(page);
     for (const [id, count] of [[12, 2], [13, 1], [15, 1]]) {
         await trigger(page, id).click();
@@ -169,7 +348,7 @@ test('special metadata stays text and missing original closes without unhandled 
     await load(page);
     await trigger(page, 14).click();
     await expect(viewer(page).getByRole('status')).toContainText('<script>window.__imageLabUnsafe=true</script>');
-    await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('alt', 'Gatto <img src=x onerror="window.__imageLabUnsafe=true"> & "occhi"');
+    await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('alt', 'Mercato <img src=x onerror="window.__imageLabUnsafe=true"> & "frutta"');
     await expect(viewer(page).locator('script, [onerror]')).toHaveCount(0);
     expect(await page.evaluate(() => window.__imageLabUnsafe)).toBeUndefined();
     await close(page);
@@ -358,7 +537,7 @@ test('real gallery resets zoom and position between all five photograph formats'
     await load(page);
     await trigger(page, 3).click();
     const image = () => viewer(page).locator('.viewer-canvas img');
-    const captions = ['Orizzontale', 'Verticale', 'Panorama', 'Quadrata', 'Alta risoluzione'];
+    const captions = ['Lago alpino', 'Tucano', 'Panorama urbano', 'Oggetti da viaggio', 'Mercato all’aperto'];
     const expectFit = async index => {
         await expect(viewer(page).getByRole('status')).toContainText(`Immagine ${index + 1} di 5`);
         await expect(viewer(page).getByRole('status')).toContainText(captions[index]);
@@ -393,7 +572,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768
         await load(page);
         const caption = 'Fotografia ad alta risoluzione: verificare dettagli, proporzioni e leggibilità senza sovrapposizioni ai comandi. '.repeat(2)
             + 'Riferimento: ' + 'ABCDEFGHIJ'.repeat(8);
-        await programmaticGridAction(page, 'updateRows', [{ id: 14, images: { src: '/test/images/large-01.jpg', alt: 'Gatto ad alta risoluzione', caption } }]);
+        await programmaticGridAction(page, 'updateRows', [{ id: 14, images: { src: '/test/images/large-01.jpg', alt: 'Mercato all’aperto', caption } }]);
         await trigger(page, 14).click();
         await expect(viewer(page).getByRole('status')).toContainText(caption);
         await expect(viewer(page).getByLabel('Chiudi immagini', { exact: true })).toBeFocused();
@@ -430,28 +609,29 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768
 }
 
 test('an unavailable thumbnail falls back to its original photograph', async ({ page }) => {
-    await page.route('**/test/images/large-01-thumb.jpg', route => route.fulfill({ status: 404, body: '' }));
+    await page.route('**/test/images/thumb-landscape-01.jpg', route => route.fulfill({ status: 404, body: '' }));
     await load(page);
     await row(page, 7).locator('img').scrollIntoViewIfNeeded();
-    await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/large-01.jpg');
+    await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await trigger(page, 7).click();
     const image = viewer(page).locator('.viewer-canvas img');
-    await expect(image).toHaveAttribute('src', '/test/images/large-01.jpg');
+    await expect(image).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
     await expect.poll(() => viewer(page).locator('.viewer-list img').evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
     await close(page);
 });
 
 test('an unavailable original can display its valid thumbnail', async ({ page }) => {
-    await page.route('**/test/images/large-01.jpg', route => route.fulfill({ status: 404, body: '' }));
+    await page.route('**/test/images/landscape-01.jpg', route => route.fulfill({ status: 404, body: '' }));
     await load(page);
     await trigger(page, 7).click();
     const image = viewer(page).locator('.viewer-canvas img');
-    await expect(image).toHaveAttribute('src', /\/test\/images\/large-01-thumb\.jpg$/);
+    await expect(image).toHaveAttribute('src', /\/test\/images\/thumb-landscape-01\.jpg$/);
     await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
     const oldThumbnail = await viewer(page).locator('.viewer-list img').elementHandle();
     const originalSource = await oldThumbnail.evaluate(element => element.src);
     await close(page);
+    await page.unroute('**/test/images/landscape-01.jpg');
     await trigger(page, 3).click();
     await oldThumbnail.evaluate(element => element.dispatchEvent(new Event('error')));
     expect(await oldThumbnail.evaluate(element => element.src)).toBe(originalSource);
@@ -509,11 +689,12 @@ test.describe('image grid selection', () => {
     });
 
     test('Tab navigation from a selection checkbox does not change selection', async ({ page }) => {
-        await load(page);
-        await checkbox(row(page, 1)).focus();
+        await enterImageGridWithTab(page);
+        await page.keyboard.press('ArrowLeft');
+        await expect(checkbox(row(page, 1))).toBeFocused();
         for (const [key, destination] of [
-            ['Tab', row(page, 1).locator('.amb-selection-column')],
-            ['Shift+Tab', primary(page).locator('.tabulator-tableholder')]
+            ['Tab', row(page, 1).locator('[tabulator-field="id"]')],
+            ['Shift+Tab', page.locator('#image-lab-update')]
         ]) {
             await page.keyboard.press(key);
             await expect(destination).toBeFocused();
