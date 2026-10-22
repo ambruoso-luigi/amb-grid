@@ -1174,11 +1174,11 @@ const labRow = (id, description, images, imageCount, testCase) => ({ id, descrip
 const createImageLabRows = () => [
     labRow(1, 'Single image', imageLabPhotos.landscape.src, 1, 'Stringa URL · preview, zoom, chiusura e focus'),
     labRow(2, 'Image object', labPhoto('coffee'), 1, 'Oggetto con alt e caption'),
-    labRow(3, 'Multi-image gallery', ['landscape', 'portrait', 'square', 'panorama', 'coffee'].map(labPhoto), 5, '5 immagini · +4 · miniature, navigazione ed estremi'),
+    labRow(3, 'Multi-image gallery', ['landscape', 'portrait', 'panorama', 'square', 'large'].map(labPhoto), 5, '5 immagini · +4 · orientamenti, navigazione ed estremi'),
     labRow(4, 'Mixed orientation', ['landscape', 'portrait', 'catPortrait'].map(labPhoto), 3, 'Orizzontale e verticali · proporzioni e posizione'),
     labRow(5, 'Square / panoramic', ['square', 'panorama'].map(labPhoto), 2, 'Quadrata e panorama · contain, reset e fit'),
     labRow(6, 'High-resolution image', labPhoto('large'), 1, '4000 × 2667 · wheel zoom, pan, bordi e reset'),
-    labRow(7, 'Distinct thumbnail', { ...labPhoto('large'), thumbnail: imageLabPhotos.catPortrait.src }, 1, 'Ritaglio verticale del gatto nella cella; originale grande nel viewer'),
+    labRow(7, 'Distinct thumbnail', { ...labPhoto('large'), thumbnail: '/test/images/large-01-thumb.jpg' }, 1, 'Thumbnail autentica 320 × 213; originale 4000 × 2667 nel viewer'),
     labRow(8, 'Empty collection', [], 0, 'Array vuoto · placeholder non interattivo'),
     labRow(9, 'Null value', null, 0, 'Null · placeholder non interattivo'),
     labRow(10, 'Invalid URL', { src: 'javascript:window.__imageLabUnsafe = true' }, 0, 'Schema escluso · nessuna esecuzione'),
@@ -1275,13 +1275,21 @@ for (const name of ['preview', 'viewer']) imageLabControls[name].addEventListene
 });
 imageLabControls.recreate.addEventListener('click', mountImageFormatterGrid);
 imageLabControls.restore.addEventListener('click', mountImageFormatterGrid);
-imageLabControls.destroy.addEventListener('click', () => {
+const destroyImageFormatterGrid = () => {
     currentImageFormatterGrid?.destroy();
     currentImageFormatterGrid = null;
     syncImageLabState('Griglia A distrutta.');
-});
+};
+imageLabControls.destroy.addEventListener('click', destroyImageFormatterGrid);
 imageLabControls.update.addEventListener('click', () => updateImageLabData(false));
 imageLabControls.reset.addEventListener('click', () => updateImageLabData(true));
+
+export const imageLabTestHarness = {
+    destroy: destroyImageFormatterGrid,
+    recreate: mountImageFormatterGrid,
+    update: () => updateImageLabData(false),
+    updateRows: rows => currentImageFormatterGrid?.updateData(structuredClone(rows))
+};
 
 selectionModeControl?.addEventListener('change', () => {
     mountGrid().catch(error => {

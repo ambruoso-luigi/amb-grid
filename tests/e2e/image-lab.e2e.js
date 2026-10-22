@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const assets = ['landscape-01.jpg', 'landscape-02.jpg', 'large-01.jpg', 'panorama-01.jpg', 'portrait-01.jpg', 'portrait-02.jpg', 'square-01.jpg'];
+const assets = ['landscape-01.jpg', 'landscape-02.jpg', 'large-01.jpg', 'large-01-thumb.jpg', 'panorama-01.jpg', 'portrait-01.jpg', 'portrait-02.jpg', 'square-01.jpg'];
 const counts = [1, 1, 5, 3, 2, 1, 1, 0, 0, 0, 1, 2, 1, 1, 1];
 const row = (page, id) => page.locator('#image-formatter-test-table .tabulator-row').filter({
     has: page.locator('[tabulator-field="id"]').filter({ hasText: new RegExp(`^${id}$`) })
@@ -26,6 +26,10 @@ const close = async page => {
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
 };
+const programmaticGridAction = (page, action, rows) => page.evaluate(async ({ action, rows }) => {
+    const { imageLabTestHarness } = await import('/src/demo/test.js');
+    await imageLabTestHarness[action](rows);
+}, { action, rows });
 
 test('photographs, fixture counts and other technical grids render correctly', async ({ page, request }, testInfo) => {
     await load(page);
@@ -89,7 +93,7 @@ test('single and gallery keyboard flow, metadata, navigation and distinct thumbn
     await viewer(page).getByRole('button', { name: 'Immagine 1 di 5', exact: true }).click();
     await expect(viewer(page).getByLabel('Precedente', { exact: true })).toHaveAttribute('aria-disabled', 'true');
     await close(page);
-    await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/portrait-02.jpg');
+    await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/large-01-thumb.jpg');
     await trigger(page, 7).click();
     await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('src', '/test/images/large-01.jpg');
     await close(page);
@@ -209,7 +213,7 @@ test('data update, reset, destroy, restore and recreate clean up only grid A', a
     await load(page);
     const otherRows = await page.locator('#column-calculations-test-table .tabulator-row').count();
     await trigger(page, 1).click();
-    await page.locator('#image-lab-update').evaluate(button => button.click());
+    await programmaticGridAction(page, 'update');
     await expect(page.locator('#image-lab-status')).toContainText('Riga 01 aggiornata');
     await expect(row(page, 1).locator('img')).toHaveAttribute('src', '/test/images/panorama-01.jpg');
     await expect(viewer(page)).toHaveCount(1);
@@ -219,14 +223,14 @@ test('data update, reset, destroy, restore and recreate clean up only grid A', a
     await expect(row(page, 1).locator('img')).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await expect(page.locator('#image-lab-status')).toContainText('Fixture originali ripristinate');
     await trigger(page, 3).click();
-    await page.locator('#image-lab-destroy').evaluate(button => button.click());
+    await programmaticGridAction(page, 'destroy');
     await expect(viewer(page)).toHaveCount(0);
     await expect(page.locator('.amb-image-viewer-source, .amb-image-preview')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Update data', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: 'Restore grid A', exact: true }).click();
     await expect(trigger(page, 1)).toHaveCount(1);
     await trigger(page, 1).click();
-    await page.locator('#image-lab-recreate').evaluate(button => button.click());
+    await programmaticGridAction(page, 'recreate');
     await expect(viewer(page)).toHaveCount(0);
     await expect(page.locator('#image-formatter-test-table .tabulator-row')).toHaveCount(15);
     await trigger(page, 1).click();
@@ -243,7 +247,7 @@ test('grid B keeps its viewer and focus when grid A is destroyed', async ({ page
     await close(page);
     await secondary.click();
     await expect(viewer(page).locator('.viewer-list li')).toHaveCount(2);
-    await page.locator('#image-lab-destroy').evaluate(button => button.click());
+    await programmaticGridAction(page, 'destroy');
     await expect(viewer(page)).toHaveCount(1);
     await page.keyboard.press('ArrowRight');
     await expect(viewer(page).getByRole('status')).toContainText('Immagine 2 di 2');
@@ -273,4 +277,184 @@ test('mobile viewport keeps lab controls and viewer usable', async ({ page }, te
     await page.screenshot({ path: testInfo.outputPath('image-lab-mobile-viewer.png') });
     await close(page);
     await expectRestoredFocus(page, '#image-formatter-test-table');
+});
+
+test('zoom tooltip allows central and uncovered pan after zoom, wheel and reopen', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await load(page);
+    const image = () => viewer(page).locator('.viewer-canvas img');
+    const zoom = () => viewer(page).getByLabel('Ingrandisci', { exact: true }).click();
+    const drag = async (x, y, dx, dy) => {
+        const before = await image().boundingBox();
+        await page.mouse.move(x, y);
+        await page.mouse.down();
+        await page.mouse.move(x + dx, y + dy, { steps: 8 });
+        await page.mouse.up();
+        const after = await image().boundingBox();
+        return { before, after, moved: Math.hypot(after.x - before.x, after.y - before.y) };
+    };
+    const expectBounded = async () => {
+        const box = await image().boundingBox();
+        expect(box.x).toBeLessThanOrEqual(0.5);
+        expect(box.y).toBeLessThanOrEqual(0.5);
+        expect(box.x + box.width).toBeGreaterThanOrEqual(1439.5);
+        expect(box.y + box.height).toBeGreaterThanOrEqual(899.5);
+    };
+    for (let session = 0; session < 2; session += 1) {
+        await trigger(page, 6).click();
+        await expect.poll(() => image().evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+        const fit = await image().boundingBox();
+        for (let step = 0; step < 14 && (await image().boundingBox()).width < 2160; step += 1) await zoom();
+        expect((await image().boundingBox()).width).toBeGreaterThan(2160);
+        await zoom();
+        const tooltip = viewer(page).locator('.viewer-tooltip');
+        await expect(tooltip).toBeVisible();
+        const hit = await page.evaluate(() => document.elementsFromPoint(720, 450).slice(0, 4).map(element => ({
+            tag: element.tagName, classes: element.className,
+            pointerEvents: getComputedStyle(element).pointerEvents,
+            zIndex: getComputedStyle(element).zIndex
+        })));
+        await viewer(page).evaluate(element => {
+            window.__imageLabPanTargets = [];
+            element.addEventListener('pointerdown', event => window.__imageLabPanTargets.push(event.target.className), true);
+        });
+        const central = await drag(720, 450, 80, 50);
+        const uncovered = await drag(550, 330, 80, 50);
+        await testInfo.attach(`pan-hit-testing-${session}`, {
+            body: JSON.stringify({ session, hit, central, uncovered,
+                tooltip: await tooltip.evaluate(element => ({ pointerEvents: getComputedStyle(element).pointerEvents, zIndex: getComputedStyle(element).zIndex })),
+                targets: await page.evaluate(() => window.__imageLabPanTargets) }),
+            contentType: 'application/json'
+        });
+        await page.screenshot({ path: testInfo.outputPath(`central-pan-${session}.png`) });
+        expect(uncovered.moved).toBeGreaterThan(20);
+        expect(central.moved).toBeGreaterThan(20);
+        expect(hit[0].tag).toBe('IMG');
+        await expectBounded();
+        for (let step = 0; step < 2; step += 1) {
+            await zoom();
+            expect((await drag(720, 450, -80, -50)).moved).toBeGreaterThan(20);
+            await expectBounded();
+        }
+        const beforeWheel = await image().boundingBox();
+        await page.mouse.move(720, 450);
+        await page.mouse.wheel(0, -250);
+        await expect.poll(async () => (await image().boundingBox()).width).toBeGreaterThan(beforeWheel.width);
+        expect((await drag(720, 450, 100, 60)).moved).toBeGreaterThan(20);
+        await drag(720, 450, 719, 449);
+        await expectBounded();
+        await drag(720, 450, -719, -449);
+        await expectBounded();
+        await viewer(page).getByLabel('Fit / Reset', { exact: true }).click();
+        const reset = await image().boundingBox();
+        for (const key of ['x', 'y', 'width', 'height']) expect(reset[key]).toBeCloseTo(fit[key], 0);
+        await close(page);
+        await expect(page.locator('.amb-image-viewer-source')).toHaveCount(0);
+    }
+});
+
+test('real gallery resets zoom and position between all five photograph formats', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await load(page);
+    await trigger(page, 3).click();
+    const image = () => viewer(page).locator('.viewer-canvas img');
+    const captions = ['Orizzontale', 'Verticale', 'Panorama', 'Quadrata', 'Alta risoluzione'];
+    const expectFit = async index => {
+        await expect(viewer(page).getByRole('status')).toContainText(`Immagine ${index + 1} di 5`);
+        await expect(viewer(page).getByRole('status')).toContainText(captions[index]);
+        await expect(viewer(page).getByRole('button', { name: `Immagine ${index + 1} di 5`, exact: true })).toHaveAttribute('aria-current', 'true');
+        await expect.poll(() => image().evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+        const box = await image().boundingBox();
+        const ratio = await image().evaluate(element => element.naturalWidth / element.naturalHeight);
+        expect(box.width / box.height).toBeCloseTo(ratio, 2);
+        expect(box.x).toBeGreaterThanOrEqual(0);
+        expect(box.y).toBeGreaterThanOrEqual(0);
+        expect(box.x + box.width).toBeLessThanOrEqual(1440);
+        expect(box.y + box.height).toBeLessThanOrEqual(900);
+        return box;
+    };
+    for (let index = 0; index < 5; index += 1) {
+        const fit = await expectFit(index);
+        await viewer(page).getByLabel('Ingrandisci', { exact: true }).click();
+        expect((await image().boundingBox()).width).toBeGreaterThan(fit.width);
+        if (index < 4) await page.keyboard.press('ArrowRight');
+    }
+    await expect(viewer(page).getByLabel('Successiva', { exact: true })).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('ArrowRight');
+    await expect(viewer(page).getByRole('status')).toContainText('Immagine 5 di 5');
+    await page.keyboard.press('ArrowLeft');
+    await expectFit(3);
+    await close(page);
+});
+
+for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 390, height: 844 }, { width: 844, height: 390 }]) {
+    test(`viewer controls and long caption remain usable at ${viewport.width}x${viewport.height}`, async ({ page }, testInfo) => {
+        await page.setViewportSize(viewport);
+        await load(page);
+        const caption = 'Fotografia ad alta risoluzione: verificare dettagli, proporzioni e leggibilità senza sovrapposizioni ai comandi. '.repeat(2)
+            + 'Riferimento: ' + 'ABCDEFGHIJ'.repeat(8);
+        await programmaticGridAction(page, 'updateRows', [{ id: 14, images: { src: '/test/images/large-01.jpg', alt: 'Gatto ad alta risoluzione', caption } }]);
+        await trigger(page, 14).click();
+        await expect(viewer(page).getByRole('status')).toContainText(caption);
+        await expect(viewer(page).getByLabel('Chiudi immagini', { exact: true })).toBeFocused();
+        await page.keyboard.press('Tab');
+        expect(await viewer(page).evaluate(element => element.contains(document.activeElement))).toBe(true);
+        await page.keyboard.press('Shift+Tab');
+        await page.screenshot({ path: testInfo.outputPath(`long-caption-${viewport.width}x${viewport.height}.png`) });
+        const statusBox = await viewer(page).getByRole('status').boundingBox();
+        expect(statusBox.x + statusBox.width).toBeLessThanOrEqual(viewport.width - 40);
+        expect(await viewer(page).getByRole('status').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+        const controls = await viewer(page).locator('.viewer-toolbar [role="button"]').all();
+        for (const control of controls) {
+            const box = await control.boundingBox();
+            expect(box.x).toBeGreaterThanOrEqual(0);
+            expect(box.y).toBeGreaterThanOrEqual(0);
+            expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+            expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+            expect(await control.evaluate(element => {
+                const box = element.getBoundingClientRect();
+                return element.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
+            })).toBe(true);
+        }
+        await close(page);
+        await expectRestoredFocus(page, '#image-formatter-test-table');
+        await trigger(page, 3).click();
+        await expect(viewer(page).locator('.viewer-list li')).toHaveCount(5);
+        await viewer(page).getByRole('button', { name: 'Immagine 2 di 5', exact: true }).click();
+        await expect(viewer(page).getByRole('status')).toContainText('Immagine 2 di 5');
+        await page.screenshot({ path: testInfo.outputPath(`gallery-${viewport.width}x${viewport.height}.png`) });
+        await viewer(page).getByLabel('Chiudi immagini', { exact: true }).click();
+        await expect(viewer(page)).toHaveCount(0);
+        await expect(page.locator('.amb-image-viewer-source')).toHaveCount(0);
+    });
+}
+
+test('an unavailable thumbnail falls back to its original photograph', async ({ page }) => {
+    await page.route('**/test/images/large-01-thumb.jpg', route => route.fulfill({ status: 404, body: '' }));
+    await load(page);
+    await row(page, 7).locator('img').scrollIntoViewIfNeeded();
+    await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/large-01.jpg');
+    await trigger(page, 7).click();
+    const image = viewer(page).locator('.viewer-canvas img');
+    await expect(image).toHaveAttribute('src', '/test/images/large-01.jpg');
+    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+    await expect.poll(() => viewer(page).locator('.viewer-list img').evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+    await close(page);
+});
+
+test('an unavailable original can display its valid thumbnail', async ({ page }) => {
+    await page.route('**/test/images/large-01.jpg', route => route.fulfill({ status: 404, body: '' }));
+    await load(page);
+    await trigger(page, 7).click();
+    const image = viewer(page).locator('.viewer-canvas img');
+    await expect(image).toHaveAttribute('src', /\/test\/images\/large-01-thumb\.jpg$/);
+    await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
+    const oldThumbnail = await viewer(page).locator('.viewer-list img').elementHandle();
+    const originalSource = await oldThumbnail.evaluate(element => element.src);
+    await close(page);
+    await trigger(page, 3).click();
+    await oldThumbnail.evaluate(element => element.dispatchEvent(new Event('error')));
+    expect(await oldThumbnail.evaluate(element => element.src)).toBe(originalSource);
+    await expect(viewer(page).getByRole('status')).toContainText('Immagine 1 di 5');
+    await close(page);
 });

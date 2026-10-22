@@ -116,8 +116,26 @@ const openCollection = (items, trigger, owner) => {
         }, { capture: true, signal: aborter.signal });
     };
 
+    const enhanceThumbnails = root => {
+        for (const element of root.querySelectorAll('.viewer-list > li')) {
+            const thumbnail = element.querySelector('img');
+            const item = items[Number(element.dataset.index)];
+            if (!thumbnail || !item?.thumbnail || item.thumbnail === item.src) continue;
+            let fallbackUsed = false;
+            const fallback = () => {
+                if (disposed || fallbackUsed) return;
+                fallbackUsed = true;
+                thumbnail.src = item.src;
+            };
+            thumbnail.addEventListener('error', fallback, { once: true, signal: aborter.signal });
+            if (thumbnail.complete && !thumbnail.naturalWidth) fallback();
+        }
+    };
+
     const enhance = () => {
         const root = session.viewer.viewer;
+        root.classList.add('amb-image-viewer');
+        enhanceThumbnails(root);
         root.removeAttribute('aria-labelledby');
         root.setAttribute('aria-label', 'Raccolta immagini');
         for (const element of doc.body.children) {

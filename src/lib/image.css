@@ -101,9 +101,11 @@ button.amb-image {
 
 .amb-image-viewer-status {
     position: absolute;
+    box-sizing: border-box;
     top: 12px;
     left: 20px;
-    max-width: calc(100% - 40px);
+    max-width: calc(100% - 80px);
+    overflow-wrap: anywhere;
     padding: 6px 8px;
     border-radius: var(--amb-radius-sm, 4px);
     background: #182333;
@@ -114,6 +116,10 @@ button.amb-image {
 
 .viewer-container [aria-disabled='true'] {
     opacity: .35;
+}
+
+.amb-image-viewer .viewer-tooltip {
+    pointer-events: none;
 }
 
 .viewer-container [role='button']:focus-visible {
