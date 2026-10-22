@@ -63,10 +63,11 @@ expectEqual(
 
 if (
     !Array.isArray(packageJson.files)
-    || packageJson.files.length !== 1
+    || packageJson.files.length !== 2
     || packageJson.files[0] !== 'dist-lib'
+    || packageJson.files[1] !== 'VIEWERJS-LICENSE.txt'
 ) {
-    addError('Invalid files allowlist', 'expected exactly ["dist-lib"]');
+    addError('Invalid files allowlist', 'expected exactly ["dist-lib", "VIEWERJS-LICENSE.txt"]');
 }
 
 if (
@@ -230,6 +231,7 @@ const requiredFiles = [
     'package.json',
     'README.md',
     'LICENSE',
+    'VIEWERJS-LICENSE.txt',
     'dist-lib/amb-grid.js',
     'dist-lib/amb-grid.umd.js',
     'dist-lib/amb-grid.css',
