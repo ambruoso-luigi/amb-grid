@@ -195,7 +195,9 @@ test('editing another page and adding a row update calculations', async ({ page 
     await expect(calcCell(page, 'quantity')).toHaveText('SUM:349');
 
     await openCalculationsPage(page);
-    await page.locator('.amb-toolbar__button--add').last().click();
+    await page.locator(
+        'section[aria-labelledby="column-calculations-test-title"] .amb-toolbar__button--add'
+    ).click();
     await expectCalculations(page, INITIAL_CALCULATIONS);
     const newRow = page.locator(
         `${TABLE} .tabulator-row:not(.tabulator-calcs)[data-state="new"]`
