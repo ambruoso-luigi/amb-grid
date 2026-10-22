@@ -16,7 +16,7 @@ import { renderImage } from './image-renderer.js';
  * @property {number} [width=48] - Thumbnail width in pixels.
  * @property {number} [height=68] - Thumbnail height in pixels.
  * @property {'contain'|'cover'} [fit='contain'] - Thumbnail sizing mode.
- * @property {boolean} [preview=true] - Reserved for a later preview interaction.
+ * @property {boolean} [preview=true] - Show the original image on pointer hover or keyboard focus.
  * @property {boolean} [viewer=true] - Reserved for a later image viewer interaction.
  */
 
@@ -86,14 +86,16 @@ export const escapeHtmlText = value => {
 export const formatters = {
     /**
      * Render a cell's image collection as a thumbnail or a non-interactive placeholder.
-     * Preview and viewer options reserve the future contract; they add no controls yet.
+     * Preview shows the original image on hover or focus; viewer remains reserved.
      *
      * @param {ImageFormatterOptions} [options={}] - Image presentation options.
      * @returns {(cell: {getValue: () => ImageValue}) => HTMLElement} Image cell formatter.
      */
     image(options = {}) {
         const normalizedOptions = normalizeImageOptions(options);
-        return cell => renderImage(cell.getValue(), normalizedOptions);
+        const formatter = cell => renderImage(cell.getValue(), normalizedOptions);
+        formatter._ambFormatterType = 'image';
+        return formatter;
     },
 
     /**

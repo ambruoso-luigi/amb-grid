@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { formatters } from '../src/lib/formatters.js';
 import { normalizeImages } from '../src/lib/image-model.js';
+import { getImagePreviewMetadata } from '../src/lib/image-renderer.js';
+import { getImagePreviewPosition, hasImagePreviewFormatter } from '../src/lib/image-preview-runtime.js';
 
 const createElement = tagName => ({
     tagName: tagName.toUpperCase(),
@@ -118,5 +120,27 @@ describe('public image formatter', () => {
         expect(one.children).toHaveLength(1);
         expect(one.children[0].tagName).toBe('IMG');
         expect(one.children[0].getAttribute('tabindex')).toBeNull();
+        expect(one.tabIndex).toBe(0);
+        expect(getImagePreviewMetadata(one)).toMatchObject({ src: '/one.jpg' });
+        const disabled = formatters.image({ preview: false })(cell('/one.jpg'));
+        expect(disabled.tabIndex).toBeUndefined();
+        expect(getImagePreviewMetadata(disabled)).toBeUndefined();
+        expect(hasImagePreviewFormatter([{ formatter }])).toBe(true);
+        expect(hasImagePreviewFormatter([{ columns: [{ formatter }] }])).toBe(true);
+        expect(hasImagePreviewFormatter([{ formatter: formatters.text() }])).toBe(false);
+    });
+
+    test('positions the preview within viewport margins at every edge', () => {
+        const overlay = { width: 200, height: 150 };
+        const viewport = { width: 500, height: 400 };
+        expect(getImagePreviewPosition({ left: 8, right: 56, top: 8, bottom: 76 }, overlay, viewport))
+            .toEqual({ left: 66, top: 86 });
+        expect(getImagePreviewPosition({ left: 444, right: 492, top: 324, bottom: 392 }, overlay, viewport))
+            .toEqual({ left: 234, top: 164 });
+        const smaller = { width: 180, height: 150 };
+        const cramped = getImagePreviewPosition({ left: 140, right: 188, top: 100, bottom: 168 }, smaller, { width: 220, height: 180 });
+        expect(cramped.left).toBeGreaterThanOrEqual(12);
+        expect(cramped.left + smaller.width).toBeLessThanOrEqual(220 - 12);
+        expect(cramped.top).toBeGreaterThanOrEqual(12);
     });
 });

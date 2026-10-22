@@ -1,5 +1,9 @@
 import { normalizeImages } from './image-model.js';
 
+const previewMetadata = new WeakMap();
+
+export const getImagePreviewMetadata = element => previewMetadata.get(element);
+
 const createPlaceholder = (label, extraClass = '') => {
     const placeholder = document.createElement('span');
     placeholder.className = `amb-image-placeholder${extraClass}`;
@@ -7,7 +11,7 @@ const createPlaceholder = (label, extraClass = '') => {
     return placeholder;
 };
 
-export const renderImage = (value, { width, height, fit }) => {
+export const renderImage = (value, { width, height, fit, preview }) => {
     const images = normalizeImages(value);
     const root = document.createElement('span');
     root.className = 'amb-image';
@@ -20,6 +24,11 @@ export const renderImage = (value, { width, height, fit }) => {
     }
 
     const first = images[0];
+    if (preview) {
+        root.tabIndex = 0;
+        root.className += ' amb-image--previewable';
+        previewMetadata.set(root, first);
+    }
     const image = document.createElement('img');
     image.className = 'amb-image-thumbnail';
     image.alt = first.alt;

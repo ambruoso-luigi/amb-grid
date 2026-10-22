@@ -1,5 +1,6 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { CrudHelper } from '../crud-helper.js';
+import { createImagePreviewRuntime, hasImagePreviewFormatter } from '../image-preview-runtime.js';
 import { CellMessageBinder } from '../../ui/cell-message-binder.js';
 import { FloatingMessage } from '../../ui/floating-message.js';
 import { ConfirmDialog } from '../../ui/confirm-dialog.js';
@@ -1050,7 +1051,8 @@ export function createTable(options = {}) {
         historyRuntime: null,
         searchController: null,
         feedback: null,
-        keyboardNavigationRuntime: null
+        keyboardNavigationRuntime: null,
+        imagePreviewRuntime: null
     };
 
     if (selectionColumnController) {
@@ -1065,6 +1067,9 @@ export function createTable(options = {}) {
     const tableElement = typeof selector === 'string'
         ? document.querySelector(selector)
         : selector;
+    if (hasImagePreviewFormatter(columns)) {
+        lifecycleResources.imagePreviewRuntime = createImagePreviewRuntime(tableElement);
+    }
     lifecycleResources.calculationPresentationRuntime =
         createCalculationPresentationRuntime(tableElement);
     const alertMethods = createAlertMethods({ table });

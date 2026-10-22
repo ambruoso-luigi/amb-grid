@@ -38,6 +38,11 @@ export const createLifecycleMethods = ({
     destroy() {
         const controller = getController();
 
+        if (resources.imagePreviewRuntime) {
+            resources.imagePreviewRuntime.destroy();
+            resources.imagePreviewRuntime = null;
+        }
+
         if (resources.calculationPresentationRuntime) {
             resources.calculationPresentationRuntime.destroy();
             resources.calculationPresentationRuntime = null;
