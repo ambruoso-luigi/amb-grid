@@ -1211,6 +1211,7 @@ const syncImageLabState = message => {
 const createImageFormatterGrid = () => AMB.table({
     selector: '#image-formatter-test-table',
     data: structuredClone(imageLabRows),
+    selectionColumn: { enabled: true, mode: 'multiple' },
     toolbar: false,
     layout: 'fitColumns',
     columns: [
@@ -1235,6 +1236,7 @@ const mountImageSecondaryGrid = () => {
     currentImageSecondaryGrid?.destroy();
     currentImageSecondaryGrid = AMB.table({
         selector: '#image-secondary-test-table',
+        selectionColumn: { enabled: true, mode: 'multiple' },
         toolbar: false,
         data: [
             labRow(1, 'B · singola', labPhoto('coffee'), 1, 'Indipendente da A'),

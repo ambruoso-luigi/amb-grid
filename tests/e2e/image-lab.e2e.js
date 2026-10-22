@@ -458,3 +458,162 @@ test('an unavailable original can display its valid thumbnail', async ({ page })
     await expect(viewer(page).getByRole('status')).toContainText('Immagine 1 di 5');
     await close(page);
 });
+
+test.describe('image grid selection', () => {
+    const primary = page => page.locator('#image-formatter-test-table');
+    const secondary = page => page.locator('#image-secondary-test-table');
+    const secondaryRow = (page, index) => secondary(page).locator('.tabulator-row').nth(index);
+    const checkbox = targetRow => targetRow.locator('.amb-selection-column__input');
+    const selectAll = grid => grid.locator('.tabulator-header input[type="checkbox"]');
+    const selectedRows = grid => grid.locator('.tabulator-row.tabulator-selected');
+    const expectSelection = async (targetRow, selected) => {
+        await expect(checkbox(targetRow)).toBeChecked({ checked: selected });
+        if (selected) await expect(targetRow).toHaveClass(/tabulator-selected/);
+        else await expect(targetRow).not.toHaveClass(/tabulator-selected/);
+    };
+
+    test('checkbox and image activation keep selection, viewer and keyboard independent', async ({ page }) => {
+        await load(page);
+        await expect(primary(page).locator('.tabulator-row .amb-selection-column__input')).toHaveCount(15);
+        await expect(secondary(page).locator('.tabulator-row .amb-selection-column__input')).toHaveCount(2);
+        await expect(selectAll(primary(page))).toHaveCount(1);
+        await expect(selectAll(secondary(page))).toHaveCount(1);
+        await checkbox(row(page, 1)).click();
+        await expectSelection(row(page, 1), true);
+        await checkbox(row(page, 2)).click();
+        await expect(selectedRows(primary(page))).toHaveCount(2);
+        await checkbox(row(page, 1)).click();
+        await expectSelection(row(page, 1), false);
+        await expect(viewer(page)).toHaveCount(0);
+
+        await trigger(page, 1).click();
+        await expect(viewer(page)).toHaveCount(1);
+        await close(page);
+        await expectRestoredFocus(page, '#image-formatter-test-table');
+        await expectSelection(row(page, 1), false);
+        await expectSelection(row(page, 2), true);
+        await checkbox(row(page, 1)).press('Space');
+        await expectSelection(row(page, 1), true);
+        await checkbox(row(page, 1)).press('Space');
+        await expectSelection(row(page, 1), false);
+        await expect(viewer(page)).toHaveCount(0);
+        for (const key of ['Enter', 'Space']) {
+            await trigger(page, 2).press(key);
+            await expect(viewer(page)).toHaveCount(1);
+            await close(page);
+            await expectRestoredFocus(page, '#image-formatter-test-table');
+            await expectSelection(row(page, 2), true);
+        }
+        await checkbox(row(page, 2)).click();
+        await expectSelection(row(page, 2), false);
+    });
+
+    test('Tab navigation from a selection checkbox does not change selection', async ({ page }) => {
+        await load(page);
+        await checkbox(row(page, 1)).focus();
+        for (const [key, destination] of [
+            ['Tab', row(page, 1).locator('.amb-selection-column')],
+            ['Shift+Tab', primary(page).locator('.tabulator-tableholder')]
+        ]) {
+            await page.keyboard.press(key);
+            await expect(destination).toBeFocused();
+            await expect(selectedRows(primary(page))).toHaveCount(0);
+            await expect(viewer(page)).toHaveCount(0);
+        }
+    });
+
+    test('select-all and multiple selections remain isolated between A and B', async ({ page }) => {
+        await load(page);
+        await checkbox(row(page, 1)).check();
+        await checkbox(row(page, 2)).check();
+        await checkbox(secondaryRow(page, 0)).check();
+        await expect(selectedRows(primary(page))).toHaveCount(2);
+        await expect(selectedRows(secondary(page))).toHaveCount(1);
+        // The existing header action clears a partial selection before selecting all.
+        await selectAll(primary(page)).click();
+        await expect(selectedRows(primary(page))).toHaveCount(0);
+        await selectAll(primary(page)).check();
+        await expect(selectedRows(primary(page))).toHaveCount(15);
+        await expect(selectedRows(secondary(page))).toHaveCount(1);
+        await selectAll(secondary(page)).click();
+        await expect(selectedRows(secondary(page))).toHaveCount(0);
+        await selectAll(secondary(page)).check();
+        await expect(selectedRows(secondary(page))).toHaveCount(2);
+        await expect(selectedRows(primary(page))).toHaveCount(15);
+        await selectAll(primary(page)).uncheck();
+        await expect(selectedRows(primary(page))).toHaveCount(0);
+        await expect(selectedRows(secondary(page))).toHaveCount(2);
+        await selectAll(secondary(page)).uncheck();
+        await expect(selectedRows(secondary(page))).toHaveCount(0);
+        await expect(viewer(page)).toHaveCount(0);
+    });
+
+    test('selection lifecycle follows updates, data replacement and image grid remounts', async ({ page }) => {
+        await load(page);
+        await checkbox(row(page, 1)).check();
+        await checkbox(secondaryRow(page, 0)).check();
+        await page.getByRole('button', { name: 'Update data', exact: true }).click();
+        await expect(page.locator('#image-lab-status')).toContainText('Riga 01 aggiornata');
+        await expectSelection(row(page, 1), true);
+        await page.getByRole('button', { name: 'Restore original data', exact: true }).click();
+        await expect(page.locator('#image-lab-status')).toContainText('Fixture originali ripristinate');
+        await expect(selectedRows(primary(page))).toHaveCount(0);
+        await expectSelection(secondaryRow(page, 0), true);
+        for (const name of ['Preview enabled', 'Viewer enabled']) {
+            await checkbox(row(page, 1)).check();
+            await page.getByLabel(name, { exact: true }).uncheck();
+            await expect(selectedRows(primary(page))).toHaveCount(0);
+            await expectSelection(secondaryRow(page, 0), true);
+            await page.getByLabel(name, { exact: true }).check();
+            await expect(primary(page).locator('.tabulator-row .amb-selection-column__input')).toHaveCount(15);
+        }
+        await checkbox(row(page, 1)).check();
+        await checkbox(row(page, 2)).check();
+        const oldSelection = await checkbox(row(page, 1)).elementHandle();
+        await page.getByRole('button', { name: 'Destroy grid A', exact: true }).click();
+        await expect(primary(page).locator('.tabulator-row')).toHaveCount(0);
+        expect(await oldSelection.evaluate(element => element.isConnected)).toBe(false);
+        await expectSelection(secondaryRow(page, 0), true);
+        await secondaryRow(page, 0).locator('button.amb-image--viewable').click();
+        await expect(viewer(page)).toHaveCount(1);
+        await close(page);
+        await expectSelection(secondaryRow(page, 0), true);
+        await page.getByRole('button', { name: 'Restore grid A', exact: true }).click();
+        await expect(primary(page).locator('.tabulator-row .amb-selection-column__input')).toHaveCount(15);
+        await expect(selectedRows(primary(page))).toHaveCount(0);
+        await expect(selectAll(primary(page))).not.toBeChecked();
+        await checkbox(row(page, 1)).check();
+        await page.getByRole('button', { name: 'Recreate grid A', exact: true }).click();
+        await expect(selectedRows(primary(page))).toHaveCount(0);
+        await expect(primary(page).locator('.tabulator-row .amb-selection-column__input')).toHaveCount(15);
+        await expectSelection(secondaryRow(page, 0), true);
+    });
+
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+        test(`selection layout and photographs remain usable at ${viewport.width}x${viewport.height}`, async ({ page }, testInfo) => {
+            await page.setViewportSize(viewport);
+            await load(page);
+            await checkbox(row(page, 1)).check();
+            await expectSelection(row(page, 1), true);
+            await checkbox(row(page, 1)).scrollIntoViewIfNeeded();
+            const inputBox = await checkbox(row(page, 1)).boundingBox();
+            expect(inputBox.x).toBeGreaterThanOrEqual(0);
+            expect(inputBox.x + inputBox.width).toBeLessThanOrEqual(viewport.width);
+            await trigger(page, 1).click();
+            await expect(viewer(page)).toHaveCount(1);
+            await close(page);
+            await expectSelection(row(page, 1), true);
+            await checkbox(secondaryRow(page, 0)).check();
+            await expectSelection(secondaryRow(page, 0), true);
+            await secondaryRow(page, 0).locator('button.amb-image--viewable').click();
+            await expect(viewer(page)).toHaveCount(1);
+            await close(page);
+            await expectSelection(secondaryRow(page, 0), true);
+            await checkbox(secondaryRow(page, 0)).focus();
+            await page.mouse.move(0, 0);
+            await secondary(page).screenshot({ path: testInfo.outputPath(`selection-b-${viewport.width}.png`) });
+            await checkbox(row(page, 1)).focus();
+            await primary(page).screenshot({ path: testInfo.outputPath(`selection-a-${viewport.width}.png`) });
+        });
+    }
+});
