@@ -11,19 +11,57 @@ const testHtml = fs.readFileSync(
 );
 
 describe('technical test page', () => {
-    test('mounts the isolated image grid using only empty or invalid fixtures', () => {
-        expect(testHtml).toContain('Image Formatter &amp; Multi-Image Viewer');
-        expect(testHtml).toContain('id="image-formatter-test-table"');
-        expect(testSource).toContain("selector: '#image-formatter-test-table'");
-        expect(testSource).toContain('formatter: AMB.formatters.image()');
-        expect(testSource).toContain('mountImageFormatterGrid();');
-        expect(testSource).toContain("images: [{ src: 'javascript:alert(1)' }]");
-        expect(testSource).toContain('In attesa delle fotografie');
-        expect(testSource).not.toContain("images: [{ src: 'https://");
-        expect(testHtml).toContain('id="inventory-test-table"');
-        expect(testHtml).toContain('id="multifield-lookup-test-table"');
-        expect(testHtml).toContain('id="autocomplete-test-table"');
-        expect(testHtml).toContain('id="column-calculations-test-table"');
+    test('mounts the image laboratory with photographic scenarios, controls and two isolated grids', () => {
+        const imageSection = testHtml.match(
+            /<section\b[^>]*aria-labelledby\s*=\s*["']image-formatter-test-title["'][^>]*>[\s\S]*?<\/section>/
+        )?.[0] || '';
+        const imageFixtures = testSource.match(
+            /\bcreateImageLabRows\s*=\s*\(\s*\)\s*=>\s*\[([\s\S]*?)\]\s*;/
+        )?.[1] || '';
+        const scenarios = [...imageFixtures.matchAll(/\blabRow\s*\(\s*(\d+)\s*,\s*(["'])(.*?)\2\s*,/g)]
+            .map(([, id, , description]) => [Number(id), description]);
+
+        expect(imageSection).toMatch(/Image Formatter\s*&(?:amp;)?\s*Multi-Image Viewer/);
+        for (const id of [
+            'image-formatter-test-table', 'image-secondary-test-table',
+            'image-lab-preview', 'image-lab-viewer',
+            'image-lab-recreate', 'image-lab-destroy', 'image-lab-restore',
+            'image-lab-update', 'image-lab-reset'
+        ]) {
+            expect(imageSection).toMatch(new RegExp(String.raw`\bid\s*=\s*["']${id}["']`));
+        }
+        for (const selector of ['image-formatter-test-table', 'image-secondary-test-table']) {
+            expect(testSource).toMatch(new RegExp(String.raw`\bselector\s*:\s*["']#${selector}["']`));
+        }
+        expect(testSource).toMatch(/\bconst\s+imageLabPhotos\s*=\s*\{/);
+        expect(testSource).toMatch(/\bsrc\s*:\s*["']\/test\/images\/[^"']+\.jpg["']/);
+        expect(testSource).toMatch(/\bAMB\s*\.\s*formatters\s*\.\s*image\s*\(/);
+        expect(testSource).toMatch(/\bmountImageFormatterGrid\s*\(\s*\)\s*;/);
+        expect(testSource).toMatch(/\bmountImageSecondaryGrid\s*\(\s*\)\s*;/);
+        expect(scenarios).toEqual([
+            [1, 'Single image'],
+            [2, 'Image object'],
+            [3, 'Multi-image gallery'],
+            [4, 'Mixed orientation'],
+            [5, 'Square / panoramic'],
+            [6, 'High-resolution image'],
+            [7, 'Distinct thumbnail'],
+            [8, 'Empty collection'],
+            [9, 'Null value'],
+            [10, 'Invalid URL'],
+            [11, 'Missing image'],
+            [12, 'Mixed valid / invalid'],
+            [13, 'Missing optional metadata'],
+            [14, 'Special characters'],
+            [15, 'Single valid after filtering']
+        ]);
+        expect(imageFixtures).toMatch(/\bnull\b/);
+        expect(imageFixtures).toMatch(/\[\s*\]/);
+        expect(imageFixtures).toMatch(/\bsrc\s*:\s*(["'])javascript:[^"']*\1/);
+        expect(imageFixtures).toMatch(/\bsrc\s*:\s*(["'])\/test\/images\/[^"']*missing[^"']*\1/);
+        for (const id of ['inventory-test-table', 'multifield-lookup-test-table', 'autocomplete-test-table', 'column-calculations-test-table']) {
+            expect(testHtml).toMatch(new RegExp(String.raw`\bid\s*=\s*["']${id}["']`));
+        }
     });
 
     test('uses the standard AMB selection column with switchable mode', () => {
