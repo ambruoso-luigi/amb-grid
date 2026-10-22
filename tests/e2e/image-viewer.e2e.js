@@ -337,3 +337,75 @@ test('destroy releases temporary document and window listeners', async ({ page }
     await expect(source(page)).toHaveCount(0);
     expect(await page.evaluate(() => window.__img04.activeListenerCount())).toBe(0);
 });
+
+test('switching grids preserves the new owner when the old grid is destroyed', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await install(page);
+    const inertBefore = await page.evaluate(() => [
+        document.querySelector('#img04-a').inert,
+        document.querySelector('#img04-b').inert
+    ]);
+    await page.locator('#img04-a button.amb-image--viewable').first().click();
+    const firstId = await viewer(page).getAttribute('id');
+    await page.evaluate(() => document.querySelector('#img04-b button.amb-image--viewable').click());
+    await expect(viewer(page)).toHaveCount(1);
+    await expect(source(page)).toHaveCount(1);
+    await expect(viewer(page)).not.toHaveAttribute('id', firstId);
+    await expect(viewer(page).locator('.amb-image-viewer-status')).toContainText('Caption 5');
+    await expect(viewer(page).locator('.viewer-button')).toBeFocused();
+    await page.evaluate(() => window.__img04.a.destroy());
+    await expect(viewer(page)).toHaveCount(1);
+    await expect(viewer(page).locator('.amb-image-viewer-status')).toContainText('Caption 5');
+    await page.keyboard.press('Escape');
+    await expect(viewer(page)).toHaveCount(0);
+    await expect(source(page)).toHaveCount(0);
+    await expect(page.locator('#img04-b button.amb-image--viewable')).toBeFocused();
+    expect(await page.evaluate(() => [
+        document.querySelector('#img04-a').inert,
+        document.querySelector('#img04-b').inert
+    ])).toEqual(inertBefore);
+    expect(errors).toEqual([]);
+});
+
+test('a late image error cannot replace the status of the next photograph', async ({ page }) => {
+    await install(page);
+    const gallery = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
+    await gallery.click();
+    await expect(viewer(page).locator('.amb-image-viewer-status')).toContainText('Caption 1');
+    await page.evaluate(() => { window.__img04.oldImage = document.querySelector('.viewer-canvas img'); });
+    await viewer(page).locator('.viewer-toolbar [data-viewer-action="next"]').click();
+    await expect(viewer(page).locator('.amb-image-viewer-status')).toContainText('Caption 2');
+    await page.evaluate(() => window.__img04.oldImage.dispatchEvent(new Event('error')));
+    await expect(viewer(page).locator('.amb-image-viewer-status')).toContainText('Caption 2');
+    await page.keyboard.press('Escape');
+    await expect(viewer(page)).toHaveCount(0);
+});
+
+test('rapid close and reopen ignores events from the disposed session', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await install(page);
+    const trigger = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
+    await trigger.click();
+    await expect(viewer(page)).toHaveCount(1);
+    await page.evaluate(() => { window.__img04.oldImage = document.querySelector('.viewer-canvas img'); });
+    await viewer(page).locator('.viewer-toolbar [data-viewer-action="next"]').click();
+    await viewer(page).locator('.viewer-toolbar [data-viewer-action="zoom-in"]').click();
+    await page.evaluate(() => {
+        document.querySelector('.viewer-button').click();
+        document.querySelector('#img04-b button.amb-image--viewable').click();
+        window.__img04.oldImage.dispatchEvent(new Event('load'));
+        window.__img04.oldImage.dispatchEvent(new Event('error'));
+    });
+    await expect(viewer(page)).toHaveCount(1);
+    await expect(source(page)).toHaveCount(1);
+    await expect(viewer(page).locator('.amb-image-viewer-status')).toContainText('Caption 5');
+    await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(viewer(page)).toHaveCount(0);
+    await expect(source(page)).toHaveCount(0);
+    await page.evaluate(() => window.__img04.b.destroy());
+    await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    expect(errors).toEqual([]);
+});

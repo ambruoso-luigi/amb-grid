@@ -217,7 +217,7 @@ const openCollection = (items, trigger, owner) => {
         view(event) {
             sync(event.detail.index);
             event.detail.image.addEventListener('error', () => {
-                if (!disposed) {
+                if (!disposed && session.viewer?.image === event.detail.image) {
                     sync(event.detail.index);
                     status.textContent = `Immagine ${event.detail.index + 1}: originale non disponibile`;
                 }
