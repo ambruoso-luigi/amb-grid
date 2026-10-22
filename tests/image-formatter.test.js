@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { formatters } from '../src/lib/formatters.js';
 import { normalizeImages } from '../src/lib/image-model.js';
-import { getImagePreviewMetadata } from '../src/lib/image-renderer.js';
+import { getImagePreviewMetadata, getImageViewerMetadata } from '../src/lib/image-renderer.js';
 import { getImagePreviewPosition, hasImagePreviewFormatter } from '../src/lib/image-preview-runtime.js';
 
 const createElement = tagName => ({
@@ -82,7 +82,9 @@ describe('public image formatter', () => {
             { src: '/fourth.jpg' }
         ];
         const result = formatters.image()(cell(value));
-        expect(result.tagName).toBe('SPAN');
+        expect(result.tagName).toBe('BUTTON');
+        expect(result.type).toBe('button');
+        expect(getImageViewerMetadata(result)).toHaveLength(4);
         expect(result.style).toMatchObject({ width: '48px', height: '68px' });
         const [image, badge] = result.children;
         expect(image.src).toBe('/thumb.jpg');
@@ -109,22 +111,30 @@ describe('public image formatter', () => {
         expect(noRetry.children[0].textContent).toBe('Immagine non disponibile');
     });
 
-    test('returns fresh non-interactive nodes on rerender and a placeholder for empty values', () => {
+    test('returns fresh nodes on rerender and a non-interactive placeholder for empty values', () => {
         const formatter = formatters.image();
         const first = formatter(cell([]));
         const second = formatter(cell(null));
         const one = formatter(cell('/one.jpg'));
         expect(first).not.toBe(second);
         expect(first.children[0].textContent).toBe('Nessuna immagine');
+        expect(first.tagName).toBe('SPAN');
         expect(first.children[0].tagName).toBe('SPAN');
         expect(one.children).toHaveLength(1);
         expect(one.children[0].tagName).toBe('IMG');
         expect(one.children[0].getAttribute('tabindex')).toBeNull();
-        expect(one.tabIndex).toBe(0);
+        expect(one.tagName).toBe('BUTTON');
         expect(getImagePreviewMetadata(one)).toMatchObject({ src: '/one.jpg' });
+        const previewOnly = formatters.image({ viewer: false })(cell('/one.jpg'));
+        expect(previewOnly.tagName).toBe('SPAN');
+        expect(previewOnly.tabIndex).toBe(0);
         const disabled = formatters.image({ preview: false })(cell('/one.jpg'));
         expect(disabled.tabIndex).toBeUndefined();
         expect(getImagePreviewMetadata(disabled)).toBeUndefined();
+        expect(disabled.tagName).toBe('BUTTON');
+        const viewDisabled = formatters.image({ preview: false, viewer: false })(cell('/one.jpg'));
+        expect(viewDisabled.tagName).toBe('SPAN');
+        expect(getImageViewerMetadata(viewDisabled)).toBeUndefined();
         expect(hasImagePreviewFormatter([{ formatter }])).toBe(true);
         expect(hasImagePreviewFormatter([{ columns: [{ formatter }] }])).toBe(true);
         expect(hasImagePreviewFormatter([{ formatter: formatters.text() }])).toBe(false);

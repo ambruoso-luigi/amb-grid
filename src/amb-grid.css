@@ -3,6 +3,7 @@
 @import './ui/lookup-dialog.css';
 @import './ui/search-filters-dialog.css';
 @import './ui/feedback-region.css';
+@import 'viewerjs/dist/viewer.css';
 @import './lib/image.css';
 
 :root {

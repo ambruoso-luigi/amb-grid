@@ -1,8 +1,10 @@
 import { normalizeImages } from './image-model.js';
 
 const previewMetadata = new WeakMap();
+const viewerMetadata = new WeakMap();
 
 export const getImagePreviewMetadata = element => previewMetadata.get(element);
+export const getImageViewerMetadata = element => viewerMetadata.get(element);
 
 const createPlaceholder = (label, extraClass = '') => {
     const placeholder = document.createElement('span');
@@ -11,9 +13,9 @@ const createPlaceholder = (label, extraClass = '') => {
     return placeholder;
 };
 
-export const renderImage = (value, { width, height, fit, preview }) => {
+export const renderImage = (value, { width, height, fit, preview, viewer }) => {
     const images = normalizeImages(value);
-    const root = document.createElement('span');
+    const root = document.createElement(viewer && images.length ? 'button' : 'span');
     root.className = 'amb-image';
     root.style.width = `${width}px`;
     root.style.height = `${height}px`;
@@ -24,8 +26,16 @@ export const renderImage = (value, { width, height, fit, preview }) => {
     }
 
     const first = images[0];
+    if (viewer) {
+        root.type = 'button';
+        root.className += ' amb-image--viewable';
+        root.setAttribute('aria-label', images.length > 1
+            ? `Apri raccolta di ${images.length} immagini${first.alt ? ': ' + first.alt : ''}`
+            : `Apri immagine${first.alt ? ': ' + first.alt : ''}`);
+        viewerMetadata.set(root, images);
+    }
     if (preview) {
-        root.tabIndex = 0;
+        if (!viewer) root.tabIndex = 0;
         root.className += ' amb-image--previewable';
         previewMetadata.set(root, first);
     }

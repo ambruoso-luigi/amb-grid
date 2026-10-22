@@ -1,6 +1,7 @@
 import { getImagePreviewMetadata } from './image-renderer.js';
 
 const activeByDocument = new WeakMap();
+export const closeImagePreview = doc => activeByDocument.get(doc)?.close();
 const DELAY_MS = 250;
 const GAP = 10;
 const MARGIN = 12;

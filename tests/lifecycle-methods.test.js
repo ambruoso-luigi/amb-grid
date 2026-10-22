@@ -10,6 +10,7 @@ describe('AMB table controller lifecycle methods', () => {
         });
         const unsubscribe = name => vi.fn(() => order.push(name));
         const resources = {
+            imageViewerRuntime: destroyResource('image-viewer'),
             imagePreviewRuntime: destroyResource('image-preview'),
             historyRuntime: destroyResource('history-runtime'),
             toolbarController: destroyResource('toolbar'),
@@ -41,6 +42,7 @@ describe('AMB table controller lifecycle methods', () => {
         methods.destroy();
 
         expect(order).toEqual([
+            'image-viewer',
             'image-preview',
             'history-runtime',
             'toolbar',

@@ -26,7 +26,8 @@
     "./style.css": "./dist-lib/amb-grid.css"
   },
   "files": [
-    "dist-lib"
+    "dist-lib",
+    "VIEWERJS-LICENSE.txt"
   ],
   "sideEffects": [
     "**/*.css",
@@ -86,6 +87,7 @@
   "dependencies": {
     "awesomplete": "^1.1.7",
     "tabulator-tables": "^6.4.0",
-    "vanillajs-datepicker": "^1.3.4"
+    "vanillajs-datepicker": "^1.3.4",
+    "viewerjs": "1.15.2"
   }
 }
