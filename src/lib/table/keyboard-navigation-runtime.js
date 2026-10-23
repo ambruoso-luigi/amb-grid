@@ -107,6 +107,7 @@ export const createKeyboardNavigationRuntime = ({
 
     let transitionInProgress = false;
     let verticalNavigationVersion = 0;
+    let pointerNavigationVersion = 0;
     let activeFinalizer = null;
     let destroyed = false;
     const pendingEditorCloseFinalizers = new Set();
@@ -168,7 +169,7 @@ export const createKeyboardNavigationRuntime = ({
     ).managedColumn;
 
     const getDestinationCandidates = destination => {
-        const { edge, field, column } = normalizeDestination(destination);
+        const { edge, field, column, activation } = normalizeDestination(destination);
         const rows = getRenderedRows(edge);
 
         if (column || field) {
@@ -176,7 +177,9 @@ export const createKeyboardNavigationRuntime = ({
                 const candidate = (column && row?.getCells?.().find(cell => cell.getColumn?.() === column))
                     || row?.getCell?.(field)
                     || row?.getCells?.().find(cell => cell.getField?.() === field);
-                if (candidate && isKeyboardOperationalCandidate(candidate)) return [candidate];
+                if (candidate && (activation === 'focus'
+                    ? isKeyboardOperationalCandidate(candidate)
+                    : isSequentialCandidate(candidate))) return [candidate];
             }
             return [];
         }
@@ -184,7 +187,9 @@ export const createKeyboardNavigationRuntime = ({
         return rows.flatMap(row => {
             const cells = row.getCells();
             return (edge === 'last' ? cells.slice().reverse() : cells)
-                .filter(isAutomaticPageCandidate);
+                .filter(candidate => isAutomaticPageCandidate(candidate) && (activation === 'focus'
+                    ? isKeyboardOperationalCandidate(candidate)
+                    : isSequentialCandidate(candidate)));
         });
     };
 
@@ -256,23 +261,26 @@ export const createKeyboardNavigationRuntime = ({
         if (!element || !isDataRowElement(rowElement)) return false;
         if (!isAllowedByRowState(candidate)) return false;
         if (candidate?.getColumn?.()?.isVisible?.() === false || definition.visible === false) return false;
-        // A display-only grid needs cell navigation even though it has no
-        // data editors. Mixed editable grids retain their established skip
-        // behavior for passive columns; image controls are interactive there.
+        if (getAmbColumnMetadata(definition).managedColumn) return isEditableCandidate(candidate);
+        return navigationEnabled ? isNavigationCandidate(candidate) : isEditableCandidate(candidate);
+    };
+
+    const isSequentialCandidate = candidate => {
+        if (!isKeyboardOperationalCandidate(candidate)) return false;
+        if (isEditableCandidate(candidate)) return true;
+        // Preserve CRUD Tab-to-editor behavior. Spatial navigation can also
+        // visit readonly cells, while display-only grids tab through all data.
         const displayOnly = !(candidate?.getRow?.()?.getCells?.() || []).some(cell => {
             const column = cell.getColumn?.()?.getDefinition?.() || {};
             return column.editor && !getAmbColumnMetadata(column).managedColumn;
         });
-        return navigationEnabled && displayOnly
-            ? isNavigationCandidate(candidate)
-            : isEditableCandidate(candidate);
+        return navigationEnabled && displayOnly;
     };
 
     const navigateCandidate = candidate => {
-        if (!candidate?.getColumn?.()?.getDefinition?.().editor && isKeyboardOperationalCandidate(candidate)) {
-            return focusNavigationCandidate(candidate);
-        }
-        return navigateToCandidate(candidate);
+        return isEditableCandidate(candidate)
+            ? navigateToCandidate(candidate)
+            : isKeyboardOperationalCandidate(candidate) && focusNavigationCandidate(candidate);
     };
 
     const isLogicalVerticalCandidate = candidate => {
@@ -608,7 +616,8 @@ export const createKeyboardNavigationRuntime = ({
         }
         if (verticalDestination) {
             focusVerticalDestination(destination);
-        } else if (getAmbColumnMetadata(destination.getColumn?.().getDefinition?.()).activateOnNavigationFocus) {
+        } else if (getAmbColumnMetadata(destination.getColumn?.().getDefinition?.()).activateOnNavigationFocus
+            && isEditableCandidate(destination)) {
             if (destination.edit?.() === false) focusNavigationCandidate(destination);
         } else focusNavigationCandidate(destination);
         return true;
@@ -648,6 +657,7 @@ export const createKeyboardNavigationRuntime = ({
         const auxiliary = action === 'auxiliary';
 
         if (!isInsideTable || (!previous && !next && !action)) return;
+        pointerNavigationVersion += 1;
 
         const editingElement = tableElement.querySelector?.('.tabulator-cell.tabulator-editing');
         const state = editingElement ? 'editing' : 'navigation';
@@ -662,7 +672,8 @@ export const createKeyboardNavigationRuntime = ({
                 return;
             }
         }
-        if (auxiliary && getAmbColumnMetadata(activeDefinition).auxiliaryAction !== true) return;
+        if (auxiliary && (getAmbColumnMetadata(activeDefinition).auxiliaryAction !== true
+            || !isEditableCandidate(activeCell))) return;
         if (
             enter
             && (
@@ -725,7 +736,7 @@ export const createKeyboardNavigationRuntime = ({
         if (isTab) {
             const renderedCells = getRenderedRows('first').flatMap(row => row.getCells());
             const candidates = renderedCells.filter(candidate => (
-                isKeyboardOperationalCandidate(candidate)
+                isSequentialCandidate(candidate)
                 && isAutomaticPageCandidate(candidate)
             ));
             const currentIndex = candidates.findIndex(candidate => (
@@ -735,7 +746,8 @@ export const createKeyboardNavigationRuntime = ({
             ));
             const activeManagedColumn = getAmbColumnMetadata(activeDefinition).managedColumn;
             const direction = action === 'previous' ? 'prev' : 'next';
-            const managedOrigin = currentIndex === -1 && Boolean(activeManagedColumn);
+            const managedOrigin = currentIndex === -1 && (Boolean(activeManagedColumn)
+                || isKeyboardOperationalCandidate(activeCell));
             let managedOriginTarget = null;
             if (managedOrigin) {
                 const originIndex = renderedCells.findIndex(candidate => (
@@ -816,6 +828,7 @@ export const createKeyboardNavigationRuntime = ({
     };
 
     const handlePointerActivation = event => {
+        const pointerVersion = ++pointerNavigationVersion;
         const cellElement = event.target?.closest?.('.tabulator-cell');
         const cell = getCellFromElement(cellElement);
         if (cell) cancelScheduledNavigationFocusRestore(cell);
@@ -823,6 +836,43 @@ export const createKeyboardNavigationRuntime = ({
         const definition = cell?.getColumn?.()?.getDefinition?.() || {};
         const metadata = getAmbColumnMetadata(definition);
         const isMarkedLargeText = cellElement?.classList?.contains?.('amb-cell--large-text');
+
+        if (cell && !isAllowedByRowState(cell)) return;
+        if (navigationEnabled && !isEditableCandidate(cell) && isKeyboardOperationalCandidate(cell)) {
+            const control = event.target?.closest?.(
+                'a[href], button, input, select, textarea, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"], [role="checkbox"], [tabindex]'
+            );
+            if (control && control !== cellElement && cellElement.contains?.(control)) return;
+            if (event.type === 'click') {
+                const row = cell.getRow?.();
+                const field = cellElement.getAttribute?.('tabulator-field');
+                const column = cell.getColumn?.();
+                const restorePointerFocus = async () => {
+                    await nextFrame();
+                    await nextFrame();
+                    for (let attempt = 0; attempt < 2; attempt += 1) {
+                        if (destroyed || pointerVersion !== pointerNavigationVersion) return;
+                        // Scrolling a grid into view can recreate its cells. Keep
+                        // the logical destination, rather than a detached DOM node.
+                        const current = row?.getCell?.(field)
+                            || row?.getCells?.().find(candidate => candidate.getColumn?.() === column)
+                            || cell;
+                        const element = current.getElement?.();
+                        if (!element || element.isConnected === false || !isKeyboardOperationalCandidate(current)) return;
+                        const active = globalThis.document?.activeElement;
+                        const holder = tableElement.querySelector?.('.tabulator-tableholder');
+                        if (active && active !== globalThis.document?.body && active !== holder
+                            && active !== cellElement && !cellElement.contains?.(active)) return;
+                        focusCellWithoutEditing(current, { preventScroll: false });
+                        await nextFrame();
+                        await nextFrame();
+                        if (element.isConnected !== false) return;
+                    }
+                };
+                void restorePointerFocus();
+            }
+            return;
+        }
 
         const focusOnly = metadata.keyboardFocusOnly === true || isMarkedLargeText;
 

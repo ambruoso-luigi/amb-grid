@@ -3,6 +3,7 @@ import { createKeyboardNavigationRuntime } from '../src/lib/table/keyboard-navig
 import {
     focusCellWithoutEditing,
     focusNavigationCandidate,
+    isNavigationCandidate,
     handleEditorCommitCancelKeydown
 } from '../src/lib/editors/shared.js';
 import { GRID_SHORTCUTS, matchesShortcut } from '../src/lib/table/keyboard-shortcuts.js';
@@ -563,7 +564,10 @@ describe('table pagination keyboard runtime', () => {
         const event = harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
-        expect(last.getElement().focus).toHaveBeenCalledOnce();
+        expect(readonly.getElement().focus).toHaveBeenCalledOnce();
+        expect(globalThis.document.activeElement).toBe(readonly.getElement());
+        harness.tableElement.dispatch({ key: 'Enter', target: readonly.getElement() });
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonly.getElement() });
         expect(globalThis.document.activeElement).toBe(last.getElement());
         expect(readonly.edit).not.toHaveBeenCalled();
         expect(last.edit).not.toHaveBeenCalled();
@@ -605,7 +609,7 @@ describe('table pagination keyboard runtime', () => {
         expect(image.edit).not.toHaveBeenCalled();
     });
 
-    test('retains passive-column skipping in mixed editable grids', () => {
+    test('visits passive columns spatially while retaining CRUD sequential destinations', () => {
         const first = createCandidate({ field: 'first' });
         const passive = createCandidate({ field: 'id' });
         delete passive.getColumn().getDefinition().editor;
@@ -613,9 +617,11 @@ describe('table pagination keyboard runtime', () => {
         const harness = createHarness({ cells: [first, passive, last] });
         globalThis.document.activeElement = first.getElement();
         harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
-        expect(globalThis.document.activeElement).toBe(last.getElement());
-        expect(passive.getElement().focus).not.toHaveBeenCalled();
-        expect(last.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(passive.getElement());
+        harness.tableElement.dispatch({ key: 'Enter', target: passive.getElement() });
+        expect(passive.edit).not.toHaveBeenCalled();
+        harness.tableElement.dispatch({ key: 'Tab', target: passive.getElement() });
+        expect(last.edit).toHaveBeenCalledOnce();
         harness.runtime.destroy();
     });
 
@@ -643,7 +649,7 @@ describe('table pagination keyboard runtime', () => {
         expect(candidate.getElement().focus).toHaveBeenLastCalledWith({ preventScroll: false });
     });
 
-    test('skips consecutive readonly cells with arrows while retaining focus-only activation', () => {
+    test('visits consecutive readonly cells with arrows without enabling their editors', () => {
         const first = createCandidate({ field: 'first' });
         const readonlyOne = createCandidate({ editable: false, field: 'readonlyOne' });
         const readonlyTwo = createCandidate({ editable: false, field: 'readonlyTwo' });
@@ -652,9 +658,13 @@ describe('table pagination keyboard runtime', () => {
         globalThis.document.activeElement = first.getElement();
 
         harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
+        expect(globalThis.document.activeElement).toBe(readonlyOne.getElement());
+        harness.tableElement.dispatch({ key: 'Enter', target: readonlyOne.getElement() });
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonlyOne.getElement() });
+        expect(globalThis.document.activeElement).toBe(readonlyTwo.getElement());
+        harness.tableElement.dispatch({ key: 'Enter', target: readonlyTwo.getElement() });
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonlyTwo.getElement() });
         expect(globalThis.document.activeElement).toBe(last.getElement());
-        expect(globalThis.document.activeElement).not.toBe(readonlyOne.getElement());
-        expect(globalThis.document.activeElement).not.toBe(readonlyTwo.getElement());
         expect(readonlyOne.edit).not.toHaveBeenCalled();
         expect(readonlyTwo.edit).not.toHaveBeenCalled();
         expect(last.edit).not.toHaveBeenCalled();
@@ -665,7 +675,66 @@ describe('table pagination keyboard runtime', () => {
         harness.setEditing(false, last);
         globalThis.document.activeElement = last.getElement();
         harness.tableElement.dispatch({ key: 'ArrowLeft', target: last.getElement() });
+        expect(globalThis.document.activeElement).toBe(readonlyTwo.getElement());
+        harness.tableElement.dispatch({ key: 'ArrowLeft', target: readonlyTwo.getElement() });
+        harness.tableElement.dispatch({ key: 'ArrowLeft', target: readonlyOne.getElement() });
         expect(globalThis.document.activeElement).toBe(first.getElement());
+    });
+
+    test('editable callbacks restrict editing without restricting or being called by navigation', () => {
+        const first = createCandidate({ field: 'first' });
+        const editable = vi.fn(() => false);
+        const locked = createCandidate({ field: 'locked', editable });
+        const harness = createHarness({ cells: [first, locked] });
+        expect(isNavigationCandidate(locked)).toBe(true);
+        expect(editable).not.toHaveBeenCalled();
+        globalThis.document.activeElement = first.getElement();
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: first.getElement() });
+        expect(globalThis.document.activeElement).toBe(locked.getElement());
+        expect(editable).not.toHaveBeenCalled();
+        harness.tableElement.dispatch({ key: 'Enter', target: locked.getElement() });
+        expect(editable).toHaveBeenCalledOnce();
+        expect(locked.edit).not.toHaveBeenCalled();
+        harness.runtime.destroy();
+    });
+
+    test('readonly pointer focus is cancelled by a newer pointer or destruction', async () => {
+        const first = createCandidate({ field: 'first', editable: false });
+        const second = createCandidate({ field: 'second', editable: false });
+        const harness = createHarness({ cells: [first, second] });
+        harness.tableElement.dispatch({ target: first.getElement() }, 'click');
+        harness.tableElement.dispatch({ target: second.getElement() }, 'click');
+        await flush();
+        expect(first.getElement().focus).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(second.getElement());
+        harness.tableElement.dispatch({ target: first.getElement() }, 'click');
+        harness.runtime.destroy();
+        await flush();
+        expect(first.getElement().focus).not.toHaveBeenCalled();
+    });
+
+    test('readonly pointer entry remains disabled with keyboardNavigation.enabled:false', async () => {
+        const readonly = createCandidate({ field: 'readonly', editable: false });
+        const harness = createHarness({ cells: [readonly], keyboardNavigation: normalizeKeyboardNavigationOptions({ enabled: false }) });
+        harness.tableElement.dispatch({ target: readonly.getElement() }, 'click');
+        const key = harness.tableElement.dispatch({ key: 'ArrowRight', target: readonly.getElement() });
+        await flush();
+        expect(readonly.getElement().focus).not.toHaveBeenCalled();
+        expect(key.preventDefault).not.toHaveBeenCalled();
+        expect(readonly.edit).not.toHaveBeenCalled();
+        harness.runtime.destroy();
+    });
+
+    test('deleted data rows stay excluded from pointer and spatial navigation', async () => {
+        const readonly = createCandidate({ field: 'readonly', editable: false });
+        const harness = createHarness({ cells: [readonly] });
+        readonly.row.getData = () => ({ _state: 'deleted' });
+        harness.tableElement.dispatch({ target: readonly.getElement() }, 'click');
+        harness.tableElement.dispatch({ key: 'ArrowRight', target: readonly.getElement() });
+        await flush();
+        expect(readonly.getElement().focus).not.toHaveBeenCalled();
+        expect(readonly.edit).not.toHaveBeenCalled();
+        harness.runtime.destroy();
     });
 
     test('skips unavailable vertical cells and reacquires the rendered destination', async () => {
@@ -673,7 +742,7 @@ describe('table pagination keyboard runtime', () => {
         const unavailable = createCandidate({ field: 'name' });
         const last = createCandidate({ field: 'name' });
         const replacement = createCandidate({ field: 'name' });
-        unavailable.getColumn().getDefinition().editable = () => false;
+        unavailable.getColumn().getDefinition().visible = false;
         const rows = [[first], [unavailable], [last]].map(cells => {
             const row = {
                 getCells: () => cells,

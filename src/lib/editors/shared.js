@@ -255,14 +255,12 @@ export const isEditableCandidate = candidate => {
     );
 };
 
-// Read-only data cells participate in navigation without pretending to own an
-// editor. Explicitly disabled columns retain their existing skip behavior.
+// Navigation depends on visibility, not permission to edit a value. Data-row
+// and lifecycle restrictions belong to the owning navigation runtime.
 export const isNavigationCandidate = candidate => {
-    if (isEditableCandidate(candidate)) return true;
     const definition = getCellDefinition(candidate);
-    if (!definition || definition.editor || !columnIsVisible(candidate?.getColumn?.())) return false;
-    if (definition.editable === false) return false;
-    return typeof definition.editable !== 'function' || definition.editable(candidate) !== false;
+    return Boolean(definition && definition.visible !== false
+        && columnIsVisible(candidate?.getColumn?.()));
 };
 
 export const navigateToCandidate = candidate => {
