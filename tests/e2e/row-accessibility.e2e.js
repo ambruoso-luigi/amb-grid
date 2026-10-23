@@ -92,26 +92,52 @@ test.describe('row controls accessibility', () => {
     test('main demo row action exits to Item code with native Tab navigation', async ({ page }) => {
         await openInventoryDemo(page);
 
-        const deleteButtonSelector = '#inventory-table .tabulator-row:first-child .amb-row-action-button--delete';
-        const deleteButton = page.locator(deleteButtonSelector);
         const firstRow = page.locator('#inventory-table .tabulator-row').first();
+        const itemCode = firstRow.locator('.tabulator-cell[tabulator-field="itemCode"]');
+        const deleteButton = firstRow.locator('.amb-row-action-button--delete');
+        const originalItemCode = await itemCode.textContent();
+        const expectItemCodeNavigation = async () => {
+            await expect(itemCode).toBeFocused();
+            await expect(itemCode).not.toHaveClass(/tabulator-editing/);
+            await expect(itemCode.locator('input')).toHaveCount(0);
+            expect(await itemCode.evaluate(element => ({
+                isActiveCell: document.activeElement === element,
+                field: document.activeElement?.getAttribute('tabulator-field'),
+                editing: element.classList.contains('tabulator-editing')
+            }))).toEqual({ isActiveCell: true, field: 'itemCode', editing: false });
+        };
 
-        await deleteButton.focus();
+        await expect(firstRow).toHaveAttribute('data-state', 'clean');
+        await enterNavigationWithClick(page, itemCode, 'Row action Tab navigation setup', '#inventory-table');
+        await page.keyboard.press('ArrowLeft');
 
         const actionFocus = await getActiveGridFocus(page);
 
         await expect(deleteButton).toBeFocused();
+        await expect(deleteButton).toBeEnabled();
         expect(actionFocus.action).toBe('delete');
         expect(actionFocus.field).toBeNull();
 
         await page.keyboard.press('Tab');
 
+        await expectItemCodeNavigation();
         const afterActionFocus = await getActiveGridFocus(page);
-
         expect(afterActionFocus.className).not.toContain('amb-row-action-button');
-        expect(afterActionFocus.tagName).toBe('INPUT');
         expect(afterActionFocus.field).toBe('itemCode');
 
+        await page.keyboard.press('Enter');
+        const editor = itemCode.locator('input.amb-cell-editor');
+        await expect(itemCode).toHaveClass(/tabulator-editing/);
+        await expect(editor).toBeFocused();
+        expect(await getActiveGridFocus(page)).toMatchObject({ tagName: 'INPUT', field: 'itemCode', action: null });
+
+        await page.keyboard.press('Escape');
+        await expectItemCodeNavigation();
+        await expect(itemCode).toHaveText(originalItemCode);
+        await expect(firstRow).toHaveAttribute('data-state', 'clean');
+        await expect(deleteButton).toBeVisible();
+        await expect(firstRow.locator('.amb-row-action-button--rollback')).toHaveCount(0);
+        await expect(page.locator('.teh-confirm-dialog--visible')).toHaveCount(0);
     });
 
     test('main demo data cbox still supports whole-cell mouse editing', async ({ page }) => {
