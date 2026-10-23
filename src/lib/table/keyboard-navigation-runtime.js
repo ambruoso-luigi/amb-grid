@@ -723,12 +723,11 @@ export const createKeyboardNavigationRuntime = ({
         }
 
         if (isTab) {
-            const candidates = getRenderedRows('first')
-                .flatMap(row => row.getCells())
-                .filter(candidate => (
-                    isKeyboardOperationalCandidate(candidate)
-                    && isAutomaticPageCandidate(candidate)
-                ));
+            const renderedCells = getRenderedRows('first').flatMap(row => row.getCells());
+            const candidates = renderedCells.filter(candidate => (
+                isKeyboardOperationalCandidate(candidate)
+                && isAutomaticPageCandidate(candidate)
+            ));
             const currentIndex = candidates.findIndex(candidate => (
                 candidate === activeCell
                 || candidate.getElement?.() === editingElement
@@ -736,12 +735,24 @@ export const createKeyboardNavigationRuntime = ({
             ));
             const activeManagedColumn = getAmbColumnMetadata(activeDefinition).managedColumn;
             const direction = action === 'previous' ? 'prev' : 'next';
-            const managedOriginTarget = currentIndex === -1 && activeManagedColumn
-                ? candidates[direction === 'prev' ? candidates.length - 1 : 0]
-                : null;
-            const atPageBoundary = direction === 'prev'
+            const managedOrigin = currentIndex === -1 && Boolean(activeManagedColumn);
+            let managedOriginTarget = null;
+            if (managedOrigin) {
+                const originIndex = renderedCells.findIndex(candidate => (
+                    candidate === activeCell || candidate.getElement?.() === activeCell?.getElement?.()
+                ));
+                if (originIndex === -1) return;
+                const automaticCandidates = new Set(candidates);
+                const step = direction === 'prev' ? -1 : 1;
+                for (let index = originIndex + step; index >= 0 && index < renderedCells.length; index += step) {
+                    if (!automaticCandidates.has(renderedCells[index])) continue;
+                    managedOriginTarget = renderedCells[index];
+                    break;
+                }
+            }
+            const atPageBoundary = managedOrigin || (direction === 'prev'
                 ? currentIndex === 0
-                : currentIndex === candidates.length - 1;
+                : currentIndex === candidates.length - 1);
             const targetCandidate = candidates[currentIndex + (direction === 'prev' ? -1 : 1)];
             const targetFocusOnly = getAmbColumnMetadata(
                 targetCandidate?.getColumn?.()?.getDefinition?.()
@@ -754,7 +765,7 @@ export const createKeyboardNavigationRuntime = ({
                 navigateCandidate(managedOriginTarget);
                 return;
             }
-            if (currentIndex === -1) return;
+            if (currentIndex === -1 && !managedOrigin) return;
             if ((focusOnly || targetFocusOnly || !activeDefinition.editor
                 || (targetCandidate && !targetCandidate.getColumn?.()?.getDefinition?.().editor)) && !atPageBoundary) {
                 event.preventDefault();
