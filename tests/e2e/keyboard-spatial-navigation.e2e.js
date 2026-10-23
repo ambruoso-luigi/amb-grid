@@ -40,6 +40,100 @@ const activeCellField = page => page.evaluate(() => {
     return cell?.getAttribute('tabulator-field') || null;
 });
 
+for (const demo of [
+    { name: 'basic-crud', selector: '#basic-table', fields: ['id', 'title', 'tag', 'archived'], editFields: ['title', 'tag', 'archived'] },
+    { name: 'row-states', selector: '#row-states-table', fields: ['id', '_ambTempId', '_ambRowNumber', '_state', '_ambErrorCount', 'description', 'type'], editFields: ['description', 'type'] }
+]) {
+    test(`NAV 01 ${demo.name}: sequential navigation and editing retain their source mode across rows`, async ({ page }, testInfo) => {
+        const observations = [];
+        await page.goto('/src/demo/index.html#feature-examples');
+        await page.locator(`[data-example="${demo.name}"]`).click();
+        const grid = page.locator(demo.selector);
+        const rowCode = row => `${demo.name === 'basic-crud' ? 'NT' : 'REC'}-00${row + 1}`;
+        const cell = (row, field) => grid.locator('.tabulator-row').filter({ has: page.locator(`[tabulator-field="id"]`, { hasText: rowCode(row) }) }).locator(`[tabulator-field="${field}"]`);
+        await expect(cell(0, demo.fields[0])).toBeVisible();
+        await page.evaluate(() => {
+            window.__nav01Consumers = [];
+            for (const method of ['preventDefault', 'stopImmediatePropagation']) {
+                const original = Event.prototype[method];
+                Event.prototype[method] = function (...args) {
+                    if (this.type === 'keydown' && this.key === 'Tab') {
+                        window.__nav01Consumers.push({ method, stack: new Error().stack.split('\n').slice(2, 5) });
+                    }
+                    return original.apply(this, args);
+                };
+            }
+        });
+        const record = async phase => observations.push({ phase, ...await grid.evaluate(grid => {
+            const active = document.activeElement;
+            const cell = active.closest('.tabulator-cell');
+            return {
+                active: active.tagName, field: cell?.getAttribute('tabulator-field'),
+                row: [...grid.querySelectorAll('.tabulator-row')].indexOf(cell?.closest('.tabulator-row')),
+                editingCount: grid.querySelectorAll('.tabulator-cell.tabulator-editing').length,
+                value: active.value ?? cell?.textContent,
+                consumers: window.__nav01Consumers.splice(0)
+            };
+        }) });
+        try {
+            await cell(0, demo.fields[0]).click();
+            const path = [0, 1].flatMap(row => demo.fields.map(field => ({ row, field })));
+            for (let index = 0; index < path.length; index += 1) {
+                if (index) await page.keyboard.press('Tab');
+                const { row, field } = path[index];
+                await expect(cell(row, field)).toBeFocused();
+                await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+                if (index) await expect.poll(() => cell(row, field).evaluate(element => {
+                    const style = getComputedStyle(element);
+                    return (style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0)
+                        || (element.matches(':focus-visible') && style.boxShadow.includes('2px'));
+                })).toBe(true);
+                await record(`NAV Tab ${row}:${field}`);
+            }
+            for (const { row, field } of path.slice(0, -1).reverse()) {
+                await page.keyboard.press('Shift+Tab');
+                await expect(cell(row, field)).toBeFocused();
+                await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+                await record(`NAV Shift+Tab ${row}:${field}`);
+            }
+            const edited = cell(0, demo.editFields[0]);
+            const original = await edited.textContent();
+            await edited.click();
+            await page.keyboard.press('Enter');
+            await expect(edited.locator('input')).toBeFocused();
+            await record(`EDIT before ${original}`);
+            await edited.locator('input').fill('NAV committed value');
+            const editPath = [
+                ...demo.editFields.slice(1).map(field => ({ row: 0, field })),
+                { row: 1, field: demo.editFields[0] }
+            ];
+            for (const { row, field } of editPath) {
+                await page.keyboard.press('Tab');
+                await expect(cell(row, field)).toHaveClass(/tabulator-editing/);
+                await expect(cell(row, field).locator('input')).toBeFocused();
+                await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+                await record(`EDIT Tab ${row}:${field}`);
+            }
+            await expect(edited).toHaveText('NAV committed value');
+            for (const field of demo.editFields.slice().reverse()) {
+                await page.keyboard.press('Shift+Tab');
+                await expect(cell(0, field)).toHaveClass(/tabulator-editing/);
+                await expect(cell(0, field).locator('input')).toBeFocused();
+                await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+                await record(`EDIT Shift+Tab 0:${field}`);
+            }
+            await expect(edited.locator('input')).toHaveValue('NAV committed value');
+            await page.keyboard.press('Escape');
+            await expect(edited).toBeFocused();
+            await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+            await expect(grid.locator('.tabulator-selected')).toHaveCount(0);
+            await record('EDIT Escape NAV');
+        } finally {
+            await testInfo.attach('navigation-observations', { body: JSON.stringify(observations, null, 2), contentType: 'application/json' });
+        }
+    });
+}
+
 const activeCellVisibility = page => page.evaluate(() => {
     const active = document.activeElement;
     const cell = active?.closest?.('.tabulator-cell');
@@ -205,6 +299,17 @@ test.describe('keyboard spatial navigation', () => {
         await expect(page.getByRole('listbox', { name: 'Results List' })
             .getByRole('option', { selected: true })).toHaveCount(1);
         await expect(warehouse).toHaveClass(/tabulator-editing/);
+        const selected = await page.getByRole('listbox', { name: 'Results List' })
+            .getByRole('option', { selected: true }).textContent();
+        await page.keyboard.press('Tab');
+        await expect(rowCell(page, 'PRD-AB02', 'stockQuantity').locator('input')).toBeFocused();
+        await expect(warehouse).toHaveText(selected.trim());
+        await page.keyboard.press('Shift+Tab');
+        await expect(warehouse.locator('input.amb-autocomplete-editor')).toBeFocused();
+        await expect(warehouse.locator('input.amb-autocomplete-editor')).toHaveValue(selected.trim());
+        await expect(table(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+        await page.keyboard.press('Escape');
+        await expectNavigationFocus(warehouse);
     });
 
     test('uses lookup double click for manual editing and F2 for the dialog', async ({ page }) => {

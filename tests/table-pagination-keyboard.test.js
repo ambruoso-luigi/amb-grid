@@ -371,7 +371,7 @@ describe('table pagination keyboard runtime', () => {
         expect(globalThis.document.activeElement).toBe(itemCode.getElement().editor);
     });
 
-    test('opens the next automatic destination when Tab starts from a managed action', () => {
+    test('focuses the next automatic destination when Tab starts from a managed action', () => {
         const rowAction = createCandidate({ field: '_actions' });
         const itemCode = createCandidate({ field: 'itemCode' });
         setAmbColumnMetadata(rowAction.getColumn().getDefinition(), {
@@ -385,8 +385,8 @@ describe('table pagination keyboard runtime', () => {
         const event = harness.tableElement.dispatch({ key: 'Tab', target: rowAction.getElement() });
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
-        expect(itemCode.edit).toHaveBeenCalledOnce();
-        expect(globalThis.document.activeElement).toBe(itemCode.getElement().editor);
+        expect(itemCode.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(itemCode.getElement());
     });
 
     test('destroy removes a pending render listener and unlocks the coordinator', async () => {
@@ -609,7 +609,7 @@ describe('table pagination keyboard runtime', () => {
         expect(image.edit).not.toHaveBeenCalled();
     });
 
-    test('visits passive columns spatially while retaining CRUD sequential destinations', () => {
+    test('visits passive columns with arrows and Tab without opening editors', () => {
         const first = createCandidate({ field: 'first' });
         const passive = createCandidate({ field: 'id' });
         delete passive.getColumn().getDefinition().editor;
@@ -621,7 +621,8 @@ describe('table pagination keyboard runtime', () => {
         harness.tableElement.dispatch({ key: 'Enter', target: passive.getElement() });
         expect(passive.edit).not.toHaveBeenCalled();
         harness.tableElement.dispatch({ key: 'Tab', target: passive.getElement() });
-        expect(last.edit).toHaveBeenCalledOnce();
+        expect(last.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe(last.getElement());
         harness.runtime.destroy();
     });
 
@@ -1125,7 +1126,9 @@ describe('table pagination keyboard runtime', () => {
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(notes.edit).not.toHaveBeenCalled();
-        expect(shiftKey ? previous.edit : next.edit).toHaveBeenCalledOnce();
+        expect(previous.edit).not.toHaveBeenCalled();
+        expect(next.edit).not.toHaveBeenCalled();
+        expect(globalThis.document.activeElement).toBe((shiftKey ? previous : next).getElement());
     });
 
     test('Shift+Tab focuses a large-text destination without opening its editor', () => {
@@ -1144,6 +1147,131 @@ describe('table pagination keyboard runtime', () => {
         expect(event.preventDefault).toHaveBeenCalledOnce();
         expect(notes.getElement().focus).toHaveBeenCalledOnce();
         expect(notes.edit).not.toHaveBeenCalled();
+    });
+
+    test.each([false, true])('Navigation Tab includes consecutive readonly and dynamic cells (reverse=%s)', async reverse => {
+        const first = createCandidate({ field: 'first' });
+        const passive = createCandidate({ field: 'passive' });
+        delete passive.getColumn().getDefinition().editor;
+        const locked = createCandidate({ field: 'locked', editable: false });
+        const callback = vi.fn(() => false);
+        const dynamic = createCandidate({ field: 'dynamic', editable: callback });
+        const hidden = createCandidate({ field: 'hidden' });
+        hidden.getColumn().getDefinition().visible = false;
+        const last = createCandidate({ field: 'last' });
+        const cells = [first, passive, locked, dynamic, hidden, last];
+        const harness = createHarness({ cells });
+        const path = [first, passive, locked, dynamic, last];
+        if (reverse) path.reverse();
+        globalThis.document.activeElement = path[0].getElement();
+        for (const destination of path.slice(1)) {
+            const event = harness.tableElement.dispatch({ key: 'Tab', shiftKey: reverse, target: globalThis.document.activeElement });
+            await flush();
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+            expect(globalThis.document.activeElement).toBe(destination.getElement());
+        }
+        cells.forEach(cell => expect(cell.edit).not.toHaveBeenCalled());
+        expect(callback).not.toHaveBeenCalled();
+        harness.runtime.destroy();
+    });
+
+    test.each([false, true])('Editing Tab commits once, skips readonly, and opens only an editable destination (reverse=%s)', async reverse => {
+        const first = createCandidate({ field: 'first' });
+        const locked = createCandidate({ field: 'locked', editable: false });
+        const dynamic = createCandidate({ field: 'dynamic', editable: () => false });
+        const passive = createCandidate({ field: 'passive' });
+        delete passive.getColumn().getDefinition().editor;
+        const last = createCandidate({ field: 'last' });
+        const harness = createHarness({ cells: [first, locked, dynamic, passive, last] });
+        const source = reverse ? last : first;
+        const destination = reverse ? first : last;
+        harness.setEditing(true, source);
+        const blur = vi.fn(() => {
+            harness.setEditing(false, source);
+            harness.table.emit('cellEdited', source);
+        });
+        globalThis.document.activeElement = { inside: true, blur, closest: () => source.getElement() };
+        const event = harness.tableElement.dispatch({ key: 'Tab', shiftKey: reverse, target: globalThis.document.activeElement });
+        await flush();
+        expect(blur).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+        expect(destination.edit).toHaveBeenCalledOnce();
+        expect(globalThis.document.activeElement).toBe(destination.getElement().editor);
+        [locked, dynamic, passive].forEach(cell => expect(cell.edit).not.toHaveBeenCalled());
+        expect(harness.listenerCount('cellEdited')).toBe(0);
+        expect(harness.listenerCount('validationFailed')).toBe(0);
+        harness.runtime.destroy();
+    });
+
+    test('blocked validation keeps Editing and removes temporary close listeners', async () => {
+        const source = createCandidate({ field: 'source' });
+        const destination = createCandidate({ field: 'destination' });
+        const harness = createHarness({ cells: [source, destination] });
+        harness.setEditing(true, source);
+        globalThis.document.activeElement = {
+            inside: true, closest: () => source.getElement(),
+            blur: () => harness.table.emit('validationFailed', source)
+        };
+        harness.tableElement.dispatch({ key: 'Tab', target: globalThis.document.activeElement });
+        await flush();
+        expect(destination.edit).not.toHaveBeenCalled();
+        expect(source.getElement().classList.contains('tabulator-editing')).toBe(true);
+        expect(harness.listenerCount('cellEdited')).toBe(0);
+        expect(harness.listenerCount('validationFailed')).toBe(0);
+        harness.runtime.destroy();
+    });
+
+    test('async commit retains its mode, ignores repeated Tab, and reacquires a replaced cell', async () => {
+        const source = createCandidate({ field: 'source' });
+        const destination = createCandidate({ field: 'destination' });
+        const harness = createHarness({ cells: [source, destination] });
+        harness.setEditing(true, source);
+        const blur = vi.fn();
+        globalThis.document.activeElement = { inside: true, blur, closest: () => source.getElement() };
+        harness.tableElement.dispatch({ key: 'Tab', target: globalThis.document.activeElement });
+        harness.tableElement.dispatch({ key: 'Tab', target: globalThis.document.activeElement });
+        expect(blur).toHaveBeenCalledOnce();
+        const replacement = createCandidate({ field: 'source' });
+        const newDestination = createCandidate({ field: 'destination' });
+        harness.setEditing(false, source);
+        harness.setCells([replacement, newDestination]);
+        globalThis.document.activeElement = replacement.getElement();
+        harness.table.emit('cellEdited', source);
+        await flush();
+        expect(newDestination.edit).toHaveBeenCalledOnce();
+        expect(destination.edit).not.toHaveBeenCalled();
+        harness.runtime.destroy();
+    });
+
+    test('a Tab on a newly activated destination waits for the current sequential finalizer', async () => {
+        const source = createCandidate({ field: 'source' });
+        const destination = createCandidate({ field: 'destination' });
+        const last = createCandidate({ field: 'last' });
+        const harness = createHarness({ cells: [source, destination, last] });
+        const close = cell => {
+            harness.setEditing(false, cell);
+            harness.table.emit('cellEdited', cell);
+        };
+        source.getElement().editor.blur = () => close(source);
+        destination.getElement().editor.blur = () => close(destination);
+        destination.edit.mockImplementation(() => {
+            harness.setEditing(true, destination);
+            globalThis.document.activeElement = destination.getElement().editor;
+            const event = harness.tableElement.dispatch({ key: 'Tab', target: globalThis.document.activeElement });
+            expect(event.preventDefault).toHaveBeenCalledOnce();
+            expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+            return true;
+        });
+        harness.setEditing(true, source);
+        globalThis.document.activeElement = source.getElement().editor;
+        harness.tableElement.dispatch({ key: 'Tab', target: globalThis.document.activeElement });
+        await flush();
+        await flush();
+        expect(destination.edit).toHaveBeenCalledOnce();
+        expect(last.edit).toHaveBeenCalledOnce();
+        expect(globalThis.document.activeElement).toBe(last.getElement().editor);
+        harness.runtime.destroy();
     });
 
     test('keeps page shortcuts recognized', () => {

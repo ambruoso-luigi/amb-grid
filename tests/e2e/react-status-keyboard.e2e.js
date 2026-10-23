@@ -32,5 +32,14 @@ test('React Status: keyboard navigation, commit and cancel', async ({ page }) =>
     await expect(status).toBeFocused();
     await expect(status).not.toHaveClass(/tabulator-editing/);
     await page.keyboard.press('ArrowLeft');
+    // Spatial navigation includes the readonly calculated column between Status and Unit price.
+    const inventoryValue = column('inventoryValue');
+    await expect(inventoryValue).toBeFocused();
+    await expect(inventoryValue).not.toHaveClass(/tabulator-editing/);
+    await page.keyboard.press('Enter');
+    await expect(inventoryValue).toBeFocused();
+    await expect(inventoryValue).not.toHaveClass(/tabulator-editing/);
+    await page.keyboard.press('ArrowLeft');
     await expect(column('unitPrice')).toBeFocused();
+    await expect(column('unitPrice')).not.toHaveClass(/tabulator-editing/);
 });

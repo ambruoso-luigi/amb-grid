@@ -411,7 +411,8 @@ popup/action cells, and non-data interactive columns:
 
 Mouse and keyboard interaction converge on three AMB Grid states:
 
-* **Navigation:** a single click focuses a normal editable cell; arrow keys
+* **Navigation:** a single click focuses a navigable data cell, including
+  readonly cells; arrow keys
   move geometrically and `Tab`/`Shift+Tab` move sequentially.
 * **Editing:** a double click (the default) or `Enter` starts the cell editor;
   `Enter` commits and `Escape` cancels standard inline editors.
@@ -436,28 +437,47 @@ and double clicks can select a word without returning the cell to Navigation.
 Clicking another cell or an external control leaves the editor through the
 normal editing lifecycle.
 
-* `Tab` moves to the next editable or interactive AMB Grid cell.
-* `Shift+Tab` moves to the previous editable or interactive AMB Grid
-  cell.
-* With local pagination, `Tab` from the last editable cell opens the first
-  editable cell on the next page. `Shift+Tab` from the first editable cell
-  opens the last editable cell on the previous page.
-* At the absolute grid boundaries, `Tab` and `Shift+Tab` move focus out of the
-  grid in the corresponding direction.
-* ArrowLeft, ArrowRight, ArrowUp, and ArrowDown use geometric navigation and
-  can reach available managed columns, including row actions. The automatic
-  sequential `Tab`/`Shift+Tab` path excludes managed columns from ordinary data
-  destinations; once a managed control is active, it retains its dedicated
-  keyboard handling.
-* `Alt+PageDown` opens the next page and its first editable cell.
-  `Alt+PageUp` opens the previous page and its first editable cell.
-* Arrow keys move focus geometrically between operational editable or
-  interactive cells, skipping read-only and unavailable cells without opening
-  a normal editor. Left/Right navigation never wraps; Up/Down retain the
-  column and cross to an adjacent page when one exists. Directional navigation
-  only focuses ordinary editors; controls retain their dedicated activation.
-* `Enter` opens the editor of the focused editable cell. `Alt+ArrowUp` and
-  `Alt+ArrowDown` are no longer defaults, but can be restored explicitly with
+Navigable (can receive focus), editable (allows changing a value), and interactive
+(contains an activatable control) are separate properties. A visible readonly
+cell can receive focus without allowing changes. Cells without an editor,
+`editable: false`, and cells whose `editable(cell)` callback currently returns
+`false` remain navigable. Editing destinations respect the callback's current
+result; that result does not exclude a cell from navigation. Hidden columns and
+non-operational data rows (such as deleted rows) are skipped; a deleted row's
+available Rollback action keeps its dedicated managed-control behavior.
+
+| Key | Navigation | Editing |
+| --- | --- | --- |
+| Arrow keys | Move between visible navigable cells, including readonly cells | Stay with the editor, except the documented checkbox behavior |
+| Tab / Shift+Tab | Focus the next / previous navigable data cell without opening an editor | Commit, skip cells that cannot currently be edited, and open the next / previous available editor |
+| Enter | Open the focused cell's editor only if editing is permitted | Commit a standard inline editor and return to Navigation |
+| Escape | Leave an active auxiliary control according to its own rules | Cancel a standard inline editor and return to Navigation |
+| F2 / Space | Invoke a supported auxiliary action / activate a focused control | Retain the editor's dedicated behavior |
+
+For example, with columns `id` (no editor), `title` (text editor), `total`
+(`editable: false`) and `tag` (text editor): click `title`, then press Tab to
+focus `total` and Tab again to focus `tag`, without changing data. Instead,
+click `title`, press Enter, change its text and press Tab: the text is committed,
+`total` is skipped, and the `tag` editor opens. Shift+Tab applies the same rule
+in reverse. A validation that blocks closing keeps the current editor active.
+
+* Sequential navigation wraps between rows. With local pagination, it continues
+  on the adjacent page in the same source mode: Navigation focuses the first or
+  last navigable data cell; Editing opens the first or last eligible editor.
+  If there is no further eligible destination, focus leaves the grid in the
+  corresponding direction. Re-entering follows the grid's normal browser focus
+  order; selection and row-action controls retain their own entry behavior.
+* ArrowLeft/ArrowRight never wrap. ArrowUp/ArrowDown retain the column and cross
+  to an adjacent page when one exists. Ordinary data destinations receive focus
+  without editing; available managed controls retain their dedicated activation.
+* Automatic Tab destinations exclude managed selection and row-action columns.
+  Starting Tab or Shift+Tab from one of those controls continues in data-row
+  order without toggling selection or running an action.
+* `Alt+PageDown` / `Alt+PageUp` change page and focus its first navigable data
+  cell in Navigation. Enter can then start editing where permitted.
+* `Enter` opens only an eligible editor; it does not make readonly cells
+  editable. `Alt+ArrowUp` and `Alt+ArrowDown` are not defaults, but can be
+  restored with
   `keyboardNavigation: { bindings: { up: 'Alt+ArrowUp', down: 'Alt+ArrowDown' } }`.
 * In standard inline editors, arrow keys remain with the editor; `Enter`
   commits and `Escape` cancels, returning focus to the same cell. Manual date

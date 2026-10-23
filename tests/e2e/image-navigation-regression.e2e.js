@@ -38,7 +38,7 @@ const install = async (page, mixed, options = {}) => {
                     { title: 'Name', field: 'name', ...(mixed ? { editor: AMB.editors.text() } : {}) },
                     { title: 'Explicit readonly', field: 'locked', editable: false, ...(mixed ? { editor: AMB.editors.text() } : {}) },
                     ...(options.extended ? [
-                        { title: 'Callback readonly', field: 'callbackLocked', editor: AMB.editors.text(), editable: () => false },
+                        { title: 'Callback readonly', field: 'callbackLocked', editor: AMB.editors.text(), editable: () => window.__img11.allowDynamic === true },
                         { title: 'Hidden', field: 'hidden', visible: false, editor: AMB.editors.text() }
                     ] : []),
                     { title: 'Images', field: 'images', formatter: AMB.formatters.image() },
@@ -96,6 +96,12 @@ for (const field of ['id', 'description', 'testCase']) {
         const start = first.locator(`[tabulator-field="${field}"]`);
         await start.click();
         await expectNavigationFocus(start);
+        if (field === 'id') {
+            await page.keyboard.press('Tab');
+            await expectNavigationFocus(first.locator('[tabulator-field="description"]'));
+            await page.keyboard.press('Shift+Tab');
+            await expectNavigationFocus(start);
+        }
         await page.keyboard.press('Enter');
         await expect(viewer(page)).toHaveCount(0);
         if (field === 'testCase') {
@@ -127,6 +133,10 @@ for (const field of ['id', 'description', 'testCase']) {
         await expect(page.locator('#image-secondary-test-table .tabulator-selected')).toHaveCount(0);
         const b = page.locator('#image-secondary-test-table .tabulator-row').first();
         await b.locator('[tabulator-field="description"]').click();
+        await expectNavigationFocus(b.locator('[tabulator-field="description"]'));
+        await page.keyboard.press('Tab');
+        await expect(b.locator('.amb-image--viewable')).toBeFocused();
+        await page.keyboard.press('Shift+Tab');
         await expectNavigationFocus(b.locator('[tabulator-field="description"]'));
         await page.keyboard.press('ArrowRight');
         await expect(b.locator('.amb-image--viewable')).toBeFocused();
@@ -164,10 +174,11 @@ test('mixed readonly click, editable:false and editable callbacks separate navig
     await expect(image(page, 0)).toBeFocused();
     await page.keyboard.press('ArrowLeft');
     await expectNavigationFocus(cell(page, 0, 'callbackLocked'));
-    // CRUD Tab still skips readonly destinations and activates enabled editors.
+    // Navigation Tab retains readonly destinations without activating editors.
     await page.keyboard.press('Shift+Tab');
-    await expect(cell(page, 0, 'name').locator('input')).toBeFocused();
-    await page.keyboard.press('Escape');
+    await expectNavigationFocus(cell(page, 0, 'locked'));
+    await page.keyboard.press('Shift+Tab');
+    await expectNavigationFocus(cell(page, 0, 'name'));
     await cell(page, 0, 'name').dblclick();
     await expect(cell(page, 0, 'name').locator('input')).toBeFocused();
     await page.keyboard.press('Escape');
@@ -269,17 +280,10 @@ for (const mixed of [false, true]) {
         await expect(row(page, 1).locator('.amb-selection-column__input')).toBeFocused();
         await page.keyboard.press('Space');
         await page.keyboard.press('Tab');
-        const destination = cell(page, 1, mixed ? 'name' : 'id');
-        if (mixed) {
-            await expect(destination).toHaveClass(/tabulator-editing/);
-            await page.keyboard.press('Escape');
-        }
+        const destination = cell(page, 1, 'id');
         await expect(destination).toBeFocused();
+        await expect(destination).not.toHaveClass(/tabulator-editing/);
         await page.keyboard.press('ArrowLeft');
-        if (mixed) {
-            await expect(cell(page, 1, 'id')).toBeFocused();
-            await page.keyboard.press('ArrowLeft');
-        }
         await expect(row(page, 1).locator('.amb-selection-column__input')).toBeFocused();
         await page.keyboard.press('Shift+Tab');
         await expect(image(page, 0)).toBeFocused();
@@ -344,4 +348,82 @@ test('mixed image controls preserve native activation, placeholders, focus and r
     await page.keyboard.press('Tab');
     await expect(page.locator('#img11-after')).toBeFocused();
     expect(errors).toEqual([]);
+});
+
+test('sequential modes cross pages, skip readonly editing destinations and leave both grid boundaries', async ({ page }) => {
+    await install(page, true, { pagination: true, extended: true });
+    await cell(page, 1, 'locked').click();
+    await expectNavigationFocus(cell(page, 1, 'locked'));
+    await page.keyboard.press('Tab');
+    await expectNavigationFocus(cell(page, 1, 'callbackLocked'));
+    await page.keyboard.press('Tab');
+    await expectNavigationFocus(cell(page, 1, 'images'));
+    await page.keyboard.press('Tab');
+    await expectNavigationFocus(cell(page, 1, 'controls'));
+    await page.keyboard.press('Tab');
+    await expect(cell(page, 0, 'id')).toHaveText('3');
+    await expectNavigationFocus(cell(page, 0, 'id'));
+    await page.keyboard.press('Shift+Tab');
+    await expect(cell(page, 1, 'id')).toHaveText('2');
+    await expectNavigationFocus(cell(page, 1, 'controls'));
+
+    await cell(page, 1, 'name').click();
+    await page.keyboard.press('Enter');
+    await cell(page, 1, 'name').locator('input').fill('Two committed');
+    await page.keyboard.press('Tab');
+    await expect(cell(page, 0, 'name').locator('input')).toHaveValue('Three');
+    await expect(cell(page, 0, 'name').locator('input')).toBeFocused();
+    await expect(grid(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
+    await page.keyboard.press('Shift+Tab');
+    await expect(cell(page, 1, 'name').locator('input')).toHaveValue('Two committed');
+    await expect(cell(page, 1, 'name').locator('input')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expectNavigationFocus(cell(page, 1, 'name'));
+
+    await cell(page, 0, 'id').click();
+    await expectNavigationFocus(cell(page, 0, 'id'));
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('#img11-before')).toBeFocused();
+    await tabIntoGrid(page);
+    await page.keyboard.press('Tab');
+    await expectNavigationFocus(cell(page, 0, 'id'));
+    await page.keyboard.press('Tab');
+    await expectNavigationFocus(cell(page, 0, 'name'));
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('#img11-before')).toBeFocused();
+    await expect(grid(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+    await cell(page, 1, 'name').click();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Tab');
+    await expect(cell(page, 0, 'name').locator('input')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#img11-after')).toBeFocused();
+    await expect(grid(page).locator('.tabulator-selected')).toHaveCount(0);
+});
+
+test('custom sequential bindings preserve Navigation and use current editable callbacks in Editing', async ({ page }) => {
+    await install(page, true, { extended: true, keyboardNavigation: { bindings: { next: 'Ctrl+ArrowRight', previous: 'Ctrl+ArrowLeft' } } });
+    await cell(page, 0, 'name').click();
+    await page.keyboard.press('Control+ArrowRight');
+    await expectNavigationFocus(cell(page, 0, 'locked'));
+    await page.keyboard.press('Control+ArrowRight');
+    await expectNavigationFocus(cell(page, 0, 'callbackLocked'));
+    await page.keyboard.press('Enter');
+    await expect(grid(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+    await page.evaluate(() => { window.__img11.allowDynamic = true; });
+    await page.keyboard.press('Enter');
+    await expect(cell(page, 0, 'callbackLocked').locator('input')).toBeFocused();
+    await page.keyboard.press('Control+ArrowLeft');
+    await expect(cell(page, 0, 'name').locator('input')).toBeFocused();
+    await page.keyboard.press('Control+ArrowRight');
+    await expect(cell(page, 0, 'callbackLocked').locator('input')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expectNavigationFocus(cell(page, 0, 'callbackLocked'));
+    await page.evaluate(() => { window.__img11.allowDynamic = false; });
+    await cell(page, 0, 'name').click();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Control+ArrowRight');
+    await expect(cell(page, 1, 'name').locator('input')).toBeFocused();
+    await expect(grid(page).locator('.tabulator-cell.tabulator-editing')).toHaveCount(1);
 });

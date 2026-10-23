@@ -559,6 +559,8 @@ describe('date editor picker keyboard navigation', () => {
         await flushDeferred();
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledWith('20/07/2026');
         expect(harness.table.navigateRight).not.toHaveBeenCalled();
@@ -580,6 +582,8 @@ describe('date editor picker keyboard navigation', () => {
         await flushDeferred();
 
         expect(event.preventDefault).toHaveBeenCalledOnce();
+        expect(event.stopPropagation).toHaveBeenCalledOnce();
+        expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
         expect(harness.success).toHaveBeenCalledOnce();
         expect(harness.table.navigateLeft).not.toHaveBeenCalled();
         expect(harness.table.navigatePrev).toHaveBeenCalledOnce();

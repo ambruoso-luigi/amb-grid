@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
+import { enterNavigationWithClick, reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 const openDatesExample = async page => {
     await page.goto('/');
@@ -100,7 +100,7 @@ test.describe('date picker commit regression', () => {
         const cell = pickerOnlyCell(page);
         const picker = page.locator('.datepicker.active');
 
-        await cell.focus();
+        await enterNavigationWithClick(page, cell, 'Picker-only F2 navigation entry', '#dates-table');
         await expect(cell).toBeFocused();
         await page.keyboard.press('F2');
         await expect(picker).toHaveCount(1);

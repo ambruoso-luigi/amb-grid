@@ -2,7 +2,7 @@ import { LookupDialog } from '../../ui/lookup-dialog.js';
 import { consumeCellAuxiliaryAction, registerCellAuxiliaryAction } from '../table/keyboard-auxiliary.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
 import { getKeyboardNavigationContext } from '../table/keyboard-bindings.js';
-import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateToCandidate } from './shared.js';
+import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateEditableCellAfterClose, navigateToCandidate } from './shared.js';
 
 /**
  * @callback LookupSuccessHandler
@@ -654,6 +654,11 @@ export function lookup(lookupInstance, options = {}) {
                 const table = cell && cell.getTable && cell.getTable();
 
                 navigationScheduled = true;
+                const keyboardContext = getKeyboardNavigationContext(table);
+                if (keyboardContext?.keyboardNavigationOptions?.enabled !== false && keyboardContext?.navigateAfterClose) {
+                    navigateEditableCellAfterClose(cell, direction);
+                    return;
+                }
                 globalThis.setTimeout(() => {
                     const row = cell && cell.getRow && cell.getRow();
                     const cells = row && typeof row.getCells === 'function'
@@ -932,6 +937,7 @@ export function lookup(lookupInstance, options = {}) {
 
         editor._ambEditorType = 'lookup';
         editor._ambCapabilities = {
+            ownsTab: true,
             auxiliary: Boolean(
                 typeof normalizedOptions.onOpenDialog === 'function'
                 || typeof normalizedOptions.dialog?.open === 'function'

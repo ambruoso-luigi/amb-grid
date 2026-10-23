@@ -125,6 +125,22 @@ The column runtime keeps AMB-managed column behavior synchronized when columns a
 
 ### Editors, validators, parsers, and formatters
 
+The keyboard navigation runtime chooses destinations in visible column and logical
+row order, coordinates local page transitions, and owns the grid-level key event.
+It captures Navigation versus Editing before closing an editor: Navigation only
+focuses navigable data (including readonly cells); Editing selects a destination
+with an available editor and current editing permission. Column metadata supplies
+managed-control, focus-only and auxiliary behavior, without making focus permission
+equivalent to editing permission.
+
+Editors own value normalization, validation, commit/cancel and their internal
+popup keys. Standard inline editors close through their existing blur and table
+events before the runtime opens the next destination. Lookup, autocomplete, date
+and checkbox editors consume their native Tab themselves, finish their specialized
+commit, then call the same runtime destination path through the private per-table
+context. Dialog focus traps remain local to the dialog. The controller composes
+these runtimes and destroys their contexts and temporary listeners with the grid.
+
 These four families deliberately have different responsibilities:
 
 ```text

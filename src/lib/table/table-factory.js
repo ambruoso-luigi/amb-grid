@@ -836,17 +836,22 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {string} [commit='Enter']
  * @property {string} [cancel='Escape']
  * @property {string} [auxiliary='F2'] Activates an auxiliary cell control, such as a Lookup dialog.
- * @property {string} [next='Tab']
- * @property {string} [previous='Shift+Tab']
+ * @property {string} [next='Tab'] Next data cell in Navigation; commit and open the next eligible editor in Editing.
+ * @property {string} [previous='Shift+Tab'] Previous data cell in Navigation; commit and open the previous eligible editor in Editing.
  */
 
 /** @typedef {'up'|'down'|'left'|'right'|'edit'|'commit'|'cancel'|'auxiliary'|'next'|'previous'} AMBKeyboardNavigationAction */
-/** @typedef {'navigation'|'editing'|'auxiliary'} AMBKeyboardNavigationState */
+/**
+ * Navigation focuses visible data cells, including readonly cells, without editing.
+ * Editing owns an active editor; sequential actions retain that source mode after commit.
+ * Auxiliary describes interaction with a supported popup, dialog or cell control.
+ * @typedef {'navigation'|'editing'|'auxiliary'} AMBKeyboardNavigationState
+ */
 /**
  * @typedef {object} AMBKeyboardNavigationContext
  * @property {AMBKeyboardNavigationAction} action
  * @property {KeyboardEvent} event
- * @property {AMBKeyboardNavigationState} state
+ * @property {AMBKeyboardNavigationState} state Source interaction state, captured before handling the key or closing an editor.
  * @property {object} cell
  * @property {object} row
  * @property {object} column
@@ -856,7 +861,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
 /**
  * @typedef {object} AMBKeyboardNavigationOptions
  * @property {boolean} [enabled=true] Enables configurable spatial navigation and edit bindings. When false, historical Tab/Shift+Tab and Alt+Page shortcuts remain, while custom bindings and hooks are disabled.
- * @property {AMBKeyboardNavigationBindings} [bindings] Exact key bindings.
+ * @property {AMBKeyboardNavigationBindings} [bindings] Exact key bindings. While enabled, next/previous focus navigable data in Navigation and commit then open an eligible editor in Editing, across rows and local pages. Readonly data remains navigable; managed controls and auxiliary editors retain their dedicated behavior.
  * @property {(context: AMBKeyboardNavigationContext) => boolean} [shouldHandle] Called only while enabled for configurable actions, including standard inline editor commit/cancel while editing; false leaves the event untouched. It is not called for page shortcuts or legacy Tab flow.
  * @property {(context: AMBKeyboardNavigationContext & {direction: 'up'|'down'|'left'|'right'}) => object|undefined|null} [resolveNavigation] Supplies a same-grid directional destination. Null or invalid cells use geometry; thrown errors propagate.
  */

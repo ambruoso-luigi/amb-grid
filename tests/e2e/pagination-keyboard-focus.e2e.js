@@ -108,7 +108,7 @@ test.describe('keyboard pagination focus', () => {
         await enterNavigationWithClick(page, notes, 'Tab pagination setup', '#inventory-table');
         await page.keyboard.press('Tab');
         await waitForPage(page, 2);
-        await expectItemCodeEditor(page);
+        await expectItemCodeNavigationFocus(page);
         await page.keyboard.press('Shift+Tab');
         await waitForPage(page, 1);
         await expect(notes).toBeFocused();

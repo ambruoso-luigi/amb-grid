@@ -98,7 +98,8 @@ export const createKeyboardNavigationRuntime = ({
     const navigationEnabled = navigationOptions.enabled !== false;
     const unregisterKeyboardContext = registerKeyboardNavigationContext(table, {
         keyboardNavigationOptions: navigationOptions,
-        getGrid
+        getGrid,
+        navigateAfterClose: (cell, direction) => moveSequentially(cell, direction, 'editing')
     });
 
     if (!tableElement) {
@@ -106,6 +107,9 @@ export const createKeyboardNavigationRuntime = ({
     }
 
     let transitionInProgress = false;
+    let sequentialInProgress = false;
+    let sequentialSource = null;
+    let pendingSequentialMove = null;
     let verticalNavigationVersion = 0;
     let pointerNavigationVersion = 0;
     let activeFinalizer = null;
@@ -266,15 +270,9 @@ export const createKeyboardNavigationRuntime = ({
     };
 
     const isSequentialCandidate = candidate => {
-        if (!isKeyboardOperationalCandidate(candidate)) return false;
-        if (isEditableCandidate(candidate)) return true;
-        // Preserve CRUD Tab-to-editor behavior. Spatial navigation can also
-        // visit readonly cells, while display-only grids tab through all data.
-        const displayOnly = !(candidate?.getRow?.()?.getCells?.() || []).some(cell => {
-            const column = cell.getColumn?.()?.getDefinition?.() || {};
-            return column.editor && !getAmbColumnMetadata(column).managedColumn;
-        });
-        return navigationEnabled && displayOnly;
+        return isKeyboardOperationalCandidate(candidate)
+            && (!navigationEnabled || Boolean(candidate?.getColumn?.()?.getDefinition?.().editor))
+            && isEditableCandidate(candidate);
     };
 
     const navigateCandidate = candidate => {
@@ -384,6 +382,7 @@ export const createKeyboardNavigationRuntime = ({
             const cleanup = () => {
                 table.off?.('cellEdited', handleEditFinished);
                 table.off?.('cellEditCancelled', handleEditFinished);
+                table.off?.('validationFailed', handleValidationFailed);
                 pendingEditorCloseFinalizers.delete(abort);
             };
             const finalize = result => {
@@ -402,6 +401,9 @@ export const createKeyboardNavigationRuntime = ({
 
                 finalize(!isCurrentCellEditing());
             }
+            function handleValidationFailed(eventCell) {
+                if (isCurrentCell(eventCell)) finalize(false);
+            }
             const abort = () => finalize(false);
 
             pendingEditorCloseFinalizers.add(abort);
@@ -409,6 +411,7 @@ export const createKeyboardNavigationRuntime = ({
             try {
                 table.on('cellEdited', handleEditFinished);
                 table.on('cellEditCancelled', handleEditFinished);
+                table.on('validationFailed', handleValidationFailed);
                 activeElement.blur();
             } catch {
                 finalize(false);
@@ -417,6 +420,91 @@ export const createKeyboardNavigationRuntime = ({
 
             if (!isCurrentCellEditing()) finalize(true);
         });
+    };
+
+    // The source mode is captured before closing an editor. Specialized editors
+    // call this same path after completing their own (possibly async) commit.
+    const resumeSequentialMove = () => {
+        if (destroyed || sequentialInProgress || transitionInProgress || !pendingSequentialMove) return;
+        const pending = pendingSequentialMove;
+        pendingSequentialMove = null;
+        if (pending.version !== pointerNavigationVersion) return;
+        void moveSequentially(pending.source, pending.direction, pending.mode);
+    };
+
+    const moveSequentially = async (source, direction, mode) => {
+        if (destroyed) return;
+        if (sequentialInProgress || transitionInProgress) {
+            // Ignore repeats from the closing source. A key on the newly
+            // focused destination waits for the current render finalizer.
+            if (source !== sequentialSource && !(sequentialSource
+                && source?.getRow?.() === sequentialSource.getRow?.()
+                && source?.getField?.() === sequentialSource.getField?.())) {
+                pendingSequentialMove = { source, direction, mode, version: pointerNavigationVersion };
+            }
+            return;
+        }
+        sequentialInProgress = true;
+        sequentialSource = source;
+        cancelScheduledNavigationFocusRestore(source);
+        try {
+            await performSequentialMove(source, direction, mode);
+        } finally {
+            sequentialInProgress = false;
+            sequentialSource = null;
+            resumeSequentialMove();
+        }
+    };
+
+    const performSequentialMove = async (source, direction, mode) => {
+        if (destroyed || transitionInProgress) return;
+        const sourceRow = source?.getRow?.();
+        const sourceField = source?.getField?.();
+        const sourceColumn = source?.getColumn?.();
+        if (mode === 'editing' && !await closeActiveEditorAndWait(source)) return;
+        if (destroyed) return;
+
+        const cells = getCurrentPageRows().flatMap(row => row.getCells());
+        const origin = cells.findIndex(cell => cell === source || (
+            cell.getRow?.() === sourceRow
+            && (sourceField ? cell.getField?.() === sourceField : cell.getColumn?.() === sourceColumn)
+        ));
+        if (origin === -1) return;
+        const step = direction === 'prev' ? -1 : 1;
+        const canVisit = mode === 'navigation' ? isKeyboardOperationalCandidate : isSequentialCandidate;
+        for (let index = origin + step; index >= 0 && index < cells.length; index += step) {
+            let candidate = cells[index];
+            if (!isAutomaticPageCandidate(candidate) || !canVisit(candidate)) continue;
+            const row = candidate.getRow?.();
+            const field = candidate.getField?.();
+            if (row !== sourceRow && typeof row?.scrollTo === 'function') {
+                await row.scrollTo('nearest', false);
+                await nextFrame();
+                if (destroyed) return;
+                candidate = row.getCell?.(field) || candidate;
+                if (!canVisit(candidate)) continue;
+            }
+            if (candidate.getElement?.()?.isConnected === false) continue;
+            const activated = mode === 'navigation'
+                ? focusNavigationCandidate(candidate) : navigateToCandidate(candidate);
+            if (activated) return;
+        }
+
+        const pageMax = paginationMethods.getPageMax();
+        while (!destroyed && paginationEnabled && (direction === 'prev'
+            ? paginationMethods.getPage() > 1 : paginationMethods.getPage() < pageMax)) {
+            const pageBefore = paginationMethods.getPage();
+            const activated = await transitionPage({ direction, destination: {
+                edge: direction === 'prev' ? 'last' : 'first',
+                activation: mode === 'navigation' ? 'focus' : 'edit'
+            } });
+            if (activated || destroyed) return;
+            if (paginationMethods.getPage() === pageBefore) break;
+        }
+        if (destroyed) return;
+        if (!focusAdjacentOutsideGrid(tableElement, direction)) {
+            globalThis.document?.activeElement?.blur?.();
+        }
     };
 
     /**
@@ -452,6 +540,7 @@ export const createKeyboardNavigationRuntime = ({
             : changePageAndActivate()
         ).finally(() => {
             transitionInProgress = false;
+            resumeSequentialMove();
         });
 
         return transition;
@@ -734,6 +823,18 @@ export const createKeyboardNavigationRuntime = ({
         }
 
         if (isTab) {
+            if (navigationEnabled) {
+                if (!activeCell) return;
+                // Lookup, autocomplete, date and checkbox editors own their
+                // native Tab commit; their close helper returns here afterwards.
+                if (state === 'editing' && event.key === 'Tab'
+                    && activeDefinition.editor?._ambCapabilities?.ownsTab) return;
+                event.preventDefault();
+                event.stopPropagation?.();
+                event.stopImmediatePropagation?.();
+                void moveSequentially(activeCell, action === 'previous' ? 'prev' : 'next', state);
+                return;
+            }
             const renderedCells = getRenderedRows('first').flatMap(row => row.getCells());
             const candidates = renderedCells.filter(candidate => (
                 isSequentialCandidate(candidate)
@@ -968,6 +1069,7 @@ export const createKeyboardNavigationRuntime = ({
          */
         destroy() {
             destroyed = true;
+            pendingSequentialMove = null;
             for (const finalize of [...pendingEditorCloseFinalizers]) finalize();
             activeFinalizer?.();
             unregisterCoordinator();

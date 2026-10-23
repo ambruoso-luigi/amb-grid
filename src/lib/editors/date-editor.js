@@ -566,6 +566,8 @@ export function date(options = {}) {
 
                         if (event.key === 'Tab') {
                             event.preventDefault();
+                            event.stopPropagation();
+                            event.stopImmediatePropagation?.();
                             commitFromTab(event.shiftKey ? 'prev' : 'next');
                             return;
                         }
@@ -690,6 +692,7 @@ export function date(options = {}) {
 
         editor._ambEditorType = 'date';
         editor._ambCapabilities = {
+            ownsTab: true,
             auxiliary: normalizedOptions.mode === 'manualWithPickerButton'
                 || normalizedOptions.mode === 'pickerOnly'
         };

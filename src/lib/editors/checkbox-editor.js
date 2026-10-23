@@ -205,6 +205,7 @@ export function checkbox(options = {}) {
         };
         editor._ambEditorType = 'checkbox';
         editor._ambCapabilities = {
+            ownsTab: true,
             activateOnNavigationFocus: true,
             spatialNavigationWhileEditing: true
         };

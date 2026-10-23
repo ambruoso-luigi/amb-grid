@@ -288,6 +288,11 @@ export const navigateToCandidate = candidate => {
 };
 
 export const navigateEditableCellAfterClose = (cell, direction = 'next') => {
+    const context = getKeyboardNavigationContext(cell?.getTable?.());
+    if (context?.keyboardNavigationOptions?.enabled !== false && context?.navigateAfterClose) {
+        void context.navigateAfterClose(cell, direction);
+        return;
+    }
     globalThis.setTimeout(() => {
         const row = cell && cell.getRow && cell.getRow();
         const cells = row && typeof row.getCells === 'function'

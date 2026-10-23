@@ -216,7 +216,7 @@ export function autocomplete(values, options = {}) {
     const normalizedOptions = normalizeAutocompleteOptions(options);
     const suggestionValues = getAutocompleteSuggestionValues(values);
 
-    return (cell, onRendered, success, cancel) => {
+    const editor = (cell, onRendered, success, cancel) => {
         const input = document.createElement('input');
         let awesomplete = null;
         let floatingAutocomplete = null;
@@ -496,4 +496,6 @@ export function autocomplete(values, options = {}) {
 
         return input;
     };
+    editor._ambCapabilities = { ownsTab: true };
+    return editor;
 }
