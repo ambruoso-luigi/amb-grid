@@ -589,10 +589,35 @@ const grid = AMB.table({
 `preview: true` (the default) shows the first image on pointer hover or keyboard
 focus; `preview: false` disables that preview. `viewer: true` (the default)
 opens the image or gallery from the thumbnail; `viewer: false` disables opening
-it without disabling the preview. Press `Enter` or `Space` on the thumbnail to
+it without disabling the preview. The two options are independent: the viewer
+also works with `preview: false`. Press `Enter` or `Space` on the thumbnail to
 open the viewer, use the arrow keys or its controls to navigate, and press
 `Escape` to close it. Null, empty, or invalid values show a placeholder; invalid
 entries in a collection are skipped.
+
+| Option | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `width` | `number` | `48` | Thumbnail width in px; positive and finite. |
+| `height` | `number` | `68` | Thumbnail height in px; positive and finite. |
+| `fit` | `'contain' \| 'cover'` | `'contain'` | Show the whole image or fill the thumbnail with possible cropping. |
+| `preview` | `boolean` | `true` | Enable the first-image preview on hover or focus. |
+| `viewer` | `boolean` | `true` | Enable opening the single image or gallery. |
+
+For example, customize a column's formatter with:
+
+```js
+formatter: AMB.formatters.image({
+    width: 56,
+    height: 72,
+    fit: 'cover',
+    preview: true,
+    viewer: true
+})
+```
+
+Image columns can also be added, updated, removed, or replaced through the public
+AMB Grid column APIs; preview and viewer support is synchronized after successful
+operations.
 
 ### Column calculations
 
