@@ -74,6 +74,10 @@ test('dynamic image columns activate, retain, release and recreate preview and v
             columns: [{ field: 'id' }, { field: 'existing', formatter: () => 'No image formatter' }]
         });
         window.__imgCons01 = { grid, listeners, image: () => AMB.formatters.image() };
+        await new Promise(resolve => {
+            const built = () => { grid.off('tableBuilt', built); resolve(); };
+            grid.on('tableBuilt', built);
+        });
     });
     const root = page.locator('#imgcons01');
     await expect(root.locator('.tabulator-row')).toHaveCount(1);
@@ -88,8 +92,12 @@ test('dynamic image columns activate, retain, release and recreate preview and v
     });
     const trigger = field => root.locator(`[tabulator-field="${field}"] .amb-image--viewable`);
     const hover = async field => {
+        await expect(trigger(field)).toHaveClass(/amb-image--previewable/);
         await trigger(field).scrollIntoViewIfNeeded();
         await expect(trigger(field).locator('img')).toHaveJSProperty('naturalWidth', 480);
+        // Finish Playwright's scroll/actionability checks before entering the trigger:
+        // a scroll delivered after pointerover legitimately cancels the preview.
+        await trigger(field).hover({ trial: true });
         await page.mouse.move(0, 0);
         await trigger(field).hover();
         await expect(page.locator('.amb-image-preview')).toHaveCount(1);

@@ -158,7 +158,9 @@ test.describe('row controls accessibility', () => {
         const table = page.locator('#validation-table');
         const rows = table.locator('.tabulator-row');
         const firstRow = rows.nth(0);
-        const secondRow = rows.filter({ hasText: 'Beacon' });
+        const secondRow = rows.filter({
+            has: page.locator('.tabulator-cell[tabulator-field="email"]').filter({ hasText: /^beacon@example\.test$/ })
+        });
 
         await expect(rows).toHaveCount(11);
         await expect(table.locator('.amb-row-action-button')).toHaveCount(0);
@@ -171,20 +173,31 @@ test.describe('row controls accessibility', () => {
 
         const rollbackRow = secondRow;
         const rollback = rollbackRow.locator('.amb-row-action-button--rollback');
+        const idCell = rollbackRow.locator('.tabulator-cell[tabulator-field="id"]');
+        const previousRowLastCell = firstRow.locator('.tabulator-cell[tabulator-field="documentNumber"]');
 
-        await rollback.focus();
+        await expect(rollbackRow.locator('.tabulator-cell[tabulator-field="id"]')).toHaveText('2');
+        await enterNavigationWithClick(page, idCell, 'Validation Rollback keyboard setup', '#validation-table');
+        await page.keyboard.press('ArrowLeft');
+        await expect(rollback).toBeFocused();
+        expect(await getActiveGridFocus(page)).toMatchObject({ tagName: 'BUTTON', action: 'rollback' });
+        await page.keyboard.press('Tab');
+        await expect(idCell).toBeFocused();
+        await expect(idCell).not.toHaveClass(/tabulator-editing/);
+        expect(await getActiveGridFocus(page)).toMatchObject({ field: 'id', action: null });
+
+        await page.keyboard.press('ArrowLeft');
         await expect(rollback).toBeFocused();
         await page.keyboard.press('Shift+Tab');
-        await expect.poll(() => page.evaluate(() => {
-            return !document.activeElement?.matches('.amb-row-actions');
-        })).toBe(true);
-        await rollback.focus();
+        await expect(previousRowLastCell).toBeFocused();
+        await expect(previousRowLastCell).not.toHaveClass(/tabulator-editing/);
+        expect(await getActiveGridFocus(page)).toMatchObject({ field: 'documentNumber', action: null });
+
         await page.keyboard.press('Tab');
-        await expect.poll(() => page.evaluate(() => {
-            return !document.activeElement?.matches('.amb-row-actions');
-        })).toBe(true);
-        await rollback.focus();
-        await rollback.click();
+        await expect(idCell).toBeFocused();
+        await page.keyboard.press('ArrowLeft');
+        await expect(rollback).toBeFocused();
+        await page.keyboard.press('Enter');
         await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
         await page.locator('.teh-confirm-dialog__button--confirm').click();
         await expect(rollbackRow).toHaveAttribute('data-state', 'clean');
