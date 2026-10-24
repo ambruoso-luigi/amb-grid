@@ -15,6 +15,16 @@ All notable changes to AMB Grid are documented in this file.
 - Fixed Multifield Lookup `editorOptions` leaking into column definitions and
   Floating Messages attempting to resolve calculation rows as data rows.
 - Shortened the Angular site navigation label to `Angular`.
+- Added `AMB.formatters.image()` with thumbnails, hover/focus previews, and a
+  viewer for single images and multi-image galleries.
+- Integrated private image runtimes with per-grid ownership and lifecycle
+  cleanup through `grid.destroy()`.
+- Synchronized image runtimes after successful dynamic column additions,
+  definition updates, removals, and replacements, including nested column
+  definitions, with activation and release as image formatters appear or disappear.
+- Fixed CRUD snapshot comparison for arrays and plain objects by content,
+  avoiding false `modified` cell markers and unchanged complex fields appearing
+  in change reports and save-payload `changedFields`.
 
 ## [0.7.0] - 2026-10-08
 

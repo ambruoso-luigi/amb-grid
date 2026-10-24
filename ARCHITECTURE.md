@@ -152,6 +152,11 @@ Parser     -> how a value is normalized into a predictable representation, espec
 
 Editors manage user interaction and commit behavior. Validators evaluate values and produce validation results. Parsers normalize values into predictable representations, especially for payload-oriented use, without replacing validation. Formatters control presentation and must not become the authoritative source of stored data.
 
+`AMB.formatters.image()` is the public image-formatting entrypoint. Its internal
+renderer presents a thumbnail, an additional-image count, or a placeholder, and
+associates private image metadata with the rendered element. Preview and gallery
+interaction belong to internal runtimes rather than to the formatter's render path.
+
 Some components cooperate internally—for example date formatters and validators can reuse AMB parsers—but their public responsibilities remain distinct.
 
 ### Lookup and Multifield Lookup
@@ -167,6 +172,15 @@ Lookup metadata and mapping remain part of the AMB Grid lifecycle so editing, va
 Several focused runtime modules support behavior that spans multiple controller methods or engine events. Examples include keyboard navigation together with page and focus transition coordination, search coordination, history reconciliation, calculation presentation and recalculation, lookup metadata initialization, hover binders, and other column/runtime synchronization helpers.
 
 These modules are internal implementation units. They should not become separate application-facing engines unless a capability is intentionally promoted to the public AMB Grid contract.
+
+The image preview and viewer runtimes (`image-preview-runtime.js` and
+`image-viewer-runtime.js`) own delegated interaction and temporary presentation
+resources for their grid instance. Multiple grids retain independent ownership;
+document-level coordination permits one active photographic modal and closes any
+active preview when a viewer opens. The photographic engine is encapsulated by
+the internal viewer runtime. Applications, including React, Vue, and Angular,
+configure image columns through the AMB public surface and use the controller's
+lifecycle; they do not create or manage these internal components directly.
 
 ### AMB-owned UI components
 
@@ -253,6 +267,21 @@ in the page.
 Resources created for one AMB Grid instance are released through that instance's `grid.destroy()`.
 
 The destroy path releases AMB-owned resources before destroying the internal table engine. This includes calculation and history runtimes, toolbar resources, column and lookup subscriptions, binders, search, feedback, messages, dialogs, CRUD bindings, and finally the table engine itself.
+
+The table factory initially creates image runtimes when canonical application
+column definitions contain an image formatter, including within nested groups.
+After successful `grid.addColumn()`, `grid.updateColumnDefinition()`,
+`grid.deleteColumn()`, or `grid.setColumns()` operations, the column runtime uses
+one private synchronization point in `lifecycleResources` to reevaluate those
+definitions. It creates missing runtimes when the first image column appears,
+retains existing instances while any image formatter remains, and destroys and
+clears them when the last one disappears. Image columns can subsequently
+reactivate the runtimes without recreating the grid. Failed or rejected column
+operations do not commit a new image-runtime configuration.
+
+`grid.destroy()` releases the grid's image runtimes, delegated and temporary
+listeners, owned overlays, and active viewer resources before the table engine.
+Destroying a previous owner does not dispose of a viewer now owned by another grid.
 
 ```text
 AMB.table(...)
