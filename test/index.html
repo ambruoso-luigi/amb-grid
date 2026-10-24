@@ -141,6 +141,24 @@
         <h3 id="image-secondary-test-title">Griglia B — isolamento</h3>
         <p>Una foto e una raccolta indipendenti dalle opzioni di A. Prova B dopo aver distrutto o ricreato A; deve esistere una sola modale fotografica.</p>
         <div id="image-secondary-test-table" aria-labelledby="image-secondary-test-title"></div>
+        <section aria-labelledby="image-columns-test-title">
+          <h3 id="image-columns-test-title">Griglia C — Colonne immagini dinamiche</h3>
+          <p>Due raccolte di fotografie locali, inizialmente senza formatter immagini. Aggiungi Photos oppure trasforma Collection, poi prova anteprima, galleria e rimozione dei formatter. Le griglie A e B restano indipendenti.</p>
+          <fieldset class="image-columns-controls" id="image-columns-controls">
+            <legend>Operazioni sulle colonne di C</legend>
+            <button type="button" data-image-columns-action="add" disabled>Add image column</button>
+            <button type="button" data-image-columns-action="update" disabled>Update formatter</button>
+            <button type="button" data-image-columns-action="remove" disabled>Remove image column</button>
+            <button type="button" data-image-columns-action="disable" disabled>Disable last image formatter</button>
+            <button type="button" data-image-columns-action="nested" disabled>Set nested image columns</button>
+            <button type="button" data-image-columns-action="plain" disabled>Set columns without images</button>
+            <button type="button" data-image-columns-action="reset" disabled>Reset / Recreate</button>
+            <button type="button" data-image-columns-action="destroy" disabled>Destroy grid</button>
+          </fieldset>
+          <p class="image-lab-note">Update formatter agisce su Collection. Disable last image formatter ripristina il testo sull’ultima colonna immagini nell’ordine visualizzato. Remove elimina solo Photos al livello principale; per le colonne annidate usa Set columns without images. Dopo Destroy, Reset / Recreate ripristina C.</p>
+          <p id="image-columns-status" class="image-lab-status" role="status" aria-live="polite" aria-atomic="true">Preparazione della griglia C. Colonne non ancora disponibili.</p>
+          <div id="image-dynamic-columns-test-table" aria-labelledby="image-columns-test-title" aria-busy="true"></div>
+        </section>
       </section>
     </main>
     <script type="module" src="/src/demo/test.js"></script>

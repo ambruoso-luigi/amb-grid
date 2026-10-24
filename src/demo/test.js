@@ -1289,6 +1289,175 @@ export const imageLabTestHarness = {
     updateRows: rows => currentImageFormatterGrid?.updateData(structuredClone(rows))
 };
 
+const imageColumnsRoot = document.querySelector('#image-dynamic-columns-test-table');
+const imageColumnsControls = document.querySelector('#image-columns-controls');
+const imageColumnsStatus = document.querySelector('#image-columns-status');
+const imageColumnsButtons = [...imageColumnsControls.querySelectorAll('button[data-image-columns-action]')];
+const imageColumnsFormatter = AMB.formatters.image();
+const imageColumnsSummary = cell => `${Array.isArray(cell.getValue()) ? cell.getValue().length : 0} immagini · formatter non-image`;
+const initialImageColumns = () => [
+    { title: 'ID', field: 'id', width: 85 },
+    { title: 'Description', field: 'description', minWidth: 220 },
+    { title: 'Collection', field: 'collection', minWidth: 250, formatter: imageColumnsSummary }
+];
+const nestedImageColumns = () => [
+    { title: 'ID', field: 'id', width: 85 },
+    { title: 'Description', field: 'description', minWidth: 220 },
+    { title: 'Raccolte', columns: [
+        { title: 'Collection', field: 'collection', width: 120, formatter: imageColumnsFormatter },
+        { title: 'Photos', field: 'photos', width: 120, formatter: imageColumnsFormatter }
+    ] }
+];
+const imageColumnsSignature = columns => JSON.stringify(columns.map(column => column.columns
+    ? { title: column.title, columns: imageColumnsSignature(column.columns) }
+    : { field: column.field, formatter: column.formatter === imageColumnsFormatter ? 'image'
+        : column.formatter === imageColumnsSummary ? 'summary' : 'other' }));
+let imageColumnsGrid = null;
+let imageColumnsReady = false;
+let imageColumnsBusy = false;
+
+const readImageColumns = () => {
+    const tree = imageColumnsReady ? imageColumnsGrid.getColumnDefinitions() : [];
+    const collect = (columns, path = []) => columns.flatMap(column => column.columns
+        ? collect(column.columns, [...path, column.title])
+        : [{ field: column.field, title: column.title, path, image: column.formatter === imageColumnsFormatter }]);
+    const leaves = collect(tree);
+    return {
+        tree, leaves, images: leaves.filter(column => column.image),
+        photos: leaves.find(column => column.field === 'photos'),
+        collection: leaves.find(column => column.field === 'collection')
+    };
+};
+
+const canRunImageColumnsAction = (action, state) => {
+    if (action === 'reset') return true;
+    if (!imageColumnsReady) return false;
+    switch (action) {
+        case 'add': return !state.photos;
+        case 'update': return Boolean(state.collection && !state.collection.image);
+        case 'remove': return Boolean(state.photos && state.photos.path.length === 0);
+        case 'disable': return state.images.length > 0;
+        case 'nested': return imageColumnsSignature(state.tree) !== imageColumnsSignature(nestedImageColumns());
+        case 'plain': return imageColumnsSignature(state.tree) !== imageColumnsSignature(initialImageColumns());
+        case 'destroy': return true;
+        default: return false;
+    }
+};
+
+const syncImageColumnsControls = message => {
+    const state = readImageColumns();
+    for (const button of imageColumnsButtons) {
+        button.disabled = imageColumnsBusy || !canRunImageColumnsAction(button.dataset.imageColumnsAction, state);
+    }
+    imageColumnsRoot.setAttribute('aria-busy', String(imageColumnsBusy));
+    const columns = state.leaves.map(column => `${[...column.path, column.title || column.field].join(' > ')} [${column.field}: ${column.image ? 'immagini' : 'non-image'}]`);
+    imageColumnsStatus.textContent = `${message} Colonne correnti: ${columns.join(', ') || (imageColumnsGrid ? 'in preparazione' : 'nessuna; griglia non disponibile')}.`;
+};
+
+const recreateImageColumnsGrid = async () => {
+    if (imageColumnsGrid) {
+        const result = await imageColumnsGrid.destroy();
+        if (result === false) throw new Error('destroy() ha restituito false.');
+    }
+    imageColumnsGrid = null;
+    imageColumnsReady = false;
+    const data = [
+        { id: 'C-01', description: 'Paesaggi · due fotografie', images: ['landscape', 'sunflowers'].map(labPhoto) },
+        { id: 'C-02', description: 'Orientamenti · tre fotografie', images: ['portrait', 'square', 'panorama'].map(labPhoto) }
+    ].map(({ images, ...row }) => ({ ...row, photos: structuredClone(images), collection: images }));
+    let grid;
+    try {
+        grid = AMB.table({ selector: imageColumnsRoot, toolbar: false, data, columns: initialImageColumns() });
+        imageColumnsGrid = grid;
+        await new Promise((resolve, reject) => {
+            const cleanup = () => {
+                grid.off('tableBuilt', built);
+                grid.off('dataLoadError', failed);
+            };
+            const built = () => { cleanup(); resolve(); };
+            const failed = error => { cleanup(); reject(new Error(`Caricamento non riuscito: ${error?.message || String(error)}`)); };
+            grid.on('tableBuilt', built);
+            grid.on('dataLoadError', failed);
+        });
+        imageColumnsReady = true;
+        if (grid.getData().length !== 2 || imageColumnsRoot.querySelectorAll('.tabulator-row').length !== 2) {
+            throw new Error('Le due raccolte iniziali non sono state caricate.');
+        }
+    } catch (error) {
+        grid?.destroy();
+        imageColumnsGrid = null;
+        imageColumnsReady = false;
+        throw error;
+    }
+};
+
+const runImageColumnsAction = async action => {
+    if (imageColumnsBusy) return;
+    const label = imageColumnsButtons.find(button => button.dataset.imageColumnsAction === action)?.textContent || action;
+    const before = readImageColumns();
+    if (!canRunImageColumnsAction(action, before)) {
+        syncImageColumnsControls(`${label}: operazione rifiutata, non applicabile allo stato corrente.`);
+        return;
+    }
+    imageColumnsBusy = true;
+    syncImageColumnsControls(`${label}: operazione in corso.`);
+    let message;
+    try {
+        let result;
+        switch (action) {
+            case 'add':
+                result = await imageColumnsGrid.addColumn({ title: 'Photos', field: 'photos', width: 120, formatter: imageColumnsFormatter });
+                break;
+            case 'update':
+                result = await imageColumnsGrid.updateColumnDefinition('collection', { formatter: imageColumnsFormatter });
+                break;
+            case 'remove':
+                result = await imageColumnsGrid.deleteColumn('photos');
+                break;
+            case 'disable':
+                result = await imageColumnsGrid.updateColumnDefinition(before.images.at(-1).field, { formatter: imageColumnsSummary });
+                break;
+            case 'nested': result = await imageColumnsGrid.setColumns(nestedImageColumns()); break;
+            case 'plain': result = await imageColumnsGrid.setColumns(initialImageColumns()); break;
+            case 'reset': await recreateImageColumnsGrid(); break;
+            case 'destroy':
+                result = await imageColumnsGrid.destroy();
+                if (result !== false) { imageColumnsGrid = null; imageColumnsReady = false; }
+                break;
+        }
+        if (result === false) throw new Error('API rifiutata: il controller ha restituito false.');
+        const after = readImageColumns();
+        let verified = false;
+        switch (action) {
+            case 'add': verified = Boolean(after.photos?.image && imageColumnsGrid.getColumn('photos')); break;
+            case 'update': verified = Boolean(after.collection?.image && imageColumnsGrid.getColumn('collection')); break;
+            case 'remove': verified = !after.photos && imageColumnsGrid.getColumns().every(column => column.getField() !== 'photos'); break;
+            case 'disable':
+                verified = after.images.length === before.images.length - 1
+                    && after.leaves.some(column => column.field === before.images.at(-1).field && !column.image);
+                break;
+            case 'nested': verified = imageColumnsSignature(after.tree) === imageColumnsSignature(nestedImageColumns()); break;
+            case 'plain':
+            case 'reset': verified = imageColumnsReady && imageColumnsSignature(after.tree) === imageColumnsSignature(initialImageColumns()); break;
+            case 'destroy': verified = !imageColumnsGrid && !imageColumnsRoot.querySelector('.tabulator-row, .tabulator-header'); break;
+        }
+        if (!verified) throw new Error('Verifica non riuscita: la struttura richiesta non è presente.');
+        message = `${label}: completata; struttura verificata.`;
+    } catch (error) {
+        message = `${label}: non riuscita. ${error?.message || String(error)}`;
+    } finally {
+        imageColumnsBusy = false;
+        syncImageColumnsControls(message);
+    }
+};
+
+imageColumnsControls.addEventListener('click', event => {
+    const button = event.target.closest('button[data-image-columns-action]');
+    if (button && imageColumnsControls.contains(button) && !button.disabled) {
+        void runImageColumnsAction(button.dataset.imageColumnsAction);
+    }
+});
+
 selectionModeControl?.addEventListener('change', () => {
     mountGrid().catch(error => {
         console.error(error);
@@ -1306,6 +1475,7 @@ const mountTestPage = async () => {
     mountColumnCalculationsGrid();
     mountImageFormatterGrid();
     mountImageSecondaryGrid();
+    await runImageColumnsAction('reset');
 };
 
 mountTestPage().catch(error => {
