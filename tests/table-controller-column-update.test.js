@@ -3,6 +3,8 @@ import { describe, expect, test, vi } from 'vitest';
 import { getLookupMetadata } from '../src/lib/lookup-metadata.js';
 import { prepareColumnPipeline } from '../src/lib/table/column-pipeline.js';
 import { createColumnRuntime } from '../src/lib/table/column-runtime.js';
+import { formatters } from '../src/lib/formatters.js';
+import { hasImagePreviewFormatter } from '../src/lib/image-preview-runtime.js';
 
 const createLookupEditor = ({
     description,
@@ -2078,5 +2080,94 @@ describe('AMB Grid managed column definition updates', () => {
         expect(harness.table.addColumn).not.toHaveBeenCalled();
         expect(harness.table.deleteColumn).not.toHaveBeenCalled();
         expect(harness.table.updateColumnDefinition).not.toHaveBeenCalled();
+    });
+});
+
+
+describe('image runtime synchronization after canonical column commits', () => {
+    const operations = ['addColumn', 'updateColumnDefinition', 'deleteColumn', 'setColumns'];
+    const prepare = async operation => {
+        const harness = operation === 'addColumn' ? createAddHarness()
+            : operation === 'updateColumnDefinition' ? createHarness() : createDeleteHarness();
+        if (operation === 'updateColumnDefinition') harness.table.updateColumnDefinition.mockReset();
+        if (operation === 'deleteColumn') {
+            await harness.columnRuntime.updateColumnDefinition('region', { formatter: formatters.image() });
+        }
+        const sync = vi.fn();
+        harness.lifecycleResources.syncImageRuntimes = sync;
+        const invoke = () => {
+            if (operation === 'addColumn') return harness.columnRuntime.addColumn({ field: 'photos', formatter: formatters.image() });
+            if (operation === 'updateColumnDefinition') return harness.columnRuntime.updateColumnDefinition('status', { formatter: formatters.image() });
+            if (operation === 'deleteColumn') return harness.columnRuntime.deleteColumn('region');
+            return harness.columnRuntime.setColumns([{ title: 'Media', columns: [{ field: 'photos', formatter: formatters.image() }] }]);
+        };
+        return { harness, sync, invoke };
+    };
+
+    test.each(operations)('%s synchronizes the committed canonical tree only after engine success', async operation => {
+        const { harness, sync, invoke } = await prepare(operation);
+        const before = harness.columnRuntime.getApplicationColumns();
+        expect(hasImagePreviewFormatter(before)).toBe(operation === 'deleteColumn');
+        let resolve;
+        harness.table[operation].mockReturnValueOnce(new Promise(done => { resolve = done; }));
+        const pending = invoke();
+        expect(sync).not.toHaveBeenCalled();
+        expect(harness.columnRuntime.getApplicationColumns()).toBe(before);
+        resolve(operation === 'addColumn' ? createRuntimeComponent({ field: 'photos' }) : undefined);
+        await pending;
+        const committed = harness.columnRuntime.getApplicationColumns();
+        expect(committed).not.toBe(before);
+        expect(sync).toHaveBeenCalledExactlyOnceWith(committed);
+        expect(hasImagePreviewFormatter(committed)).toBe(operation !== 'deleteColumn');
+        if (operation === 'setColumns') expect(committed[0].columns[0].formatter._ambFormatterType).toBe('image');
+        if (operation === 'updateColumnDefinition') expect(committed[0].columns[0].formatter._ambFormatterType).toBe('image');
+    });
+
+    test.each(operations.flatMap(operation => ['throw', 'reject', 'false', 'resolved false'].map(failure => [operation, failure])))(
+        '%s preserves image resources and canonical state on %s', async (operation, failure) => {
+            const { harness, sync, invoke } = await prepare(operation);
+            const preview = { destroy: vi.fn() };
+            const viewer = { destroy: vi.fn() };
+            Object.assign(harness.lifecycleResources, { imagePreviewRuntime: preview, imageViewerRuntime: viewer });
+            const before = harness.columnRuntime.getApplicationColumns();
+            const error = new Error('Column operation failed');
+            if (failure === 'throw') harness.table[operation].mockImplementationOnce(() => { throw error; });
+            else if (failure === 'reject') harness.table[operation].mockRejectedValueOnce(error);
+            else if (failure === 'false') harness.table[operation].mockReturnValueOnce(false);
+            else harness.table[operation].mockResolvedValueOnce(false);
+            if (failure === 'throw' || failure === 'reject') await expect(async () => invoke()).rejects.toBe(error);
+            else if (operation === 'addColumn') await expect(invoke()).rejects.toThrow('expected Column Component');
+            else expect(await invoke()).toBe(false);
+            expect(sync).not.toHaveBeenCalled();
+            expect(harness.columnRuntime.getApplicationColumns()).toBe(before);
+            expect(harness.lifecycleResources.imagePreviewRuntime).toBe(preview);
+            expect(harness.lifecycleResources.imageViewerRuntime).toBe(viewer);
+            expect(preview.destroy).not.toHaveBeenCalled();
+            expect(viewer.destroy).not.toHaveBeenCalled();
+        }
+    );
+
+    test('synchronous replacement also synchronizes nested image columns and their subsequent removal', () => {
+        const harness = createDeleteHarness();
+        const sync = vi.fn();
+        harness.lifecycleResources.syncImageRuntimes = sync;
+        expect(harness.columnRuntime.setColumns([{ title: 'Media', columns: [{ field: 'photos', formatter: formatters.image() }] }])).toBeUndefined();
+        expect(sync).toHaveBeenCalledTimes(1);
+        expect(hasImagePreviewFormatter(sync.mock.calls[0][0])).toBe(true);
+        expect(harness.columnRuntime.setColumns([])).toBeUndefined();
+        expect(sync).toHaveBeenCalledTimes(2);
+        expect(sync.mock.calls[1][0]).toEqual([]);
+    });
+
+    test('invalid public column operations never invoke image synchronization', () => {
+        const harness = createDeleteHarness();
+        const sync = vi.fn();
+        harness.lifecycleResources.syncImageRuntimes = sync;
+        expect(harness.columnRuntime.addColumn({ field: 'name', formatter: formatters.image() })).toBe(false);
+        expect(harness.columnRuntime.updateColumnDefinition('name', { field: 'renamed', formatter: formatters.image() })).toBe(false);
+        expect(harness.columnRuntime.deleteColumn('missing')).toBe(false);
+        expect(harness.columnRuntime.setColumns([{ field: 'photos' }, { field: 'photos', formatter: formatters.image() }])).toBe(false);
+        expect(sync).not.toHaveBeenCalled();
+        for (const operation of operations) expect(harness.table[operation]).not.toHaveBeenCalled();
     });
 });

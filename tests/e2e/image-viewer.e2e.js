@@ -44,6 +44,129 @@ const install = async page => {
     await expect(page.locator('#img04-b button.amb-image--viewable')).toHaveCount(1);
 };
 
+test('dynamic image columns activate, retain, release and recreate preview and viewer runtimes', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/__imgcons01__/**', route => route.fulfill({ contentType: 'image/svg+xml', body: SVG }));
+    await page.goto('/test/');
+    await expect(page.locator('#image-secondary-test-table .tabulator-row')).toHaveCount(2);
+    await page.evaluate(async () => {
+        const { AMB } = await import('/src/index.js');
+        const before = document.createElement('button');
+        before.id = 'imgcons01-before';
+        before.textContent = 'Outside dynamic image grid';
+        const host = document.createElement('div');
+        host.id = 'imgcons01';
+        document.body.append(before, host);
+        const listeners = [];
+        const addListener = host.addEventListener;
+        host.addEventListener = function (type, listener, options) {
+            if (options?.signal) listeners.push({ type, signal: options.signal });
+            return addListener.call(this, type, listener, options);
+        };
+        const images = [1, 2].map(number => ({
+            src: `/__imgcons01__/original-${number}.svg`, thumbnail: `/__imgcons01__/thumb-${number}.svg`,
+            alt: `Dynamic image ${number}`, caption: `Dynamic caption ${number}`
+        }));
+        const grid = AMB.table({
+            selector: host, toolbar: false,
+            data: [{ id: 1, images, existing: images }],
+            columns: [{ field: 'id' }, { field: 'existing', formatter: () => 'No image formatter' }]
+        });
+        window.__imgCons01 = { grid, listeners, image: () => AMB.formatters.image() };
+    });
+    const root = page.locator('#imgcons01');
+    await expect(root.locator('.tabulator-row')).toHaveCount(1);
+    await expect(root.locator('.amb-image')).toHaveCount(0);
+    const metrics = () => page.evaluate(() => ({
+        created: window.__imgCons01.listeners.length,
+        live: window.__imgCons01.listeners.filter(record => !record.signal.aborted).length
+    }));
+    const baseline = await metrics();
+    const expectListeners = async (created, live) => expect(await metrics()).toEqual({
+        created: baseline.created + created, live: baseline.live + live
+    });
+    const trigger = field => root.locator(`[tabulator-field="${field}"] .amb-image--viewable`);
+    const hover = async field => {
+        await trigger(field).scrollIntoViewIfNeeded();
+        await expect(trigger(field).locator('img')).toHaveJSProperty('naturalWidth', 480);
+        await page.mouse.move(0, 0);
+        await trigger(field).hover();
+        await expect(page.locator('.amb-image-preview')).toHaveCount(1);
+        await expect(page.locator('.amb-image-preview__image')).toHaveAttribute('src', '/__imgcons01__/original-1.svg');
+        await expect(page.locator('.amb-image-preview__image')).toHaveJSProperty('naturalWidth', 480);
+    };
+    const open = async field => {
+        await trigger(field).click();
+        await expect(viewer(page)).toHaveCount(1);
+        await expect(source(page)).toHaveCount(1);
+        await expect(viewer(page).locator('.viewer-list li')).toHaveCount(2);
+        await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('src', '/__imgcons01__/original-1.svg');
+        await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    };
+    const exercise = async field => {
+        await hover(field);
+        await open(field);
+        await page.keyboard.press('Escape');
+        await expect(viewer(page)).toHaveCount(0);
+        await expect(source(page)).toHaveCount(0);
+        await page.locator('#imgcons01-before').click();
+        await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    };
+
+    await page.evaluate(() => window.__imgCons01.grid.addColumn({ field: 'images', formatter: window.__imgCons01.image() }));
+    await expectListeners(6, 6);
+    await exercise('images');
+    await expectListeners(6, 6);
+    await open('images');
+    expect(await page.evaluate(() => window.__imgCons01.grid.updateColumnDefinition('images', { field: 'renamed' }))).toBe(false);
+    await expect(viewer(page)).toHaveCount(1);
+    await expectListeners(6, 6);
+    await page.keyboard.press('Escape');
+
+    await page.evaluate(() => window.__imgCons01.grid.updateColumnDefinition('existing', { formatter: window.__imgCons01.image() }));
+    await exercise('existing');
+    await expectListeners(6, 6);
+    await page.evaluate(() => window.__imgCons01.grid.deleteColumn('images'));
+    await exercise('existing');
+    await expectListeners(6, 6);
+
+    await hover('existing');
+    await page.evaluate(() => window.__imgCons01.grid.updateColumnDefinition('existing', { formatter: () => 'No image formatter' }));
+    await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    await expectListeners(6, 0);
+
+    await page.evaluate(() => window.__imgCons01.grid.setColumns([
+        { field: 'id' }, { title: 'Media', columns: [{ title: 'Gallery', columns: [{ field: 'images', formatter: window.__imgCons01.image() }] }] }
+    ]));
+    await expectListeners(12, 6);
+    await exercise('images');
+    await expectListeners(12, 6);
+    await open('images');
+    await page.evaluate(() => window.__imgCons01.grid.setColumns([{ field: 'id' }]));
+    await expect(viewer(page)).toHaveCount(0);
+    await expect(source(page)).toHaveCount(0);
+    await expectListeners(12, 0);
+
+    await page.evaluate(() => window.__imgCons01.grid.addColumn({ field: 'images', formatter: window.__imgCons01.image() }));
+    await exercise('images');
+    await hover('images');
+    await page.evaluate(() => window.__imgCons01.grid.deleteColumn('images'));
+    await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    await expectListeners(18, 0);
+
+    await page.evaluate(() => window.__imgCons01.grid.addColumn({ field: 'images', formatter: window.__imgCons01.image() }));
+    await exercise('images');
+    await expectListeners(24, 6);
+    await open('images');
+    await page.evaluate(() => window.__imgCons01.grid.destroy());
+    await expect(viewer(page)).toHaveCount(0);
+    await expect(source(page)).toHaveCount(0);
+    await expect(page.locator('.amb-image-preview')).toHaveCount(0);
+    expect((await metrics()).live).toBe(0);
+    expect(errors).toEqual([]);
+});
+
 test('single image, four-image gallery, navigation and native keyboard activation', async ({ page }) => {
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').first().locator('button.amb-image--viewable').first();

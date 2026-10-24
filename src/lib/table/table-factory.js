@@ -1059,7 +1059,8 @@ export function createTable(options = {}) {
         feedback: null,
         keyboardNavigationRuntime: null,
         imagePreviewRuntime: null,
-        imageViewerRuntime: null
+        imageViewerRuntime: null,
+        syncImageRuntimes: null
     };
 
     if (selectionColumnController) {
@@ -1074,10 +1075,19 @@ export function createTable(options = {}) {
     const tableElement = typeof selector === 'string'
         ? document.querySelector(selector)
         : selector;
-    if (hasImagePreviewFormatter(columns)) {
-        lifecycleResources.imagePreviewRuntime = createImagePreviewRuntime(tableElement);
-        lifecycleResources.imageViewerRuntime = createImageViewerRuntime(tableElement);
-    }
+    lifecycleResources.syncImageRuntimes = applicationColumns => {
+        if (crud?.isDestroyed) return;
+        if (hasImagePreviewFormatter(applicationColumns)) {
+            lifecycleResources.imagePreviewRuntime ||= createImagePreviewRuntime(tableElement);
+            lifecycleResources.imageViewerRuntime ||= createImageViewerRuntime(tableElement);
+            return;
+        }
+        lifecycleResources.imageViewerRuntime?.destroy();
+        lifecycleResources.imageViewerRuntime = null;
+        lifecycleResources.imagePreviewRuntime?.destroy();
+        lifecycleResources.imagePreviewRuntime = null;
+    };
+    lifecycleResources.syncImageRuntimes(columnPipeline.applicationColumns);
     lifecycleResources.calculationPresentationRuntime =
         createCalculationPresentationRuntime(tableElement);
     const alertMethods = createAlertMethods({ table });

@@ -434,6 +434,7 @@ export const createColumnRuntime = ({
                 candidatePipeline.searchColumns
             );
         }
+        lifecycleResources.syncImageRuntimes?.(candidatePipeline.applicationColumns);
     };
 
     return {
@@ -500,6 +501,7 @@ export const createColumnRuntime = ({
             );
 
             return Promise.resolve(runtimeResult).then(newColumn => {
+                if (newColumn === false) return false;
                 commitPipeline(
                     previousPipeline,
                     candidatePipeline,
@@ -728,6 +730,7 @@ export const createColumnRuntime = ({
             const runtimeResult = table.deleteColumn(resolvedColumn);
 
             return Promise.resolve(runtimeResult).then(result => {
+                if (result === false) return false;
                 commitPipeline(
                     previousPipeline,
                     candidatePipeline,
@@ -807,13 +810,14 @@ export const createColumnRuntime = ({
                 && typeof runtimeResult.then === 'function'
             ) {
                 return Promise.resolve(runtimeResult).then(result => {
+                    if (result === false) return false;
                     commitCandidate();
 
                     return result;
                 });
             }
 
-            commitCandidate();
+            if (runtimeResult !== false) commitCandidate();
 
             return runtimeResult;
         },
