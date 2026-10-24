@@ -177,7 +177,7 @@ export function InventoryGrid({ onReady, onStateChange }: InventoryGridProps) {
       grid.off('cellEdited', refreshEditedRow);
       grid.off('tableBuilt', handleTableBuilt);
       removeCrudListeners.forEach((removeListener) => removeListener());
-      gridRef.current?.destroy();
+      grid.destroy();
       supplierDialog.destroy();
       gridRef.current = null;
       onReady(null);
