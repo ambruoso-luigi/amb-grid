@@ -116,6 +116,44 @@ const cloneData = (data) => {
     return JSON.parse(JSON.stringify(data));
 };
 
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+const isPlainObject = value => {
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+};
+
+// Compare snapshot data, not object identity. Other object types retain the
+// existing identity semantics rather than being treated as empty plain objects.
+const valuesAreEqual = (current, original, compared) => {
+    if (Object.is(current, original)) return true;
+    if (current === null || original === null
+        || typeof current !== 'object' || typeof original !== 'object') return false;
+
+    if (current instanceof Date || original instanceof Date) {
+        return current instanceof Date && original instanceof Date
+            && Object.is(current.getTime(), original.getTime());
+    }
+
+    if (Array.isArray(current) || Array.isArray(original)) {
+        if (!Array.isArray(current) || !Array.isArray(original) || current.length !== original.length) return false;
+    } else if (!isPlainObject(current) || !isPlainObject(original)) {
+        return false;
+    }
+
+    const keys = Object.keys(current);
+    if (keys.length !== Object.keys(original).length) return false;
+
+    // Per-comparison pairs avoid recursion on cyclic data; nothing is cached
+    // across renders, so in-place changes are still detected.
+    const pairs = compared || new WeakMap();
+    const originals = pairs.get(current);
+    if (originals?.has(original)) return true;
+    if (originals) originals.add(original);
+    else pairs.set(current, new WeakSet([original]));
+
+    return keys.every(key => hasOwn(original, key) && valuesAreEqual(current[key], original[key], pairs));
+};
+
 /**
  * Tracks row lifecycle, validation and save state for an AMB Grid managed table.
  *
@@ -1181,15 +1219,25 @@ export class CrudHelper {
         const resetData = {};
 
         Object.keys(currentData).forEach(field => {
-            if (!(field in restoredData) && field !== this.options.stateField) {
+            if (!hasOwn(restoredData, field) && field !== this.options.stateField) {
                 resetData[field] = undefined;
             }
         });
 
-        return this._patchRow(row, {
+        const operation = this._patchRow(row, {
             ...resetData,
             ...restoredData
         });
+        const restoreAbsentFields = result => {
+            const data = row.getData();
+            // Clear rendered values through the engine first, then restore the
+            // snapshot's actual property presence rather than leaving undefined.
+            Object.keys(resetData).forEach(field => { delete data[field]; });
+            return result;
+        };
+        return operation && typeof operation.then === 'function'
+            ? operation.then(restoreAbsentFields)
+            : restoreAbsentFields(operation);
     }
 
     _getRowId(row) {
@@ -1227,7 +1275,7 @@ export class CrudHelper {
     }
 
     _valuesAreEqual(currentValue, originalValue) {
-        return Object.is(currentValue, originalValue);
+        return valuesAreEqual(currentValue, originalValue);
     }
 
     _getChangedFields(before, after) {
@@ -1237,7 +1285,8 @@ export class CrudHelper {
         ]);
 
         return Array.from(fields).filter(field => {
-            return !this._valuesAreEqual(before[field], after[field]);
+            return hasOwn(before, field) !== hasOwn(after, field)
+                || !this._valuesAreEqual(before[field], after[field]);
         });
     }
 
@@ -1325,13 +1374,16 @@ export class CrudHelper {
 
         const originalData = this._getOriginalDataForRow(row);
         const field = cell.getField();
+        const currentData = row.getData();
 
-        if (!originalData || !(field in originalData)) {
+        if (!originalData || field === this.options.stateField || field === this.options.originalDataField
+            || (!hasOwn(originalData, field) && !hasOwn(currentData, field))) {
             this._clearCellState(cell);
             return;
         }
 
-        if (this._valuesAreEqual(cell.getValue(), originalData[field])) {
+        if (hasOwn(currentData, field) === hasOwn(originalData, field)
+            && this._valuesAreEqual(cell.getValue(), originalData[field])) {
             this._clearCellState(cell);
             return;
         }
