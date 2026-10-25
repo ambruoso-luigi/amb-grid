@@ -9,11 +9,14 @@ import { getLookupMetadata } from '../lib/lookup-metadata.js';
  */
 export class CellMessageBinder {
     constructor({ table, tableElement = table?.element, crudHelper, floatingMessage,
+        enabled = true, floatingMessagesByField = new Map(),
         validationErrors = true, lookupDescriptions = true, largeTextPreviews = true } = {}) {
         this.table = table;
         this.tableElement = tableElement;
         this.crudHelper = crudHelper;
         this.floatingMessage = floatingMessage;
+        this.enabled = enabled !== false;
+        this.floatingMessagesByField = floatingMessagesByField;
         this.options = {
             validationErrors: validationErrors !== false,
             lookupDescriptions: lookupDescriptions !== false,
@@ -56,7 +59,8 @@ export class CellMessageBinder {
     }
 
     resolveValidationMessage(cellElement) {
-        if (!this.options.validationErrors) return null;
+        const presentation = this._resolveChannel(cellElement, 'validationErrors', 'Validation error');
+        if (!presentation) return null;
 
         const row = this._getRow(cellElement);
         if (!row) return null;
@@ -66,7 +70,19 @@ export class CellMessageBinder {
             return error.key === key && error.field === field;
         })?.message;
 
-        return message ? { type: 'error', title: 'Validation error', message } : null;
+        return message ? { type: 'error', ...presentation, message } : null;
+    }
+
+    _resolveChannel(cellElement, channel, defaultTitle) {
+        if (!this.enabled) return null;
+        const field = cellElement?.getAttribute?.('tabulator-field');
+        const local = this.floatingMessagesByField.get(field)?.[channel];
+        const enabled = typeof local?.enabled === 'boolean' ? local.enabled : this.options[channel];
+        if (!enabled) return null;
+        return {
+            title: typeof local?.title === 'string' ? local.title : defaultTitle,
+            ...(typeof local?.className === 'string' ? { className: local.className } : {})
+        };
     }
 
     _getRowKey(row) {
@@ -81,17 +97,19 @@ export class CellMessageBinder {
     }
 
     resolveLookupDescription(cellElement) {
-        if (!this.options.lookupDescriptions) return null;
+        const presentation = this._resolveChannel(cellElement, 'lookupDescriptions', 'Description');
+        if (!presentation) return null;
 
         const field = cellElement?.dataset?.lookupField;
         const row = field ? this._getRow(cellElement) : null;
         const description = row && getLookupMetadata(row.getData?.(), field)?.current?.description;
 
-        return description ? { type: 'info', title: 'Description', message: String(description) } : null;
+        return description ? { type: 'info', ...presentation, message: String(description) } : null;
     }
 
     resolveLargeTextPreview(cellElement) {
-        if (!this.options.largeTextPreviews) return null;
+        const presentation = this._resolveChannel(cellElement, 'largeTextPreviews', 'Text');
+        if (!presentation) return null;
 
         const field = cellElement?.dataset?.largeTextField;
         const row = field ? this._getRow(cellElement) : null;
@@ -99,7 +117,7 @@ export class CellMessageBinder {
 
         return value === null || value === undefined || value === ''
             ? null
-            : { type: 'info', title: 'Text', message: String(value) };
+            : { type: 'info', ...presentation, message: String(value) };
     }
 
     resolveCellMessage(cellElement) {
@@ -142,7 +160,7 @@ export class CellMessageBinder {
 
     _getMessageKey(message) {
         return message
-            ? `${message.type}\u0000${message.title}\u0000${message.message}`
+            ? `${message.type}\u0000${message.title}\u0000${message.message}\u0000${message.className || ''}`
             : null;
     }
 

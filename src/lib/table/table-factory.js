@@ -1033,6 +1033,7 @@ export function createTable(options = {}) {
         : null;
     const columnPipelineOptions = {
         messages: normalizedMessages,
+        floatingMessagesEnabled: normalizedFloatingMessages.enabled,
         lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
         getCrud: () => crud,
         getTable: () => table,
@@ -1178,6 +1179,8 @@ export function createTable(options = {}) {
         tableElement,
         crudHelper: crud,
         floatingMessage,
+        enabled: normalizedFloatingMessages.enabled,
+        floatingMessagesByField: columnPipeline.floatingMessagesByField,
         validationErrors: normalizedFloatingMessages.validationErrors,
         lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
         largeTextPreviews: normalizedFloatingMessages.largeTextPreviews

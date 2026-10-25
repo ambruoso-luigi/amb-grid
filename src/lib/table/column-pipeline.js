@@ -21,12 +21,25 @@ const NUMERIC_FORMATTER_TYPES = new Set([
 const DATE_EDITOR_TYPES = new Set(['date']);
 const DATE_FORMATTER_TYPES = new Set(['date']);
 const CHECKBOX_EDITOR_TYPES = new Set(['checkbox']);
+const FLOATING_MESSAGE_CHANNELS = ['validationErrors', 'lookupDescriptions', 'largeTextPreviews'];
+
+const cloneFloatingMessages = configuration => Object.fromEntries(
+    FLOATING_MESSAGE_CHANNELS.filter(channel => configuration?.[channel] && typeof configuration[channel] === 'object')
+        .map(channel => [channel, Object.fromEntries(
+            ['enabled', 'title', 'className'].filter(key => configuration[channel][key] !== undefined)
+                .map(key => [key, configuration[channel][key]])
+        )])
+);
 
 const cloneApplicationColumns = (columns = []) => {
     return (columns || []).map(column => {
         if (!column || typeof column !== 'object') return column;
 
         const nextColumn = { ...column };
+
+        if (column.floatingMessages !== undefined) {
+            nextColumn.floatingMessages = cloneFloatingMessages(column.floatingMessages);
+        }
 
         if (column.columns) {
             nextColumn.columns = cloneApplicationColumns(column.columns);
@@ -288,8 +301,10 @@ export const prepareLookupColumns = (columns = [], options = {}) => {
         }
 
         const lookupConfig = getLookupConfig(nextColumn);
+        const localEnabled = nextColumn.floatingMessages?.lookupDescriptions?.enabled;
         const showDescription = Boolean(
-            lookupDescriptionsEnabled
+            options.enabled !== false
+            && (typeof localEnabled === 'boolean' ? localEnabled : lookupDescriptionsEnabled)
             && lookupConfig
             && lookupConfig.showDescription !== false
         );
@@ -876,6 +891,7 @@ const composeRuntimeColumns = (
  * @param {object[]} [options.columns=[]] - Application column definitions.
  * @param {object} [options.messages] - Declarative validator messages.
  * @param {boolean} [options.lookupDescriptions=true] - Enable lookup markers.
+ * @param {boolean} [options.floatingMessagesEnabled=true] - Master contextual-message switch.
  * @param {Function} [options.getCrud] - Return the current CRUD helper.
  * @param {Function} [options.getTable] - Return the current internal table.
  * @param {object|null} [options.selectionColumn] - AMB-managed selection definition.
@@ -886,7 +902,8 @@ const composeRuntimeColumns = (
  *   runtimeColumns: object[],
  *   validators: object[],
  *   lookupColumns: object[],
- *   searchColumns: object[]
+ *   searchColumns: object[],
+ *   floatingMessagesByField: Map<string, object>
  * }} Canonical application, prepared data, runtime, validation, lookup, and search results.
  * @private
  * @internal
@@ -895,6 +912,7 @@ export const prepareColumnPipeline = ({
     columns = [],
     messages = DEFAULT_MESSAGES,
     lookupDescriptions = true,
+    floatingMessagesEnabled = true,
     getCrud = () => null,
     getTable = () => null,
     selectionColumn = null,
@@ -917,7 +935,7 @@ export const prepareColumnPipeline = ({
     );
     const preparedLookupColumns = prepareLookupColumns(
         editableColumns,
-        { lookupDescriptions }
+        { lookupDescriptions, enabled: floatingMessagesEnabled }
     );
     const preparedCheckboxColumns = prepareCheckboxColumns(
         preparedLookupColumns,
@@ -926,6 +944,17 @@ export const prepareColumnPipeline = ({
     const preparedLargeTextColumns = prepareLargeTextColumns(preparedCheckboxColumns);
     const preparedDataColumns = applyDefaultColumnAlignments(preparedLargeTextColumns);
     const lookupColumns = collectLookupColumns(preparedDataColumns);
+    const floatingMessagesByField = new Map();
+    const collectFloatingMessages = (canonicalColumns, runtimeColumns) => {
+        canonicalColumns.forEach((column, index) => {
+            if (column.field && column.floatingMessages) {
+                floatingMessagesByField.set(column.field, cloneFloatingMessages(column.floatingMessages));
+            }
+            delete runtimeColumns[index].floatingMessages;
+            if (column.columns) collectFloatingMessages(column.columns, runtimeColumns[index].columns);
+        });
+    };
+    collectFloatingMessages(applicationColumns, preparedDataColumns);
 
     configureLookupEditors(preparedDataColumns, getCrud);
 
@@ -939,6 +968,7 @@ export const prepareColumnPipeline = ({
         ),
         validators: extracted.validators,
         lookupColumns,
+        floatingMessagesByField,
         searchColumns: preparedDataColumns
     };
 };

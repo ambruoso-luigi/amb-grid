@@ -82,6 +82,63 @@ const findPreparedColumn = (pipeline, field) => {
 };
 
 describe('AMB Grid column preparation pipeline', () => {
+    test('keeps canonical column messages independent and strips AMB options from nested runtime columns', () => {
+        const shared = Object.freeze({ largeTextPreviews: Object.freeze({ title: 'Notes', className: 'notes-theme' }) });
+        const columns = Object.freeze([
+            Object.freeze({ field: 'notes', floatingMessages: shared }),
+            Object.freeze({ title: 'Group', floatingMessages: shared, columns: Object.freeze([
+                Object.freeze({ field: 'other', floatingMessages: shared })
+            ]) })
+        ]);
+        const a = prepareColumnPipeline({ columns });
+        const b = prepareColumnPipeline({ columns });
+        expect(a.floatingMessagesByField.size).toBe(2);
+        expect(a.floatingMessagesByField.get('notes')).toEqual(shared);
+        expect(a.floatingMessagesByField.get('other')).toEqual(shared);
+        expect(a.runtimeColumns[0]).not.toHaveProperty('floatingMessages');
+        expect(a.runtimeColumns[1]).not.toHaveProperty('floatingMessages');
+        expect(a.runtimeColumns[1].columns[0]).not.toHaveProperty('floatingMessages');
+        expect(a.applicationColumns[0].floatingMessages).toEqual(shared);
+        expect(a.applicationColumns[1].columns[0].floatingMessages).toEqual(shared);
+        a.floatingMessagesByField.get('notes').largeTextPreviews.title = 'Changed';
+        a.applicationColumns[0].floatingMessages.largeTextPreviews.className = 'canonical-change';
+        expect(a.floatingMessagesByField.get('other').largeTextPreviews.title).toBe('Notes');
+        expect(b.floatingMessagesByField.get('notes')).toEqual(shared);
+        expect(a.floatingMessagesByField.get('notes').largeTextPreviews.className).toBe('notes-theme');
+        expect(shared.largeTextPreviews.title).toBe('Notes');
+    });
+
+    test.each([
+        [false, undefined, true, false],
+        [true, undefined, true, true],
+        [true, false, true, false],
+        [false, true, false, false],
+        [false, true, true, true]
+    ])('prepares Lookup markers with global=%s, local=%s, master=%s', (global, local, master, expected) => {
+        const editor = createLookupEditor({ lookupInstance: {}, setHandlers: vi.fn() });
+        const pipeline = prepareColumnPipeline({
+            lookupDescriptions: global, floatingMessagesEnabled: master,
+            columns: [{ title: 'Nested', columns: [{ field: 'status', editor, floatingMessages: {
+                lookupDescriptions: { ...(local === undefined ? {} : { enabled: local }) }
+            } }] }]
+        });
+        const target = createCell({ field: 'status' });
+        pipeline.preparedDataColumns[0].columns[0].formatter(target);
+        expect(target.element.dataset.lookupField).toBe(expected ? 'status' : undefined);
+    });
+
+    test('preserves explicit Lookup showDescription:false despite a local enable', () => {
+        const editor = createLookupEditor({ lookupInstance: {}, setHandlers: vi.fn() });
+        editor._ambLookupConfig.showDescription = false;
+        const pipeline = prepareColumnPipeline({ lookupDescriptions: false, columns: [{
+            field: 'status', editor, floatingMessages: { lookupDescriptions: { enabled: true } }
+        }] });
+        const target = createCell({ field: 'status' });
+        pipeline.preparedDataColumns[0].formatter(target);
+        expect(target.element.dataset.lookupField).toBeUndefined();
+        expect(editor._ambLookupConfig.showDescription).toBe(false);
+    });
+
     test('preserves scoped metadata for declarative custom validators', () => {
         const validateFn = vi.fn(() => true);
         const legacyValidate = vi.fn(() => true);

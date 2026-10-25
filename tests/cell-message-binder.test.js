@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { CellMessageBinder } from '../src/ui/cell-message-binder.js';
 import { setLookupMetadata } from '../src/lib/lookup-metadata.js';
+import { normalizeFloatingMessageOptions } from '../src/lib/table/table-factory.js';
+import { prepareColumnPipeline } from '../src/lib/table/column-pipeline.js';
 
 const createNode = (className = '', parent = null) => {
     const classes = new Set(className.split(' ').filter(Boolean));
@@ -24,7 +26,7 @@ const createNode = (className = '', parent = null) => {
     return node;
 };
 
-const createHarness = () => {
+const createHarness = (options = {}) => {
     const tableListeners = new Map();
     const documentListeners = new Map();
     const crudHandlers = new Map();
@@ -66,7 +68,7 @@ const createHarness = () => {
         scheduleShow: vi.fn(),
         hide: vi.fn()
     };
-    const binder = new CellMessageBinder({ table, tableElement, crudHelper, floatingMessage });
+    const binder = new CellMessageBinder({ table, tableElement, crudHelper, floatingMessage, ...options });
 
     const makeCell = (data, dataset = {}, { rowClass = 'tabulator-row', registered = true } = {}) => {
         const rowElement = createNode(rowClass);
@@ -317,5 +319,118 @@ describe('CellMessageBinder', () => {
         expect(harness.tableListeners.size).toBe(0);
         expect(harness.documentListeners.size).toBe(0);
         harness.unsubscribes.forEach(unsubscribe => expect(unsubscribe).toHaveBeenCalledOnce());
+    });
+
+    const allProviders = harness => {
+        const target = harness.makeCell({ id: 8, notes: '<b>Full text</b>' }, {
+            field: 'notes', lookupField: 'notes', largeTextField: 'notes'
+        });
+        setLookupMetadata(target.row.getData(), 'notes', 'value', '<b>Lookup description</b>');
+        harness.cellErrors.push({ key: 8, field: 'notes', message: '<b>Required</b>' });
+        return target.cellElement;
+    };
+
+    test.each([
+        [{}, 'error', 'Validation error', '<b>Required</b>'],
+        [{ validationErrors: { enabled: false } }, 'info', 'Description', '<b>Lookup description</b>'],
+        [{ validationErrors: { enabled: false }, lookupDescriptions: { enabled: false } }, 'info', 'Text', '<b>Full text</b>']
+    ])('preserves provider priority and falls through disabled channels: %j', (configuration, type, title, message) => {
+        const harness = createHarness({ floatingMessagesByField: new Map([['notes', configuration]]) });
+        const target = allProviders(harness);
+        expect(harness.binder.resolveCellMessage(target)).toEqual({ type, title, message });
+        harness.tableElement.dispatch('focusin', { target });
+        expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(target, { type, title, message });
+    });
+
+    test.each([
+        ['validationErrors', 'error', '<b>Required</b>'],
+        ['lookupDescriptions', 'info', '<b>Lookup description</b>'],
+        ['largeTextPreviews', 'info', '<b>Full text</b>']
+    ])('locally reenables %s and passes its title and classes as presentation only', (channel, type, message) => {
+        const harness = createHarness({
+            validationErrors: false, lookupDescriptions: false, largeTextPreviews: false,
+            floatingMessagesByField: new Map([['notes', {
+                [channel]: { enabled: true, title: '<b>Custom title</b>', className: 'custom-theme wide-tooltip' }
+            }]])
+        });
+        const target = allProviders(harness);
+        harness.tableElement.dispatch('pointermove', { target });
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenLastCalledWith(target, {
+            type, title: '<b>Custom title</b>', message, className: 'custom-theme wide-tooltip'
+        });
+    });
+
+    test.each(['validationErrors', 'lookupDescriptions', 'largeTextPreviews'])('inherits the global disabled default for %s when enabled is omitted', channel => {
+        const harness = createHarness({
+            validationErrors: false, lookupDescriptions: false, largeTextPreviews: false,
+            floatingMessagesByField: new Map([['notes', { [channel]: { title: 'Custom', className: 'custom' } }]])
+        });
+        expect(harness.binder.resolveCellMessage(allProviders(harness))).toBeNull();
+    });
+
+    test.each([false, { enabled: false }])('cannot override a disabled global master: %j', configuration => {
+        const globalOptions = normalizeFloatingMessageOptions(configuration);
+        const local = Object.fromEntries(['validationErrors', 'lookupDescriptions', 'largeTextPreviews']
+            .map(channel => [channel, { enabled: true, title: 'Custom', className: 'custom' }]));
+        const harness = createHarness({ ...globalOptions, floatingMessagesByField: new Map([['notes', local]]) });
+        const target = allProviders(harness);
+        harness.tableElement.dispatch('pointermove', { target });
+        harness.tableElement.dispatch('focusin', { target });
+        expect(harness.binder.resolveCellMessage(target)).toBeNull();
+        expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+        expect(harness.floatingMessage.scheduleShow).not.toHaveBeenCalled();
+        expect(globalOptions.searchFilterStatus).toBe(false);
+    });
+
+    test('resolves column presentation independently of editors and returns standard presentation on another column', () => {
+        const pipeline = prepareColumnPipeline({ columns: [
+            { field: 'notes', floatingMessages: { largeTextPreviews: { title: 'Historical notes', className: 'antique-notes-tooltip' } } },
+            { field: 'other', floatingMessages: { largeTextPreviews: { title: 'Other notes', className: 'other-tooltip' } } },
+            { field: 'standard' }
+        ] });
+        const harness = createHarness({ floatingMessagesByField: pipeline.floatingMessagesByField });
+        const custom = harness.makeCell({ id: 1, notes: 'First' }, { largeTextField: 'notes' });
+        const other = harness.makeCell({ id: 1, other: 'Second' }, { largeTextField: 'other' });
+        const standard = harness.makeCell({ id: 1, standard: 'Third' }, { largeTextField: 'standard' });
+        harness.tableElement.dispatch('focusin', { target: custom.cellElement });
+        expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(custom.cellElement, {
+            type: 'info', title: 'Historical notes', message: 'First', className: 'antique-notes-tooltip'
+        });
+        harness.tableElement.dispatch('focusin', { target: other.cellElement });
+        expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(other.cellElement, {
+            type: 'info', title: 'Other notes', message: 'Second', className: 'other-tooltip'
+        });
+        harness.tableElement.dispatch('focusin', { target: standard.cellElement });
+        expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(standard.cellElement, {
+            type: 'info', title: 'Text', message: 'Third'
+        });
+    });
+
+    test('hides messages when all three local channels are disabled', () => {
+        const local = Object.fromEntries(['validationErrors', 'lookupDescriptions', 'largeTextPreviews']
+            .map(channel => [channel, { enabled: false }]));
+        const harness = createHarness({ floatingMessagesByField: new Map([['notes', local]]) });
+        const target = allProviders(harness);
+        harness.tableElement.dispatch('focusin', { target });
+        expect(harness.binder.resolveCellMessage(target)).toBeNull();
+        expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+        expect(harness.floatingMessage.hide).toHaveBeenCalled();
+    });
+
+    test('keeps the same field isolated between grids and includes classes in the hover identity', () => {
+        const create = className => {
+            const pipeline = prepareColumnPipeline({ columns: [{ field: 'notes', floatingMessages: {
+                largeTextPreviews: { className }
+            } }] });
+            const harness = createHarness({ floatingMessagesByField: pipeline.floatingMessagesByField });
+            const target = harness.makeCell({ id: 1, notes: 'Same text' }, { largeTextField: 'notes' });
+            return harness.binder.resolveCellMessage(target.cellElement);
+        };
+        const a = create('theme-a');
+        const b = create('theme-b');
+        expect(a).toEqual({ type: 'info', title: 'Text', message: 'Same text', className: 'theme-a' });
+        expect(b).toEqual({ ...a, className: 'theme-b' });
+        const { binder } = createHarness();
+        expect(binder._getMessageKey(a)).not.toBe(binder._getMessageKey(b));
     });
 });
