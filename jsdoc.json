@@ -4,6 +4,7 @@
     "includePattern": ".+\\.js$",
     "excludePattern": "(node_modules|dist|demo)"
   },
+  "plugins": ["./scripts/jsdoc-typescript-compat.cjs"],
   "opts": {
     "destination": "docs",
     "recurse": true,

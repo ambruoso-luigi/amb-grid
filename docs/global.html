@@ -7083,7 +7083,7 @@ row data and CRUD state.
             <td class="type">
             
                 
-<span class="param-type">AMBMultifieldLookupOptions</span>
+<span class="param-type"><a href="global.html#AMBMultifieldLookupOptions">AMBMultifieldLookupOptions</a></span>
 
 
             
@@ -45439,6 +45439,367 @@ means the callback, row or operation is unavailable.
 
             
                 
+<h4 class="name" id="AMBColumnOptions">AMBColumnOptions</h4>
+
+
+
+
+<div class="description">
+    Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validation</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBColumnValidationOptions">AMBColumnValidationOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>floatingMessages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBColumnFloatingMessagesOptions">AMBColumnFloatingMessagesOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>columns</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="global.html#AMBColumnOptions">AMBColumnOptions</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line892">line 892</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBColumnValidationOptions">AMBColumnValidationOptions</h4>
+
+
+
+
+<div class="description">
+    Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>custom</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBDeclarativeCustomValidatorOptions">AMBDeclarativeCustomValidatorOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line891">line 891</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
 <h4 class="name" id="AMBDeclarativeCustomValidatorOptions">AMBDeclarativeCustomValidatorOptions</h4>
 
 
@@ -53015,15 +53376,22 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>shouldHandle</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
             
             </td>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -53036,22 +53404,29 @@ means the callback, row or operation is unavailable.
                 </td>
             
 
-            <td class="description last"></td>
+            <td class="description last">Called only while enabled for configurable actions, including standard inline editor commit/cancel while editing; false leaves the event untouched. It is not called for page shortcuts or legacy Tab flow. TypeScript: <code>(context: AMBKeyboardNavigationContext) =&gt; boolean</code>.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>resolveNavigation</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
             
             </td>
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -53064,7 +53439,7 @@ means the callback, row or operation is unavailable.
                 </td>
             
 
-            <td class="description last"></td>
+            <td class="description last">Supplies a same-grid directional destination. Null or invalid cells use geometry; thrown errors propagate. TypeScript: <code>(context: AMBKeyboardNavigationContext &amp; {direction: 'up'|'down'|'left'|'right'}) =&gt; object|undefined|null</code>.</td>
         </tr>
 
     
@@ -53274,7 +53649,7 @@ means the callback, row or operation is unavailable.
     
 
     
-    <h4 class="name" id="AMBMultifieldApplyRecord"><span class="type-signature"></span>AMBMultifieldApplyRecord<span class="signature">(patch, record, rowData)</span><span class="type-signature"> &rarr; {object|undefined|null|false}</span></h4>
+    <h4 class="name" id="AMBMultifieldApplyRecord"><span class="type-signature"></span>AMBMultifieldApplyRecord<span class="signature">(cell, patch, record, rowData)</span><span class="type-signature"> &rarr; {object|undefined|null|false}</span></h4>
     
 
     
@@ -53314,10 +53689,15 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>cell</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
             
             </td>
 
@@ -53325,7 +53705,7 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Edited master cell. TypeScript: <code>{getRow: () =&gt; {getData: () =&gt; object}, getField: () =&gt; string}</code>.</td>
         </tr>
 
     
@@ -53505,7 +53885,7 @@ means the callback, row or operation is unavailable.
     
 
     
-    <h4 class="name" id="AMBMultifieldCreateClearPatch"><span class="type-signature"></span>AMBMultifieldCreateClearPatch<span class="signature">()</span><span class="type-signature"> &rarr; {object}</span></h4>
+    <h4 class="name" id="AMBMultifieldCreateClearPatch"><span class="type-signature"></span>AMBMultifieldCreateClearPatch<span class="signature">(options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object}</span></h4>
     
 
     
@@ -53527,9 +53907,13 @@ means the callback, row or operation is unavailable.
     <thead>
     <tr>
         
+        <th>Name</th>
+        
 
         <th>Type</th>
 
+        
+        <th>Attributes</th>
         
 
         
@@ -53543,16 +53927,33 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
+                <td class="name"><code>options</code></td>
+            
 
             <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Clear-patch options. TypeScript: <code>{includeMaster?: boolean, masterValue?: unknown}</code>.</td>
         </tr>
 
     
@@ -53880,7 +54281,7 @@ means the callback, row or operation is unavailable.
             <td class="type">
             
                 
-<span class="param-type">AMBMultifieldDependentColumnOptions</span>
+<span class="param-type"><a href="global.html#AMBMultifieldDependentColumnOptions">AMBMultifieldDependentColumnOptions</a></span>
 
 
             
@@ -53991,6 +54392,645 @@ means the callback, row or operation is unavailable.
 
             
                 
+<h4 class="name" id="AMBMultifieldDependentColumnOptions">AMBMultifieldDependentColumnOptions</h4>
+
+
+
+
+<div class="description">
+    Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>width</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>editable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>editor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">unknown</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cssClass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validator</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">unknown</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line135">line 135</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBMultifieldDependentField">AMBMultifieldDependentField</h4>
+
+
+
+
+<div class="description">
+    Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>required</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>visibleInGrid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>visibleInLookup</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>searchable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>readonly</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line90">line 90</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
 <h4 class="name" id="AMBMultifieldDialog">AMBMultifieldDialog</h4>
 
 
@@ -54002,12 +55042,64 @@ means the callback, row or operation is unavailable.
     <ul>
         <li>
             
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
         </li>
     </ul>
 
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>open</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -54042,6 +55134,202 @@ means the callback, row or operation is unavailable.
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line74">line 74</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBMultifieldEditorOptions">AMBMultifieldEditorOptions</h4>
+
+
+
+
+<div class="description">
+    Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>caseSensitive</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showDescription</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>applyRecord</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldApplyRecord">AMBMultifieldApplyRecord</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -54221,12 +55509,432 @@ means the callback, row or operation is unavailable.
     <ul>
         <li>
             
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
         </li>
     </ul>
 
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>lookup</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>masterField</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldMasterField">AMBMultifieldMasterField</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dependentFields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="global.html#AMBMultifieldDependentField">AMBMultifieldDependentField</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearDependentsOnInvalidMaster</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearDependentsOnEmptyMaster</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>readonlyDependents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mapping</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="global.html#AMBMultifieldMappingEntry">AMBMultifieldMappingEntry</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mapToRow</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldMapToRow">AMBMultifieldMapToRow</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>lookupColumns</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>searchFields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>createPatch</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldCreatePatch">AMBMultifieldCreatePatch</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>createClearPatch</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldCreateClearPatch">AMBMultifieldCreateClearPatch</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isRecordValid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldIsRecordValid">AMBMultifieldIsRecordValid</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validateMasterValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldValidateMasterValue">AMBMultifieldValidateMasterValue</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>masterColumn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldMasterColumn">AMBMultifieldMasterColumn</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dependentColumn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldDependentColumn">AMBMultifieldDependentColumn</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -54278,6 +55986,415 @@ means the callback, row or operation is unavailable.
 
             
                 
+<h4 class="name" id="AMBMultifieldLookupOptions">AMBMultifieldLookupOptions</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>lookup</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldDialog">AMBMultifieldDialog</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>masterField</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldMasterField">AMBMultifieldMasterField</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dependentFields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="global.html#AMBMultifieldDependentField">AMBMultifieldDependentField</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearDependentsOnInvalidMaster</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clearDependentsOnEmptyMaster</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>readonlyDependents</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line193">line 193</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBMultifieldMapToRow">AMBMultifieldMapToRow</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object.&lt;string, string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line151">line 151</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
 <h4 class="name" id="AMBMultifieldMappingEntry">AMBMultifieldMappingEntry</h4>
 
 
@@ -54289,12 +56406,113 @@ means the callback, row or operation is unavailable.
     <ul>
         <li>
             
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
         </li>
     </ul>
 
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>role</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">"master"</span>
+|
+
+<span class="param-type">"dependent"</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -54398,7 +56616,7 @@ means the callback, row or operation is unavailable.
             <td class="type">
             
                 
-<span class="param-type">AMBMultifieldMasterColumnOptions</span>
+<span class="param-type"><a href="global.html#AMBMultifieldMasterColumnOptions">AMBMultifieldMasterColumnOptions</a></span>
 
 
             
@@ -54502,6 +56720,617 @@ means the callback, row or operation is unavailable.
 </dl>
 
     
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBMultifieldMasterColumnOptions">AMBMultifieldMasterColumnOptions</h4>
+
+
+
+
+<div class="description">
+    Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>width</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldDialog">AMBMultifieldDialog</a></span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>editorOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBMultifieldEditorOptions">AMBMultifieldEditorOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validation</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>validator</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">unknown</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cssClass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line122">line 122</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBMultifieldMasterField">AMBMultifieldMasterField</h4>
+
+
+
+
+<div class="description">
+    Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>required</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>autocomplete</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dialog</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_multifield-lookup.js.html">lib/multifield-lookup.js</a>, <a href="lib_multifield-lookup.js.html#line78">line 78</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
 
 
 
@@ -59332,10 +62161,15 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>getChanges</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#getChanges">CrudHelper#getChanges</a></span>
+
+
             
             </td>
 
@@ -59343,17 +62177,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Read changes currently classified by the AMB CRUD lifecycle.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>getStateReport</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#getStateReport">CrudHelper#getStateReport</a></span>
+
+
             
             </td>
 
@@ -59361,7 +62200,7 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Return the complete AMB snapshot of rows, lifecycle state, errors, and changes.</td>
         </tr>
 
     
@@ -59391,10 +62230,15 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>addRow</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#addRow">CrudHelper#addRow</a></span>
+
+
             
             </td>
 
@@ -59402,7 +62246,7 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Add a row through the AMB lifecycle rather than directly through the engine.</td>
         </tr>
 
     
@@ -59432,10 +62276,15 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>updateRow</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#updateRowFields">CrudHelper#updateRowFields</a></span>
+
+
             
             </td>
 
@@ -59443,17 +62292,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Patch a row through AMB tracking and validation rather than directly through the engine.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>deleteRow</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#deleteRow">CrudHelper#deleteRow</a></span>
+
+
             
             </td>
 
@@ -59461,17 +62315,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Delete or mark one row deleted according to the AMB lifecycle.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>rollbackRow</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#rollbackRow">CrudHelper#rollbackRow</a></span>
+
+
             
             </td>
 
@@ -59479,17 +62338,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Restore or remove one row according to its AMB lifecycle state.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>applyBackendIds</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#applyBackendIds">CrudHelper#applyBackendIds</a></span>
+
+
             
             </td>
 
@@ -59497,17 +62361,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Reconcile temporary and backend ids without sending data to the backend.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>markRowSaved</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">CrudHelper#markRowSaved</span>
+
+
             
             </td>
 
@@ -59515,17 +62384,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Confirm one row as saved without sending data to the backend.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>markRowsSaved</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#markRowsSaved">CrudHelper#markRowsSaved</a></span>
+
+
             
             </td>
 
@@ -59533,17 +62407,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Confirm an explicit row list as saved without sending data to the backend.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>markValidChangesSaved</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#markValidChangesSaved">CrudHelper#markValidChangesSaved</a></span>
+
+
             
             </td>
 
@@ -59551,17 +62430,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Confirm valid changes and return saved/skipped rows without sending data to the backend.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>hasErrors</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#hasErrors">CrudHelper#hasErrors</a></span>
+
+
             
             </td>
 
@@ -59569,17 +62453,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Return whether AMB CRUD currently tracks row or cell-field application errors.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>getErrors</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#getErrors">CrudHelper#getErrors</a></span>
+
+
             
             </td>
 
@@ -59587,17 +62476,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Return the grouped AMB CRUD error summary without reading native cell-validation markers.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>getRowErrors</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#getRowErrors">CrudHelper#getRowErrors</a></span>
+
+
             
             </td>
 
@@ -59605,17 +62499,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Return the currently registered AMB row-level errors.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>getCellErrors</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#getCellErrors">CrudHelper#getCellErrors</a></span>
+
+
             
             </td>
 
@@ -59623,17 +62522,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Return the currently registered AMB cell-field errors, not native Cell Components.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>markCellError</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#markCellError">CrudHelper#markCellError</a></span>
+
+
             
             </td>
 
@@ -59641,17 +62545,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Register an AMB application error for a row field without changing lifecycle state or native cell-validation markers.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>clearCellError</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#clearCellError">CrudHelper#clearCellError</a></span>
+
+
             
             </td>
 
@@ -59659,17 +62568,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Clear one AMB row-field error without clearing native Cell Component validation state.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>markRowError</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#markRowError">CrudHelper#markRowError</a></span>
+
+
             
             </td>
 
@@ -59677,17 +62591,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Register an AMB application error for an entire row without changing its lifecycle state.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>clearRowError</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#clearRowError">CrudHelper#clearRowError</a></span>
+
+
             
             </td>
 
@@ -59695,17 +62614,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Clear only an AMB row-level error, preserving cell-field errors and lifecycle state.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>clearCellErrorsForRow</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#clearRowErrors">CrudHelper#clearRowErrors</a></span>
+
+
             
             </td>
 
@@ -59713,17 +62637,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Clear all AMB field errors for one row, preserving its general error and native cell-validation markers.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>clearErrorsForRow</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#clearAllErrors">CrudHelper#clearAllErrors</a></span>
+
+
             
             </td>
 
@@ -59731,7 +62660,7 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Clear every AMB application error for one row only, preserving native cell-validation markers.</td>
         </tr>
 
     
@@ -59761,10 +62690,15 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>offCrud</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
             
             </td>
 
@@ -59772,7 +62706,7 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Remove one specific AMB CRUD callback, distinct from engine `off`; remaining subscriptions are released on destroy. TypeScript: <code>(eventName: string, callback: AMBGridEventCallback) =&gt; void</code>.</td>
         </tr>
 
     
@@ -59802,10 +62736,15 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>removeCellValidators</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#removeCellValidator">CrudHelper#removeCellValidator</a></span>
+
+
             
             </td>
 
@@ -59813,17 +62752,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Remove every AMB rule for a field, including initial declarative rules, without immediately validating data.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>validate</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#validateAll">CrudHelper#validateAll</a></span>
+
+
             
             </td>
 
@@ -59831,17 +62775,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Validate AMB-managed rows and return the structured AMB Grid validation report.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>validateChanges</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#validateChanges">CrudHelper#validateChanges</a></span>
+
+
             
             </td>
 
@@ -59849,17 +62798,22 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Validate AMB rows with pending insert or update changes.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>validateRow</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type"><a href="CrudHelper.html#validateRow">CrudHelper#validateRow</a></span>
+
+
             
             </td>
 
@@ -59867,7 +62821,7 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Validate one AMB-managed row by backend or temporary identifier.</td>
         </tr>
 
     
@@ -62848,6 +65802,918 @@ means the callback, row or operation is unavailable.
 
             
                 
+<h4 class="name" id="AMBTableOptions">AMBTableOptions</h4>
+
+
+
+
+<div class="description">
+    Public options accepted by `AMB.table(...)`.Known AMB Grid options remain typed. Additional options are passed throughto the internal table engine as `unknown`, keeping that implementation aninternal detail of the AMB Grid public API.Additional string keys accept unknown values.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>selector</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;object></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>columns</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="global.html#AMBColumnOptions">AMBColumnOptions</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pagination</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type"><a href="global.html#AMBPaginationOptions">AMBPaginationOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>keyboardNavigation</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBKeyboardNavigationOptions">AMBKeyboardNavigationOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cellEditing</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBCellEditingOptions">AMBCellEditingOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rowActionColumn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBRowActionColumnOptions">AMBRowActionColumnOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>selectionColumn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBSelectionColumnOptions">AMBSelectionColumnOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>search</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBSearchOptions">AMBSearchOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>floatingMessages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type"><a href="global.html#AMBFloatingMessagesOptions">AMBFloatingMessagesOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>toolbar</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type"><a href="global.html#AMBToolbarOptions">AMBToolbarOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>messages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBTableMessages">AMBTableMessages</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>errorStyle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#AMBErrorStyleOptions">AMBErrorStyleOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>layout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">"fitData"</span>
+|
+
+<span class="param-type">"fitColumns"</span>
+|
+
+<span class="param-type">"fitDataFill"</span>
+|
+
+<span class="param-type">"fitDataStretch"</span>
+|
+
+<span class="param-type">"fitDataTable"</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>height</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">number</span>
+|
+
+<span class="param-type">false</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>history</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>groupBy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">Array.&lt;string></span>
+|
+
+<span class="param-type"><a href="global.html#AMBGroupByFunction">AMBGroupByFunction</a></span>
+|
+
+<span class="param-type">Array.&lt;(string|<a href="global.html#AMBGroupByFunction">AMBGroupByFunction</a>)></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>responsiveLayout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+|
+
+<span class="param-type">"hide"</span>
+|
+
+<span class="param-type">"collapse"</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>movableColumns</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>paginationMode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">"local"</span>
+|
+
+<span class="param-type">"remote"</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>paginationSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">true</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>paginationSizeSelector</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">true</span>
+|
+
+<span class="param-type">Array.&lt;number></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line898">line 898</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="global.html#AMBTablePassthroughOptions">AMBTablePassthroughOptions</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="AMBTablePassthroughOptions">AMBTablePassthroughOptions</h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object.&lt;string, unknown></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="lib_table_table-factory.js.html">lib/table/table-factory.js</a>, <a href="lib_table_table-factory.js.html#line839">line 839</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
 <h4 class="name" id="AMBToolbarOptions">AMBToolbarOptions</h4>
 
 
@@ -64045,7 +67911,7 @@ means the callback, row or operation is unavailable.
     
 
     
-    <h4 class="name" id="LookupApplyRecordHandler"><span class="type-signature"></span>LookupApplyRecordHandler<span class="signature">(patch, record, rowData)</span><span class="type-signature"> &rarr; {object|undefined|null|false}</span></h4>
+    <h4 class="name" id="LookupApplyRecordHandler"><span class="type-signature"></span>LookupApplyRecordHandler<span class="signature">(cell, patch, record, rowData)</span><span class="type-signature"> &rarr; {object|undefined|null|false}</span></h4>
     
 
     
@@ -64085,10 +67951,15 @@ means the callback, row or operation is unavailable.
 
         <tr>
             
-                <td class="name"><code></code></td>
+                <td class="name"><code>cell</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
             
             </td>
 
@@ -64096,7 +67967,7 @@ means the callback, row or operation is unavailable.
 
             
 
-            <td class="description last"></td>
+            <td class="description last">Edited grid cell. TypeScript: <code>{getRow: () =&gt; {getData: () =&gt; object}, getField: () =&gt; string}</code>.</td>
         </tr>
 
     
