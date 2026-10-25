@@ -30,7 +30,7 @@
 import { consumeCellAuxiliaryAction, registerCellAuxiliaryAction } from '../table/keyboard-auxiliary.js';
 import { ensureLookupMetadata, setLookupMetadata } from '../lookup-metadata.js';
 import { getKeyboardNavigationContext } from '../table/keyboard-bindings.js';
-import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateToCandidate } from './shared.js';
+import { containEditorSpatialNavigation, getInitialValue, getLookupOptionValue, handleEditorCommitCancelKeydown, navigateEditableCellAfterClose, navigateToCandidate } from './shared.js';
 
 /**
  * @callback LookupSuccessHandler
@@ -552,6 +552,8 @@ export function lookup(lookupInstance, options = {}) {
 
                 try {
                     const item = await findExactItem(normalizedInitialValue);
+                    if (closed) return;
+
                     const metadataValue = item
                         ? getCanonicalItemValue(item)
                         : normalizedInitialValue;
@@ -562,6 +564,8 @@ export function lookup(lookupInstance, options = {}) {
                     });
                     setCellLookupDescription(description);
                 } catch (error) {
+                    if (closed) return;
+
                     console.error('Lookup metadata initialization failed', error);
                     setLookupMetadata(rowData, field, normalizedInitialValue, '', {
                         setInitial: true
@@ -571,6 +575,8 @@ export function lookup(lookupInstance, options = {}) {
             };
 
             const commit = async () => {
+                if (closed) return;
+
                 const value = getValue();
 
                 input.value = value;
@@ -586,6 +592,7 @@ export function lookup(lookupInstance, options = {}) {
 
                     try {
                         item = await findExactItem(value);
+                        if (closed) return;
 
                         if (item) {
                             const canonicalValue = getCanonicalItemValue(item);
@@ -608,6 +615,8 @@ export function lookup(lookupInstance, options = {}) {
                             setCellLookupDescription('');
                         }
                     } catch (error) {
+                        if (closed) return;
+
                         console.error('Lookup validation failed', error);
                     }
 
@@ -638,6 +647,7 @@ export function lookup(lookupInstance, options = {}) {
 
                 try {
                     const item = await findExactItem(value);
+                    if (closed) return;
 
                     if (item) {
                         const canonicalValue = getCanonicalItemValue(item);
@@ -649,6 +659,8 @@ export function lookup(lookupInstance, options = {}) {
                         return;
                     }
                 } catch (error) {
+                    if (closed) return;
+
                     console.error('Lookup validation failed', error);
                     closeWithCancel();
                     return;
@@ -670,6 +682,11 @@ export function lookup(lookupInstance, options = {}) {
                 const table = cell &amp;&amp; cell.getTable &amp;&amp; cell.getTable();
 
                 navigationScheduled = true;
+                const keyboardContext = getKeyboardNavigationContext(table);
+                if (keyboardContext?.keyboardNavigationOptions?.enabled !== false &amp;&amp; keyboardContext?.navigateAfterClose) {
+                    navigateEditableCellAfterClose(cell, direction);
+                    return;
+                }
                 globalThis.setTimeout(() => {
                     const row = cell &amp;&amp; cell.getRow &amp;&amp; cell.getRow();
                     const cells = row &amp;&amp; typeof row.getCells === 'function'
@@ -828,6 +845,7 @@ export function lookup(lookupInstance, options = {}) {
                         searchFields,
                         searchPlaceholder: normalizedOptions.searchPlaceholder || 'Search...'
                     });
+                    if (closed) return;
 
                     if (!selected) return;
 
@@ -913,7 +931,7 @@ export function lookup(lookupInstance, options = {}) {
                 });
             });
             input.addEventListener('blur', () => {
-                if (dialogOpen || tabCommitInProgress) return;
+                if (closed || dialogOpen || tabCommitInProgress) return;
 
                 if (normalizedOptions.validateOnBlur) {
                     return commit();
@@ -947,6 +965,7 @@ export function lookup(lookupInstance, options = {}) {
 
         editor._ambEditorType = 'lookup';
         editor._ambCapabilities = {
+            ownsTab: true,
             auxiliary: Boolean(
                 typeof normalizedOptions.onOpenDialog === 'function'
                 || typeof normalizedOptions.dialog?.open === 'function'
@@ -986,7 +1005,7 @@ export function lookup(lookupInstance, options = {}) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Mon Oct 19 2026 19:27:50 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Oct 25 2026 14:00:44 GMT+0100 (Ora standard dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>
