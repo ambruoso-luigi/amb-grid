@@ -38,6 +38,11 @@ export const createLifecycleMethods = ({
     destroy() {
         const controller = getController();
 
+        if (resources.largeTextEditor) {
+            resources.largeTextEditor();
+            resources.largeTextEditor = null;
+        }
+
         if (resources.imageViewerRuntime) {
             resources.imageViewerRuntime.destroy();
             resources.imageViewerRuntime = null;

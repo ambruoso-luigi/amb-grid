@@ -1,5 +1,6 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { CrudHelper } from '../crud-helper.js';
+import { largeTextLifecycleResources } from '../editors/large-text-editor.js';
 import { createImagePreviewRuntime, hasImagePreviewFormatter } from '../image-preview-runtime.js';
 import { createImageViewerRuntime } from '../image-viewer-runtime.js';
 import { CellMessageBinder } from '../../ui/cell-message-binder.js';
@@ -1063,6 +1064,7 @@ export function createTable(options = {}) {
         columns
     });
     const lifecycleResources = {
+        largeTextEditor: null,
         toolbarController: null,
         unsubscribeRowActionColumn: null,
         unsubscribeSelectionColumn: null,
@@ -1088,6 +1090,7 @@ export function createTable(options = {}) {
     }
 
     table = new Tabulator(selector, normalizedOptions);
+    table[largeTextLifecycleResources] = lifecycleResources;
     const tableElement = typeof selector === 'string'
         ? document.querySelector(selector)
         : selector;

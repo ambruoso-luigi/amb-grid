@@ -2,6 +2,7 @@ import { containEditorSpatialNavigation, focusCellWithoutEditing, getInitialValu
 import { createFocusTrap } from '../../ui/focus-trap.js';
 
 let dialogSequence = 0;
+export const largeTextLifecycleResources = Symbol('amb.largeTextLifecycleResources');
 
     /**
      * Modal textarea editor for long text.
@@ -64,6 +65,7 @@ export function largeText(options = {}) {
             const saveButton = readOnly ? null : document.createElement('button');
             const sourceRow = cell.getRow?.();
             const sourceField = cell.getField?.();
+            const resources = cell.getTable?.()?.[largeTextLifecycleResources];
             const titleId = `amb-large-text-title-${++dialogSequence}`;
             let closed = false;
             let focusTrap;
@@ -120,6 +122,7 @@ export function largeText(options = {}) {
 
             const destroyPopup = () => {
                 overlay.remove();
+                if (resources?.largeTextEditor === destroyEditor) resources.largeTextEditor = null;
             };
 
             const restoreSourceFocus = () => {
@@ -155,6 +158,16 @@ export function largeText(options = {}) {
                 destroyPopup();
                 restoreSourceFocus();
             };
+
+            const destroyEditor = () => {
+                if (closed) return;
+
+                closed = true;
+                focusTrap?.deactivate({ restore: false });
+                cancel();
+                destroyPopup();
+            };
+            if (resources) resources.largeTextEditor = destroyEditor;
 
             cancelButton.addEventListener('click', closeWithCancel);
             textarea.addEventListener('keydown', containEditorSpatialNavigation);
@@ -195,6 +208,7 @@ export function largeText(options = {}) {
             document.body.appendChild(overlay);
 
             onRendered(() => {
+                if (closed) return;
                 focusTrap.activate();
                 textarea.setSelectionRange(textarea.value.length, textarea.value.length);
             });
