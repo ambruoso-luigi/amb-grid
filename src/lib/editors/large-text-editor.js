@@ -40,6 +40,8 @@ export function largeText(options = {}) {
             placeholder: '',
             saveText: 'Save',
             cancelText: 'Cancel',
+            readOnly: false,
+            closeText: 'Close',
             width: 640,
             maxWidth: '90vw',
             height: 'auto',
@@ -51,6 +53,7 @@ export function largeText(options = {}) {
         };
 
         const editor = (cell, onRendered, success, cancel) => {
+            const readOnly = normalizedOptions.readOnly === true;
             const placeholder = document.createElement('span');
             const overlay = document.createElement('div');
             const panel = document.createElement('div');
@@ -58,7 +61,7 @@ export function largeText(options = {}) {
             const textarea = document.createElement('textarea');
             const actions = document.createElement('div');
             const cancelButton = document.createElement('button');
-            const saveButton = document.createElement('button');
+            const saveButton = readOnly ? null : document.createElement('button');
             const sourceRow = cell.getRow?.();
             const sourceField = cell.getField?.();
             const titleId = `amb-large-text-title-${++dialogSequence}`;
@@ -73,16 +76,19 @@ export function largeText(options = {}) {
             textarea.className = 'amb-large-text-editor__textarea';
             actions.className = 'amb-large-text-editor__actions';
             cancelButton.className = 'amb-large-text-editor__button';
-            saveButton.className = 'amb-large-text-editor__button amb-large-text-editor__button--primary';
 
             title.textContent = normalizedOptions.title;
             textarea.value = getInitialValue(cell);
+            textarea.readOnly = readOnly;
             textarea.rows = normalizedOptions.rows;
             textarea.placeholder = normalizedOptions.placeholder;
             cancelButton.type = 'button';
-            cancelButton.textContent = normalizedOptions.cancelText;
-            saveButton.type = 'button';
-            saveButton.textContent = normalizedOptions.saveText;
+            cancelButton.textContent = readOnly ? normalizedOptions.closeText : normalizedOptions.cancelText;
+            if (saveButton) {
+                saveButton.className = 'amb-large-text-editor__button amb-large-text-editor__button--primary';
+                saveButton.type = 'button';
+                saveButton.textContent = normalizedOptions.saveText;
+            }
             overlay.setAttribute('role', 'dialog');
             overlay.setAttribute('aria-modal', 'true');
             overlay.setAttribute('aria-labelledby', titleId);
@@ -107,7 +113,8 @@ export function largeText(options = {}) {
                 textarea.wrap = 'soft';
             }
 
-            actions.append(cancelButton, saveButton);
+            actions.append(cancelButton);
+            if (saveButton) actions.append(saveButton);
             panel.append(title, textarea, actions);
             overlay.appendChild(panel);
 
@@ -130,7 +137,7 @@ export function largeText(options = {}) {
             };
 
             const closeWithSuccess = () => {
-                if (closed) return;
+                if (closed || readOnly) return;
 
                 closed = true;
                 focusTrap?.deactivate({ restore: false });
@@ -151,7 +158,7 @@ export function largeText(options = {}) {
 
             cancelButton.addEventListener('click', closeWithCancel);
             textarea.addEventListener('keydown', containEditorSpatialNavigation);
-            saveButton.addEventListener('click', closeWithSuccess);
+            saveButton?.addEventListener('click', closeWithSuccess);
             overlay.addEventListener('mousedown', event => {
                 if (event.target !== overlay) return;
 
@@ -180,7 +187,7 @@ export function largeText(options = {}) {
 
             focusTrap = createFocusTrap({
                 container: panel,
-                getElements: () => [textarea, cancelButton, saveButton],
+                getElements: () => readOnly ? [textarea, cancelButton] : [textarea, cancelButton, saveButton],
                 initialFocus: textarea,
                 fallbackFocus: panel
             });

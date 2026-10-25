@@ -10,6 +10,7 @@ const createElement = tagName => {
         style: {},
         attributes: {},
         value: '',
+        disabled: false,
         append(...children) { children.forEach(child => this.appendChild(child)); },
         appendChild(child) { child.parentNode = this; this.children.push(child); },
         setAttribute(name, value) { this.attributes[name] = value; },
@@ -172,6 +173,69 @@ describe('large text editor', () => {
 
         expect(harness.cancel).not.toHaveBeenCalled();
         expect(globalThis.document.body.children).toContain(harness.overlay);
+    });
+
+    test('readonly preserves the value in an enabled textarea and shows only the custom Close action', () => {
+        const harness = createHarness({ readOnly: true, closeText: 'Chiudi' });
+
+        expect(harness.textarea.value).toBe('Original notes');
+        expect(harness.textarea.readOnly).toBe(true);
+        expect(harness.textarea.disabled).toBe(false);
+        expect(harness.panel.children[2].children).toEqual([harness.cancelButton]);
+        expect(harness.cancelButton.textContent).toBe('Chiudi');
+        expect(harness.saveButton).toBeUndefined();
+        expect(harness.overlay.attributes).toMatchObject({ role: 'dialog', 'aria-modal': 'true' });
+        expect(harness.overlay.attributes['aria-labelledby']).toBe(harness.panel.children[0].id);
+    });
+
+    test('readonly traps Tab across two controls, ignores commit and cancels once on Escape', async () => {
+        const harness = createHarness({ readOnly: true });
+        expect(harness.cancelButton.textContent).toBe('Close');
+        expect(globalThis.document.activeElement).toBe(harness.textarea);
+        for (const [shiftKey, target] of [
+            [false, harness.cancelButton], [false, harness.textarea],
+            [true, harness.cancelButton], [true, harness.textarea]
+        ]) {
+            harness.overlay.dispatch('keydown', { key: 'Tab', shiftKey });
+            expect(globalThis.document.activeElement).toBe(target);
+        }
+        harness.overlay.dispatch('keydown', { key: 'Enter', ctrlKey: true });
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).toContain(harness.overlay);
+
+        harness.overlay.dispatch('keydown', { key: 'Escape' });
+        harness.cancelButton.dispatch('click');
+        await flush();
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(harness.overlay);
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+        expect(harness.cell.edit).not.toHaveBeenCalled();
+    });
+
+    test('readonly Close and allowed backdrop cancel once while a disabled backdrop keeps it open', async () => {
+        const harness = createHarness({ readOnly: true, closeOnBackdropClick: false });
+        harness.overlay.dispatch('mousedown');
+        expect(harness.cancel).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).toContain(harness.overlay);
+        harness.cancelButton.dispatch('click');
+        harness.cancelButton.dispatch('click');
+        await flush();
+        expect(harness.cancel).toHaveBeenCalledOnce();
+        expect(harness.success).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(harness.overlay);
+        expect(globalThis.document.activeElement).toBe(harness.cellElement);
+
+        const backdrop = createHarness({ readOnly: true });
+        backdrop.overlay.dispatch('mousedown');
+        backdrop.overlay.dispatch('keydown', { key: 'Escape' });
+        await flush();
+        expect(backdrop.cancel).toHaveBeenCalledOnce();
+        expect(backdrop.success).not.toHaveBeenCalled();
+        expect(globalThis.document.body.children).not.toContain(backdrop.overlay);
+        expect(globalThis.document.activeElement).toBe(backdrop.cellElement);
+        expect(backdrop.cell.edit).not.toHaveBeenCalled();
     });
 
     test.each(['ArrowUp', 'ArrowDown'])('does not intercept Alt+%s in the textarea', key => {
