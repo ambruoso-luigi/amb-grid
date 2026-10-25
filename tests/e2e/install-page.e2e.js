@@ -108,7 +108,7 @@ test('shows the English installation flow and its links', async ({ page }) => {
     await expect(page.locator('.installation-frameworks a')).toHaveCount(4);
     await expect(page.locator('.installation-frameworks a').nth(0)).toHaveAttribute('href', '/#getting-started-javascript');
     await expect(page.locator('.installation-frameworks a').nth(1)).toHaveAttribute('href', '/#getting-started-react');
-    await expect(page.locator('.installation-frameworks a').nth(2)).toHaveAttribute('href', '/#framework-integrations');
+    await expect(page.locator('.installation-frameworks a').nth(2)).toHaveAttribute('href', '/vue/');
     await expect(page.locator('.installation-frameworks a').nth(3)).toHaveAttribute('href', '/#framework-integrations');
     await expect(page.locator('.installation-frameworks small')).toHaveText(['Dedicated guide', 'Dedicated guide', 'Framework overview', 'Framework overview']);
     await expect(panel.locator('.installation-next').getByRole('heading', { name: 'AMB Grid is ready.' })).toBeVisible();

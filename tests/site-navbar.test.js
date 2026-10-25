@@ -26,12 +26,15 @@ describe('shared site navbar', () => {
         expect(navbar).toContain("demoIcon('framework'");
         expect(navbar).toContain('renderNavbarDemoIcon');
         expect(navbar).not.toContain('frameworkIcon');
-        expect(navbar).toContain('class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"');
+        expect(navbar).toContain('href="/vue/" data-navbar-route="vue"');
+        expect(navbar).not.toContain('class="site-navbar__dropdown-item is-unavailable" aria-disabled="true"');
+        expect(navbar).toContain("/^\\/vue(?:\\/|$)/.test(window.location.pathname) ? 'vue'");
         expect(navbar.match(/angular: 'Angular'/g)).toHaveLength(2);
         expect(navbar).toContain("querySelector('[data-demo-label=\"angular\"]')");
         expect(navbar).toContain("window.location.pathname === '/angular/' ? 'angular'");
         expect(navbar).toContain('class="site-navbar__dropdown-label"');
-        expect(navbar).toContain('data-demo-future');
+        expect(navbar).not.toContain('data-demo-future');
+        expect(navbar).not.toContain('Coming soon');
         expect(navbar).toContain("querySelector('[data-demo-label=\"examples\"]')");
         expect(navbar).not.toContain("querySelector('[href=\"/#feature-examples\"]').textContent");
         expect(navbar).toContain('href="/#feature-examples"');
@@ -41,7 +44,7 @@ describe('shared site navbar', () => {
         expect(navbar).toContain("event.key === 'Escape'");
         expect(navbar).toContain('amb-demo-language-change');
         expect(navbar).toContain('currentRoute');
-        expect(navbar).toContain("['#feature-examples', '#getting-started-javascript', '#getting-started-react', 'angular']");
+        expect(navbar).toContain("['#feature-examples', '#getting-started-javascript', '#getting-started-react', 'vue', 'angular']");
         expect(navbar).toContain('site-navbar__main-nav');
         expect(navbar).toContain('site-navbar__utilities');
         expect(navbar).toContain('site-navbar__github');

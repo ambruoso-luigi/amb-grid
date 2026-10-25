@@ -29,8 +29,10 @@ describe('demo site navigation', () => {
         expect(main).toContain("'frameworks.react.meta': 'TypeScript · Component lifecycle'");
         expect(main).toContain("'frameworks.react.description': 'Integra AMB Grid nel lifecycle del componente React, con mount e cleanup corretti.'");
         expect(main).toContain("'frameworks.vue.meta': 'Composition API · TypeScript'");
-        expect(main).toContain("'frameworks.vue.description': 'Integra AMB Grid con la Composition API usando il lifecycle del componente Vue.'");
-        expect(main).toContain("'frameworks.vue.description': 'Integrate AMB Grid with the Composition API through the Vue component lifecycle.'");
+        expect(main).toContain("'frameworks.vue.description': 'Apri Atelier del Tempo, la demo Vue dedicata ad antiquariato, design e oggetti con una storia.'");
+        expect(main).toContain("'frameworks.vue.description': 'Open Atelier del Tempo, the Vue demo for antiques, design and objects with a story.'");
+        expect(main).toContain("'frameworks.vue.cta': 'Apri demo Vue'");
+        expect(main).toContain("'frameworks.vue.cta': 'Open Vue demo'");
         expect(main).toContain("'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid'");
         expect(main).toContain("'frameworks.angular.description': 'Apri Live Multi-Asset Portfolio, la demo Angular di un portfolio finanziario simulato.'");
         expect(main).toContain("'frameworks.angular.description': 'Open Live Multi-Asset Portfolio, the Angular demo of a simulated financial portfolio.'");
@@ -41,7 +43,7 @@ describe('demo site navigation', () => {
         expect(main).toContain("import('../../examples/react-demo/src/mount.tsx')");
         expect(main).toContain('currentReactDemoUnmount();');
         expect(main).toContain('id="react-demo-root"');
-        expect(main).toContain('<article class="demo-framework-card demo-framework-card--vue card');
+        expect(main).toContain('<a class="demo-framework-card demo-framework-card--vue card bg-base-100 border shadow-sm transition" href="/vue/">');
         expect(main).toContain('<a class="demo-framework-card demo-framework-card--angular card bg-base-100 border shadow-sm transition" href="/angular/">');
         expect(main).not.toContain('demo-framework-card__badge');
         expect(main).not.toContain('demo-framework-card__arrow');
@@ -56,7 +58,8 @@ describe('demo site navigation', () => {
         const icons = read('src/demo/demo-icons.js');
 
         expect(frameworkCards).not.toContain('href="#feature-examples"');
-        expect(frameworkCards.match(/data-i18n="frameworks\.cta"/g)).toHaveLength(3);
+        expect(frameworkCards.match(/data-i18n="frameworks\.cta"/g)).toHaveLength(2);
+        expect(frameworkCards).toContain('data-i18n="frameworks.vue.cta"');
         expect(frameworkCards).toContain('data-i18n="frameworks.angular.cta"');
         expect(frameworkHeading).toContain('demo-frameworks__heading-copy');
         expect(main.slice(frameworkSectionStart, frameworkGridEnd)).not.toContain('href="/install/"');
