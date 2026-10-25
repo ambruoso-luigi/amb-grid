@@ -27,6 +27,7 @@ export class FloatingMessage {
         this.titleElement = null;
         this.bodyElement = null;
         this.showTimer = null;
+        this._customClasses = new Set();
     }
 
     _ensureElement() {
@@ -56,6 +57,20 @@ export class FloatingMessage {
         this.element.classList.add(`teh-floating-message--${normalizedType}`);
     }
 
+    _setCustomClasses(className) {
+        this._customClasses.forEach(token => this.element.classList.remove(token));
+        this._customClasses.clear();
+
+        if (typeof className !== 'string') return;
+
+        for (const token of className.split(/\s+/)) {
+            // The component's class namespace is reserved for structure and state.
+            if (!token || token.startsWith('teh-floating-message')) continue;
+            this.element.classList.add(token);
+            this._customClasses.add(token);
+        }
+    }
+
     _positionNear(targetElement) {
         const rect = targetElement.getBoundingClientRect();
 
@@ -78,6 +93,7 @@ export class FloatingMessage {
      * @param {'error'|'warning'|'info'|'success'} [messageOptions.type='info'] - Visual message type.
      * @param {string} [messageOptions.title] - Message title.
      * @param {string} [messageOptions.message] - Message body.
+     * @param {string} [messageOptions.className] - Space-separated custom classes, excluding the reserved `teh-floating-message` namespace.
      * @returns {void}
      */
     show(targetElement, messageOptions = {}) {
@@ -88,6 +104,7 @@ export class FloatingMessage {
 
         this._ensureElement();
         this._setType(messageOptions.type);
+        this._setCustomClasses(messageOptions.className);
 
         this.titleElement.textContent = messageOptions.title || '';
         this.bodyElement.textContent = messageOptions.message || '';
@@ -134,6 +151,7 @@ export class FloatingMessage {
      */
     destroy() {
         this._clearShowTimer();
+        this._customClasses.clear();
 
         if (!this.element) return;
 
