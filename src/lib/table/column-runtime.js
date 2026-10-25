@@ -435,6 +435,7 @@ export const createColumnRuntime = ({
             );
         }
         lifecycleResources.syncImageRuntimes?.(candidatePipeline.applicationColumns);
+        lifecycleResources.cellMessageBinder?.replaceColumnMessages(candidatePipeline.floatingMessagesByField);
     };
 
     return {

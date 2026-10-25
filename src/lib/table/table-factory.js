@@ -1061,6 +1061,7 @@ export function createTable(options = {}) {
         keyboardNavigationRuntime: null,
         imagePreviewRuntime: null,
         imageViewerRuntime: null,
+        cellMessageBinder: null,
         syncImageRuntimes: null
     };
 
@@ -1185,6 +1186,7 @@ export function createTable(options = {}) {
         lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
         largeTextPreviews: normalizedFloatingMessages.largeTextPreviews
     });
+    lifecycleResources.cellMessageBinder = cellMessageBinder;
     lifecycleResources.unsubscribeLookupMetadata = bindLookupMetadataInitialization(
         table,
         columnPipeline.lookupColumns

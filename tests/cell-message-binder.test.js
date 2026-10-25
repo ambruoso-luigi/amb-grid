@@ -433,4 +433,107 @@ describe('CellMessageBinder', () => {
         const { binder } = createHarness();
         expect(binder._getMessageKey(a)).not.toBe(binder._getMessageKey(b));
     });
+
+    const noteOptions = (title, className) => new Map([['notes', { largeTextPreviews: { title, className } }]]);
+
+    test.each(['keyboard', 'mouse'])('refreshes a visible %s message immediately and restores defaults when configuration disappears', source => {
+        const harness = createHarness({ floatingMessagesByField: noteOptions('Old', 'old-theme') });
+        const { cellElement } = harness.makeCell({ id: 1, notes: 'Full note' }, { largeTextField: 'notes' });
+        harness.tableElement.dispatch(source === 'keyboard' ? 'focusin' : 'pointermove', { target: cellElement });
+        harness.floatingMessage.element = { classList: { contains: () => true } };
+        const newMap = noteOptions('New', 'new-theme');
+        harness.binder.replaceColumnMessages(newMap);
+        expect(harness.binder.floatingMessagesByField).toBe(newMap);
+        expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(cellElement, {
+            type: 'info', title: 'New', className: 'new-theme', message: 'Full note'
+        });
+        expect(harness.floatingMessage.hide.mock.invocationCallOrder.at(-1))
+            .toBeLessThan(harness.floatingMessage.show.mock.invocationCallOrder.at(-1));
+        harness.binder.replaceColumnMessages(new Map());
+        expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(cellElement, {
+            type: 'info', title: 'Text', message: 'Full note'
+        });
+        harness.floatingMessage.show.mockClear();
+        harness.binder.replaceColumnMessages(new Map([['notes', { largeTextPreviews: { enabled: false } }]]));
+        expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+        expect(harness.tableElement.addEventListener).toHaveBeenCalledTimes(5);
+    });
+
+    test('cancels the old hover timer before scheduling current options and cancels again on destroy', () => {
+        vi.useFakeTimers();
+        try {
+            const harness = createHarness({ floatingMessagesByField: noteOptions('Old', 'old-theme') });
+            const { cellElement } = harness.makeCell({ id: 1, notes: 'Full note' }, { largeTextField: 'notes' });
+            // Model only the renderer's timer contract, already covered by FloatingMessage tests.
+            let timer;
+            harness.floatingMessage.scheduleShow.mockImplementation((target, options) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => harness.floatingMessage.show(target, options), 300);
+            });
+            harness.floatingMessage.hide.mockImplementation(() => clearTimeout(timer));
+            harness.tableElement.dispatch('pointermove', { target: cellElement });
+            vi.advanceTimersByTime(100);
+            harness.binder.replaceColumnMessages(noteOptions('New', 'new-theme'));
+            vi.advanceTimersByTime(200);
+            expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+            vi.advanceTimersByTime(100);
+            expect(harness.floatingMessage.show).toHaveBeenCalledExactlyOnceWith(cellElement, {
+                type: 'info', title: 'New', className: 'new-theme', message: 'Full note'
+            });
+            harness.binder.replaceColumnMessages(noteOptions('Pending', 'pending-theme'));
+            harness.binder.destroy();
+            harness.binder.replaceColumnMessages(noteOptions('After destroy', 'obsolete-theme'));
+            vi.runAllTimers();
+            expect(harness.floatingMessage.show).toHaveBeenCalledTimes(1);
+            expect(vi.getTimerCount()).toBe(0);
+            expect(harness.binder.floatingMessagesByField.size).toBe(0);
+            expect(harness.tableListeners.size).toBe(0);
+            expect(harness.documentListeners.size).toBe(0);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    test.each(['keyboard', 'mouse'])('drops a removed %s cell without inspecting its detached DOM', source => {
+        const harness = createHarness({ floatingMessagesByField: noteOptions('Old', 'old-theme') });
+        const { cellElement } = harness.makeCell({ id: 1, notes: 'Full note' }, { largeTextField: 'notes' });
+        harness.tableElement.dispatch(source === 'keyboard' ? 'focusin' : 'pointermove', { target: cellElement });
+        harness.floatingMessage.show.mockClear();
+        harness.floatingMessage.scheduleShow.mockClear();
+        cellElement.isConnected = false;
+        cellElement.closest = () => { throw new Error('Detached cell inspected'); };
+        harness.binder.replaceColumnMessages(new Map());
+        expect(harness.binder.pointerCell).toBeNull();
+        expect(harness.binder.focusCell).toBeNull();
+        expect(harness.floatingMessage.hide).toHaveBeenCalled();
+        expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+        expect(harness.floatingMessage.scheduleShow).not.toHaveBeenCalled();
+    });
+
+    test('replacing one grid map leaves another grid and its active presentation unchanged', () => {
+        const a = createHarness({ floatingMessagesByField: noteOptions('A', 'theme-a') });
+        const b = createHarness({ floatingMessagesByField: noteOptions('B', 'theme-b') });
+        const aCell = a.makeCell({ id: 1, notes: 'A text' }, { largeTextField: 'notes' }).cellElement;
+        const bCell = b.makeCell({ id: 1, notes: 'B text' }, { largeTextField: 'notes' }).cellElement;
+        a.tableElement.dispatch('focusin', { target: aCell });
+        b.tableElement.dispatch('focusin', { target: bCell });
+        const previousB = b.binder.floatingMessagesByField;
+        b.floatingMessage.hide.mockClear();
+        a.binder.replaceColumnMessages(noteOptions('Changed A', 'changed-theme-a'));
+        expect(a.floatingMessage.show).toHaveBeenLastCalledWith(aCell, expect.objectContaining({ className: 'changed-theme-a' }));
+        expect(b.binder.floatingMessagesByField).toBe(previousB);
+        expect(b.floatingMessage.show).toHaveBeenCalledExactlyOnceWith(bCell, {
+            type: 'info', title: 'B', className: 'theme-b', message: 'B text'
+        });
+        expect(b.floatingMessage.hide).not.toHaveBeenCalled();
+    });
+
+    test('map replacement keeps the global master disabled', () => {
+        const harness = createHarness({ enabled: false });
+        const target = allProviders(harness);
+        harness.tableElement.dispatch('focusin', { target });
+        harness.binder.replaceColumnMessages(new Map([['notes', { validationErrors: { enabled: true } }]]));
+        expect(harness.binder.resolveCellMessage(target)).toBeNull();
+        expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+    });
 });

@@ -5,6 +5,7 @@ import { prepareColumnPipeline } from '../src/lib/table/column-pipeline.js';
 import { createColumnRuntime } from '../src/lib/table/column-runtime.js';
 import { formatters } from '../src/lib/formatters.js';
 import { hasImagePreviewFormatter } from '../src/lib/image-preview-runtime.js';
+import { CellMessageBinder } from '../src/ui/cell-message-binder.js';
 
 const createLookupEditor = ({
     description,
@@ -2084,6 +2085,61 @@ describe('AMB Grid managed column definition updates', () => {
 });
 
 
+describe('floating message configuration after canonical column commits', () => {
+    const oldOptions = { validationErrors: { enabled: false }, largeTextPreviews: { title: 'Old', className: 'old-theme' } };
+    const newOptions = { largeTextPreviews: { title: 'New', className: 'new-theme' } };
+
+    test.each(['addColumn', 'updateColumnDefinition', 'deleteColumn', 'setColumns'])(
+        '%s replaces the existing binder map only after success', async operation => {
+            const harness = operation === 'addColumn' ? createAddHarness() : createDeleteHarness();
+            if (operation !== 'addColumn') {
+                await harness.columnRuntime.updateColumnDefinition('region', { floatingMessages: oldOptions });
+            }
+            const previousMap = new Map(operation === 'addColumn' ? [] : [['region', oldOptions]]);
+            const binder = new CellMessageBinder({ floatingMessagesByField: previousMap });
+            const replace = vi.spyOn(binder, 'replaceColumnMessages');
+            harness.lifecycleResources.cellMessageBinder = binder;
+            let resolve;
+            harness.table[operation].mockReturnValueOnce(new Promise(done => { resolve = done; }));
+            const pending = operation === 'addColumn'
+                ? harness.columnRuntime.addColumn({ field: 'photos', floatingMessages: newOptions })
+                : operation === 'updateColumnDefinition'
+                    ? harness.columnRuntime.updateColumnDefinition('region', { floatingMessages: newOptions })
+                    : operation === 'deleteColumn'
+                        ? harness.columnRuntime.deleteColumn('region')
+                        : harness.columnRuntime.setColumns([{ title: 'Nested', columns: [{ field: 'notes', floatingMessages: newOptions }] }]);
+            expect(binder.floatingMessagesByField).toBe(previousMap);
+            expect(replace).not.toHaveBeenCalled();
+            resolve(operation === 'addColumn' ? createRuntimeComponent({ field: 'photos' }) : undefined);
+            await pending;
+            expect(replace).toHaveBeenCalledOnce();
+            expect(binder.floatingMessagesByField).not.toBe(previousMap);
+            if (operation === 'deleteColumn') expect(binder.floatingMessagesByField.size).toBe(0);
+            else {
+                const field = operation === 'addColumn' ? 'photos' : operation === 'setColumns' ? 'notes' : 'region';
+                expect([...binder.floatingMessagesByField.keys()]).toEqual([field]);
+                expect(binder.floatingMessagesByField.get(field)).toEqual(newOptions);
+                // Definition patches replace floatingMessages shallowly, not channel-by-channel.
+                expect(binder.floatingMessagesByField.get(field)).not.toHaveProperty('validationErrors');
+            }
+            if (operation === 'updateColumnDefinition') {
+                await harness.columnRuntime.updateColumnDefinition('region', { floatingMessages: undefined });
+                expect(binder.floatingMessagesByField.size).toBe(0);
+            }
+        }
+    );
+
+    test('synchronous nested replacement and subsequent plain columns replace the complete map', () => {
+        const harness = createDeleteHarness();
+        const binder = new CellMessageBinder();
+        harness.lifecycleResources.cellMessageBinder = binder;
+        harness.columnRuntime.setColumns([{ title: 'Nested', columns: [{ field: 'notes', floatingMessages: newOptions }] }]);
+        expect(binder.floatingMessagesByField.get('notes')).toEqual(newOptions);
+        harness.columnRuntime.setColumns([{ field: 'notes' }]);
+        expect(binder.floatingMessagesByField.size).toBe(0);
+    });
+});
+
 describe('image runtime synchronization after canonical column commits', () => {
     const operations = ['addColumn', 'updateColumnDefinition', 'deleteColumn', 'setColumns'];
     const prepare = async operation => {
@@ -2095,13 +2151,17 @@ describe('image runtime synchronization after canonical column commits', () => {
         }
         const sync = vi.fn();
         harness.lifecycleResources.syncImageRuntimes = sync;
+        const previousMap = new Map([['existing', { largeTextPreviews: { className: 'unchanged' } }]]);
+        const binder = new CellMessageBinder({ floatingMessagesByField: previousMap });
+        const replaceMessages = vi.spyOn(binder, 'replaceColumnMessages');
+        harness.lifecycleResources.cellMessageBinder = binder;
         const invoke = () => {
             if (operation === 'addColumn') return harness.columnRuntime.addColumn({ field: 'photos', formatter: formatters.image() });
             if (operation === 'updateColumnDefinition') return harness.columnRuntime.updateColumnDefinition('status', { formatter: formatters.image() });
             if (operation === 'deleteColumn') return harness.columnRuntime.deleteColumn('region');
             return harness.columnRuntime.setColumns([{ title: 'Media', columns: [{ field: 'photos', formatter: formatters.image() }] }]);
         };
-        return { harness, sync, invoke };
+        return { harness, sync, invoke, binder, previousMap, replaceMessages };
     };
 
     test.each(operations)('%s synchronizes the committed canonical tree only after engine success', async operation => {
@@ -2125,7 +2185,7 @@ describe('image runtime synchronization after canonical column commits', () => {
 
     test.each(operations.flatMap(operation => ['throw', 'reject', 'false', 'resolved false'].map(failure => [operation, failure])))(
         '%s preserves image resources and canonical state on %s', async (operation, failure) => {
-            const { harness, sync, invoke } = await prepare(operation);
+            const { harness, sync, invoke, binder, previousMap, replaceMessages } = await prepare(operation);
             const preview = { destroy: vi.fn() };
             const viewer = { destroy: vi.fn() };
             Object.assign(harness.lifecycleResources, { imagePreviewRuntime: preview, imageViewerRuntime: viewer });
@@ -2139,6 +2199,8 @@ describe('image runtime synchronization after canonical column commits', () => {
             else if (operation === 'addColumn') await expect(invoke()).rejects.toThrow('expected Column Component');
             else expect(await invoke()).toBe(false);
             expect(sync).not.toHaveBeenCalled();
+            expect(replaceMessages).not.toHaveBeenCalled();
+            expect(binder.floatingMessagesByField).toBe(previousMap);
             expect(harness.columnRuntime.getApplicationColumns()).toBe(before);
             expect(harness.lifecycleResources.imagePreviewRuntime).toBe(preview);
             expect(harness.lifecycleResources.imageViewerRuntime).toBe(viewer);

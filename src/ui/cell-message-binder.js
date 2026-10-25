@@ -16,6 +16,7 @@ export class CellMessageBinder {
         this.crudHelper = crudHelper;
         this.floatingMessage = floatingMessage;
         this.enabled = enabled !== false;
+        this.destroyed = false;
         this.floatingMessagesByField = floatingMessagesByField;
         this.options = {
             validationErrors: validationErrors !== false,
@@ -48,6 +49,29 @@ export class CellMessageBinder {
 
     _findCell(target) {
         return target?.closest?.('.tabulator-cell') || null;
+    }
+
+    replaceColumnMessages(floatingMessagesByField) {
+        if (this.destroyed) return;
+        const wasVisible = this.floatingMessage?.element?.classList?.contains('teh-floating-message--visible');
+        // hide() also cancels the pending hover timer before options are replaced.
+        this.floatingMessage?.hide?.();
+        this.floatingMessagesByField = floatingMessagesByField;
+        const isCurrentCell = element => element && element.isConnected !== false
+            && this.tableElement?.contains?.(element) && this._getRow(element);
+        if (!isCurrentCell(this.pointerCell)) this.pointerCell = null;
+        if (!isCurrentCell(this.focusCell)) this.focusCell = null;
+        if (this.activeSource === 'keyboard' && !this.focusCell) {
+            this.activeSource = this.pointerCell ? 'mouse' : null;
+        } else if (this.activeSource === 'mouse' && !this.pointerCell) {
+            this.activeSource = this.focusCell ? 'keyboard' : null;
+        }
+        this.pointerMessageKey = null;
+        if (this.activeSource === 'mouse' && wasVisible) {
+            this.pointerMessageKey = this._getMessageKey(this._render(this.pointerCell, true));
+        } else {
+            this._renderActive();
+        }
     }
 
     _getRow(cellElement) {
@@ -245,6 +269,8 @@ export class CellMessageBinder {
     }
 
     destroy() {
+        this.destroyed = true;
+        this.floatingMessagesByField = new Map();
         this.unsubscribeHandlers.forEach(unsubscribe => unsubscribe());
         this.unsubscribeHandlers = [];
         this.tableElement?.removeEventListener?.('pointermove', this.handlePointerMove);
