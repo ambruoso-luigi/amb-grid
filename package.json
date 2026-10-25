@@ -47,9 +47,10 @@
   ],
   "scripts": {
     "dev": "vite",
-    "dev:site": "npm run build:dist && npm run site:angular && vite",
+    "dev:site": "npm run build:dist && npm run site:angular && npm run site:vue && vite",
     "build": "vite build",
-    "build:site": "npm run build:dist && npm run site:angular && vite build",
+    "build:site": "npm run build:dist && npm run site:angular && npm run site:vue && vite build",
+    "site:vue": "node scripts/build-vue-site.mjs",
     "site:angular": "node scripts/build-angular-site.mjs",
     "site:angular:check": "node scripts/verify-angular-site.mjs",
     "build:lib": "vite build --config vite.lib.config.js",

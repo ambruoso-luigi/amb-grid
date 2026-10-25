@@ -8,6 +8,27 @@ const isIntegratedAngularDev = command => command === 'serve' && process.env.npm
 
 export default defineConfig(({ command }) => ({
     plugins: [{
+        name: 'vue-demo-route',
+        configureServer(server) {
+            const index = resolve(import.meta.dirname, 'public/vue/index.html');
+            server.middlewares.use((request, response, next) => {
+                const path = new URL(request.url, 'http://localhost').pathname;
+                if (path === '/vue') {
+                    response.writeHead(308, { Location: '/vue/' });
+                    response.end();
+                    return;
+                }
+                if (path !== '/vue/' && path !== '/vue/index.html') return next();
+                if (!existsSync(index)) {
+                    response.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
+                    response.end('Build the Vue demo with npm run site:vue first.');
+                    return;
+                }
+                response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+                createReadStream(index).pipe(response);
+            });
+        }
+    }, {
         name: 'angular-demo-route',
         configureServer(server) {
             const integratedDev = isIntegratedAngularDev(command);
@@ -96,7 +117,7 @@ export default defineConfig(({ command }) => ({
         }
     }],
     server: isIntegratedAngularDev(command) ? {
-        watch: { ignored: ['**/public/angular/**', '**/examples/angular-demo/dist/**'] }
+        watch: { ignored: ['**/public/angular/**', '**/examples/angular-demo/dist/**', '**/public/vue/**', '**/examples/vue-demo/dist/**'] }
     } : undefined,
     build: {
         rollupOptions: {

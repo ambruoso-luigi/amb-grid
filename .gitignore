@@ -12,6 +12,7 @@ dist
 dist-lib
 dist-ssr
 public/angular/
+public/vue/
 release-artifacts/
 *.local
 

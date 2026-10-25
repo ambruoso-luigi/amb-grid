@@ -63,7 +63,8 @@ const translations = {
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
         'frameworks.react.description': 'Integra AMB Grid nel lifecycle del componente React, con mount e cleanup corretti.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
-        'frameworks.vue.description': 'Integra AMB Grid con la Composition API usando il lifecycle del componente Vue.',
+        'frameworks.vue.description': 'Apri Atelier del Tempo, la demo Vue dedicata ad antiquariato, design e oggetti con una storia.',
+        'frameworks.vue.cta': 'Apri demo Vue',
         'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid',
         'frameworks.angular.description': 'Apri Live Multi-Asset Portfolio, la demo Angular di un portfolio finanziario simulato.',
         'frameworks.angular.cta': 'Apri demo Angular',
@@ -221,7 +222,8 @@ const translations = {
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
         'frameworks.react.description': 'Integrate AMB Grid into the React component lifecycle with proper mounting and cleanup.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
-        'frameworks.vue.description': 'Integrate AMB Grid with the Composition API through the Vue component lifecycle.',
+        'frameworks.vue.description': 'Open Atelier del Tempo, the Vue demo for antiques, design and objects with a story.',
+        'frameworks.vue.cta': 'Open Vue demo',
         'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid',
         'frameworks.angular.description': 'Open Live Multi-Asset Portfolio, the Angular demo of a simulated financial portfolio.',
         'frameworks.angular.cta': 'Open Angular demo',
@@ -683,20 +685,20 @@ const renderShell = selectedId => {
                             <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span></span>
                         </span>
                     </a>
-                    <article class="demo-framework-card demo-framework-card--vue card bg-base-100 border shadow-sm transition">
+                    <a class="demo-framework-card demo-framework-card--vue card bg-base-100 border shadow-sm transition" href="/vue/">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('vue')}
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
                             <span class="demo-framework-card__meta" data-i18n="frameworks.vue.meta">Composition API · TypeScript</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Integra AMB Grid con la Composition API usando il lifecycle del componente Vue.</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Apri Atelier del Tempo, la demo Vue dedicata ad antiquariato, design e oggetti con una storia.</span>
                         </span>
                         <span class="demo-framework-card__footer" aria-hidden="true">
-                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
+                            <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.vue.cta">Apri demo Vue</span></span>
                             <span class="demo-framework-card__direction" aria-hidden="true"><span class="demo-framework-card__direction-step demo-framework-card__direction-step--1">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--2">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span><span class="demo-framework-card__direction-step demo-framework-card__direction-step--3">${demoIcon('chevronRight', { className: 'demo-framework-card__direction-icon', size: 20, strokeWidth: 2.6 })}</span></span>
                         </span>
-                    </article>
+                    </a>
                     <a class="demo-framework-card demo-framework-card--angular card bg-base-100 border shadow-sm transition" href="/angular/">
                         <span class="demo-framework-card__icon" aria-hidden="true">
                             ${frameworkIcon('angular')}
