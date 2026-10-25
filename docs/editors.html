@@ -2813,7 +2813,7 @@
 
 
 <div class="description">
-    Modal textarea editor for long text.Keyboard behavior: `Escape` cancels, `Ctrl+Enter` saves, and the dialogtraps `Tab`/`Shift+Tab` across its textarea and actions. Closing restoreskeyboard focus to the source cell without reopening the editor.
+    Modal textarea editor for long text.In normal mode, `Escape` cancels, `Ctrl+Enter` saves, and the dialogtraps `Tab`/`Shift+Tab` across its textarea and actions. Closing restoreskeyboard focus to the source cell without reopening the editor.With `readOnly: true`, the dialog remains openable and its textarea isreadonly, not disabled: text can still be selected and copied. Only theClose action is shown; `Escape` and Close end the session without a commit,and `Ctrl+Enter` does not save. Focus returns to the original cell.Unlike this dialog mode, column `editable: false` prevents the editorfrom opening. Readonly consultation does not restrict programmatic updates.
 </div>
 
 
@@ -3096,6 +3096,84 @@
             
 
             <td class="description last">Cancel button text.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>readOnly</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Open for consultation with textarea.readOnly=true, without disabling the textarea or committing changes.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>closeText</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'Close'
+                
+                </td>
+            
+
+            <td class="description last">Text of the only action button in readonly mode.</td>
         </tr>
 
     
@@ -3428,7 +3506,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_editors_large-text-editor.js.html">lib/editors/large-text-editor.js</a>, <a href="lib_editors_large-text-editor.js.html#line36">line 36</a>
+        <a href="lib_editors_large-text-editor.js.html">lib/editors/large-text-editor.js</a>, <a href="lib_editors_large-text-editor.js.html#line46">line 46</a>
     </li></ul></dd>
     
 

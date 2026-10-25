@@ -30,13 +30,21 @@
 import { createFocusTrap } from '../../ui/focus-trap.js';
 
 let dialogSequence = 0;
+export const largeTextLifecycleResources = Symbol('amb.largeTextLifecycleResources');
 
     /**
      * Modal textarea editor for long text.
      *
-     * Keyboard behavior: `Escape` cancels, `Ctrl+Enter` saves, and the dialog
+     * In normal mode, `Escape` cancels, `Ctrl+Enter` saves, and the dialog
      * traps `Tab`/`Shift+Tab` across its textarea and actions. Closing restores
      * keyboard focus to the source cell without reopening the editor.
+     *
+     * With `readOnly: true`, the dialog remains openable and its textarea is
+     * readonly, not disabled: text can still be selected and copied. Only the
+     * Close action is shown; `Escape` and Close end the session without a commit,
+     * and `Ctrl+Enter` does not save. Focus returns to the original cell.
+     * Unlike this dialog mode, column `editable: false` prevents the editor
+     * from opening. Readonly consultation does not restrict programmatic updates.
      *
      * @param {object} [options] - Large text editor options.
      * @param {string} [options.title='Edit text'] - Dialog title.
@@ -44,6 +52,8 @@ let dialogSequence = 0;
      * @param {string} [options.placeholder=''] - Textarea placeholder.
      * @param {string} [options.saveText='Save'] - Save button text.
      * @param {string} [options.cancelText='Cancel'] - Cancel button text.
+     * @param {boolean} [options.readOnly=false] - Open for consultation with textarea.readOnly=true, without disabling the textarea or committing changes.
+     * @param {string} [options.closeText='Close'] - Text of the only action button in readonly mode.
      * @param {number|string} [options.width=640] - Panel width.
      * @param {number|string} [options.maxWidth='90vw'] - Panel maximum width.
      * @param {number|string} [options.height='auto'] - Panel height. `auto` keeps the panel content-sized.
@@ -68,6 +78,8 @@ export function largeText(options = {}) {
             placeholder: '',
             saveText: 'Save',
             cancelText: 'Cancel',
+            readOnly: false,
+            closeText: 'Close',
             width: 640,
             maxWidth: '90vw',
             height: 'auto',
@@ -79,6 +91,7 @@ export function largeText(options = {}) {
         };
 
         const editor = (cell, onRendered, success, cancel) => {
+            const readOnly = normalizedOptions.readOnly === true;
             const placeholder = document.createElement('span');
             const overlay = document.createElement('div');
             const panel = document.createElement('div');
@@ -86,9 +99,10 @@ export function largeText(options = {}) {
             const textarea = document.createElement('textarea');
             const actions = document.createElement('div');
             const cancelButton = document.createElement('button');
-            const saveButton = document.createElement('button');
+            const saveButton = readOnly ? null : document.createElement('button');
             const sourceRow = cell.getRow?.();
             const sourceField = cell.getField?.();
+            const resources = cell.getTable?.()?.[largeTextLifecycleResources];
             const titleId = `amb-large-text-title-${++dialogSequence}`;
             let closed = false;
             let focusTrap;
@@ -101,16 +115,19 @@ export function largeText(options = {}) {
             textarea.className = 'amb-large-text-editor__textarea';
             actions.className = 'amb-large-text-editor__actions';
             cancelButton.className = 'amb-large-text-editor__button';
-            saveButton.className = 'amb-large-text-editor__button amb-large-text-editor__button--primary';
 
             title.textContent = normalizedOptions.title;
             textarea.value = getInitialValue(cell);
+            textarea.readOnly = readOnly;
             textarea.rows = normalizedOptions.rows;
             textarea.placeholder = normalizedOptions.placeholder;
             cancelButton.type = 'button';
-            cancelButton.textContent = normalizedOptions.cancelText;
-            saveButton.type = 'button';
-            saveButton.textContent = normalizedOptions.saveText;
+            cancelButton.textContent = readOnly ? normalizedOptions.closeText : normalizedOptions.cancelText;
+            if (saveButton) {
+                saveButton.className = 'amb-large-text-editor__button amb-large-text-editor__button--primary';
+                saveButton.type = 'button';
+                saveButton.textContent = normalizedOptions.saveText;
+            }
             overlay.setAttribute('role', 'dialog');
             overlay.setAttribute('aria-modal', 'true');
             overlay.setAttribute('aria-labelledby', titleId);
@@ -135,12 +152,14 @@ export function largeText(options = {}) {
                 textarea.wrap = 'soft';
             }
 
-            actions.append(cancelButton, saveButton);
+            actions.append(cancelButton);
+            if (saveButton) actions.append(saveButton);
             panel.append(title, textarea, actions);
             overlay.appendChild(panel);
 
             const destroyPopup = () => {
                 overlay.remove();
+                if (resources?.largeTextEditor === destroyEditor) resources.largeTextEditor = null;
             };
 
             const restoreSourceFocus = () => {
@@ -158,7 +177,7 @@ export function largeText(options = {}) {
             };
 
             const closeWithSuccess = () => {
-                if (closed) return;
+                if (closed || readOnly) return;
 
                 closed = true;
                 focusTrap?.deactivate({ restore: false });
@@ -177,9 +196,19 @@ export function largeText(options = {}) {
                 restoreSourceFocus();
             };
 
+            const destroyEditor = () => {
+                if (closed) return;
+
+                closed = true;
+                focusTrap?.deactivate({ restore: false });
+                cancel();
+                destroyPopup();
+            };
+            if (resources) resources.largeTextEditor = destroyEditor;
+
             cancelButton.addEventListener('click', closeWithCancel);
             textarea.addEventListener('keydown', containEditorSpatialNavigation);
-            saveButton.addEventListener('click', closeWithSuccess);
+            saveButton?.addEventListener('click', closeWithSuccess);
             overlay.addEventListener('mousedown', event => {
                 if (event.target !== overlay) return;
 
@@ -208,7 +237,7 @@ export function largeText(options = {}) {
 
             focusTrap = createFocusTrap({
                 container: panel,
-                getElements: () => [textarea, cancelButton, saveButton],
+                getElements: () => readOnly ? [textarea, cancelButton] : [textarea, cancelButton, saveButton],
                 initialFocus: textarea,
                 fallbackFocus: panel
             });
@@ -216,6 +245,7 @@ export function largeText(options = {}) {
             document.body.appendChild(overlay);
 
             onRendered(() => {
+                if (closed) return;
                 focusTrap.activate();
                 textarea.setSelectionRange(textarea.value.length, textarea.value.length);
             });

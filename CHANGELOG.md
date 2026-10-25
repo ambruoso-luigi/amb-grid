@@ -4,6 +4,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ## [Unreleased]
 
+- Added Large Text readonly consultation with `readOnly` and `closeText`,
+  cancellation without commits, and dialog cleanup on grid destruction.
 - Added per-column Floating Messages channel overrides, titles, and CSS classes,
   synchronized with dynamic column operations and documented with TypeScript types.
 - Consolidated the Angular portfolio demo around 14 fixed positions with

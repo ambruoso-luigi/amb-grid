@@ -1211,6 +1211,29 @@ Popup editor designed for:
 
 without increasing row height.
 
+Use `readOnly: true` for consultation, with `closeText` to label the Close button
+(defaults: `readOnly: false`, `closeText: 'Close'`):
+
+```js
+const notesColumn = {
+  title: 'Note storiche',
+  field: 'notes',
+  formatter: AMB.formatters.largeTextPreview(),
+  editor: AMB.editors.largeText({
+    title: 'Descrizione',
+    readOnly: true,
+    closeText: 'Chiudi'
+  })
+};
+```
+
+With the default activation settings, double-click or press Enter on the focused
+cell to open the dialog. The text is selectable and copyable, but not editable;
+only Close is shown. Close or Escape returns focus to the source cell without
+committing or creating CRUD changes; Ctrl+Enter does not save. Unlike
+`editable: false`, which prevents the editor from opening, this mode only limits
+interaction inside the dialog and leaves programmatic data updates available.
+
 ### Backend Integration
 
 Support for:

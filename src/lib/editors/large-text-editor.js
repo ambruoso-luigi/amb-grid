@@ -7,9 +7,16 @@ export const largeTextLifecycleResources = Symbol('amb.largeTextLifecycleResourc
     /**
      * Modal textarea editor for long text.
      *
-     * Keyboard behavior: `Escape` cancels, `Ctrl+Enter` saves, and the dialog
+     * In normal mode, `Escape` cancels, `Ctrl+Enter` saves, and the dialog
      * traps `Tab`/`Shift+Tab` across its textarea and actions. Closing restores
      * keyboard focus to the source cell without reopening the editor.
+     *
+     * With `readOnly: true`, the dialog remains openable and its textarea is
+     * readonly, not disabled: text can still be selected and copied. Only the
+     * Close action is shown; `Escape` and Close end the session without a commit,
+     * and `Ctrl+Enter` does not save. Focus returns to the original cell.
+     * Unlike this dialog mode, column `editable: false` prevents the editor
+     * from opening. Readonly consultation does not restrict programmatic updates.
      *
      * @param {object} [options] - Large text editor options.
      * @param {string} [options.title='Edit text'] - Dialog title.
@@ -17,6 +24,8 @@ export const largeTextLifecycleResources = Symbol('amb.largeTextLifecycleResourc
      * @param {string} [options.placeholder=''] - Textarea placeholder.
      * @param {string} [options.saveText='Save'] - Save button text.
      * @param {string} [options.cancelText='Cancel'] - Cancel button text.
+     * @param {boolean} [options.readOnly=false] - Open for consultation with textarea.readOnly=true, without disabling the textarea or committing changes.
+     * @param {string} [options.closeText='Close'] - Text of the only action button in readonly mode.
      * @param {number|string} [options.width=640] - Panel width.
      * @param {number|string} [options.maxWidth='90vw'] - Panel maximum width.
      * @param {number|string} [options.height='auto'] - Panel height. `auto` keeps the panel content-sized.
