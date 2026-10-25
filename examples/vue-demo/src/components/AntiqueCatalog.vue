@@ -13,11 +13,21 @@ onMounted(() => {
     selector: container.value,
     data: createAntiqueItems(),
     toolbar: false,
-    floatingMessages: false,
+    floatingMessages: {
+      enabled: true,
+      validationErrors: false,
+      lookupDescriptions: false,
+      largeTextPreviews: true,
+      searchFilterStatus: false
+    },
     layout: 'fitColumns',
     height: 540,
     initialSort: [{ column: 'name', dir: 'asc' }],
     columns: [
+      {
+        title: 'Foto', field: 'images', width: 110, headerSort: false,
+        formatter: AMB.formatters.image({ width: 72, height: 64, fit: 'cover', preview: true, viewer: true })
+      },
       { title: 'Codice', field: 'code', width: 115, sorter: 'string' },
       { title: 'Oggetto', field: 'name', minWidth: 260, widthGrow: 3, sorter: 'string', sorterParams: { locale: 'it' } },
       { title: 'Categoria', field: 'category', minWidth: 190, sorter: 'string', sorterParams: { locale: 'it' } },
@@ -30,6 +40,17 @@ onMounted(() => {
         title: 'Prezzo', field: 'price', width: 150, sorter: 'number',
         hozAlign: 'right', headerHozAlign: 'right',
         formatter: AMB.formatters.currency({ locale: 'it-IT', currency: 'EUR' })
+      },
+      {
+        title: 'Note', field: 'notes', minWidth: 300,
+        formatter: AMB.formatters.largeTextPreview({ maxLength: 65 }),
+        editor: AMB.editors.largeText({
+          title: "Storia dell'oggetto", readOnly: true, closeText: 'Chiudi',
+          width: 720, maxWidth: '92vw', textareaHeight: 320
+        }),
+        floatingMessages: {
+          largeTextPreviews: { enabled: true, title: "Storia dell'oggetto", className: 'antique-notes-tooltip' }
+        }
       }
     ]
   });
@@ -44,6 +65,10 @@ onBeforeUnmount(() => {
 <template>
   <div class="antique-catalog">
     <p class="antique-catalog__description">24 articoli in consultazione · Catalogo dimostrativo con prezzi simulati</p>
+    <p class="antique-catalog__credits">
+      Fotografie illustrative di esemplari analoghi, non degli articoli simulati.
+      <a href="https://github.com/ambruoso-luigi/amb-grid/blob/main/examples/vue-demo/IMAGE_SOURCES.md" target="_blank" rel="noopener noreferrer">Fonti e licenze</a>
+    </p>
     <div class="antique-catalog__scroll">
       <div ref="container" class="antique-catalog__grid" aria-labelledby="catalogue-title"></div>
     </div>
@@ -58,8 +83,10 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 .antique-catalog__description { margin: 12px 0 20px; color: #6a5a46; font-size: 14px; line-height: 1.5; }
+.antique-catalog__credits { margin: -10px 0 20px; color: #6a5a46; font-size: 13px; line-height: 1.5; }
+.antique-catalog__credits a { color: #526844; text-underline-offset: 3px; }
 .antique-catalog__scroll { overflow-x: auto; border: 1px solid var(--catalog-border); border-radius: 6px; }
-.antique-catalog__grid { min-width: 1090px; }
+.antique-catalog__grid { min-width: 1500px; }
 .antique-catalog :deep(.tabulator) { border: 0; background: #f6f1e6; color: var(--catalog-ink); font: inherit; font-size: 14px; }
 .antique-catalog :deep(.tabulator-header) { background: #eee6d5; border-bottom: 2px solid #ac8d55; color: #493921; }
 .antique-catalog :deep(.tabulator-header .tabulator-col) { background: transparent; border-right-color: var(--catalog-border); }

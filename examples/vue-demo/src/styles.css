@@ -12,6 +12,26 @@ body { min-width: 320px; min-height: 100vh; margin: 0; }
 .atelier-catalogue { margin-top: 28px; padding: clamp(18px, 3.4vw, 44px); border: 1px solid #d8ccb6; border-radius: 8px; background: #fffdf6; }
 .atelier-catalogue h2 { margin: 0; color: #493921; font-family: Georgia, 'Times New Roman', serif; font-weight: 500; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.2; }
 
+/* Floating Messages are mounted in body, outside the component's scoped styles. */
+.teh-floating-message.antique-notes-tooltip {
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 1px solid #ac8d55;
+  background: #fffaf0;
+  color: #403328;
+  box-shadow: 0 8px 24px rgb(73 57 33 / 16%);
+}
+.antique-notes-tooltip .teh-floating-message__title {
+  color: #493921;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16px;
+}
+.antique-notes-tooltip .teh-floating-message__body {
+  color: #403328;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 .atelier-page {
   width: min(100% - 12px, 1872px);
   margin: 0 auto;
