@@ -1089,6 +1089,49 @@ AMB.table({
 });
 ```
 
+Columns can customize `validationErrors`, `lookupDescriptions`, and
+`largeTextPreviews` independently. Both table-level `floatingMessages: false`
+and `{ enabled: false }` disable the master and cannot be overridden by columns.
+Otherwise, a column channel's `enabled` overrides its global boolean default,
+including reenabling a globally disabled channel; omitting it inherits that default.
+`searchFilterStatus` remains exclusively global.
+
+```js
+AMB.table({
+  selector: '#grid',
+  data,
+  floatingMessages: { largeTextPreviews: false },
+  columns: [{
+    field: 'notes',
+    formatter: AMB.formatters.largeTextPreview(),
+    floatingMessages: {
+      largeTextPreviews: {
+        enabled: true,
+        title: 'Historical notes',
+        className: 'antique-notes-tooltip'
+      }
+    }
+  }]
+});
+```
+
+Optional `title` supplies plain text and `className` supplies space-separated CSS
+classes for that message. Omitted values retain the standard channel title and
+presentation; previous custom classes are removed when another message appears.
+Use application CSS for styling, for example:
+
+```css
+.teh-floating-message.antique-notes-tooltip {
+  background: #f4ecd8;
+  color: #3f301d;
+  border-color: #b7a17a;
+}
+```
+
+Successful `addColumn`, `updateColumnDefinition`, `deleteColumn`, and `setColumns`
+operations synchronize these options, including nested columns. Definition patches
+replace `floatingMessages` as a whole rather than merging individual channels.
+
 The municipality demo follows the standard lookup interaction contract: a
 single click focuses Municipality for navigation, a double click or `Enter`
 opens its manual lookup editor, and `F2` opens the complete lookup dialog.

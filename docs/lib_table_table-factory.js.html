@@ -28,6 +28,8 @@
         <article>
             <pre class="prettyprint source linenums"><code>import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { CrudHelper } from '../crud-helper.js';
+import { createImagePreviewRuntime, hasImagePreviewFormatter } from '../image-preview-runtime.js';
+import { createImageViewerRuntime } from '../image-viewer-runtime.js';
 import { CellMessageBinder } from '../../ui/cell-message-binder.js';
 import { FloatingMessage } from '../../ui/floating-message.js';
 import { ConfirmDialog } from '../../ui/confirm-dialog.js';
@@ -813,6 +815,20 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {object} AMBColumnFloatingMessageOptions
+ * @property {boolean} [enabled] - Override this channel's global default; cannot override a disabled table master.
+ * @property {string} [title] - Plain-text title; omitted values keep the standard channel title.
+ * @property {string} [className] - Space-separated CSS classes for this message; omitted values keep the standard presentation.
+ */
+
+/**
+ * @typedef {object} AMBColumnFloatingMessagesOptions
+ * @property {AMBColumnFloatingMessageOptions} [validationErrors] - Validation error presentation.
+ * @property {AMBColumnFloatingMessageOptions} [lookupDescriptions] - Lookup description presentation; preserves the editor's showDescription:false.
+ * @property {AMBColumnFloatingMessageOptions} [largeTextPreviews] - Large-text preview presentation.
+ */
+
+/**
  * @typedef {object} AMBFloatingMessagesOptions
  * @property {boolean} [enabled=true] - Enable all floating message channels.
  * @property {boolean} [lookupDescriptions=true] - Show lookup descriptions for pointer or keyboard focus.
@@ -862,17 +878,22 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {string} [commit='Enter']
  * @property {string} [cancel='Escape']
  * @property {string} [auxiliary='F2'] Activates an auxiliary cell control, such as a Lookup dialog.
- * @property {string} [next='Tab']
- * @property {string} [previous='Shift+Tab']
+ * @property {string} [next='Tab'] Next data cell in Navigation; commit and open the next eligible editor in Editing.
+ * @property {string} [previous='Shift+Tab'] Previous data cell in Navigation; commit and open the previous eligible editor in Editing.
  */
 
 /** @typedef {'up'|'down'|'left'|'right'|'edit'|'commit'|'cancel'|'auxiliary'|'next'|'previous'} AMBKeyboardNavigationAction */
-/** @typedef {'navigation'|'editing'|'auxiliary'} AMBKeyboardNavigationState */
+/**
+ * Navigation focuses visible data cells, including readonly cells, without editing.
+ * Editing owns an active editor; sequential actions retain that source mode after commit.
+ * Auxiliary describes interaction with a supported popup, dialog or cell control.
+ * @typedef {'navigation'|'editing'|'auxiliary'} AMBKeyboardNavigationState
+ */
 /**
  * @typedef {object} AMBKeyboardNavigationContext
  * @property {AMBKeyboardNavigationAction} action
  * @property {KeyboardEvent} event
- * @property {AMBKeyboardNavigationState} state
+ * @property {AMBKeyboardNavigationState} state Source interaction state, captured before handling the key or closing an editor.
  * @property {object} cell
  * @property {object} row
  * @property {object} column
@@ -882,7 +903,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
 /**
  * @typedef {object} AMBKeyboardNavigationOptions
  * @property {boolean} [enabled=true] Enables configurable spatial navigation and edit bindings. When false, historical Tab/Shift+Tab and Alt+Page shortcuts remain, while custom bindings and hooks are disabled.
- * @property {AMBKeyboardNavigationBindings} [bindings] Exact key bindings.
+ * @property {AMBKeyboardNavigationBindings} [bindings] Exact key bindings. While enabled, next/previous focus navigable data in Navigation and commit then open an eligible editor in Editing, across rows and local pages. Readonly data remains navigable; managed controls and auxiliary editors retain their dedicated behavior.
  * @property {(context: AMBKeyboardNavigationContext) => boolean} [shouldHandle] Called only while enabled for configurable actions, including standard inline editor commit/cancel while editing; false leaves the event untouched. It is not called for page shortcuts or legacy Tab flow.
  * @property {(context: AMBKeyboardNavigationContext &amp; {direction: 'up'|'down'|'left'|'right'}) => object|undefined|null} [resolveNavigation] Supplies a same-grid directional destination. Null or invalid cells use geometry; thrown errors propagate.
  */
@@ -896,7 +917,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {string[]|'*'} [dependsOn]
  */
 /** @typedef {{[key: string]: unknown, custom?: AMBDeclarativeCustomValidatorOptions}} AMBColumnValidationOptions */
-/** @typedef {{[key: string]: unknown, field?: string, validation?: AMBColumnValidationOptions, columns?: AMBColumnOptions[]}} AMBColumnOptions */
+/** @typedef {{[key: string]: unknown, field?: string, validation?: AMBColumnValidationOptions, floatingMessages?: AMBColumnFloatingMessagesOptions, columns?: AMBColumnOptions[]}} AMBColumnOptions */
 /**
  * @typedef {object} AMBCellEditingOptions
  * @property {AMBMouseEditTrigger} [mouseTrigger='double-click'] Controls how pointer interaction starts cell editing. By default, a single click focuses a cell for navigation and a double click starts editing.
@@ -1054,6 +1075,7 @@ export function createTable(options = {}) {
         : null;
     const columnPipelineOptions = {
         messages: normalizedMessages,
+        floatingMessagesEnabled: normalizedFloatingMessages.enabled,
         lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
         getCrud: () => crud,
         getTable: () => table,
@@ -1078,7 +1100,11 @@ export function createTable(options = {}) {
         historyRuntime: null,
         searchController: null,
         feedback: null,
-        keyboardNavigationRuntime: null
+        keyboardNavigationRuntime: null,
+        imagePreviewRuntime: null,
+        imageViewerRuntime: null,
+        cellMessageBinder: null,
+        syncImageRuntimes: null
     };
 
     if (selectionColumnController) {
@@ -1093,6 +1119,19 @@ export function createTable(options = {}) {
     const tableElement = typeof selector === 'string'
         ? document.querySelector(selector)
         : selector;
+    lifecycleResources.syncImageRuntimes = applicationColumns => {
+        if (crud?.isDestroyed) return;
+        if (hasImagePreviewFormatter(applicationColumns)) {
+            lifecycleResources.imagePreviewRuntime ||= createImagePreviewRuntime(tableElement);
+            lifecycleResources.imageViewerRuntime ||= createImageViewerRuntime(tableElement);
+            return;
+        }
+        lifecycleResources.imageViewerRuntime?.destroy();
+        lifecycleResources.imageViewerRuntime = null;
+        lifecycleResources.imagePreviewRuntime?.destroy();
+        lifecycleResources.imagePreviewRuntime = null;
+    };
+    lifecycleResources.syncImageRuntimes(columnPipeline.applicationColumns);
     lifecycleResources.calculationPresentationRuntime =
         createCalculationPresentationRuntime(tableElement);
     const alertMethods = createAlertMethods({ table });
@@ -1183,10 +1222,13 @@ export function createTable(options = {}) {
         tableElement,
         crudHelper: crud,
         floatingMessage,
+        enabled: normalizedFloatingMessages.enabled,
+        floatingMessagesByField: columnPipeline.floatingMessagesByField,
         validationErrors: normalizedFloatingMessages.validationErrors,
         lookupDescriptions: normalizedFloatingMessages.lookupDescriptions,
         largeTextPreviews: normalizedFloatingMessages.largeTextPreviews
     });
+    lifecycleResources.cellMessageBinder = cellMessageBinder;
     lifecycleResources.unsubscribeLookupMetadata = bindLookupMetadataInitialization(
         table,
         columnPipeline.lookupColumns
@@ -1310,7 +1352,7 @@ export function createTable(options = {}) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Oct 07 2026 19:13:36 GMT+0200 (Ora legale dell’Europa centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Sun Oct 25 2026 10:53:17 GMT+0100 (Ora standard dell’Europa centrale)
 </footer>
 
 <script> prettyPrint(); </script>

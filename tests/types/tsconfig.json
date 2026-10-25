@@ -8,5 +8,5 @@
     "lib": ["ES2022", "DOM"],
     "skipLibCheck": true
   },
-  "files": ["validation-scopes.ts", "multifield-lookup.ts", "image-formatter.ts"]
+  "files": ["validation-scopes.ts", "multifield-lookup.ts", "image-formatter.ts", "floating-messages.ts"]
 }

@@ -4,6 +4,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ## [Unreleased]
 
+- Added per-column Floating Messages channel overrides, titles, and CSS classes,
+  synchronized with dynamic column operations and documented with TypeScript types.
 - Consolidated the Angular portfolio demo around 14 fixed positions with
   exclusive instrument lookup, selective Instrument and Quantity editing,
   simulated quotes, global live `topCalc` totals, and an integrated guide.

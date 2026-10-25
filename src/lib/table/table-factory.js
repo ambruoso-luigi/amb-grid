@@ -787,6 +787,20 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {object} AMBColumnFloatingMessageOptions
+ * @property {boolean} [enabled] - Override this channel's global default; cannot override a disabled table master.
+ * @property {string} [title] - Plain-text title; omitted values keep the standard channel title.
+ * @property {string} [className] - Space-separated CSS classes for this message; omitted values keep the standard presentation.
+ */
+
+/**
+ * @typedef {object} AMBColumnFloatingMessagesOptions
+ * @property {AMBColumnFloatingMessageOptions} [validationErrors] - Validation error presentation.
+ * @property {AMBColumnFloatingMessageOptions} [lookupDescriptions] - Lookup description presentation; preserves the editor's showDescription:false.
+ * @property {AMBColumnFloatingMessageOptions} [largeTextPreviews] - Large-text preview presentation.
+ */
+
+/**
  * @typedef {object} AMBFloatingMessagesOptions
  * @property {boolean} [enabled=true] - Enable all floating message channels.
  * @property {boolean} [lookupDescriptions=true] - Show lookup descriptions for pointer or keyboard focus.
@@ -875,7 +889,7 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  * @property {string[]|'*'} [dependsOn]
  */
 /** @typedef {{[key: string]: unknown, custom?: AMBDeclarativeCustomValidatorOptions}} AMBColumnValidationOptions */
-/** @typedef {{[key: string]: unknown, field?: string, validation?: AMBColumnValidationOptions, columns?: AMBColumnOptions[]}} AMBColumnOptions */
+/** @typedef {{[key: string]: unknown, field?: string, validation?: AMBColumnValidationOptions, floatingMessages?: AMBColumnFloatingMessagesOptions, columns?: AMBColumnOptions[]}} AMBColumnOptions */
 /**
  * @typedef {object} AMBCellEditingOptions
  * @property {AMBMouseEditTrigger} [mouseTrigger='double-click'] Controls how pointer interaction starts cell editing. By default, a single click focuses a cell for navigation and a double click starts editing.
