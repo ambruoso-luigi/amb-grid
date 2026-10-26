@@ -4,6 +4,8 @@ All notable changes to AMB Grid are documented in this file.
 
 ## [Unreleased]
 
+- Added optional per-column `largeTextPreviews.maxLength` for Floating Messages,
+  preserving full text by default and leaving cell previews and dialog values unchanged.
 - Added Large Text readonly consultation with `readOnly` and `closeText`,
   cancellation without commits, and dialog cleanup on grid destruction.
 - Added per-column Floating Messages channel overrides, titles, and CSS classes,

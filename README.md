@@ -1108,7 +1108,8 @@ AMB.table({
       largeTextPreviews: {
         enabled: true,
         title: 'Historical notes',
-        className: 'antique-notes-tooltip'
+        className: 'antique-notes-tooltip',
+        maxLength: 160
       }
     }
   }]
@@ -1118,6 +1119,14 @@ AMB.table({
 Optional `title` supplies plain text and `className` supplies space-separated CSS
 classes for that message. Omitted values retain the standard channel title and
 presentation; previous custom classes are removed when another message appears.
+Only the per-column `largeTextPreviews` channel accepts `maxLength`: a positive
+integer limiting the message, including a trailing ellipsis when text exceeds
+the limit. Omitted or invalid values leave the full text. Validation and Lookup
+messages are unaffected; table-level channels remain boolean options.
+This limit is independent of `AMB.formatters.largeTextPreview({ maxLength: 50 })`
+in the cell. For example, a cell can show about 50 characters, its floating
+message at most 160, and the readonly Large Text dialog the complete original
+value. Neither preview changes the underlying data or the dialog contents.
 Use application CSS for styling, for example:
 
 ```css

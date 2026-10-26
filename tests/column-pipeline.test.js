@@ -83,7 +83,7 @@ const findPreparedColumn = (pipeline, field) => {
 
 describe('AMB Grid column preparation pipeline', () => {
     test('keeps canonical column messages independent and strips AMB options from nested runtime columns', () => {
-        const shared = Object.freeze({ largeTextPreviews: Object.freeze({ title: 'Notes', className: 'notes-theme' }) });
+        const shared = Object.freeze({ largeTextPreviews: Object.freeze({ title: 'Notes', className: 'notes-theme', maxLength: 160 }) });
         const columns = Object.freeze([
             Object.freeze({ field: 'notes', floatingMessages: shared }),
             Object.freeze({ title: 'Group', floatingMessages: shared, columns: Object.freeze([
@@ -101,11 +101,26 @@ describe('AMB Grid column preparation pipeline', () => {
         expect(a.applicationColumns[0].floatingMessages).toEqual(shared);
         expect(a.applicationColumns[1].columns[0].floatingMessages).toEqual(shared);
         a.floatingMessagesByField.get('notes').largeTextPreviews.title = 'Changed';
+        a.floatingMessagesByField.get('notes').largeTextPreviews.maxLength = 50;
         a.applicationColumns[0].floatingMessages.largeTextPreviews.className = 'canonical-change';
         expect(a.floatingMessagesByField.get('other').largeTextPreviews.title).toBe('Notes');
+        expect(a.floatingMessagesByField.get('other').largeTextPreviews.maxLength).toBe(160);
         expect(b.floatingMessagesByField.get('notes')).toEqual(shared);
         expect(a.floatingMessagesByField.get('notes').largeTextPreviews.className).toBe('notes-theme');
         expect(shared.largeTextPreviews.title).toBe('Notes');
+    });
+
+    test('preserves maxLength exclusively for large-text column messages', () => {
+        const pipeline = prepareColumnPipeline({ columns: [{ field: 'notes', floatingMessages: {
+            validationErrors: { title: 'Error', maxLength: 10 },
+            lookupDescriptions: { title: 'Description', maxLength: 10 },
+            largeTextPreviews: { maxLength: 160 }
+        } }] });
+        expect(pipeline.floatingMessagesByField.get('notes')).toEqual({
+            validationErrors: { title: 'Error' },
+            lookupDescriptions: { title: 'Description' },
+            largeTextPreviews: { maxLength: 160 }
+        });
     });
 
     test.each([

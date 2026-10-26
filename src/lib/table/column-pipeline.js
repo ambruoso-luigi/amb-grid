@@ -26,7 +26,8 @@ const FLOATING_MESSAGE_CHANNELS = ['validationErrors', 'lookupDescriptions', 'la
 const cloneFloatingMessages = configuration => Object.fromEntries(
     FLOATING_MESSAGE_CHANNELS.filter(channel => configuration?.[channel] && typeof configuration[channel] === 'object')
         .map(channel => [channel, Object.fromEntries(
-            ['enabled', 'title', 'className'].filter(key => configuration[channel][key] !== undefined)
+            ['enabled', 'title', 'className', ...(channel === 'largeTextPreviews' ? ['maxLength'] : [])]
+                .filter(key => configuration[channel][key] !== undefined)
                 .map(key => [key, configuration[channel][key]])
         )])
 );

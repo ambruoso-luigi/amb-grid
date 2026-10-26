@@ -139,9 +139,14 @@ export class CellMessageBinder {
         const row = field ? this._getRow(cellElement) : null;
         const value = row?.getData?.()?.[field];
 
-        return value === null || value === undefined || value === ''
-            ? null
-            : { type: 'info', ...presentation, message: String(value) };
+        if (value === null || value === undefined || value === '') return null;
+
+        const maxLength = this.floatingMessagesByField.get(field)?.largeTextPreviews?.maxLength;
+        const text = String(value);
+        const message = Number.isInteger(maxLength) && maxLength > 0 && text.length > maxLength
+            ? `${text.slice(0, maxLength - 1)}…`
+            : text;
+        return { type: 'info', ...presentation, message };
     }
 
     resolveCellMessage(cellElement) {

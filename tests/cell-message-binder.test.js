@@ -434,6 +434,46 @@ describe('CellMessageBinder', () => {
         expect(binder._getMessageKey(a)).not.toBe(binder._getMessageKey(b));
     });
 
+    test.each([
+        [undefined, 'Complete note', 'Complete note'],
+        [6, 'Short', 'Short'],
+        [6, 'Exactly', 'Exact…'],
+        [6, 'Sixsix', 'Sixsix'],
+        [1, 'Long', '…'],
+        [0, 'Complete note', 'Complete note']
+    ])('limits only the displayed large-text message with maxLength=%s and text=%s', (maxLength, value, expected) => {
+        const harness = createHarness({ floatingMessagesByField: new Map([
+            ['notes', { largeTextPreviews: { maxLength } }]
+        ]) });
+        const data = Object.freeze({ id: 1, notes: value, other: value });
+        const target = harness.makeCell(data, { largeTextField: 'notes' });
+        const other = harness.makeCell(data, { largeTextField: 'other' });
+        harness.tableElement.dispatch('focusin', { target: target.cellElement });
+        expect(harness.floatingMessage.show).toHaveBeenLastCalledWith(target.cellElement,
+            { type: 'info', title: 'Text', message: expected });
+        harness.tableElement.dispatch('pointermove', { target: other.cellElement });
+        expect(harness.floatingMessage.scheduleShow).toHaveBeenLastCalledWith(other.cellElement,
+            { type: 'info', title: 'Text', message: value });
+        expect(data.notes).toBe(value);
+    });
+
+    test('retains channel priority and disabling when a large-text limit is configured', () => {
+        const harness = createHarness({ floatingMessagesByField: new Map([['notes', {
+            validationErrors: { maxLength: 1 }, lookupDescriptions: { maxLength: 1 },
+            largeTextPreviews: { maxLength: 5 }
+        }]]) });
+        const target = allProviders(harness);
+        expect(harness.binder.resolveCellMessage(target).message).toBe('<b>Required</b>');
+        harness.cellErrors.length = 0;
+        expect(harness.binder.resolveCellMessage(target).message).toBe('<b>Lookup description</b>');
+        harness.binder.replaceColumnMessages(new Map([['notes', {
+            lookupDescriptions: { enabled: false }, largeTextPreviews: { enabled: false, maxLength: 5 }
+        }]]));
+        harness.tableElement.dispatch('focusin', { target });
+        expect(harness.binder.resolveCellMessage(target)).toBeNull();
+        expect(harness.floatingMessage.show).not.toHaveBeenCalled();
+    });
+
     const noteOptions = (title, className) => new Map([['notes', { largeTextPreviews: { title, className } }]]);
 
     test.each(['keyboard', 'mouse'])('refreshes a visible %s message immediately and restores defaults when configuration disappears', source => {

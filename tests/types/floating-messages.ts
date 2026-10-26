@@ -6,11 +6,11 @@ const columns: Column[] = [{
     floatingMessages: {
         validationErrors: { enabled: true, title: 'Validation problem', className: 'custom-error' },
         lookupDescriptions: { enabled: false, title: 'Description', className: 'custom-lookup' },
-        largeTextPreviews: { enabled: true, title: 'Historical notes', className: 'antique-notes-tooltip' }
+        largeTextPreviews: { enabled: true, title: 'Historical notes', className: 'antique-notes-tooltip', maxLength: 160 }
     }
 }, {
     title: 'Details',
-    columns: [{ field: 'summary', floatingMessages: { largeTextPreviews: { enabled: true } } }]
+    columns: [{ field: 'summary', floatingMessages: { largeTextPreviews: { enabled: true, maxLength: 80 } } }]
 }];
 AMB.table({ selector: '#grid', columns, floatingMessages: { largeTextPreviews: false } });
 
@@ -24,4 +24,10 @@ const wrongClass: Column = { floatingMessages: { largeTextPreviews: { className:
 AMB.table({ selector: '#grid', floatingMessages: { validationErrors: { enabled: true } } });
 // @ts-expect-error searchFilterStatus is exclusively global.
 const wrongChannel: Column = { floatingMessages: { searchFilterStatus: { enabled: true } } };
-void [wrongEnabled, wrongTitle, wrongClass, wrongChannel];
+// @ts-expect-error maxLength must be a number.
+const wrongLength: Column = { floatingMessages: { largeTextPreviews: { maxLength: '160' } } };
+// @ts-expect-error Validation messages do not accept maxLength.
+const wrongValidationLength: Column = { floatingMessages: { validationErrors: { maxLength: 160 } } };
+// @ts-expect-error Lookup messages do not accept maxLength.
+const wrongLookupLength: Column = { floatingMessages: { lookupDescriptions: { maxLength: 160 } } };
+void [wrongEnabled, wrongTitle, wrongClass, wrongChannel, wrongLength, wrongValidationLength, wrongLookupLength];

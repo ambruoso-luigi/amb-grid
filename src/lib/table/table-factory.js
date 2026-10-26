@@ -795,10 +795,18 @@ export const normalizeFloatingMessageOptions = (floatingMessages = undefined) =>
  */
 
 /**
+ * @typedef {object} AMBColumnLargeTextPreviewOptions
+ * @property {boolean} [enabled] - Override the global large-text default; cannot override a disabled table master.
+ * @property {string} [title] - Plain-text title; defaults to the standard large-text title.
+ * @property {string} [className] - Space-separated CSS classes for this message.
+ * @property {number} [maxLength] - Positive integer limiting the floating message, including its trailing ellipsis when truncated. Omitted or invalid values leave the full text; cell previews and editor contents are unchanged.
+ */
+
+/**
  * @typedef {object} AMBColumnFloatingMessagesOptions
  * @property {AMBColumnFloatingMessageOptions} [validationErrors] - Validation error presentation.
  * @property {AMBColumnFloatingMessageOptions} [lookupDescriptions] - Lookup description presentation; preserves the editor's showDescription:false.
- * @property {AMBColumnFloatingMessageOptions} [largeTextPreviews] - Large-text preview presentation.
+ * @property {AMBColumnLargeTextPreviewOptions} [largeTextPreviews] - Large-text preview presentation and optional message length limit.
  */
 
 /**

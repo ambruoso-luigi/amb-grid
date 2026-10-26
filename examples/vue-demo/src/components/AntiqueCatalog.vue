@@ -50,7 +50,7 @@ onMounted(() => {
           width: 720, maxWidth: '92vw', textareaHeight: 320
         }),
         floatingMessages: {
-          largeTextPreviews: { enabled: true, title: "Storia dell'oggetto", className: 'antique-notes-tooltip' }
+          largeTextPreviews: { enabled: true, title: "Storia dell'oggetto", className: 'antique-notes-tooltip', maxLength: 160 }
         }
       }
     ]
