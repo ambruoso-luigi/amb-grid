@@ -1,6 +1,7 @@
 export type AntiqueCategory =
   | 'Orologi' | 'Audio' | 'Fotografia' | 'Scrittura'
-  | 'Illuminazione' | 'Mobili' | 'Strumenti scientifici' | 'Oggetti decorativi';
+  | 'Illuminazione' | 'Mobili' | 'Strumenti scientifici' | 'Oggetti decorativi'
+  | 'Telefonia' | 'Radio' | 'Strumenti commerciali';
 
 export type AntiqueCondition = 'Ottimo' | 'Buono' | 'Da restaurare';
 

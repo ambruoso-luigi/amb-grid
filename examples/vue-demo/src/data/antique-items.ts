@@ -93,16 +93,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
     notes: 'La lampada da scrittoio degli anni Trenta concentrava la luce sul piano di lettura, accompagnando il lavoro negli studi professionali e negli ambienti domestici. Nella tipologia qui rappresentata la base zavorrata favorisce la stabilità e il paralume orientabile permette di dirigere l’illuminazione. Il catalogo simulato dichiara una costruzione in ottone e vetro opalino, con patina superficiale e piccoli segni sul vetro, entro uno stato generale buono. Il contrasto fra metallo e diffusore costituisce il principale motivo estetico, senza attribuzioni a manifatture o designer. L’impianto elettrico deve essere controllato prima dell’utilizzo: non sono dichiarati adeguamenti, isolamento verificato o sicurezza d’esercizio.'
   },
   {
-    id: 16, code: 'ADT-016', name: 'Secretaire con ribalta e cassetti', category: 'Mobili',
-    period: 'Secondo Ottocento, circa 1880', approximateYear: 1880,
-    materials: ['Noce', 'Abete', 'Ottone'], condition: 'Buono', price: 1450, available: true, images: [
-      { src: '/vue/images/adt-016-1.jpg', thumbnail: '/vue/images/adt-016-1-thumb.jpg',
-        alt: "Secretaire storico con ribalta e cassetti",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Secretaire storico con ribalta e cassetti. The Metropolitan Museum of Art - CC0." }
-    ],
-    notes: 'Il secretaire ottocentesco riuniva in un solo mobile un piano per la corrispondenza e vani destinati a carte, piccoli oggetti e documenti domestici. La ribalta consentiva di richiudere la superficie di lavoro, restituendo all’arredo un fronte ordinato. Il modello simulato, collocato intorno al 1880, è descritto con noce, abete e ferramenta in ottone, cassetti e scomparti interni. Sono dichiarate riprese della finitura e una serratura interna priva di chiave, pur con conservazione generale buona; non si attribuiscono tali riprese a restauri documentati. L’interesse della tipologia risiede nell’organizzazione dello spazio di scrittura e nell’accostamento fra superfici di rappresentanza e struttura di servizio.'
-  },
-  {
     id: 18, code: 'ADT-018', name: 'Comodino con piano in marmo', category: 'Mobili',
     period: 'Anni Venti, circa 1925', approximateYear: 1925,
     materials: ['Legno impiallacciato', 'Marmo', 'Ottone'], condition: 'Buono', price: 360, available: false, images: [
@@ -123,16 +113,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
     notes: 'Nelle farmacie del primo Novecento le pesate di precisione contribuivano alla preparazione di sostanze in quantità controllate. La bilancia a due piatti confrontava la massa del campione con quella dei pesi di riferimento; la vetrina limitava le correnti d’aria che potevano disturbare l’equilibrio. La scheda simulata descrive componenti in ottone entro una struttura in legno e vetro, con conservazione generale buona. La serie dei pesi è incompleta e la taratura non è verificata: non si dichiara una sensibilità strumentale né l’idoneità a impieghi farmaceutici attuali. L’interesse collezionistico riguarda la relazione fra meccanica, protezione ambientale e pratiche di misura, senza provenienza professionale certificata.'
   },
   {
-    id: 20, code: 'ADT-020', name: 'Microscopio monoculare con specchio', category: 'Strumenti scientifici',
-    period: 'Anni Trenta, circa 1930', approximateYear: 1930,
-    materials: ['Ottone', 'Ghisa', 'Vetro ottico'], condition: 'Buono', price: 430, available: true, images: [
-      { src: '/vue/images/adt-020-1.jpg', thumbnail: '/vue/images/adt-020-1-thumb.jpg',
-        alt: "Microscopio monoculare storico con specchio",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Microscopio monoculare storico con specchio. Wellcome Collection / Wellcome Images - CC BY 4.0." }
-    ],
-    notes: 'Il microscopio monoculare con illuminazione a specchio appartiene a una lunga tradizione di osservazione didattica e di laboratorio, ancora diffusa negli anni Trenta. Lo specchio dirigeva la luce verso il preparato e la messa a fuoco meccanica regolava la distanza utile all’osservazione. Nell’articolo simulato sono dichiarati ottone, ghisa e vetro ottico, con usura della base e ottiche da pulire entro uno stato generale buono. La presenza dello specchio racconta un uso legato alla disponibilità e all’orientamento della sorgente luminosa. Non sono attestati ingrandimenti, qualità delle immagini o completezza degli accessori; il valore di consultazione è storico e collezionistico, senza prestazioni scientifiche garantite.'
-  },
-  {
     id: 21, code: 'ADT-021', name: 'Barometro aneroide da parete', category: 'Strumenti scientifici',
     period: 'Fine Ottocento, circa 1895', approximateYear: 1895,
     materials: ['Legno intagliato', 'Ottone', 'Vetro'], condition: 'Buono', price: 230, available: false, images: [
@@ -143,14 +123,62 @@ export const antiqueItems: readonly AntiqueItem[] = [
     notes: 'Il barometro aneroide misura la pressione attraverso le piccole deformazioni di una capsula metallica chiusa, dalla quale è stata sottratta parte dell’aria; un sistema di leve trasmette il movimento all’indice. A fine Ottocento la tipologia trovava impiego nell’osservazione scientifica e nelle case, dove si seguivano le tendenze del tempo senza una colonna di mercurio. Il modello simulato presenta una cornice in legno intagliato, parti in ottone e vetro, con piccole perdite di finitura e stato generale buono. Indice e capsula non sono stati tarati: la lettura non è certificata e non basta, da sola, a formulare previsioni meteorologiche. La cornice conserva soprattutto una funzione di arredo e protezione.'
   },
   {
-    id: 24, code: 'ADT-024', name: 'Cornice dorata con decoro a foglie', category: 'Oggetti decorativi',
-    period: 'Fine Ottocento, circa 1885', approximateYear: 1885,
-    materials: ['Legno', 'Gesso', 'Doratura'], condition: 'Da restaurare', price: 210, available: true, images: [
-      { src: '/vue/images/adt-024-1.jpg', thumbnail: '/vue/images/adt-024-1-thumb.jpg',
-        alt: "Cornice storica intagliata con motivi vegetali",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Cornice storica intagliata con motivi vegetali. The Metropolitan Museum of Art - CC0." }
+    id: 25, code: 'ADT-025', name: 'Telefono nero in bachelite a disco', category: 'Telefonia',
+    period: 'Successivo al 1931; modello del 1931', approximateYear: 1931,
+    materials: ['Bachelite', 'Metallo', 'Carbone'], condition: 'Buono', price: 185, available: true, images: [
+      { src: '/vue/images/adt-025-1.jpg', thumbnail: '/vue/images/adt-025-1-thumb.jpg',
+        alt: 'Telefono nero in bachelite con cornetta e disco, vista anteriore',
+        caption: 'F.A.T.M.E.–Ericsson, modello 1931, esemplare IGB-10728: vista anteriore. Fotografia illustrativa, non dell’articolo simulato. Rodolfo Colombo / Museo Scienza Milano — CC BY-SA 4.0.' },
+      { src: '/vue/images/adt-025-2.jpg', thumbnail: '/vue/images/adt-025-2-thumb.jpg',
+        alt: 'Profilo laterale del telefono nero con cornetta appoggiata',
+        caption: 'IGB-10728, profilo laterale dello stesso telefono museale. Fotografia illustrativa, non dell’articolo simulato. Rodolfo Colombo / Museo Scienza Milano — CC BY-SA 4.0.' },
+      { src: '/vue/images/adt-025-3.jpg', thumbnail: '/vue/images/adt-025-3-thumb.jpg',
+        alt: 'Fondo del telefono con aperture della suoneria e marcature',
+        caption: 'IGB-10728, fondo e marcature dello stesso esemplare. Fotografia illustrativa, non dell’articolo simulato. Rodolfo Colombo / Museo Scienza Milano — CC BY-SA 4.0.' }
     ],
-    notes: 'Nell’arredo di fine Ottocento la cornice ornamentale raccordava il dipinto o lo specchio alla parete, contribuendo alla percezione dell’opera e all’unità della stanza. Foglie e motivi vegetali in rilievo potevano essere ottenuti mediante intaglio o decorazioni applicate; su preparazioni a gesso la doratura impiegava, secondo le lavorazioni, foglia metallica e differenti tecniche di adesione. Per l’articolo simulato sono dichiarati legno, gesso e doratura, senza identificarne la tecnica specifica. Le lacune agli angoli e le riprese della superficie dorata motivano lo stato da restaurare. La cornice è proposta senza opera e senza vetro; non sono attestati autore, bottega o interventi conservativi documentati.'
+    notes: 'Negli anni Trenta il telefono a disco rese familiare la selezione automatica degli abbonati, mentre la bachelite permetteva di riunire suoneria e combinatore in una scocca compatta. Il modello illustrato è il F.A.T.M.E.–Ericsson del 1931: il museo data il proprio esemplare a un momento successivo, senza precisarne l’anno di produzione. La cornetta riunisce microfono a carbone e ricevitore; il ritorno del disco invia gli impulsi di selezione alla centrale. Nel catalogo commerciale simulato lo stato buono e il prezzo sono dati dimostrativi, non attestazioni relative al pezzo museale. La forma unitaria racconta il passaggio a un apparecchio da scrivania di uso quotidiano; collegamento e funzionamento non sono verificati.'
+  },
+  {
+    id: 26, code: 'ADT-026', name: 'Radio a valvole da tavolo in legno', category: 'Radio',
+    period: '1940–1941', approximateYear: 1940,
+    materials: ['Legno impiallacciato', 'Metallo', 'Vetro', 'Bachelite'], condition: 'Buono', price: 420, available: true, images: [
+      { src: '/vue/images/adt-026-1.jpg', thumbnail: '/vue/images/adt-026-1-thumb.jpg',
+        alt: 'Radio DRECO in legno, frontale con scala di sintonia e tre manopole',
+        caption: 'DRECO 513, 1940–1941, inventario 2017.121.1: frontale. Fotografia illustrativa, non dell’articolo simulato. Auckland Museum Tāmaki Paenga Hira — CC BY 4.0.' },
+      { src: '/vue/images/adt-026-2.jpg', thumbnail: '/vue/images/adt-026-2-thumb.jpg',
+        alt: 'Retro aperto della radio con valvole, telaio e targhetta',
+        caption: '2017.121.1, retro con valvole dello stesso esemplare. Fotografia illustrativa, non dell’articolo simulato. Auckland Museum Tāmaki Paenga Hira — CC BY 4.0.' },
+      { src: '/vue/images/adt-026-3.jpg', thumbnail: '/vue/images/adt-026-3-thumb.jpg',
+        alt: 'Targhetta della radio con modello 513 e numero di serie 227',
+        caption: '2017.121.1, targhetta modello 513 e seriale 227. Fotografia illustrativa, non dell’articolo simulato. Auckland Museum Tāmaki Paenga Hira — CC BY 4.0.' }
+    ],
+    notes: 'La radio da tavolo portò notiziari, musica e programmi parlati negli ambienti domestici, diventando un punto di ascolto condiviso. Il modello illustrato, DRECO 513 del 1940–1941, associa un mobile impiallacciato a una scala analogica di sintonia e tre manopole; i circuiti a valvole ricevono e amplificano il segnale destinato all’altoparlante. L’esemplare fotografato fu realizzato per il National Patriotic Fund Board neozelandese e reca una targhetta identificativa. Questa informazione documenta soltanto la fonte museale, non la provenienza dell’articolo simulato. Per il record dimostrativo si indica uno stato buono, senza certificare ricezione, sicurezza elettrica o revisione: l’interesse è nella relazione fra tecnica radiofonica e arredo.'
+  },
+  {
+    id: 27, code: 'ADT-027', name: 'Registratore di cassa meccanico', category: 'Strumenti commerciali',
+    period: '1912', approximateYear: 1912,
+    materials: ['Metallo nichelato', 'Legno', 'Vetro', 'Celluloide'], condition: 'Buono', price: 720, available: false, images: [
+      { src: '/vue/images/adt-027-1.jpg', thumbnail: '/vue/images/adt-027-1-thumb.jpg',
+        alt: 'National 542, tre quarti anteriore con tastiera, indicatori e manovella',
+        caption: 'National 542, 1912, inventario IGB-6854: tre quarti anteriore. Fotografia illustrativa, non dell’articolo simulato. Moira Ricci / Museo Scienza Milano — CC BY-SA 4.0.' },
+      { src: '/vue/images/adt-027-2.jpg', thumbnail: '/vue/images/adt-027-2-thumb.jpg',
+        alt: 'Retro del National 542 con decorazioni floreali e indicatori rivolti al cliente',
+        caption: 'IGB-6854, vista posteriore dello stesso registratore. Fotografia illustrativa, non dell’articolo simulato. Moira Ricci / Museo Scienza Milano — CC BY-SA 4.0.' }
+    ],
+    notes: 'All’inizio del Novecento il registratore di cassa rese più controllabile la gestione degli incassi, collegando l’impostazione dell’importo alla registrazione della vendita. Nel National 542 del 1912 la tastiera meccanica seleziona i valori, gli indicatori li rendono visibili e la manovella aziona il ciclo di registrazione; il basamento ospita il cassetto del denaro. Metallo nichelato decorato, legno, vetro e coperture dei tasti in celluloide uniscono robustezza e rappresentanza commerciale. Le fotografie appartengono al solo esemplare museale identificato nella fonte. Lo stato buono del record è simulato e non garantisce integrità dei vetri, efficienza della stampa o precisione dei conteggi; la disponibilità è puramente dimostrativa.'
+  },
+  {
+    id: 28, code: 'ADT-028', name: 'Registratore a bobine portatile', category: 'Audio',
+    period: '1961–1965', approximateYear: 1963,
+    materials: ['Plastica', 'Metallo'], condition: 'Buono', price: 190, available: true, images: [
+      { src: '/vue/images/adt-028-1.jpg', thumbnail: '/vue/images/adt-028-1-thumb.jpg',
+        alt: 'Geloso G.257, vista anteriore con altoparlante e bobine sotto il coperchio trasparente',
+        caption: 'Geloso G.257, 1961–1965, inventario IGB-9270: tre quarti anteriore. Fotografia illustrativa, non dell’articolo simulato. Rodolfo Colombo / Museo Scienza Milano — CC BY-SA 4.0.' },
+      { src: '/vue/images/adt-028-2.jpg', thumbnail: '/vue/images/adt-028-2-thumb.jpg',
+        alt: 'Geloso G.257, vista posteriore con alimentazione, fusibile e comandi colorati',
+        caption: 'IGB-9270, tre quarti posteriore dello stesso registratore. Fotografia illustrativa, non dell’articolo simulato. Rodolfo Colombo / Museo Scienza Milano — CC BY-SA 4.0.' }
+    ],
+    notes: 'Negli anni Sessanta il registratore portatile rese accessibile la conservazione di voci, conversazioni e musica anche fuori dagli studi professionali. Il Geloso G.257, documentato fra il 1961 e il 1965, impiega un nastro magnetico trasferito fra due bobine e un’amplificazione a valvole; i comandi colorati selezionano registrazione, ascolto e scorrimento. Il telaio in plastica e metallo raccoglie altoparlante e meccanica in dimensioni contenute, con bobine protette da un coperchio trasparente. La fonte fotografica riguarda un preciso esemplare museale e non attesta la proprietà del record commerciale simulato. Qui lo stato buono è indicativo: trascinamento, testine e alimentazione non sono collaudati, né si promette una revisione già eseguita.'
   }
 ];
 
