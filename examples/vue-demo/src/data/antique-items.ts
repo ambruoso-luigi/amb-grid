@@ -27,12 +27,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
     notes: 'Piccolo orologio meccanico da viaggio con custodia ripiegabile, pensato per essere trasportato nel bagaglio. La pelle mostra usura sui bordi; quadrante leggibile e maniglia conservata.'
   },
   {
-    id: 3, code: 'ADT-003', name: 'Sveglia meccanica a due campane', category: 'Orologi',
-    period: 'Anni Quaranta, circa 1940', approximateYear: 1940,
-    materials: ['Acciaio', 'Vetro'], condition: 'Da restaurare', price: 95, available: true, images: [],
-    notes: 'Sveglia da comodino con suoneria esterna a due campane, diffusa nelle abitazioni della prima metà del Novecento. Ossidazioni sulla cassa e carica da revisionare; proposta come oggetto da recupero.'
-  },
-  {
     id: 4, code: 'ADT-004', name: 'Grammofono da tavolo con sportelli', category: 'Audio',
     period: 'Anni Venti, circa 1925', approximateYear: 1925,
     materials: ['Legno impiallacciato', 'Acciaio', 'Ottone'], condition: 'Buono', price: 720, available: true, images: [
@@ -41,16 +35,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
         caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Grammofono acustico da tavolo con mobile in legno. 波喜多 - CC0." }
     ],
     notes: 'Mobile compatto con tromba interna e sportelli frontali per modulare la diffusione del suono. Tipologia domestica per dischi a 78 giri; meccanismo a molla e diaframma non collaudati.'
-  },
-  {
-    id: 5, code: 'ADT-005', name: 'Grammofono portatile a valigia', category: 'Audio',
-    period: 'Anni Trenta, circa 1930', approximateYear: 1930,
-    materials: ['Legno', 'Tessuto rivestito', 'Acciaio'], condition: 'Buono', price: 280, available: false, images: [
-      { src: '/vue/images/adt-005-1.jpg', thumbnail: '/vue/images/adt-005-1-thumb.jpg',
-        alt: "Grammofono portatile Victrola 2-55 con valigia aperta",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Grammofono portatile Victrola 2-55 con valigia aperta. 丘崈 - CC0." }
-    ],
-    notes: 'La cassa a valigia integra il percorso acustico e rende trasportabile la riproduzione dei dischi a 78 giri. Rivestimento segnato vicino alla chiusura; manovella presente e accessori non originali possibili.'
   },
   {
     id: 6, code: 'ADT-006', name: 'Fonografo a cilindri con base lignea', category: 'Audio',
@@ -76,22 +60,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
     notes: 'Fotocamera a rullo con sportello ribaltabile, concepita per ridurre gli ingombri durante il trasporto. Soffietto con pieghe marcate e otturatore da verificare; nessuna garanzia di tenuta alla luce.'
   },
   {
-    id: 8, code: 'ADT-008', name: 'Fotocamera box con mirino superiore', category: 'Fotografia',
-    period: 'Anni Trenta, circa 1935', approximateYear: 1935,
-    materials: ['Lamiera', 'Tessuto rivestito', 'Vetro'], condition: 'Buono', price: 110, available: true, images: [
-      { src: '/vue/images/adt-008-1.jpg', thumbnail: '/vue/images/adt-008-1-thumb.jpg',
-        alt: "Fotocamera box Kodak Brownie",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Fotocamera box Kodak Brownie. User Ericd on en.wikipedia - CC BY-SA 3.0." }
-    ],
-    notes: 'La costruzione a scatola e i comandi ridotti caratterizzano le fotocamere destinate alla fotografia amatoriale. Il rivestimento è conservato con abrasioni; il mirino superiore presenta velature.'
-  },
-  {
-    id: 9, code: 'ADT-009', name: 'Fotocamera da studio in legno', category: 'Fotografia',
-    period: 'Inizio Novecento, circa 1900', approximateYear: 1900,
-    materials: ['Legno', 'Ottone', 'Pelle', 'Vetro smerigliato'], condition: 'Da restaurare', price: 890, available: false, images: [],
-    notes: 'Banco pieghevole con messa a fuoco su vetro smerigliato, tipico della ripresa su lastra. Soffietto fragile e portalastre assenti; lenti e parti meccaniche non sono state verificate per un uso fotografico.'
-  },
-  {
     id: 10, code: 'ADT-010', name: 'Macchina da scrivere portatile con valigia', category: 'Scrittura',
     period: 'Fine anni Trenta, circa 1938', approximateYear: 1938,
     materials: ['Acciaio', 'Gomma', 'Tessuto rivestito'], condition: 'Buono', price: 260, available: true, images: [
@@ -100,16 +68,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
         caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Macchina da scrivere portatile Remington. Maksym Kozlenko - CC BY-SA 4.0." }
     ],
     notes: 'Carrello compatto e custodia rigida rispondono alla crescente mobilità della scrittura professionale. Tasti completi, rullo indurito e nastro da sostituire; la battitura necessita di regolazione.'
-  },
-  {
-    id: 11, code: 'ADT-011', name: 'Macchina da scrivere da ufficio', category: 'Scrittura',
-    period: 'Anni Venti, circa 1920', approximateYear: 1920,
-    materials: ['Ghisa verniciata', 'Acciaio', 'Gomma'], condition: 'Da restaurare', price: 190, available: true, images: [
-      { src: '/vue/images/adt-011-1.jpg', thumbnail: '/vue/images/adt-011-1-thumb.jpg',
-        alt: "Macchina da scrivere da ufficio Continental",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Macchina da scrivere da ufficio Continental. Daderot - CC0." }
-    ],
-    notes: 'Struttura pesante a leve visibili, pensata per il lavoro continuativo di ufficio. Vernice consumata sulle zone di appoggio, alcuni leveraggi bloccati e ritorno del carrello da ripristinare.'
   },
   {
     id: 12, code: 'ADT-012', name: 'Macchina da scrivere meccanica color crema', category: 'Scrittura',
@@ -135,18 +93,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
     notes: 'Base zavorrata e paralume orientabile appartengono alla tipologia delle lampade da lettura da scrivania. Patina superficiale e piccoli segni sul vetro; impianto elettrico da controllare prima dell’utilizzo.'
   },
   {
-    id: 14, code: 'ADT-014', name: 'Lume a petrolio con serbatoio in vetro', category: 'Illuminazione',
-    period: 'Fine Ottocento, circa 1880', approximateYear: 1880,
-    materials: ['Vetro', 'Ottone'], condition: 'Buono', price: 180, available: true, images: [],
-    notes: 'Serbatoio stampato e bruciatore a stoppino documentano una tipologia di illuminazione precedente alla capillare elettrificazione. Camino presente con lievi irregolarità sul bordo; destinazione decorativa.'
-  },
-  {
-    id: 15, code: 'ADT-015', name: 'Lampada da tavolo in vetro lattimo', category: 'Illuminazione',
-    period: 'Anni Cinquanta, circa 1950', approximateYear: 1950,
-    materials: ['Vetro lattimo', 'Ottone'], condition: 'Ottimo', price: 390, available: true, images: [],
-    notes: 'Diffusore in vetro bianco e piede metallico sottile, secondo un linguaggio domestico del secondo dopoguerra. Non si propone alcuna attribuzione a designer o manifatture; cablaggio da verificare.'
-  },
-  {
     id: 16, code: 'ADT-016', name: 'Secretaire con ribalta e cassetti', category: 'Mobili',
     period: 'Secondo Ottocento, circa 1880', approximateYear: 1880,
     materials: ['Noce', 'Abete', 'Ottone'], condition: 'Buono', price: 1450, available: true, images: [
@@ -155,16 +101,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
         caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Secretaire storico con ribalta e cassetti. The Metropolitan Museum of Art - CC0." }
     ],
     notes: 'Mobile da scrittura con piano a ribalta e scomparti interni, destinato alla corrispondenza e alla custodia di documenti. Sono visibili riprese della finitura; la serratura interna è priva di chiave.'
-  },
-  {
-    id: 17, code: 'ADT-017', name: 'Sedia in noce con seduta intrecciata', category: 'Mobili',
-    period: 'Inizio Novecento, circa 1900', approximateYear: 1900,
-    materials: ['Noce', 'Fibra vegetale'], condition: 'Da restaurare', price: 120, available: true, images: [
-      { src: '/vue/images/adt-017-1.jpg', thumbnail: '/vue/images/adt-017-1-thumb.jpg',
-        alt: "Sedia storica in legno con seduta intrecciata",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Sedia storica in legno con seduta intrecciata. The Metropolitan Museum of Art - CC0." }
-    ],
-    notes: 'Schienale a traverse e seduta intrecciata richiamano la produzione domestica di uso quotidiano. Intreccio allentato e giunti da consolidare; la portata non è stata verificata e necessita di restauro.'
   },
   {
     id: 18, code: 'ADT-018', name: 'Comodino con piano in marmo', category: 'Mobili',
@@ -205,22 +141,6 @@ export const antiqueItems: readonly AntiqueItem[] = [
         caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Barometro aneroide su supporto ligneo. Reconrabbit - CC0." }
     ],
     notes: 'Strumento domestico per seguire le variazioni della pressione atmosferica senza colonna di mercurio. Cornice intagliata con piccole perdite di finitura; indice e capsula aneroide non sono stati tarati.'
-  },
-  {
-    id: 22, code: 'ADT-022', name: 'Scatola portagioie con intarsi geometrici', category: 'Oggetti decorativi',
-    period: 'Inizio Novecento, circa 1900', approximateYear: 1900,
-    materials: ['Legno', 'Impiallacciature miste', 'Ottone'], condition: 'Buono', price: 160, available: true, images: [],
-    notes: 'Coperchio con intarsi geometrici e interno rivestito, secondo una tipologia di piccolo arredo personale. Alcune tessere mostrano sollevamenti; fodera probabilmente sostituita e serratura senza chiave.'
-  },
-  {
-    id: 23, code: 'ADT-023', name: 'Vaso in ceramica con smalto verde', category: 'Oggetti decorativi',
-    period: 'Anni Quaranta, circa 1940', approximateYear: 1940,
-    materials: ['Ceramica smaltata'], condition: 'Ottimo', price: 140, available: true, images: [
-      { src: '/vue/images/adt-023-1.jpg', thumbnail: '/vue/images/adt-023-1-thumb.jpg',
-        alt: "Vaso in ceramica verde Catalina Pottery",
-        caption: "Illustrazione di un esemplare analogo, non dell'articolo simulato. Vaso in ceramica verde Catalina Pottery. Gmcbjames - CC BY-SA 3.0." }
-    ],
-    notes: 'Corpo tornito con collo stretto e smalto verde dalle variazioni di tono, pensato come complemento di arredo. Fondo privo di marchi leggibili; non viene associato a una specifica manifattura.'
   },
   {
     id: 24, code: 'ADT-024', name: 'Cornice dorata con decoro a foglie', category: 'Oggetti decorativi',

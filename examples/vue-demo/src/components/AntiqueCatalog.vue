@@ -5,13 +5,14 @@ import { createAntiqueItems } from '../data/antique-items';
 import type { AntiqueItem } from '../models/antique-item';
 
 const container = ref<HTMLDivElement | null>(null);
+const items = createAntiqueItems();
 let grid: ReturnType<typeof AMB.table> | null = null;
 
 onMounted(() => {
   if (!container.value) return;
   grid = AMB.table({
     selector: container.value,
-    data: createAntiqueItems(),
+    data: items,
     toolbar: false,
     floatingMessages: {
       enabled: true,
@@ -24,12 +25,12 @@ onMounted(() => {
     height: 540,
     initialSort: [{ column: 'name', dir: 'asc' }],
     columns: [
-      {
-        title: 'Foto', field: 'images', width: 110, headerSort: false,
-        formatter: AMB.formatters.image({ width: 72, height: 64, fit: 'cover', preview: true, viewer: true })
-      },
       { title: 'Codice', field: 'code', width: 115, sorter: 'string' },
       { title: 'Oggetto', field: 'name', minWidth: 260, widthGrow: 3, sorter: 'string', sorterParams: { locale: 'it' } },
+      {
+        title: 'Foto', field: 'images', width: 120, headerSort: false,
+        formatter: AMB.formatters.image({ width: 80, height: 72, fit: 'cover', preview: true, viewer: true })
+      },
       { title: 'Categoria', field: 'category', minWidth: 190, sorter: 'string', sorterParams: { locale: 'it' } },
       {
         title: 'Epoca', field: 'approximateYear', minWidth: 230, sorter: 'number',
@@ -64,7 +65,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="antique-catalog">
-    <p class="antique-catalog__description">24 articoli in consultazione · Catalogo dimostrativo con prezzi simulati</p>
+    <p class="antique-catalog__description">{{ items.length }} articoli in consultazione · Catalogo dimostrativo con prezzi simulati</p>
     <p class="antique-catalog__credits">
       Fotografie illustrative di esemplari analoghi, non degli articoli simulati.
       <a href="https://github.com/ambruoso-luigi/amb-grid/blob/main/examples/vue-demo/IMAGE_SOURCES.md" target="_blank" rel="noopener noreferrer">Fonti e licenze</a>

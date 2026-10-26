@@ -2,7 +2,9 @@
 
 Il catalogo contiene articoli simulati. Le fotografie mostrano esemplari analoghi, non oggetti effettivamente in vendita: produttori, epoche, materiali e dettagli visibili nelle fonti non sono attribuzioni degli articoli simulati. Anche alt e caption identificano la natura illustrativa.
 
-22 fotografie per 19 articoli. Le tre gallerie mostrano lo stesso esemplare: ADT-002, inventario Auckland Museum AM16360 (due viste); ADT-006, fonografo della 1811 Kid Ory Historic House (due inquadrature); ADT-012, Triumph Tippa fotografata da Raimond Spekking (con e senza copertura del meccanismo). Nessuna galleria mescola oggetti differenti.
+Catalogo attivo: 14 articoli, tutti con fotografie, per un totale di 17 fotografie associate. Archivio fotografico: 22 fotografie originali con relative miniature (44 file JPEG). Le fotografie degli articoli rimossi restano conservate, con tutte le attribuzioni e licenze nella tabella sottostante. La sezione sui placeholder documenta le esclusioni fotografiche del precedente catalogo a 24 articoli; nessuno di quei cinque record fa parte del catalogo attivo.
+
+Le tre gallerie mostrano lo stesso esemplare: ADT-002, inventario Auckland Museum AM16360 (due viste); ADT-006, fonografo della 1811 Kid Ory Historic House (due inquadrature); ADT-012, Triumph Tippa fotografata da Raimond Spekking (con e senza copertura del meccanismo). Nessuna galleria mescola oggetti differenti.
 
 Le copie locali sono JPEG ridimensionati, lato massimo 1280 px, con miniature distinte da 256 px; nessun ritocco al soggetto. Le immagini CC BY-SA e i rispettivi adattamenti mantengono la licenza indicata. Queste licenze riguardano le fotografie, separatamente dalla licenza della libreria. Fonte e attribuzione sono riportate anche nelle caption.
 
