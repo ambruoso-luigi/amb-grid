@@ -44,7 +44,7 @@ onMounted(() => {
       },
       {
         title: 'Note', field: 'notes', minWidth: 300,
-        formatter: AMB.formatters.largeTextPreview({ maxLength: 65 }),
+        formatter: AMB.formatters.largeTextPreview({ maxLength: 50 }),
         editor: AMB.editors.largeText({
           title: "Storia dell'oggetto", readOnly: true, closeText: 'Chiudi',
           width: 720, maxWidth: '92vw', textareaHeight: 320
