@@ -1676,7 +1676,9 @@ a {
 
 .demo-hero__video.demo-video-preview:hover {
     border-color: var(--amb-site-blue);
-    box-shadow: 0 18px 42px rgb(16 35 63 / 23%);
+    box-shadow:
+        0 0 0 3px rgb(29 95 153 / 24%),
+        0 22px 46px rgb(16 35 63 / 24%);
     transform: none;
 }
 
