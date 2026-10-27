@@ -59,14 +59,14 @@ const translations = {
         'frameworks.cta': 'Apri guida e demo',
         'frameworks.install.title': 'Installa AMB Grid',
         'frameworks.javascript.meta': 'ESM / UMD · Integrazione diretta',
-        'frameworks.javascript.description': 'Integra AMB Grid in pagine JavaScript classiche o server-rendered, senza framework obbligatori.',
+        'frameworks.javascript.description': 'Gestionale di magazzino con ciclo CRUD completo, validazione e payload, integrato direttamente in JavaScript anche in contesti legacy.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
-        'frameworks.react.description': 'Integra AMB Grid nel lifecycle del componente React, con mount e cleanup corretti.',
+        'frameworks.react.description': 'Applicazione di inventario con AMB Grid integrata nei componenti React, dalla creazione alla distruzione della griglia.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
-        'frameworks.vue.description': 'Apri Atelier del Tempo, la demo Vue dedicata ad antiquariato, design e oggetti con una storia.',
+        'frameworks.vue.description': 'Atelier del Tempo: catalogo di antiquariato con gallerie fotografiche e schede storiche, integrato in Vue con Composition API.',
         'frameworks.vue.cta': 'Apri demo Vue',
-        'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid',
-        'frameworks.angular.description': 'Apri Live Multi-Asset Portfolio, la demo Angular di un portfolio finanziario simulato.',
+        'frameworks.angular.meta': 'Angular · TypeScript · Feed WebSocket simulato',
+        'frameworks.angular.description': 'Portafoglio finanziario multiasset con quotazioni generate localmente che simulano un feed WebSocket, timeline dinamiche ed editing selettivo.',
         'frameworks.angular.cta': 'Apri demo Angular',
         'mainDemo.kicker': 'Demo principale · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
@@ -218,14 +218,14 @@ const translations = {
         'frameworks.cta': 'Open guide and demo',
         'frameworks.install.title': 'Install AMB Grid',
         'frameworks.javascript.meta': 'ESM / UMD · Direct integration',
-        'frameworks.javascript.description': 'Integrate AMB Grid into classic or server-rendered JavaScript pages without requiring a framework.',
+        'frameworks.javascript.description': 'Inventory management demo with a complete CRUD workflow, validation and backend-ready payloads, integrated directly into JavaScript, including legacy environments.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
-        'frameworks.react.description': 'Integrate AMB Grid into the React component lifecycle with proper mounting and cleanup.',
+        'frameworks.react.description': 'Inventory application integrating AMB Grid into React components, from grid initialization to proper cleanup.',
         'frameworks.vue.meta': 'Composition API · TypeScript',
-        'frameworks.vue.description': 'Open Atelier del Tempo, the Vue demo for antiques, design and objects with a story.',
+        'frameworks.vue.description': 'Atelier del Tempo: an antiques catalogue with photo galleries and historical descriptions, integrated into Vue using the Composition API.',
         'frameworks.vue.cta': 'Open Vue demo',
-        'frameworks.angular.meta': 'Angular · TypeScript · AMB Grid',
-        'frameworks.angular.description': 'Open Live Multi-Asset Portfolio, the Angular demo of a simulated financial portfolio.',
+        'frameworks.angular.meta': 'Angular · TypeScript · Simulated WebSocket feed',
+        'frameworks.angular.description': 'Multi-asset financial portfolio with locally generated quotes simulating a WebSocket feed, dynamic timelines and selective editing.',
         'frameworks.angular.cta': 'Open Angular demo',
         'mainDemo.kicker': 'Main demo · Legacy-friendly',
         'mainDemo.title': 'Gestionale Magazzino Classico',
@@ -663,8 +663,8 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">JavaScript</span>
-                            <span class="demo-framework-card__meta" data-i18n="frameworks.javascript.meta">ESM / UMD · Direct integration</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Integra AMB Grid in pagine JavaScript classiche o server-rendered, senza framework obbligatori.</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.javascript.meta">ESM / UMD · Integrazione diretta</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.javascript.description">Gestionale di magazzino con ciclo CRUD completo, validazione e payload, integrato direttamente in JavaScript anche in contesti legacy.</span>
                         </span>
                         <span class="demo-framework-card__footer">
                             <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
@@ -678,7 +678,7 @@ const renderShell = selectedId => {
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">React</span>
                             <span class="demo-framework-card__meta" data-i18n="frameworks.react.meta">TypeScript · Component lifecycle</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Integra AMB Grid nel lifecycle del componente React, con mount e cleanup corretti.</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Applicazione di inventario con AMB Grid integrata nei componenti React, dalla creazione alla distruzione della griglia.</span>
                         </span>
                         <span class="demo-framework-card__footer">
                             <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>
@@ -692,7 +692,7 @@ const renderShell = selectedId => {
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
                             <span class="demo-framework-card__meta" data-i18n="frameworks.vue.meta">Composition API · TypeScript</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Apri Atelier del Tempo, la demo Vue dedicata ad antiquariato, design e oggetti con una storia.</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Atelier del Tempo: catalogo di antiquariato con gallerie fotografiche e schede storiche, integrato in Vue con Composition API.</span>
                         </span>
                         <span class="demo-framework-card__footer" aria-hidden="true">
                             <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.vue.cta">Apri demo Vue</span></span>
@@ -705,8 +705,8 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
-                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">Angular · TypeScript · AMB Grid</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Apri Live Multi-Asset Portfolio, la demo Angular di un portfolio finanziario simulato.</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">Angular · TypeScript · Feed WebSocket simulato</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Portafoglio finanziario multiasset con quotazioni generate localmente che simulano un feed WebSocket, timeline dinamiche ed editing selettivo.</span>
                         </span>
                         <span class="demo-framework-card__footer" aria-hidden="true">
                             <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.angular.cta">Apri demo Angular</span></span>

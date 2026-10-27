@@ -1262,7 +1262,7 @@ a {
 
 .demo-framework-card__meta {
     color: color-mix(in srgb, var(--framework-accent) 68%, var(--amb-site-slate));
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 750;
     letter-spacing: 0.015em;
     line-height: 1.35;
@@ -1270,7 +1270,7 @@ a {
 
 .demo-framework-card__description {
     color: var(--amb-site-slate);
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.48;
     overflow-wrap: anywhere;
 }
