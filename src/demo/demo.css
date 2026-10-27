@@ -177,13 +177,13 @@ a {
     box-shadow:
         0 1px 0 rgb(255 255 255 / 86%) inset,
         0 26px 70px rgb(16 35 63 / 13%);
-    column-gap: clamp(24px, 4vw, 56px);
     display: grid;
-    gap: clamp(28px, 3.6vw, 46px);
+    column-gap: clamp(24px, 4vw, 56px);
+    row-gap: clamp(16px, 2vw, 24px);
     grid-template-areas:
         "brand video"
         "body video";
-    grid-template-columns: minmax(0, 1fr) minmax(290px, 430px);
+    grid-template-columns: minmax(0, 1fr) minmax(290px, min(38vw, 520px));
     min-height: auto;
     overflow: hidden;
     padding: clamp(24px, 4vw, 52px);
@@ -234,12 +234,12 @@ a {
     align-self: center;
     min-width: 0;
     max-width: 100%;
-    padding: clamp(6px, 1.8vw, 18px) 0 clamp(6px, 1.8vw, 18px);
+    padding: 0;
 }
 
 .demo-hero h1 {
     color: #0d2038;
-    font-size: clamp(34px, 5.2vw, 66px);
+    font-size: clamp(32px, 4.7vw, 60px);
     letter-spacing: 0;
     line-height: 0.98;
     margin-bottom: 20px;
@@ -1665,6 +1665,44 @@ a {
 
 .demo-video-preview:hover .demo-video-preview__destination {
     background: rgb(10 22 38 / 86%);
+}
+
+/* Home hero only: keep the photograph clear and interaction on the perimeter. */
+.demo-hero__video.demo-video-preview {
+    align-self: center;
+    max-width: 520px;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.demo-hero__video.demo-video-preview:hover {
+    border-color: var(--amb-site-blue);
+    box-shadow: 0 18px 42px rgb(16 35 63 / 23%);
+    transform: none;
+}
+
+.demo-hero__video.demo-video-preview:focus-visible {
+    outline: 2px solid var(--amb-site-blue);
+    outline-offset: 4px;
+    box-shadow: var(--amb-site-ring), 0 18px 42px rgb(16 35 63 / 23%);
+}
+
+.demo-hero__video .demo-video-preview__overlay,
+.demo-hero__video:hover .demo-video-preview__overlay {
+    background: linear-gradient(180deg, transparent 35%, rgb(10 22 38 / 16%) 100%);
+    transition: none;
+}
+
+.demo-hero__video .demo-video-preview__title {
+    bottom: 12px;
+    font-size: 12px;
+    left: auto;
+    padding: 6px 8px;
+    right: 12px;
+    top: auto;
+}
+
+.demo-hero__video:hover .demo-video-preview__destination {
+    background: rgb(10 22 38 / 76%);
 }
 
 .demo-guide-page h1 {
@@ -4432,7 +4470,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     }
 
     .demo-hero__content {
-        padding-top: 18px;
+        padding-top: 0;
     }
 
     .demo-flow-grid {
@@ -4519,7 +4557,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     }
 
     .demo-hero h1 {
-        font-size: clamp(30px, 11vw, 42px);
+        font-size: clamp(28px, 10vw, 38px);
         line-height: 1.03;
     }
 
