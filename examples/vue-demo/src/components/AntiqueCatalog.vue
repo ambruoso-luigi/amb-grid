@@ -65,9 +65,8 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="antique-catalog">
-    <p class="antique-catalog__description">{{ items.length }} articoli in consultazione · Catalogo dimostrativo con prezzi simulati</p>
+    <p class="antique-catalog__description">{{ items.length }} articoli in consultazione · Catalogo dimostrativo di oggetti d'epoca. Fotografie reali, prezzi simulati.</p>
     <p class="antique-catalog__credits">
-      Fotografie illustrative di esemplari analoghi, non degli articoli simulati.
       <a href="https://github.com/ambruoso-luigi/amb-grid/blob/main/examples/vue-demo/IMAGE_SOURCES.md" target="_blank" rel="noopener noreferrer">Fonti e licenze</a>
     </p>
     <div class="antique-catalog__scroll">
