@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { enterNavigationWithClick } from './helpers/focus-diagnostics.js';
 
 const grid = page => page.locator('#img11-grid');
 const row = (page, index) => grid(page).locator('.tabulator-row').nth(index);
@@ -94,7 +95,7 @@ for (const field of ['id', 'description', 'testCase']) {
         const a = page.locator('#image-formatter-test-table');
         const first = a.locator('.tabulator-row').first();
         const start = first.locator(`[tabulator-field="${field}"]`);
-        await start.click();
+        await enterNavigationWithClick(page, start, `Fresh readonly ${field}`, '#image-formatter-test-table');
         await expectNavigationFocus(start);
         if (field === 'id') {
             await page.keyboard.press('Tab');

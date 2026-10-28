@@ -9,7 +9,10 @@ const inspectTarget = async target => {
         connected: element.isConnected,
         focused: document.activeElement === element,
         className: String(element.className || ''),
-        field: element.getAttribute('tabulator-field')
+        field: element.getAttribute('tabulator-field'),
+        editing: Boolean(element.closest('.tabulator-cell')?.classList.contains('tabulator-editing')),
+        rowState: element.closest('.tabulator-row')?.getAttribute('data-state') || null,
+        action: element.closest('[data-action]')?.getAttribute('data-action') || null
     }));
 };
 
@@ -22,9 +25,11 @@ export const reportFocusDiagnostics = async (page, target, label, tableSelector)
             const table = document.querySelector(selector);
             return {
                 activeElement: { tagName: active?.tagName || null, className: String(active?.className || ''), connected: Boolean(active?.isConnected) },
-                activeCell: { field: activeCell?.getAttribute('tabulator-field') || null, editing: Boolean(activeCell?.classList.contains('tabulator-editing')) },
+                activeCell: { field: activeCell?.getAttribute('tabulator-field') || null, editing: Boolean(activeCell?.classList.contains('tabulator-editing')), rowState: activeCell?.closest('.tabulator-row')?.getAttribute('data-state') || null },
                 openEditors: table?.querySelectorAll('.tabulator-cell.tabulator-editing').length ?? null,
                 currentPage: table?.querySelector('.tabulator-page.active')?.textContent?.trim() || null,
+                toolbarBusy: Boolean(document.querySelector('.amb-toolbar__button--add[aria-busy="true"]')),
+                activeAction: active?.closest('[data-action]')?.getAttribute('data-action') || null,
                 dialogOpen: Boolean(document.querySelector('.amb-lookup-dialog, .teh-confirm-dialog--visible'))
             };
         }, tableSelector)
@@ -37,6 +42,13 @@ export const enterNavigationWithClick = async (page, target, label, tableSelecto
     try {
         await target.scrollIntoViewIfNeeded();
         await expect(target).toBeVisible();
+        await expect.poll(() => target.evaluate(async element => {
+            const before = element.getBoundingClientRect();
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            const after = element.getBoundingClientRect();
+            return element.isConnected && before.x === after.x && before.y === after.y
+                && before.width === after.width && before.height === after.height;
+        })).toBe(true);
         await target.click();
         await expect.poll(() => page.evaluate(() => document.activeElement?.closest('.tabulator-cell')?.getAttribute('tabulator-field') || null)).toBe(field);
         await expect(target).toBeFocused();

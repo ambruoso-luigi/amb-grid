@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { enterNavigationWithClick } from './helpers/focus-diagnostics.js';
+import { enterNavigationWithClick, reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 const openInventoryDemo = async (page, { publicEntry = false } = {}) => {
     await page.goto(publicEntry ? '/#getting-started-javascript' : '/src/demo/index.html#getting-started-javascript');
@@ -71,22 +71,38 @@ test.describe('row controls accessibility', () => {
     test('main demo confirms removal of a new row', async ({ page }) => {
         await openInventoryDemo(page, { publicEntry: true });
 
-        await page.locator('#javascript-demo .amb-toolbar__button--add').click();
+        const addButton = page.locator('#javascript-demo .amb-toolbar__button--add');
+        await addButton.click();
         const newRow = page.locator('#inventory-table .tabulator-row[data-state="new"]');
+        const itemCode = newRow.locator('[tabulator-field="itemCode"]');
         const removeNewButton = newRow.locator('.amb-row-action-button--remove-new');
 
-        await expect(newRow).toBeVisible();
-        await expect(removeNewButton).toBeVisible();
-        await expect(removeNewButton).toBeEnabled();
-        await removeNewButton.press('Enter');
-        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
-        await page.locator('.teh-confirm-dialog__button--cancel').click();
-        await expect(newRow).toBeVisible();
-        await expect(newRow).toHaveAttribute('data-state', 'new');
-        await removeNewButton.press('Space');
-        await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
-        await page.locator('.teh-confirm-dialog__button--confirm').click();
-        await expect(newRow).toHaveCount(0);
+        try {
+            await expect(newRow).toBeVisible();
+            await expect(addButton).not.toHaveAttribute('aria-busy', 'true');
+            await expect(itemCode.locator('input.amb-cell-editor')).toBeFocused();
+            await page.keyboard.press('Escape');
+            await expect(itemCode).toBeFocused();
+            await expect(newRow.locator('.tabulator-editing')).toHaveCount(0);
+            await page.keyboard.press('ArrowLeft');
+            await expect(removeNewButton).toBeVisible();
+            await expect(removeNewButton).toBeEnabled();
+            await expect(removeNewButton).toBeFocused();
+            await page.keyboard.press('Enter');
+            await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
+            await page.locator('.teh-confirm-dialog__button--cancel').click();
+            await expect(newRow).toBeVisible();
+            await expect(newRow).toHaveAttribute('data-state', 'new');
+            await expect(removeNewButton).toBeFocused();
+            await page.keyboard.press('Space');
+            await expect(page.locator('.teh-confirm-dialog--visible')).toBeVisible();
+            await page.locator('.teh-confirm-dialog__button--confirm').click();
+            await expect(newRow).toHaveCount(0);
+            await expect.poll(() => getActiveGridFocus(page)).toMatchObject({ action: 'delete' });
+        } catch (error) {
+            await reportFocusDiagnostics(page, removeNewButton, 'New row confirmation failed', '#inventory-table');
+            throw error;
+        }
     });
 
     test('main demo row action exits to Item code with native Tab navigation', async ({ page }) => {
