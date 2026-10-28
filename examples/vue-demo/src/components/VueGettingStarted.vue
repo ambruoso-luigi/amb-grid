@@ -173,7 +173,7 @@ const CodeBlock = defineComponent({
 </template>
 
 <style scoped>
-.vue-start-guide { --vue-guide-accent: #258764; background: #f8faf9; color: #142033; margin: 40px auto 20px; max-width: 1320px; padding: clamp(20px, 3vw, 40px); width: 100%; }
+.vue-start-guide { --vue-guide-accent: #258764; background: transparent; border-top: 1px solid #dbe5df; box-sizing: border-box; color: #142033; margin: 32px auto 20px; max-width: none; min-width: 0; padding: clamp(34px, 5vw, 68px) clamp(4px, 1.4vw, 18px) clamp(18px, 3vw, 36px); width: 100%; }
 .vue-start-guide__heading { margin-bottom: 28px; }
 .vue-start-guide .vue-start-guide__kicker { color: #206f53; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
 .vue-start-guide h2 { font-size: clamp(28px, 3.2vw, 42px); font-weight: 750; line-height: 1.12; margin: 10px 0 16px; }
@@ -189,7 +189,7 @@ const CodeBlock = defineComponent({
 .vue-start-step__number { align-items: center; background: #206f53; border-radius: 50%; color: #fff; display: flex; font-size: 15px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
 .vue-start-step__body { min-width: 0; }
 .vue-start-guide .vue-start-step__note { font-size: 14px; line-height: 1.6; }
-.vue-start-guide :deep(.vue-start-code) { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; }
+.vue-start-guide :deep(.vue-start-code) { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; box-sizing: border-box; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; min-width: 0; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; width: 100%; }
 .vue-start-guide :deep(.vue-start-code code) { color: inherit; font: inherit; }
 .vue-start-guide :deep(.vue-start-token--keyword) { color: #c792ea; }
 .vue-start-guide :deep(.vue-start-token--string) { color: #b9d88b; }
@@ -198,7 +198,7 @@ const CodeBlock = defineComponent({
 .vue-start-guide :deep(.vue-start-token--function) { color: #82c7ff; }
 .vue-start-guide :deep(.vue-start-token--api) { color: #58d6c7; font-weight: 700; }
 @media (max-width: 640px) {
-  .vue-start-guide { margin-top: 28px; padding: 18px 6px; }
+  .vue-start-guide { margin-top: 28px; padding: 34px 0 18px; }
   .vue-start-step { gap: 12px; grid-template-columns: minmax(0, 1fr); padding-block: 24px; }
   .vue-start-guide :deep(.vue-start-code) { padding: 14px; }
 }

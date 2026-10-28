@@ -260,12 +260,15 @@ body.amb-react-demo-active .teh-floating-message--info .teh-floating-message__bo
 
 /* Technical guide: the JavaScript guide's vertical rhythm, scoped to React. */
 .react-start-guide {
-  background: #f8fafc;
+  background: transparent;
+  border-top: 1px solid #dbe5ef;
+  box-sizing: border-box;
   color: #142033;
-  margin: 40px auto 64px;
-  max-width: 1320px;
-  padding: clamp(20px, 3vw, 40px);
-  width: calc(100% - 24px);
+  margin: 32px auto 48px;
+  max-width: none;
+  min-width: 0;
+  padding: clamp(34px, 5vw, 68px) clamp(4px, 1.4vw, 18px) clamp(18px, 3vw, 36px);
+  width: calc(100% - 12px);
 }
 .react-start-guide__heading { margin-bottom: 28px; }
 .react-start-guide__kicker { color: #08758d !important; font-size: 13px !important; font-weight: 800; letter-spacing: .08em; }
@@ -282,7 +285,7 @@ body.amb-react-demo-active .teh-floating-message--info .teh-floating-message__bo
 .react-start-step__number { align-items: center; background: #08758d; border-radius: 50%; color: #fff; display: flex; font-size: 15px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
 .react-start-step__body { min-width: 0; }
 .react-start-guide .react-start-step__note { font-size: 14px; line-height: 1.6; }
-.react-start-code { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; }
+.react-start-code { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; box-sizing: border-box; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; min-width: 0; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; width: 100%; }
 .react-start-code code { color: inherit; font: inherit; }
 .react-start-token--keyword { color: #c792ea; }
 .react-start-token--string { color: #b9d88b; }
@@ -291,7 +294,7 @@ body.amb-react-demo-active .teh-floating-message--info .teh-floating-message__bo
 .react-start-token--function { color: #82c7ff; }
 .react-start-token--api { color: #58d6c7; font-weight: 700; }
 @media (max-width: 640px) {
-  .react-start-guide { margin-block: 28px 40px; padding: 18px 12px; }
+  .react-start-guide { margin-block: 28px 40px; padding: 34px 0 18px; width: calc(100% - 24px); }
   .react-start-step { gap: 12px; grid-template-columns: minmax(0, 1fr); padding-block: 24px; }
   .react-start-code { padding: 14px; }
 }

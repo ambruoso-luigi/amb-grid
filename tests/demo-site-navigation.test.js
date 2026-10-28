@@ -29,13 +29,13 @@ describe('demo site navigation', () => {
         expect(main).toContain("'frameworks.react.meta': 'TypeScript · Component lifecycle'");
         expect(main).toContain("'frameworks.react.description': 'Applicazione di inventario con AMB Grid integrata nei componenti React, dalla creazione alla distruzione della griglia.'");
         expect(main).toContain("'frameworks.react.description': 'Inventory application integrating AMB Grid into React components, from grid initialization to proper cleanup.'");
-        expect(main).toContain("'frameworks.vue.meta': 'Composition API · TypeScript'");
+        expect(main).toContain("'frameworks.vue.meta': 'TypeScript · Composition API'");
         expect(main).toContain("'frameworks.vue.description': 'Atelier del Tempo: catalogo di antiquariato con gallerie fotografiche e schede storiche, integrato in Vue con Composition API.'");
         expect(main).toContain("'frameworks.vue.description': 'Atelier del Tempo: an antiques catalogue with photo galleries and historical descriptions, integrated into Vue using the Composition API.'");
         expect(main).toContain("'frameworks.vue.cta': 'Apri demo Vue'");
         expect(main).toContain("'frameworks.vue.cta': 'Open Vue demo'");
-        expect(main).toContain("'frameworks.angular.meta': 'Angular · TypeScript · Feed WebSocket simulato'");
-        expect(main).toContain("'frameworks.angular.meta': 'Angular · TypeScript · Simulated WebSocket feed'");
+        expect(main).toContain("'frameworks.angular.meta': 'TypeScript · Feed WebSocket simulato'");
+        expect(main).toContain("'frameworks.angular.meta': 'TypeScript · Simulated WebSocket feed'");
         expect(main).toContain("'frameworks.angular.description': 'Portafoglio finanziario multiasset con quotazioni generate localmente che simulano un feed WebSocket, timeline dinamiche ed editing selettivo.'");
         expect(main).toContain("'frameworks.angular.description': 'Multi-asset financial portfolio with locally generated quotes simulating a WebSocket feed, dynamic timelines and selective editing.'");
         expect(main).toContain("'frameworks.angular.cta': 'Apri demo Angular'");

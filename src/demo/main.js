@@ -62,10 +62,10 @@ const translations = {
         'frameworks.javascript.description': 'Gestionale di magazzino con ciclo CRUD completo, validazione e payload, integrato direttamente in JavaScript anche in contesti legacy.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
         'frameworks.react.description': 'Applicazione di inventario con AMB Grid integrata nei componenti React, dalla creazione alla distruzione della griglia.',
-        'frameworks.vue.meta': 'Composition API · TypeScript',
+        'frameworks.vue.meta': 'TypeScript · Composition API',
         'frameworks.vue.description': 'Atelier del Tempo: catalogo di antiquariato con gallerie fotografiche e schede storiche, integrato in Vue con Composition API.',
         'frameworks.vue.cta': 'Apri demo Vue',
-        'frameworks.angular.meta': 'Angular · TypeScript · Feed WebSocket simulato',
+        'frameworks.angular.meta': 'TypeScript · Feed WebSocket simulato',
         'frameworks.angular.description': 'Portafoglio finanziario multiasset con quotazioni generate localmente che simulano un feed WebSocket, timeline dinamiche ed editing selettivo.',
         'frameworks.angular.cta': 'Apri demo Angular',
         'mainDemo.kicker': 'Demo principale · Legacy-friendly',
@@ -221,10 +221,10 @@ const translations = {
         'frameworks.javascript.description': 'Inventory management demo with a complete CRUD workflow, validation and backend-ready payloads, integrated directly into JavaScript, including legacy environments.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
         'frameworks.react.description': 'Inventory application integrating AMB Grid into React components, from grid initialization to proper cleanup.',
-        'frameworks.vue.meta': 'Composition API · TypeScript',
+        'frameworks.vue.meta': 'TypeScript · Composition API',
         'frameworks.vue.description': 'Atelier del Tempo: an antiques catalogue with photo galleries and historical descriptions, integrated into Vue using the Composition API.',
         'frameworks.vue.cta': 'Open Vue demo',
-        'frameworks.angular.meta': 'Angular · TypeScript · Simulated WebSocket feed',
+        'frameworks.angular.meta': 'TypeScript · Simulated WebSocket feed',
         'frameworks.angular.description': 'Multi-asset financial portfolio with locally generated quotes simulating a WebSocket feed, dynamic timelines and selective editing.',
         'frameworks.angular.cta': 'Open Angular demo',
         'mainDemo.kicker': 'Main demo · Legacy-friendly',
@@ -691,7 +691,7 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Vue</span>
-                            <span class="demo-framework-card__meta" data-i18n="frameworks.vue.meta">Composition API · TypeScript</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.vue.meta">TypeScript · Composition API</span>
                             <span class="demo-framework-card__description" data-i18n="frameworks.vue.description">Atelier del Tempo: catalogo di antiquariato con gallerie fotografiche e schede storiche, integrato in Vue con Composition API.</span>
                         </span>
                         <span class="demo-framework-card__footer" aria-hidden="true">
@@ -705,7 +705,7 @@ const renderShell = selectedId => {
                         </span>
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">Angular</span>
-                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">Angular · TypeScript · Feed WebSocket simulato</span>
+                            <span class="demo-framework-card__meta" data-i18n="frameworks.angular.meta">TypeScript · Feed WebSocket simulato</span>
                             <span class="demo-framework-card__description" data-i18n="frameworks.angular.description">Portafoglio finanziario multiasset con quotazioni generate localmente che simulano un feed WebSocket, timeline dinamiche ed editing selettivo.</span>
                         </span>
                         <span class="demo-framework-card__footer" aria-hidden="true">

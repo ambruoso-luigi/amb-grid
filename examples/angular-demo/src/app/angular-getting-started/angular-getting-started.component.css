@@ -3,7 +3,7 @@
 .copy-en { display: none; }
 :host-context(html[lang="en"]) .copy-it { display: none; }
 :host-context(html[lang="en"]) .copy-en { display: inline; }
-.angular-start-guide { --guide-accent: #a73555; margin: 40px auto 20px; max-width: 1320px; padding: clamp(20px, 3vw, 40px); background: #f8fafc; color: #142033; }
+.angular-start-guide { --guide-accent: #a73555; margin: 32px auto 20px; max-width: none; min-width: 0; padding: clamp(34px, 5vw, 68px) clamp(4px, 1.4vw, 18px) clamp(18px, 3vw, 36px); background: transparent; border-top: 1px solid #dbe5ef; box-sizing: border-box; color: #142033; width: 100%; }
 header { margin-bottom: 28px; }
 .kicker { color: var(--guide-accent); font-size: 13px; font-weight: 800; letter-spacing: .08em; }
 h2 { font-size: clamp(28px, 3.2vw, 42px); font-weight: 750; line-height: 1.12; margin: 10px 0 16px; }
@@ -18,7 +18,7 @@ li:last-child { border-bottom: 1px solid #dbe5ef; }
 .number { align-items: center; background: var(--guide-accent); border-radius: 50%; color: #fff; display: flex; font-size: 15px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
 .step-body { min-width: 0; }
 .note { font-size: 14px; line-height: 1.6; }
-pre { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; }
+pre { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; box-sizing: border-box; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; min-width: 0; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; width: 100%; }
 code { color: inherit; font: inherit; }
 .token-keyword { color: #c792ea; }
 .token-string { color: #b9d88b; }
@@ -27,7 +27,7 @@ code { color: inherit; font: inherit; }
 .token-function { color: #82c7ff; }
 .token-api { color: #58d6c7; font-weight: 700; }
 @media (max-width: 640px) {
-  .angular-start-guide { margin-top: 28px; padding: 18px 6px; }
+  .angular-start-guide { margin-top: 28px; padding: 34px 0 18px; }
   li { gap: 12px; grid-template-columns: minmax(0, 1fr); padding-block: 24px; }
   pre { padding: 14px; }
 }
