@@ -257,3 +257,41 @@ button, a { outline-offset: 3px; }
 body.amb-react-demo-active .teh-floating-message--info { background: #effbfc; border-color: #b3dfe6; border-left-color: #0ea5b7; border-radius: 8px; box-shadow: 0 8px 20px rgb(20 92 108 / 14%); color: #21485e; max-width: 300px; }
 body.amb-react-demo-active .teh-floating-message--info .teh-floating-message__title { display: none; }
 body.amb-react-demo-active .teh-floating-message--info .teh-floating-message__body { padding: 9px 11px; }
+
+/* Technical guide: the JavaScript guide's vertical rhythm, scoped to React. */
+.react-start-guide {
+  background: #f8fafc;
+  color: #142033;
+  margin: 40px auto 64px;
+  max-width: 1320px;
+  padding: clamp(20px, 3vw, 40px);
+  width: calc(100% - 24px);
+}
+.react-start-guide__heading { margin-bottom: 28px; }
+.react-start-guide__kicker { color: #08758d !important; font-size: 13px !important; font-weight: 800; letter-spacing: .08em; }
+.react-start-guide h2 { font-size: clamp(28px, 3.2vw, 42px); font-weight: 750; line-height: 1.12; margin: 10px 0 16px; }
+.react-start-guide h3 { font-size: clamp(21px, 2.3vw, 26px); font-weight: 700; line-height: 1.2; margin: 0 0 12px; }
+.react-start-guide p { color: #50677c; font-size: 16px; line-height: 1.65; margin: 0 0 12px; max-width: 920px; }
+.react-start-guide .react-start-guide__install { font-size: 14px; margin-top: 18px; }
+.react-start-guide__install a { color: #08758d; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.react-start-guide__install a:hover { color: #123f58; }
+.react-start-guide a:focus-visible, .react-start-code:focus-visible { outline: 2px solid #08758d; outline-offset: 4px; }
+.react-start-guide__steps { list-style: none; margin: 0; padding: 0; }
+.react-start-step { border-top: 1px solid #dbe5ef; display: grid; gap: 18px; grid-template-columns: 34px minmax(0, 1fr); padding: 30px 0; }
+.react-start-step:last-child { border-bottom: 1px solid #dbe5ef; }
+.react-start-step__number { align-items: center; background: #08758d; border-radius: 50%; color: #fff; display: flex; font-size: 15px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
+.react-start-step__body { min-width: 0; }
+.react-start-guide .react-start-step__note { font-size: 14px; line-height: 1.6; }
+.react-start-code { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; }
+.react-start-code code { color: inherit; font: inherit; }
+.react-start-token--keyword { color: #c792ea; }
+.react-start-token--string { color: #b9d88b; }
+.react-start-token--number { color: #f2c580; }
+.react-start-token--comment { color: #9baac0; font-style: italic; }
+.react-start-token--function { color: #82c7ff; }
+.react-start-token--api { color: #58d6c7; font-weight: 700; }
+@media (max-width: 640px) {
+  .react-start-guide { margin-block: 28px 40px; padding: 18px 12px; }
+  .react-start-step { gap: 12px; grid-template-columns: minmax(0, 1fr); padding-block: 24px; }
+  .react-start-code { padding: 14px; }
+}

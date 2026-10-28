@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { readDemoLanguage } from '../../../src/demo/demo-language-switch.js';
 import { InventoryShell } from './components/InventoryShell';
 import { ReactHero } from './components/ReactHero';
+import { ReactGettingStarted } from './components/ReactGettingStarted';
 import { TableGuideAccordion } from './components/TableGuideAccordion';
 
 type Language = 'it' | 'en';
@@ -32,6 +33,7 @@ export default function App() {
         <TableGuideAccordion language={language} />
         <InventoryShell language={language} />
       </section>
+      <ReactGettingStarted language={language} />
     </main>
   );
 }
