@@ -112,7 +112,7 @@ const copy = {
       {
         title: 'Sincronizza AMB Grid con lo stato React',
         description: 'InventoryShell passa syncFromGrid come onStateChange. In InventoryGrid, gli eventi reali row-state-changed e dataFiltered richiamano questa callback: il nuovo payload aggiorna lo stato React. La callback completa legge anche getStateReport() e getCalcResults() per aggiornare i KPI.',
-        note: 'Estratti parziali: il primo mostra lo stato in InventoryShell.tsx (tipi, emptyPayload e handleGridReady sono già definiti nella demo). Il secondo mostra due delle sottoscrizioni di InventoryGrid.tsx e le corrispondenti istruzioni di cleanup, da collocare dentro destroyGrid. onCrud restituisce la funzione di rimozione; gli eventi registrati con on si rimuovono con off.',
+        note: 'Estratti parziali di InventoryShell.tsx e InventoryGrid.tsx; tipi, emptyPayload e handleGridReady sono definiti nella demo. Il secondo blocco mostra due sottoscrizioni e il relativo destroyGrid: onCrud restituisce la funzione di rimozione, mentre on richiede off.',
       },
       {
         title: 'Configura editor e ricerca dei fornitori',
@@ -141,7 +141,7 @@ const copy = {
       {
         title: 'Synchronize AMB Grid with React state',
         description: 'InventoryShell passes syncFromGrid as onStateChange. In InventoryGrid, the real row-state-changed and dataFiltered events call this callback: the new payload updates React state. The full callback also reads getStateReport() and getCalcResults() to update the KPIs.',
-        note: 'Partial excerpts: the first shows state in InventoryShell.tsx (types, emptyPayload and handleGridReady are already defined in the demo). The second shows two subscriptions from InventoryGrid.tsx and their cleanup instructions, which belong inside destroyGrid. onCrud returns an unsubscribe function; events registered with on are removed with off.',
+        note: 'Partial excerpts from InventoryShell.tsx and InventoryGrid.tsx; types, emptyPayload and handleGridReady are defined in the demo. The second block shows two subscriptions and their destroyGrid cleanup: onCrud returns an unsubscribe function, while on requires off.',
       },
       {
         title: 'Configure editors and supplier search',

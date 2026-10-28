@@ -60,13 +60,6 @@ ngAfterViewInit(): void {
       visibleInGrid: true, visibleInLookup: true, searchable: true, required: true },
   ],
 });`,
-  selection: `const instrument = record as Instrument;
-const row = cell.getRow().getData() as HoldingsRow;
-const key = positionKey(row);
-const selection = instrumentSelectionPatch(
-  this.grid.getData() as HoldingsRow[], key, instrument,
-  this.market.quoteFor(instrument.id).price,
-);`,
   quantity: `const isCrypto = cell.getRow().getData().type === 'Crypto';
 const quantityEditor = isCrypto
   ? AMB.editors.decimal({ decimalDigits: 8, integerDigits: 10,
@@ -99,19 +92,6 @@ const quantityEditor = isCrypto
     if (content) this.paintLiveCell(content, row, field);
   }
 }`,
-  timeline: `const history = this.market.historyFor(row.instrumentId);
-const previousClose = this.quoteFor(row).previousClose;
-const low = Math.min(...history);
-const high = Math.max(...history);
-const spread = Math.max(high - low, previousClose * 0.001);
-const base = low - spread * 0.15;
-const scale = spread * 1.3;
-svg.setAttribute('class', 'portfolio-grid__timeline');
-svg.setAttribute('aria-label',
-  \`\${row.ticker}: andamento simulato degli ultimi \${history.length} campioni\`);
-while (svg.children.length < history.length)
-  svg.append(document.createElementNS(namespace, 'rect'));
-while (svg.children.length > history.length) svg.lastElementChild?.remove();`,
   totals: `const allHoldings = () =>
   (this.grid?.getData() as HoldingsRow[] | undefined) ?? initialHoldings;
 const portfolioTotals = () =>
@@ -129,15 +109,6 @@ const profitLossSummary = {
   topCalc: () => portfolioTotals(),
   topCalcFormatter: profitSummary,
 };`,
-  recalc: `this.grid.on('cellEdited', (event: unknown) => {
-  const cell = event as EditedCell;
-  if (cell.getField() === 'quantity') {
-    const row = cell.getRow().getData();
-    this.refreshLiveCells(row);
-    this.grid?.recalc();
-  }
-  if (cell.getField() === 'instrument') this.activeLookupKey = null;
-});`,
 } as const;
 
 export const copy = {
@@ -151,22 +122,22 @@ export const copy = {
       {
         title: 'Inizializza AMB Grid nel lifecycle Angular',
         description: 'Angular possiede il contenitore DOM collegato a #gridHost. @ViewChild e ElementRef lo rendono disponibile in ngAfterViewInit; AMB.table crea la griglia al suo interno. Angular coordina il componente, AMB Grid gestisce la tabella.',
-        note: 'Estratti di PortfolioGridComponent: il primo mostra solo la colonna Price readonly. Import e helper come initialRows, HoldingsRow e liveCell sono definiti nel sorgente; le altre colonne e la registrazione degli eventi sono omesse. Il secondo è il cleanup reale: ngOnDestroy ferma il timer, rimuove il listener esistente, distrugge il lookup e chiama grid.destroy().',
+        note: 'Estratti parziali di PortfolioGridComponent, con la sola colonna Price. Import, helper e sottoscrizioni sono omessi. Il cleanup completo ferma il timer, rimuove il listener, distrugge il lookup e la griglia.',
       },
       {
         title: 'Modifica soltanto i campi necessari',
         description: 'Solo Instrument e Quantity hanno un editor. AMB.lookup ricerca nel catalogo locale escludendo gli strumenti già presenti in altre posizioni; AMB.multifieldLookup collega il nome a instrumentId, ticker e type. La colonna Instrument nasce da multifield.masterColumn(), le dipendenti da multifield.dependentColumn(). Price, Timeline, Value e P/L sono consultabili senza editor.',
-        note: 'Estratti di ngAfterViewInit: lookup e multifield mantengono le opzioni reali. Il terzo frammento è il nucleo di editorOptions.applyRecord: dopo il controllo di this.grid, l’helper applicativo instrumentSelectionPatch verifica i duplicati e restituisce i campi collegati, quantità e costo medio. La callback restituisce selection, oppure null mostrando un errore; la parte omessa aggiorna filtri, celle e totali. L’ultimo frammento seleziona l’editor Quantity: decimali per Crypto, interi per le altre categorie; il callback e il validator completi verificano quantità finite e positive. Le 14 posizioni restano fisse.',
+        note: 'Estratti di ngAfterViewInit e dell’editor Quantity. La callback applyRecord, omessa, usa instrumentSelectionPatch per verificare i duplicati e aggiornare i campi collegati, quantità e costo medio. Callback e validator completi richiedono quantità finite e positive. Le 14 posizioni restano fisse.',
       },
       {
         title: 'Aggiorna i dati con un feed simulato',
         description: 'Il feed è una simulazione locale in memoria: riproduce aggiornamenti push simili a WebSocket, senza connessione o server WebSocket, backend finanziario o quotazioni reali. Il timer applicativo chiama tick ogni 900 ms quando Live è attivo e la pagina è visibile. MarketSimulator.advance genera prezzi e aggiorna lo storico; vengono ridipinte soltanto le celle degli strumenti interessati, senza ricreare la tabella.',
-        note: 'Metodi reali di PortfolioGridComponent: tick e refreshLiveCells sono applicativi, mentre getData(), getCellElement() e recalc() sono API pubbliche AMB Grid. LIVE_FIELDS comprende timeline, price, value e profitLoss. I formatter creano i contenuti tramite liveCell; paintLiveCell aggiorna prezzo, valori e P/L e delega a paintTimeline. Il terzo estratto mostra il nucleo SVG di paintTimeline, dopo la creazione o il recupero di svg; seguono nel sorgente gli attributi e i colori delle barre, calcolati sui 32 campioni locali.',
+        note: 'tick, refreshLiveCells e paintLiveCell sono metodi applicativi; getData(), getCellElement() e recalc() sono API pubbliche AMB Grid. LIVE_FIELDS seleziona timeline, price, value e profitLoss. paintLiveCell delega a paintTimeline il disegno SVG dei 32 campioni locali; i formatter creano il contenuto iniziale tramite liveCell.',
       },
       {
         title: 'Aggiorna i calcoli aggregati',
         description: 'L’helper applicativo calculatePortfolioTotals calcola valore, P/L e rendimento sul costo usando tutte le 14 posizioni, anche con filtri attivi. AMB Grid esegue topCalc; AMB.formatters.calculation presenta il valore totale. Il P/L usa il formatter applicativo profitSummary. recalc aggiorna i totali dopo ogni tick e dopo l’editing della quantità; anche la selezione di uno strumento richiede un ricalcolo.',
-        note: 'Estratti parziali: valueSummary e profitLossSummary danno un nome alle proprietà topCalc/topCalcFormatter delle colonne Value e P/L; inizializzazione di initialHoldings e formatter sono nel componente reale. Il secondo blocco è il listener cellEdited esistente, registrato dopo AMB.table. La colonna Instrument mostra anche il conteggio posizioni tramite topCalc e AMB.formatters.calculation.',
+        note: 'valueSummary e profitLossSummary nominano le proprietà dei totali nelle colonne Value e P/L. initialHoldings e i formatter sono definiti nel componente. Il tick precedente mostra recalc(); gli handler di editing lo richiamano dopo le modifiche.',
       },
     ],
   },
@@ -180,22 +151,22 @@ export const copy = {
       {
         title: 'Initialize AMB Grid in the Angular lifecycle',
         description: 'Angular owns the DOM container linked to #gridHost. @ViewChild and ElementRef make it available in ngAfterViewInit; AMB.table creates the grid inside it. Angular coordinates the component, while AMB Grid manages the table.',
-        note: 'Excerpts from PortfolioGridComponent: the first shows only the readonly Price column. Imports and helpers such as initialRows, HoldingsRow and liveCell are defined in the source; other columns and event registration are omitted. The second is the actual cleanup: ngOnDestroy stops the timer, removes the existing listener, destroys the lookup and calls grid.destroy().',
+        note: 'Partial excerpts from PortfolioGridComponent, showing only the Price column. Imports, helpers and subscriptions are omitted. The complete cleanup stops the timer, removes the listener and destroys the lookup and grid.',
       },
       {
         title: 'Edit only the fields you need',
         description: 'Only Instrument and Quantity have editors. AMB.lookup searches the local catalogue while excluding instruments already held in other positions; AMB.multifieldLookup links the name to instrumentId, ticker and type. Instrument comes from multifield.masterColumn(), and dependent columns from multifield.dependentColumn(). Price, Timeline, Value and P/L have no editors.',
-        note: 'Excerpts from ngAfterViewInit: lookup and multifield retain their actual options. The third fragment is the core of editorOptions.applyRecord: after checking this.grid, the application helper instrumentSelectionPatch checks duplicates and returns linked fields, quantity and average cost. The callback returns selection, or null with an error; omitted code refreshes filters, cells and totals. The last fragment selects the Quantity editor: decimals for Crypto, integers for other categories; the full callback and validator enforce finite, positive quantities. The 14 positions remain fixed.',
+        note: 'Excerpts from ngAfterViewInit and the Quantity editor. The omitted applyRecord callback uses instrumentSelectionPatch to check duplicates and update linked fields, quantity and average cost. The full callback and validator require finite, positive quantities. The 14 positions remain fixed.',
       },
       {
         title: 'Update data with a simulated feed',
         description: 'The feed is a local, in-memory simulation: it reproduces WebSocket-like push updates without a WebSocket connection or server, financial backend or real quotes. The application timer calls tick every 900 ms while Live is active and the page is visible. MarketSimulator.advance generates prices and updates history; only cells for affected instruments are repainted, without recreating the table.',
-        note: 'Actual PortfolioGridComponent methods: tick and refreshLiveCells belong to the application; getData(), getCellElement() and recalc() are public AMB Grid APIs. LIVE_FIELDS contains timeline, price, value and profitLoss. Formatters create content through liveCell; paintLiveCell updates price, values and P/L and delegates to paintTimeline. The third excerpt shows the SVG core of paintTimeline, after svg is created or retrieved; the source then sets bar attributes and colors using the 32 local samples.',
+        note: 'tick, refreshLiveCells and paintLiveCell are application methods; getData(), getCellElement() and recalc() are public AMB Grid APIs. LIVE_FIELDS selects timeline, price, value and profitLoss. paintLiveCell delegates the SVG drawing of 32 local samples to paintTimeline; formatters create the initial content through liveCell.',
       },
       {
         title: 'Refresh aggregate calculations',
         description: 'The application helper calculatePortfolioTotals computes value, P/L and return on cost across all 14 positions, including when filters are active. AMB Grid runs topCalc; AMB.formatters.calculation displays total value. P/L uses the application’s profitSummary formatter. recalc refreshes totals after each tick and quantity edit; instrument selection also triggers recalculation.',
-        note: 'Partial excerpts: valueSummary and profitLossSummary name the Value and P/L columns’ topCalc/topCalcFormatter properties; initialHoldings and formatters are defined in the actual component. The second block is the existing cellEdited listener, registered after AMB.table. The Instrument column also shows the position count through topCalc and AMB.formatters.calculation.',
+        note: 'valueSummary and profitLossSummary name the totals properties in the Value and P/L columns. initialHoldings and formatters are defined in the component. The preceding tick shows recalc(); editing handlers call it after changes as well.',
       },
     ],
   },
@@ -203,7 +174,7 @@ export const copy = {
 
 export const stepCode = [
   [snippets.lifecycle, snippets.cleanup],
-  [snippets.lookup, snippets.multifield, snippets.selection, snippets.quantity],
-  [snippets.tick, snippets.refresh, snippets.timeline],
-  [snippets.totals, snippets.recalc],
+  [snippets.lookup, snippets.multifield, snippets.quantity],
+  [snippets.tick, snippets.refresh],
+  [snippets.totals],
 ];

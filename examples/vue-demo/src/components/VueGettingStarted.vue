@@ -175,7 +175,7 @@ const CodeBlock = defineComponent({
 <style scoped>
 .vue-start-guide { --vue-guide-accent: #258764; background: #f8faf9; color: #142033; margin: 40px auto 20px; max-width: 1320px; padding: clamp(20px, 3vw, 40px); width: 100%; }
 .vue-start-guide__heading { margin-bottom: 28px; }
-.vue-start-guide .vue-start-guide__kicker { color: var(--vue-guide-accent); font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+.vue-start-guide .vue-start-guide__kicker { color: #206f53; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
 .vue-start-guide h2 { font-size: clamp(28px, 3.2vw, 42px); font-weight: 750; line-height: 1.12; margin: 10px 0 16px; }
 .vue-start-guide h3 { font-size: clamp(21px, 2.3vw, 26px); font-weight: 700; line-height: 1.2; margin: 0 0 12px; }
 .vue-start-guide p { color: #50677c; font-size: 16px; line-height: 1.65; margin: 0 0 12px; max-width: 920px; }
@@ -186,7 +186,7 @@ const CodeBlock = defineComponent({
 .vue-start-guide__steps { list-style: none; margin: 0; padding: 0; }
 .vue-start-step { border-top: 1px solid #dbe5df; display: grid; gap: 18px; grid-template-columns: 34px minmax(0, 1fr); padding: 30px 0; }
 .vue-start-step:last-child { border-bottom: 1px solid #dbe5df; }
-.vue-start-step__number { align-items: center; background: var(--vue-guide-accent); border-radius: 50%; color: #fff; display: flex; font-size: 15px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
+.vue-start-step__number { align-items: center; background: #206f53; border-radius: 50%; color: #fff; display: flex; font-size: 15px; font-weight: 800; height: 34px; justify-content: center; width: 34px; }
 .vue-start-step__body { min-width: 0; }
 .vue-start-guide .vue-start-step__note { font-size: 14px; line-height: 1.6; }
 .vue-start-guide :deep(.vue-start-code) { background: #0d1420; border: 1px solid #25344a; border-radius: 8px; color: #dbe7f5; font: 13px/1.6 Consolas, "Courier New", monospace; margin: 18px 0 0; max-width: 100%; overflow-x: auto; padding: 18px; scrollbar-color: #52647d #111c2c; tab-size: 2; white-space: pre; }
