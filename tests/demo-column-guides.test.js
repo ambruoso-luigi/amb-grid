@@ -7,11 +7,10 @@ const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'ut
 
 describe('Public demo column guides', () => {
     const demos = [
-        'basic-crud',
+        'crud-row-states',
         'validation',
         'autocomplete',
         'multifield-lookup',
-        'row-states',
         'column-calculations',
         'dates',
         'parsers',
@@ -45,7 +44,7 @@ describe('Public demo column guides', () => {
         expect(markup).toContain('data-i18n-emphasis="guide.name.emphasis"');
     });
 
-    test('is used by all eight mini-examples and the JavaScript demo', () => {
+    test('is used by all seven mini-examples and the JavaScript demo', () => {
         demos.forEach(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 
@@ -97,21 +96,11 @@ describe('Public demo column guides', () => {
     });
 
     test('keeps each guide aligned with its visible columns', () => {
-        const rowStates = read('src/demo/row-states.js');
-        const basicCrud = read('src/demo/basic-crud.js');
-
-        ['Record ID', 'Temp ID', 'Row', 'State', 'Errors', 'Description', 'Type'].forEach(title => {
-            expect(rowStates).toContain(`title: '${title}'`);
+        const source = read('src/demo/crud-row-states.js');
+        ['Record ID', 'Description', 'Type', 'Department', 'Tag', 'Archived', 'State', 'Errors'].forEach(title => {
+            expect(source).toContain(`title: '${title}'`);
         });
-        ['Item', 'Category', 'Owner', 'Note', 'Lifecycle'].forEach(title => {
-            expect(rowStates).not.toContain(`title: '${title}'`);
-        });
-        ['ID', 'Title', 'Tag', 'Archived'].forEach(title => {
-            expect(basicCrud).toContain(`title: '${title}'`);
-        });
-        ['Temp ID', 'Row No.', 'State'].forEach(title => {
-            expect(basicCrud).not.toContain(`title: '${title}'`);
-        });
+        ['Temp ID', 'Row No.', 'Title'].forEach(title => expect(source).not.toContain(`title: '${title}'`));
     });
 
     test('documents the real validation, lookup, and JavaScript demo behavior', () => {

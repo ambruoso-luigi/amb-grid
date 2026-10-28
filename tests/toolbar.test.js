@@ -848,9 +848,9 @@ describe('AMB toolbar', () => {
         expect(libraryCss).toContain("@import './ui/feedback-region.css'");
     });
 
-    test('uses a multi-action toolbar in the Basic CRUD demo', () => {
+    test('uses a multi-action toolbar in the CRUD & Row States demo', () => {
         const demoSource = fs.readFileSync(
-            new URL('../src/demo/basic-crud.js', import.meta.url),
+            new URL('../src/demo/crud-row-states.js', import.meta.url),
             'utf8'
         );
 
@@ -865,9 +865,9 @@ describe('AMB toolbar', () => {
         expect(demoSource).not.toContain("id: 'report'");
         expect(demoSource).not.toContain("id: 'selected'");
         expect(demoSource).toContain("onReload: handleReload");
-        expect(demoSource).toContain("message: 'Data reloaded.'");
+        expect(demoSource).toContain("message: t('reloaded')");
         expect(demoSource).toContain(
-            "message: 'Changes saved successfully.'"
+            "t('savedCount', { count: result.saved.length - deleted })"
         );
         expect(demoSource).not.toContain('id="action-add-row"');
         expect(demoSource).not.toContain('id="action-show-report"');
@@ -909,17 +909,12 @@ describe('AMB toolbar', () => {
             });
         };
 
-        expectOrder(readDemo('row-states'), [
+        expectOrder(readDemo('crud-row-states'), [
             "'add'",
-            "'save'",
-            "'reload'",
-            "id: 'state-show-states'",
-            'commandGuideToolbar.button'
-        ]);
-        expectOrder(readDemo('basic-crud'), [
-            "'add'",
+            "id: 'state-prepare'",
             "'save'",
             "'payload'",
+            "id: 'state-report'",
             "'reload'",
             'commandGuideToolbar.button'
         ]);

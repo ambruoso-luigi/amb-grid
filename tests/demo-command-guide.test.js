@@ -15,11 +15,10 @@ const demoMainSource = fs.readFileSync(
     'utf8'
 );
 const miniDemoSources = {
-    basicCrud: fs.readFileSync(new URL('../src/demo/basic-crud.js', import.meta.url), 'utf8'),
+    crudRowStates: fs.readFileSync(new URL('../src/demo/crud-row-states.js', import.meta.url), 'utf8'),
     validation: fs.readFileSync(new URL('../src/demo/validation.js', import.meta.url), 'utf8'),
     autocomplete: fs.readFileSync(new URL('../src/demo/autocomplete.js', import.meta.url), 'utf8'),
     multifieldLookup: fs.readFileSync(new URL('../src/demo/multifield-lookup.js', import.meta.url), 'utf8'),
-    rowStates: fs.readFileSync(new URL('../src/demo/row-states.js', import.meta.url), 'utf8'),
     columnCalculations: fs.readFileSync(new URL('../src/demo/column-calculations.js', import.meta.url), 'utf8'),
     dates: fs.readFileSync(new URL('../src/demo/dates.js', import.meta.url), 'utf8'),
     parsers: fs.readFileSync(new URL('../src/demo/parsers.js', import.meta.url), 'utf8')
@@ -389,11 +388,10 @@ describe('demo command guide', () => {
 
     test('integrates the shared command-guide toolbar before each mini-demo grid', () => {
         const demos = [
-            ['basicCrud', 'id="basic-table"'],
+            ['crudRowStates', 'id="crud-row-states-table"'],
             ['validation', 'id="validation-table"'],
             ['autocomplete', 'id="autocomplete-table"'],
             ['multifieldLookup', 'id="municipality-table"'],
-            ['rowStates', 'id="row-states-table"'],
             ['columnCalculations', 'id="column-calculations-table"'],
             ['dates', 'id="dates-table"'],
             ['parsers', 'id="parsers-table"']

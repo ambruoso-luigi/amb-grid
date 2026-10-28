@@ -1,118 +1,48 @@
-import fs from 'node:fs';
+﻿import fs from 'node:fs';
 import { describe, expect, test } from 'vitest';
-
-const source = fs.readFileSync(
-    new URL('../src/demo/row-states.js', import.meta.url),
-    'utf8'
-).replace(/\r\n/g, '\n');
-
-describe('Row states demo', () => {
-    test('uses the AMB toolbar and standard CRUD actions without loose buttons', () => {
-        expect(source).toContain("buttons: [");
-        expect(source).toContain("'add'");
-        expect(source).toContain("'save'");
-        expect(source).toContain("'reload'");
-        expect(source).toContain('onAdd: handleAdd');
-        expect(source).toContain('onSave: handleSave');
-        expect(source).toContain('onReload: handleReload');
-        expect(source).not.toContain('<button');
-        expect(source).not.toContain('id="state-add"');
-        expect(source).not.toContain('id="state-save"');
+import { publicExampleTranslations } from '../src/demo/example-copy.js';
+const source = fs.readFileSync(new URL('../src/demo/crud-row-states.js', import.meta.url), 'utf8');
+describe('Unified CRUD & Row States demo', () => {
+    test('starts with nine business records and preserves the tutorial record', () => {
+        const records = [...source.matchAll(/\{ id: '(REC-\d+)', description: '([^']+)', type: '([^']+)', department: '([^']+)', tag: '([^']+)', archived: '([YN])' \}/g)];
+        expect(records.map(record => record[1])).toEqual(Array.from({ length: 9 }, (_, index) => `REC-${String(index + 1).padStart(3, '0')}`));
+        expect(records[1].slice(3, 5)).toEqual(['Contract', 'Operations']);
+        expect(source).toContain("layout: 'fitColumns'");
+        expect(source.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)).toHaveLength(3);
+        expect(source).not.toContain("field: '_ambTempId'");
+        expect(source).not.toContain("field: '_ambRowNumber'");
     });
-
-    test('uses the standard row action column and a compact lifecycle scenario', () => {
-        expect(source).toContain('rowActionColumn: {');
-        expect(source).toContain('enabled: true');
-        expect(source.match(/\{ id: 'REC-\d+', description:/g)).toHaveLength(4);
-        expect(source).not.toContain("_state: 'clean'");
-        expect(source).toContain("return crud.addRow({");
-        expect(source).toContain("description: 'New lifecycle sample'");
-        expect(source).toContain('crud.applyBackendIds(generatedIds)');
-        expect(source).toContain('crud.markValidChangesSaved()');
+    test('prepares valid lifecycle states explicitly and reloads the baseline', () => {
+        const prepare = source.slice(source.indexOf('async function handlePrepareStates()'), source.indexOf('async function handleReload()'));
+        expect(prepare).toContain('await resetToCleanBaseline()');
+        expect(prepare).toContain("demo.updateRow('REC-005', { tag: 'review' })");
+        expect(prepare).toContain("demo.deleteRow('REC-003')");
+        expect(prepare).toContain('await handleAdd()');
+        expect(prepare).not.toContain('REC-002');
+        expect(prepare).not.toContain('validateRow');
+        expect(prepare).not.toContain("description: ''");
+        expect(source).toContain('let nextId = 10');
+        expect(source).toContain('await demo.setData(initialData.map(row => ({ ...row })))');
     });
-
-    test('uses report dialogs and removes inline report output', () => {
-        expect(source).toContain(
-            "import { createDemoReportDialog } from './utils/demo-report-dialog.js'"
-        );
-        expect(source).toContain("title: 'Row states report'");
-        expect(source).toContain("title: 'Row numbers'");
+    test('preserves public valid-only saving, backend rejection and checkbox editing', () => {
+        for (const operation of ['demo.validateChanges()', 'demo.getSavePayload(', 'crud.applyBackendIds(generatedIds)', 'crud.markValidChangesSaved()', "crud.markCellError(row.key, 'type'"]) expect(source).toContain(operation);
+        expect(source).toContain("row.after.type === 'Restricted'");
+        expect(source).not.toContain("row.after.department === 'Compliance'");
+        expect(source).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
+        expect(source).toContain("uncheckedValue: 'N'");
+        expect(source).toContain('partialSaveDialog.confirm(');
+        expect(source).toContain('rowConfirmDialog.confirm(');
+    });
+    test('keeps report, payload, cleanup and translated copy together', () => {
         expect(source).toContain('jsonData: report');
-        expect(source).toContain('jsonData: rows');
-        expect(source).toContain('reportDialog.destroy()');
-        expect(source).not.toContain('<pre');
-        expect(source).not.toContain('row-states-output');
-        expect(source).not.toContain('textContent = JSON.stringify');
-    });
-
-    test('uses a numeric derived Errors column without adding an error state', () => {
-        expect(source).toContain(
-            "summaryKey: 'examples.rowStates.detailsTitle'"
-        );
-        expect(source).not.toContain('<details class="demo-disclosure" open>');
-        expect(source).toContain('ID identifies persisted rows, Temp ID identifies unsaved rows');
-        expect(source).toContain('Errors belong to a row or cell and remain conceptually distinct from Deleted.');
-        expect(source).toContain("title: 'State'");
-        expect(source).toContain("title: 'Errors'");
-        expect(source).toContain("field: '_ambErrorCount'");
-        expect(source).toContain('const errorCounts = new Map()');
-        expect(source).toContain('function formatErrorCount(cell)');
-        expect(source).not.toContain("title: 'Health'");
-        expect(source).not.toContain("field: '_ambHealth'");
+        expect(source).toContain('jsonData: payload');
+        expect(source).toContain('row.tempId');
+        expect(source).toContain('row.rowNumber');
+        for (const resource of ['reportDialog', 'partialSaveDialog', 'rowConfirmDialog', 'commandGuideToolbar']) expect(source).toContain(`${resource}.destroy()`);
+        expect(source).toContain("window.removeEventListener('amb-demo-language-change', syncPresentation)");
+        const keys = Object.keys(publicExampleTranslations.en).filter(key => key.startsWith('examples.crudRowStates.'));
+        expect(keys.length).toBeGreaterThan(50);
+        for (const key of keys) expect(publicExampleTranslations.it[key]).toBeTruthy();
         expect(source).not.toContain('ROW_STATE.ERROR');
-        expect(source).not.toContain("_state: 'error'");
-        expect(source).toContain("'Lifecycle states'");
-        expect(source).toContain("'Errors'");
-        expect(source).toContain('Rows with errors: ${report.errorRowsCount}');
-        expect(source).toContain('Cell errors: ${report.errors.cells.length}');
-        expect(source).toContain('Row errors: ${report.errors.rows.length}');
-        expect(source).toContain('buildErrorDetails(report)');
-        expect(
-            source.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)
-        ).toHaveLength(5);
-        expect(source).not.toContain('demo-cell--readonly');
-        expect(source).not.toContain("cssClass: 'amb-cell--readonly-passive");
-    });
-
-    test('keeps report and row numbers as lifecycle-focused custom actions', () => {
-        const showStates = source.slice(source.indexOf('async function handleShowStates()'), source.indexOf('async function handleReload()'));
-        expect(source).toContain("id: 'state-report'");
-        expect(source).toContain("label: 'Report'");
-        expect(source).toContain("id: 'state-row-numbers'");
-        expect(source).toContain("label: 'Row numbers'");
-        expect(source).toContain('async function handleShowStates()');
-        expect(showStates).toContain('await resetToCleanBaseline();');
-        expect(showStates).toContain("await demo.updateRow('REC-002', {\n            type: 'Procedure'\n        });");
-        expect(showStates).toContain("await demo.deleteRow('REC-003')");
-        expect(showStates).toContain("await demo.updateRow('REC-004', {\n            description: ''\n        });");
-        expect(showStates).toContain("await demo.validateRow('REC-004')");
-        expect(showStates).toContain("await demo.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request' })");
-        expect(showStates).toContain('refreshErrorCounts();');
-        expect(showStates).not.toContain("type: ''");
-        expect(source).toContain("Clear Description to trigger its required-field error; after Reload, edit REC-004 and Save to reproduce it.");
-        expect(source).toContain("AMB.editors.select({ options: ['Request', 'Contract', 'Procedure', 'Compliance', 'Restricted'] })");
-        expect(source).toContain("crud.markCellError(row.key, 'type'");
-        expect(source).toContain('function refreshErrorCounts()');
-        expect(source).toContain("row.getCell('_ambErrorCount')");
-        expect(source).toContain('refreshErrorCounts()');
-        expect(source).toContain('handleShowStates');
-    });
-
-    test('settles active edits before Save and report actions read row state', () => {
-        expect(source).toContain('const runAfterEditSettled = callback =>');
-        expect(source).toContain('document.activeElement.blur()');
-        expect(source).toContain('return runAfterEditSettled(saveChangedRows)');
-        expect(source).toContain('return runAfterEditSettled(openStateReport)');
-        expect(source).toContain('return runAfterEditSettled(openRowNumbersReport)');
-        expect(source).toContain('crud.markValidChangesSaved()');
-        expect(source).toContain('There are no valid changes to save.');
-    });
-
-    test('reloads the initial lifecycle scenario and closes reports', () => {
-        expect(source).toContain('async function handleReload()');
-        expect(source).toContain('reportDialog.close()');
-        expect(source).toContain('nextId = 5');
-        expect(source).toContain('await resetToCleanBaseline();');
-        expect(source).toContain('Clean baseline reloaded.');
     });
 });

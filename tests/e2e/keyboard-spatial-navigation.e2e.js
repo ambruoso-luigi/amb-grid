@@ -41,15 +41,14 @@ const activeCellField = page => page.evaluate(() => {
 });
 
 for (const demo of [
-    { name: 'basic-crud', selector: '#basic-table', fields: ['id', 'title', 'tag', 'archived'], editFields: ['title', 'tag', 'archived'] },
-    { name: 'row-states', selector: '#row-states-table', fields: ['id', '_ambTempId', '_ambRowNumber', '_state', '_ambErrorCount', 'description', 'type'], editFields: ['description', 'type'] }
+    { name: 'crud-row-states', selector: '#crud-row-states-table', fields: ['id', 'description', 'type', 'department', 'tag', 'archived', '_state', '_ambErrorCount'], editFields: ['description', 'type', 'department', 'tag', 'archived'] }
 ]) {
     test(`NAV 01 ${demo.name}: sequential navigation and editing retain their source mode across rows`, async ({ page }, testInfo) => {
         const observations = [];
         await page.goto('/src/demo/index.html#feature-examples');
         await page.locator(`[data-example="${demo.name}"]`).click();
         const grid = page.locator(demo.selector);
-        const rowCode = row => `${demo.name === 'basic-crud' ? 'NT' : 'REC'}-00${row + 1}`;
+        const rowCode = row => `REC-00${row + 1}`;
         const cell = (row, field) => grid.locator('.tabulator-row').filter({ has: page.locator(`[tabulator-field="id"]`, { hasText: rowCode(row) }) }).locator(`[tabulator-field="${field}"]`);
         await expect(cell(0, demo.fields[0])).toBeVisible();
         await page.evaluate(() => {
@@ -343,12 +342,12 @@ test.describe('keyboard spatial navigation', () => {
         await expect(previous).not.toHaveClass(/tabulator-editing/);
     });
 
-    test('visits Basic CRUD readonly cells without editing or changing CRUD Tab semantics', async ({ page }) => {
+    test('visits CRUD & Row States readonly cells without editing or changing CRUD Tab semantics', async ({ page }) => {
         await page.goto('/src/demo/index.html#feature-examples');
-        await page.locator('[data-example="basic-crud"]').click();
-        const basicTable = page.locator('#basic-table');
+        await page.locator('[data-example="crud-row-states"]').click();
+        const basicTable = page.locator('#crud-row-states-table');
         const row = basicTable.locator('.tabulator-row').first();
-        const title = row.locator('.tabulator-cell[tabulator-field="title"]');
+        const title = row.locator('.tabulator-cell[tabulator-field="description"]');
         await expect(title).toBeVisible();
         await focusNavigationCell(page, title, 'readonly cell');
 
@@ -364,7 +363,7 @@ test.describe('keyboard spatial navigation', () => {
         await page.keyboard.press('ArrowRight');
         await expect(id).toBeFocused();
         await page.keyboard.press('ArrowRight');
-        await expect.poll(() => activeCellField(page)).toBe('title');
+        await expect.poll(() => activeCellField(page)).toBe('description');
         await expect(title).not.toHaveClass(/tabulator-editing/);
 
         await page.keyboard.press('Enter');

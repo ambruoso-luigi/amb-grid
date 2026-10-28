@@ -31,22 +31,22 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain('Summary');
     });
 
-    test('uses the shared dialog for the Basic CRUD save payload action', () => {
-        const source = readSource('../src/demo/basic-crud.js');
+    test('uses the shared dialog for the CRUD & Row States save payload action', () => {
+        const source = readSource('../src/demo/crud-row-states.js');
 
         expect(source).toContain(
             "import { createDemoReportDialog } from './utils/demo-report-dialog.js'"
         );
         expect(source).not.toContain('id="basic-output"');
         expect(source).not.toContain('output.textContent = JSON.stringify');
-        expect(source).toContain("title: 'Save payload'");
-        expect(source).not.toContain("title: 'Basic CRUD report'");
+        expect(source).toContain("title: t('payloadTitle')");
+        expect(source).not.toContain("title: 'CRUD & Row States report'");
         expect(source).not.toContain("title: 'Selected rows'");
 
-        const saveHandler = source.slice(source.indexOf('async function handleSave()'));
+        const saveHandler = source.slice(source.indexOf('async function saveChangedRows()'), source.indexOf('async function resetToCleanBaseline()'));
 
         expect(saveHandler).not.toContain('reportDialog.open');
-        expect(saveHandler).toContain("message: 'Save cancelled.'");
+        expect(saveHandler).toContain("message: t('cancelled')");
     });
 
     test('uses the same Report/JSON dialog in Validation', () => {
@@ -118,7 +118,7 @@ describe('demo report dialog integration', () => {
 
     test('keeps demo guidance compact in closed disclosures', () => {
         const validationSource = readSource('../src/demo/validation.js');
-        const basicCrudSource = readSource('../src/demo/basic-crud.js');
+        const crudRowStatesSource = readSource('../src/demo/crud-row-states.js');
         const demoCss = readSource('../src/demo/demo.css');
         const technicalMarkup = createDemoColumnGuide({
             summary: 'How validation works',
@@ -136,13 +136,13 @@ describe('demo report dialog integration', () => {
         expect(validationSource).toContain(
             "summaryKey: 'examples.validation.detailsTitle'"
         );
-        expect(basicCrudSource).toContain(
-            "summaryKey: 'examples.basicCrud.detailsTitle'"
+        expect(crudRowStatesSource).toContain(
+            "summaryKey: 'examples.crudRowStates.detailsTitle'"
         );
         expect(validationSource).toContain("variant: 'technical'");
         expect(validationSource).toContain("summaryMetaKey: 'examples.validation.guideMeta'");
-        expect(basicCrudSource).toContain("variant: 'technical'");
-        expect(basicCrudSource).toContain("summaryMetaKey: 'examples.basicCrud.guideMeta'");
+        expect(crudRowStatesSource).toContain("variant: 'technical'");
+        expect(crudRowStatesSource).toContain("summaryMetaKey: 'examples.crudRowStates.guideMeta'");
         expect(technicalMarkup).toContain(
             '<details class="demo-disclosure demo-disclosure--technical">'
         );

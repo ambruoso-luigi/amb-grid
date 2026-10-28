@@ -14,8 +14,8 @@ const demoColumnGuideCopySource = fs.readFileSync(
     new URL('../src/demo/demo-column-guide-copy.js', import.meta.url),
     'utf8'
 );
-const basicCrudSource = fs.readFileSync(
-    new URL('../src/demo/basic-crud.js', import.meta.url),
+const crudRowStatesSource = fs.readFileSync(
+    new URL('../src/demo/crud-row-states.js', import.meta.url),
     'utf8'
 );
 const demoCss = fs.readFileSync(
@@ -286,8 +286,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('const partialSaveDialog = new AMB.ConfirmDialog()');
         expect(source).toContain('partialSaveDialog.destroy()');
         expect(source).not.toContain('createDemoRowActionColumn');
-        expect(basicCrudSource).toContain('rowActionColumn: {');
-        expect(basicCrudSource).not.toContain('selectionColumn: {');
+        expect(crudRowStatesSource).toContain('rowActionColumn: {');
+        expect(crudRowStatesSource).not.toContain('selectionColumn: {');
     });
 
     test('keeps the Notes large text editor open when its backdrop is clicked', () => {
@@ -439,7 +439,7 @@ describe('Legacy-friendly warehouse demo', () => {
     test('renders Requires inspection with passive demo visual and AMB checkbox editor', () => {
         expect(source).toContain('const formatInspectionCheckbox = createDemoCheckboxFormatter();');
         expect(source).toContain("cssClass: 'demo-business-checkbox-cell'");
-        expect(basicCrudSource).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
+        expect(crudRowStatesSource).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
         expect(checkboxFormatterSource).toContain('class="demo-inspection-visual${stateClass}"');
         expect(checkboxFormatterSource).toContain('aria-hidden="true"');
         expect(source).toContain('formatter: formatInspectionCheckbox');

@@ -286,16 +286,16 @@ const assertToolbarBusyObserved = diagnostic => {
     ).toBe(true);
 };
 
-const assertBasicCrudFocusObserved = diagnostic => {
+const assertCrudRowStatesFocusObserved = diagnostic => {
     const message = formatDiagnostic(diagnostic);
 
     expect(diagnostic.delayed.actionButtonFocused, `Focus is on the action/remove button.\n${message}`)
         .toBe(false);
     expect(diagnostic.immediate.actionButtonFocused, `Immediate focus is on the action/remove button.\n${message}`)
         .toBe(false);
-    expect(diagnostic.delayed.newRowExists, `Basic CRUD did not create a visible new row.\n${message}`)
+    expect(diagnostic.delayed.newRowExists, `CRUD & Row States did not create a visible new row.\n${message}`)
         .toBe(true);
-    expect(diagnostic.delayed.targetCellExists, `Basic CRUD target cell is missing.\n${message}`)
+    expect(diagnostic.delayed.targetCellExists, `CRUD & Row States target cell is missing.\n${message}`)
         .toBe(true);
 };
 
@@ -316,10 +316,10 @@ const openInventoryDemo = async page => {
     }
 };
 
-const openBasicCrudDemo = async page => {
+const openCrudRowStatesDemo = async page => {
     await page.goto('/src/demo/index.html#feature-examples');
-    await page.locator('[data-example="basic-crud"]').click();
-    await expect(page.locator('#basic-table.tabulator')).toBeVisible();
+    await page.locator('[data-example="crud-row-states"]').click();
+    await expect(page.locator('#crud-row-states-table.tabulator')).toBeVisible();
 };
 
 test.describe('browser addRow focus regression', () => {
@@ -340,18 +340,18 @@ test.describe('browser addRow focus regression', () => {
         }
     });
 
-    test('Basic CRUD comparison reports first editable field focus after toolbar Add row', async ({ page }) => {
-        await openBasicCrudDemo(page);
+    test('CRUD & Row States comparison reports first editable field focus after toolbar Add row', async ({ page }) => {
+        await openCrudRowStatesDemo(page);
 
         const diagnostic = await runToolbarDiagnostic(page, {
-            scenario: 'Basic CRUD non-paginated rowActionColumn via toolbar',
+            scenario: 'CRUD & Row States non-paginated rowActionColumn via toolbar',
             iteration: 1,
-            tableSelector: '#basic-table',
-            targetField: 'title',
+            tableSelector: '#crud-row-states-table',
+            targetField: 'description',
             addButtonSelector: '#feature-example .amb-toolbar__button--add'
         });
 
-        assertBasicCrudFocusObserved(diagnostic);
+        assertCrudRowStatesFocusObserved(diagnostic);
     });
 
     test('fixture toolbar returns and awaits crud.addRow focus', async ({ page }) => {

@@ -312,7 +312,7 @@ describe('demo site navigation', () => {
         expect(css).not.toContain('.language-switch__flag');
     });
 
-    test('shows eight focused public feature examples', () => {
+    test('shows seven focused public feature examples', () => {
         const main = read('src/demo/main.js');
         const copy = read('src/demo/example-copy.js');
         const featureConfig = main.slice(
@@ -322,14 +322,14 @@ describe('demo site navigation', () => {
 
         expect(main).toContain('class="demo-feature-grid"');
         expect(main).toContain('class="demo-feature-card');
-        expect(featureConfig.match(/id: '/g)).toHaveLength(8);
-        expect(featureConfig).toContain("id: 'basic-crud'");
+        expect(featureConfig.match(/id: '/g)).toHaveLength(7);
+        expect(featureConfig).toContain("id: 'crud-row-states'");
+        expect(featureConfig).not.toContain("id: 'basic-crud'");
+        expect(featureConfig).not.toContain("id: 'row-states'");
+        expect(featureConfig.indexOf("id: 'crud-row-states'")).toBeLessThan(featureConfig.indexOf("id: 'validation'"));
         expect(featureConfig).toContain("id: 'validation'");
         expect(featureConfig).toContain("id: 'autocomplete'");
         expect(featureConfig).toContain("id: 'multifield-lookup'");
-        expect(featureConfig).toContain("id: 'row-states'");
-        expect(featureConfig.indexOf("id: 'row-states'")).toBeLessThan(featureConfig.indexOf("id: 'basic-crud'"));
-        expect(featureConfig.indexOf("id: 'basic-crud'")).toBeLessThan(featureConfig.indexOf("id: 'validation'"));
         expect(main).toContain("import columnCalculations from './column-calculations.js'");
         expect(featureConfig).toContain("id: 'column-calculations'");
         expect(main).toContain("import dates from './dates.js'");
@@ -339,8 +339,6 @@ describe('demo site navigation', () => {
         expect(featureConfig).not.toContain("id: 'numeric'");
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Come funzionano i calcoli di colonna'");
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'How column calculations work'");
-        expect(copy).toContain("'examples.rowStates.detailsTitle': 'Come funzionano gli stati riga'");
-        expect(copy).toContain("'examples.rowStates.detailsTitle': 'How row states work'");
         expect(main).not.toContain('multiple-tables');
         expect(main).toContain('applyI18n();\n    initDemoMotion(container);');
     });
@@ -407,11 +405,10 @@ describe('demo site navigation', () => {
     test('keeps public example disclosures bilingual without a redundant multifield introduction', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
-            ['basic-crud', 'basicCrud', '4 fields · essential CRUD'],
+            ['crud-row-states', 'crudRowStates', 'Identity · states · errors · save'],
             ['validation', 'validation', 'Rules · errors · constraints'],
             ['autocomplete', 'autocomplete', 'Assisted input · suggestions'],
             ['multifield-lookup', 'multifieldLookup', 'Search · multi-field mapping'],
-            ['row-states', 'rowStates', 'Identity · states · errors · save'],
             ['column-calculations', 'columnCalculations', 'Count · sum · avg · min · max'],
             ['dates', 'dates', 'Input · formats · datepicker'],
             ['parsers', 'parsers', 'Normalization · payload']
@@ -436,7 +433,7 @@ describe('demo site navigation', () => {
             expect(copy.match(new RegExp(`'examples\\.${key}\\.guideMeta'`, 'g'))).toHaveLength(2);
         });
 
-        expect(copy).toContain("'examples.basicCrud.guideMeta': '4 campi · CRUD essenziale'");
+        expect(copy).toContain("'examples.crudRowStates.guideMeta': 'Identità · stati · errori · salvataggio'");
         expect(copy).toContain("'examples.validation.guideMeta': 'Regole · errori · vincoli'");
         expect(copy).toContain("'examples.autocomplete.guideMeta': 'Input assistito · suggerimenti'");
         expect(copy).toContain("'examples.multifieldLookup.guideMeta': 'Ricerca · mapping multiplo'");
@@ -445,11 +442,10 @@ describe('demo site navigation', () => {
 
     test('uses one demo-only passive-cell policy across public mini examples', () => {
         const passiveCells = {
-            'basic-crud': { passive: 1, derived: 0 },
+            'crud-row-states': { passive: 3, derived: 3 },
             validation: { passive: 1, derived: 0 },
             autocomplete: { passive: 1, derived: 0 },
             'multifield-lookup': { passive: 5, derived: 5 },
-            'row-states': { passive: 5, derived: 5 },
             'column-calculations': { passive: 1, derived: 0 },
             dates: { passive: 1, derived: 0 },
             parsers: { passive: 4, derived: 2 }
@@ -463,7 +459,7 @@ describe('demo site navigation', () => {
             expect(source).not.toContain('demo-cell--readonly');
         });
 
-        expect(Object.values(passiveCells).reduce((total, expected) => total + expected.passive, 0)).toBe(19);
+        expect(Object.values(passiveCells).reduce((total, expected) => total + expected.passive, 0)).toBe(16);
 
         const multifield = read('src/demo/multifield-lookup.js');
         expect(multifield.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)).toHaveLength(5);
@@ -514,11 +510,10 @@ describe('demo site navigation', () => {
         const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');
         const exampleFiles = [
-            'basic-crud',
+            'crud-row-states',
             'validation',
             'autocomplete',
             'multifield-lookup',
-            'row-states',
             'column-calculations',
             'dates',
             'parsers'
@@ -544,18 +539,18 @@ describe('demo site navigation', () => {
         });
     });
 
-    test('uses a centered label-free checkbox in Basic CRUD', () => {
-        const basicCrud = read('src/demo/basic-crud.js');
+    test('uses a centered label-free checkbox in CRUD & Row States', () => {
+        const crudRowStates = read('src/demo/crud-row-states.js');
 
-        expect(basicCrud).toContain("checkedValue: 'Y'");
-        expect(basicCrud).toContain("uncheckedValue: 'N'");
-        expect(basicCrud).toContain("checkedLabel: ''");
-        expect(basicCrud).toContain("uncheckedLabel: ''");
-        expect(basicCrud).toContain("hozAlign: 'center'");
-        expect(basicCrud).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
-        expect(basicCrud).toContain("cssClass: 'demo-business-checkbox-cell'");
-        expect(basicCrud).not.toContain("checkedLabel: 'Yes'");
-        expect(basicCrud).not.toContain("uncheckedLabel: 'No'");
+        expect(crudRowStates).toContain("checkedValue: 'Y'");
+        expect(crudRowStates).toContain("uncheckedValue: 'N'");
+        expect(crudRowStates).toContain("checkedLabel: ''");
+        expect(crudRowStates).toContain("uncheckedLabel: ''");
+        expect(crudRowStates).toContain("hozAlign: 'center'");
+        expect(crudRowStates).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
+        expect(crudRowStates).toContain("cssClass: 'demo-business-checkbox-cell'");
+        expect(crudRowStates).not.toContain("checkedLabel: 'Yes'");
+        expect(crudRowStates).not.toContain("uncheckedLabel: 'No'");
     });
 
     test('uses one lifecycle palette for Feature Examples with error precedence', () => {
@@ -627,11 +622,10 @@ describe('demo site navigation', () => {
         const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');
         const exampleFiles = [
-            'basic-crud',
+            'crud-row-states',
             'validation',
             'autocomplete',
             'multifield-lookup',
-            'row-states',
             'column-calculations',
             'dates',
             'parsers'
@@ -664,11 +658,10 @@ describe('demo site navigation', () => {
         const validationCellRule = css.match(/\.demo-panel \.demo-validation-grid \.tabulator-cell\s*\{([\s\S]*?)\n\}/)?.[1] || '';
         const validationActionCellRule = css.match(/\.demo-panel\s+\.demo-validation-grid\s+\.tabulator-cell:has\(\.amb-row-actions\)\s*\{([\s\S]*?)\n\}/)?.[1] || '';
         const featureSources = [
-            'basic-crud',
+            'crud-row-states',
             'validation',
             'autocomplete',
             'multifield-lookup',
-            'row-states',
             'column-calculations',
             'dates',
             'parsers'
@@ -704,13 +697,12 @@ describe('demo site navigation', () => {
         expect(featureSources.filter(source => source.includes('demo-validation-grid'))).toHaveLength(1);
     });
 
-    test('starts feature grids with coherent datasets and a compact Row States laboratory', () => {
+    test('starts feature grids with coherent datasets and a unified CRUD lifecycle example', () => {
         const slices = {
-            basic: read('src/demo/basic-crud.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
+            crudRowStates: read('src/demo/crud-row-states.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
             validation: read('src/demo/validation.js').match(/const validationData = \[([\s\S]*?)\n\];/)[1],
             autocomplete: read('src/demo/autocomplete.js').match(/const createAutocompleteData = \(\) => \[([\s\S]*?)\n\];/)[1],
             multifield: read('src/demo/multifield-lookup.js').match(/const createInitialData = \(\) => \[([\s\S]*?)\n\];/)[1],
-            rowStates: read('src/demo/row-states.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
             calculations: read('src/demo/column-calculations.js').match(/data: \[([\s\S]*?)\n        \],/)[1],
             dates: read('src/demo/dates.js').match(/const dateData = \[([\s\S]*?)\n\];/)[1],
             parsers: read('src/demo/parsers.js').match(/const parserExamples = \[([\s\S]*?)\n\];/)[1]
@@ -721,17 +713,16 @@ describe('demo site navigation', () => {
         ]));
 
         expect(counts).toEqual({
-            basic: 10,
+            crudRowStates: 9,
             validation: 11,
             autocomplete: 10,
             multifield: 10,
-            rowStates: 4,
             calculations: 10,
             dates: 10,
             parsers: 9
         });
-        expect(slices.basic).toContain("id: 'NT-010'");
-        expect(read('src/demo/basic-crud.js')).toContain('let nextNoteNumber = 11;');
+        expect(slices.crudRowStates).toContain("id: 'REC-009'");
+        expect(read('src/demo/crud-row-states.js')).toContain('let nextId = 10;');
     });
 
     test('updates the ten-row public column calculation results', () => {

@@ -4,11 +4,10 @@ import '../amb-grid.css';
 import './demo.css';
 import './components/demo-command-guide.css';
 import { AMB } from '../index.js';
-import basicCrud from './basic-crud.js';
+import crudRowStates from './crud-row-states.js';
 import validation from './validation.js';
 import autocomplete from './autocomplete.js';
 import multifieldLookup from './multifield-lookup.js';
-import rowStates from './row-states.js';
 import columnCalculations from './column-calculations.js';
 import dates from './dates.js';
 import parsers from './parsers.js';
@@ -28,8 +27,7 @@ window.AMB = AMB;
 window.LookupDialog = AMB.LookupDialog;
 
 const featureExamples = [
-    { id: 'row-states', titleKey: 'examples.rowStates.title', descriptionKey: 'examples.rowStates.description', mount: rowStates },
-    { id: 'basic-crud', titleKey: 'examples.basicCrud.title', descriptionKey: 'examples.basicCrud.description', mount: basicCrud },
+    { id: 'crud-row-states', titleKey: 'examples.crudRowStates.title', descriptionKey: 'examples.crudRowStates.description', mount: crudRowStates },
     { id: 'validation', titleKey: 'examples.validation.title', descriptionKey: 'examples.validation.description', mount: validation },
     { id: 'autocomplete', titleKey: 'examples.autocomplete.title', descriptionKey: 'examples.autocomplete.description', mount: autocomplete },
     { id: 'multifield-lookup', titleKey: 'examples.multifieldLookup.title', descriptionKey: 'examples.multifieldLookup.description', mount: multifieldLookup },
