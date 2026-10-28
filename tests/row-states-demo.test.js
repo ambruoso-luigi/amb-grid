@@ -27,7 +27,11 @@ describe('Unified CRUD & Row States demo', () => {
     test('preserves public valid-only saving, backend rejection and checkbox editing', () => {
         for (const operation of ['demo.validateChanges()', 'demo.getSavePayload(', 'crud.applyBackendIds(generatedIds)', 'crud.markValidChangesSaved()', "crud.markCellError(row.key, 'type'"]) expect(source).toContain(operation);
         expect(source).toContain("row.after.type === 'Restricted'");
-        expect(source).not.toContain("row.after.department === 'Compliance'");
+        expect(source).toContain("row.after.type === 'Restricted' && row.after.department !== 'Compliance'");
+        expect(source).toContain("crud.clearCellError(key, 'type')");
+        expect(source).toContain('error?.message === message');
+        expect(source).toContain('serverRejectedRows.delete(key)');
+        expect(source).toContain("demo.table.off('cellEdited', handleBackendCorrection)");
         expect(source).toContain("createDemoCheckboxFormatter({ checkedValue: 'Y' })");
         expect(source).toContain("uncheckedValue: 'N'");
         expect(source).toContain('partialSaveDialog.confirm(');
@@ -44,5 +48,18 @@ describe('Unified CRUD & Row States demo', () => {
         expect(keys.length).toBeGreaterThan(50);
         for (const key of keys) expect(publicExampleTranslations.it[key]).toBeTruthy();
         expect(source).not.toContain('ROW_STATE.ERROR');
+    });
+
+    test('describes the backend rule and identifies rejected records in both languages', () => {
+        for (const locale of ['it', 'en']) {
+            const copy = publicExampleTranslations[locale];
+            const prefix = 'examples.crudRowStates.';
+            expect(copy[`${prefix}backendRejected`]).toContain('{id}');
+            expect(copy[`${prefix}backendRejectedMany`]).toContain('{ids}');
+            expect(copy[`${prefix}backendRejected`]).toContain('Compliance');
+            expect(copy[`${prefix}typeGuide`]).toContain('Compliance');
+            expect(copy[`${prefix}backendPartial`]).not.toEqual(copy[`${prefix}backendNotSaved`]);
+        }
+        expect(source).toContain("t(result.saved.length ? 'backendPartial' : 'backendNotSaved')");
     });
 });

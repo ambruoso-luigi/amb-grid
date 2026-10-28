@@ -9,7 +9,8 @@ export default function crudRowStates(app) {
     let nextId = 10;
     let destroyed = false;
     const errorCounts = new Map();
-    const serverRejectedRows = new Set();
+    const serverRejectedRows = new Map();
+    let presentationPending = false;
     const t = (key, values = {}) => {
         const locale = document.documentElement.lang === 'en' ? 'en' : 'it';
         const message = publicExampleTranslations[locale][`examples.crudRowStates.${key}`];
@@ -42,7 +43,7 @@ export default function crudRowStates(app) {
             columns: [
                 { title: 'Record ID', titleKey: 'guides.rowStates.id.title', badge: 'PERSISTENT', description: 'Readonly identifier assigned by the backend.', descriptionKey: 'guides.rowStates.id.description' },
                 { title: 'Description', titleKey: 'guides.rowStates.description.title', badge: 'TEXT', description: 'Required trimmed description, at least 3 characters.', descriptionKey: 'examples.crudRowStates.descriptionGuide' },
-                { title: 'Type', titleKey: 'guides.rowStates.type.title', badge: 'SELECT', description: 'Business type; Restricted is accepted locally but rejected by the simulated backend.', descriptionKey: 'guides.rowStates.type.description' },
+                { title: 'Type', titleKey: 'guides.rowStates.type.title', badge: 'SELECT', description: 'Restricted is accepted locally; the simulated backend allows it only for Compliance.', descriptionKey: 'examples.crudRowStates.typeGuide' },
                 { title: 'Department', titleKey: 'examples.crudRowStates.column.department', badge: 'SELECT', description: 'The business department responsible for this record.', descriptionKey: 'examples.crudRowStates.departmentGuide' },
                 { title: 'Tag', titleKey: 'guides.basic.tag.title', badge: 'TEXT', description: 'Required lowercase letters, up to 12 characters.', descriptionKey: 'examples.crudRowStates.tagGuide' },
                 { title: 'Archived', titleKey: 'guides.basic.archived.title', badge: 'BOOLEAN', description: 'Editable checkbox stored as Y or N.', descriptionKey: 'examples.crudRowStates.archivedGuide' },
@@ -94,12 +95,9 @@ export default function crudRowStates(app) {
     const crud = demo.crud;
     commandGuideToolbar.mount();
     const originalDestroy = demo.destroy.bind(demo);
-    const crudUnsubscribers = ['cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared', 'row-state-changed'].map(name => demo.onCrud(name, event => {
-        if (name === 'cell-error-cleared' && event.field === 'type' && event.row?.getData()?.type !== 'Restricted') serverRejectedRows.delete(event.key);
-        refreshErrorCounts();
-        syncServerErrorPresentation();
-        globalThis.queueMicrotask(syncPresentation);
-    }));
+    const crudUnsubscribers = ['cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared', 'row-state-changed']
+        .map(name => demo.onCrud(name, schedulePresentation));
+    demo.table.on('cellEdited', handleBackendCorrection);
     demo.table.on('renderComplete', syncPresentation);
     window.addEventListener('amb-demo-language-change', syncPresentation);
     syncPresentation();
@@ -107,6 +105,7 @@ export default function crudRowStates(app) {
         destroyed = true;
         window.removeEventListener('amb-demo-language-change', syncPresentation);
         demo.table.off('renderComplete', syncPresentation);
+        demo.table.off('cellEdited', handleBackendCorrection);
         crudUnsubscribers.forEach(unsubscribe => unsubscribe?.());
         reportDialog.destroy();
         partialSaveDialog.destroy();
@@ -135,15 +134,36 @@ export default function crudRowStates(app) {
     }
 
     function syncServerErrorPresentation() {
-        const errorKeys = new Set(crud.getStateReport().errors.cells.filter(error => error.field === 'type').map(error => error.key));
-        for (const key of serverRejectedRows) {
-            if (!errorKeys.has(key)) serverRejectedRows.delete(key);
+        const typeErrors = new Map(crud.getStateReport().errors.cells.filter(error => error.field === 'type').map(error => [error.key, error.message]));
+        for (const [key, message] of serverRejectedRows) {
+            if (typeErrors.get(key) !== message) serverRejectedRows.delete(key);
         }
         demo.table.getRows().forEach(row => {
             const data = row.getData();
             if (serverRejectedRows.has(data.id ?? data._ambTempId)) row.getElement().setAttribute('data-demo-server-error', 'true');
             else row.getElement().removeAttribute('data-demo-server-error');
         });
+    }
+
+    function schedulePresentation() {
+        if (destroyed || presentationPending) return;
+        presentationPending = true;
+        globalThis.queueMicrotask(() => {
+            presentationPending = false;
+            syncPresentation();
+        });
+    }
+
+    function handleBackendCorrection(cell) {
+        if (!['type', 'department'].includes(cell.getField())) return;
+        const data = cell.getRow().getData();
+        const key = data.id ?? data._ambTempId;
+        const message = serverRejectedRows.get(key);
+        if (!message || (data.type === 'Restricted' && data.department !== 'Compliance')) return;
+        const error = crud.getStateReport().errors.cells.find(error => error.key === key && error.field === 'type');
+        serverRejectedRows.delete(key);
+        if (error?.message === message) crud.clearCellError(key, 'type');
+        schedulePresentation();
     }
 
     function syncPresentation() {
@@ -197,10 +217,11 @@ export default function crudRowStates(app) {
         }
         let report = crud.getStateReport();
         const before = new Map(report.validChangedRows.map(row => [row.key, row.state]));
-        const rejected = report.validChangedRows.filter(row => row.after.type === 'Restricted');
+        const rejected = report.validChangedRows.filter(row => row.after.type === 'Restricted' && row.after.department !== 'Compliance');
         rejected.forEach(row => {
-            crud.markCellError(row.key, 'type', t('backendRejected'));
-            serverRejectedRows.add(row.key);
+            const message = t('backendRejected', { id: row.id ?? row.tempId ?? row.key });
+            serverRejectedRows.set(row.key, message);
+            crud.markCellError(row.key, 'type', message);
         });
         report = crud.getStateReport();
         const generatedIds = report.validChangedRows.filter(row => row.state === 'new' && !row.id && row.tempId).map(row => ({ tempId: row.tempId, id: `REC-${String(nextId++).padStart(3, '0')}` }));
@@ -209,7 +230,11 @@ export default function crudRowStates(app) {
         const deleted = result.saved.filter(row => before.get(row.key) === 'deleted').length;
         const invalid = crud.getStateReport().invalidChangedRowsCount;
         const parts = [t('savedCount', { count: result.saved.length - deleted }), t('deletedCount', { count: deleted })];
-        if (rejected.length) parts.push(t('rejectedCount', { count: rejected.length }));
+        if (rejected.length) {
+            const ids = rejected.map(row => row.id ?? row.tempId ?? row.key).join(', ');
+            const explanation = rejected.length === 1 ? t('backendRejected', { id: ids }) : t('backendRejectedMany', { ids });
+            parts.unshift(`${t(result.saved.length ? 'backendPartial' : 'backendNotSaved')} ${explanation}`);
+        }
         if (invalid) parts.push(t('invalidCount', { count: invalid }));
         refreshErrorCounts();
         syncServerErrorPresentation();

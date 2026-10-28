@@ -10,6 +10,24 @@ const editText = async (page, id, field, value) => {
     await input.fill(value);
     await input.press('Enter');
 };
+const selectCell = async (page, target, value) => {
+    await openEditorFromNavigation(page, target, `Select ${value}`, '#crud-row-states-table', 'input');
+    const options = page.locator('.tabulator-edit-list-item');
+    await (value ? options.filter({ hasText: new RegExp(`^${value}$`) }) : options.first()).click();
+    await expect(target).not.toHaveClass(/tabulator-editing/);
+};
+const selectValue = (page, id, field, value) => selectCell(page, cell(page, id, field), value);
+const feedback = page => page.locator('#feature-example .amb-feedback-region__message');
+const addRecord = async (page, description) => {
+    await action(page, 'add').click();
+    await expect(action(page, 'add')).not.toHaveAttribute('aria-busy', 'true');
+    const input = page.locator('#crud-row-states-table input.amb-cell-editor');
+    await expect(input).toBeFocused();
+    await input.fill(description);
+    await input.press('Enter');
+    await expect(input).toHaveCount(0);
+    return table(page).locator('.tabulator-row').filter({ hasText: description });
+};
 const readDialog = async (page, name) => {
     const dialog = page.getByRole('dialog', { name, exact: true });
     await expect(dialog).toBeVisible();
@@ -143,5 +161,122 @@ test.describe('CRUD & Row States lifecycle', () => {
         });
         expect(dimensions.scroll).toBeGreaterThan(dimensions.width);
         expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport);
+    });
+
+    for (const correction of ['type', 'department']) {
+        test(`retries a partially rejected record after correcting ${correction}`, async ({ page }) => {
+            await editText(page, 'REC-002', 'description', 'Revised contract review');
+            await selectValue(page, 'REC-002', 'type', 'Restricted');
+            await expect(cell(page, 'REC-002', '_state')).toHaveText('modified');
+            await expect(cell(page, 'REC-002', '_ambErrorCount')).toHaveText('0');
+            await expect(cell(page, 'REC-002', 'type')).not.toHaveAttribute('data-cell-error');
+            await expect(row(page, 'REC-002')).not.toHaveAttribute('data-demo-server-error');
+            await editText(page, 'REC-001', 'description', 'Approved revised service request');
+            await action(page, 'save').click();
+            await expect(page.getByText('Partial save. The simulated backend rejected record REC-002: Restricted is only allowed for the Compliance department.', { exact: false })).toBeVisible();
+            await expect(cell(page, 'REC-001', '_state')).toHaveText('saved');
+            await expect(cell(page, 'REC-002', '_state')).toHaveText('modified');
+            await expect(cell(page, 'REC-002', '_ambErrorCount')).toHaveText('1');
+            await expect(row(page, 'REC-002')).toHaveAttribute('data-demo-server-error', 'true');
+            await action(page, 'state-report').click();
+            const rejectedReport = await readDialog(page, 'CRUD & Row States report');
+            expect(rejectedReport.changedRows.map(row => row.id)).toEqual(['REC-002']);
+            expect(rejectedReport.errors.cells[0]).toMatchObject({ id: 'REC-002', field: 'type' });
+            await action(page, 'payload').click();
+            const rejectedPayload = await readDialog(page, 'Save payload');
+            expect(rejectedPayload.hasChanges).toBe(true);
+            expect(rejectedPayload.hasInvalidChanges).toBe(true);
+            expect(rejectedPayload.changes.updated).toHaveLength(0);
+            await selectValue(page, 'REC-002', correction, correction === 'type' ? 'Contract' : 'Compliance');
+            await expect(cell(page, 'REC-002', '_ambErrorCount')).toHaveText('0');
+            await expect(row(page, 'REC-002')).not.toHaveAttribute('data-demo-server-error');
+            await expect(cell(page, 'REC-002', '_state')).toHaveText('modified');
+            await expect(cell(page, 'REC-002', 'description')).toHaveText('Revised contract review');
+            await action(page, 'payload').click();
+            const correctedPayload = await readDialog(page, 'Save payload');
+            expect(correctedPayload.changes.updated[0].after).toMatchObject({
+                id: 'REC-002', type: correction === 'type' ? 'Contract' : 'Restricted',
+                department: correction === 'type' ? 'Operations' : 'Compliance'
+            });
+            await action(page, 'save').click();
+            await expect(cell(page, 'REC-002', '_state')).toHaveText('saved');
+            await action(page, 'state-report').click();
+            const savedReport = await readDialog(page, 'CRUD & Row States report');
+            expect(savedReport.errorRowsCount).toBe(0);
+            expect(savedReport.hasChanges).toBe(false);
+        });
+    }
+
+    test('accepts Restricted and Contract in Compliance without a prior backend error', async ({ page }) => {
+        await selectValue(page, 'REC-004', 'type', 'Restricted');
+        await selectValue(page, 'REC-008', 'type', 'Contract');
+        await expect(cell(page, 'REC-004', '_ambErrorCount')).toHaveText('0');
+        await action(page, 'save').click();
+        for (const id of ['REC-004', 'REC-008']) {
+            await expect(cell(page, id, '_state')).toHaveText('saved');
+            await expect(cell(page, id, '_ambErrorCount')).toHaveText('0');
+            await expect(row(page, id)).not.toHaveAttribute('data-demo-server-error');
+        }
+    });
+
+    for (const locale of ['it', 'en']) {
+        test(`explains a wholly rejected save in ${locale} without claiming partial success`, async ({ page }) => {
+            if (locale === 'it') await page.locator('[data-language-toggle]').click();
+            await selectValue(page, 'REC-002', 'type', 'Restricted');
+            await action(page, 'save').click();
+            const message = locale === 'it'
+                ? 'Salvataggio non eseguito. Il backend simulato ha rifiutato il record REC-002: il tipo Restricted è consentito soltanto al reparto Compliance.'
+                : 'Save not completed. The simulated backend rejected record REC-002: Restricted is only allowed for the Compliance department.';
+            await expect(page.getByText(message, { exact: false })).toBeVisible();
+            await expect(cell(page, 'REC-002', '_ambErrorCount')).toHaveText('1');
+            await editText(page, 'REC-001', 'description', 'Accepted service request revision');
+            await action(page, 'save').click();
+            const partialMessage = locale === 'it'
+                ? 'Salvataggio parziale. Il backend simulato ha rifiutato il record REC-002: il tipo Restricted è consentito soltanto al reparto Compliance.'
+                : 'Partial save. The simulated backend rejected record REC-002: Restricted is only allowed for the Compliance department.';
+            await expect(feedback(page)).toContainText(partialMessage);
+            await expect(cell(page, 'REC-001', '_state')).toHaveText('saved');
+        });
+    }
+
+    test('keeps frontend errors and other rejected rows when Department corrects the backend rule', async ({ page }) => {
+        await selectValue(page, 'REC-002', 'type', 'Restricted');
+        await selectValue(page, 'REC-006', 'type', 'Restricted');
+        await action(page, 'save').click();
+        await expect(cell(page, 'REC-006', '_ambErrorCount')).toHaveText('1');
+        await editText(page, 'REC-002', 'description', '');
+        await selectValue(page, 'REC-002', 'department', 'Compliance');
+        await expect(cell(page, 'REC-002', 'type')).not.toHaveAttribute('data-cell-error');
+        await expect(cell(page, 'REC-002', 'description')).toHaveAttribute('data-cell-error', 'true');
+        await expect(cell(page, 'REC-002', '_ambErrorCount')).toHaveText('1');
+        await expect(row(page, 'REC-002')).not.toHaveAttribute('data-demo-server-error');
+        await expect(cell(page, 'REC-006', 'type')).toHaveAttribute('data-cell-error', 'true');
+        await expect(row(page, 'REC-006')).toHaveAttribute('data-demo-server-error', 'true');
+        await selectValue(page, 'REC-006', 'type', '');
+        await selectValue(page, 'REC-006', 'department', 'Compliance');
+        await expect(cell(page, 'REC-006', 'type')).toHaveAttribute('data-cell-error', 'true');
+        await expect(cell(page, 'REC-006', '_ambErrorCount')).toHaveText('1');
+    });
+
+    test('assigns IDs only to accepted new records and identifies multiple rejections', async ({ page }) => {
+        const rejectedNew = await addRecord(page, 'Restricted vendor review');
+        await selectCell(page, rejectedNew.locator('[tabulator-field="type"]'), 'Restricted');
+        await addRecord(page, 'Accepted vendor review');
+        await selectValue(page, 'REC-002', 'type', 'Restricted');
+        await action(page, 'save').click();
+        await expect(cell(page, 'REC-010', 'description')).toHaveText('Accepted vendor review');
+        await expect(cell(page, 'REC-010', '_state')).toHaveText('saved');
+        await expect(rejectedNew.locator('[tabulator-field="id"]')).toHaveText('');
+        await expect(rejectedNew.locator('[tabulator-field="_state"]')).toHaveText('new');
+        await action(page, 'state-report').click();
+        const report = await readDialog(page, 'CRUD & Row States report');
+        expect(report.errorRowsCount).toBe(2);
+        const pendingNew = report.changedRows.find(row => row.state === 'new');
+        expect(pendingNew.id).toBeFalsy();
+        expect(pendingNew.tempId).toBeTruthy();
+        expect(report.changedRows.find(row => row.id === 'REC-002').state).toBe('modified');
+        await expect(feedback(page)).toContainText('Partial save. The simulated backend rejected records');
+        await expect(feedback(page)).toContainText('REC-002');
+        await expect(feedback(page)).toContainText(pendingNew.tempId);
     });
 });
