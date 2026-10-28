@@ -38,7 +38,6 @@ const normalizeDependentField = dependentField => {
     const visibleInLookup = dependentField.visibleInLookup !== false;
 
     return {
-        readonly: true,
         visibleInGrid: true,
         visibleInLookup,
         searchable: visibleInLookup,

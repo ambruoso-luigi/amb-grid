@@ -20,7 +20,6 @@ export const normalizeDateEditorOptions = (options = {}) => {
         format: 'dd/mm/yyyy',
         allowEmpty: true,
         invalidBehavior: 'commitRaw',
-        mode,
         picker: false,
         selectOnFocus: false,
         ...options,

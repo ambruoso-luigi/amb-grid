@@ -38,6 +38,22 @@ vi.mock('vanillajs-datepicker/Datepicker', () => ({
 }));
 
 describe('date editor modes', () => {
+    test.each([
+        [{}, 'manual'],
+        [{ picker: true }, 'manualWithPickerButton'],
+        [{ mode: undefined, picker: true }, 'manualWithPickerButton'],
+        [{ mode: null, picker: true }, 'manualWithPickerButton'],
+        [{ mode: '', picker: true }, 'manualWithPickerButton'],
+        [{ mode: false }, 'manual'],
+        [{ mode: 'manual', picker: true }, 'manual'],
+        [{ mode: 'pickerOnly', picker: true }, 'pickerOnly']
+    ])('keeps the effective mode after applying options %j', (options, mode) => {
+        expect(normalizeDateEditorOptions(options)).toMatchObject({
+            ...options,
+            mode
+        });
+    });
+
     test('maps picker true to manualWithPickerButton', () => {
         expect(normalizeDateEditorOptions({ picker: true }).mode)
             .toBe('manualWithPickerButton');

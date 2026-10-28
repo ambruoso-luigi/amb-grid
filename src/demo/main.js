@@ -61,7 +61,7 @@ const translations = {
         'frameworks.javascript.meta': 'ESM / UMD · Integrazione diretta',
         'frameworks.javascript.description': 'Gestionale di magazzino con ciclo CRUD completo, validazione e payload, integrato direttamente in JavaScript anche in contesti legacy.',
         'frameworks.react.meta': 'TypeScript · Component lifecycle',
-        'frameworks.react.description': 'Applicazione di inventario con AMB Grid integrata nei componenti React, dalla creazione alla distruzione della griglia.',
+        'frameworks.react.description': 'Gestionale d’inventario realizzato in React, con AMB Grid integrata nei componenti e gestita correttamente durante l’intero ciclo di vita.',
         'frameworks.vue.meta': 'TypeScript · Composition API',
         'frameworks.vue.description': 'Atelier del Tempo: catalogo di antiquariato con gallerie fotografiche e schede storiche, integrato in Vue con Composition API.',
         'frameworks.vue.cta': 'Apri demo Vue',
@@ -678,7 +678,7 @@ const renderShell = selectedId => {
                         <span class="demo-framework-card__body">
                             <span class="demo-framework-card__name">React</span>
                             <span class="demo-framework-card__meta" data-i18n="frameworks.react.meta">TypeScript · Component lifecycle</span>
-                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Applicazione di inventario con AMB Grid integrata nei componenti React, dalla creazione alla distruzione della griglia.</span>
+                            <span class="demo-framework-card__description" data-i18n="frameworks.react.description">Gestionale d’inventario realizzato in React, con AMB Grid integrata nei componenti e gestita correttamente durante l’intero ciclo di vita.</span>
                         </span>
                         <span class="demo-framework-card__footer">
                             <span class="demo-framework-card__cta-label">${demoIcon('guide', { className: 'demo-framework-card__cta-label-icon', size: 18, strokeWidth: 2.3 })}<span data-i18n="frameworks.cta">Apri guida e demo</span></span>

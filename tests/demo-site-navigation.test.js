@@ -27,7 +27,7 @@ describe('demo site navigation', () => {
         expect(main).toContain("'frameworks.javascript.meta': 'ESM / UMD · Direct integration'");
         expect(main).toContain("'frameworks.javascript.description': 'Inventory management demo with a complete CRUD workflow, validation and backend-ready payloads, integrated directly into JavaScript, including legacy environments.'");
         expect(main).toContain("'frameworks.react.meta': 'TypeScript · Component lifecycle'");
-        expect(main).toContain("'frameworks.react.description': 'Applicazione di inventario con AMB Grid integrata nei componenti React, dalla creazione alla distruzione della griglia.'");
+        expect(main).toContain("'frameworks.react.description': 'Gestionale d’inventario realizzato in React, con AMB Grid integrata nei componenti e gestita correttamente durante l’intero ciclo di vita.'");
         expect(main).toContain("'frameworks.react.description': 'Inventory application integrating AMB Grid into React components, from grid initialization to proper cleanup.'");
         expect(main).toContain("'frameworks.vue.meta': 'TypeScript · Composition API'");
         expect(main).toContain("'frameworks.vue.description': 'Atelier del Tempo: catalogo di antiquariato con gallerie fotografiche e schede storiche, integrato in Vue con Composition API.'");

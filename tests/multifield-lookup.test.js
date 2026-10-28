@@ -305,6 +305,31 @@ describe('AMB.multifieldLookup', () => {
         });
     });
 
+    test.each([undefined, true, false, null, 0, ''])(
+        'only literal false opts a dependent field out of readonly (%j)',
+        readonly => {
+            const multifieldLookup = createMunicipalityMultifieldLookup({
+                dependentFields: [{ field: 'province', from: 'province', readonly }]
+            });
+            const column = multifieldLookup.dependentColumn('province', {
+                editable: true,
+                editor: 'input'
+            });
+
+            expect(multifieldLookup.dependentFields[0].readonly).toBe(readonly !== false);
+            expect(column.editable).toBe(readonly === false);
+            expect(column.editor).toBe(readonly === false ? 'input' : undefined);
+        }
+    );
+
+    test('global readonly opt-out preserves the dependent editor without changing normalization', () => {
+        const multifieldLookup = createMunicipalityMultifieldLookup({ readonlyDependents: false });
+        const column = multifieldLookup.dependentColumn('province', { editable: true, editor: 'input' });
+
+        expect(multifieldLookup.dependentFields[0].readonly).toBe(true);
+        expect(column).toMatchObject({ editable: true, editor: 'input' });
+    });
+
     test('creates an atomic patch using explicit from to field mapping', () => {
         const multifieldLookup = createMunicipalityMultifieldLookup();
 
