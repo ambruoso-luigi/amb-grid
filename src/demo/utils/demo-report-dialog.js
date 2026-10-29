@@ -188,9 +188,10 @@ export const createDemoReportDialog = () => {
 
         if (
             previouslyFocusedElement
+            && previouslyFocusedElement.isConnected
             && typeof previouslyFocusedElement.focus === 'function'
         ) {
-            previouslyFocusedElement.focus();
+            previouslyFocusedElement.focus({ preventScroll: true });
         }
 
         previouslyFocusedElement = null;
