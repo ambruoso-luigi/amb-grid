@@ -113,7 +113,9 @@ test('supports skip, reopen, restart, cleanup and viewer reuse', async ({ page }
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'explore-gallery');
 
     await page.evaluate(() => document.querySelector('[data-example="validation"]').click());
-    await expect(tutorial(page)).toHaveCount(0);
+    await expect(page.locator('#validation-table')).toBeVisible();
+    await expect(tutorial(page)).toHaveCount(1);
+    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'create-anomalies');
     await page.locator('[data-example="image-preview-viewer"]').click();
     await expect(tutorial(page)).toHaveCount(1);
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'explore-gallery');

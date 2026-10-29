@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { countPrintProducts } from './utils/demo-calculations.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
+import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 
 const formatAveragePrice = value => Number(value).toFixed(2);
 
@@ -33,11 +34,40 @@ export default function columnCalculations(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="column-calculations-table" class="demo-business-grid demo-business-grid--viewport demo-column-calculations-grid"></div>
         </div>
     `;
 
+    let destroyed = false;
+    const editCandidates = new Map();
+    const tutorial = createDemoActionTutorial({
+        host: app.querySelector('.demo-action-tutorial-host'),
+        locale: document.documentElement.lang === 'en' ? 'en' : 'it',
+        titleKey: 'examples.columnCalculations.tutorialTitle',
+        completedKey: 'examples.columnCalculations.tutorialCompleted',
+        steps: [
+            {
+                id: 'update-sum', actionId: 'quantity-edited', instructionKey: 'examples.columnCalculations.tutorialSum',
+                isComplete: ({ id, field, previous, value, before, after, row }) => id === 1001 && field === 'quantity'
+                    && value === 12 && previous !== value && Number.isFinite(before) && after === before + (value - previous)
+                    && row?.after?.quantity === value && row.state === 'modified'
+            },
+            {
+                id: 'update-print', actionId: 'product-edited', instructionKey: 'examples.columnCalculations.tutorialPrint',
+                isComplete: ({ id, field, previous, value, before, after, row }) => id === 1004 && field === 'product'
+                    && value === 'Print storage bin' && previous !== value && countPrintProducts([previous]) === 0
+                    && Number.isFinite(before) && after === before + 1
+                    && row?.after?.product === value && row.state === 'modified'
+            },
+            {
+                id: 'update-count', actionId: 'product-added', instructionKey: 'examples.columnCalculations.tutorialCount',
+                isComplete: ({ id, before, after, row }) => Number.isFinite(before) && after === before + 1
+                    && row?.id === id && row.state === 'new'
+            }
+        ]
+    });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const grid = AMB.table({
         selector: '#column-calculations-table',
@@ -116,11 +146,44 @@ export default function columnCalculations(app) {
     });
     commandGuideToolbar.mount();
 
-    function handleAdd() {
+    const editKey = cell => `${cell.getRow().getData().id}:${cell.getField()}`;
+    const handleEditStart = cell => {
+        const context = tutorial.capture();
+        const id = cell.getRow().getData().id;
+        const field = cell.getField();
+        const expected = context?.stepId === 'update-sum' && id === 1001 && field === 'quantity'
+            || context?.stepId === 'update-print' && id === 1004 && field === 'product';
+        if (!expected) return;
+        editCandidates.set(editKey(cell), {
+            context, id, field, previous: cell.getValue(),
+            before: Number(grid.getCalcResults().top?.[field])
+        });
+    };
+    const handleEditCancelled = cell => editCandidates.delete(editKey(cell));
+    const handleEditConfirmed = cell => {
+        const key = editKey(cell);
+        const candidate = editCandidates.get(key);
+        editCandidates.delete(key);
+        if (destroyed || !candidate) return;
+        const value = cell.getValue();
+        const after = Number(grid.getCalcResults().top?.[candidate.field]);
+        const row = grid.getStateReport().rows.find(item => item.id === candidate.id);
+        tutorial.notify(candidate.field === 'quantity' ? 'quantity-edited' : 'product-edited', {
+            ...candidate, value, after, row
+        }, candidate.context);
+    };
+    grid.table.on('cellEditing', handleEditStart);
+    grid.table.on('cellEditCancelled', handleEditCancelled);
+    grid.table.on('cellEdited', handleEditConfirmed);
+
+    async function handleAdd() {
+        const context = tutorial.capture();
+        const before = Number(grid.getCalcResults().top?.id);
+        const id = nextProductId++;
         grid.feedback.clear();
 
-        return grid.crud.addRow({
-            id: nextProductId++,
+        const added = await grid.crud.addRow({
+            id,
             product: 'New product',
             category: 'New category',
             quantity: 0,
@@ -128,11 +191,23 @@ export default function columnCalculations(app) {
             deliveryDays: 0,
             score: 0
         });
+        if (!destroyed && added) {
+            const after = Number(grid.getCalcResults().top?.id);
+            const row = grid.getStateReport().rows.find(item => item.id === id);
+            tutorial.notify('product-added', { id, before, after, row }, context);
+        }
+        return added;
     }
 
     return {
         destroy() {
+            destroyed = true;
+            editCandidates.clear();
+            grid.table.off('cellEditing', handleEditStart);
+            grid.table.off('cellEditCancelled', handleEditCancelled);
+            grid.table.off('cellEdited', handleEditConfirmed);
             commandGuideToolbar.destroy();
+            tutorial.destroy();
             grid.destroy();
         }
     };
