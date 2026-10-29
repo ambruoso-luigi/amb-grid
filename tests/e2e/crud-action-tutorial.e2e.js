@@ -19,7 +19,7 @@ const editText = async (page, id, value) => {
     await input.press('Enter');
 };
 const closeReport = async page => {
-    const dialog = page.getByRole('dialog', { name: 'CRUD & Row States report', exact: true });
+    const dialog = page.getByRole('dialog', { name: /^(CRUD & Row States report|Report CRUD & Row States)$/ });
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 };
@@ -43,9 +43,11 @@ test.beforeEach(async ({ page }) => {
     await step(page, 'prepare-states');
 });
 
-for (const correction of ['type', 'department']) {
-    test(`completes all five verified steps through ${correction} correction`, async ({ page }) => {
-        await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 5');
+for (const [locale, correction] of [['en', 'type'], ['en', 'department'], ['it', 'type'], ['it', 'department']]) {
+    test(`completes all five verified steps in ${locale} through ${correction} correction`, async ({ page }) => {
+        if (locale === 'it') await page.locator('[data-language-toggle]').click();
+        await expect(tutorial(page).locator('.demo-action-tutorial__title')).toHaveText(locale === 'it' ? 'Prova CRUD & Row States' : 'Try CRUD & Row States');
+        await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText(locale === 'it' ? '1 di 5' : '1 of 5');
         await expect(tutorial(page).locator('ol li')).toHaveCount(5);
         await reachSave(page);
         await expect(cell(page, 'REC-002', 'type')).toBeFocused();
@@ -53,7 +55,7 @@ for (const correction of ['type', 'department']) {
         await action(page, 'save').click();
         await step(page, 'save-corrected');
         const feedback = page.locator('#feature-example .amb-feedback-region__message');
-        await expect(feedback).toContainText('Partial save. The simulated backend rejected record REC-002');
+        await expect(feedback).toContainText(locale === 'it' ? 'Salvataggio parziale. Il backend simulato ha rifiutato il record REC-002' : 'Partial save. The simulated backend rejected record REC-002');
         await expect(cell(page, 'REC-002', 'type')).toHaveAttribute('data-cell-error', 'true');
         await expect(cell(page, 'REC-005', '_state')).toHaveText('saved');
         await expect(cell(page, 'REC-010', '_state')).toHaveText('saved');
@@ -63,11 +65,11 @@ for (const correction of ['type', 'department']) {
         await expect(cell(page, 'REC-002', '_state')).toHaveText('modified');
         await action(page, 'save').click();
         await step(page, 'complete');
-        await expect(tutorial(page).locator('[aria-live="polite"]')).toHaveText('Tutorial complete. You explored row states, reports, backend rejection and saving.');
+        await expect(tutorial(page).locator('[aria-live="polite"]')).toHaveText(locale === 'it' ? 'Tutorial completato. Hai provato stati, report, errore backend e salvataggio.' : 'Tutorial complete. You explored row states, reports, backend rejection and saving.');
         await expect(cell(page, 'REC-002', '_state')).toHaveText('saved');
-        await expect(feedback).toContainText('Saved rows: 1.');
+        await expect(feedback).toContainText(locale === 'it' ? 'Righe salvate: 1.' : 'Saved rows: 1.');
         await action(page, 'payload').click();
-        const payloadDialog = page.getByRole('dialog', { name: 'Save payload', exact: true });
+        const payloadDialog = page.getByRole('dialog', { name: locale === 'it' ? 'Payload di salvataggio' : 'Save payload', exact: true });
         const payload = JSON.parse(await payloadDialog.locator('.demo-report-dialog__json').textContent());
         expect(payload.hasChanges).toBe(false);
         await payloadDialog.getByRole('button', { name: 'Close', exact: true }).click();
@@ -163,7 +165,42 @@ test('skip, reopen, language changes and remount preserve normal grid use withou
     await expect(page.locator('.demo-report-dialog')).toHaveCount(1);
 });
 
-for (const width of [1440, 850, 390]) {
+test('does not advance for a backend rejection belonging to another record', async ({ page }) => {
+    await reachSave(page);
+    await select(page, 'REC-002', 'type', 'Request');
+    await select(page, 'REC-006', 'type', 'Restricted');
+    await action(page, 'save').click();
+    await expect(cell(page, 'REC-006', 'type')).toHaveAttribute('data-cell-error', 'true');
+    await expect(cell(page, 'REC-002', '_state')).toHaveText('saved');
+    await step(page, 'backend-rejected');
+    await action(page, 'reload').click();
+    await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(9);
+    await expect(cell(page, 'REC-002', 'type')).toHaveText('Contract');
+    await control(page, 'restart').click();
+    await step(page, 'prepare-states');
+    await action(page, 'state-prepare').click();
+    await step(page, 'open-report');
+});
+
+test('keeps keyboard navigation local when hiding and reopening the tutorial', async ({ page }) => {
+    await control(page, 'restart').focus();
+    await page.keyboard.press('Tab');
+    await expect(control(page, 'skip')).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(control(page, 'restart')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(control(page, 'reopen')).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(control(page, 'restart')).toBeFocused();
+    await step(page, 'prepare-states');
+    await page.keyboard.press('Tab');
+    await expect(control(page, 'skip')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(action(page, 'add')).toBeFocused();
+});
+
+for (const width of [1440, 850, 768, 390]) {
     test(`fits above the toolbar at ${width}px and preserves keyboard access`, async ({ page }) => {
         await page.setViewportSize({ width, height: 1000 });
         await tutorial(page).scrollIntoViewIfNeeded();

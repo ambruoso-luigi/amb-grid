@@ -312,7 +312,7 @@ describe('demo site navigation', () => {
         expect(css).not.toContain('.language-switch__flag');
     });
 
-    test('shows seven focused public feature examples', () => {
+    test('shows eight focused public feature examples', () => {
         const main = read('src/demo/main.js');
         const copy = read('src/demo/example-copy.js');
         const featureConfig = main.slice(
@@ -322,7 +322,7 @@ describe('demo site navigation', () => {
 
         expect(main).toContain('class="demo-feature-grid"');
         expect(main).toContain('class="demo-feature-card');
-        expect(featureConfig.match(/id: '/g)).toHaveLength(7);
+        expect(featureConfig.match(/id: '/g)).toHaveLength(8);
         expect(featureConfig).toContain("id: 'crud-row-states'");
         expect(featureConfig).not.toContain("id: 'basic-crud'");
         expect(featureConfig).not.toContain("id: 'row-states'");
@@ -330,12 +330,16 @@ describe('demo site navigation', () => {
         expect(featureConfig).toContain("id: 'validation'");
         expect(featureConfig).toContain("id: 'autocomplete'");
         expect(featureConfig).toContain("id: 'multifield-lookup'");
+        expect(featureConfig.indexOf("id: 'multifield-lookup'")).toBeLessThan(featureConfig.indexOf("id: 'image-preview-viewer'"));
+        expect(featureConfig.indexOf("id: 'image-preview-viewer'")).toBeLessThan(featureConfig.indexOf("id: 'column-calculations'"));
         expect(main).toContain("import columnCalculations from './column-calculations.js'");
         expect(featureConfig).toContain("id: 'column-calculations'");
         expect(main).toContain("import dates from './dates.js'");
         expect(main).toContain("import parsers from './parsers.js'");
         expect(featureConfig).toContain("id: 'dates'");
         expect(featureConfig).toContain("id: 'parsers'");
+        expect(main).toContain("import imagePreviewViewer from './image-preview-viewer.js'");
+        expect(featureConfig).toContain("id: 'image-preview-viewer'");
         expect(featureConfig).not.toContain("id: 'numeric'");
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Come funzionano i calcoli di colonna'");
         expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'How column calculations work'");

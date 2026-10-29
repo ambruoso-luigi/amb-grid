@@ -11,6 +11,7 @@ import multifieldLookup from './multifield-lookup.js';
 import columnCalculations from './column-calculations.js';
 import dates from './dates.js';
 import parsers from './parsers.js';
+import imagePreviewViewer from './image-preview-viewer.js';
 import fullDemo from './full-demo.js';
 import gettingStartedJavaScript from './getting-started-javascript.js';
 import { renderDemoBrand } from './demo-brand.js';
@@ -31,6 +32,7 @@ const featureExamples = [
     { id: 'validation', titleKey: 'examples.validation.title', descriptionKey: 'examples.validation.description', mount: validation },
     { id: 'autocomplete', titleKey: 'examples.autocomplete.title', descriptionKey: 'examples.autocomplete.description', mount: autocomplete },
     { id: 'multifield-lookup', titleKey: 'examples.multifieldLookup.title', descriptionKey: 'examples.multifieldLookup.description', mount: multifieldLookup },
+    { id: 'image-preview-viewer', titleKey: 'examples.imagePreviewViewer.title', descriptionKey: 'examples.imagePreviewViewer.description', mount: imagePreviewViewer },
     { id: 'column-calculations', titleKey: 'examples.columnCalculations.title', descriptionKey: 'examples.columnCalculations.description', mount: columnCalculations },
     { id: 'dates', titleKey: 'examples.dates.title', descriptionKey: 'examples.dates.description', mount: dates },
     { id: 'parsers', titleKey: 'examples.parsers.title', descriptionKey: 'examples.parsers.description', mount: parsers }

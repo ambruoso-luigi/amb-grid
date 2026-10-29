@@ -50,7 +50,7 @@ test.describe('CRUD & Row States lifecycle', () => {
     });
 
     test('prepares repeatable valid states, separates report from payload and saves backend IDs', async ({ page }) => {
-        await expect(page.locator('[data-example]')).toHaveCount(7);
+        await expect(page.locator('[data-example]')).toHaveCount(8);
         await expect(page.locator('#feature-example details.demo-disclosure')).not.toHaveAttribute('open');
         for (let iteration = 0; iteration < 2; iteration += 1) {
             await prepare(page);

@@ -180,3 +180,56 @@ export const commandGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
         }
     }
 };
+
+export const readonlyImageGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> = {
+    it: {
+        ...commandGuideCopy.it,
+        subtitle: 'Navigazione della tabella e visualizzatore immagini',
+        tabs: {
+            ...commandGuideCopy.it.tabs,
+            navigation: {
+                label: 'Navigazione',
+                groups: [{ items: [
+                    { tokens: [action('Click su una cella')], text: 'Porta il focus sulla cella senza modificarne il contenuto.' },
+                    { tokens: [key('←'), key('↑'), key('↓'), key('→')], text: 'Spostano il focus tra le celle della tabella.' },
+                    { tokens: [key('Tab'), key('Shift+Tab')], text: 'Passano alla cella successiva o precedente, comprese le celle con immagini.' }
+                ] }]
+            },
+            advanced: {
+                label: 'Immagini e viewer',
+                groups: [{ items: [
+                    { tokens: [action('Passa sulla miniatura')], text: 'Mostra l’anteprima della prima immagine.' },
+                    { tokens: [action('Click sulla miniatura'), key('Enter'), key('Space')], text: 'Aprono il visualizzatore dalla miniatura focalizzata.' },
+                    { tokens: [key('←'), key('→')], text: 'Nel visualizzatore passano all’immagine precedente o successiva della raccolta.' },
+                    { tokens: [action('Controlli del viewer')], text: 'Consentono di ingrandire, ridurre, ripristinare e spostare l’immagine ingrandita.' },
+                    { tokens: [key('Esc')], text: 'Chiude il visualizzatore e riporta il focus alla miniatura o alla griglia.' }
+                ] }]
+            }
+        }
+    },
+    en: {
+        ...commandGuideCopy.en,
+        subtitle: 'Table navigation and image viewer',
+        tabs: {
+            ...commandGuideCopy.en.tabs,
+            navigation: {
+                label: 'Navigation',
+                groups: [{ items: [
+                    { tokens: [action('Click a cell')], text: 'Focuses the cell without changing its content.' },
+                    { tokens: [key('←'), key('↑'), key('↓'), key('→')], text: 'Move focus between table cells.' },
+                    { tokens: [key('Tab'), key('Shift+Tab')], text: 'Move to the next or previous cell, including image cells.' }
+                ] }]
+            },
+            advanced: {
+                label: 'Images and viewer',
+                groups: [{ items: [
+                    { tokens: [action('Hover over a thumbnail')], text: 'Shows a preview of the first image.' },
+                    { tokens: [action('Click a thumbnail'), key('Enter'), key('Space')], text: 'Open the viewer from the focused thumbnail.' },
+                    { tokens: [key('←'), key('→')], text: 'In the viewer, move to the previous or next image in the collection.' },
+                    { tokens: [action('Viewer controls')], text: 'Zoom in, zoom out, reset and pan an enlarged image.' },
+                    { tokens: [key('Esc')], text: 'Closes the viewer and returns focus to the thumbnail or grid.' }
+                ] }]
+            }
+        }
+    }
+};

@@ -1,7 +1,7 @@
 import './demo-action-tutorial.css';
 import { publicExampleTranslations } from '../example-copy.js';
 
-export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey }) {
+export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed' }) {
     let language = locale === 'en' ? 'en' : 'it';
     let index = 0;
     let generation = 0;
@@ -59,7 +59,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey 
             indicator.setAttribute('data-complete', String(stepIndex < index));
             indicator.setAttribute('aria-current', !complete && stepIndex === index ? 'step' : 'false');
         });
-        const text = copy(complete ? 'tutorial.completed' : steps[index].instructionKey);
+        const text = copy(complete ? completedKey : steps[index].instructionKey);
         if (instruction.textContent !== text) instruction.textContent = text;
         skipButton.textContent = copy('tutorial.skip');
         restartButton.textContent = copy('tutorial.restart');
@@ -68,15 +68,19 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey 
 
     function skip() {
         if (destroyed || hidden) return;
+        const restoreFocus = [skipButton, restartButton].includes(document.activeElement);
         hidden = true;
         generation += 1;
         render();
+        if (restoreFocus) reopenButton.focus({ preventScroll: true });
     }
 
     function reopen() {
         if (destroyed || !hidden) return;
+        const restoreFocus = document.activeElement === reopenButton;
         hidden = false;
         render();
+        if (restoreFocus) restartButton.focus({ preventScroll: true });
     }
 
     function restart() {

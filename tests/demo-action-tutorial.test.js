@@ -17,6 +17,7 @@ class ElementMock extends EventTarget {
     getAttribute(key) { return this.attributes.get(key); }
     remove() { this.parentNode.children = this.parentNode.children.filter(child => child !== this); }
     click() { this.dispatchEvent(new Event('click')); }
+    focus() { document.activeElement = this; }
 }
 
 const find = (element, predicate) => predicate(element) ? element : element.children.map(child => find(child, predicate)).find(Boolean);
@@ -56,6 +57,36 @@ describe('demo action tutorial controller', () => {
         expect(progress.children).toHaveLength(5);
         expect(progress.children[0].getAttribute('aria-current')).toBe('step');
         expect(document.activeElement).toBeNull();
+    });
+
+    test('supports two image steps and a dedicated completion message without changing the shared defaults', () => {
+        const windowMock = new EventTarget();
+        vi.stubGlobal('window', windowMock);
+        vi.stubGlobal('document', { createElement: tag => new ElementMock(tag), documentElement: { lang: 'it' }, activeElement: null });
+        const host = new ElementMock('div');
+        const controller = createDemoActionTutorial({
+            host,
+            locale: 'it',
+            titleKey: 'examples.imagePreviewViewer.tutorialTitle',
+            completedKey: 'examples.imagePreviewViewer.tutorialCompleted',
+            steps: [
+                { id: 'explore-gallery', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialGallery', isComplete: payload => payload.galleryId === 'TRV-001' && payload.navigated },
+                { id: 'explore-portrait', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialPortrait', isComplete: payload => payload.galleryId === 'TRV-002' && payload.portraitViewed && payload.focusRestored }
+            ]
+        });
+        controllers.push(controller);
+        const root = host.children[0];
+        const instruction = find(root, element => element.getAttribute('aria-live') === 'polite');
+        expect(find(root, element => element.tagName === 'ol').children).toHaveLength(2);
+        expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('1 di 2');
+        expect(controller.notify('viewer-closed', { galleryId: 'TRV-001', navigated: false }, controller.capture())).toBe(false);
+        expect(controller.notify('viewer-closed', { galleryId: 'TRV-001', navigated: true }, controller.capture())).toBe(true);
+        expect(root.getAttribute('data-tutorial-step')).toBe('explore-portrait');
+        controller.setLocale('en');
+        expect(instruction.textContent).toContain('Nature and Villages');
+        expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('2 of 2');
+        expect(controller.notify('viewer-closed', { galleryId: 'TRV-002', portraitViewed: true, focusRestored: true }, controller.capture())).toBe(true);
+        expect(instruction.textContent).toBe('Tutorial complete. You explored galleries and photos with different aspect ratios.');
     });
 
     test('ignores unrelated, unsuccessful and missing-context notifications without caching them', () => {
@@ -105,6 +136,25 @@ describe('demo action tutorial controller', () => {
         controller.restart();
         expect(controller.notify('prepare-states', { succeeded: true }, pending)).toBe(false);
         expect(root.getAttribute('data-tutorial-step')).toBe('prepare-states');
+    });
+
+    test('keeps focus on visible tutorial commands after explicit skip and reopen', () => {
+        const { button } = mount();
+        button('skip').focus();
+        button('skip').click();
+        expect(document.activeElement).toBe(button('reopen'));
+        button('reopen').click();
+        expect(document.activeElement).toBe(button('restart'));
+    });
+
+    test('does not steal grid focus when skip and reopen are called programmatically', () => {
+        const { controller } = mount();
+        const gridCell = document.createElement('div');
+        gridCell.focus();
+        controller.skip();
+        expect(document.activeElement).toBe(gridCell);
+        controller.reopen();
+        expect(document.activeElement).toBe(gridCell);
     });
 
     test('requires a verified boolean result rather than an unresolved asynchronous condition', () => {

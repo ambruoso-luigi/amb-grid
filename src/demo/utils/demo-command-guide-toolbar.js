@@ -4,7 +4,7 @@ import { demoIcon } from '../demo-icons.js';
 
 const getLocale = () => document.documentElement.lang === 'en' ? 'en' : 'it';
 
-export const createDemoCommandGuideToolbar = app => {
+export const createDemoCommandGuideToolbar = (app, { profile = 'default' } = {}) => {
     let controller = null;
     let trigger = null;
     let mounted = false;
@@ -48,7 +48,8 @@ export const createDemoCommandGuideToolbar = app => {
             controller = createDemoCommandGuide({
                 host,
                 trigger: trigger || undefined,
-                locale: getLocale()
+                locale: getLocale(),
+                profile
             });
             mounted = true;
             syncLocale();

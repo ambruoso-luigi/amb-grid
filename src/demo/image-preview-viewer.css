@@ -1,0 +1,36 @@
+.demo-image-example {
+    min-width: 0;
+}
+
+.demo-image-example > h2 {
+    margin: 0 0 0.4rem;
+}
+
+.demo-image-example > .demo-note {
+    margin-bottom: 1.2rem;
+}
+
+.demo-image-grid {
+    min-width: 0;
+    max-width: 100%;
+    --amb-demo-row-height: 116px;
+    --amb-demo-visible-rows: 5;
+}
+
+.demo-panel .demo-image-grid .tabulator-row {
+    box-sizing: border-box;
+    min-height: var(--amb-demo-row-height);
+}
+
+.demo-panel .demo-image-grid .tabulator-cell {
+    min-height: var(--amb-demo-row-height);
+    align-content: center;
+}
+
+.demo-panel .demo-image-grid .amb-image-thumbnail {
+    max-width: 100%;
+}
+
+.demo-panel .demo-image-grid .tabulator-cell[tabulator-field="images"] {
+    text-align: center;
+}

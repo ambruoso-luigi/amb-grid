@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
+import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 
 const hasReservedDocumentPrefix = value => {
     if (value === null || value === undefined || String(value).trim() === '') return true;
@@ -246,11 +247,36 @@ export default function validation(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="validation-table" class="demo-business-grid demo-business-grid--viewport demo-validation-grid"></div>
         </div>
     `;
 
+    let destroyed = false;
+    const editCandidates = new Map();
+    const editKey = cell => `${cell.getRow().getData().id}:${cell.getField()}`;
+    const tutorial = createDemoActionTutorial({
+        host: app.querySelector('.demo-action-tutorial-host'),
+        locale: document.documentElement.lang === 'en' ? 'en' : 'it',
+        titleKey: 'examples.validation.tutorialTitle',
+        completedKey: 'examples.validation.tutorialCompleted',
+        steps: [
+            {
+                id: 'create-anomalies', actionId: 'create-anomalies', instructionKey: 'examples.validation.tutorialAnomalies',
+                isComplete: ({ introducedErrors, report }) => introducedErrors > 0 && report.errorRowsCount > 0
+            },
+            {
+                id: 'inspect-report', actionId: 'show-report', instructionKey: 'examples.validation.tutorialReport',
+                isComplete: ({ opened, report }) => opened === true && report.errorRowsCount > 0 && report.errors.cells.length > 0
+            },
+            {
+                id: 'correct-value', actionId: 'cell-edited', instructionKey: 'examples.validation.tutorialCorrect',
+                isComplete: ({ corrected, report, id, field }) => corrected === true && report.rows.some(row => row.id === id
+                    && !row.cellErrors.some(error => error.field === field))
+            }
+        ]
+    });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#validation-table',
@@ -408,6 +434,32 @@ export default function validation(app) {
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
 
+    const handleEditStart = cell => {
+        const context = tutorial.capture();
+        if (!context || context.stepId !== 'correct-value') return;
+        const id = cell.getRow().getData().id;
+        const field = cell.getField();
+        const report = demo.getStateReport();
+        if (!report.rows.some(row => row.id === id && row.cellErrors.some(error => error.field === field))) return;
+        editCandidates.set(editKey(cell), { context, id, field, oldValue: cell.getValue() });
+    };
+    const handleEditCancelled = cell => editCandidates.delete(editKey(cell));
+    const handleEditConfirmed = cell => {
+        const key = editKey(cell);
+        const candidate = editCandidates.get(key);
+        editCandidates.delete(key);
+        if (!candidate || destroyed) return;
+        const report = demo.getStateReport();
+        const row = report.rows.find(item => item.id === candidate.id);
+        const corrected = Boolean(row) && cell.getValue() !== candidate.oldValue
+            && row?.after?.[candidate.field] === cell.getValue()
+            && !row.cellErrors.some(error => error.field === candidate.field);
+        tutorial.notify('cell-edited', { corrected, report, id: candidate.id, field: candidate.field }, candidate.context);
+    };
+    demo.table.on('cellEditing', handleEditStart);
+    demo.table.on('cellEditCancelled', handleEditCancelled);
+    demo.table.on('cellEdited', handleEditConfirmed);
+
     const openValidationReport = () => {
         const details = {
             validateResult: null,
@@ -420,15 +472,24 @@ export default function validation(app) {
             reportText: buildReadableReport(details),
             jsonData: details
         });
+        return details;
     };
 
     demo.destroy = () => {
+        destroyed = true;
+        editCandidates.clear();
+        demo.table.off('cellEditing', handleEditStart);
+        demo.table.off('cellEditCancelled', handleEditCancelled);
+        demo.table.off('cellEdited', handleEditConfirmed);
         reportDialog.destroy();
         commandGuideToolbar.destroy();
+        tutorial.destroy();
         originalDestroy();
     };
 
     async function handleCreateAnomalies() {
+        const context = tutorial.capture();
+        const previousErrors = new Set(demo.getStateReport().errors.cells.map(error => `${error.id}:${error.field}`));
         demo.feedback.clear();
 
         anomalyPatches.forEach(({ id, ...patch }) => {
@@ -436,21 +497,28 @@ export default function validation(app) {
         });
 
         await new Promise(resolve => window.setTimeout(resolve, 0));
+        if (destroyed) return;
         demo.validateChanges();
+        const report = demo.getStateReport();
         demo.feedback.show({
             type: 'warning',
             message: 'Anomalies created. Check highlighted cells or open the report.'
         });
+        const introducedErrors = report.errors.cells.filter(error => !previousErrors.has(`${error.id}:${error.field}`)).length;
+        tutorial.notify('create-anomalies', { introducedErrors, report }, context);
     }
 
     function handleShowReport() {
-        openValidationReport();
+        const context = tutorial.capture();
+        const details = openValidationReport();
+        tutorial.notify('show-report', { opened: true, report: details.stateReport }, context);
     }
 
     async function handleReload() {
         demo.feedback.clear();
         reportDialog.close();
         await demo.setData(validationData.map(row => ({ ...row })));
+        if (destroyed) return;
         demo.feedback.show({
             type: 'success',
             message: 'Validation demo data reloaded.'

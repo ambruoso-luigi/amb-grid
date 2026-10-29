@@ -14,6 +14,7 @@ describe('Public demo column guides', () => {
         'column-calculations',
         'dates',
         'parsers',
+        'image-preview-viewer',
         'full-demo'
     ];
 
@@ -44,7 +45,7 @@ describe('Public demo column guides', () => {
         expect(markup).toContain('data-i18n-emphasis="guide.name.emphasis"');
     });
 
-    test('is used by all seven mini-examples and the JavaScript demo', () => {
+    test('is used by all eight mini-examples and the JavaScript demo', () => {
         demos.forEach(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 

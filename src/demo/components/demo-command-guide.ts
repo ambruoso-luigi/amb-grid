@@ -1,5 +1,6 @@
 import {
     commandGuideCopy,
+    readonlyImageGuideCopy,
     type DemoCommandGuideLocale,
     type DemoCommandGuideTab
 } from './demo-command-guide-copy';
@@ -18,6 +19,7 @@ type DemoCommandGuideOptions = {
     host: HTMLElement;
     trigger?: HTMLElement;
     locale?: DemoCommandGuideLocale;
+    profile?: 'default' | 'imageReadonly';
 };
 
 type SharedGuide = {
@@ -109,13 +111,15 @@ class DemoCommandGuide implements DemoCommandGuideController {
     private host: HTMLElement;
     private trigger: HTMLElement | undefined;
     private locale: DemoCommandGuideLocale;
+    private profile: 'default' | 'imageReadonly';
     private selectedTab: DemoCommandGuideTab = 'navigation';
     private destroyed = false;
 
-    constructor({ host, trigger, locale = 'it' }: DemoCommandGuideOptions) {
+    constructor({ host, trigger, locale = 'it', profile = 'default' }: DemoCommandGuideOptions) {
         this.host = host;
         this.trigger = trigger;
         this.locale = locale;
+        this.profile = profile;
         this.deactivate();
     }
 
@@ -181,7 +185,10 @@ class DemoCommandGuide implements DemoCommandGuideController {
 
     private render() {
         const guide = getSharedGuide();
-        const copy = commandGuideCopy[this.locale];
+        const copy = this.profile === 'imageReadonly'
+            ? readonlyImageGuideCopy[this.locale]
+            : commandGuideCopy[this.locale];
+        const availableTabs = this.availableTabs();
 
         guide.title.textContent = copy.title;
         guide.subtitle.textContent = copy.subtitle;
@@ -190,6 +197,15 @@ class DemoCommandGuide implements DemoCommandGuideController {
             const tabPanel = guide.tabPanels.get(tab);
 
             if (!button || !tabPanel) return;
+            if (!availableTabs.includes(tab)) {
+                button.hidden = true;
+                button.onclick = null;
+                button.onkeydown = null;
+                tabPanel.hidden = true;
+                tabPanel.replaceChildren();
+                return;
+            }
+            button.hidden = false;
             button.textContent = copy.tabs[tab].label;
             button.setAttribute('aria-selected', String(tab === this.selectedTab));
             button.tabIndex = tab === this.selectedTab ? 0 : -1;
@@ -242,7 +258,7 @@ class DemoCommandGuide implements DemoCommandGuideController {
     private bindTabEvents() {
         const guide = getSharedGuide();
 
-        tabs.forEach(tab => {
+        this.availableTabs().forEach(tab => {
             const button = guide.tabs.get(tab);
             if (!button) return;
             button.onclick = () => this.selectTab(tab);
@@ -257,16 +273,21 @@ class DemoCommandGuide implements DemoCommandGuideController {
     }
 
     private handleTabKeydown(event: KeyboardEvent, tab: DemoCommandGuideTab) {
-        const index = tabs.indexOf(tab);
+        const availableTabs = this.availableTabs();
+        const index = availableTabs.indexOf(tab);
         let nextIndex: number | null = null;
 
-        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
-        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % availableTabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + availableTabs.length) % availableTabs.length;
         if (event.key === 'Home') nextIndex = 0;
-        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (event.key === 'End') nextIndex = availableTabs.length - 1;
         if (nextIndex === null) return;
         event.preventDefault();
-        this.selectTab(tabs[nextIndex], true);
+        this.selectTab(availableTabs[nextIndex], true);
+    }
+
+    private availableTabs(): readonly DemoCommandGuideTab[] {
+        return this.profile === 'imageReadonly' ? ['navigation', 'advanced'] : tabs;
     }
 }
 

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
     createDemoCommandGuide
 } from '../src/demo/components/demo-command-guide.ts';
-import { commandGuideCopy } from '../src/demo/components/demo-command-guide-copy.ts';
+import { commandGuideCopy, readonlyImageGuideCopy } from '../src/demo/components/demo-command-guide-copy.ts';
 import { createDemoCommandGuideToolbar } from '../src/demo/utils/demo-command-guide-toolbar.js';
 
 const fullDemoSource = fs.readFileSync(
@@ -258,6 +258,35 @@ describe('demo command guide', () => {
         expect(panel.children[0].children[1].children[1].textContent).toBe('Editing');
         expect(commandGuideCopy.en.tabs.navigation.groups[0].items[0].text)
             .toBe('Selects the cell without opening editing.');
+    });
+
+    test('limits the image profile to readonly navigation and viewer actions', () => {
+        const harness = createHarness();
+        harnesses.push(harness);
+        const host = harness.createElement('div');
+        const controller = createDemoCommandGuide({ host, locale: 'it', profile: 'imageReadonly' });
+        controller.open();
+        const panel = host.children[0];
+        const tablist = panel.children[0].children[1];
+        const [navigation, editing, whileEditing, checkbox, images] = tablist.children;
+
+        expect(navigation.hidden).toBe(false);
+        expect(images.hidden).toBe(false);
+        expect([editing, whileEditing, checkbox].every(tab => tab.hidden)).toBe(true);
+        expect(readonlyImageGuideCopy.it.tabs.advanced.groups[0].items.map(item => item.tokens.map(token => token.label)))
+            .toContainEqual(['Esc']);
+        navigation.keydown('ArrowRight');
+        expect(images.getAttribute('aria-selected')).toBe('true');
+        expect(harness.documentMock.activeElement).toBe(images);
+        controller.setLocale('en');
+        expect(images.textContent).toBe('Images and viewer');
+        controller.destroy();
+
+        const defaultHost = harness.createElement('div');
+        const defaultGuide = createDemoCommandGuide({ host: defaultHost, locale: 'en' });
+        defaultGuide.open();
+        expect(defaultHost.children[0].children[0].children[1].children.every(tab => !tab.hidden)).toBe(true);
+        defaultGuide.destroy();
     });
 
     test('closes and destroys without leaving active trigger state', () => {

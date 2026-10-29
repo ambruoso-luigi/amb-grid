@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
+import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 
 const departments = [
     'Administration',
@@ -149,11 +150,43 @@ export default function autocomplete(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="autocomplete-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
+    let destroyed = false;
+    let activeEdit = null;
+    const tutorial = createDemoActionTutorial({
+        host: app.querySelector('.demo-action-tutorial-host'),
+        locale: document.documentElement.lang === 'en' ? 'en' : 'it',
+        titleKey: 'examples.autocomplete.tutorialTitle',
+        completedKey: 'examples.autocomplete.tutorialCompleted',
+        steps: [
+            {
+                id: 'show-suggestions', actionId: 'suggestions-open', instructionKey: 'examples.autocomplete.tutorialSuggestions',
+                isComplete: ({ id, field, typed, options }) => id === 1 && field === 'requiredDepartment'
+                    && typed !== 'Administration' && options.includes('Security')
+            },
+            {
+                id: 'choose-department', actionId: 'department-committed', instructionKey: 'examples.autocomplete.tutorialChoose',
+                isComplete: ({ id, field, value, selected, previous, row, editorClosed }) => id === 1
+                    && field === 'requiredDepartment' && value === 'Security' && selected === value
+                    && previous !== value && departments.includes(value) && editorClosed
+                    && row?.state === 'modified' && row.after?.requiredDepartment === value
+                    && !row.cellErrors.some(error => error.field === field)
+            },
+            {
+                id: 'enter-free-value', actionId: 'free-value-committed', instructionKey: 'examples.autocomplete.tutorialFree',
+                isComplete: ({ id, field, value, previous, row, editorClosed }) => id === 1
+                    && field === 'tag' && typeof value === 'string' && value.trim().length > 0
+                    && value !== previous && !tags.includes(value) && editorClosed
+                    && row?.state === 'modified' && row.after?.tag === value
+                    && !row.cellErrors.some(error => error.field === field)
+            }
+        ]
+    });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#autocomplete-table',
@@ -259,9 +292,71 @@ export default function autocomplete(app) {
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
 
+    const handleEditStart = cell => {
+        activeEdit = {
+            cell,
+            id: cell.getRow().getData().id,
+            field: cell.getField(),
+            previous: cell.getValue(),
+            selected: null,
+            context: tutorial.capture()
+        };
+    };
+    const handleEditorInput = event => {
+        if (activeEdit?.cell.getElement().contains(event.target)) activeEdit.selected = null;
+    };
+    const handleSuggestionsOpen = event => {
+        const edit = activeEdit;
+        if (!edit || !edit.cell.getElement().contains(event.target)) return;
+        const input = event.target;
+        const list = document.getElementById(input.getAttribute('aria-controls'));
+        if (input.getAttribute('aria-expanded') !== 'true' || !list || list.hidden) return;
+        const options = [...list.querySelectorAll('[role="option"]')].map(option => option.textContent.trim());
+        const advanced = tutorial.notify('suggestions-open', {
+            id: edit.id, field: edit.field, typed: input.value, options
+        }, edit.context);
+        if (advanced) edit.context = tutorial.capture();
+    };
+    const handleSuggestionChosen = event => {
+        const edit = activeEdit;
+        if (!edit || !edit.cell.getElement().contains(event.target)) return;
+        edit.selected = String(event.text?.value ?? event.text ?? '');
+    };
+    const handleEditCancelled = () => { activeEdit = null; };
+    const handleEditConfirmed = cell => {
+        const edit = activeEdit;
+        activeEdit = null;
+        if (destroyed || !edit || edit.cell !== cell) return;
+        const value = cell.getValue();
+        const row = demo.getStateReport().rows.find(item => item.id === edit.id);
+        const payload = {
+            id: edit.id, field: edit.field, value, previous: edit.previous,
+            selected: edit.selected, row,
+            editorClosed: !cell.getElement().querySelector('.amb-autocomplete-editor')
+        };
+        tutorial.notify(edit.field === 'requiredDepartment' ? 'department-committed' : 'free-value-committed', payload, edit.context);
+    };
+    demo.table.on('cellEditing', handleEditStart);
+    demo.table.on('cellEditCancelled', handleEditCancelled);
+    demo.table.on('cellEdited', handleEditConfirmed);
+    document.addEventListener('input', handleEditorInput, true);
+    document.addEventListener('awesomplete-open', handleSuggestionsOpen, true);
+    document.addEventListener('awesomplete-highlight', handleSuggestionChosen, true);
+    document.addEventListener('awesomplete-selectcomplete', handleSuggestionChosen, true);
+
     demo.destroy = () => {
+        destroyed = true;
+        activeEdit = null;
+        demo.table.off('cellEditing', handleEditStart);
+        demo.table.off('cellEditCancelled', handleEditCancelled);
+        demo.table.off('cellEdited', handleEditConfirmed);
+        document.removeEventListener('input', handleEditorInput, true);
+        document.removeEventListener('awesomplete-open', handleSuggestionsOpen, true);
+        document.removeEventListener('awesomplete-highlight', handleSuggestionChosen, true);
+        document.removeEventListener('awesomplete-selectcomplete', handleSuggestionChosen, true);
         reportDialog.destroy();
         commandGuideToolbar.destroy();
+        tutorial.destroy();
         originalDestroy();
     };
 

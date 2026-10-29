@@ -74,6 +74,10 @@
     padding: .5rem .65rem;
 }
 
+.demo-command-guide__tab[hidden] {
+    display: none;
+}
+
 .demo-command-guide__tab[aria-selected='true'] {
     border-bottom-color: var(--demo-command-guide-accent);
     color: #172554;
