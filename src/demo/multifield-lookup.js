@@ -7,6 +7,7 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
+import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 
 const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.meta.url);
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
@@ -189,6 +190,7 @@ export default function multifieldLookup(app) {
             <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
             <p class="demo-note" data-municipality-lookup-status role="status" aria-live="polite">Municipality lookup data is loading.</p>
             <div class="demo-table-workbench">
+                <div class="demo-action-tutorial-host"></div>
                 <div class="demo-command-guide-host"></div>
                 <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
             </div>
@@ -198,6 +200,30 @@ export default function multifieldLookup(app) {
     const tableMount = app.querySelector('#municipality-table');
     const lookupStatus = app.querySelector('[data-municipality-lookup-status]');
     let destroyed = false;
+    let activeEdit = null;
+    let activeDialog = null;
+    const tutorial = createDemoActionTutorial({
+        host: app.querySelector('.demo-action-tutorial-host'),
+        locale: document.documentElement.lang === 'en' ? 'en' : 'it',
+        titleKey: 'examples.multifieldLookup.tutorialTitle',
+        completedKey: 'examples.multifieldLookup.tutorialCompleted',
+        steps: [
+            {
+                id: 'open-lookup', actionId: 'lookup-opened', instructionKey: 'examples.multifieldLookup.tutorialOpen',
+                isComplete: ({ id, field, opened }) => id === 1 && field === 'municipality' && opened
+            },
+            {
+                id: 'select-municipality', actionId: 'mapping-applied', instructionKey: 'examples.multifieldLookup.tutorialSelect',
+                isComplete: ({ id, selected, before, after, report, dialogClosed }) => {
+                    if (id !== 1 || selected?.municipalityName !== 'Salerno' || !dialogClosed) return false;
+                    const mappedFields = Object.entries(MUNICIPALITY_MAP_TO_ROW);
+                    const changedFields = mappedFields.filter(([field]) => before[field] !== after[field]);
+                    return changedFields.length >= 2 && mappedFields.every(([field, source]) => after[field] === selected[source])
+                        && report?.state === 'modified' && !report.hasErrors;
+                }
+            }
+        ]
+    });
     const setLookupStatus = message => {
         if (destroyed) {
             return;
@@ -240,6 +266,24 @@ export default function multifieldLookup(app) {
         }
     });
     const municipalityDialog = new AMB.LookupDialog();
+    const originalDialogOpen = municipalityDialog.open.bind(municipalityDialog);
+    municipalityDialog.open = options => {
+        const edit = activeEdit;
+        const context = tutorial.capture();
+        const selection = originalDialogOpen(options);
+        activeDialog = edit && edit.id === 1 && edit.field === 'municipality'
+            ? { edit, before: { ...edit.cell.getRow().getData() }, selected: null, context: null }
+            : null;
+        const opened = Boolean(municipalityDialog.overlay && !municipalityDialog.overlay.hidden);
+        if (opened && edit) {
+            tutorial.notify('lookup-opened', { id: edit.id, field: edit.field, opened }, context);
+            if (activeDialog) activeDialog.context = tutorial.capture();
+        }
+        return selection.then(selected => {
+            if (activeDialog?.edit === edit) activeDialog.selected = selected;
+            return selected;
+        });
+    };
     const municipalityMultifieldLookup = AMB.multifieldLookup({
         id: 'municipality',
         lookup: municipalityLookup,
@@ -330,6 +374,13 @@ export default function multifieldLookup(app) {
                 widthGrow: 1.7,
                 dialog: municipalityDialog,
                 editorOptions: {
+                    applyRecord: (cell, patch, record) => {
+                        const dialog = activeDialog;
+                        if (dialog?.edit.cell === cell && dialog.selected?.istatCode === record.istatCode) {
+                            dialog.record = record;
+                            dialog.patch = patch;
+                        }
+                    },
                     dialogTitle: 'Select an Italian municipality',
                     searchPlaceholder: 'Search municipality, province, region, or postal code...',
                     autoComplete: true,
@@ -379,6 +430,24 @@ export default function multifieldLookup(app) {
         icon: 'lookup',
         label: 'Search'
     });
+    const handleEditStart = cell => {
+        activeEdit = { cell, id: cell.getRow().getData().id, field: cell.getField() };
+    };
+    const handleEditCancelled = () => { activeEdit = null; activeDialog = null; };
+    const handleRowUpdated = row => {
+        const dialog = activeDialog;
+        if (destroyed || !dialog?.record || !dialog.selected || row.getData().id !== dialog.edit.id) return;
+        activeDialog = null;
+        const after = { ...row.getData() };
+        const report = grid.getStateReport().rows.find(row => row.id === dialog.edit.id);
+        tutorial.notify('mapping-applied', {
+            id: dialog.edit.id, selected: dialog.record, before: dialog.before, after, report,
+            dialogClosed: !municipalityDialog.overlay || municipalityDialog.overlay.hidden
+        }, dialog.context);
+    };
+    grid.table.on('cellEditing', handleEditStart);
+    grid.table.on('cellEditCancelled', handleEditCancelled);
+    grid.table.on('rowUpdated', handleRowUpdated);
 
     function handleAddRow() {
         grid.feedback.clear();
@@ -407,12 +476,18 @@ export default function multifieldLookup(app) {
         ...grid,
         destroy() {
             destroyed = true;
+            activeEdit = null;
+            activeDialog = null;
+            grid.table.off('cellEditing', handleEditStart);
+            grid.table.off('cellEditCancelled', handleEditCancelled);
+            grid.table.off('rowUpdated', handleRowUpdated);
             reportDialog.destroy();
             stopDecoratingLookupButtons();
 
             municipalityDialog.destroy();
 
             commandGuideToolbar.destroy();
+            tutorial.destroy();
             grid.destroy();
         }
     };
