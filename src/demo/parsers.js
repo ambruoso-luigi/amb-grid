@@ -1,6 +1,7 @@
 import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
+import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 
 const priorityParser = AMB.parsers.custom(value => {
     const priorities = {
@@ -181,11 +182,38 @@ export default function parsers(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="parsers-table" class="demo-business-grid demo-business-grid--viewport demo-parsers-grid"></div>
         </div>
     `;
 
+    let destroyed = false;
+    let pendingResult = null;
+    const editCandidates = new Map();
+    const tutorial = createDemoActionTutorial({
+        host: app.querySelector('.demo-action-tutorial-host'),
+        locale: document.documentElement.lang === 'en' ? 'en' : 'it',
+        titleKey: 'examples.parsers.tutorialTitle',
+        completedKey: 'examples.parsers.tutorialCompleted',
+        steps: [
+            {
+                id: 'parse-decimal', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialDecimal',
+                isComplete: ({ id, field, parserKey, previous, input, parsedValue }) => id === 1 && field === 'input'
+                    && parserKey === 'decimal' && previous !== input && input === '1.234,56' && parsedValue === '1234.56'
+            },
+            {
+                id: 'parse-boolean', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialBoolean',
+                isComplete: ({ id, field, parserKey, previous, input, parsedValue }) => id === 7 && field === 'input'
+                    && parserKey === 'boolean' && previous !== input && input === false && parsedValue === 'N'
+            },
+            {
+                id: 'parse-custom', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialCustom',
+                isComplete: ({ id, field, parserKey, previous, input, parsedValue }) => id === 9 && field === 'input'
+                    && parserKey === 'custom' && previous !== input && input === 'Low' && parsedValue === 'L'
+            }
+        ]
+    });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#parsers-table',
@@ -224,18 +252,51 @@ export default function parsers(app) {
     commandGuideToolbar.mount();
     const handleLanguageChange = () => demo.redraw(true);
     const originalDestroy = demo.destroy.bind(demo);
+    const handleEditStart = cell => {
+        if (cell.getField() !== 'input') return;
+        const context = tutorial.capture();
+        if (!context) return;
+        const id = cell.getRow().getData().id;
+        editCandidates.set(id, { context, id, field: 'input', previous: cell.getValue() });
+    };
+    const handleEditCancelled = cell => editCandidates.delete(cell.getRow().getData().id);
+    const handleRowUpdated = row => {
+        const candidate = pendingResult;
+        if (destroyed || !candidate || row.getData().id !== candidate.id) return;
+        const data = row.getData();
+        if (data.input !== candidate.input || data.parsedValue !== candidate.expectedParsedValue) return;
+        pendingResult = null;
+        tutorial.notify('parser-updated', {
+            ...candidate, parserKey: data.parserKey, input: data.input, parsedValue: data.parsedValue
+        }, candidate.context);
+    };
 
     window.addEventListener('amb-demo-language-change', handleLanguageChange);
+    demo.table.on('cellEditing', handleEditStart);
+    demo.table.on('cellEditCancelled', handleEditCancelled);
+    demo.table.on('rowUpdated', handleRowUpdated);
 
     demo.destroy = () => {
+        destroyed = true;
+        pendingResult = null;
+        editCandidates.clear();
         window.removeEventListener('amb-demo-language-change', handleLanguageChange);
+        demo.table.off('cellEditing', handleEditStart);
+        demo.table.off('cellEditCancelled', handleEditCancelled);
+        demo.table.off('rowUpdated', handleRowUpdated);
         commandGuideToolbar.destroy();
+        tutorial.destroy();
         originalDestroy();
     };
 
     function handleInputEdited(cell) {
         const rowData = cell.getRow().getData();
         const parsedValue = parseExampleValue(rowData);
+        const candidate = editCandidates.get(rowData.id);
+        editCandidates.delete(rowData.id);
+        pendingResult = candidate ? {
+            ...candidate, input: rowData.input, expectedParsedValue: parsedValue
+        } : null;
 
         demo.feedback.clear();
         demo.updateRow(rowData.id, { parsedValue });
