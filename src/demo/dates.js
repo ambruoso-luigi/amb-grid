@@ -3,6 +3,7 @@ import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
+import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 
 const minDate = '2025-01-01';
 const maxDate = '2027-12-31';
@@ -154,11 +155,37 @@ export default function dates(app) {
             ]
         })}
         <div class="demo-table-workbench">
+            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="dates-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
     `;
 
+    let destroyed = false;
+    const editCandidates = new Map();
+    const tutorial = createDemoActionTutorial({
+        host: app.querySelector('.demo-action-tutorial-host'),
+        locale: getLanguage(),
+        titleKey: 'examples.dates.tutorialTitle',
+        completedKey: 'examples.dates.tutorialCompleted',
+        steps: [
+            {
+                id: 'manual-date', actionId: 'date-edited', instructionKey: 'examples.dates.tutorialManual',
+                isComplete: ({ id, field, previous, value, rowValue }) => id === 1 && field === 'manualDate'
+                    && previous !== value && value === '06/06/2026' && rowValue === value
+            },
+            {
+                id: 'picker-date', actionId: 'date-edited', instructionKey: 'examples.dates.tutorialPicker',
+                isComplete: ({ id, field, previous, value, rowValue }) => id === 1 && field === 'pickerOnlyDate'
+                    && previous !== value && value === '16-06-2026' && rowValue === value
+            },
+            {
+                id: 'validate-date', actionId: 'dates-validated', instructionKey: 'examples.dates.tutorialValidate',
+                isComplete: ({ value, result, reportOpened }) => value === '31/02/2026' && reportOpened
+                    && result.isValid === false && result.errors.some(error => error.id === 2 && error.field === 'manualDate')
+            }
+        ]
+    });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
     const demo = AMB.table({
         selector: '#dates-table',
@@ -216,6 +243,32 @@ export default function dates(app) {
     const validateLabel = validateButton && validateButton.querySelector('.amb-toolbar__button-label');
     const originalDestroy = demo.destroy.bind(demo);
 
+    const editKey = cell => `${cell.getRow().getData().id}:${cell.getField()}`;
+    const handleEditStart = cell => {
+        const context = tutorial.capture();
+        const id = cell.getRow().getData().id;
+        const field = cell.getField();
+        if (context?.stepId === 'manual-date' && id === 1 && field === 'manualDate'
+            || context?.stepId === 'picker-date' && id === 1 && field === 'pickerOnlyDate') {
+            editCandidates.set(editKey(cell), { context, id, field, previous: cell.getValue() });
+        }
+    };
+    const handleEditCancelled = cell => editCandidates.delete(editKey(cell));
+    const handleEditConfirmed = cell => {
+        const key = editKey(cell);
+        const candidate = editCandidates.get(key);
+        editCandidates.delete(key);
+        if (destroyed || !candidate) return;
+        tutorial.notify('date-edited', {
+            ...candidate,
+            value: cell.getValue(),
+            rowValue: cell.getRow().getData()[candidate.field]
+        }, candidate.context);
+    };
+    demo.table.on('cellEditing', handleEditStart);
+    demo.table.on('cellEditCancelled', handleEditCancelled);
+    demo.table.on('cellEdited', handleEditConfirmed);
+
     if (validateButton) {
         validateButton.dataset.i18nTitle = 'examples.dates.validateTitle';
     }
@@ -224,13 +277,20 @@ export default function dates(app) {
     }
 
     demo.destroy = () => {
+        destroyed = true;
+        editCandidates.clear();
+        demo.table.off('cellEditing', handleEditStart);
+        demo.table.off('cellEditCancelled', handleEditCancelled);
+        demo.table.off('cellEdited', handleEditConfirmed);
         reportDialog.destroy();
         stopDecoratingDateButtons();
         commandGuideToolbar.destroy();
+        tutorial.destroy();
         originalDestroy();
     };
 
     function handleValidateDates() {
+        const context = tutorial.capture();
         const result = demo.crud.validateAll();
 
         reportDialog.open({
@@ -238,6 +298,9 @@ export default function dates(app) {
             reportText: buildDateReport(result),
             jsonData: result
         });
+        const value = demo.table.getRow(2)?.getData().manualDate;
+        const reportOpened = Boolean(document.querySelector('.demo-report-dialog:not([hidden]) .demo-report-dialog__panel[role="dialog"]'));
+        tutorial.notify('dates-validated', { value, result, reportOpened }, context);
     }
 
     return demo;

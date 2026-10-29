@@ -150,8 +150,9 @@ describe('Public Column calculations interactions', () => {
         expect(source).toContain('onAdd: handleAdd');
         expect(source).toContain('rowActionColumn: {');
         expect(source).toContain('enabled: true');
-        expect(source).toContain('return grid.crud.addRow({');
-        expect(source).toContain('id: nextProductId++');
+        expect(source).toContain('const id = nextProductId++;');
+        expect(source).toContain('const added = await grid.crud.addRow({');
+        expect(source).toMatch(/const added = await grid\.crud\.addRow\(\{\s*id,/);
         expect(source).toContain("product: 'New product'");
         expect(source).toContain("category: 'New category'");
         expect(source).not.toContain("'save'");
