@@ -4,6 +4,7 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
+import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 
 export default function crudRowStates(app) {
     let nextId = 10;
@@ -53,6 +54,7 @@ export default function crudRowStates(app) {
         })}
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
+            <div class="demo-action-tutorial-host"></div>
             <div id="crud-row-states-table" class="demo-business-grid demo-business-grid--viewport demo-row-states-grid"></div>
         </div>
     `;
@@ -60,6 +62,43 @@ export default function crudRowStates(app) {
     const reportDialog = createDemoReportDialog();
     const partialSaveDialog = new AMB.ConfirmDialog();
     const rowConfirmDialog = new AMB.ConfirmDialog();
+    const tutorial = createDemoActionTutorial({
+        host: app.querySelector('.demo-action-tutorial-host'),
+        locale: document.documentElement.lang,
+        titleKey: 'examples.crudRowStates.tutorialTitle',
+        steps: [
+            {
+                id: 'prepare-states', actionId: 'prepare-states', instructionKey: 'examples.crudRowStates.tutorialPrepare',
+                isComplete: ({ report }) => !report.hasErrors
+                    && ['clean', 'new', 'modified', 'deleted'].every(state => report.rows.some(row => row.state === state))
+                    && report.rows.some(row => row.id === 'REC-002' && row.after.type === 'Contract' && row.after.department === 'Operations')
+            },
+            {
+                id: 'open-report', actionId: 'open-report', instructionKey: 'examples.crudRowStates.tutorialReport',
+                isComplete: ({ opened }) => opened === true
+            },
+            {
+                id: 'commit-restricted', actionId: 'cell-edited', instructionKey: 'examples.crudRowStates.tutorialRestricted',
+                isComplete: ({ id, field, report, backendRejected }) => id === 'REC-002' && field === 'type' && !backendRejected
+                    && report.rows.some(row => row.id === id && row.after.type === 'Restricted' && row.after.department === 'Operations'
+                        && row.state === 'modified' && !row.hasErrors)
+            },
+            {
+                id: 'backend-rejected', actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialReject',
+                isComplete: ({ report, rejectedIds, feedbackShown, feedbackType }) => feedbackShown && feedbackType === 'error'
+                    && rejectedIds.includes('REC-002')
+                    && report.rows.some(row => row.id === 'REC-002' && row.state === 'modified' && row.hasChanges
+                        && row.cellErrors.some(error => error.field === 'type'))
+            },
+            {
+                id: 'save-corrected', actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialCorrect',
+                isComplete: ({ report, saved, feedbackShown, feedbackType }) => feedbackShown && feedbackType === 'success'
+                    && saved.some(row => row.id === 'REC-002')
+                    && report.rows.some(row => row.id === 'REC-002' && row.state === 'saved' && !row.hasChanges && !row.hasErrors
+                        && (row.after.type !== 'Restricted' || row.after.department === 'Compliance'))
+            }
+        ]
+    });
     const formatArchivedCheckbox = createDemoCheckboxFormatter({ checkedValue: 'Y' });
     const demo = AMB.table({
         selector: '#crud-row-states-table',
@@ -98,6 +137,7 @@ export default function crudRowStates(app) {
     const crudUnsubscribers = ['cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared', 'row-state-changed']
         .map(name => demo.onCrud(name, schedulePresentation));
     demo.table.on('cellEdited', handleBackendCorrection);
+    demo.table.on('cellEdited', handleTutorialEdit);
     demo.table.on('renderComplete', syncPresentation);
     window.addEventListener('amb-demo-language-change', syncPresentation);
     syncPresentation();
@@ -106,11 +146,13 @@ export default function crudRowStates(app) {
         window.removeEventListener('amb-demo-language-change', syncPresentation);
         demo.table.off('renderComplete', syncPresentation);
         demo.table.off('cellEdited', handleBackendCorrection);
+        demo.table.off('cellEdited', handleTutorialEdit);
         crudUnsubscribers.forEach(unsubscribe => unsubscribe?.());
         reportDialog.destroy();
         partialSaveDialog.destroy();
         rowConfirmDialog.destroy();
         commandGuideToolbar.destroy();
+        tutorial.destroy();
         originalDestroy();
     };
 
@@ -166,6 +208,17 @@ export default function crudRowStates(app) {
         schedulePresentation();
     }
 
+    function handleTutorialEdit(cell) {
+        const context = tutorial.capture();
+        const data = cell.getRow().getData();
+        tutorial.notify('cell-edited', {
+            id: data.id,
+            field: cell.getField(),
+            report: crud.getStateReport(),
+            backendRejected: serverRejectedRows.has(data.id ?? data._ambTempId)
+        }, context);
+    }
+
     function syncPresentation() {
         if (destroyed) return;
         refreshErrorCounts();
@@ -201,10 +254,11 @@ export default function crudRowStates(app) {
     }
 
     function handleSave() {
-        return runAfterEditSettled(saveChangedRows);
+        const context = tutorial.capture();
+        return runAfterEditSettled(() => saveChangedRows(context));
     }
 
-    async function saveChangedRows() {
+    async function saveChangedRows(context) {
         demo.feedback.clear();
         const validateResult = demo.validateChanges();
         const payload = demo.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
@@ -238,7 +292,12 @@ export default function crudRowStates(app) {
         if (invalid) parts.push(t('invalidCount', { count: invalid }));
         refreshErrorCounts();
         syncServerErrorPresentation();
-        demo.feedback.show({ type: rejected.length ? 'error' : invalid ? 'warning' : 'success', message: parts.join(' ') });
+        const feedbackType = rejected.length ? 'error' : invalid ? 'warning' : 'success';
+        demo.feedback.show({ type: feedbackType, message: parts.join(' ') });
+        tutorial.notify('save', {
+            report: crud.getStateReport(), saved: result.saved, rejectedIds: rejected.map(row => row.id),
+            feedbackShown: true, feedbackType
+        }, context);
     }
 
     async function resetToCleanBaseline() {
@@ -252,6 +311,7 @@ export default function crudRowStates(app) {
     }
 
     async function handlePrepareStates() {
+        const context = tutorial.capture();
         demo.feedback.clear();
         reportDialog.close();
         await resetToCleanBaseline();
@@ -259,8 +319,10 @@ export default function crudRowStates(app) {
         await demo.updateRow('REC-005', { tag: 'review' });
         await demo.deleteRow('REC-003');
         await handleAdd();
+        if (destroyed) return;
         syncPresentation();
         demo.feedback.show({ type: 'info', message: t('prepared') });
+        tutorial.notify('prepare-states', { report: crud.getStateReport() }, context);
     }
 
     async function handleReload() {
@@ -271,6 +333,7 @@ export default function crudRowStates(app) {
     }
 
     function handleShowReport() {
+        const context = tutorial.capture();
         return runAfterEditSettled(() => {
             const report = crud.getStateReport();
             const lines = [
@@ -287,6 +350,7 @@ export default function crudRowStates(app) {
                 ...report.errors.rows.map(error => `${t('row')} ${error.rowNumber}: ${error.message}`)
             ];
             reportDialog.open({ title: t('reportTitle'), reportLines: lines, jsonData: report, apiMethods: ['getStateReport'] });
+            tutorial.notify('open-report', { opened: true, report }, context);
         });
     }
 

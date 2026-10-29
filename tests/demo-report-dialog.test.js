@@ -43,7 +43,7 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain("title: 'CRUD & Row States report'");
         expect(source).not.toContain("title: 'Selected rows'");
 
-        const saveHandler = source.slice(source.indexOf('async function saveChangedRows()'), source.indexOf('async function resetToCleanBaseline()'));
+        const saveHandler = source.slice(source.indexOf('async function saveChangedRows(context)'), source.indexOf('async function resetToCleanBaseline()'));
 
         expect(saveHandler).not.toContain('reportDialog.open');
         expect(saveHandler).toContain("message: t('cancelled')");

@@ -901,7 +901,7 @@ describe('AMB toolbar', () => {
             'utf8'
         );
         const expectOrder = (source, actions) => {
-            const positions = actions.map(action => source.indexOf(action));
+            const positions = actions.map(action => source.indexOf(action, source.indexOf('buttons:')));
 
             positions.forEach(position => expect(position).toBeGreaterThan(-1));
             positions.slice(1).forEach((position, index) => {
