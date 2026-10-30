@@ -11,7 +11,20 @@ export default function crudRowStates(app) {
     let destroyed = false;
     const errorCounts = new Map();
     const serverRejectedRows = new Map();
+    const backendRetryRows = new Set();
+    const tutorialEdits = new Map();
+    const tutorialRowActions = new Map();
+    let tutorialNewTempId = null;
+    let preparingStates = false;
     let presentationPending = false;
+    let demo = null;
+    let scenarioGeneration = 0;
+    let resettingScenario = false;
+    let baselineReset = Promise.resolve();
+    const scenarioOperations = new Set();
+    const identifierSignatures = new WeakMap();
+    let tutorialState = null;
+    let highlightedControl = null;
     const t = (key, values = {}) => {
         const locale = document.documentElement.lang === 'en' ? 'en' : 'it';
         const message = publicExampleTranslations[locale][`examples.crudRowStates.${key}`];
@@ -66,46 +79,117 @@ export default function crudRowStates(app) {
         host: app.querySelector('.demo-action-tutorial-host'),
         locale: document.documentElement.lang,
         titleKey: 'examples.crudRowStates.tutorialTitle',
+        completedKey: 'examples.crudRowStates.tutorialCompleted',
+        onRestart: resetToCleanBaseline,
+        onStateChange: state => {
+            tutorialState = state;
+            syncTutorialHighlight();
+        },
         steps: [
             {
-                id: 'prepare-states', actionId: 'prepare-states', instructionKey: 'examples.crudRowStates.tutorialPrepare',
-                isComplete: ({ report }) => !report.hasErrors
-                    && ['clean', 'new', 'modified', 'deleted'].every(state => report.rows.some(row => row.state === state))
-                    && report.rows.some(row => row.id === 'REC-002' && row.after.type === 'Contract' && row.after.department === 'Operations')
+                id: 'edit-record', actions: [{
+                    actionId: 'cell-edited', instructionKey: 'examples.crudRowStates.tutorialEdit',
+                    isComplete: ({ id, field, previous, report }) => id === 'REC-001' && field === 'type' && previous === 'Request'
+                        && report.rows.some(row => row.id === id && row.after.type === 'Procedure' && row.state === 'modified' && !row.hasErrors)
+                }]
             },
             {
-                id: 'open-report', actionId: 'open-report', instructionKey: 'examples.crudRowStates.tutorialReport',
-                isComplete: ({ opened }) => opened === true
+                id: 'add-record', actions: [{
+                    actionId: 'row-added', instructionKey: 'examples.crudRowStates.tutorialAdd',
+                    isComplete: ({ row }) => row?.state === 'new' && Boolean(row.tempId) && !row.id && !row.hasErrors
+                }]
             },
             {
-                id: 'commit-restricted', actionId: 'cell-edited', instructionKey: 'examples.crudRowStates.tutorialRestricted',
-                isComplete: ({ id, field, report, backendRejected }) => id === 'REC-002' && field === 'type' && !backendRejected
-                    && report.rows.some(row => row.id === id && row.after.type === 'Restricted' && row.after.department === 'Operations'
-                        && row.state === 'modified' && !row.hasErrors)
+                id: 'delete-record', actions: [{
+                    actionId: 'row-action', instructionKey: 'examples.crudRowStates.tutorialDelete',
+                    isComplete: ({ id, action, report }) => id === 'REC-003' && action === 'delete'
+                        && report.rows.some(row => row.id === id && row.state === 'deleted')
+                }]
             },
             {
-                id: 'backend-rejected', actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialReject',
-                isComplete: ({ report, rejectedIds, feedbackShown, feedbackType }) => feedbackShown && feedbackType === 'error'
-                    && rejectedIds.includes('REC-002')
-                    && report.rows.some(row => row.id === 'REC-002' && row.state === 'modified' && row.hasChanges
-                        && row.cellErrors.some(error => error.field === 'type'))
+                id: 'frontend-report', actions: [
+                    {
+                        actionId: 'cell-edited', instructionKey: 'examples.crudRowStates.tutorialInvalidate',
+                        isComplete: ({ id, field, report }) => id === 'REC-004' && field === 'description' && hasTutorialFrontendError(report)
+                    },
+                    {
+                        actionId: 'open-report', instructionKey: 'examples.crudRowStates.tutorialInspectError',
+                        isComplete: ({ opened, report }) => opened === true && hasTutorialFrontendError(report)
+                            && report.errors.cells.some(error => error.id === 'REC-004' && error.field === 'description')
+                    }
+                ]
             },
             {
-                id: 'save-corrected', actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialCorrect',
-                isComplete: ({ report, saved, feedbackShown, feedbackType }) => feedbackShown && feedbackType === 'success'
-                    && saved.some(row => row.id === 'REC-002')
-                    && report.rows.some(row => row.id === 'REC-002' && row.state === 'saved' && !row.hasChanges && !row.hasErrors
-                        && (row.after.type !== 'Restricted' || row.after.department === 'Compliance'))
+                id: 'partial-save', actions: [
+                    {
+                        actionId: 'partial-save-opened', instructionKey: 'examples.crudRowStates.tutorialPartialSave',
+                        isComplete: ({ opened, report }) => opened === true && hasTutorialPartialScenario(report)
+                    },
+                    {
+                        actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialConfirmPartial',
+                        isComplete: ({ report, saved, generatedIds, partialConfirmed }) => partialConfirmed === true
+                            && saved.some(row => row.id === 'REC-001') && saved.some(row => row.id === 'REC-003' && row.state === 'deleted')
+                            && report.rows.some(row => row.id === 'REC-001' && row.state === 'saved' && row.after.type === 'Procedure')
+                            && generatedIds.some(mapping => mapping.tempId === tutorialNewTempId
+                                && report.rows.some(row => row.id === mapping.id && row.state === 'saved' && !row.hasErrors))
+                            && !report.rows.some(row => row.id === 'REC-003') && hasTutorialFrontendError(report)
+                    }
+                ]
+            },
+            {
+                id: 'rollback-record', actions: [{
+                    actionId: 'row-action', instructionKey: 'examples.crudRowStates.tutorialRollback',
+                    isComplete: ({ id, action, previous, report }) => id === 'REC-004' && action === 'rollback'
+                        && previous?.cellErrors.some(error => error.field === 'description')
+                        && report.rows.some(row => row.id === id && row.state === 'clean' && !row.hasErrors && !row.hasChanges
+                            && row.after.description === initialData.find(item => item.id === id).description)
+                        && errorCounts.get(id) === undefined
+                }]
+            },
+            {
+                id: 'backend-error', actions: [
+                    {
+                        actionId: 'cell-edited', instructionKey: 'examples.crudRowStates.tutorialRestrictedEdit',
+                        isComplete: ({ id, field, previous, report, backendRejected }) => id === 'REC-001' && field === 'type'
+                            && previous !== 'Restricted' && !backendRejected
+                            && report.rows.some(row => row.id === id && row.after.type === 'Restricted' && row.after.department === 'Operations'
+                                && row.state === 'modified' && !row.hasErrors)
+                    },
+                    {
+                        actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialBackendSave',
+                        isComplete: ({ report, rejectedIds, feedbackShown, feedbackType }) => feedbackShown && feedbackType === 'error'
+                            && rejectedIds.includes('REC-001') && serverRejectedRows.has('REC-001') && errorCounts.get('REC-001') > 0
+                            && report.rows.some(row => row.id === 'REC-001' && row.state === 'modified' && row.hasChanges
+                                && row.cellErrors.some(error => error.field === 'type' && error.message === serverRejectedRows.get(row.key)))
+                    }
+                ]
+            },
+            {
+                id: 'correct-save', actions: [
+                    {
+                        actionId: 'cell-edited', instructionKey: 'examples.crudRowStates.tutorialCorrectEdit',
+                        isComplete: ({ id, field, previous, report, backendRejected }) => id === 'REC-001' && field === 'type'
+                            && previous === 'Restricted' && !backendRejected && backendRetryRows.has(id)
+                            && report.rows.some(row => row.id === id && row.after.type === 'Procedure' && !row.hasErrors)
+                    },
+                    {
+                        actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialCorrectSave',
+                        isComplete: ({ report, saved, feedbackShown }) => feedbackShown && saved.some(row => row.id === 'REC-001')
+                            && !serverRejectedRows.has('REC-001') && !backendRetryRows.has('REC-001')
+                            && report.rows.some(row => row.id === 'REC-001' && row.state === 'saved'
+                                && row.after.type === 'Procedure' && !row.hasErrors && !row.hasChanges)
+                    }
+                ]
             }
         ]
     });
     const formatArchivedCheckbox = createDemoCheckboxFormatter({ checkedValue: 'Y' });
-    const demo = AMB.table({
+    demo = AMB.table({
         selector: '#crud-row-states-table',
         rowActionColumn: {
             enabled: true,
             confirmDeleteMessage: 'Delete record?', confirmRollbackMessage: 'Rollback record?', confirmRemoveNewMessage: 'Remove new record?',
-            confirmProvider: ({ action }) => rowConfirmDialog.confirm({ title: t('confirmTitle'), message: t(`confirm.${action}`), confirmText: t('confirm'), cancelText: t('cancel') })
+            confirmProvider: handleConfirmRowAction
         },
         toolbar: {
             buttons: [
@@ -121,7 +205,7 @@ export default function crudRowStates(app) {
         data: initialData.map(row => ({ ...row })),
         layout: 'fitColumns',
         columns: [
-            { title: 'Record ID', field: 'id', minWidth: 95, widthGrow: 0.7, cssClass: 'demo-cell--passive demo-cell--derived' },
+            { title: 'Record ID', field: 'id', minWidth: 95, widthGrow: 0.7, formatter: formatRecordId, variableHeight: true, cssClass: 'demo-cell--passive demo-cell--derived' },
             { title: 'Description', field: 'description', minWidth: 180, widthGrow: 2.4, editor: AMB.editors.text({ trim: true }), required: true, requiredMessage: t('descriptionRequired'), validation: { minLength: { value: 3, message: t('descriptionLength') } } },
             { title: 'Type', field: 'type', minWidth: 108, widthGrow: 0.9, editor: AMB.editors.select({ options: ['Request', 'Contract', 'Procedure', 'Restricted'] }), required: true, requiredMessage: t('typeRequired') },
             { title: 'Department', field: 'department', minWidth: 118, widthGrow: 1, editor: AMB.editors.select({ options: ['Operations', 'Compliance', 'Procurement', 'Finance', 'IT'] }), required: true, requiredMessage: t('departmentRequired') },
@@ -136,17 +220,32 @@ export default function crudRowStates(app) {
     const originalDestroy = demo.destroy.bind(demo);
     const crudUnsubscribers = ['cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared', 'row-state-changed']
         .map(name => demo.onCrud(name, schedulePresentation));
+    crudUnsubscribers.push(demo.onCrud('row-state-changed', handleTutorialRowState));
+    demo.table.on('cellEditing', handleTutorialEditStart);
+    demo.table.on('cellEditCancelled', handleTutorialEditCancelled);
     demo.table.on('cellEdited', handleBackendCorrection);
     demo.table.on('cellEdited', handleTutorialEdit);
     demo.table.on('renderComplete', syncPresentation);
+    demo.table.on('scrollVertical', syncTutorialHighlight);
+    demo.table.on('dataFiltered', syncTutorialHighlight);
     window.addEventListener('amb-demo-language-change', syncPresentation);
     syncPresentation();
     demo.destroy = () => {
         destroyed = true;
+        scenarioGeneration += 1;
+        clearTutorialHighlight();
+        tutorialEdits.clear();
+        tutorialRowActions.clear();
+        backendRetryRows.clear();
+        scenarioOperations.clear();
         window.removeEventListener('amb-demo-language-change', syncPresentation);
         demo.table.off('renderComplete', syncPresentation);
+        demo.table.off('scrollVertical', syncTutorialHighlight);
+        demo.table.off('dataFiltered', syncTutorialHighlight);
         demo.table.off('cellEdited', handleBackendCorrection);
         demo.table.off('cellEdited', handleTutorialEdit);
+        demo.table.off('cellEditing', handleTutorialEditStart);
+        demo.table.off('cellEditCancelled', handleTutorialEditCancelled);
         crudUnsubscribers.forEach(unsubscribe => unsubscribe?.());
         reportDialog.destroy();
         partialSaveDialog.destroy();
@@ -159,6 +258,108 @@ export default function crudRowStates(app) {
     function formatErrorCount(cell) {
         const data = cell.getRow().getData();
         return errorCounts.get(data.id ?? data._ambTempId) || 0;
+    }
+
+    function formatRecordId(cell) {
+        const data = cell.getRow().getData();
+        if (data.id !== null && data.id !== undefined && data.id !== '') return String(data.id);
+        if (!data._ambTempId) return '';
+        const indicator = document.createElement('span');
+        const label = document.createElement('span');
+        const identifier = document.createElement('code');
+        indicator.className = 'demo-crud-temp-id';
+        indicator.dataset.demoTempId = String(data._ambTempId);
+        label.className = 'demo-crud-temp-id__label';
+        label.textContent = t('temporaryId');
+        identifier.textContent = String(data._ambTempId);
+        indicator.append(label, identifier);
+        return indicator;
+    }
+
+    function clearTutorialHighlight() {
+        highlightedControl?.classList.remove('demo-crud-tutorial-target');
+        highlightedControl = null;
+    }
+
+    function syncTutorialHighlight() {
+        clearTutorialHighlight();
+        if (!demo || destroyed || resettingScenario || preparingStates || !tutorialState
+            || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) return;
+        const { stepId, actionIndex } = tutorialState;
+        let target = null;
+        let recordId = null;
+        let field = null;
+        let rowAction = null;
+        let toolbarAction = null;
+        if (stepId === 'edit-record' || (stepId === 'backend-error' || stepId === 'correct-save') && actionIndex === 0) {
+            recordId = 'REC-001';
+            field = 'type';
+        } else if (stepId === 'add-record') toolbarAction = 'add';
+        else if (stepId === 'delete-record') { recordId = 'REC-003'; rowAction = 'delete'; }
+        else if (stepId === 'frontend-report' && actionIndex === 0) { recordId = 'REC-004'; field = 'description'; }
+        else if (stepId === 'frontend-report') toolbarAction = 'state-report';
+        else if (stepId === 'rollback-record') { recordId = 'REC-004'; rowAction = 'rollback'; }
+        else if (stepId === 'partial-save' && actionIndex === 1 && partialSaveDialog.resolveCurrent) target = partialSaveDialog.confirmButton;
+        else if (stepId === 'partial-save' || stepId === 'backend-error' || stepId === 'correct-save') toolbarAction = 'save';
+        if (recordId) {
+            const row = demo.table.getRows().find(item => item.getData().id === recordId);
+            target = field ? row?.getCell(field)?.getElement() : row?.getElement().querySelector(`[data-action="${rowAction}"]`);
+        } else if (toolbarAction) target = app.querySelector(`[data-action="${toolbarAction}"]`);
+        if (target?.isConnected && target.getClientRects().length > 0) {
+            target.classList.add('demo-crud-tutorial-target');
+            highlightedControl = target;
+        }
+    }
+
+    function trackScenarioOperation(operation) {
+        const pending = Promise.resolve(operation);
+        scenarioOperations.add(pending);
+        pending.then(() => scenarioOperations.delete(pending), () => scenarioOperations.delete(pending));
+        return pending;
+    }
+
+    function isCurrentScenario(generation) {
+        return !destroyed && !resettingScenario && generation === scenarioGeneration;
+    }
+
+    function hasTutorialFrontendError(report) {
+        return report.rows.some(row => row.id === 'REC-004' && row.state === 'modified' && row.after.description === ''
+            && row.cellErrors.some(error => error.field === 'description')) && errorCounts.get('REC-004') > 0;
+    }
+
+    function hasTutorialPartialScenario(report) {
+        return hasTutorialFrontendError(report)
+            && report.rows.some(row => row.id === 'REC-001' && row.state === 'modified' && row.after.type === 'Procedure' && !row.hasErrors)
+            && report.rows.some(row => row.tempId === tutorialNewTempId && row.state === 'new' && !row.hasErrors)
+            && report.rows.some(row => row.id === 'REC-003' && row.state === 'deleted');
+    }
+
+    async function handleConfirmRowAction({ action, id }) {
+        if (resettingScenario || destroyed) return false;
+        const generation = scenarioGeneration;
+        reportDialog.close();
+        const context = preparingStates ? null : tutorial.capture();
+        const previous = crud.getStateReport().rows.find(row => row.key === id);
+        const confirmed = await trackScenarioOperation(rowConfirmDialog.confirm({ title: t('confirmTitle'), message: t(`confirm.${action}`), confirmText: t('confirm'), cancelText: t('cancel') }));
+        if (!isCurrentScenario(generation)) return false;
+        if (confirmed && !destroyed && action === 'rollback') backendRetryRows.delete(id);
+        if (confirmed && !destroyed && context) tutorialRowActions.set(id, { action, context, previous });
+        return confirmed;
+    }
+
+    function handleTutorialRowState({ id, key, nextState }) {
+        const generation = scenarioGeneration;
+        const candidate = tutorialRowActions.get(key);
+        if (!candidate || preparingStates || destroyed || resettingScenario) return;
+        if (candidate.action !== 'delete' && candidate.action !== 'rollback') return;
+        if (nextState !== (candidate.action === 'delete' ? 'deleted' : 'clean')) return;
+        tutorialRowActions.delete(key);
+        if (candidate.action === 'rollback') backendRetryRows.delete(key);
+        globalThis.queueMicrotask(() => {
+            if (!isCurrentScenario(generation) || preparingStates) return;
+            refreshErrorCounts();
+            tutorial.notify('row-action', { id, action: candidate.action, previous: candidate.previous, report: crud.getStateReport() }, candidate.context);
+        });
     }
 
     function refreshErrorCounts() {
@@ -197,6 +398,7 @@ export default function crudRowStates(app) {
     }
 
     function handleBackendCorrection(cell) {
+        if (resettingScenario || destroyed) return;
         if (!['type', 'department'].includes(cell.getField())) return;
         const data = cell.getRow().getData();
         const key = data.id ?? data._ambTempId;
@@ -208,15 +410,30 @@ export default function crudRowStates(app) {
         schedulePresentation();
     }
 
-    function handleTutorialEdit(cell) {
-        const context = tutorial.capture();
+    function handleTutorialEditStart(cell) {
         const data = cell.getRow().getData();
+        const context = preparingStates || resettingScenario ? null : tutorial.capture();
+        if (context) tutorialEdits.set(`${data.id}:${cell.getField()}`, { context, previous: cell.getValue() });
+    }
+
+    function handleTutorialEditCancelled(cell) {
+        tutorialEdits.delete(`${cell.getRow().getData().id}:${cell.getField()}`);
+    }
+
+    function handleTutorialEdit(cell) {
+        const data = cell.getRow().getData();
+        const key = `${data.id}:${cell.getField()}`;
+        const candidate = tutorialEdits.get(key);
+        tutorialEdits.delete(key);
+        if (!candidate || preparingStates || destroyed || resettingScenario) return;
+        refreshErrorCounts();
         tutorial.notify('cell-edited', {
             id: data.id,
             field: cell.getField(),
+            previous: candidate.previous,
             report: crud.getStateReport(),
             backendRejected: serverRejectedRows.has(data.id ?? data._ambTempId)
-        }, context);
+        }, candidate.context);
     }
 
     function syncPresentation() {
@@ -241,33 +458,69 @@ export default function crudRowStates(app) {
             button.title = t(`action.${button.dataset.action}`);
             button.setAttribute('aria-label', button.title);
         }
+        demo.table.getRows().forEach(row => {
+            const data = row.getData();
+            const cell = row.getCell('id');
+            const element = cell?.getElement();
+            const signature = `${data.id ?? ''}:${data._ambTempId ?? ''}:${document.documentElement.lang}`;
+            if (element && identifierSignatures.get(element) !== signature) {
+                identifierSignatures.set(element, signature);
+                cell.reformat();
+                row.normalizeHeight();
+            }
+        });
+        syncTutorialHighlight();
     }
 
     function runAfterEditSettled(callback) {
-        document.activeElement?.blur?.();
-        return new Promise(resolve => globalThis.setTimeout(() => resolve(destroyed ? undefined : callback()), 0));
+        const generation = scenarioGeneration;
+        if (document.activeElement?.closest?.('#crud-row-states-table .tabulator-editing')) document.activeElement.blur();
+        return trackScenarioOperation(new Promise(resolve => globalThis.setTimeout(() => resolve(isCurrentScenario(generation) ? callback() : undefined), 0)));
     }
 
-    function handleAdd() {
+    async function handleAdd() {
+        if (resettingScenario || destroyed) return;
+        const generation = scenarioGeneration;
+        const context = preparingStates ? null : tutorial.capture();
+        reportDialog.close();
         demo.feedback.clear();
-        return crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request', department: 'Operations', tag: 'vendor', archived: 'N' });
+        const added = await trackScenarioOperation(crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request', department: 'Operations', tag: 'vendor', archived: 'N' }));
+        if (isCurrentScenario(generation) && !preparingStates && added) {
+            const row = crud.getStateReport().rows.find(item => item.tempId === added.getData()._ambTempId);
+            if (tutorial.notify('row-added', { row }, context)) tutorialNewTempId = row.tempId;
+        }
+        return added;
     }
 
     function handleSave() {
+        if (resettingScenario || destroyed) return;
+        const generation = scenarioGeneration;
+        reportDialog.close();
         const context = tutorial.capture();
-        return runAfterEditSettled(() => saveChangedRows(context));
+        return runAfterEditSettled(() => saveChangedRows(context, generation));
     }
 
-    async function saveChangedRows(context) {
+    // A corrected backend rejection is resubmitted on Save even when it matches the saved baseline.
+    async function saveChangedRows(context, generation) {
+        if (!isCurrentScenario(generation)) return;
         demo.feedback.clear();
         const validateResult = demo.validateChanges();
         const payload = demo.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-        if (!payload.hasChanges) return demo.feedback.show({ type: 'info', message: t('noChanges') });
-        if (!payload.hasValidChanges) return demo.feedback.show({ type: 'warning', message: t('noValidChanges') });
+        const retries = crud.getStateReport().rows.filter(row => backendRetryRows.has(row.key) && row.state === 'clean' && !row.hasErrors);
+        if (!payload.hasChanges && !retries.length) return demo.feedback.show({ type: 'info', message: t('noChanges') });
+        if (!payload.hasValidChanges && !retries.length) return demo.feedback.show({ type: 'warning', message: t('noValidChanges') });
+        let partialConfirmed = false;
         if (payload.hasInvalidChanges && payload.isPartialSave) {
             const invalidRows = validateResult.rows.filter(row => !row.isValid).map(row => `${t('row')} ${row.rowNumber}: ${row.errors.map(error => error.field).join(', ')}`);
-            const confirmed = await partialSaveDialog.confirm({ title: t('partialTitle'), message: [t('partialMessage'), ...invalidRows].join('\n'), confirmText: t('saveValid'), cancelText: t('cancel') });
+            const confirmation = partialSaveDialog.confirm({ title: t('partialTitle'), message: [t('partialMessage'), ...invalidRows].join('\n'), confirmText: t('saveValid'), cancelText: t('cancel') });
+            refreshErrorCounts();
+            if (tutorial.notify('partial-save-opened', { opened: Boolean(partialSaveDialog.resolveCurrent), report: crud.getStateReport() }, context)) context = tutorial.capture();
+            syncTutorialHighlight();
+            const confirmed = await confirmation;
+            if (!isCurrentScenario(generation)) return;
+            syncTutorialHighlight();
             if (!confirmed || destroyed) return destroyed ? undefined : demo.feedback.show({ type: 'info', message: t('cancelled') });
+            partialConfirmed = true;
         }
         let report = crud.getStateReport();
         const before = new Map(report.validChangedRows.map(row => [row.key, row.state]));
@@ -275,12 +528,23 @@ export default function crudRowStates(app) {
         rejected.forEach(row => {
             const message = t('backendRejected', { id: row.id ?? row.tempId ?? row.key });
             serverRejectedRows.set(row.key, message);
+            backendRetryRows.add(row.key);
             crud.markCellError(row.key, 'type', message);
         });
         report = crud.getStateReport();
         const generatedIds = report.validChangedRows.filter(row => row.state === 'new' && !row.id && row.tempId).map(row => ({ tempId: row.tempId, id: `REC-${String(nextId++).padStart(3, '0')}` }));
         crud.applyBackendIds(generatedIds);
         const result = crud.markValidChangesSaved();
+        for (const retry of retries) {
+            const validation = crud.validateRow(retry.key);
+            const row = demo.table.getRow(retry.id);
+            if (!validation?.isValid || !row || row.getData().type === 'Restricted' && row.getData().department !== 'Compliance') continue;
+            await row.update({ [crud.options.stateField]: 'saved' });
+            if (!isCurrentScenario(generation)) return;
+            row.getElement().dataset.state = 'saved';
+            result.saved.push({ key: retry.key, id: retry.id, tempId: retry.tempId, state: retry.state });
+        }
+        result.saved.forEach(row => backendRetryRows.delete(row.key));
         const deleted = result.saved.filter(row => before.get(row.key) === 'deleted').length;
         const invalid = crud.getStateReport().invalidChangedRowsCount;
         const parts = [t('savedCount', { count: result.saved.length - deleted }), t('deletedCount', { count: deleted })];
@@ -296,43 +560,66 @@ export default function crudRowStates(app) {
         demo.feedback.show({ type: feedbackType, message: parts.join(' ') });
         tutorial.notify('save', {
             report: crud.getStateReport(), saved: result.saved, rejectedIds: rejected.map(row => row.id),
-            feedbackShown: true, feedbackType
+            feedbackShown: true, feedbackType, generatedIds, partialConfirmed
         }, context);
     }
 
-    async function resetToCleanBaseline() {
-        nextId = 10;
-        errorCounts.clear();
-        serverRejectedRows.clear();
-        demo.clearSearch();
-        demo.clearFilter();
-        await demo.setData(initialData.map(row => ({ ...row })));
-        syncPresentation();
+    function resetToCleanBaseline() {
+        const generation = ++scenarioGeneration;
+        resettingScenario = true;
+        preparingStates = false;
+        clearTutorialHighlight();
+        tutorialEdits.clear();
+        tutorialRowActions.clear();
+        demo.table.cancelEdit?.();
+        reportDialog.close();
+        partialSaveDialog.destroy();
+        rowConfirmDialog.destroy();
+        demo.feedback.clear();
+        const pending = [...scenarioOperations];
+        baselineReset = baselineReset.catch(() => {}).then(async () => {
+            await Promise.allSettled(pending);
+            if (destroyed || generation !== scenarioGeneration) return false;
+            nextId = 10;
+            errorCounts.clear();
+            serverRejectedRows.clear();
+            backendRetryRows.clear();
+            tutorialNewTempId = null;
+            demo.clearSearch();
+            demo.clearFilter();
+            await demo.setData(initialData.map(row => ({ ...row })));
+            if (destroyed || generation !== scenarioGeneration) return false;
+            resettingScenario = false;
+            syncPresentation();
+            return true;
+        });
+        return baselineReset;
     }
 
     async function handlePrepareStates() {
-        const context = tutorial.capture();
-        demo.feedback.clear();
-        reportDialog.close();
-        await resetToCleanBaseline();
-        if (destroyed) return;
-        await demo.updateRow('REC-005', { tag: 'review' });
-        await demo.deleteRow('REC-003');
-        await handleAdd();
-        if (destroyed) return;
+        if (!await resetToCleanBaseline()) return;
+        const generation = scenarioGeneration;
+        preparingStates = true;
+        try {
+            await trackScenarioOperation(demo.updateRow('REC-005', { tag: 'review' }));
+            if (!isCurrentScenario(generation)) return;
+            await trackScenarioOperation(demo.deleteRow('REC-003'));
+            if (!isCurrentScenario(generation)) return;
+            await handleAdd();
+        } finally {
+            if (generation === scenarioGeneration) preparingStates = false;
+        }
+        if (!isCurrentScenario(generation)) return;
         syncPresentation();
         demo.feedback.show({ type: 'info', message: t('prepared') });
-        tutorial.notify('prepare-states', { report: crud.getStateReport() }, context);
     }
 
     async function handleReload() {
-        demo.feedback.clear();
-        reportDialog.close();
-        await resetToCleanBaseline();
-        if (!destroyed) demo.feedback.show({ type: 'success', message: t('reloaded') });
+        if (await resetToCleanBaseline()) demo.feedback.show({ type: 'success', message: t('reloaded') });
     }
 
     function handleShowReport() {
+        if (resettingScenario || destroyed) return;
         const context = tutorial.capture();
         return runAfterEditSettled(() => {
             const report = crud.getStateReport();
@@ -355,6 +642,7 @@ export default function crudRowStates(app) {
     }
 
     function handleShowPayload() {
+        if (resettingScenario || destroyed) return;
         return runAfterEditSettled(() => {
             const payload = demo.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
             reportDialog.open({ title: t('payloadTitle'), reportLines: ['inserted', 'updated', 'deleted'].map(key => `${key}: ${payload.changes[key].length}`), jsonData: payload, apiMethods: ['getSavePayload'] });

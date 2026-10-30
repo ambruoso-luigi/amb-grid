@@ -22,19 +22,19 @@ class ElementMock extends EventTarget {
 
 const find = (element, predicate) => predicate(element) ? element : element.children.map(child => find(child, predicate)).find(Boolean);
 const controllers = [];
-const mount = () => {
+const mount = (customSteps, options = {}) => {
     const windowMock = new EventTarget();
     const removeListener = vi.spyOn(windowMock, 'removeEventListener');
     vi.stubGlobal('window', windowMock);
     vi.stubGlobal('document', { createElement: tag => new ElementMock(tag), documentElement: { lang: 'it' }, activeElement: null });
     const host = new ElementMock('div');
-    const steps = ['prepare-states', 'open-report', 'commit-restricted', 'backend-rejected', 'save-corrected'].map((id, index) => ({
+    const steps = customSteps ?? ['prepare-states', 'open-report', 'commit-restricted', 'backend-rejected', 'save-corrected'].map((id, index) => ({
         id,
         actionId: index < 3 ? id : 'save',
         instructionKey: `examples.crudRowStates.${['tutorialPrepare', 'tutorialReport', 'tutorialRestricted', 'tutorialReject', 'tutorialCorrect'][index]}`,
         isComplete: vi.fn(payload => payload.succeeded === true)
     }));
-    const controller = createDemoActionTutorial({ host, steps, locale: 'en', titleKey: 'examples.crudRowStates.tutorialTitle' });
+    const controller = createDemoActionTutorial({ host, steps, locale: 'en', titleKey: 'examples.crudRowStates.tutorialTitle', ...options });
     controllers.push(controller);
     const root = host.children[0];
     const button = action => find(root, element => element.getAttribute('data-tutorial-action') === action);
@@ -43,10 +43,132 @@ const mount = () => {
 
 afterEach(() => {
     controllers.splice(0).forEach(controller => controller.destroy());
+    vi.useRealTimers();
     vi.unstubAllGlobals();
 });
 
 describe('demo action tutorial controller', () => {
+    test('awaits an optional application restart and invalidates old work without moving focus', async () => {
+        vi.useFakeTimers();
+        let finish;
+        const onRestart = vi.fn(() => new Promise(resolve => { finish = resolve; }));
+        const onStateChange = vi.fn();
+        const { controller, root, button } = mount(undefined, { onRestart, onStateChange });
+        controller.notify('prepare-states', { succeeded: true }, controller.capture());
+        const oldContext = controller.capture();
+        button('restart').focus();
+        const restarted = controller.restart();
+        expect(onRestart).toHaveBeenCalledTimes(1);
+        expect(controller.capture()).toBeNull();
+        expect(root.getAttribute('aria-busy')).toBe('true');
+        expect(button('restart').getAttribute('aria-disabled')).toBe('true');
+        controller.restart();
+        expect(onRestart).toHaveBeenCalledTimes(1);
+        controller.skip();
+        controller.reopen();
+        controller.setLocale('it');
+        expect(controller.notify('open-report', { succeeded: true }, oldContext)).toBe(false);
+        const focusDuringReset = document.activeElement;
+        finish(true);
+        expect(await restarted).toBe(true);
+        expect(controller.capture().stepId).toBe('prepare-states');
+        expect(root.getAttribute('aria-busy')).toBe('false');
+        expect(document.activeElement).toBe(focusDuringReset);
+        expect(onStateChange).toHaveBeenLastCalledWith(expect.objectContaining({ stepId: 'prepare-states', resetting: false, hidden: false }));
+    });
+
+    test('keeps a failed restart blocked until retried and ignores a reset completing after destroy', async () => {
+        let finish;
+        const onRestart = vi.fn().mockRejectedValueOnce(new Error('Replacement failed'))
+            .mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+        const onStateChange = vi.fn();
+        const { controller, host, root } = mount(undefined, { onRestart, onStateChange });
+        expect(await controller.restart()).toBe(false);
+        expect(controller.capture()).toBeNull();
+        expect(find(root, element => element.getAttribute('aria-live') === 'polite').textContent).toContain('Press Restart');
+        const restarted = controller.restart();
+        controller.destroy();
+        const callsAfterDestroy = onStateChange.mock.calls.length;
+        finish(true);
+        expect(await restarted).toBe(false);
+        expect(host.children).toHaveLength(0);
+        expect(onStateChange).toHaveBeenCalledTimes(callsAfterDestroy);
+        expect(onStateChange).toHaveBeenLastCalledWith(expect.objectContaining({ hidden: true, destroyed: true }));
+    });
+
+    test('orders micro-actions within a main phase and rejects duplicate contexts even for the same action ID', () => {
+        vi.useFakeTimers();
+        const { controller, root } = mount([
+            {
+                id: 'phase-one', actions: [
+                    { actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialPrepare', isComplete: payload => payload.first === true },
+                    { actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialReport', isComplete: payload => payload.second === true }
+                ]
+            },
+            { id: 'phase-two', actionId: 'finish', instructionKey: 'examples.crudRowStates.tutorialCorrect', isComplete: payload => payload.succeeded === true }
+        ]);
+        const counter = find(root, element => element.className === 'demo-action-tutorial__counter');
+        const instruction = find(root, element => element.getAttribute('aria-live') === 'polite');
+        const first = controller.capture();
+        expect(controller.notify('finish', { succeeded: true }, first)).toBe(false);
+        expect(controller.notify('save', { second: true }, first)).toBe(false);
+        expect(controller.notify('save', { first: true }, first)).toBe(true);
+        expect(counter.textContent).toBe('1 of 2');
+        expect(root.getAttribute('data-tutorial-step')).toBe('phase-one');
+        expect(instruction.textContent).toBe('Action completed.');
+        expect(controller.notify('save', { second: true }, first)).toBe(false);
+        expect(controller.notify('save', { second: true }, { generation: first.generation, stepId: first.stepId })).toBe(false);
+        vi.advanceTimersByTime(400);
+        expect(instruction.textContent).toContain('Open "Report"');
+        expect(counter.textContent).toBe('1 of 2');
+        const second = controller.capture();
+        expect(controller.notify('save', { first: true }, second)).toBe(false);
+        expect(controller.notify('save', { second: true }, second)).toBe(true);
+        expect(root.getAttribute('data-tutorial-step')).toBe('phase-two');
+        expect(counter.textContent).toBe('2 of 2');
+        vi.advanceTimersByTime(400);
+        expect(controller.notify('finish', { succeeded: true }, controller.capture())).toBe(true);
+        expect(root.getAttribute('data-tutorial-step')).toBe('complete');
+        expect(vi.getTimerCount()).toBe(0);
+        expect(document.activeElement).toBeNull();
+    });
+
+    test('cancels presentation timers across language, skip, restart and destroy without late progress', () => {
+        vi.useFakeTimers();
+        const { controller, root, host } = mount([{
+            id: 'phase', actions: [
+                { actionId: 'first', instructionKey: 'examples.crudRowStates.tutorialPrepare', isComplete: () => true },
+                { actionId: 'second', instructionKey: 'examples.crudRowStates.tutorialReport', isComplete: () => true }
+            ]
+        }]);
+        controller.notify('first', {}, controller.capture());
+        expect(vi.getTimerCount()).toBe(1);
+        controller.setLocale('it');
+        expect(vi.getTimerCount()).toBe(0);
+        expect(find(root, element => element.getAttribute('aria-live') === 'polite').textContent).toContain('Apri "Report"');
+        controller.restart();
+        controller.notify('first', {}, controller.capture());
+        const pending = controller.capture();
+        controller.skip();
+        expect(vi.getTimerCount()).toBe(0);
+        controller.reopen();
+        expect(controller.notify('second', {}, pending)).toBe(false);
+        expect(controller.capture().actionIndex).toBe(1);
+        controller.restart();
+        expect(controller.capture().actionIndex).toBe(0);
+        controller.notify('first', {}, controller.capture());
+        controller.restart();
+        vi.runAllTimers();
+        expect(controller.capture().actionIndex).toBe(0);
+        controller.notify('first', {}, controller.capture());
+        const late = controller.capture();
+        controller.destroy();
+        expect(vi.getTimerCount()).toBe(0);
+        vi.runAllTimers();
+        expect(host.children).toHaveLength(0);
+        expect(controller.notify('second', {}, late)).toBe(false);
+    });
+
     test('starts at step one with an accessible instruction and five progress indicators', () => {
         const { root } = mount();
         expect(root.getAttribute('data-tutorial-step')).toBe('prepare-states');

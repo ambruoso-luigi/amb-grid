@@ -4051,6 +4051,47 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     box-shadow: inset 4px 0 0 #c34c4c;
 }
 
+.demo-crud-temp-id {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.demo-crud-temp-id__label {
+    align-self: flex-start;
+    background: #e4eff9;
+    border: 1px solid #bad2e5;
+    border-radius: 3px;
+    color: #205d91;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 4px;
+}
+
+.demo-crud-temp-id code {
+    color: #153c60;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.demo-crud-tutorial-target {
+    position: relative;
+}
+
+.demo-crud-tutorial-target::after {
+    border: 2px solid rgb(29 95 153 / 65%);
+    border-radius: 3px;
+    content: '';
+    inset: 2px;
+    pointer-events: none;
+    position: absolute;
+}
+
 .demo-report-dialog[hidden] {
     display: none;
 }

@@ -6,7 +6,8 @@ describe('Unified CRUD & Row States demo', () => {
     test('starts with nine business records and preserves the tutorial record', () => {
         const records = [...source.matchAll(/\{ id: '(REC-\d+)', description: '([^']+)', type: '([^']+)', department: '([^']+)', tag: '([^']+)', archived: '([YN])' \}/g)];
         expect(records.map(record => record[1])).toEqual(Array.from({ length: 9 }, (_, index) => `REC-${String(index + 1).padStart(3, '0')}`));
-        expect(records[1].slice(3, 5)).toEqual(['Contract', 'Operations']);
+        expect(records[0].slice(3, 5)).toEqual(['Request', 'Operations']);
+        expect(records[3][2]).toBe('Compliance evidence requires review');
         expect(source).toContain("layout: 'fitColumns'");
         expect(source.match(/cssClass: 'demo-cell--passive demo-cell--derived'/g)).toHaveLength(3);
         expect(source).not.toContain("field: '_ambTempId'");
@@ -20,6 +21,7 @@ describe('Unified CRUD & Row States demo', () => {
         expect(prepare).toContain('await handleAdd()');
         expect(prepare).not.toContain('REC-002');
         expect(prepare).not.toContain('validateRow');
+        expect(prepare).not.toContain('tutorial.notify');
         expect(prepare).not.toContain("description: ''");
         expect(source).toContain('let nextId = 10');
         expect(source).toContain('await demo.setData(initialData.map(row => ({ ...row })))');
