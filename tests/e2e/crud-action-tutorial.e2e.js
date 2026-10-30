@@ -41,10 +41,15 @@ const confirmRow = async (page, id, name, confirm = true) => {
     await expect(dialog).toHaveCount(0);
 };
 const confirmPartial = async (page, confirm = true) => {
-    const dialog = page.getByRole('dialog', { name: /^(Save valid rows\?|Salvare le righe valide\?)$/ });
+    const dialog = page.locator('.teh-confirm-dialog--visible');
     await expect(dialog).toBeVisible();
-    await dialog.locator(confirm ? '.teh-confirm-dialog__button--confirm' : '.teh-confirm-dialog__button--cancel').click();
-    await expect(dialog).toBeHidden();
+    await expect(dialog.locator('.teh-confirm-dialog__title')).toHaveText(/^(Save valid rows\?|Salvare le righe valide\?)$/);
+    const confirmButton = dialog.locator('.teh-confirm-dialog__button--confirm');
+    const cancelButton = dialog.locator('.teh-confirm-dialog__button--cancel');
+    await expect(confirmButton).toBeVisible();
+    await expect(cancelButton).toBeVisible();
+    await (confirm ? confirmButton : cancelButton).click();
+    await expect(dialog).toHaveCount(0);
 };
 const readReport = async page => {
     await reportReturnFocus.get(page)?.dispose();
@@ -56,15 +61,27 @@ const readReport = async page => {
     return JSON.parse(await dialog.locator('.demo-report-dialog__json').textContent());
 };
 const closeReport = async page => {
-    const scrollPosition = await page.evaluate(() => window.scrollY);
-    await reportDialog(page).getByRole('button', { name: 'Close', exact: true }).click();
+    const trigger = action(page, 'state-report');
+    await expect(reportDialog(page)).toBeVisible();
+    await expect(tutorial(page)).toHaveAttribute('data-feedback', 'false');
+    await expect.poll(() => trigger.evaluate(async element => {
+        const before = element.getBoundingClientRect();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const after = element.getBoundingClientRect();
+        return before.x === after.x && before.y === after.y && before.width === after.width && before.height === after.height;
+    })).toBe(true);
+    await expect(trigger).toBeInViewport();
+    const triggerPosition = await trigger.boundingBox();
+    await expect(reportDialog(page).getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(reportDialog(page)).toBeHidden();
     const returnFocus = reportReturnFocus.get(page);
     expect(returnFocus).toBeTruthy();
     await expect.poll(() => page.evaluate(element => !element.isConnected || document.activeElement === element, returnFocus)).toBe(true);
     await returnFocus.dispose();
     reportReturnFocus.delete(page);
-    expect(await page.evaluate(() => window.scrollY)).toBe(scrollPosition);
+    await expect(trigger).toBeInViewport();
+    await expect.poll(() => trigger.boundingBox()).toEqual(triggerPosition);
 };
 const reachFrontendError = async page => {
     await select(page, 'REC-001', 'type', 'Procedure');

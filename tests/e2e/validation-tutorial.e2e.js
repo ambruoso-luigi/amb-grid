@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 const table = page => page.locator('#validation-table');
 const tutorial = page => page.locator('#feature-example .demo-action-tutorial');
@@ -17,9 +18,7 @@ const openValidation = async page => {
 };
 const edit = async (page, id, field, value, key = 'Enter') => {
     const target = cell(page, id, field);
-    await target.dblclick();
-    const input = target.locator('input.amb-cell-editor');
-    await expect(input).toBeFocused();
+    const input = await openEditorFromNavigation(page, target, `Validation ${id} ${field}`, '#validation-table');
     await input.fill(value);
     await input.press(key);
     await expect(input).toHaveCount(0);

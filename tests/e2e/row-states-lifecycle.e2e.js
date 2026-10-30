@@ -266,7 +266,9 @@ test.describe('CRUD & Row States lifecycle', () => {
         await action(page, 'save').click();
         await expect(cell(page, 'REC-010', 'description')).toHaveText('Accepted vendor review');
         await expect(cell(page, 'REC-010', '_state')).toHaveText('saved');
-        await expect(rejectedNew.locator('[tabulator-field="id"]')).toHaveText('');
+        const rejectedId = rejectedNew.locator('[tabulator-field="id"]');
+        const temporaryId = rejectedId.locator('.demo-crud-temp-id');
+        await expect(temporaryId).toBeVisible();
         await expect(rejectedNew.locator('[tabulator-field="_state"]')).toHaveText('new');
         await action(page, 'state-report').click();
         const report = await readDialog(page, 'CRUD & Row States report');
@@ -274,6 +276,10 @@ test.describe('CRUD & Row States lifecycle', () => {
         const pendingNew = report.changedRows.find(row => row.state === 'new');
         expect(pendingNew.id).toBeFalsy();
         expect(pendingNew.tempId).toBeTruthy();
+        await expect(temporaryId).toHaveAttribute('data-demo-temp-id', pendingNew.tempId);
+        await expect(temporaryId.locator('code')).toHaveText(pendingNew.tempId);
+        expect(pendingNew.after.id).toBeFalsy();
+        await expect(rejectedId).not.toContainText(/REC-\d+/);
         expect(report.changedRows.find(row => row.id === 'REC-002').state).toBe('modified');
         await expect(feedback(page)).toContainText('Partial save. The simulated backend rejected records');
         await expect(feedback(page)).toContainText('REC-002');
