@@ -9,6 +9,8 @@ const row = (page, id) => page.locator('#crud-row-states-table .tabulator-row')
 const cell = (page, id, field) => row(page, id).locator(`[tabulator-field="${field}"]`);
 const feedback = page => page.locator('#feature-example .amb-feedback-region__message');
 const reportDialog = page => page.getByRole('dialog', { name: /^(CRUD & Row States report|Report CRUD & Row States)$/ });
+const reportReturnFocus = new WeakMap();
+const pageErrors = new WeakMap();
 const step = async (page, id, microAction = 0) => {
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', id);
     if (id !== 'complete') await expect(tutorial(page)).toHaveAttribute('data-tutorial-action-index', String(microAction));
@@ -45,6 +47,9 @@ const confirmPartial = async (page, confirm = true) => {
     await expect(dialog).toBeHidden();
 };
 const readReport = async page => {
+    await reportReturnFocus.get(page)?.dispose();
+    reportReturnFocus.set(page, await page.evaluateHandle(() => document.querySelector('#crud-row-states-table .tabulator-editing')
+        ? document.querySelector('#feature-example [data-action="state-report"]') : document.activeElement));
     await action(page, 'state-report').click();
     const dialog = reportDialog(page);
     await expect(dialog).toBeVisible();
@@ -54,7 +59,11 @@ const closeReport = async page => {
     const scrollPosition = await page.evaluate(() => window.scrollY);
     await reportDialog(page).getByRole('button', { name: 'Close', exact: true }).click();
     await expect(reportDialog(page)).toBeHidden();
-    await expect(action(page, 'state-report')).toBeFocused();
+    const returnFocus = reportReturnFocus.get(page);
+    expect(returnFocus).toBeTruthy();
+    await expect.poll(() => page.evaluate(element => !element.isConnected || document.activeElement === element, returnFocus)).toBe(true);
+    await returnFocus.dispose();
+    reportReturnFocus.delete(page);
     expect(await page.evaluate(() => window.scrollY)).toBe(scrollPosition);
 };
 const reachFrontendError = async page => {
@@ -100,10 +109,49 @@ const reachBackendError = async page => {
 };
 
 test.beforeEach(async ({ page }) => {
+    const errors = [];
+    pageErrors.set(page, errors);
+    page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'en'));
     await page.goto('/src/demo/index.html#feature-examples');
     await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(9);
     await step(page, 'edit-record');
+});
+
+test('Row advances once only after a valid new row with its real Temp ID exists', async ({ page }) => {
+    await select(page, 'REC-001', 'type', 'Procedure');
+    await step(page, 'add-record');
+    const beforeAdd = await readReport(page);
+    expect(beforeAdd.rows).toHaveLength(9);
+    expect(beforeAdd.rows.some(item => item.state === 'new')).toBe(false);
+    await closeReport(page);
+    await step(page, 'add-record');
+    await action(page, 'add').click();
+    await expect(action(page, 'add')).not.toHaveAttribute('aria-busy', 'true');
+    await step(page, 'delete-record');
+    await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(10);
+    await expect(action(page, 'add')).not.toHaveClass(/demo-crud-tutorial-target/);
+    await expect(row(page, 'REC-003').locator('[data-action="delete"]')).toHaveClass(/demo-crud-tutorial-target/);
+    const report = await readReport(page);
+    const additions = report.rows.filter(item => item.state === 'new');
+    expect(additions).toHaveLength(1);
+    expect(additions[0]).toMatchObject({ id: null, hasErrors: false, isValid: true });
+    expect(additions[0].tempId).toBeTruthy();
+    await expect(page.locator('.demo-crud-temp-id')).toHaveAttribute('data-demo-temp-id', additions[0].tempId);
+    await closeReport(page);
+    const addedRow = page.locator('#crud-row-states-table .tabulator-row').filter({ has: page.locator('.demo-crud-temp-id') });
+    const input = await openEditorFromNavigation(page, addedRow.locator('[tabulator-field="description"]'), 'New row after lifecycle completion', '#crud-row-states-table');
+    await input.fill('New valid vendor assessment');
+    await input.press('Enter');
+    await step(page, 'delete-record');
+    const updatedReport = await readReport(page);
+    expect(updatedReport.rows).toHaveLength(10);
+    expect(updatedReport.rows.filter(item => item.state === 'new')).toEqual([
+        expect.objectContaining({ tempId: additions[0].tempId, hasErrors: false })
+    ]);
+    await closeReport(page);
+    await step(page, 'delete-record');
+    expect(pageErrors.get(page)).toEqual([]);
 });
 
 for (const locale of ['en', 'it']) {

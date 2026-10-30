@@ -14,6 +14,7 @@ export default function crudRowStates(app) {
     const backendRetryRows = new Set();
     const tutorialEdits = new Map();
     const tutorialRowActions = new Map();
+    const pendingAdditions = new Set();
     let tutorialNewTempId = null;
     let preparingStates = false;
     let presentationPending = false;
@@ -225,6 +226,8 @@ export default function crudRowStates(app) {
     demo.table.on('cellEditCancelled', handleTutorialEditCancelled);
     demo.table.on('cellEdited', handleBackendCorrection);
     demo.table.on('cellEdited', handleTutorialEdit);
+    demo.table.on('rowAdded', handleAddedRowLifecycle);
+    demo.table.on('rowUpdated', handleAddedRowLifecycle);
     demo.table.on('renderComplete', syncPresentation);
     demo.table.on('scrollVertical', syncTutorialHighlight);
     demo.table.on('dataFiltered', syncTutorialHighlight);
@@ -233,6 +236,7 @@ export default function crudRowStates(app) {
     demo.destroy = () => {
         destroyed = true;
         scenarioGeneration += 1;
+        cancelPendingAdditions();
         clearTutorialHighlight();
         tutorialEdits.clear();
         tutorialRowActions.clear();
@@ -244,6 +248,8 @@ export default function crudRowStates(app) {
         demo.table.off('dataFiltered', syncTutorialHighlight);
         demo.table.off('cellEdited', handleBackendCorrection);
         demo.table.off('cellEdited', handleTutorialEdit);
+        demo.table.off('rowAdded', handleAddedRowLifecycle);
+        demo.table.off('rowUpdated', handleAddedRowLifecycle);
         demo.table.off('cellEditing', handleTutorialEditStart);
         demo.table.off('cellEditCancelled', handleTutorialEditCancelled);
         crudUnsubscribers.forEach(unsubscribe => unsubscribe?.());
@@ -347,7 +353,8 @@ export default function crudRowStates(app) {
         return confirmed;
     }
 
-    function handleTutorialRowState({ id, key, nextState }) {
+    function handleTutorialRowState({ id, key, nextState, row }) {
+        handleAddedRowLifecycle(row);
         const generation = scenarioGeneration;
         const candidate = tutorialRowActions.get(key);
         if (!candidate || preparingStates || destroyed || resettingScenario) return;
@@ -421,6 +428,7 @@ export default function crudRowStates(app) {
     }
 
     function handleTutorialEdit(cell) {
+        handleAddedRowLifecycle(cell.getRow());
         const data = cell.getRow().getData();
         const key = `${data.id}:${cell.getField()}`;
         const candidate = tutorialEdits.get(key);
@@ -464,12 +472,13 @@ export default function crudRowStates(app) {
             const element = cell?.getElement();
             const signature = `${data.id ?? ''}:${data._ambTempId ?? ''}:${document.documentElement.lang}`;
             if (element && identifierSignatures.get(element) !== signature) {
+                element.replaceChildren(formatRecordId(cell));
                 identifierSignatures.set(element, signature);
-                cell.reformat();
                 row.normalizeHeight();
             }
         });
         syncTutorialHighlight();
+        handleAddedRowLifecycle();
     }
 
     function runAfterEditSettled(callback) {
@@ -478,18 +487,61 @@ export default function crudRowStates(app) {
         return trackScenarioOperation(new Promise(resolve => globalThis.setTimeout(() => resolve(isCurrentScenario(generation) ? callback() : undefined), 0)));
     }
 
+    function cancelPendingAdditions() {
+        pendingAdditions.forEach(candidate => candidate.resolve(null));
+        pendingAdditions.clear();
+    }
+
+    function handleAddedRowLifecycle(updatedRow) {
+        for (const candidate of pendingAdditions) {
+            if (!candidate.row || candidate.checking || updatedRow && updatedRow.getData() !== candidate.row.getData()) continue;
+            if (!isCurrentScenario(candidate.generation)) {
+                pendingAdditions.delete(candidate);
+                candidate.resolve(null);
+                continue;
+            }
+            const data = candidate.row.getData();
+            const tempId = data[crud.options.tempIdField];
+            if (data[crud.options.stateField] !== 'new' || !tempId || data.id !== null && data.id !== undefined && data.id !== '') continue;
+            if (!demo.table.getRows().some(row => row.getData() === data)) continue;
+            candidate.checking = true;
+            try {
+                const validation = crud.validateRow(tempId);
+                const row = crud.getStateReport().rows.find(item => item.tempId === tempId);
+                if (!validation?.isValid || row?.state !== 'new' || row.hasErrors) continue;
+                pendingAdditions.delete(candidate);
+                if (!candidate.preparing && !preparingStates && tutorial.notify('row-added', { row }, candidate.context)) tutorialNewTempId = tempId;
+                candidate.resolve(candidate.row);
+            } finally {
+                candidate.checking = false;
+            }
+        }
+    }
+
     async function handleAdd() {
         if (resettingScenario || destroyed) return;
         const generation = scenarioGeneration;
         const context = preparingStates ? null : tutorial.capture();
         reportDialog.close();
         demo.feedback.clear();
-        const added = await trackScenarioOperation(crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request', department: 'Operations', tag: 'vendor', archived: 'N' }));
-        if (isCurrentScenario(generation) && !preparingStates && added) {
-            const row = crud.getStateReport().rows.find(item => item.tempId === added.getData()._ambTempId);
-            if (tutorial.notify('row-added', { row }, context)) tutorialNewTempId = row.tempId;
+        const candidate = { generation, context, preparing: preparingStates, row: null, checking: false, resolve: null };
+        const completed = new Promise(resolve => { candidate.resolve = resolve; });
+        pendingAdditions.add(candidate);
+        try {
+            const added = await trackScenarioOperation(crud.addRow({ id: null, description: 'New vendor risk assessment', type: 'Request', department: 'Operations', tag: 'vendor', archived: 'N' }));
+            if (!added || !isCurrentScenario(generation)) {
+                pendingAdditions.delete(candidate);
+                candidate.resolve(null);
+                return added;
+            }
+            candidate.row = added;
+            handleAddedRowLifecycle(added);
+            return await trackScenarioOperation(completed);
+        } catch (error) {
+            pendingAdditions.delete(candidate);
+            candidate.resolve(null);
+            throw error;
         }
-        return added;
     }
 
     function handleSave() {
@@ -567,6 +619,7 @@ export default function crudRowStates(app) {
     function resetToCleanBaseline() {
         const generation = ++scenarioGeneration;
         resettingScenario = true;
+        cancelPendingAdditions();
         preparingStates = false;
         clearTutorialHighlight();
         tutorialEdits.clear();
