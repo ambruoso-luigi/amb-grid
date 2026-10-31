@@ -207,6 +207,35 @@ test.describe('CRUD & Row States lifecycle', () => {
         });
     }
 
+    test('a rejected row returned to its saved baseline stays clean and is omitted from later saves', async ({ page }) => {
+        await selectValue(page, 'REC-001', 'type', 'Procedure');
+        await action(page, 'save').click();
+        await expect(cell(page, 'REC-001', '_state')).toHaveText('saved');
+
+        await selectValue(page, 'REC-001', 'type', 'Restricted');
+        await action(page, 'save').click();
+        await expect(cell(page, 'REC-001', '_ambErrorCount')).toHaveText('1');
+        await selectValue(page, 'REC-001', 'type', 'Procedure');
+        await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');
+        await expect(cell(page, 'REC-001', '_ambErrorCount')).toHaveText('0');
+        await expect(row(page, 'REC-001')).not.toHaveAttribute('data-demo-server-error');
+        const payload = await readDialog(page, 'Save payload');
+        expect(payload.hasValidChanges).toBe(false);
+        expect(payload.changes.updated).toHaveLength(0);
+        await action(page, 'save').click();
+        await expect(feedback(page)).toHaveText('There are no changes to save.');
+        await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');
+
+        await selectValue(page, 'REC-002', 'department', 'Compliance');
+        await action(page, 'save').click();
+        await expect(feedback(page)).toContainText('Saved rows: 1.');
+        await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');
+        await expect(cell(page, 'REC-002', '_state')).toHaveText('saved');
+        const report = await readDialog(page, 'CRUD & Row States report');
+        expect(report.rows.find(item => item.id === 'REC-001')).toMatchObject({ state: 'clean', hasErrors: false });
+        expect(report.rows.find(item => item.id === 'REC-002')).toMatchObject({ state: 'saved', hasErrors: false });
+    });
+
     test('accepts Restricted and Contract in Compliance without a prior backend error', async ({ page }) => {
         await selectValue(page, 'REC-004', 'type', 'Restricted');
         await selectValue(page, 'REC-008', 'type', 'Contract');

@@ -38,6 +38,9 @@ describe('Unified CRUD & Row States demo', () => {
         expect(source).toContain("uncheckedValue: 'N'");
         expect(source).toContain('partialSaveDialog.confirm(');
         expect(source).toContain('rowConfirmDialog.confirm(');
+        expect(source).not.toContain('backendRetryRows');
+        expect(source).not.toContain('result.saved.push(');
+        expect(source).not.toContain('row.getElement().dataset.state =');
     });
     test('keeps report, payload, cleanup and translated copy together', () => {
         expect(source).toContain('jsonData: report');
@@ -63,5 +66,20 @@ describe('Unified CRUD & Row States demo', () => {
             expect(copy[`${prefix}backendPartial`]).not.toEqual(copy[`${prefix}backendNotSaved`]);
         }
         expect(source).toContain("t(result.saved.length ? 'backendPartial' : 'backendNotSaved')");
+    });
+    test('requires a real Department correction and an accepted save in the final phase', () => {
+        const finalPhase = source.slice(source.indexOf("id: 'correct-save'"), source.indexOf('const formatArchivedCheckbox'));
+        expect(finalPhase).toContain("field === 'department'");
+        expect(finalPhase).toContain("previous === 'Operations'");
+        expect(finalPhase).toContain("row.after.department === 'Compliance'");
+        expect(finalPhase).toContain("row.after.type === 'Restricted'");
+        expect(finalPhase).toContain("row.state === 'modified'");
+        expect(finalPhase).toContain("saved.some(row => row.id === 'REC-001')");
+        for (const locale of ['it', 'en']) {
+            const copy = publicExampleTranslations[locale];
+            expect(copy['examples.crudRowStates.tutorialCorrectEdit']).toContain('Operations');
+            expect(copy['examples.crudRowStates.tutorialCorrectEdit']).toContain('Compliance');
+            expect(copy['examples.crudRowStates.tutorialCorrectSave']).toContain(locale === 'en' ? 'Save' : 'Salva');
+        }
     });
 });

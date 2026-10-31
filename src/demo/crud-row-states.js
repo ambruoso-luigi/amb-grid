@@ -11,7 +11,6 @@ export default function crudRowStates(app) {
     let destroyed = false;
     const errorCounts = new Map();
     const serverRejectedRows = new Map();
-    const backendRetryRows = new Set();
     const tutorialEdits = new Map();
     const tutorialRowActions = new Map();
     const pendingAdditions = new Set();
@@ -169,16 +168,18 @@ export default function crudRowStates(app) {
                 id: 'correct-save', actions: [
                     {
                         actionId: 'cell-edited', instructionKey: 'examples.crudRowStates.tutorialCorrectEdit',
-                        isComplete: ({ id, field, previous, report, backendRejected }) => id === 'REC-001' && field === 'type'
-                            && previous === 'Restricted' && !backendRejected && backendRetryRows.has(id)
-                            && report.rows.some(row => row.id === id && row.after.type === 'Procedure' && !row.hasErrors)
+                        isComplete: ({ id, field, previous, report, backendRejected }) => id === 'REC-001' && field === 'department'
+                            && previous === 'Operations' && !backendRejected && !serverRejectedRows.has(id)
+                            && report.rows.some(row => row.id === id && row.after.department === 'Compliance'
+                                && row.after.type === 'Restricted' && row.state === 'modified' && row.hasChanges && !row.hasErrors)
                     },
                     {
                         actionId: 'save', instructionKey: 'examples.crudRowStates.tutorialCorrectSave',
                         isComplete: ({ report, saved, feedbackShown }) => feedbackShown && saved.some(row => row.id === 'REC-001')
-                            && !serverRejectedRows.has('REC-001') && !backendRetryRows.has('REC-001')
+                            && !serverRejectedRows.has('REC-001')
                             && report.rows.some(row => row.id === 'REC-001' && row.state === 'saved'
-                                && row.after.type === 'Procedure' && !row.hasErrors && !row.hasChanges)
+                                && row.after.type === 'Restricted' && row.after.department === 'Compliance'
+                                && !row.hasErrors && !row.hasChanges)
                     }
                 ]
             }
@@ -240,7 +241,6 @@ export default function crudRowStates(app) {
         clearTutorialHighlight();
         tutorialEdits.clear();
         tutorialRowActions.clear();
-        backendRetryRows.clear();
         scenarioOperations.clear();
         window.removeEventListener('amb-demo-language-change', syncPresentation);
         demo.table.off('renderComplete', syncPresentation);
@@ -297,10 +297,11 @@ export default function crudRowStates(app) {
         let field = null;
         let rowAction = null;
         let toolbarAction = null;
-        if (stepId === 'edit-record' || (stepId === 'backend-error' || stepId === 'correct-save') && actionIndex === 0) {
+        if (stepId === 'edit-record' || stepId === 'backend-error' && actionIndex === 0) {
             recordId = 'REC-001';
             field = 'type';
-        } else if (stepId === 'add-record') toolbarAction = 'add';
+        } else if (stepId === 'correct-save' && actionIndex === 0) { recordId = 'REC-001'; field = 'department'; }
+        else if (stepId === 'add-record') toolbarAction = 'add';
         else if (stepId === 'delete-record') { recordId = 'REC-003'; rowAction = 'delete'; }
         else if (stepId === 'frontend-report' && actionIndex === 0) { recordId = 'REC-004'; field = 'description'; }
         else if (stepId === 'frontend-report') toolbarAction = 'state-report';
@@ -348,7 +349,6 @@ export default function crudRowStates(app) {
         const previous = crud.getStateReport().rows.find(row => row.key === id);
         const confirmed = await trackScenarioOperation(rowConfirmDialog.confirm({ title: t('confirmTitle'), message: t(`confirm.${action}`), confirmText: t('confirm'), cancelText: t('cancel') }));
         if (!isCurrentScenario(generation)) return false;
-        if (confirmed && !destroyed && action === 'rollback') backendRetryRows.delete(id);
         if (confirmed && !destroyed && context) tutorialRowActions.set(id, { action, context, previous });
         return confirmed;
     }
@@ -361,7 +361,6 @@ export default function crudRowStates(app) {
         if (candidate.action !== 'delete' && candidate.action !== 'rollback') return;
         if (nextState !== (candidate.action === 'delete' ? 'deleted' : 'clean')) return;
         tutorialRowActions.delete(key);
-        if (candidate.action === 'rollback') backendRetryRows.delete(key);
         globalThis.queueMicrotask(() => {
             if (!isCurrentScenario(generation) || preparingStates) return;
             refreshErrorCounts();
@@ -552,15 +551,13 @@ export default function crudRowStates(app) {
         return runAfterEditSettled(() => saveChangedRows(context, generation));
     }
 
-    // A corrected backend rejection is resubmitted on Save even when it matches the saved baseline.
     async function saveChangedRows(context, generation) {
         if (!isCurrentScenario(generation)) return;
         demo.feedback.clear();
         const validateResult = demo.validateChanges();
         const payload = demo.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-        const retries = crud.getStateReport().rows.filter(row => backendRetryRows.has(row.key) && row.state === 'clean' && !row.hasErrors);
-        if (!payload.hasChanges && !retries.length) return demo.feedback.show({ type: 'info', message: t('noChanges') });
-        if (!payload.hasValidChanges && !retries.length) return demo.feedback.show({ type: 'warning', message: t('noValidChanges') });
+        if (!payload.hasChanges) return demo.feedback.show({ type: 'info', message: t('noChanges') });
+        if (!payload.hasValidChanges) return demo.feedback.show({ type: 'warning', message: t('noValidChanges') });
         let partialConfirmed = false;
         if (payload.hasInvalidChanges && payload.isPartialSave) {
             const invalidRows = validateResult.rows.filter(row => !row.isValid).map(row => `${t('row')} ${row.rowNumber}: ${row.errors.map(error => error.field).join(', ')}`);
@@ -580,23 +577,12 @@ export default function crudRowStates(app) {
         rejected.forEach(row => {
             const message = t('backendRejected', { id: row.id ?? row.tempId ?? row.key });
             serverRejectedRows.set(row.key, message);
-            backendRetryRows.add(row.key);
             crud.markCellError(row.key, 'type', message);
         });
         report = crud.getStateReport();
         const generatedIds = report.validChangedRows.filter(row => row.state === 'new' && !row.id && row.tempId).map(row => ({ tempId: row.tempId, id: `REC-${String(nextId++).padStart(3, '0')}` }));
         crud.applyBackendIds(generatedIds);
         const result = crud.markValidChangesSaved();
-        for (const retry of retries) {
-            const validation = crud.validateRow(retry.key);
-            const row = demo.table.getRow(retry.id);
-            if (!validation?.isValid || !row || row.getData().type === 'Restricted' && row.getData().department !== 'Compliance') continue;
-            await row.update({ [crud.options.stateField]: 'saved' });
-            if (!isCurrentScenario(generation)) return;
-            row.getElement().dataset.state = 'saved';
-            result.saved.push({ key: retry.key, id: retry.id, tempId: retry.tempId, state: retry.state });
-        }
-        result.saved.forEach(row => backendRetryRows.delete(row.key));
         const deleted = result.saved.filter(row => before.get(row.key) === 'deleted').length;
         const invalid = crud.getStateReport().invalidChangedRowsCount;
         const parts = [t('savedCount', { count: result.saved.length - deleted }), t('deletedCount', { count: deleted })];
@@ -636,7 +622,6 @@ export default function crudRowStates(app) {
             nextId = 10;
             errorCounts.clear();
             serverRejectedRows.clear();
-            backendRetryRows.clear();
             tutorialNewTempId = null;
             demo.clearSearch();
             demo.clearFilter();
