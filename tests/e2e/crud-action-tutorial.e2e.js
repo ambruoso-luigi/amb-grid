@@ -66,13 +66,15 @@ const closeReport = async page => {
     await expect(tutorial(page)).toHaveAttribute('data-feedback', 'false');
     await expect.poll(() => trigger.evaluate(async element => {
         const before = element.getBoundingClientRect();
+        const scrollBefore = { x: window.scrollX, y: window.scrollY };
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         const after = element.getBoundingClientRect();
-        return before.x === after.x && before.y === after.y && before.width === after.width && before.height === after.height;
+        return before.x === after.x && before.y === after.y && before.width === after.width && before.height === after.height
+            && scrollBefore.x === window.scrollX && scrollBefore.y === window.scrollY;
     })).toBe(true);
     await expect(trigger).toBeInViewport();
-    const triggerPosition = await trigger.boundingBox();
     await expect(reportDialog(page).getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+    const scrollPosition = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }));
     await page.keyboard.press('Enter');
     await expect(reportDialog(page)).toBeHidden();
     const returnFocus = reportReturnFocus.get(page);
@@ -81,7 +83,14 @@ const closeReport = async page => {
     await returnFocus.dispose();
     reportReturnFocus.delete(page);
     await expect(trigger).toBeInViewport();
-    await expect.poll(() => trigger.boundingBox()).toEqual(triggerPosition);
+    await expect.poll(() => page.evaluate(async () => {
+        const before = { x: window.scrollX, y: window.scrollY };
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        return {
+            position: { x: window.scrollX, y: window.scrollY },
+            stable: before.x === window.scrollX && before.y === window.scrollY
+        };
+    })).toEqual({ position: scrollPosition, stable: true });
 };
 const reachFrontendError = async page => {
     await select(page, 'REC-001', 'type', 'Procedure');
