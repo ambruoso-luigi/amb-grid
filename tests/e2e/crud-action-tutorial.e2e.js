@@ -356,6 +356,12 @@ test('a rejection for another record and saving before the correction do not fin
     await select(page, 'REC-006', 'type', 'Restricted');
     await action(page, 'save').click();
     await step(page, 'backend-error');
+    await expect(feedback(page)).toContainText('rejected record REC-006');
+    await expect(cell(page, 'REC-006', '_ambErrorCount')).toHaveText('1');
+    await select(page, 'REC-006', 'type', 'Request');
+    await expect(cell(page, 'REC-006', '_ambErrorCount')).toHaveText('0');
+    await expect(cell(page, 'REC-006', '_state')).toHaveText('clean');
+    await step(page, 'backend-error');
     await select(page, 'REC-001', 'department', 'Compliance');
     await select(page, 'REC-001', 'type', 'Restricted');
     await step(page, 'backend-error');
@@ -363,9 +369,12 @@ test('a rejection for another record and saving before the correction do not fin
     await select(page, 'REC-001', 'department', 'Operations');
     await select(page, 'REC-001', 'type', 'Restricted');
     await step(page, 'backend-error', 1);
+    await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
+    await expect(cell(page, 'REC-001', '_ambErrorCount')).toHaveText('0');
     await action(page, 'save').click();
-    await confirmPartial(page);
     await step(page, 'correct-save');
+    await expect(feedback(page)).toContainText('rejected record REC-001');
+    await expect(cell(page, 'REC-001', '_ambErrorCount')).toHaveText('1');
     await select(page, 'REC-001', 'type', 'Procedure');
     await step(page, 'correct-save');
     await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');

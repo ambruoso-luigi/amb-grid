@@ -219,6 +219,7 @@ test.describe('CRUD & Row States lifecycle', () => {
         await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');
         await expect(cell(page, 'REC-001', '_ambErrorCount')).toHaveText('0');
         await expect(row(page, 'REC-001')).not.toHaveAttribute('data-demo-server-error');
+        await action(page, 'payload').click();
         const payload = await readDialog(page, 'Save payload');
         expect(payload.hasValidChanges).toBe(false);
         expect(payload.changes.updated).toHaveLength(0);
