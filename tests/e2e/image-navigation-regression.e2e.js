@@ -378,8 +378,83 @@ test('sequential modes cross pages, skip readonly editing destinations and leave
     await page.keyboard.press('Shift+Tab');
     await expect(cell(page, 1, 'name').locator('input')).toHaveValue('Two committed');
     await expect(cell(page, 1, 'name').locator('input')).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expectNavigationFocus(cell(page, 1, 'name'));
+    const escapeTrace = await page.evaluateHandle(() => {
+        const gridElement = document.querySelector('#img11-grid');
+        const nameCell = () => gridElement?.querySelectorAll('.tabulator-row')[1]?.querySelector('[tabulator-field="name"]') || null;
+        const expected = nameCell();
+        const describe = element => {
+            const cellElement = element?.closest?.('.tabulator-cell');
+            return {
+                tag: element?.tagName || null,
+                id: element?.id || null,
+                className: String(element?.className || ''),
+                field: cellElement?.getAttribute('tabulator-field') || null,
+                rowIndex: cellElement ? [...gridElement.querySelectorAll('.tabulator-row')].indexOf(cellElement.closest('.tabulator-row')) : null,
+                connected: Boolean(element?.isConnected)
+            };
+        };
+        const trace = {
+            events: [],
+            afterEscape: null,
+            afterTwoFrames: null,
+            snapshot() {
+                const current = nameCell();
+                return {
+                    active: describe(document.activeElement),
+                    expected: describe(expected),
+                    expectedConnected: Boolean(expected?.isConnected),
+                    expectedReplaced: Boolean(current && current !== expected),
+                    current: describe(current),
+                    currentIsExpected: current === expected,
+                    openEditors: [...gridElement.querySelectorAll('.tabulator-editing')].map(describe),
+                    currentPage: gridElement.querySelector('.tabulator-page.active')?.textContent?.trim() || null,
+                    tablePage: window.__img11?.grid?.table?.getPage?.() ?? null
+                };
+            }
+        };
+        trace.beforeEscape = trace.snapshot();
+        trace.onFocus = event => trace.events.push({
+            type: event.type,
+            target: describe(event.target),
+            relatedTarget: describe(event.relatedTarget),
+            active: describe(document.activeElement),
+            at: performance.now()
+        });
+        trace.onKeyup = event => {
+            if (event.key !== 'Escape' || trace.afterEscape) return;
+            queueMicrotask(() => {
+                trace.afterEscape = trace.snapshot();
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    trace.afterTwoFrames = trace.snapshot();
+                }));
+            });
+        };
+        document.addEventListener('focusin', trace.onFocus, true);
+        document.addEventListener('focusout', trace.onFocus, true);
+        document.addEventListener('keyup', trace.onKeyup, true);
+        return trace;
+    });
+    try {
+        await page.keyboard.press('Escape');
+        await expectNavigationFocus(cell(page, 1, 'name'));
+    } catch (error) {
+        const diagnostics = await page.evaluate(trace => ({
+            beforeEscape: trace.beforeEscape,
+            events: trace.events,
+            afterEscape: trace.afterEscape,
+            afterTwoFrames: trace.afterTwoFrames,
+            atFailure: trace.snapshot()
+        }), escapeTrace).catch(diagnosticError => ({ diagnosticError: diagnosticError.message }));
+        console.error(`[focus diagnostics] Escape from paginated Name editor\n${JSON.stringify(diagnostics, null, 2)}`);
+        throw error;
+    } finally {
+        await page.evaluate(trace => {
+            document.removeEventListener('focusin', trace.onFocus, true);
+            document.removeEventListener('focusout', trace.onFocus, true);
+            document.removeEventListener('keyup', trace.onKeyup, true);
+        }, escapeTrace).catch(() => {});
+        await escapeTrace.dispose();
+    }
 
     await cell(page, 0, 'id').click();
     await expectNavigationFocus(cell(page, 0, 'id'));
