@@ -4837,11 +4837,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     max-width: 880px;
 }
 
-.demo-panel .demo-action-tutorial-host .demo-action-tutorial--crud:not([hidden]) {
-    border-radius: 8px;
-    margin-bottom: 12px;
-}
-
 @media (max-width: 640px) {
     .demo-example .demo-crud-heading {
         grid-template-columns: minmax(0, 1fr);

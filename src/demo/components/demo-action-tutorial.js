@@ -51,7 +51,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     bar.className = 'demo-action-tutorial__bar';
     identity.className = 'demo-action-tutorial__identity';
     icon.className = 'demo-action-tutorial__icon';
-    if (isCrud) icon.innerHTML = demoIcon('mousePointerClick', { size: 21 });
+    if (isCrud) icon.innerHTML = demoIcon('mousePointerClick', { size: 25 });
     else icon.textContent = '\u203a';
     icon.setAttribute('aria-hidden', 'true');
     headingGroup.className = 'demo-action-tutorial__heading';
@@ -121,7 +121,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         bar.hidden = hidden;
         reopenButton.hidden = !hidden || Boolean(externalOpenButton);
         heading.textContent = copy(titleKey);
-        label.textContent = copy('tutorial.title');
+        label.textContent = copy(isCrud ? 'examples.crudRowStates.tutorialLabel' : 'tutorial.title');
         counter.textContent = copy('tutorial.counter', { current: Math.min(index + 1, steps.length), total: steps.length });
         progress.setAttribute('aria-label', copy('tutorial.progress'));
         indicators.forEach((indicator, stepIndex) => {

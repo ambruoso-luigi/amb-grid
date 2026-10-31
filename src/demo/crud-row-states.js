@@ -74,9 +74,9 @@ export default function crudRowStates(app) {
             </div>
         </div>
         <p class="demo-note" data-i18n="examples.crudRowStates.intro">Edit business records, inspect lifecycle states and errors, and compare reports with the save payload.</p>
+        <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
-            <div class="demo-action-tutorial-host"></div>
             <div id="crud-row-states-table" class="demo-business-grid demo-business-grid--viewport demo-row-states-grid"></div>
         </div>
     `;

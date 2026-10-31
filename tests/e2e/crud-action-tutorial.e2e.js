@@ -142,6 +142,7 @@ test.beforeEach(async ({ page }) => {
     await page.goto('/src/demo/index.html#feature-examples');
     await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(9);
     await expect(tutorial(page)).toBeHidden();
+    await expect(page.locator('#feature-example .demo-action-tutorial-host + .demo-table-workbench')).toHaveCount(1);
     expect(await page.locator('#feature-example .demo-action-tutorial-host').evaluate(element => element.getBoundingClientRect().height)).toBe(0);
     await expect(action(page, 'tutorial-launch')).toBeVisible();
     await expect(action(page, 'tutorial-launch')).toHaveText('Start tutorial');
@@ -207,7 +208,10 @@ for (const locale of ['en', 'it']) {
     test(`completes eight verified phases and ordered micro-actions in ${locale}`, async ({ page }) => {
         if (locale === 'it') await page.locator('[data-language-toggle]').click();
         await expect(tutorial(page)).toHaveClass(/demo-action-tutorial--crud/);
+        await expect(tutorial(page).locator('.demo-action-tutorial__label')).toHaveText(locale === 'it' ? 'Tutorial interattivo' : 'Interactive tutorial');
+        await expect(tutorial(page).locator('.demo-action-tutorial__title')).toHaveText('CRUD & Row States');
         await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText(locale === 'it' ? '1 di 8' : '1 of 8');
+        expect(await tutorial(page).evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(255, 249, 235)');
         await expect(tutorial(page).locator('ol li')).toHaveCount(8);
         await expect(control(page, 'restart')).toContainText(locale === 'it' ? 'Ricomincia' : 'Restart');
         await expect(control(page, 'skip')).toContainText(locale === 'it' ? 'Chiudi' : 'Close');

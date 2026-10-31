@@ -78,6 +78,7 @@ describe('demo action tutorial controller', () => {
     test('applies the CRUD variant only when requested and preserves tutorial controls', () => {
         const standard = mount();
         expect(standard.root.className).toBe('demo-action-tutorial');
+        expect(find(standard.root, element => element.className === 'demo-action-tutorial__label').textContent).toBe('Interactive guide');
         expect(standard.button('skip').textContent).toBe('Skip tutorial');
         standard.controller.destroy();
 
@@ -89,6 +90,8 @@ describe('demo action tutorial controller', () => {
         }));
         const { root, button, controller } = mount(steps, { variant: 'crud' });
         expect(root.className).toBe('demo-action-tutorial demo-action-tutorial--crud');
+        expect(find(root, element => element.className === 'demo-action-tutorial__label').textContent).toBe('Interactive tutorial');
+        expect(find(root, element => element.className === 'demo-action-tutorial__title').textContent).toBe('CRUD & Row States');
         expect(find(root, element => element.tagName === 'ol').children).toHaveLength(8);
         expect(find(root, element => element.className === 'demo-action-tutorial__title-row').children[1].className).toBe('demo-action-tutorial__counter');
         expect(find(root, element => element.className === 'demo-action-tutorial__icon').innerHTML).toContain('<svg');
@@ -103,6 +106,7 @@ describe('demo action tutorial controller', () => {
         expect(root.getAttribute('data-hidden')).toBe('false');
         expect(document.activeElement).toBe(button('restart'));
         controller.setLocale('it');
+        expect(find(root, element => element.className === 'demo-action-tutorial__label').textContent).toBe('Tutorial interattivo');
         expect(button('skip').children[1].textContent).toBe('Chiudi');
     });
 
