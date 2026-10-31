@@ -503,7 +503,7 @@ test('skip, language changes and remount preserve normal use and the current mic
     await expect(tutorial(page)).toHaveCount(1);
     await expect(tutorial(page)).toBeHidden();
     await expect(action(page, 'tutorial-launch')).toBeVisible();
-    await expect(action(page, 'tutorial-launch')).toHaveText('Start tutorial');
+    await expect(action(page, 'tutorial-launch')).toHaveText('Avvia tutorial');
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
     await action(page, 'tutorial-launch').click();
     await step(page, 'edit-record');

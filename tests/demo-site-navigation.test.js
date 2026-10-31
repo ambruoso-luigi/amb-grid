@@ -431,7 +431,9 @@ describe('demo site navigation', () => {
             expect(source).toContain(`summaryKey: 'examples.${key}.detailsTitle'`);
             expect(source).toContain(`summaryMetaKey: 'examples.${key}.guideMeta'`);
             expect(source).toContain(`summaryMeta: '${meta}'`);
-            expect(source).toContain("summaryIcon: 'help'");
+            expect(source).toContain(fileName === 'crud-row-states'
+                ? "summaryIcon: 'guide'"
+                : "summaryIcon: 'help'");
             expect(source).toContain("variant: 'technical'");
             expect(copy.match(new RegExp(`'examples\\.${key}\\.detailsTitle'`, 'g'))).toHaveLength(2);
             expect(copy.match(new RegExp(`'examples\\.${key}\\.guideMeta'`, 'g'))).toHaveLength(2);
