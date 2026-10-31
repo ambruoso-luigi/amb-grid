@@ -150,6 +150,7 @@ test.beforeEach(async ({ page }) => {
     await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-controls', 'crud-row-states-tutorial');
     await expect(control(page, 'reopen')).toBeHidden();
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
+    await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(0);
     await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');
     await action(page, 'tutorial-launch').click();
     await expect(tutorial(page)).toBeVisible();
@@ -222,10 +223,13 @@ for (const locale of ['en', 'it']) {
         await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target--pulse/);
         const pulseStyle = await cell(page, 'REC-001', 'type').evaluate(element => {
             const style = getComputedStyle(element, '::after');
-            return { name: style.animationName, iterations: style.animationIterationCount };
+            return { name: style.animationName, iterations: style.animationIterationCount,
+                duration: style.animationDuration, border: style.borderTopColor, pointerEvents: style.pointerEvents };
         });
+        expect(pulseStyle.border).toBe('rgb(183, 122, 22)');
+        expect(pulseStyle.pointerEvents).toBe('none');
         if (await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)) expect(pulseStyle.name).toBe('none');
-        else expect(pulseStyle).toEqual({ name: 'demo-crud-target-pulse', iterations: '2' });
+        else expect(pulseStyle).toMatchObject({ name: 'demo-crud-target-pulse', iterations: 'infinite', duration: '4.8s' });
         await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
         const tempId = await reachPartialSave(page);
         await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
@@ -236,6 +240,7 @@ for (const locale of ['en', 'it']) {
         await expect(page.locator('.teh-confirm-dialog--visible .teh-confirm-dialog__button--confirm')).toHaveClass(/demo-crud-tutorial-target/);
         await expect(page.locator('.teh-confirm-dialog--visible .teh-confirm-dialog__button--confirm')).toHaveClass(/demo-crud-tutorial-target--pulse/);
         await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
+        await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(1);
         await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText(locale === 'it' ? '5 di 8' : '5 of 8');
         await confirmPartial(page);
         await step(page, 'rollback-record');
@@ -283,6 +288,7 @@ for (const locale of ['en', 'it']) {
         await expect(cell(page, 'REC-001', 'type')).toHaveText('Restricted');
         await expect(cell(page, 'REC-001', 'department')).toHaveText('Compliance');
         await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
+        await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(0);
         await expect(feedback(page)).toContainText(locale === 'it' ? 'Righe salvate: 1.' : 'Saved rows: 1.');
         const finalReport = await readReport(page);
         expect(finalReport.hasChanges).toBe(false);
@@ -303,30 +309,14 @@ test('ignores wrong records, cancelled edits and cancelled row actions', async (
     await readReport(page);
     await step(page, 'edit-record');
     await closeReport(page);
-    await cell(page, 'REC-001', 'type').evaluate(async element => {
-        await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished));
-    });
-    await page.evaluate(() => {
-        window.__crudPulseStarts = 0;
-        window.__crudPulseListener = event => {
-            if (event.animationName === 'demo-crud-target-pulse') window.__crudPulseStarts += 1;
-        };
-        document.addEventListener('animationstart', window.__crudPulseListener, true);
-    });
-    try {
-        await select(page, 'REC-002', 'type', 'Procedure');
-        await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target/);
-        await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
-        expect(await page.evaluate(() => window.__crudPulseStarts)).toBe(0);
-    } finally {
-        await page.evaluate(() => {
-            document.removeEventListener('animationstart', window.__crudPulseListener, true);
-            delete window.__crudPulseListener;
-            delete window.__crudPulseStarts;
-        });
-    }
+    await select(page, 'REC-002', 'type', 'Procedure');
+    await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target--pulse/);
+    await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
+    await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(1);
     await step(page, 'edit-record');
     await editText(page, 'REC-001', 'Unrelated description edit');
+    await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target--pulse/);
+    await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(1);
     await step(page, 'edit-record');
     const input = await openEditorFromNavigation(page, cell(page, 'REC-001', 'type'), 'Cancelled Type', '#crud-row-states-table', 'input');
     await page.keyboard.press('ArrowDown');
@@ -355,7 +345,8 @@ test('cancelled partial saving does not save rows or skip the confirmation micro
     await step(page, 'partial-save', 1);
     await confirmPartial(page, false);
     await expect(action(page, 'save')).toHaveClass(/demo-crud-tutorial-target/);
-    await expect(action(page, 'save')).not.toHaveClass(/demo-crud-tutorial-target--pulse/);
+    await expect(action(page, 'save')).toHaveClass(/demo-crud-tutorial-target--pulse/);
+    await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(1);
     await step(page, 'partial-save', 1);
     await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
     await expect(cell(page, 'REC-003', '_state')).toHaveText('deleted');
@@ -475,6 +466,7 @@ test('skip, language changes and remount preserve normal use and the current mic
     await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-expanded', 'false');
     await expect(control(page, 'reopen')).toBeHidden();
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
+    await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(0);
     await editText(page, 'REC-002', 'Preserve user changes');
     const skippedReport = await readReport(page);
     expect(skippedReport.rows.filter(item => item.state === 'new')).toHaveLength(1);

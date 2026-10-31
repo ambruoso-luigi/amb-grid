@@ -27,7 +27,6 @@ export default function crudRowStates(app) {
     let tutorialState = null;
     let highlightedControl = null;
     let highlightedAction = null;
-    let highlightedActionPulsed = false;
     let tutorialStarted = false;
     const t = (key, values = {}) => {
         const locale = document.documentElement.lang === 'en' ? 'en' : 'it';
@@ -307,7 +306,6 @@ export default function crudRowStates(app) {
         highlightedControl = null;
         if (resetAction) {
             highlightedAction = null;
-            highlightedActionPulsed = false;
         }
     }
 
@@ -351,13 +349,10 @@ export default function crudRowStates(app) {
             target = field ? row?.getCell(field)?.getElement() : row?.getElement().querySelector(`[data-action="${rowAction}"]`);
         } else if (toolbarAction) target = app.querySelector(`[data-action="${toolbarAction}"]`);
         if (target?.isConnected && target.getClientRects().length > 0) {
-            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')) return;
+            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
+                && target.classList.contains('demo-crud-tutorial-target--pulse')) return;
             clearTutorialHighlight({ resetAction: false });
-            target.classList.add('demo-crud-tutorial-target');
-            if (!highlightedActionPulsed) {
-                target.classList.add('demo-crud-tutorial-target--pulse');
-                highlightedActionPulsed = true;
-            }
+            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
             highlightedControl = target;
         } else clearTutorialHighlight({ resetAction: false });
     }

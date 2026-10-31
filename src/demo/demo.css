@@ -4084,22 +4084,26 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-crud-tutorial-target::after {
-    border: 2px solid #bd821d;
-    border-radius: 3px;
-    box-shadow: 0 0 0 2px rgb(245 211 143 / 70%), 0 0 9px rgb(153 101 16 / 22%);
+    border: 2px solid #b77a16;
+    border-radius: 4px;
+    box-shadow: 0 0 0 3px rgb(250 217 139 / 85%), 0 0 12px rgb(163 103 13 / 42%);
     content: '';
-    inset: 2px;
+    inset: 1px;
     pointer-events: none;
     position: absolute;
 }
 
 .demo-crud-tutorial-target--pulse::after {
-    animation: demo-crud-target-pulse 600ms ease-in-out 2;
+    animation: demo-crud-target-pulse 4.8s ease-in-out infinite;
 }
 
 @keyframes demo-crud-target-pulse {
-    50% {
-        box-shadow: 0 0 0 4px rgb(245 211 143 / 80%), 0 0 13px rgb(153 101 16 / 35%);
+    0%, 22%, 46%, 100% {
+        box-shadow: 0 0 0 3px rgb(250 217 139 / 85%), 0 0 12px rgb(163 103 13 / 42%);
+    }
+
+    11%, 35% {
+        box-shadow: 0 0 0 7px rgb(250 217 139 / 62%), 0 0 22px rgb(163 103 13 / 60%);
     }
 }
 
