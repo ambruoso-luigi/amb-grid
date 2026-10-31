@@ -1,5 +1,6 @@
 import './demo-action-tutorial.css';
 import { publicExampleTranslations } from '../example-copy.js';
+import { demoIcon } from '../demo-icons.js';
 
 /**
  * A phase can keep its existing action fields or provide an ordered `actions` array.
@@ -7,7 +8,8 @@ import { publicExampleTranslations } from '../example-copy.js';
  * Capture a fresh context for each operation; feedback timers only change the displayed text.
  * Optional onRestart awaits application cleanup; onStateChange reports the current phase and visibility.
  */
-export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange }) {
+export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, variant = 'default' }) {
+    const isCrud = variant === 'crud';
     let language = locale === 'en' ? 'en' : 'it';
     let index = 0;
     let actionIndex = 0;
@@ -29,6 +31,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     const label = document.createElement('span');
     const heading = document.createElement('strong');
     const counter = document.createElement('span');
+    const titleRow = isCrud ? document.createElement('div') : null;
     const instruction = document.createElement('p');
     const result = document.createElement('p');
     const progress = document.createElement('ol');
@@ -36,21 +39,25 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     const skipButton = document.createElement('button');
     const restartButton = document.createElement('button');
     const reopenButton = document.createElement('button');
+    const restartLabel = isCrud ? document.createElement('span') : null;
+    const skipLabel = isCrud ? document.createElement('span') : null;
     const indicators = steps.map(() => document.createElement('li'));
     const copy = (key, values = {}) => Object.entries(values).reduce(
         (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
         publicExampleTranslations[language][key]
     );
-    root.className = 'demo-action-tutorial';
+    root.className = `demo-action-tutorial${isCrud ? ' demo-action-tutorial--crud' : ''}`;
     bar.className = 'demo-action-tutorial__bar';
     identity.className = 'demo-action-tutorial__identity';
     icon.className = 'demo-action-tutorial__icon';
-    icon.textContent = '\u203a';
+    if (isCrud) icon.innerHTML = demoIcon('mousePointerClick', { size: 21 });
+    else icon.textContent = '\u203a';
     icon.setAttribute('aria-hidden', 'true');
     headingGroup.className = 'demo-action-tutorial__heading';
     label.className = 'demo-action-tutorial__label';
     heading.className = 'demo-action-tutorial__title';
     counter.className = 'demo-action-tutorial__counter';
+    if (titleRow) titleRow.className = 'demo-action-tutorial__title-row';
     instruction.className = 'demo-action-tutorial__instruction';
     instruction.setAttribute('aria-live', 'polite');
     instruction.setAttribute('aria-atomic', 'true');
@@ -64,11 +71,27 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     skipButton.setAttribute('data-tutorial-action', 'skip');
     restartButton.setAttribute('data-tutorial-action', 'restart');
     reopenButton.setAttribute('data-tutorial-action', 'reopen');
+    if (isCrud) {
+        const restartIcon = document.createElement('span');
+        const skipIcon = document.createElement('span');
+        restartIcon.className = 'demo-action-tutorial__button-icon';
+        skipIcon.className = 'demo-action-tutorial__button-icon';
+        restartIcon.setAttribute('aria-hidden', 'true');
+        skipIcon.setAttribute('aria-hidden', 'true');
+        restartIcon.innerHTML = demoIcon('rotateCcw', { size: 15 });
+        skipIcon.innerHTML = demoIcon('close', { size: 15 });
+        restartButton.append(restartIcon, restartLabel);
+        skipButton.append(skipIcon, skipLabel);
+    }
     progress.append(...indicators);
     controls.append(restartButton, skipButton);
-    headingGroup.append(label, heading);
+    if (isCrud) {
+        titleRow.append(heading, counter);
+        headingGroup.append(label, titleRow);
+    } else headingGroup.append(label, heading);
     identity.append(icon, headingGroup);
-    bar.append(identity, counter, progress, instruction, result, controls);
+    if (isCrud) bar.append(identity, progress, instruction, result, controls);
+    else bar.append(identity, counter, progress, instruction, result, controls);
     root.append(bar, reopenButton);
     host.append(root);
 
@@ -92,6 +115,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         root.setAttribute('data-feedback', String(feedbackKey !== null));
         root.setAttribute('aria-busy', String(resetting));
         root.setAttribute('data-resetting', String(resetting));
+        if (isCrud) root.setAttribute('data-hidden', String(hidden));
         bar.hidden = hidden;
         reopenButton.hidden = !hidden;
         heading.textContent = copy(titleKey);
@@ -112,8 +136,13 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         }
         result.hidden = resetting || restartFailed || Boolean(feedbackKey) || !action?.resultKey;
         result.textContent = result.hidden ? '' : copy(action.resultKey);
-        skipButton.textContent = copy('tutorial.skip');
-        restartButton.textContent = copy('tutorial.restart');
+        if (isCrud) {
+            skipLabel.textContent = copy('examples.crudRowStates.tutorialClose');
+            restartLabel.textContent = copy('tutorial.restart');
+        } else {
+            skipButton.textContent = copy('tutorial.skip');
+            restartButton.textContent = copy('tutorial.restart');
+        }
         reopenButton.textContent = copy('tutorial.reopen');
         restartButton.setAttribute('aria-disabled', String(resetting));
         onStateChange?.({ stepId: complete ? null : steps[index].id, actionIndex, hidden, complete, resetting, restartFailed, destroyed });

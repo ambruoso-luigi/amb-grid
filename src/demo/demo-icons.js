@@ -21,6 +21,7 @@ import {
     Layers,
     ListChecks,
     MonitorCog,
+    MousePointerClick,
     Pencil,
     Package,
     RotateCcw,
@@ -31,7 +32,8 @@ import {
     ShieldCheck,
     Sparkles,
     Trash2,
-    Workflow
+    Workflow,
+    X
 } from 'lucide';
 
 export const demoIcons = {
@@ -45,6 +47,7 @@ export const demoIcons = {
     date: CalendarDays,
     chevronDown: ChevronDown,
     chevronRight: ChevronRight,
+    close: X,
     help: CircleHelp,
     delete: Trash2,
     edit: Pencil,
@@ -58,11 +61,13 @@ export const demoIcons = {
     legacy: Box,
     lookup: Search,
     modern: MonitorCog,
+    mousePointerClick: MousePointerClick,
     payload: FileJson,
     package: Package,
     react: Atom,
     report: ClipboardList,
     rollback: RotateCcw,
+    rotateCcw: RotateCcw,
     rowStates: Rows3,
     save: Save,
     selected: ListChecks,

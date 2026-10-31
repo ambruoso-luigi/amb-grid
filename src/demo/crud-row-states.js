@@ -79,6 +79,7 @@ export default function crudRowStates(app) {
     const rowConfirmDialog = new AMB.ConfirmDialog();
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
+        variant: 'crud',
         locale: document.documentElement.lang,
         titleKey: 'examples.crudRowStates.tutorialTitle',
         completedKey: 'examples.crudRowStates.tutorialCompleted',

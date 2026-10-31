@@ -183,8 +183,14 @@ test('Row advances once only after a valid new row with its real Temp ID exists'
 for (const locale of ['en', 'it']) {
     test(`completes eight verified phases and ordered micro-actions in ${locale}`, async ({ page }) => {
         if (locale === 'it') await page.locator('[data-language-toggle]').click();
+        await expect(tutorial(page)).toHaveClass(/demo-action-tutorial--crud/);
         await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText(locale === 'it' ? '1 di 8' : '1 of 8');
         await expect(tutorial(page).locator('ol li')).toHaveCount(8);
+        await expect(control(page, 'restart')).toContainText(locale === 'it' ? 'Ricomincia' : 'Restart');
+        await expect(control(page, 'skip')).toContainText(locale === 'it' ? 'Chiudi' : 'Close');
+        await expect(control(page, 'restart').locator('svg')).toHaveAttribute('aria-hidden', 'true');
+        await expect(control(page, 'skip').locator('svg')).toHaveAttribute('aria-hidden', 'true');
+        expect(await tutorial(page).locator('ol li').first().evaluate(element => element.getBoundingClientRect().width > element.getBoundingClientRect().height)).toBe(true);
         await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target/);
         const tempId = await reachPartialSave(page);
         await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
@@ -403,6 +409,7 @@ test('prepare states stays outside the tutorial and generates no frontend errors
 test('skip, language changes and remount preserve normal use and the current micro-action', async ({ page }) => {
     await reachFrontendError(page);
     await control(page, 'skip').click();
+    await expect(control(page, 'reopen')).toBeVisible();
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
     await editText(page, 'REC-002', 'Preserve user changes');
     const skippedReport = await readReport(page);
@@ -425,6 +432,7 @@ test('skip, language changes and remount preserve normal use and the current mic
     await page.locator('[data-example="validation"]').click();
     await expect(page.locator('#validation-table')).toBeVisible();
     await expect(tutorial(page)).toHaveCount(1);
+    await expect(tutorial(page)).not.toHaveClass(/demo-action-tutorial--crud/);
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'create-anomalies');
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
     await page.locator('[data-example="crud-row-states"]').click();

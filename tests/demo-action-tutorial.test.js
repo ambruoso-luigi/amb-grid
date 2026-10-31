@@ -48,6 +48,37 @@ afterEach(() => {
 });
 
 describe('demo action tutorial controller', () => {
+    test('applies the CRUD variant only when requested and preserves tutorial controls', () => {
+        const standard = mount();
+        expect(standard.root.className).toBe('demo-action-tutorial');
+        expect(standard.button('skip').textContent).toBe('Skip tutorial');
+        standard.controller.destroy();
+
+        const steps = Array.from({ length: 8 }, (_, index) => ({
+            id: `phase-${index + 1}`,
+            actionId: 'advance',
+            instructionKey: 'examples.crudRowStates.tutorialEdit',
+            isComplete: () => true
+        }));
+        const { root, button, controller } = mount(steps, { variant: 'crud' });
+        expect(root.className).toBe('demo-action-tutorial demo-action-tutorial--crud');
+        expect(find(root, element => element.tagName === 'ol').children).toHaveLength(8);
+        expect(find(root, element => element.className === 'demo-action-tutorial__title-row').children[1].className).toBe('demo-action-tutorial__counter');
+        expect(find(root, element => element.className === 'demo-action-tutorial__icon').innerHTML).toContain('<svg');
+        expect(button('restart').children[1].textContent).toBe('Restart');
+        expect(button('skip').children[1].textContent).toBe('Close');
+        expect(button('skip').getAttribute('data-tutorial-action')).toBe('skip');
+        button('skip').focus();
+        button('skip').click();
+        expect(root.getAttribute('data-hidden')).toBe('true');
+        expect(document.activeElement).toBe(button('reopen'));
+        button('reopen').click();
+        expect(root.getAttribute('data-hidden')).toBe('false');
+        expect(document.activeElement).toBe(button('restart'));
+        controller.setLocale('it');
+        expect(button('skip').children[1].textContent).toBe('Chiudi');
+    });
+
     test('awaits an optional application restart and invalidates old work without moving focus', async () => {
         vi.useFakeTimers();
         let finish;
