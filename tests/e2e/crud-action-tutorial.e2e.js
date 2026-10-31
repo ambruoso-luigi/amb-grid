@@ -192,6 +192,14 @@ for (const locale of ['en', 'it']) {
         await expect(control(page, 'skip').locator('svg')).toHaveAttribute('aria-hidden', 'true');
         expect(await tutorial(page).locator('ol li').first().evaluate(element => element.getBoundingClientRect().width > element.getBoundingClientRect().height)).toBe(true);
         await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target/);
+        await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target--pulse/);
+        const pulseStyle = await cell(page, 'REC-001', 'type').evaluate(element => {
+            const style = getComputedStyle(element, '::after');
+            return { name: style.animationName, iterations: style.animationIterationCount };
+        });
+        if (await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)) expect(pulseStyle.name).toBe('none');
+        else expect(pulseStyle).toEqual({ name: 'demo-crud-target-pulse', iterations: '2' });
+        await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
         const tempId = await reachPartialSave(page);
         await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
         await expect(cell(page, 'REC-003', '_state')).toHaveText('deleted');
@@ -199,6 +207,8 @@ for (const locale of ['en', 'it']) {
         await action(page, 'save').click();
         await step(page, 'partial-save', 1);
         await expect(page.locator('.teh-confirm-dialog--visible .teh-confirm-dialog__button--confirm')).toHaveClass(/demo-crud-tutorial-target/);
+        await expect(page.locator('.teh-confirm-dialog--visible .teh-confirm-dialog__button--confirm')).toHaveClass(/demo-crud-tutorial-target--pulse/);
+        await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
         await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText(locale === 'it' ? '5 di 8' : '5 of 8');
         await confirmPartial(page);
         await step(page, 'rollback-record');
@@ -266,7 +276,28 @@ test('ignores wrong records, cancelled edits and cancelled row actions', async (
     await readReport(page);
     await step(page, 'edit-record');
     await closeReport(page);
-    await select(page, 'REC-002', 'type', 'Procedure');
+    await cell(page, 'REC-001', 'type').evaluate(async element => {
+        await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished));
+    });
+    await page.evaluate(() => {
+        window.__crudPulseStarts = 0;
+        window.__crudPulseListener = event => {
+            if (event.animationName === 'demo-crud-target-pulse') window.__crudPulseStarts += 1;
+        };
+        document.addEventListener('animationstart', window.__crudPulseListener, true);
+    });
+    try {
+        await select(page, 'REC-002', 'type', 'Procedure');
+        await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target/);
+        await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
+        expect(await page.evaluate(() => window.__crudPulseStarts)).toBe(0);
+    } finally {
+        await page.evaluate(() => {
+            document.removeEventListener('animationstart', window.__crudPulseListener, true);
+            delete window.__crudPulseListener;
+            delete window.__crudPulseStarts;
+        });
+    }
     await step(page, 'edit-record');
     await editText(page, 'REC-001', 'Unrelated description edit');
     await step(page, 'edit-record');
@@ -297,6 +328,7 @@ test('cancelled partial saving does not save rows or skip the confirmation micro
     await step(page, 'partial-save', 1);
     await confirmPartial(page, false);
     await expect(action(page, 'save')).toHaveClass(/demo-crud-tutorial-target/);
+    await expect(action(page, 'save')).not.toHaveClass(/demo-crud-tutorial-target--pulse/);
     await step(page, 'partial-save', 1);
     await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
     await expect(cell(page, 'REC-003', '_state')).toHaveText('deleted');
@@ -348,6 +380,7 @@ test('restart closes a pending partial confirmation and prevents the old save fr
     await expect(page.locator('.teh-confirm-dialog--visible')).toHaveCount(0);
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
     await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target/);
+    await expect(cell(page, 'REC-001', 'type')).toHaveClass(/demo-crud-tutorial-target--pulse/);
     await expect(row(page, 'REC-010')).toHaveCount(0);
     const report = await readReport(page);
     expect(report.hasChanges).toBe(false);

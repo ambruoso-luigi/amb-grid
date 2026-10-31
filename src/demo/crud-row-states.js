@@ -25,6 +25,8 @@ export default function crudRowStates(app) {
     const identifierSignatures = new WeakMap();
     let tutorialState = null;
     let highlightedControl = null;
+    let highlightedAction = null;
+    let highlightedActionPulsed = false;
     const t = (key, values = {}) => {
         const locale = document.documentElement.lang === 'en' ? 'en' : 'it';
         const message = publicExampleTranslations[locale][`examples.crudRowStates.${key}`];
@@ -285,16 +287,28 @@ export default function crudRowStates(app) {
         return indicator;
     }
 
-    function clearTutorialHighlight() {
-        highlightedControl?.classList.remove('demo-crud-tutorial-target');
+    function clearTutorialHighlight({ resetAction = true } = {}) {
+        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
         highlightedControl = null;
+        if (resetAction) {
+            highlightedAction = null;
+            highlightedActionPulsed = false;
+        }
     }
 
     function syncTutorialHighlight() {
-        clearTutorialHighlight();
         if (!demo || destroyed || resettingScenario || preparingStates || !tutorialState
-            || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) return;
+            || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+            clearTutorialHighlight({ resetAction: destroyed || resettingScenario || tutorialState?.complete
+                || tutorialState?.resetting || tutorialState?.restartFailed || tutorialState?.destroyed });
+            return;
+        }
         const { stepId, actionIndex } = tutorialState;
+        const actionKey = `${stepId}:${actionIndex}`;
+        if (highlightedAction !== actionKey) {
+            clearTutorialHighlight();
+            highlightedAction = actionKey;
+        }
         let target = null;
         let recordId = null;
         let field = null;
@@ -316,9 +330,15 @@ export default function crudRowStates(app) {
             target = field ? row?.getCell(field)?.getElement() : row?.getElement().querySelector(`[data-action="${rowAction}"]`);
         } else if (toolbarAction) target = app.querySelector(`[data-action="${toolbarAction}"]`);
         if (target?.isConnected && target.getClientRects().length > 0) {
+            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')) return;
+            clearTutorialHighlight({ resetAction: false });
             target.classList.add('demo-crud-tutorial-target');
+            if (!highlightedActionPulsed) {
+                target.classList.add('demo-crud-tutorial-target--pulse');
+                highlightedActionPulsed = true;
+            }
             highlightedControl = target;
-        }
+        } else clearTutorialHighlight({ resetAction: false });
     }
 
     function trackScenarioOperation(operation) {

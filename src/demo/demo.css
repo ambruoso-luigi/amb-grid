@@ -4084,12 +4084,29 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-crud-tutorial-target::after {
-    border: 2px solid rgb(29 95 153 / 65%);
+    border: 2px solid #bd821d;
     border-radius: 3px;
+    box-shadow: 0 0 0 2px rgb(245 211 143 / 70%), 0 0 9px rgb(153 101 16 / 22%);
     content: '';
     inset: 2px;
     pointer-events: none;
     position: absolute;
+}
+
+.demo-crud-tutorial-target--pulse::after {
+    animation: demo-crud-target-pulse 600ms ease-in-out 2;
+}
+
+@keyframes demo-crud-target-pulse {
+    50% {
+        box-shadow: 0 0 0 4px rgb(245 211 143 / 80%), 0 0 13px rgb(153 101 16 / 35%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-crud-tutorial-target--pulse::after {
+        animation: none;
+    }
 }
 
 .demo-report-dialog[hidden] {
