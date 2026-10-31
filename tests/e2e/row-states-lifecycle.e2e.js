@@ -232,6 +232,7 @@ test.describe('CRUD & Row States lifecycle', () => {
         await expect(feedback(page)).toContainText('Saved rows: 1.');
         await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');
         await expect(cell(page, 'REC-002', '_state')).toHaveText('saved');
+        await action(page, 'state-report').click();
         const report = await readDialog(page, 'CRUD & Row States report');
         expect(report.rows.find(item => item.id === 'REC-001')).toMatchObject({ state: 'clean', hasErrors: false });
         expect(report.rows.find(item => item.id === 'REC-002')).toMatchObject({ state: 'saved', hasErrors: false });
