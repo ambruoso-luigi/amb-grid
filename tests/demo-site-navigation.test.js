@@ -533,7 +533,9 @@ describe('demo site navigation', () => {
         exampleFiles.forEach(fileName => {
             const source = read(`src/demo/${fileName}.js`);
 
-            expect(source).toContain('class="demo-table-workbench"');
+            expect(source).toContain(fileName === 'crud-row-states'
+                ? 'class="demo-table-workbench demo-table-workbench--crud"'
+                : 'class="demo-table-workbench"');
             expect(source).toMatch(/class="demo-business-grid(?:\s|\")/);
             expect(source).toContain("layout: 'fitColumns'");
             expect(source).toContain('minWidth:');

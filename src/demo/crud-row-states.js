@@ -42,10 +42,10 @@ export default function crudRowStates(app) {
         { id: 'REC-009', description: 'Completed warehouse maintenance request', type: 'Request', department: 'Operations', tag: 'warehouse', archived: 'Y' }
     ];
     app.innerHTML = `
-        <h2 data-i18n="examples.crudRowStates.title">CRUD &amp; Row States</h2>
-        <p class="demo-note" data-i18n="examples.crudRowStates.intro">Edit business records, inspect lifecycle states and errors, and compare reports with the save payload.</p>
-        ${createDemoColumnGuide({
-            summary: 'How this table works', summaryKey: 'examples.crudRowStates.detailsTitle',
+        <div class="demo-crud-heading">
+            <h2 data-i18n="examples.crudRowStates.title">CRUD &amp; Row States</h2>
+            ${createDemoColumnGuide({
+            summary: 'Technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
             summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'help', variant: 'technical',
             intro: 'The table starts with nine clean records. Prepare states explicitly restores the baseline and creates a valid lifecycle scenario.', introKey: 'examples.crudRowStates.guideIntro',
             points: [
@@ -64,8 +64,10 @@ export default function crudRowStates(app) {
                 { title: 'State', titleKey: 'guides.rowStates.state.title', badge: 'STATE', description: 'clean, new, modified, deleted or saved.', descriptionKey: 'guides.rowStates.state.description' },
                 { title: 'Errors', titleKey: 'guides.rowStates.errors.title', badge: 'DERIVED', description: 'Current cell and row error count.', descriptionKey: 'guides.rowStates.errors.description' }
             ]
-        })}
-        <div class="demo-table-workbench">
+            })}
+        </div>
+        <p class="demo-note" data-i18n="examples.crudRowStates.intro">Edit business records, inspect lifecycle states and errors, and compare reports with the save payload.</p>
+        <div class="demo-table-workbench demo-table-workbench--crud">
             <div class="demo-command-guide-host"></div>
             <div class="demo-action-tutorial-host"></div>
             <div id="crud-row-states-table" class="demo-business-grid demo-business-grid--viewport demo-row-states-grid"></div>

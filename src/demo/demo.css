@@ -4706,3 +4706,151 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
         width: calc(100vw - 24px);
     }
 }
+
+/* CRUD & Row States: compact guide and one connected workbench. */
+.demo-example .demo-crud-heading {
+    align-items: start;
+    display: grid;
+    gap: 8px 16px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 8px;
+    min-width: 0;
+}
+
+.demo-example .demo-crud-heading h2 {
+    color: var(--amb-site-navy);
+    font-size: clamp(26px, 2.4vw, 34px);
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin: 0;
+    min-width: 0;
+}
+
+.demo-example .demo-crud-heading .demo-disclosure--technical {
+    align-self: start;
+    box-shadow: none;
+    justify-self: end;
+    margin: 0;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.demo-example .demo-crud-heading .demo-disclosure--technical[open] {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    width: 100%;
+}
+
+.demo-example .demo-crud-heading .demo-disclosure__summary--technical {
+    gap: 7px;
+    grid-template-areas: "icon title chevron";
+    grid-template-columns: 24px auto 24px;
+    min-height: 38px;
+    padding: 5px 9px;
+}
+
+.demo-example .demo-crud-heading .demo-disclosure__technical-leading,
+.demo-example .demo-crud-heading .demo-disclosure__technical-chevron {
+    border-radius: 6px;
+    height: 24px;
+    width: 24px;
+}
+
+.demo-example .demo-crud-heading .demo-disclosure__technical-meta {
+    display: none;
+}
+
+.demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__summary--technical {
+    grid-template-areas: "icon title meta chevron";
+    grid-template-columns: 24px auto minmax(0, 1fr) 24px;
+}
+
+.demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__technical-meta {
+    display: block;
+    justify-self: end;
+}
+
+.demo-example > .demo-crud-heading + .demo-note {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    max-width: 880px;
+}
+
+.demo-panel .demo-table-workbench--crud {
+    background: #fff;
+    border: 1px solid #b8cada;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.demo-panel .demo-table-workbench--crud .demo-command-guide.is-open {
+    border-bottom: 1px solid #c7d8e6;
+    margin-bottom: 0;
+}
+
+.demo-panel .demo-table-workbench--crud .demo-command-guide__header,
+.demo-panel .demo-table-workbench--crud .demo-command-guide__tabs,
+.demo-panel .demo-table-workbench--crud .demo-command-guide__content {
+    border-inline: 0;
+}
+
+.demo-panel .demo-table-workbench--crud .demo-command-guide__header {
+    border-top: 0;
+    border-radius: 7px 7px 0 0;
+    box-shadow: none;
+}
+
+.demo-panel .demo-table-workbench--crud .demo-action-tutorial {
+    border-radius: 7px 7px 0 0;
+    box-shadow: none;
+    margin: 0;
+}
+
+.demo-panel .demo-table-workbench--crud .demo-command-guide-host:has(.is-open) + .demo-action-tutorial-host .demo-action-tutorial {
+    border-radius: 0;
+}
+
+.demo-panel .demo-table-workbench--crud .amb-toolbar {
+    border: 0;
+    border-bottom: 1px solid #b8cada;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+}
+
+.demo-panel .demo-table-workbench--crud .amb-feedback-region {
+    border-inline: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.demo-panel .demo-table-workbench--crud .tabulator {
+    border: 0;
+    border-radius: 0 0 7px 7px;
+    box-shadow: none;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .demo-example .demo-crud-heading {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .demo-example .demo-crud-heading .demo-disclosure--technical {
+        justify-self: start;
+    }
+
+    .demo-example .demo-crud-heading .demo-disclosure--technical[open] {
+        grid-column: 1;
+    }
+
+    .demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__technical-meta {
+        display: none;
+    }
+
+    .demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__summary--technical {
+        grid-template-areas: "icon title chevron";
+        grid-template-columns: 24px minmax(0, 1fr) 24px;
+    }
+}
