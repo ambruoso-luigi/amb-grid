@@ -48,6 +48,33 @@ afterEach(() => {
 });
 
 describe('demo action tutorial controller', () => {
+    test('starts hidden with an external opener and restores focus without resetting progress', () => {
+        const externalOpenButton = new ElementMock('button');
+        const { root, controller, button } = mount(undefined, {
+            variant: 'crud', initiallyHidden: true, externalOpenButton, panelId: 'crud-tutorial'
+        });
+        expect(root.id).toBe('crud-tutorial');
+        expect(root.hidden).toBe(true);
+        expect(root.getAttribute('data-hidden')).toBe('true');
+        expect(button('reopen').hidden).toBe(true);
+        expect(controller.capture()).toBeNull();
+
+        externalOpenButton.focus();
+        controller.reopen();
+        expect(root.hidden).toBe(false);
+        expect(document.activeElement).toBe(button('restart'));
+        controller.notify('prepare-states', { succeeded: true }, controller.capture());
+        expect(controller.capture().stepId).toBe('open-report');
+
+        button('skip').focus();
+        button('skip').click();
+        expect(root.hidden).toBe(true);
+        expect(document.activeElement).toBe(externalOpenButton);
+        controller.reopen();
+        expect(controller.capture().stepId).toBe('open-report');
+        expect(document.activeElement).toBe(button('restart'));
+    });
+
     test('applies the CRUD variant only when requested and preserves tutorial controls', () => {
         const standard = mount();
         expect(standard.root.className).toBe('demo-action-tutorial');

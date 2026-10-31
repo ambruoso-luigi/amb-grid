@@ -5,6 +5,7 @@ import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { demoIcon } from './demo-icons.js';
 
 export default function crudRowStates(app) {
     let nextId = 10;
@@ -27,6 +28,7 @@ export default function crudRowStates(app) {
     let highlightedControl = null;
     let highlightedAction = null;
     let highlightedActionPulsed = false;
+    let tutorialStarted = false;
     const t = (key, values = {}) => {
         const locale = document.documentElement.lang === 'en' ? 'en' : 'it';
         const message = publicExampleTranslations[locale][`examples.crudRowStates.${key}`];
@@ -46,9 +48,11 @@ export default function crudRowStates(app) {
     app.innerHTML = `
         <div class="demo-crud-heading">
             <h2 data-i18n="examples.crudRowStates.title">CRUD &amp; Row States</h2>
-            ${createDemoColumnGuide({
-            summary: 'Technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
-            summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'help', variant: 'technical',
+            <div class="demo-crud-heading__commands">
+                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('mousePointerClick', { size: 17 })}<span>Start tutorial</span></button>
+                ${createDemoColumnGuide({
+            summary: 'Guide to this example', summaryKey: 'examples.crudRowStates.detailsTitle',
+            summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'guide', variant: 'technical',
             intro: 'The table starts with nine clean records. Prepare states explicitly restores the baseline and creates a valid lifecycle scenario.', introKey: 'examples.crudRowStates.guideIntro',
             points: [
                 { title: 'Identity and states', titleKey: 'examples.crudRowStates.point1Title', description: 'Reports distinguish persistent IDs, temporary IDs, row numbers and lifecycle states.', descriptionKey: 'examples.crudRowStates.detail1' },
@@ -66,10 +70,11 @@ export default function crudRowStates(app) {
                 { title: 'State', titleKey: 'guides.rowStates.state.title', badge: 'STATE', description: 'clean, new, modified, deleted or saved.', descriptionKey: 'guides.rowStates.state.description' },
                 { title: 'Errors', titleKey: 'guides.rowStates.errors.title', badge: 'DERIVED', description: 'Current cell and row error count.', descriptionKey: 'guides.rowStates.errors.description' }
             ]
-            })}
+                })}
+            </div>
         </div>
         <p class="demo-note" data-i18n="examples.crudRowStates.intro">Edit business records, inspect lifecycle states and errors, and compare reports with the save payload.</p>
-        <div class="demo-table-workbench demo-table-workbench--crud">
+        <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
             <div class="demo-action-tutorial-host"></div>
             <div id="crud-row-states-table" class="demo-business-grid demo-business-grid--viewport demo-row-states-grid"></div>
@@ -79,15 +84,23 @@ export default function crudRowStates(app) {
     const reportDialog = createDemoReportDialog();
     const partialSaveDialog = new AMB.ConfirmDialog();
     const rowConfirmDialog = new AMB.ConfirmDialog();
+    const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
+    const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
         variant: 'crud',
+        initiallyHidden: true,
+        externalOpenButton: tutorialLaunch,
+        panelId: 'crud-row-states-tutorial',
         locale: document.documentElement.lang,
         titleKey: 'examples.crudRowStates.tutorialTitle',
         completedKey: 'examples.crudRowStates.tutorialCompleted',
         onRestart: resetToCleanBaseline,
         onStateChange: state => {
             tutorialState = state;
+            tutorialLaunch.hidden = !state.hidden;
+            tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
+            tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
             syncTutorialHighlight();
         },
         steps: [
@@ -223,6 +236,7 @@ export default function crudRowStates(app) {
         ]
     });
     const crud = demo.crud;
+    tutorialLaunch.addEventListener('click', handleTutorialLaunch);
     commandGuideToolbar.mount();
     const originalDestroy = demo.destroy.bind(demo);
     const crudUnsubscribers = ['cell-error', 'cell-error-cleared', 'row-error', 'row-error-cleared', 'row-state-changed']
@@ -244,6 +258,7 @@ export default function crudRowStates(app) {
         scenarioGeneration += 1;
         cancelPendingAdditions();
         clearTutorialHighlight();
+        tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
         tutorialEdits.clear();
         tutorialRowActions.clear();
         scenarioOperations.clear();
@@ -294,6 +309,12 @@ export default function crudRowStates(app) {
             highlightedAction = null;
             highlightedActionPulsed = false;
         }
+    }
+
+    function handleTutorialLaunch() {
+        if (destroyed || !tutorialState?.hidden) return;
+        tutorialStarted = true;
+        tutorial.reopen();
     }
 
     function syncTutorialHighlight() {

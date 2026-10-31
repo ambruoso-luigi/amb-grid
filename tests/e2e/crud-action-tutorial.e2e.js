@@ -141,6 +141,29 @@ test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'en'));
     await page.goto('/src/demo/index.html#feature-examples');
     await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(9);
+    await expect(tutorial(page)).toBeHidden();
+    expect(await page.locator('#feature-example .demo-action-tutorial-host').evaluate(element => element.getBoundingClientRect().height)).toBe(0);
+    await expect(action(page, 'tutorial-launch')).toBeVisible();
+    await expect(action(page, 'tutorial-launch')).toHaveText('Start tutorial');
+    await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-expanded', 'false');
+    await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-controls', 'crud-row-states-tutorial');
+    await expect(control(page, 'reopen')).toBeHidden();
+    await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
+    await expect(cell(page, 'REC-001', '_state')).toHaveText('clean');
+    await action(page, 'tutorial-launch').click();
+    await expect(tutorial(page)).toBeVisible();
+    await expect(action(page, 'tutorial-launch')).toBeHidden();
+    await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-expanded', 'true');
+    await step(page, 'edit-record');
+});
+
+test('keeps the technical guide as a separate native disclosure', async ({ page }) => {
+    const guide = page.locator('#feature-example .demo-crud-heading .demo-disclosure--technical');
+    await expect(guide).not.toHaveAttribute('open');
+    await expect(guide.locator('.demo-disclosure__technical-title')).toHaveText('Guide to this example');
+    await guide.locator('summary').click();
+    await expect(guide).toHaveAttribute('open', '');
+    await expect(guide.locator('.demo-column-guide__item')).toHaveCount(8);
     await step(page, 'edit-record');
 });
 
@@ -442,7 +465,11 @@ test('prepare states stays outside the tutorial and generates no frontend errors
 test('skip, language changes and remount preserve normal use and the current micro-action', async ({ page }) => {
     await reachFrontendError(page);
     await control(page, 'skip').click();
-    await expect(control(page, 'reopen')).toBeVisible();
+    await expect(tutorial(page)).toBeHidden();
+    await expect(action(page, 'tutorial-launch')).toBeVisible();
+    await expect(action(page, 'tutorial-launch')).toHaveText('Resume tutorial');
+    await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-expanded', 'false');
+    await expect(control(page, 'reopen')).toBeHidden();
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
     await editText(page, 'REC-002', 'Preserve user changes');
     const skippedReport = await readReport(page);
@@ -451,7 +478,7 @@ test('skip, language changes and remount preserve normal use and the current mic
     expect(skippedReport.errors.cells).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'REC-004', field: 'description' })]));
     await step(page, 'frontend-report', 1);
     await closeReport(page);
-    await control(page, 'reopen').click();
+    await action(page, 'tutorial-launch').click();
     await expect(action(page, 'state-report')).toHaveClass(/demo-crud-tutorial-target/);
     await expect(cell(page, 'REC-002', 'description')).toHaveText('Preserve user changes');
     await expect(cell(page, 'REC-004', '_ambErrorCount')).toHaveText('1');
@@ -470,6 +497,11 @@ test('skip, language changes and remount preserve normal use and the current mic
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
     await page.locator('[data-example="crud-row-states"]').click();
     await expect(tutorial(page)).toHaveCount(1);
+    await expect(tutorial(page)).toBeHidden();
+    await expect(action(page, 'tutorial-launch')).toBeVisible();
+    await expect(action(page, 'tutorial-launch')).toHaveText('Start tutorial');
+    await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
+    await action(page, 'tutorial-launch').click();
     await step(page, 'edit-record');
     await expect(cell(page, 'REC-001', 'type')).toHaveText('Request');
     await readReport(page);
@@ -485,7 +517,7 @@ test('keeps keyboard navigation local when hiding and reopening the tutorial', a
     await expect(control(page, 'restart')).toBeFocused();
     await page.keyboard.press('Tab');
     await page.keyboard.press('Enter');
-    await expect(control(page, 'reopen')).toBeFocused();
+    await expect(action(page, 'tutorial-launch')).toBeFocused();
     await page.keyboard.press('Space');
     await expect(control(page, 'restart')).toBeFocused();
     await step(page, 'edit-record');

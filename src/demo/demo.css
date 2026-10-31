@@ -4724,7 +4724,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     }
 }
 
-/* CRUD & Row States: compact guide and one connected workbench. */
+/* CRUD & Row States: heading commands above the standard toolbar and grid. */
 .demo-example .demo-crud-heading {
     align-items: start;
     display: grid;
@@ -4743,22 +4743,65 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     min-width: 0;
 }
 
+.demo-example .demo-crud-heading__commands {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.demo-example .demo-crud-heading:has(.demo-disclosure--technical[open]) .demo-crud-heading__commands {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+}
+
+.demo-example .demo-crud-tutorial-launch {
+    align-items: center;
+    background: #1d5f99;
+    border: 1px solid #164a78;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    gap: 7px;
+    min-height: 38px;
+    padding: 6px 11px;
+}
+
+.demo-example .demo-crud-tutorial-launch:hover {
+    background: #164a78;
+}
+
+.demo-example .demo-crud-tutorial-launch:focus-visible {
+    outline: 2px solid #1d5f99;
+    outline-offset: 2px;
+}
+
+.demo-example .demo-crud-tutorial-launch[hidden] {
+    display: none;
+}
+
 .demo-example .demo-crud-heading .demo-disclosure--technical {
     align-self: start;
     box-shadow: none;
-    justify-self: end;
     margin: 0;
     max-width: 100%;
     min-width: 0;
 }
 
 .demo-example .demo-crud-heading .demo-disclosure--technical[open] {
-    grid-column: 1 / -1;
-    justify-self: stretch;
+    flex-basis: 100%;
     width: 100%;
 }
 
 .demo-example .demo-crud-heading .demo-disclosure__summary--technical {
+    background: #fff;
     gap: 7px;
     grid-template-areas: "icon title chevron";
     grid-template-columns: 24px auto 24px;
@@ -4794,59 +4837,9 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     max-width: 880px;
 }
 
-.demo-panel .demo-table-workbench--crud {
-    background: #fff;
-    border: 1px solid #b8cada;
+.demo-panel .demo-action-tutorial-host .demo-action-tutorial--crud:not([hidden]) {
     border-radius: 8px;
-    box-sizing: border-box;
-}
-
-.demo-panel .demo-table-workbench--crud .demo-command-guide.is-open {
-    border-bottom: 1px solid #c7d8e6;
-    margin-bottom: 0;
-}
-
-.demo-panel .demo-table-workbench--crud .demo-command-guide__header,
-.demo-panel .demo-table-workbench--crud .demo-command-guide__tabs,
-.demo-panel .demo-table-workbench--crud .demo-command-guide__content {
-    border-inline: 0;
-}
-
-.demo-panel .demo-table-workbench--crud .demo-command-guide__header {
-    border-top: 0;
-    border-radius: 7px 7px 0 0;
-    box-shadow: none;
-}
-
-.demo-panel .demo-table-workbench--crud .demo-action-tutorial {
-    border-radius: 7px 7px 0 0;
-    box-shadow: none;
-    margin: 0;
-}
-
-.demo-panel .demo-table-workbench--crud .demo-command-guide-host:has(.is-open) + .demo-action-tutorial-host .demo-action-tutorial {
-    border-radius: 0;
-}
-
-.demo-panel .demo-table-workbench--crud .amb-toolbar {
-    border: 0;
-    border-bottom: 1px solid #b8cada;
-    border-radius: 0;
-    box-shadow: none;
-    margin: 0;
-}
-
-.demo-panel .demo-table-workbench--crud .amb-feedback-region {
-    border-inline: 0;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-.demo-panel .demo-table-workbench--crud .tabulator {
-    border: 0;
-    border-radius: 0 0 7px 7px;
-    box-shadow: none;
-    margin: 0;
+    margin-bottom: 12px;
 }
 
 @media (max-width: 640px) {
@@ -4855,11 +4848,11 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     }
 
     .demo-example .demo-crud-heading .demo-disclosure--technical {
-        justify-self: start;
+        flex: 0 1 auto;
     }
 
-    .demo-example .demo-crud-heading .demo-disclosure--technical[open] {
-        grid-column: 1;
+    .demo-example .demo-crud-heading__commands {
+        justify-content: flex-start;
     }
 
     .demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__technical-meta {

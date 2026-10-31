@@ -8,13 +8,13 @@ import { demoIcon } from '../demo-icons.js';
  * Capture a fresh context for each operation; feedback timers only change the displayed text.
  * Optional onRestart awaits application cleanup; onStateChange reports the current phase and visibility.
  */
-export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, variant = 'default' }) {
+export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, variant = 'default', initiallyHidden = false, externalOpenButton = null, panelId = '' }) {
     const isCrud = variant === 'crud';
     let language = locale === 'en' ? 'en' : 'it';
     let index = 0;
     let actionIndex = 0;
     let generation = 0;
-    let hidden = false;
+    let hidden = initiallyHidden;
     let destroyed = false;
     let feedbackKey = null;
     let feedbackTimer = null;
@@ -47,6 +47,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         publicExampleTranslations[language][key]
     );
     root.className = `demo-action-tutorial${isCrud ? ' demo-action-tutorial--crud' : ''}`;
+    if (panelId) root.id = panelId;
     bar.className = 'demo-action-tutorial__bar';
     identity.className = 'demo-action-tutorial__identity';
     icon.className = 'demo-action-tutorial__icon';
@@ -116,8 +117,9 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         root.setAttribute('aria-busy', String(resetting));
         root.setAttribute('data-resetting', String(resetting));
         if (isCrud) root.setAttribute('data-hidden', String(hidden));
+        root.hidden = hidden && Boolean(externalOpenButton);
         bar.hidden = hidden;
-        reopenButton.hidden = !hidden;
+        reopenButton.hidden = !hidden || Boolean(externalOpenButton);
         heading.textContent = copy(titleKey);
         label.textContent = copy('tutorial.title');
         counter.textContent = copy('tutorial.counter', { current: Math.min(index + 1, steps.length), total: steps.length });
@@ -155,12 +157,12 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         hidden = true;
         generation += 1;
         render();
-        if (restoreFocus) reopenButton.focus({ preventScroll: true });
+        if (restoreFocus) (externalOpenButton || reopenButton).focus({ preventScroll: true });
     }
 
     function reopen() {
         if (destroyed || !hidden) return;
-        const restoreFocus = document.activeElement === reopenButton;
+        const restoreFocus = document.activeElement === (externalOpenButton || reopenButton);
         clearFeedback();
         hidden = false;
         render();

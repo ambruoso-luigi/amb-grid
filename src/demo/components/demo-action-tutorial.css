@@ -191,6 +191,10 @@
     padding: 12px 16px;
 }
 
+.demo-action-tutorial--crud[hidden] {
+    display: none;
+}
+
 .demo-action-tutorial--crud[data-feedback="true"] {
     background: #173452;
 }
