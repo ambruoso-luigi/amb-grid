@@ -4108,26 +4108,23 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-crud-tutorial-target--rays::before,
-.demo-example .demo-crud-tutorial-launch:not([hidden])::before,
-.demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled)::before {
-    background:
-        linear-gradient(90deg, transparent, #bde3ff 25%, #4aa8ff 75%, transparent) 0 19px / 11px 2px no-repeat,
-        linear-gradient(135deg, transparent 40%, #bde3ff 46%, #4aa8ff 54%, transparent 60%) 10px 7px / 13px 13px no-repeat,
-        linear-gradient(180deg, transparent, #bde3ff 25%, #4aa8ff 75%, transparent) 24px 0 / 2px 11px no-repeat;
+.demo-example .demo-crud-tutorial-launch:not([hidden]):not([data-demo-crud-rays-consumed])::before,
+.demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled):not([data-demo-crud-rays-consumed])::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cpath d='M12 17V3 M23 17L33 7 M28 28H41' fill='none' stroke='%237DC7FF' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M12 17V3 M23 17L33 7 M28 28H41' fill='none' stroke='%23BDE3FF' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
     content: '';
-    filter: drop-shadow(0 0 3px #7dc7ff);
-    height: 34px;
-    opacity: 0.75;
+    filter: drop-shadow(0 0 4px #7dc7ff) drop-shadow(0 0 7px #4aa8ff);
+    height: 40px;
+    opacity: 0.9;
     pointer-events: none;
     position: absolute;
-    right: -15px;
-    top: -15px;
-    width: 36px;
+    right: -20px;
+    top: -19px;
+    width: 44px;
     animation: demo-crud-rays 4.8s ease-in-out infinite;
 }
 
 @keyframes demo-crud-rays {
-    0%, 22%, 46%, 100% { opacity: 0.65; }
+    0%, 22%, 46%, 100% { opacity: 0.82; }
     11%, 35% { opacity: 1; }
 }
 

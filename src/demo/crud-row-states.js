@@ -27,6 +27,8 @@ export default function crudRowStates(app) {
     let tutorialState = null;
     let highlightedControl = null;
     let highlightedAction = null;
+    let highlightedRayKey = null;
+    const consumedRayControls = new Set();
     let guidedDeleteConfirmation = null;
     let tutorialStarted = false;
     const t = (key, values = {}) => {
@@ -240,6 +242,7 @@ export default function crudRowStates(app) {
         ]
     });
     const crud = demo.crud;
+    app.addEventListener('click', handleTutorialRayClick, true);
     tutorialLaunch.addEventListener('click', handleTutorialLaunch);
     commandGuideToolbar.mount();
     const originalDestroy = demo.destroy.bind(demo);
@@ -263,6 +266,7 @@ export default function crudRowStates(app) {
         cancelPendingAdditions();
         clearTutorialHighlight();
         guidedDeleteConfirmation = null;
+        app.removeEventListener('click', handleTutorialRayClick, true);
         tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
         tutorialEdits.clear();
         tutorialRowActions.clear();
@@ -310,8 +314,24 @@ export default function crudRowStates(app) {
     function clearTutorialHighlight({ resetAction = true } = {}) {
         highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
         highlightedControl = null;
+        highlightedRayKey = null;
         if (resetAction) {
             highlightedAction = null;
+        }
+    }
+
+    function handleTutorialRayClick(event) {
+        const button = event.target.closest?.('button');
+        if (!button || destroyed) return;
+        if (button === tutorialLaunch && !tutorialLaunch.hidden) {
+            consumedRayControls.add('tutorial-launch');
+            button.setAttribute('data-demo-crud-rays-consumed', '');
+        } else if (button.matches('[data-tutorial-action="finish"]') && tutorialState?.complete && app.contains(button)) {
+            consumedRayControls.add('tutorial-finish');
+            button.setAttribute('data-demo-crud-rays-consumed', '');
+        } else if (button === highlightedControl && highlightedRayKey && button.classList.contains('demo-crud-tutorial-target--rays')) {
+            consumedRayControls.add(highlightedRayKey);
+            button.classList.remove('demo-crud-tutorial-target--rays');
         }
     }
 
@@ -351,7 +371,7 @@ export default function crudRowStates(app) {
         let field = null;
         let rowAction = null;
         let toolbarAction = null;
-        let rays = false;
+        let rayKey = null;
         if (stepId === 'edit-record' || stepId === 'backend-error' && actionIndex === 0) {
             recordId = 'REC-001';
             field = 'type';
@@ -361,7 +381,7 @@ export default function crudRowStates(app) {
             if (guidedDeleteConfirmation?.accepted) target = null;
             else if (guidedDeleteConfirmation?.resolver && rowConfirmDialog.resolveCurrent === guidedDeleteConfirmation.resolver) {
                 target = rowConfirmDialog.confirmButton;
-                rays = true;
+                rayKey = 'confirm-delete:REC-003';
             } else { recordId = 'REC-003'; rowAction = 'delete'; }
         }
         else if (stepId === 'frontend-report' && actionIndex === 0) { recordId = 'REC-004'; field = 'description'; }
@@ -369,13 +389,16 @@ export default function crudRowStates(app) {
         else if (stepId === 'rollback-record') { recordId = 'REC-004'; rowAction = 'rollback'; }
         else if (stepId === 'partial-save' && actionIndex === 1 && partialSaveDialog.resolveCurrent) {
             target = partialSaveDialog.confirmButton;
-            rays = true;
+            rayKey = 'confirm-partial-save';
         }
         else if (stepId === 'partial-save' || stepId === 'backend-error' || stepId === 'correct-save') toolbarAction = 'save';
         if (recordId) {
             const row = demo.table.getRows().find(item => item.getData().id === recordId);
             target = field ? row?.getCell(field)?.getElement() : row?.getElement().querySelector(`[data-action="${rowAction}"]`);
         } else if (toolbarAction) target = app.querySelector(`[data-action="${toolbarAction}"]`);
+        if (rowAction) rayKey = `row:${recordId}:${rowAction}`;
+        else if (toolbarAction) rayKey = `toolbar:${toolbarAction}`;
+        const rays = target?.tagName === 'BUTTON' && Boolean(rayKey) && !consumedRayControls.has(rayKey);
         if (target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
                 && target.classList.contains('demo-crud-tutorial-target--pulse')
@@ -384,6 +407,7 @@ export default function crudRowStates(app) {
             target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
             if (rays) target.classList.add('demo-crud-tutorial-target--rays');
             highlightedControl = target;
+            highlightedRayKey = rayKey;
         } else clearTutorialHighlight({ resetAction: false });
     }
 
@@ -423,10 +447,13 @@ export default function crudRowStates(app) {
             guidedDeleteConfirmation = guidedDelete;
             syncTutorialHighlight();
         }
+        const confirmButton = guidedDelete ? rowConfirmDialog.confirmButton : null;
+        confirmButton?.addEventListener('click', handleTutorialRayClick, true);
         let confirmed = false;
         try {
             confirmed = await trackScenarioOperation(confirmation);
         } finally {
+            confirmButton?.removeEventListener('click', handleTutorialRayClick, true);
             if (guidedDelete && guidedDeleteConfirmation === guidedDelete) {
                 if (confirmed) guidedDelete.accepted = true;
                 else guidedDeleteConfirmation = null;
@@ -654,7 +681,11 @@ export default function crudRowStates(app) {
             refreshErrorCounts();
             if (tutorial.notify('partial-save-opened', { opened: Boolean(partialSaveDialog.resolveCurrent), report: crud.getStateReport() }, context)) context = tutorial.capture();
             syncTutorialHighlight();
-            const confirmed = await confirmation;
+            const confirmButton = partialSaveDialog.confirmButton;
+            confirmButton.addEventListener('click', handleTutorialRayClick, true);
+            let confirmed;
+            try { confirmed = await confirmation; }
+            finally { confirmButton.removeEventListener('click', handleTutorialRayClick, true); }
             if (!isCurrentScenario(generation)) return;
             syncTutorialHighlight();
             if (!confirmed || destroyed) return destroyed ? undefined : demo.feedback.show({ type: 'info', message: t('cancelled') });
