@@ -4952,6 +4952,17 @@ body .demo-crud-partial-save-dialog .teh-confirm-dialog__message {
     position: relative;
 }
 
+.demo-example .demo-crud-tutorial-launch > svg {
+    align-self: center;
+    color: #fff;
+    display: block;
+    flex: 0 0 19px;
+    height: 19px;
+    stroke: #fff;
+    stroke-width: 2.4;
+    width: 19px;
+}
+
 .demo-example .demo-crud-tutorial-launch:hover {
     background: #2874b3;
 }

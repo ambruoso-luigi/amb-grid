@@ -272,6 +272,13 @@
     line-height: 1.45;
 }
 
+.demo-action-tutorial--crud .demo-action-tutorial__instruction strong {
+    color: #0f2747;
+    font-size: inherit;
+    font-weight: 750;
+    line-height: inherit;
+}
+
 .demo-action-tutorial--crud .demo-action-tutorial__result {
     grid-area: result;
 }
@@ -378,6 +385,17 @@
     gap: 8px;
     min-height: 42px;
     padding: 8px 13px;
+}
+
+.demo-action-tutorial--crud [data-tutorial-action="finish"] > svg {
+    align-self: center;
+    color: #fff;
+    display: block;
+    flex: 0 0 19px;
+    height: 19px;
+    stroke: #fff;
+    stroke-width: 2.4;
+    width: 19px;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__complete-button:hover:not(:disabled) {

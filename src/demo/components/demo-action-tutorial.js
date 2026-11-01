@@ -20,6 +20,8 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     let feedbackTimer = null;
     let presentationGeneration = 0;
     let instructionRevision = 0;
+    let renderedInstructionSource = null;
+    let renderedInstructionEmphasis = false;
     let resetting = false;
     let restartFailed = false;
     let restartSequence = 0;
@@ -155,8 +157,19 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         });
         const text = copy(resetting ? 'tutorial.restarting' : restartFailed ? 'tutorial.restartFailed'
             : feedbackKey ?? (complete ? completedKey : action.instructionKey));
-        if (instruction.textContent !== text) {
-            instruction.textContent = text;
+        const emphasizeInstruction = isCrud && !resetting && !restartFailed && !feedbackKey && !complete;
+        if (renderedInstructionSource !== text || renderedInstructionEmphasis !== emphasizeInstruction) {
+            if (emphasizeInstruction) {
+                const nodes = text.split(/(\[\[[^\]]+\]\])/g).filter(Boolean).map(segment => {
+                    if (!segment.startsWith('[[')) return document.createTextNode(segment);
+                    const strong = document.createElement('strong');
+                    strong.textContent = segment.slice(2, -2);
+                    return strong;
+                });
+                instruction.replaceChildren(...nodes);
+            } else instruction.textContent = text;
+            renderedInstructionSource = text;
+            renderedInstructionEmphasis = emphasizeInstruction;
             instructionRevision += 1;
             instruction.setAttribute('data-transition', instructionRevision % 2 ? 'odd' : 'even');
         }
