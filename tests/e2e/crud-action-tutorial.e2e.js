@@ -41,11 +41,22 @@ const editText = async (page, id, value, key = 'Enter') => {
     await input.press(key);
 };
 const confirmRow = async (page, id, name, confirm = true) => {
-    await row(page, id).locator(`[data-action="${name}"]`).click();
+    const trigger = row(page, id).locator(`[data-action="${name}"]`);
+    await trigger.click();
     const dialog = page.locator('.teh-confirm-dialog--visible');
     await expect(dialog).toBeVisible();
+    if (id === 'REC-003' && name === 'delete') {
+        await expect(trigger).not.toHaveClass(/demo-crud-tutorial-target/);
+        await expect(dialog.locator('.teh-confirm-dialog__button--confirm')).toHaveClass(/demo-crud-tutorial-target--rays/);
+        await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
+        await expect(page.locator('.demo-crud-tutorial-target--rays')).toHaveCount(1);
+    }
     await dialog.locator(confirm ? '.teh-confirm-dialog__button--confirm' : '.teh-confirm-dialog__button--cancel').click();
     await expect(dialog).toHaveCount(0);
+    if (id === 'REC-003' && name === 'delete') {
+        await expect(page.locator('.demo-crud-tutorial-target--rays')).toHaveCount(0);
+        if (!confirm) await expect(trigger).toHaveClass(/demo-crud-tutorial-target/);
+    }
 };
 const confirmPartial = async (page, confirm = true) => {
     const dialog = page.locator('.teh-confirm-dialog--visible');
@@ -55,8 +66,10 @@ const confirmPartial = async (page, confirm = true) => {
     const cancelButton = dialog.locator('.teh-confirm-dialog__button--cancel');
     await expect(confirmButton).toBeVisible();
     await expect(cancelButton).toBeVisible();
+    await expect(confirmButton).toHaveClass(/demo-crud-tutorial-target--rays/);
     await (confirm ? confirmButton : cancelButton).click();
     await expect(dialog).toHaveCount(0);
+    await expect(page.locator('.demo-crud-tutorial-target--rays')).toHaveCount(0);
 };
 const readReport = async page => {
     await reportReturnFocus.get(page)?.dispose();
@@ -155,6 +168,7 @@ test.beforeEach(async ({ page }) => {
     await expect(action(page, 'tutorial-launch')).toHaveText('Start tutorial');
     await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-expanded', 'false');
     await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-controls', 'crud-row-states-tutorial');
+    expect(await action(page, 'tutorial-launch').evaluate(element => getComputedStyle(element, '::before').content)).not.toBe('none');
     await expect(control(page, 'reopen')).toBeHidden();
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
     await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(0);
@@ -244,6 +258,7 @@ for (const locale of ['en', 'it']) {
             expect(pulseStyle).toMatchObject({ name: 'demo-crud-cell-trace', iterations: 'infinite', duration: '3.8s', border: 'rgb(189, 227, 255)' });
         }
         await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
+        await expect(page.locator('.demo-crud-tutorial-target--rays')).toHaveCount(0);
         const tempId = await reachPartialSave(page);
         await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
         await expect(cell(page, 'REC-003', '_state')).toHaveText('deleted');
@@ -301,6 +316,7 @@ for (const locale of ['en', 'it']) {
             ? 'Hai provato editing, stati CRUD, validazione, salvataggio parziale, rollback ed errore backend.'
             : 'You tried editing, CRUD states, validation, partial saving, rollback and a backend error.');
         await expect(control(page, 'finish')).toHaveText(locale === 'it' ? 'Fine' : 'Finish');
+        expect(await control(page, 'finish').evaluate(element => getComputedStyle(element, '::before').content)).not.toBe('none');
         await expect(control(page, 'finish').locator('svg')).toHaveAttribute('aria-hidden', 'true');
         await expect(control(page, 'open-guide')).toHaveText(locale === 'it' ? 'Apri guida tecnica' : 'Open technical guide');
         await expect(control(page, 'open-guide').locator('svg')).toHaveAttribute('aria-hidden', 'true');

@@ -27,6 +27,7 @@ export default function crudRowStates(app) {
     let tutorialState = null;
     let highlightedControl = null;
     let highlightedAction = null;
+    let guidedDeleteConfirmation = null;
     let tutorialStarted = false;
     const t = (key, values = {}) => {
         const locale = document.documentElement.lang === 'en' ? 'en' : 'it';
@@ -261,6 +262,7 @@ export default function crudRowStates(app) {
         scenarioGeneration += 1;
         cancelPendingAdditions();
         clearTutorialHighlight();
+        guidedDeleteConfirmation = null;
         tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
         tutorialEdits.clear();
         tutorialRowActions.clear();
@@ -306,7 +308,7 @@ export default function crudRowStates(app) {
     }
 
     function clearTutorialHighlight({ resetAction = true } = {}) {
-        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
         highlightedControl = null;
         if (resetAction) {
             highlightedAction = null;
@@ -332,11 +334,13 @@ export default function crudRowStates(app) {
     function syncTutorialHighlight() {
         if (!demo || destroyed || resettingScenario || preparingStates || !tutorialState
             || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+            if (destroyed || resettingScenario || tutorialState?.hidden || tutorialState?.complete || tutorialState?.destroyed) guidedDeleteConfirmation = null;
             clearTutorialHighlight({ resetAction: destroyed || resettingScenario || tutorialState?.complete
                 || tutorialState?.resetting || tutorialState?.restartFailed || tutorialState?.destroyed });
             return;
         }
         const { stepId, actionIndex } = tutorialState;
+        if (stepId !== 'delete-record') guidedDeleteConfirmation = null;
         const actionKey = `${stepId}:${actionIndex}`;
         if (highlightedAction !== actionKey) {
             clearTutorialHighlight();
@@ -347,16 +351,26 @@ export default function crudRowStates(app) {
         let field = null;
         let rowAction = null;
         let toolbarAction = null;
+        let rays = false;
         if (stepId === 'edit-record' || stepId === 'backend-error' && actionIndex === 0) {
             recordId = 'REC-001';
             field = 'type';
         } else if (stepId === 'correct-save' && actionIndex === 0) { recordId = 'REC-001'; field = 'department'; }
         else if (stepId === 'add-record') toolbarAction = 'add';
-        else if (stepId === 'delete-record') { recordId = 'REC-003'; rowAction = 'delete'; }
+        else if (stepId === 'delete-record') {
+            if (guidedDeleteConfirmation?.accepted) target = null;
+            else if (guidedDeleteConfirmation?.resolver && rowConfirmDialog.resolveCurrent === guidedDeleteConfirmation.resolver) {
+                target = rowConfirmDialog.confirmButton;
+                rays = true;
+            } else { recordId = 'REC-003'; rowAction = 'delete'; }
+        }
         else if (stepId === 'frontend-report' && actionIndex === 0) { recordId = 'REC-004'; field = 'description'; }
         else if (stepId === 'frontend-report') toolbarAction = 'state-report';
         else if (stepId === 'rollback-record') { recordId = 'REC-004'; rowAction = 'rollback'; }
-        else if (stepId === 'partial-save' && actionIndex === 1 && partialSaveDialog.resolveCurrent) target = partialSaveDialog.confirmButton;
+        else if (stepId === 'partial-save' && actionIndex === 1 && partialSaveDialog.resolveCurrent) {
+            target = partialSaveDialog.confirmButton;
+            rays = true;
+        }
         else if (stepId === 'partial-save' || stepId === 'backend-error' || stepId === 'correct-save') toolbarAction = 'save';
         if (recordId) {
             const row = demo.table.getRows().find(item => item.getData().id === recordId);
@@ -364,9 +378,11 @@ export default function crudRowStates(app) {
         } else if (toolbarAction) target = app.querySelector(`[data-action="${toolbarAction}"]`);
         if (target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
-                && target.classList.contains('demo-crud-tutorial-target--pulse')) return;
+                && target.classList.contains('demo-crud-tutorial-target--pulse')
+                && target.classList.contains('demo-crud-tutorial-target--rays') === rays) return;
             clearTutorialHighlight({ resetAction: false });
             target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+            if (rays) target.classList.add('demo-crud-tutorial-target--rays');
             highlightedControl = target;
         } else clearTutorialHighlight({ resetAction: false });
     }
@@ -400,7 +416,27 @@ export default function crudRowStates(app) {
         reportDialog.close();
         const context = preparingStates ? null : tutorial.capture();
         const previous = crud.getStateReport().rows.find(row => row.key === id);
-        const confirmed = await trackScenarioOperation(rowConfirmDialog.confirm({ title: t('confirmTitle'), message: t(`confirm.${action}`), confirmText: t('confirm'), cancelText: t('cancel') }));
+        const confirmation = rowConfirmDialog.confirm({ title: t('confirmTitle'), message: t(`confirm.${action}`), confirmText: t('confirm'), cancelText: t('cancel') });
+        const guidedDelete = context?.stepId === 'delete-record' && action === 'delete' && id === 'REC-003'
+            && rowConfirmDialog.resolveCurrent ? { resolver: rowConfirmDialog.resolveCurrent, accepted: false } : null;
+        if (guidedDelete) {
+            guidedDeleteConfirmation = guidedDelete;
+            syncTutorialHighlight();
+        }
+        let confirmed = false;
+        try {
+            confirmed = await trackScenarioOperation(confirmation);
+        } finally {
+            if (guidedDelete && guidedDeleteConfirmation === guidedDelete) {
+                if (confirmed) guidedDelete.accepted = true;
+                else guidedDeleteConfirmation = null;
+                syncTutorialHighlight();
+                // Tabulator can replace the row action after the dialog restores focus.
+                if (!confirmed) globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
+                    if (isCurrentScenario(generation) && tutorialState?.stepId === 'delete-record') syncTutorialHighlight();
+                }));
+            }
+        }
         if (!isCurrentScenario(generation)) return false;
         if (confirmed && !destroyed && context) tutorialRowActions.set(id, { action, context, previous });
         return confirmed;
@@ -661,6 +697,7 @@ export default function crudRowStates(app) {
         cancelPendingAdditions();
         preparingStates = false;
         clearTutorialHighlight();
+        guidedDeleteConfirmation = null;
         tutorialEdits.clear();
         tutorialRowActions.clear();
         demo.table.cancelEdit?.();
