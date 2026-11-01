@@ -51,7 +51,7 @@ export default function crudRowStates(app) {
         <div class="demo-crud-heading">
             <h2 data-i18n="examples.crudRowStates.title">CRUD &amp; Row States</h2>
             <div class="demo-crud-heading__commands">
-                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('mousePointerClick', { size: 17 })}<span>Start tutorial</span></button>
+                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('video', { size: 17 })}<span>Start tutorial</span></button>
                 ${createDemoColumnGuide({
             summary: 'Technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
             summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'guide', variant: 'technical',
@@ -441,6 +441,7 @@ export default function crudRowStates(app) {
         const context = preparingStates ? null : tutorial.capture();
         const previous = crud.getStateReport().rows.find(row => row.key === id);
         const confirmation = rowConfirmDialog.confirm({ title: t('confirmTitle'), message: t(`confirm.${action}`), confirmText: t('confirm'), cancelText: t('cancel') });
+        rowConfirmDialog.element.classList.add('demo-crud-row-confirm-dialog');
         const guidedDelete = context?.stepId === 'delete-record' && action === 'delete' && id === 'REC-003'
             && rowConfirmDialog.resolveCurrent ? { resolver: rowConfirmDialog.resolveCurrent, accepted: false } : null;
         if (guidedDelete) {
