@@ -667,6 +667,29 @@ export default function crudRowStates(app) {
         return runAfterEditSettled(() => saveChangedRows(context, generation));
     }
 
+    function decoratePartialSaveDialog(invalidRows) {
+        const { element, panelElement, titleElement, messageElement, confirmButton } = partialSaveDialog;
+        if (!element.classList.contains('demo-crud-partial-save-dialog')) {
+            element.classList.add('demo-crud-partial-save-dialog');
+            const header = document.createElement('div');
+            header.className = 'demo-crud-partial-save-dialog__header';
+            const badge = document.createElement('span');
+            badge.className = 'demo-crud-partial-save-dialog__badge';
+            badge.innerHTML = demoIcon('save', { size: 29 });
+            header.append(badge, titleElement);
+            panelElement.prepend(header);
+        }
+        const details = document.createElement('span');
+        details.className = 'demo-crud-partial-save-dialog__details';
+        invalidRows.forEach(row => {
+            const line = document.createElement('span');
+            line.textContent = row;
+            details.append(line);
+        });
+        messageElement.replaceChildren(document.createTextNode(t('partialMessage')), document.createTextNode('\n'), details);
+        confirmButton.insertAdjacentHTML('afterbegin', demoIcon('save', { size: 17 }));
+    }
+
     async function saveChangedRows(context, generation) {
         if (!isCurrentScenario(generation)) return;
         demo.feedback.clear();
@@ -678,6 +701,7 @@ export default function crudRowStates(app) {
         if (payload.hasInvalidChanges && payload.isPartialSave) {
             const invalidRows = validateResult.rows.filter(row => !row.isValid).map(row => `${t('row')} ${row.rowNumber}: ${row.errors.map(error => error.field).join(', ')}`);
             const confirmation = partialSaveDialog.confirm({ title: t('partialTitle'), message: [t('partialMessage'), ...invalidRows].join('\n'), confirmText: t('saveValid'), cancelText: t('cancel') });
+            decoratePartialSaveDialog(invalidRows);
             refreshErrorCounts();
             if (tutorial.notify('partial-save-opened', { opened: Boolean(partialSaveDialog.resolveCurrent), report: crud.getStateReport() }, context)) context = tutorial.capture();
             syncTutorialHighlight();
