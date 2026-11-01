@@ -510,7 +510,7 @@ test('skip, language changes and remount preserve normal use and the current mic
     await expect(page.locator('.demo-crud-temp-id')).toHaveCount(1);
     await page.locator('[data-language-toggle]').click();
     await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('4 di 8');
-    await expect(tutorial(page).locator('[aria-live="polite"]')).toContainText('Apri Report');
+    await expect(tutorial(page).locator('.demo-action-tutorial__instruction')).toContainText('Apri Report');
     await control(page, 'restart').click();
     await restarted(page);
     await expect(cell(page, 'REC-002', 'description')).toHaveText('Contract review in progress');

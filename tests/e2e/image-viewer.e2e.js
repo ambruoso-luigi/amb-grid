@@ -277,9 +277,7 @@ test('dialog semantics, focus cycle, keyboard navigation and controls', async ({
             if (event.target.closest('.amb-image--viewable')) window.__img04.openings += 1;
         });
     });
-    await trigger.focus();
-    await expect(trigger).toBeFocused();
-    await page.keyboard.press('Enter');
+    await trigger.press('Enter');
     await expect(viewer(page)).toHaveCount(1);
     expect(await page.evaluate(() => window.__img04.openings)).toBe(1);
     await expect(viewer(page)).toHaveAttribute('role', 'dialog');

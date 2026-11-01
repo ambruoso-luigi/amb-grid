@@ -118,7 +118,9 @@ describe('demo action tutorial controller', () => {
         let finishReset;
         const onCompleteAction = vi.fn(() => new Promise(resolve => { finishReset = resolve; }));
         const onCompleteSuccess = vi.fn();
-        const { root, controller, button } = mount(steps, { variant: 'crud', onCompleteAction, onCompleteSuccess });
+        const { root, controller, button } = mount(steps, {
+            variant: 'crud', completedKey: 'examples.crudRowStates.tutorialCompleted', onCompleteAction, onCompleteSuccess
+        });
         const guideButton = button('open-guide');
         const status = find(root, element => element.className === 'demo-action-tutorial__complete-status');
         expect(guideButton.parentNode.hidden).toBe(true);
