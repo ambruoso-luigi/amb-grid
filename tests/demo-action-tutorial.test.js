@@ -119,7 +119,8 @@ describe('demo action tutorial controller', () => {
         const onCompleteAction = vi.fn(() => new Promise(resolve => { finishReset = resolve; }));
         const onCompleteSuccess = vi.fn();
         const { root, controller, button } = mount(steps, {
-            variant: 'crud', completedKey: 'examples.crudRowStates.tutorialCompleted', onCompleteAction, onCompleteSuccess
+            variant: 'crud', completedKey: 'examples.crudRowStates.tutorialCompleted',
+            externalOpenButton: new ElementMock('button'), onCompleteAction, onCompleteSuccess
         });
         const guideButton = button('open-guide');
         const status = find(root, element => element.className === 'demo-action-tutorial__complete-status');
