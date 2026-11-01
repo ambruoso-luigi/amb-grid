@@ -50,9 +50,9 @@ export default function crudRowStates(app) {
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('mousePointerClick', { size: 17 })}<span>Start tutorial</span></button>
                 ${createDemoColumnGuide({
-            summary: 'Guide to this example', summaryKey: 'examples.crudRowStates.detailsTitle',
+            summary: 'Technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
             summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'guide', variant: 'technical',
-            intro: 'The table starts with nine clean records. Prepare states explicitly restores the baseline and creates a valid lifecycle scenario.', introKey: 'examples.crudRowStates.guideIntro',
+            intro: 'This is the technical guide for CRUD & Row States. The table starts with nine clean records. Prepare states explicitly restores the baseline and creates a valid lifecycle scenario.', introKey: 'examples.crudRowStates.guideIntro',
             points: [
                 { title: 'Identity and states', titleKey: 'examples.crudRowStates.point1Title', description: 'Reports distinguish persistent IDs, temporary IDs, row numbers and lifecycle states.', descriptionKey: 'examples.crudRowStates.detail1' },
                 { title: 'Editing and validation', titleKey: 'examples.crudRowStates.point2Title', description: 'Edit business fields; validation errors remain distinct from deleted rows.', descriptionKey: 'examples.crudRowStates.detail2' },
@@ -98,7 +98,7 @@ export default function crudRowStates(app) {
         completedKey: 'examples.crudRowStates.tutorialCompleted',
         onRestart: resetToCleanBaseline,
         onCompleteAction: resetToCleanBaseline,
-        onCompleteSuccess: openTechnicalGuide,
+        onCompleteSuccess: finishTutorial,
         onStateChange: state => {
             tutorialState = state;
             tutorialLaunch.hidden = !state.hidden;
@@ -319,12 +319,14 @@ export default function crudRowStates(app) {
         tutorial.reopen();
     }
 
-    function openTechnicalGuide() {
+    function finishTutorial({ openGuide }) {
         if (destroyed) return;
         tutorialStarted = false;
         tutorialLaunchLabel.textContent = t('tutorialStart');
-        technicalGuide.open = true;
-        technicalGuideSummary.focus({ preventScroll: true });
+        if (openGuide) {
+            technicalGuide.open = true;
+            technicalGuideSummary.focus({ preventScroll: true });
+        } else tutorialLaunch.focus({ preventScroll: true });
     }
 
     function syncTutorialHighlight() {

@@ -42,6 +42,8 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     const restartButton = document.createElement('button');
     const reopenButton = document.createElement('button');
     const completeActions = isCrud ? document.createElement('div') : null;
+    const finishButton = isCrud ? document.createElement('button') : null;
+    const finishLabel = isCrud ? document.createElement('span') : null;
     const completeButton = isCrud ? document.createElement('button') : null;
     const completeLabel = isCrud ? document.createElement('span') : null;
     const completeStatus = isCrud ? document.createElement('p') : null;
@@ -80,15 +82,20 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     reopenButton.setAttribute('data-tutorial-action', 'reopen');
     if (isCrud) {
         completeActions.className = 'demo-action-tutorial__complete-actions';
+        finishButton.type = 'button';
+        finishButton.className = 'demo-action-tutorial__complete-button';
+        finishButton.setAttribute('data-tutorial-action', 'finish');
+        finishButton.innerHTML = demoIcon('selected', { size: 18 });
+        finishButton.append(finishLabel);
         completeButton.type = 'button';
-        completeButton.className = 'demo-action-tutorial__complete-button';
+        completeButton.className = 'demo-action-tutorial__complete-button demo-action-tutorial__complete-button--guide';
         completeButton.setAttribute('data-tutorial-action', 'open-guide');
         completeButton.innerHTML = demoIcon('guide', { size: 18 });
         completeStatus.className = 'demo-action-tutorial__complete-status';
         completeStatus.setAttribute('role', 'status');
         completeStatus.setAttribute('aria-live', 'polite');
         completeButton.append(completeLabel);
-        completeActions.append(completeButton, completeStatus);
+        completeActions.append(finishButton, completeButton, completeStatus);
         const restartIcon = document.createElement('span');
         const skipIcon = document.createElement('span');
         restartIcon.className = 'demo-action-tutorial__button-icon';
@@ -157,6 +164,10 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         result.textContent = result.hidden ? '' : copy(action.resultKey);
         if (isCrud) {
             completeActions.hidden = !complete || hidden;
+            finishButton.disabled = completeActionPending;
+            finishButton.setAttribute('aria-busy', String(completeActionPending));
+            finishButton.setAttribute('aria-disabled', String(completeActionPending));
+            finishLabel.textContent = copy('examples.crudRowStates.tutorialFinish');
             completeButton.disabled = completeActionPending;
             completeButton.setAttribute('aria-busy', String(completeActionPending));
             completeButton.setAttribute('aria-disabled', String(completeActionPending));
@@ -232,7 +243,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         render();
     }
 
-    async function completeAndOpenGuide() {
+    async function completeAndExit(openGuide) {
         if (!isCrud || destroyed || hidden || index !== steps.length || completeActionPending) return false;
         completeActionPending = true;
         completeActionFailed = false;
@@ -257,15 +268,19 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         generation += 1;
         completeActionFailed = false;
         render();
-        onCompleteSuccess?.();
+        onCompleteSuccess?.({ openGuide });
         return true;
     }
+
+    const handleFinish = () => completeAndExit(false);
+    const handleOpenGuide = () => completeAndExit(true);
 
     const handleLanguageChange = event => setLocale(event.detail?.language ?? document.documentElement.lang);
     skipButton.addEventListener('click', skip);
     reopenButton.addEventListener('click', reopen);
     restartButton.addEventListener('click', restart);
-    completeButton?.addEventListener('click', completeAndOpenGuide);
+    finishButton?.addEventListener('click', handleFinish);
+    completeButton?.addEventListener('click', handleOpenGuide);
     window.addEventListener('amb-demo-language-change', handleLanguageChange);
     render();
 
@@ -312,7 +327,8 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             skipButton.removeEventListener('click', skip);
             reopenButton.removeEventListener('click', reopen);
             restartButton.removeEventListener('click', restart);
-            completeButton?.removeEventListener('click', completeAndOpenGuide);
+            finishButton?.removeEventListener('click', handleFinish);
+            completeButton?.removeEventListener('click', handleOpenGuide);
             window.removeEventListener('amb-demo-language-change', handleLanguageChange);
             root.remove();
         }

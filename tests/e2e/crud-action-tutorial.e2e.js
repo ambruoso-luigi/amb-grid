@@ -14,8 +14,13 @@ const pageErrors = new WeakMap();
 const step = async (page, id, microAction = 0) => {
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', id);
     if (id !== 'complete') await expect(tutorial(page)).toHaveAttribute('data-tutorial-action-index', String(microAction));
-    if (id === 'complete') await expect(control(page, 'open-guide')).toBeVisible();
-    else await expect(control(page, 'open-guide')).toBeHidden();
+    if (id === 'complete') {
+        await expect(control(page, 'finish')).toBeVisible();
+        await expect(control(page, 'open-guide')).toBeVisible();
+    } else {
+        await expect(control(page, 'finish')).toBeHidden();
+        await expect(control(page, 'open-guide')).toBeHidden();
+    }
 };
 const restarted = async page => {
     await expect(tutorial(page)).toHaveAttribute('data-resetting', 'false');
@@ -164,9 +169,10 @@ test.beforeEach(async ({ page }) => {
 test('keeps the technical guide as a separate native disclosure', async ({ page }) => {
     const guide = page.locator('#feature-example .demo-crud-heading .demo-disclosure--technical');
     await expect(guide).not.toHaveAttribute('open');
-    await expect(guide.locator('.demo-disclosure__technical-title')).toHaveText('Guide to this example');
+    await expect(guide.locator('.demo-disclosure__technical-title')).toHaveText('Technical guide');
     await guide.locator('summary').click();
     await expect(guide).toHaveAttribute('open', '');
+    await expect(guide).toContainText('technical guide for CRUD & Row States');
     await expect(guide.locator('.demo-column-guide__item')).toHaveCount(8);
     await step(page, 'edit-record');
 });
@@ -214,7 +220,7 @@ for (const locale of ['en', 'it']) {
         await expect(tutorial(page).locator('.demo-action-tutorial__label')).toHaveText(locale === 'it' ? 'Tutorial interattivo' : 'Interactive tutorial');
         await expect(tutorial(page).locator('.demo-action-tutorial__title')).toHaveText('CRUD & Row States');
         await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText(locale === 'it' ? '1 di 8' : '1 of 8');
-        expect(await tutorial(page).evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(255, 249, 235)');
+        expect(await tutorial(page).evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(244, 248, 252)');
         await expect(tutorial(page).locator('ol li')).toHaveCount(8);
         await expect(control(page, 'restart')).toContainText(locale === 'it' ? 'Ricomincia' : 'Restart');
         await expect(control(page, 'skip')).toContainText(locale === 'it' ? 'Chiudi' : 'Close');
@@ -228,10 +234,15 @@ for (const locale of ['en', 'it']) {
             return { name: style.animationName, iterations: style.animationIterationCount,
                 duration: style.animationDuration, border: style.borderTopColor, pointerEvents: style.pointerEvents };
         });
-        expect(pulseStyle.border).toBe('rgb(183, 122, 22)');
         expect(pulseStyle.pointerEvents).toBe('none');
-        if (await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)) expect(pulseStyle.name).toBe('none');
-        else expect(pulseStyle).toMatchObject({ name: 'demo-crud-target-pulse', iterations: 'infinite', duration: '4.8s' });
+        const motion = await page.evaluate(() => ({ reduced: matchMedia('(prefers-reduced-motion: reduce)').matches,
+            traceSupported: CSS.supports('mask-composite', 'exclude') }));
+        if (motion.reduced || !motion.traceSupported) {
+            expect(pulseStyle.name).toBe('none');
+            expect(pulseStyle.border).toBe('rgb(74, 168, 255)');
+        } else {
+            expect(pulseStyle).toMatchObject({ name: 'demo-crud-cell-trace', iterations: 'infinite', duration: '3.8s', border: 'rgb(189, 227, 255)' });
+        }
         await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(1);
         const tempId = await reachPartialSave(page);
         await expect(cell(page, 'REC-001', '_state')).toHaveText('modified');
@@ -289,7 +300,9 @@ for (const locale of ['en', 'it']) {
         await expect(tutorial(page).locator('.demo-action-tutorial__instruction')).toHaveText(locale === 'it'
             ? 'Hai provato editing, stati CRUD, validazione, salvataggio parziale, rollback ed errore backend.'
             : 'You tried editing, CRUD states, validation, partial saving, rollback and a backend error.');
-        await expect(control(page, 'open-guide')).toHaveText(locale === 'it' ? 'Apri la guida di questo esempio' : 'Open the guide to this example');
+        await expect(control(page, 'finish')).toHaveText(locale === 'it' ? 'Fine' : 'Finish');
+        await expect(control(page, 'finish').locator('svg')).toHaveAttribute('aria-hidden', 'true');
+        await expect(control(page, 'open-guide')).toHaveText(locale === 'it' ? 'Apri guida tecnica' : 'Open technical guide');
         await expect(control(page, 'open-guide').locator('svg')).toHaveAttribute('aria-hidden', 'true');
         await expect(tutorial(page).locator('ol li[data-complete="true"]')).toHaveCount(8);
         await expect(cell(page, 'REC-001', '_state')).toHaveText('saved');
@@ -304,11 +317,19 @@ for (const locale of ['en', 'it']) {
         await closeReport(page);
         const guide = page.locator('#feature-example .demo-crud-heading .demo-disclosure--technical');
         await expect(guide).not.toHaveAttribute('open');
-        await control(page, 'open-guide').click();
+        await control(page, locale === 'it' ? 'finish' : 'open-guide').click();
         await expect(tutorial(page)).toBeHidden();
-        await expect(guide).toHaveAttribute('open', '');
-        await expect(guide.locator('summary')).toBeFocused();
+        if (locale === 'it') {
+            await expect(guide).not.toHaveAttribute('open');
+            await expect(action(page, 'tutorial-launch')).toBeFocused();
+        } else {
+            await expect(guide).toHaveAttribute('open', '');
+            await expect(guide.locator('summary')).toBeFocused();
+        }
         await expect(action(page, 'tutorial-launch')).toHaveText(locale === 'it' ? 'Avvia tutorial' : 'Start tutorial');
+        const launchAnimation = await action(page, 'tutorial-launch').evaluate(element => getComputedStyle(element).animationName);
+        expect(launchAnimation).toBe(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
+            ? 'none' : 'demo-crud-launch-glow');
         await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
         await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(0);
         await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(9);

@@ -79,6 +79,7 @@ describe('demo action tutorial controller', () => {
         const standard = mount();
         expect(standard.root.className).toBe('demo-action-tutorial');
         expect(standard.button('open-guide')).toBeUndefined();
+        expect(standard.button('finish')).toBeUndefined();
         expect(find(standard.root, element => element.className === 'demo-action-tutorial__label').textContent).toBe('Interactive guide');
         expect(standard.button('skip').textContent).toBe('Skip tutorial');
         standard.controller.destroy();
@@ -123,8 +124,10 @@ describe('demo action tutorial controller', () => {
             externalOpenButton: new ElementMock('button'), onCompleteAction, onCompleteSuccess
         });
         const guideButton = button('open-guide');
+        const finishButton = button('finish');
         const status = find(root, element => element.className === 'demo-action-tutorial__complete-status');
         expect(guideButton.parentNode.hidden).toBe(true);
+        expect(finishButton.parentNode.hidden).toBe(true);
         controller.notify('first', {}, controller.capture());
         expect(guideButton.parentNode.hidden).toBe(true);
         const oldContext = controller.capture();
@@ -135,14 +138,17 @@ describe('demo action tutorial controller', () => {
         expect(find(root, element => element.getAttribute('aria-live') === 'polite').textContent).toContain('You tried editing');
         expect(find(root, element => element.tagName === 'ol').children.every(item => item.getAttribute('data-complete') === 'true')).toBe(true);
         expect(guideButton.parentNode.hidden).toBe(false);
+        expect(finishButton.parentNode.hidden).toBe(false);
         expect(onCompleteAction).not.toHaveBeenCalled();
 
         guideButton.click();
         guideButton.click();
+        finishButton.click();
         expect(onCompleteAction).toHaveBeenCalledTimes(1);
         expect(root.hidden).toBe(false);
         expect(root.getAttribute('aria-busy')).toBe('true');
         expect(guideButton.disabled).toBe(true);
+        expect(finishButton.disabled).toBe(true);
         expect(status.textContent).toBe('Restoring initial data…');
         expect(onCompleteSuccess).not.toHaveBeenCalled();
 
@@ -165,9 +171,29 @@ describe('demo action tutorial controller', () => {
         expect(root.getAttribute('data-tutorial-step')).toBe('first');
         expect(root.getAttribute('data-hidden')).toBe('true');
         expect(onCompleteSuccess).toHaveBeenCalledTimes(1);
+        expect(onCompleteSuccess).toHaveBeenCalledWith({ openGuide: true });
         controller.reopen();
         expect(controller.capture().stepId).toBe('first');
         expect(controller.notify('last', {}, oldContext)).toBe(false);
+    });
+
+    test('finishes the CRUD tutorial with one reset and without requesting the guide', async () => {
+        const steps = [{ id: 'last', actionId: 'finish', instructionKey: 'examples.crudRowStates.tutorialEdit', isComplete: () => true }];
+        const onCompleteAction = vi.fn().mockResolvedValue(true);
+        const onCompleteSuccess = vi.fn();
+        const { root, controller, button } = mount(steps, {
+            variant: 'crud', externalOpenButton: new ElementMock('button'), onCompleteAction, onCompleteSuccess
+        });
+        controller.notify('finish', {}, controller.capture());
+        button('finish').click();
+        await Promise.resolve();
+        expect(onCompleteAction).toHaveBeenCalledTimes(1);
+        expect(root.hidden).toBe(true);
+        expect(root.getAttribute('data-tutorial-step')).toBe('last');
+        expect(onCompleteSuccess).toHaveBeenCalledTimes(1);
+        expect(onCompleteSuccess).toHaveBeenCalledWith({ openGuide: false });
+        controller.reopen();
+        expect(controller.capture().stepId).toBe('last');
     });
 
     test('ignores a rejected final reset and a completion that resolves after destroy', async () => {

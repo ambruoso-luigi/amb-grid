@@ -4084,32 +4084,66 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-crud-tutorial-target::after {
-    border: 2px solid #b77a16;
+    border: 2px solid #4aa8ff;
     border-radius: 4px;
-    box-shadow: 0 0 0 3px rgb(250 217 139 / 85%), 0 0 12px rgb(163 103 13 / 42%);
+    box-shadow: 0 0 0 2px rgb(189 227 255 / 82%), 0 0 12px rgb(125 199 255 / 75%);
     content: '';
     inset: 1px;
     pointer-events: none;
     position: absolute;
 }
 
-.demo-crud-tutorial-target--pulse::after {
+.demo-crud-tutorial-target--pulse:not(.tabulator-cell)::after {
     animation: demo-crud-target-pulse 4.8s ease-in-out infinite;
 }
 
 @keyframes demo-crud-target-pulse {
     0%, 22%, 46%, 100% {
-        box-shadow: 0 0 0 3px rgb(250 217 139 / 85%), 0 0 12px rgb(163 103 13 / 42%);
+        box-shadow: 0 0 0 2px rgb(189 227 255 / 82%), 0 0 12px rgb(125 199 255 / 75%);
     }
 
     11%, 35% {
-        box-shadow: 0 0 0 7px rgb(250 217 139 / 62%), 0 0 22px rgb(163 103 13 / 60%);
+        box-shadow: 0 0 0 6px rgb(189 227 255 / 68%), 0 0 21px rgb(74 168 255 / 78%);
     }
+}
+
+@property --demo-crud-trace-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@supports (mask-composite: exclude) {
+    .tabulator-cell.demo-crud-tutorial-target::after {
+        background: conic-gradient(from var(--demo-crud-trace-angle), #4aa8ff, #7dc7ff 55deg, transparent 115deg 245deg, #bde3ff 305deg, #4aa8ff);
+        border-color: #bde3ff;
+        box-sizing: border-box;
+        filter: drop-shadow(0 0 4px #7dc7ff);
+        mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        mask-composite: exclude;
+        padding: 2px;
+    }
+
+    .tabulator-cell.demo-crud-tutorial-target--pulse::after {
+        animation: demo-crud-cell-trace 3.8s linear infinite;
+    }
+}
+
+@keyframes demo-crud-cell-trace {
+    to { --demo-crud-trace-angle: 360deg; }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .demo-crud-tutorial-target--pulse::after {
         animation: none;
+    }
+
+    .tabulator-cell.demo-crud-tutorial-target::after {
+        background: none;
+        border-color: #4aa8ff;
+        filter: none;
+        mask: none;
+        padding: 0;
     }
 }
 
@@ -4763,9 +4797,11 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 
 .demo-example .demo-crud-tutorial-launch {
     align-items: center;
+    animation: demo-crud-launch-glow 4.8s ease-in-out infinite;
     background: #1d5f99;
-    border: 1px solid #164a78;
+    border: 1px solid #4aa8ff;
     border-radius: 6px;
+    box-shadow: 0 0 0 2px rgb(189 227 255 / 68%), 0 0 12px rgb(125 199 255 / 46%);
     color: #fff;
     cursor: pointer;
     display: inline-flex;
@@ -4779,7 +4815,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-example .demo-crud-tutorial-launch:hover {
-    background: #164a78;
+    background: #2874b3;
 }
 
 .demo-example .demo-crud-tutorial-launch:focus-visible {
@@ -4788,7 +4824,24 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 }
 
 .demo-example .demo-crud-tutorial-launch[hidden] {
+    animation: none;
     display: none;
+}
+
+@keyframes demo-crud-launch-glow {
+    0%, 22%, 46%, 100% {
+        box-shadow: 0 0 0 2px rgb(189 227 255 / 68%), 0 0 12px rgb(125 199 255 / 46%);
+    }
+
+    11%, 35% {
+        box-shadow: 0 0 0 5px rgb(189 227 255 / 48%), 0 0 20px rgb(74 168 255 / 68%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .demo-example .demo-crud-tutorial-launch {
+        animation: none;
+    }
 }
 
 .demo-example .demo-crud-heading .demo-disclosure--technical {

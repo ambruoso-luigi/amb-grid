@@ -184,11 +184,11 @@
 
 .demo-action-tutorial--crud {
     animation: demo-tutorial-appear 180ms ease-out;
-    background: #fff9eb;
-    border: 1px solid #d9b76c;
+    background: #f4f8fc;
+    border: 1px solid #c7d7ea;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgb(74 57 25 / 7%);
-    color: var(--amb-site-navy, #17324d);
+    box-shadow: 0 4px 12px rgb(15 39 71 / 6%);
+    color: #183b63;
     margin: 0 0 14px;
     padding: 13px 17px;
 }
@@ -198,7 +198,7 @@
 }
 
 .demo-action-tutorial--crud[data-feedback="true"] {
-    background: #fff3d7;
+    background: #eaf4ff;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__bar {
@@ -216,10 +216,10 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__icon {
-    background: #fff0c6;
-    border: 1px solid #ead49c;
+    background: #e3f3ff;
+    border: 1px solid #bde3ff;
     border-radius: 7px;
-    color: #9a6918;
+    color: #2f7fd8;
     flex-basis: 36px;
     height: 36px;
     width: 36px;
@@ -231,7 +231,7 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__label {
-    color: #77571f;
+    color: #346b9f;
     font-size: 11px;
     font-weight: 750;
     letter-spacing: 0.04em;
@@ -239,7 +239,7 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__result {
-    color: #4f6173;
+    color: #4d6680;
     font-size: 13px;
 }
 
@@ -251,21 +251,21 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__title {
-    color: var(--amb-site-navy, #17324d);
+    color: #0f2747;
     font-size: 16px;
     font-weight: 750;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__counter {
-    border-inline-start: 1px solid #d9c9a8;
-    color: #78571c;
+    border-inline-start: 1px solid #c7d7ea;
+    color: #2f7fd8;
     font-size: 12px;
     font-weight: 700;
     padding-inline-start: 10px;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__instruction {
-    color: #213a53;
+    color: #183b63;
     font-size: 16px;
     font-weight: 600;
     grid-area: instruction;
@@ -285,7 +285,7 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__progress li {
-    background: #ded5c1;
+    background: #d8e4f2;
     border-radius: 3px;
     flex: 1 1 0;
     height: 7px;
@@ -294,18 +294,18 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__progress li[data-complete="true"] {
-    background: #bd8a28;
+    background: #77b8ff;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__progress li[aria-current="step"] {
-    background: #d7a43d;
-    outline: 1px solid #9a6918;
+    background: #2f7fd8;
+    outline: 1px solid #4aa8ff;
     outline-offset: 1px;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__controls {
     align-self: start;
-    border-inline-start: 1px solid #e2d3af;
+    border-inline-start: 1px solid #c7d7ea;
     border-top: 0;
     flex-wrap: wrap;
     grid-area: controls;
@@ -315,10 +315,10 @@
 
 .demo-action-tutorial--crud .demo-action-tutorial__button {
     align-items: center;
-    background: #fffdf8;
-    border: 1px solid #cbbd9c;
+    background: #fafdff;
+    border: 1px solid #b8cee5;
     border-radius: 6px;
-    color: #23415c;
+    color: #183b63;
     display: inline-flex;
     font-size: 13px;
     font-weight: 650;
@@ -329,12 +329,17 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__button:hover {
-    background: #fff1ce;
-    border-color: #bd8a28;
+    background: #e6f4ff;
+    border-color: #7dc7ff;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__button-icon,
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button--guide svg {
+    color: #2f7fd8;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__button:focus-visible {
-    outline: 2px solid #9a6918;
+    outline: 2px solid #2f7fd8;
     outline-offset: 2px;
 }
 
@@ -361,8 +366,8 @@
 
 .demo-action-tutorial--crud .demo-action-tutorial__complete-button {
     align-items: center;
-    background: #9a6918;
-    border: 1px solid #805411;
+    background: #2f7fd8;
+    border: 1px solid #246dbb;
     border-radius: 6px;
     color: #fff;
     cursor: pointer;
@@ -376,12 +381,22 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__complete-button:hover:not(:disabled) {
-    background: #805411;
+    background: #226dbd;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__complete-button:focus-visible {
-    outline: 2px solid var(--amb-site-navy, #17324d);
+    outline: 2px solid #0f2747;
     outline-offset: 2px;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button--guide {
+    background: #fafdff;
+    border-color: #77b8ff;
+    color: #183b63;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button--guide:hover:not(:disabled) {
+    background: #e2f2ff;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__complete-button:disabled {
@@ -390,7 +405,7 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__complete-status {
-    color: #77571f;
+    color: #346b9f;
     font-size: 13px;
     font-weight: 650;
     margin: 0;
@@ -426,7 +441,7 @@
 
     .demo-action-tutorial--crud .demo-action-tutorial__controls {
         border-inline-start: 0;
-        border-top: 1px solid #e2d3af;
+        border-top: 1px solid #c7d7ea;
         padding: 8px 0 0;
     }
 }
