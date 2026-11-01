@@ -338,6 +338,72 @@
     outline-offset: 2px;
 }
 
+.demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__bar {
+    grid-template-areas:
+        "identity controls"
+        "instruction controls"
+        "completion completion"
+        "progress progress";
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    grid-area: completion;
+    min-width: 0;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-actions[hidden] {
+    display: none;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button {
+    align-items: center;
+    background: #9a6918;
+    border: 1px solid #805411;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    gap: 8px;
+    min-height: 42px;
+    padding: 8px 13px;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button:hover:not(:disabled) {
+    background: #805411;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button:focus-visible {
+    outline: 2px solid var(--amb-site-navy, #17324d);
+    outline-offset: 2px;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button:disabled {
+    cursor: progress;
+    opacity: 0.72;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-status {
+    color: #77571f;
+    font-size: 13px;
+    font-weight: 650;
+    margin: 0;
+}
+
+.demo-action-tutorial--crud .demo-action-tutorial__complete-status:not([hidden]) {
+    flex: 1 1 180px;
+}
+
+.demo-action-tutorial--crud[data-completing="false"] .demo-action-tutorial__complete-status:not([hidden]) {
+    color: #8a3426;
+}
+
 @media (max-width: 850px) {
     .demo-action-tutorial--crud .demo-action-tutorial__bar {
         grid-template-areas:
@@ -347,6 +413,15 @@
             "progress"
             "controls";
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__bar {
+        grid-template-areas:
+            "identity"
+            "instruction"
+            "completion"
+            "progress"
+            "controls";
     }
 
     .demo-action-tutorial--crud .demo-action-tutorial__controls {

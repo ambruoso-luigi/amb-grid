@@ -78,6 +78,7 @@ describe('demo action tutorial controller', () => {
     test('applies the CRUD variant only when requested and preserves tutorial controls', () => {
         const standard = mount();
         expect(standard.root.className).toBe('demo-action-tutorial');
+        expect(standard.button('open-guide')).toBeUndefined();
         expect(find(standard.root, element => element.className === 'demo-action-tutorial__label').textContent).toBe('Interactive guide');
         expect(standard.button('skip').textContent).toBe('Skip tutorial');
         standard.controller.destroy();
@@ -108,6 +109,84 @@ describe('demo action tutorial controller', () => {
         controller.setLocale('it');
         expect(find(root, element => element.className === 'demo-action-tutorial__label').textContent).toBe('Tutorial interattivo');
         expect(button('skip').children[1].textContent).toBe('Chiudi');
+    });
+
+    test('shows the CRUD guide action only after completion and waits for one successful reset', async () => {
+        const steps = ['first', 'last'].map(id => ({
+            id, actionId: id, instructionKey: 'examples.crudRowStates.tutorialEdit', isComplete: () => true
+        }));
+        let finishReset;
+        const onCompleteAction = vi.fn(() => new Promise(resolve => { finishReset = resolve; }));
+        const onCompleteSuccess = vi.fn();
+        const { root, controller, button } = mount(steps, { variant: 'crud', onCompleteAction, onCompleteSuccess });
+        const guideButton = button('open-guide');
+        const status = find(root, element => element.className === 'demo-action-tutorial__complete-status');
+        expect(guideButton.parentNode.hidden).toBe(true);
+        controller.notify('first', {}, controller.capture());
+        expect(guideButton.parentNode.hidden).toBe(true);
+        const oldContext = controller.capture();
+        controller.notify('last', {}, oldContext);
+        expect(root.getAttribute('data-tutorial-step')).toBe('complete');
+        expect(root.getAttribute('aria-label')).toBe('Tutorial completed');
+        expect(find(root, element => element.className === 'demo-action-tutorial__title').textContent).toBe('Tutorial completed');
+        expect(find(root, element => element.getAttribute('aria-live') === 'polite').textContent).toContain('You tried editing');
+        expect(find(root, element => element.tagName === 'ol').children.every(item => item.getAttribute('data-complete') === 'true')).toBe(true);
+        expect(guideButton.parentNode.hidden).toBe(false);
+        expect(onCompleteAction).not.toHaveBeenCalled();
+
+        guideButton.click();
+        guideButton.click();
+        expect(onCompleteAction).toHaveBeenCalledTimes(1);
+        expect(root.hidden).toBe(false);
+        expect(root.getAttribute('aria-busy')).toBe('true');
+        expect(guideButton.disabled).toBe(true);
+        expect(status.textContent).toBe('Restoring initial data…');
+        expect(onCompleteSuccess).not.toHaveBeenCalled();
+
+        finishReset(false);
+        await Promise.resolve();
+        expect(root.hidden).toBe(false);
+        expect(root.getAttribute('data-tutorial-step')).toBe('complete');
+        expect(guideButton.disabled).toBe(false);
+        expect(status.textContent).toBe('Could not restore the initial data. Try again.');
+        expect(onCompleteSuccess).not.toHaveBeenCalled();
+        controller.setLocale('it');
+        expect(status.textContent).toBe('Errore nel ripristino, riprova.');
+        controller.setLocale('en');
+
+        guideButton.click();
+        expect(onCompleteAction).toHaveBeenCalledTimes(2);
+        finishReset(true);
+        await Promise.resolve();
+        expect(root.hidden).toBe(true);
+        expect(root.getAttribute('data-tutorial-step')).toBe('first');
+        expect(root.getAttribute('data-hidden')).toBe('true');
+        expect(onCompleteSuccess).toHaveBeenCalledTimes(1);
+        controller.reopen();
+        expect(controller.capture().stepId).toBe('first');
+        expect(controller.notify('last', {}, oldContext)).toBe(false);
+    });
+
+    test('ignores a rejected final reset and a completion that resolves after destroy', async () => {
+        const steps = [{ id: 'last', actionId: 'finish', instructionKey: 'examples.crudRowStates.tutorialEdit', isComplete: () => true }];
+        let finishReset;
+        const onCompleteAction = vi.fn().mockRejectedValueOnce(new Error('Reset failed'))
+            .mockImplementationOnce(() => new Promise(resolve => { finishReset = resolve; }));
+        const onCompleteSuccess = vi.fn();
+        const { root, host, controller, button } = mount(steps, { variant: 'crud', onCompleteAction, onCompleteSuccess });
+        controller.notify('finish', {}, controller.capture());
+        button('open-guide').click();
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(root.hidden).toBe(false);
+        expect(root.getAttribute('data-tutorial-step')).toBe('complete');
+        expect(button('open-guide').disabled).toBe(false);
+        button('open-guide').click();
+        controller.destroy();
+        finishReset(true);
+        await Promise.resolve();
+        expect(host.children).toHaveLength(0);
+        expect(onCompleteSuccess).not.toHaveBeenCalled();
     });
 
     test('awaits an optional application restart and invalidates old work without moving focus', async () => {

@@ -8,7 +8,7 @@ import { demoIcon } from '../demo-icons.js';
  * Capture a fresh context for each operation; feedback timers only change the displayed text.
  * Optional onRestart awaits application cleanup; onStateChange reports the current phase and visibility.
  */
-export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, variant = 'default', initiallyHidden = false, externalOpenButton = null, panelId = '' }) {
+export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, onCompleteAction, onCompleteSuccess, variant = 'default', initiallyHidden = false, externalOpenButton = null, panelId = '' }) {
     const isCrud = variant === 'crud';
     let language = locale === 'en' ? 'en' : 'it';
     let index = 0;
@@ -23,6 +23,8 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     let resetting = false;
     let restartFailed = false;
     let restartSequence = 0;
+    let completeActionPending = false;
+    let completeActionFailed = false;
     const root = document.createElement('section');
     const bar = document.createElement('div');
     const identity = document.createElement('div');
@@ -39,6 +41,10 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     const skipButton = document.createElement('button');
     const restartButton = document.createElement('button');
     const reopenButton = document.createElement('button');
+    const completeActions = isCrud ? document.createElement('div') : null;
+    const completeButton = isCrud ? document.createElement('button') : null;
+    const completeLabel = isCrud ? document.createElement('span') : null;
+    const completeStatus = isCrud ? document.createElement('p') : null;
     const restartLabel = isCrud ? document.createElement('span') : null;
     const skipLabel = isCrud ? document.createElement('span') : null;
     const indicators = steps.map(() => document.createElement('li'));
@@ -73,6 +79,16 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     restartButton.setAttribute('data-tutorial-action', 'restart');
     reopenButton.setAttribute('data-tutorial-action', 'reopen');
     if (isCrud) {
+        completeActions.className = 'demo-action-tutorial__complete-actions';
+        completeButton.type = 'button';
+        completeButton.className = 'demo-action-tutorial__complete-button';
+        completeButton.setAttribute('data-tutorial-action', 'open-guide');
+        completeButton.innerHTML = demoIcon('guide', { size: 18 });
+        completeStatus.className = 'demo-action-tutorial__complete-status';
+        completeStatus.setAttribute('role', 'status');
+        completeStatus.setAttribute('aria-live', 'polite');
+        completeButton.append(completeLabel);
+        completeActions.append(completeButton, completeStatus);
         const restartIcon = document.createElement('span');
         const skipIcon = document.createElement('span');
         restartIcon.className = 'demo-action-tutorial__button-icon';
@@ -91,7 +107,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         headingGroup.append(label, titleRow);
     } else headingGroup.append(label, heading);
     identity.append(icon, headingGroup);
-    if (isCrud) bar.append(identity, progress, instruction, result, controls);
+    if (isCrud) bar.append(identity, progress, instruction, result, completeActions, controls);
     else bar.append(identity, counter, progress, instruction, result, controls);
     root.append(bar, reopenButton);
     host.append(root);
@@ -110,17 +126,18 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         if (destroyed) return;
         const complete = index === steps.length;
         const action = complete ? null : actionsFor(steps[index])[actionIndex];
-        root.setAttribute('aria-label', copy(titleKey));
+        root.setAttribute('aria-label', copy(isCrud && complete ? 'examples.crudRowStates.tutorialCompleteTitle' : titleKey));
         root.setAttribute('data-tutorial-step', complete ? 'complete' : steps[index].id);
         root.setAttribute('data-tutorial-action-index', complete ? '' : String(actionIndex));
         root.setAttribute('data-feedback', String(feedbackKey !== null));
-        root.setAttribute('aria-busy', String(resetting));
+        root.setAttribute('aria-busy', String(resetting || completeActionPending));
         root.setAttribute('data-resetting', String(resetting));
+        if (isCrud) root.setAttribute('data-completing', String(completeActionPending));
         if (isCrud) root.setAttribute('data-hidden', String(hidden));
         root.hidden = hidden && Boolean(externalOpenButton);
         bar.hidden = hidden;
         reopenButton.hidden = !hidden || Boolean(externalOpenButton);
-        heading.textContent = copy(titleKey);
+        heading.textContent = copy(isCrud && complete ? 'examples.crudRowStates.tutorialCompleteTitle' : titleKey);
         label.textContent = copy(isCrud ? 'examples.crudRowStates.tutorialLabel' : 'tutorial.title');
         counter.textContent = copy('tutorial.counter', { current: Math.min(index + 1, steps.length), total: steps.length });
         progress.setAttribute('aria-label', copy('tutorial.progress'));
@@ -139,6 +156,16 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         result.hidden = resetting || restartFailed || Boolean(feedbackKey) || !action?.resultKey;
         result.textContent = result.hidden ? '' : copy(action.resultKey);
         if (isCrud) {
+            completeActions.hidden = !complete || hidden;
+            completeButton.disabled = completeActionPending;
+            completeButton.setAttribute('aria-busy', String(completeActionPending));
+            completeButton.setAttribute('aria-disabled', String(completeActionPending));
+            completeLabel.textContent = copy('examples.crudRowStates.tutorialOpenGuide');
+            completeStatus.hidden = !completeActionPending && !completeActionFailed;
+            completeStatus.textContent = completeActionPending ? copy('examples.crudRowStates.tutorialRestoring')
+                : completeActionFailed ? copy('examples.crudRowStates.tutorialRestoreFailed') : '';
+            skipButton.disabled = completeActionPending;
+            restartButton.disabled = completeActionPending;
             skipLabel.textContent = copy('examples.crudRowStates.tutorialClose');
             restartLabel.textContent = copy('tutorial.restart');
         } else {
@@ -146,12 +173,12 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             restartButton.textContent = copy('tutorial.restart');
         }
         reopenButton.textContent = copy('tutorial.reopen');
-        restartButton.setAttribute('aria-disabled', String(resetting));
+        restartButton.setAttribute('aria-disabled', String(resetting || completeActionPending));
         onStateChange?.({ stepId: complete ? null : steps[index].id, actionIndex, hidden, complete, resetting, restartFailed, destroyed });
     }
 
     function skip() {
-        if (destroyed || hidden) return;
+        if (destroyed || hidden || completeActionPending) return;
         const restoreFocus = [skipButton, restartButton].includes(document.activeElement);
         clearFeedback();
         hidden = true;
@@ -170,8 +197,9 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     }
 
     function restart() {
-        if (destroyed || resetting) return;
+        if (destroyed || resetting || completeActionPending) return;
         clearFeedback();
+        completeActionFailed = false;
         index = 0;
         actionIndex = 0;
         hidden = false;
@@ -204,10 +232,40 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         render();
     }
 
+    async function completeAndOpenGuide() {
+        if (!isCrud || destroyed || hidden || index !== steps.length || completeActionPending) return false;
+        completeActionPending = true;
+        completeActionFailed = false;
+        render();
+        let succeeded = false;
+        try {
+            succeeded = await onCompleteAction?.() === true;
+        } catch {
+            succeeded = false;
+        }
+        if (destroyed) return false;
+        completeActionPending = false;
+        if (!succeeded) {
+            completeActionFailed = true;
+            render();
+            return false;
+        }
+        clearFeedback();
+        index = 0;
+        actionIndex = 0;
+        hidden = true;
+        generation += 1;
+        completeActionFailed = false;
+        render();
+        onCompleteSuccess?.();
+        return true;
+    }
+
     const handleLanguageChange = event => setLocale(event.detail?.language ?? document.documentElement.lang);
     skipButton.addEventListener('click', skip);
     reopenButton.addEventListener('click', reopen);
     restartButton.addEventListener('click', restart);
+    completeButton?.addEventListener('click', completeAndOpenGuide);
     window.addEventListener('amb-demo-language-change', handleLanguageChange);
     render();
 
@@ -230,7 +288,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
                 index += 1;
                 actionIndex = 0;
             }
-            if (hasActions) {
+            if (hasActions && !(isCrud && index === steps.length)) {
                 feedbackKey = action.successKey ?? 'tutorial.actionCompleted';
                 const revision = presentationGeneration;
                 feedbackTimer = globalThis.setTimeout(() => {
@@ -249,10 +307,12 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             destroyed = true;
             generation += 1;
             restartSequence += 1;
+            completeActionPending = false;
             onStateChange?.({ stepId: null, actionIndex, hidden: true, complete: false, resetting: false, restartFailed: false, destroyed: true });
             skipButton.removeEventListener('click', skip);
             reopenButton.removeEventListener('click', reopen);
             restartButton.removeEventListener('click', restart);
+            completeButton?.removeEventListener('click', completeAndOpenGuide);
             window.removeEventListener('amb-demo-language-change', handleLanguageChange);
             root.remove();
         }

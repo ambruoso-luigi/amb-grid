@@ -14,6 +14,8 @@ const pageErrors = new WeakMap();
 const step = async (page, id, microAction = 0) => {
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', id);
     if (id !== 'complete') await expect(tutorial(page)).toHaveAttribute('data-tutorial-action-index', String(microAction));
+    if (id === 'complete') await expect(control(page, 'open-guide')).toBeVisible();
+    else await expect(control(page, 'open-guide')).toBeHidden();
 };
 const restarted = async page => {
     await expect(tutorial(page)).toHaveAttribute('data-resetting', 'false');
@@ -283,7 +285,13 @@ for (const locale of ['en', 'it']) {
         await action(page, 'save').click();
         await step(page, 'complete');
         await expect(tutorial(page)).toHaveAttribute('data-feedback', 'false');
-        await expect(tutorial(page).locator('[aria-live="polite"]')).toContainText(locale === 'it' ? 'Tutorial completato.' : 'Tutorial complete.');
+        await expect(tutorial(page).locator('.demo-action-tutorial__title')).toHaveText(locale === 'it' ? 'Tutorial completato' : 'Tutorial completed');
+        await expect(tutorial(page).locator('.demo-action-tutorial__instruction')).toHaveText(locale === 'it'
+            ? 'Hai provato editing, stati CRUD, validazione, salvataggio parziale, rollback ed errore backend.'
+            : 'You tried editing, CRUD states, validation, partial saving, rollback and a backend error.');
+        await expect(control(page, 'open-guide')).toHaveText(locale === 'it' ? 'Apri la guida di questo esempio' : 'Open the guide to this example');
+        await expect(control(page, 'open-guide').locator('svg')).toHaveAttribute('aria-hidden', 'true');
+        await expect(tutorial(page).locator('ol li[data-complete="true"]')).toHaveCount(8);
         await expect(cell(page, 'REC-001', '_state')).toHaveText('saved');
         await expect(cell(page, 'REC-001', 'type')).toHaveText('Restricted');
         await expect(cell(page, 'REC-001', 'department')).toHaveText('Compliance');
@@ -294,6 +302,27 @@ for (const locale of ['en', 'it']) {
         expect(finalReport.hasChanges).toBe(false);
         expect(finalReport.hasErrors).toBe(false);
         await closeReport(page);
+        const guide = page.locator('#feature-example .demo-crud-heading .demo-disclosure--technical');
+        await expect(guide).not.toHaveAttribute('open');
+        await control(page, 'open-guide').click();
+        await expect(tutorial(page)).toBeHidden();
+        await expect(guide).toHaveAttribute('open', '');
+        await expect(guide.locator('summary')).toBeFocused();
+        await expect(action(page, 'tutorial-launch')).toHaveText(locale === 'it' ? 'Avvia tutorial' : 'Start tutorial');
+        await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
+        await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(0);
+        await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(9);
+        await expect(row(page, 'REC-010')).toHaveCount(0);
+        await expect(page.locator('.demo-crud-temp-id')).toHaveCount(0);
+        await expect(cell(page, 'REC-001', 'type')).toHaveText('Request');
+        await expect(cell(page, 'REC-001', 'department')).toHaveText('Operations');
+        const guideResetReport = await readReport(page);
+        expect(guideResetReport.hasChanges).toBe(false);
+        expect(guideResetReport.hasErrors).toBe(false);
+        expect(guideResetReport.rows.every(item => item.state === 'clean' && !item.tempId && !item.hasErrors)).toBe(true);
+        await closeReport(page);
+        await action(page, 'tutorial-launch').click();
+        await step(page, 'edit-record');
         await control(page, 'restart').click();
         await restarted(page);
         await expect(cell(page, 'REC-003', '_state')).toHaveText('clean');

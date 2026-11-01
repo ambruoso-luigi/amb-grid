@@ -85,6 +85,8 @@ export default function crudRowStates(app) {
     const rowConfirmDialog = new AMB.ConfirmDialog();
     const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
     const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
+    const technicalGuide = app.querySelector('.demo-crud-heading .demo-disclosure--technical');
+    const technicalGuideSummary = technicalGuide.querySelector('summary');
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
         variant: 'crud',
@@ -95,6 +97,8 @@ export default function crudRowStates(app) {
         titleKey: 'examples.crudRowStates.tutorialTitle',
         completedKey: 'examples.crudRowStates.tutorialCompleted',
         onRestart: resetToCleanBaseline,
+        onCompleteAction: resetToCleanBaseline,
+        onCompleteSuccess: openTechnicalGuide,
         onStateChange: state => {
             tutorialState = state;
             tutorialLaunch.hidden = !state.hidden;
@@ -313,6 +317,14 @@ export default function crudRowStates(app) {
         if (destroyed || !tutorialState?.hidden) return;
         tutorialStarted = true;
         tutorial.reopen();
+    }
+
+    function openTechnicalGuide() {
+        if (destroyed) return;
+        tutorialStarted = false;
+        tutorialLaunchLabel.textContent = t('tutorialStart');
+        technicalGuide.open = true;
+        technicalGuideSummary.focus({ preventScroll: true });
     }
 
     function syncTutorialHighlight() {
