@@ -28,6 +28,8 @@ export default function crudRowStates(app) {
     let highlightedControl = null;
     let highlightedAction = null;
     let highlightedRayKey = null;
+    let rowActionGlow = null;
+    let rowActionGlowFrame = null;
     const consumedRayControls = new Set();
     let guidedDeleteConfirmation = null;
     let tutorialStarted = false;
@@ -313,11 +315,56 @@ export default function crudRowStates(app) {
 
     function clearTutorialHighlight({ resetAction = true } = {}) {
         highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
+        clearRowActionGlow();
         highlightedControl = null;
         highlightedRayKey = null;
         if (resetAction) {
             highlightedAction = null;
         }
+    }
+
+    function clearRowActionGlow() {
+        if (rowActionGlowFrame !== null) globalThis.cancelAnimationFrame(rowActionGlowFrame);
+        rowActionGlowFrame = null;
+        if (!rowActionGlow) return;
+        window.removeEventListener('scroll', scheduleRowActionGlowSync, true);
+        window.removeEventListener('resize', scheduleRowActionGlowSync);
+        rowActionGlow.remove();
+        rowActionGlow = null;
+    }
+
+    function scheduleRowActionGlowSync() {
+        if (rowActionGlowFrame !== null) return;
+        rowActionGlowFrame = globalThis.requestAnimationFrame(() => {
+            rowActionGlowFrame = null;
+            if (rowActionGlow && !destroyed) syncTutorialHighlight();
+        });
+    }
+
+    function syncRowActionGlow(target, rays) {
+        if (!rowActionGlow) {
+            rowActionGlow = document.createElement('div');
+            rowActionGlow.className = 'demo-crud-row-action-glow demo-crud-row-action-glow--pulse';
+            rowActionGlow.setAttribute('aria-hidden', 'true');
+            document.body.append(rowActionGlow);
+            window.addEventListener('scroll', scheduleRowActionGlowSync, true);
+            window.addEventListener('resize', scheduleRowActionGlowSync);
+        }
+        rowActionGlow.classList.toggle('demo-crud-row-action-glow--rays', rays);
+        const holder = target.closest('.tabulator-tableholder');
+        const bounds = holder?.getBoundingClientRect();
+        const rect = target.getBoundingClientRect();
+        const visible = bounds && rect.width > 0 && rect.height > 0
+            && rect.left >= bounds.left && rect.right <= bounds.right
+            && rect.top >= bounds.top && rect.bottom <= bounds.bottom
+            && rect.right > 0 && rect.left < window.innerWidth
+            && rect.bottom > 0 && rect.top < window.innerHeight;
+        rowActionGlow.hidden = !visible;
+        if (!visible) return;
+        rowActionGlow.style.left = `${rect.left}px`;
+        rowActionGlow.style.top = `${rect.top}px`;
+        rowActionGlow.style.width = `${rect.width}px`;
+        rowActionGlow.style.height = `${rect.height}px`;
     }
 
     function handleTutorialRayClick(event) {
@@ -332,6 +379,7 @@ export default function crudRowStates(app) {
         } else if (button === highlightedControl && highlightedRayKey && button.classList.contains('demo-crud-tutorial-target--rays')) {
             consumedRayControls.add(highlightedRayKey);
             button.classList.remove('demo-crud-tutorial-target--rays');
+            rowActionGlow?.classList.remove('demo-crud-row-action-glow--rays');
         }
     }
 
@@ -402,12 +450,16 @@ export default function crudRowStates(app) {
         if (target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
                 && target.classList.contains('demo-crud-tutorial-target--pulse')
-                && target.classList.contains('demo-crud-tutorial-target--rays') === rays) return;
+                && target.classList.contains('demo-crud-tutorial-target--rays') === rays) {
+                if (rowAction) syncRowActionGlow(target, rays);
+                return;
+            }
             clearTutorialHighlight({ resetAction: false });
             target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
             if (rays) target.classList.add('demo-crud-tutorial-target--rays');
             highlightedControl = target;
             highlightedRayKey = rayKey;
+            if (rowAction) syncRowActionGlow(target, rays);
         } else clearTutorialHighlight({ resetAction: false });
     }
 

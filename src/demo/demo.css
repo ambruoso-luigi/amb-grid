@@ -4233,6 +4233,35 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     position: absolute;
 }
 
+#crud-row-states-table .amb-row-action-button.demo-crud-tutorial-target::after,
+#crud-row-states-table .amb-row-action-button.demo-crud-tutorial-target--rays::before {
+    content: none;
+}
+
+#crud-row-states-table .amb-row-action-button.demo-crud-tutorial-target:hover {
+    transform: none;
+}
+
+.demo-crud-row-action-glow {
+    position: fixed;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.demo-crud-row-action-glow::after {
+    border: 2px solid #4aa8ff;
+    border-radius: 8px;
+    box-shadow: 0 0 0 2px rgb(189 227 255 / 82%), 0 0 12px rgb(125 199 255 / 75%);
+    content: '';
+    inset: -2px;
+    position: absolute;
+    pointer-events: none;
+}
+
+.demo-crud-row-action-glow--pulse::after {
+    animation: demo-crud-target-pulse 4.8s ease-in-out infinite;
+}
+
 .demo-crud-tutorial-target--pulse:not(.tabulator-cell)::after {
     animation: demo-crud-target-pulse 4.8s ease-in-out infinite;
 }
@@ -4248,9 +4277,10 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 .demo-crud-tutorial-target--rays::before,
+.demo-crud-row-action-glow--rays::before,
 .demo-example .demo-crud-tutorial-launch:not([hidden]):not([data-demo-crud-rays-consumed])::before,
 .demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled):not([data-demo-crud-rays-consumed])::before {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cpath d='M18 5V11 M28.5 15.5L33.5 10.5 M33 25H39' fill='none' stroke='%237DC7FF' stroke-width='5.4' stroke-linecap='round'/%3E%3Cpath d='M18 5V11 M28.5 15.5L33.5 10.5 M33 25H39' fill='none' stroke='%23BDE3FF' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cdefs%3E%3ClinearGradient id='ice' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop stop-color='%237DC7FF'/%3E%3Cstop offset='.72' stop-color='%23BDE3FF'/%3E%3Cstop offset='1' stop-color='%23F3FBFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23ice)'%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(19 16)'/%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(27 18) rotate(45)'/%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(28 27) rotate(90)'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
     content: '';
     filter: drop-shadow(0 0 5px #7dc7ff) drop-shadow(0 0 8px #4aa8ff);
     height: 38px;
@@ -4295,11 +4325,13 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .demo-crud-tutorial-target--pulse::after {
+    .demo-crud-tutorial-target--pulse::after,
+    .demo-crud-row-action-glow--pulse::after {
         animation: none;
     }
 
     .demo-crud-tutorial-target--rays::before,
+    .demo-crud-row-action-glow--rays::before,
     .demo-example .demo-crud-tutorial-launch::before,
     .demo-action-tutorial--crud .demo-action-tutorial__complete-button[data-tutorial-action="finish"]::before {
         animation: none;
