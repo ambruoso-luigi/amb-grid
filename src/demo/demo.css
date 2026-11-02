@@ -1806,6 +1806,7 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     background: linear-gradient(160deg, #fff 58%, #f4f9ff 100%);
     box-shadow: 0 28px 72px rgb(15 39 71 / 23%), 0 8px 24px rgb(15 39 71 / 11%);
     color: #0f2747;
+    overflow: visible;
 }
 
 .demo-crud-partial-save-dialog__header {
@@ -1871,17 +1872,31 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     margin-top: 26px;
     padding-top: 18px;
     border-top: 1px solid #e1edf8;
+    overflow: visible;
 }
 
 :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__button {
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
     min-height: 44px;
     padding: 10px 16px;
     border-radius: 8px;
     font-weight: 700;
     line-height: 1.2;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+:is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__button.demo-crud-tutorial-target {
+    z-index: 1;
+}
+
+:is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__button.demo-crud-tutorial-target::after {
+    inset: -3px;
+    border-radius: 10px;
 }
 
 :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__button--cancel {
@@ -4235,7 +4250,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 .demo-crud-tutorial-target--rays::before,
 .demo-example .demo-crud-tutorial-launch:not([hidden]):not([data-demo-crud-rays-consumed])::before,
 .demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled):not([data-demo-crud-rays-consumed])::before {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cpath d='M13 18V2 M23 18L34 7 M29 28H43' fill='none' stroke='%237DC7FF' stroke-width='4.7' stroke-linecap='round'/%3E%3Cpath d='M13 18V2 M23 18L34 7 M29 28H43' fill='none' stroke='%23BDE3FF' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cpath d='M18 5V11 M28.5 15.5L33.5 10.5 M33 25H39' fill='none' stroke='%237DC7FF' stroke-width='5.4' stroke-linecap='round'/%3E%3Cpath d='M18 5V11 M28.5 15.5L33.5 10.5 M33 25H39' fill='none' stroke='%23BDE3FF' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
     content: '';
     filter: drop-shadow(0 0 5px #7dc7ff) drop-shadow(0 0 8px #4aa8ff);
     height: 38px;
