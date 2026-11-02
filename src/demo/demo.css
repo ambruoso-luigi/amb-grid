@@ -4279,12 +4279,12 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 .demo-crud-tutorial-target--rays::before,
 .demo-crud-row-action-glow--rays::before,
 .demo-example .demo-crud-tutorial-launch:not([hidden]):not([data-demo-crud-rays-consumed])::before,
-.demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled):not([data-demo-crud-rays-consumed])::before {
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cdefs%3E%3ClinearGradient id='ice' x1='0' y1='1' x2='0' y2='0'%3E%3Cstop stop-color='%237DC7FF'/%3E%3Cstop offset='.72' stop-color='%23BDE3FF'/%3E%3Cstop offset='1' stop-color='%23F3FBFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23ice)'%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(19 16)'/%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(27 18) rotate(45)'/%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(28 27) rotate(90)'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+.demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled)::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 40'%3E%3Cdefs%3E%3ClinearGradient id='ice' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%234AA8FF'/%3E%3Cstop offset='.42' stop-color='%2366B9FF'/%3E%3Cstop offset='.78' stop-color='%238FCEFF'/%3E%3Cstop offset='1' stop-color='%23BDE3FF' stop-opacity='.78'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23ice)'%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(19 16)'/%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(27 18) rotate(45)'/%3E%3Cpath d='M0 0 C-1 -2.2 -2.8 -6.5 -2.8 -9.5 C-2.8 -12 -1.5 -13.5 0 -13.5 C1.5 -13.5 2.8 -12 2.8 -9.5 C2.8 -6.5 1 -2.2 0 0Z' transform='translate(28 27) rotate(90)'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
     content: '';
-    filter: drop-shadow(0 0 5px #7dc7ff) drop-shadow(0 0 8px #4aa8ff);
+    filter: drop-shadow(0 0 3px #7dc7ff) drop-shadow(0 0 6px #4aa8ff);
     height: 38px;
-    opacity: 0.94;
+    opacity: 1;
     pointer-events: none;
     position: absolute;
     right: -17px;
@@ -4294,7 +4294,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 @keyframes demo-crud-rays {
-    0%, 22%, 46%, 100% { opacity: 0.88; }
+    0%, 22%, 46%, 100% { opacity: 0.94; }
     11%, 35% { opacity: 1; }
 }
 

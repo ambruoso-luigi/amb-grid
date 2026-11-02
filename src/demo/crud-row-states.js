@@ -27,10 +27,8 @@ export default function crudRowStates(app) {
     let tutorialState = null;
     let highlightedControl = null;
     let highlightedAction = null;
-    let highlightedRayKey = null;
     let rowActionGlow = null;
     let rowActionGlowFrame = null;
-    const consumedRayControls = new Set();
     let guidedDeleteConfirmation = null;
     let tutorialStarted = false;
     const t = (key, values = {}) => {
@@ -317,7 +315,6 @@ export default function crudRowStates(app) {
         highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
         clearRowActionGlow();
         highlightedControl = null;
-        highlightedRayKey = null;
         if (resetAction) {
             highlightedAction = null;
         }
@@ -371,15 +368,7 @@ export default function crudRowStates(app) {
         const button = event.target.closest?.('button');
         if (!button || destroyed) return;
         if (button === tutorialLaunch && !tutorialLaunch.hidden) {
-            consumedRayControls.add('tutorial-launch');
             button.setAttribute('data-demo-crud-rays-consumed', '');
-        } else if (button.matches('[data-tutorial-action="finish"]') && tutorialState?.complete && app.contains(button)) {
-            consumedRayControls.add('tutorial-finish');
-            button.setAttribute('data-demo-crud-rays-consumed', '');
-        } else if (button === highlightedControl && highlightedRayKey && button.classList.contains('demo-crud-tutorial-target--rays')) {
-            consumedRayControls.add(highlightedRayKey);
-            button.classList.remove('demo-crud-tutorial-target--rays');
-            rowActionGlow?.classList.remove('demo-crud-row-action-glow--rays');
         }
     }
 
@@ -419,7 +408,7 @@ export default function crudRowStates(app) {
         let field = null;
         let rowAction = null;
         let toolbarAction = null;
-        let rayKey = null;
+        let rayTarget = false;
         if (stepId === 'edit-record' || stepId === 'backend-error' && actionIndex === 0) {
             recordId = 'REC-001';
             field = 'type';
@@ -429,7 +418,7 @@ export default function crudRowStates(app) {
             if (guidedDeleteConfirmation?.accepted) target = null;
             else if (guidedDeleteConfirmation?.resolver && rowConfirmDialog.resolveCurrent === guidedDeleteConfirmation.resolver) {
                 target = rowConfirmDialog.confirmButton;
-                rayKey = 'confirm-delete:REC-003';
+                rayTarget = true;
             } else { recordId = 'REC-003'; rowAction = 'delete'; }
         }
         else if (stepId === 'frontend-report' && actionIndex === 0) { recordId = 'REC-004'; field = 'description'; }
@@ -437,16 +426,14 @@ export default function crudRowStates(app) {
         else if (stepId === 'rollback-record') { recordId = 'REC-004'; rowAction = 'rollback'; }
         else if (stepId === 'partial-save' && actionIndex === 1 && partialSaveDialog.resolveCurrent) {
             target = partialSaveDialog.confirmButton;
-            rayKey = 'confirm-partial-save';
+            rayTarget = true;
         }
         else if (stepId === 'partial-save' || stepId === 'backend-error' || stepId === 'correct-save') toolbarAction = 'save';
         if (recordId) {
             const row = demo.table.getRows().find(item => item.getData().id === recordId);
             target = field ? row?.getCell(field)?.getElement() : row?.getElement().querySelector(`[data-action="${rowAction}"]`);
         } else if (toolbarAction) target = app.querySelector(`[data-action="${toolbarAction}"]`);
-        if (rowAction) rayKey = `row:${recordId}:${rowAction}`;
-        else if (toolbarAction) rayKey = `toolbar:${toolbarAction}`;
-        const rays = target?.tagName === 'BUTTON' && Boolean(rayKey) && !consumedRayControls.has(rayKey);
+        const rays = target?.tagName === 'BUTTON' && (rayTarget || Boolean(rowAction || toolbarAction));
         if (target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
                 && target.classList.contains('demo-crud-tutorial-target--pulse')
@@ -458,7 +445,6 @@ export default function crudRowStates(app) {
             target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
             if (rays) target.classList.add('demo-crud-tutorial-target--rays');
             highlightedControl = target;
-            highlightedRayKey = rayKey;
             if (rowAction) syncRowActionGlow(target, rays);
         } else clearTutorialHighlight({ resetAction: false });
     }
