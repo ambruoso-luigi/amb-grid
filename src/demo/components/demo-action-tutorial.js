@@ -61,7 +61,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     bar.className = 'demo-action-tutorial__bar';
     identity.className = 'demo-action-tutorial__identity';
     icon.className = 'demo-action-tutorial__icon';
-    if (isCrud) icon.innerHTML = demoIcon('mousePointerClick', { size: 25 });
+    if (isCrud) icon.innerHTML = demoIcon('guide', { size: 22, strokeWidth: 2.2 });
     else icon.textContent = '\u203a';
     icon.setAttribute('aria-hidden', 'true');
     headingGroup.className = 'demo-action-tutorial__heading';

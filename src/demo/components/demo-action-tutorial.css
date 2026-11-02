@@ -216,13 +216,13 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__icon {
-    background: #e3f3ff;
-    border: 1px solid #bde3ff;
-    border-radius: 7px;
-    color: #2f7fd8;
-    flex-basis: 36px;
-    height: 36px;
-    width: 36px;
+    background: #edf8ff;
+    border: 1px solid #c6e6fa;
+    border-radius: 8px;
+    color: #195b98;
+    flex-basis: 34px;
+    height: 34px;
+    width: 34px;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__icon svg,
@@ -231,10 +231,10 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__label {
-    color: #346b9f;
-    font-size: 11px;
+    color: #4d89b6;
+    font-size: 10px;
     font-weight: 750;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 
@@ -244,7 +244,7 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__title-row {
-    align-items: baseline;
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: 4px 10px;
@@ -253,15 +253,18 @@
 .demo-action-tutorial--crud .demo-action-tutorial__title {
     color: #0f2747;
     font-size: 16px;
-    font-weight: 750;
+    font-weight: 800;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__counter {
-    border-inline-start: 1px solid #c7d7ea;
-    color: #2f7fd8;
+    background: #eaf6ff;
+    border: 1px solid #a9d4f2;
+    border-radius: 999px;
+    color: #184d7e;
     font-size: 12px;
     font-weight: 700;
-    padding-inline-start: 10px;
+    line-height: 1.2;
+    padding: 4px 10px;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__instruction {

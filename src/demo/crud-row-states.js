@@ -726,7 +726,7 @@ export default function crudRowStates(app) {
             details.append(line);
         });
         messageElement.replaceChildren(document.createTextNode(t('partialMessage')), document.createTextNode('\n'), details);
-        confirmButton.insertAdjacentHTML('afterbegin', demoIcon('save', { size: 17 }));
+        confirmButton.insertAdjacentHTML('afterbegin', demoIcon('check', { size: 18, strokeWidth: 2.6 }));
     }
 
     async function saveChangedRows(context, generation) {
