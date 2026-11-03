@@ -35,6 +35,7 @@ import {
     ShieldCheck,
     Sparkles,
     Trash2,
+    TriangleAlert,
     Workflow,
     X
 } from 'lucide';
@@ -70,6 +71,7 @@ export const demoIcons = {
     payload: FileJson,
     package: Package,
     tutorialPlay: Play,
+    warning: TriangleAlert,
     react: Atom,
     report: ClipboardList,
     rollback: RotateCcw,

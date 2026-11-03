@@ -714,18 +714,32 @@ export default function crudRowStates(app) {
             header.className = 'demo-crud-partial-save-dialog__header';
             const badge = document.createElement('span');
             badge.className = 'demo-crud-partial-save-dialog__badge';
-            badge.innerHTML = demoIcon('save', { size: 29 });
+            badge.innerHTML = demoIcon('warning', { size: 24, strokeWidth: 2.2 });
             header.append(badge, titleElement);
             panelElement.prepend(header);
         }
+        const intro = document.createElement('span');
+        intro.className = 'demo-crud-partial-save-dialog__intro';
+        intro.textContent = t('partialMessage');
         const details = document.createElement('span');
         details.className = 'demo-crud-partial-save-dialog__details';
+        const detailsHeading = document.createElement('span');
+        detailsHeading.className = 'demo-crud-partial-save-dialog__details-heading';
+        detailsHeading.innerHTML = demoIcon('warning', { size: 16, strokeWidth: 2.1 });
+        const count = document.createElement('span');
+        count.textContent = t(invalidRows.length === 1 ? 'partialExcludedOne' : 'partialExcludedMany', { count: invalidRows.length });
+        detailsHeading.append(count);
+        details.append(detailsHeading);
         invalidRows.forEach(row => {
             const line = document.createElement('span');
+            line.className = 'demo-crud-partial-save-dialog__details-line';
             line.textContent = row;
             details.append(line);
         });
-        messageElement.replaceChildren(document.createTextNode(t('partialMessage')), document.createTextNode('\n'), details);
+        const explanation = document.createElement('span');
+        explanation.className = 'demo-crud-partial-save-dialog__explanation';
+        explanation.textContent = t('partialExplanation');
+        messageElement.replaceChildren(intro, details, explanation);
         confirmButton.insertAdjacentHTML('afterbegin', demoIcon('check', { size: 18, strokeWidth: 2.6 }));
     }
 
@@ -738,8 +752,11 @@ export default function crudRowStates(app) {
         if (!payload.hasValidChanges) return demo.feedback.show({ type: 'warning', message: t('noValidChanges') });
         let partialConfirmed = false;
         if (payload.hasInvalidChanges && payload.isPartialSave) {
-            const invalidRows = validateResult.rows.filter(row => !row.isValid).map(row => `${t('row')} ${row.rowNumber}: ${row.errors.map(error => error.field).join(', ')}`);
-            const confirmation = partialSaveDialog.confirm({ title: t('partialTitle'), message: [t('partialMessage'), ...invalidRows].join('\n'), confirmText: t('saveValid'), cancelText: t('cancel') });
+            const invalidRows = validateResult.rows.filter(row => !row.isValid).map(row => {
+                const identifier = row.id ?? row.tempId ?? `${t('row')} ${row.rowNumber}`;
+                return `${identifier} — ${row.errors.map(error => error.message).join(' ')}`;
+            });
+            const confirmation = partialSaveDialog.confirm({ title: t('partialTitle'), message: t('partialMessage'), confirmText: t('saveValid'), cancelText: t('cancel') });
             decoratePartialSaveDialog(invalidRows);
             refreshErrorCounts();
             if (tutorial.notify('partial-save-opened', { opened: Boolean(partialSaveDialog.resolveCurrent), report: crud.getStateReport() }, context)) context = tutorial.capture();

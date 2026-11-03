@@ -1819,20 +1819,20 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
 .demo-crud-partial-save-dialog__badge {
     display: grid;
     place-items: center;
-    flex: 0 0 48px;
-    height: 48px;
-    border: 1px solid #a8d8f5;
+    box-sizing: border-box;
+    flex: 0 0 44px;
+    height: 44px;
+    border: 1px solid #f3d08a;
     border-radius: 12px;
-    background: linear-gradient(145deg, #f0faff, #cfeaff);
-    box-shadow: inset 0 1px 0 #fff, 0 6px 16px rgb(74 168 255 / 18%);
-    color: #12538c;
+    background: linear-gradient(180deg, #fff7e8 0%, #fdefd1 100%);
+    color: #c88719;
+    width: 44px;
 }
 
 .demo-crud-partial-save-dialog__badge svg {
-    width: 35px;
-    height: 35px;
-    stroke-width: 2.3;
-    filter: drop-shadow(0 1px 1px rgb(21 91 152 / 20%));
+    width: 24px;
+    height: 24px;
+    stroke-width: 2.2;
 }
 
 :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__title {
@@ -1857,15 +1857,46 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 
 .demo-crud-partial-save-dialog__details {
     display: grid;
-    gap: 5px;
-    margin-top: 16px;
-    padding: 12px 14px;
-    border-left: 3px solid #4aa8ff;
-    border-radius: 8px;
-    background: #f2f8ff;
-    color: #466583;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px solid #f1d7a0;
+    border-left: 4px solid #d89a22;
+    border-radius: 12px;
+    background: #fff8ea;
+    color: #5e3d00;
     font-size: 13px;
     line-height: 1.5;
+}
+
+.demo-crud-partial-save-dialog__intro,
+.demo-crud-partial-save-dialog__explanation {
+    display: block;
+}
+
+.demo-crud-partial-save-dialog__explanation {
+    margin-top: 14px;
+}
+
+.demo-crud-partial-save-dialog__details-heading {
+    align-items: center;
+    color: #6c4700;
+    display: flex;
+    font-size: 14px;
+    font-weight: 700;
+    gap: 8px;
+}
+
+.demo-crud-partial-save-dialog__details-heading svg {
+    color: #c88719;
+    flex: 0 0 16px;
+    height: 16px;
+    stroke-width: 2.1;
+    width: 16px;
+}
+
+.demo-crud-partial-save-dialog__details-line {
+    color: #7a5310;
 }
 
 :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__actions {
