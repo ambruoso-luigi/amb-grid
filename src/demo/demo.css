@@ -3670,6 +3670,36 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     color: var(--demo-accent-strong);
 }
 
+.demo-example:has(#crud-row-states-table) .amb-search-toolbar__filters-button {
+    background: linear-gradient(180deg, #fff 0%, #f3f8fe 100%);
+    border: 1px solid #b8cce3;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgb(15 39 71 / 8%), inset 0 1px 0 rgb(255 255 255 / 85%);
+    color: #234b78;
+}
+
+.demo-example:has(#crud-row-states-table) .amb-search-toolbar__filters-button:hover {
+    color: #2f629a;
+}
+
+.demo-example:has(#crud-row-states-table) .amb-toolbar__filters-button--active {
+    background: linear-gradient(180deg, #f8fcff 0%, #e5f2ff 100%);
+    border-color: #86b9e1;
+    color: #234b78;
+}
+
+.demo-example:has(#crud-row-states-table) .amb-search-toolbar__filters-button .amb-toolbar__button-icon {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    display: contents;
+}
+
+.demo-example:has(#crud-row-states-table) .amb-search-toolbar__filters-button .amb-toolbar__button-icon svg {
+    height: 26px;
+    width: 26px;
+}
+
 .demo-panel .amb-feedback-region {
     animation: demo-status-reveal 180ms ease both;
     border-color: #b8cada;

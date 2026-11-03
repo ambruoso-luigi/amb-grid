@@ -13,6 +13,11 @@ class ElementMock extends EventTarget {
     append(...children) {
         children.forEach(child => { child.parentNode = this; this.children.push(child); });
     }
+    replaceChildren(...children) {
+        this.children = [];
+        this.append(...children);
+        this.textContent = children.map(child => child.textContent).join('');
+    }
     setAttribute(key, value) { this.attributes.set(key, value); }
     getAttribute(key) { return this.attributes.get(key); }
     remove() { this.parentNode.children = this.parentNode.children.filter(child => child !== this); }
@@ -26,7 +31,11 @@ const mount = (customSteps, options = {}) => {
     const windowMock = new EventTarget();
     const removeListener = vi.spyOn(windowMock, 'removeEventListener');
     vi.stubGlobal('window', windowMock);
-    vi.stubGlobal('document', { createElement: tag => new ElementMock(tag), documentElement: { lang: 'it' }, activeElement: null });
+    vi.stubGlobal('document', {
+        createElement: tag => new ElementMock(tag),
+        createTextNode: text => Object.assign(new ElementMock('#text'), { textContent: text }),
+        documentElement: { lang: 'it' }, activeElement: null
+    });
     const host = new ElementMock('div');
     const steps = customSteps ?? ['prepare-states', 'open-report', 'commit-restricted', 'backend-rejected', 'save-corrected'].map((id, index) => ({
         id,

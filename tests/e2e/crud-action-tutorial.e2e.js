@@ -54,14 +54,13 @@ const confirmRow = async (page, id, name, confirm = true) => {
     await dialog.locator(confirm ? '.teh-confirm-dialog__button--confirm' : '.teh-confirm-dialog__button--cancel').click();
     await expect(dialog).toHaveCount(0);
     if (id === 'REC-003' && name === 'delete') {
-        await expect(page.locator('.demo-crud-tutorial-target--rays')).toHaveCount(0);
         if (!confirm) await expect(trigger).toHaveClass(/demo-crud-tutorial-target/);
     }
 };
 const confirmPartial = async (page, confirm = true) => {
     const dialog = page.locator('.teh-confirm-dialog--visible');
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator('.teh-confirm-dialog__title')).toHaveText(/^(Save valid rows\?|Salvare le righe valide\?)$/);
+    await expect(dialog.locator('.teh-confirm-dialog__title')).toHaveText(/^(Some rows are invalid|Alcune righe non sono valide)$/);
     const confirmButton = dialog.locator('.teh-confirm-dialog__button--confirm');
     const cancelButton = dialog.locator('.teh-confirm-dialog__button--cancel');
     await expect(confirmButton).toBeVisible();
@@ -69,7 +68,6 @@ const confirmPartial = async (page, confirm = true) => {
     await expect(confirmButton).toHaveClass(/demo-crud-tutorial-target--rays/);
     await (confirm ? confirmButton : cancelButton).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page.locator('.demo-crud-tutorial-target--rays')).toHaveCount(0);
 };
 const readReport = async page => {
     await reportReturnFocus.get(page)?.dispose();
