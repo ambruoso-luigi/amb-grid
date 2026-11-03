@@ -216,25 +216,36 @@
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__icon {
-    background: #edf8ff;
-    border: 1px solid #c6e6fa;
-    border-radius: 8px;
-    color: #195b98;
-    flex-basis: 34px;
-    height: 34px;
-    width: 34px;
+    align-items: center;
+    background: linear-gradient(180deg, #eff8ff 0%, #d9ebfc 100%);
+    border: 1px solid #c4e1fa;
+    border-radius: 12px;
+    box-sizing: border-box;
+    color: #176baa;
+    display: inline-flex;
+    flex: 0 0 44px;
+    height: 44px;
+    justify-content: center;
+    width: 44px;
 }
 
-.demo-action-tutorial--crud .demo-action-tutorial__icon svg,
+.demo-action-tutorial--crud .demo-action-tutorial__icon svg {
+    display: block;
+    height: 28px;
+    stroke-width: 2.2;
+    width: 28px;
+}
+
 .demo-action-tutorial--crud .demo-action-tutorial__button-icon svg {
     display: block;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__label {
-    color: #4d89b6;
-    font-size: 10px;
-    font-weight: 750;
-    letter-spacing: 0.06em;
+    color: #167dc6;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    line-height: 15px;
     text-transform: uppercase;
 }
 
@@ -247,24 +258,29 @@
     align-items: center;
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 10px;
+    gap: 10px;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__title {
     color: #0f2747;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 800;
+    letter-spacing: -0.2px;
+    line-height: 22px;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__counter {
-    background: #eaf6ff;
-    border: 1px solid #a9d4f2;
+    background: #dceeff;
+    border: 1px solid #a6d0fa;
     border-radius: 999px;
-    color: #184d7e;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.2;
-    padding: 4px 10px;
+    color: #176cc7;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    line-height: 18px;
+    min-height: 28px;
+    padding: 4px 11px;
+    white-space: nowrap;
 }
 
 .demo-action-tutorial--crud .demo-action-tutorial__instruction {

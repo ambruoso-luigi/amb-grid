@@ -51,7 +51,7 @@ export default function crudRowStates(app) {
         <div class="demo-crud-heading">
             <h2 data-i18n="examples.crudRowStates.title">CRUD &amp; Row States</h2>
             <div class="demo-crud-heading__commands">
-                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('video', { size: 17 })}<span>Start tutorial</span></button>
+                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
                 ${createDemoColumnGuide({
             summary: 'Technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
             summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'guide', variant: 'technical',

@@ -1926,16 +1926,6 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     box-shadow: 0 6px 18px rgb(74 168 255 / 42%);
 }
 
-.demo-crud-partial-save-dialog .teh-confirm-dialog__button--confirm {
-    border-color: #236ab0;
-    background: #236ab0;
-}
-
-.demo-crud-partial-save-dialog .teh-confirm-dialog__button--confirm:hover {
-    border-color: #19558e;
-    background: #19558e;
-}
-
 :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__button:focus-visible {
     outline: 2px solid #4aa8ff;
     outline-offset: 2px;
@@ -4243,6 +4233,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     inset: 1px;
     pointer-events: none;
     position: absolute;
+    z-index: 1;
 }
 
 #crud-row-states-table .amb-row-action-button.demo-crud-tutorial-target::after,
@@ -4267,23 +4258,24 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     content: '';
     inset: -2px;
     position: absolute;
+    z-index: 1;
     pointer-events: none;
 }
 
 .demo-crud-row-action-glow--pulse::after {
-    animation: demo-crud-target-pulse 4.8s ease-in-out infinite;
+    animation: demo-crud-target-pulse 4.15s ease-in-out infinite;
 }
 
 .demo-crud-tutorial-target--pulse:not(.tabulator-cell)::after {
-    animation: demo-crud-target-pulse 4.8s ease-in-out infinite;
+    animation: demo-crud-target-pulse 4.15s ease-in-out infinite;
 }
 
 @keyframes demo-crud-target-pulse {
-    0%, 22%, 46%, 100% {
+    0%, 25.4%, 53.2%, 100% {
         box-shadow: 0 0 0 2px rgb(189 227 255 / 82%), 0 0 12px rgb(125 199 255 / 75%);
     }
 
-    11%, 35% {
+    12.7%, 40.5% {
         box-shadow: 0 0 0 8px rgb(189 227 255 / 64%), 0 0 25px rgb(74 168 255 / 82%);
     }
 }
@@ -4299,21 +4291,20 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     opacity: 1;
     pointer-events: none;
     position: absolute;
+    z-index: 2;
     right: -17px;
     top: -17px;
     width: 42px;
-    animation: demo-crud-rays 4.8s ease-in-out infinite;
+    animation: demo-crud-rays 4.15s ease-in-out infinite;
 }
 
 @keyframes demo-crud-rays {
-    0%, 22%, 46%, 100% {
-        opacity: 0.58;
-        filter: drop-shadow(0 0 2px #7dc7ff) drop-shadow(0 0 4px #4aa8ff);
+    0%, 25.4%, 53.2%, 100% {
+        opacity: 0.08;
     }
 
-    11%, 35% {
+    12.7%, 40.5% {
         opacity: 1;
-        filter: drop-shadow(0 0 4px #7dc7ff) drop-shadow(0 0 8px #4aa8ff);
     }
 }
 
@@ -5015,12 +5006,8 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 
 .demo-example .demo-crud-tutorial-launch {
     align-items: center;
-    animation: demo-crud-launch-glow 4.8s ease-in-out infinite;
-    background: #1d5f99;
-    border: 1px solid #4aa8ff;
-    border-radius: 6px;
-    box-shadow: 0 0 0 2px rgb(189 227 255 / 68%), 0 0 12px rgb(125 199 255 / 46%);
-    color: #fff;
+    animation: demo-crud-launch-glow 4.15s ease-in-out infinite;
+    border: 1px solid;
     cursor: pointer;
     display: inline-flex;
     flex: 0 0 auto;
@@ -5033,19 +5020,15 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     position: relative;
 }
 
-.demo-example .demo-crud-tutorial-launch > svg {
+.demo-example .demo-crud-tutorial-launch > svg.demo-icon {
     align-self: center;
     color: #fff;
     display: block;
-    flex: 0 0 19px;
-    height: 19px;
+    flex: 0 0 21px;
+    height: 21px;
     stroke: #fff;
-    stroke-width: 2.4;
-    width: 19px;
-}
-
-.demo-example .demo-crud-tutorial-launch:hover {
-    background: #2874b3;
+    stroke-width: 2.6;
+    width: 21px;
 }
 
 .demo-example .demo-crud-tutorial-launch:focus-visible {
@@ -5059,36 +5042,42 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 .demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled) {
-    animation: demo-crud-launch-glow 4.8s ease-in-out infinite;
-    box-shadow: 0 0 0 2px rgb(189 227 255 / 68%), 0 0 12px rgb(125 199 255 / 46%);
+    animation: demo-crud-launch-glow 4.15s ease-in-out infinite;
     position: relative;
 }
 
 .demo-example .demo-crud-tutorial-launch,
-.demo-action-tutorial--crud .demo-action-tutorial__complete-button[data-tutorial-action="finish"] {
-    background: linear-gradient(180deg, #3b91e5, #246fba);
-    border-color: #bde3ff;
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button[data-tutorial-action="finish"],
+:is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__button--confirm {
+    background: linear-gradient(180deg, #326fa9 0%, #245d96 48%, #194c81 100%);
+    border-color: #7ab6df;
     border-radius: 10px;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 48%), 0 0 0 2px rgb(189 227 255 / 64%),
-        0 0 16px rgb(125 199 255 / 58%), 0 5px 12px rgb(15 39 71 / 16%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), inset 0 -1px 0 rgb(10 44 81 / 35%),
+        0 2px 0 #123c68, 0 6px 14px rgb(15 39 71 / 25%), 0 0 12px rgb(74 168 255 / 20%);
     color: #fff;
-    text-shadow: 0 1px 1px rgb(15 39 71 / 25%);
+    text-shadow: 0 1px 1px rgb(10 44 81 / 40%);
 }
 
 .demo-example .demo-crud-tutorial-launch:hover,
-.demo-action-tutorial--crud .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:hover:not(:disabled) {
-    background: linear-gradient(180deg, #4aa8ff, #2f7fd8);
+.demo-action-tutorial--crud .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:hover:not(:disabled),
+:is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__button--confirm:hover {
+    background: linear-gradient(180deg, #3b7db8 0%, #2b68a2 48%, #1e568c 100%);
+    border-color: #9acbf0;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 42%), inset 0 -1px 0 rgb(10 44 81 / 30%),
+        0 2px 0 #154574, 0 7px 17px rgb(15 39 71 / 27%), 0 0 16px rgb(74 168 255 / 28%);
 }
 
 @keyframes demo-crud-launch-glow {
-    0%, 22%, 46%, 100% {
-        box-shadow: inset 0 1px 0 rgb(255 255 255 / 48%), 0 0 0 2px rgb(189 227 255 / 64%),
-            0 0 16px rgb(125 199 255 / 58%), 0 5px 12px rgb(15 39 71 / 16%);
+    0%, 25.4%, 53.2%, 100% {
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), inset 0 -1px 0 rgb(10 44 81 / 35%),
+            0 2px 0 #123c68, 0 0 0 2px rgb(189 227 255 / 64%),
+            0 0 16px rgb(125 199 255 / 58%), 0 6px 14px rgb(15 39 71 / 25%);
     }
 
-    11%, 35% {
-        box-shadow: inset 0 1px 0 rgb(255 255 255 / 48%), 0 0 0 8px rgb(189 227 255 / 48%),
-            0 0 26px rgb(74 168 255 / 72%), 0 5px 12px rgb(15 39 71 / 16%);
+    12.7%, 40.5% {
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), inset 0 -1px 0 rgb(10 44 81 / 35%),
+            0 2px 0 #123c68, 0 0 0 8px rgb(189 227 255 / 48%),
+            0 0 26px rgb(74 168 255 / 72%), 0 6px 14px rgb(15 39 71 / 25%);
     }
 }
 
