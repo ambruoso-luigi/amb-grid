@@ -88,7 +88,9 @@ test.describe('CRUD & Row States lifecycle', () => {
         await prepare(page);
         await editText(page, 'REC-004', 'description', '');
         await action(page, 'save').click();
-        await expect(page.getByText('Some rows contain errors and will not be saved.')).toBeVisible();
+        const partialSaveDialog = page.locator('.teh-confirm-dialog--visible');
+        await expect(partialSaveDialog.locator('.teh-confirm-dialog__title')).toHaveText('Some rows are invalid');
+        await expect(partialSaveDialog.getByRole('button', { name: 'Save valid rows', exact: true })).toBeVisible();
         await page.getByRole('button', { name: 'Cancel', exact: true }).click();
         await expect(cell(page, 'REC-005', '_state')).toHaveText('modified');
         await expect(cell(page, 'REC-004', '_ambErrorCount')).toHaveText('1');

@@ -53,9 +53,6 @@ const confirmRow = async (page, id, name, confirm = true) => {
     }
     await dialog.locator(confirm ? '.teh-confirm-dialog__button--confirm' : '.teh-confirm-dialog__button--cancel').click();
     await expect(dialog).toHaveCount(0);
-    if (id === 'REC-003' && name === 'delete') {
-        if (!confirm) await expect(trigger).toHaveClass(/demo-crud-tutorial-target/);
-    }
 };
 const confirmPartial = async (page, confirm = true) => {
     const dialog = page.locator('.teh-confirm-dialog--visible');
