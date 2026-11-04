@@ -53,7 +53,7 @@ export default function crudRowStates(app) {
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
                 ${createDemoColumnGuide({
-            summary: 'Technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
+            summary: 'CRUD technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
             summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'guide', variant: 'technical',
             intro: 'This is the technical guide for CRUD & Row States. The table starts with nine clean records. Prepare states explicitly restores the baseline and creates a valid lifecycle scenario.', introKey: 'examples.crudRowStates.guideIntro',
             points: [
@@ -220,9 +220,9 @@ export default function crudRowStates(app) {
         toolbar: {
             buttons: [
                 'add',
-                { id: 'state-prepare', label: t('prepare'), title: t('prepareTitle'), onClick: handlePrepareStates },
                 'save', 'payload',
                 { id: 'state-report', label: t('report'), title: t('reportTitle'), onClick: handleShowReport },
+                { id: 'state-prepare', label: t('prepare'), title: t('prepareTitle'), onClick: handlePrepareStates },
                 'reload', commandGuideToolbar.button
             ],
             onAdd: handleAdd, onSave: handleSave, onPayload: handleShowPayload, onReload: handleReload
@@ -478,8 +478,47 @@ export default function crudRowStates(app) {
         reportDialog.close();
         const context = preparingStates ? null : tutorial.capture();
         const previous = crud.getStateReport().rows.find(row => row.key === id);
-        const confirmation = rowConfirmDialog.confirm({ title: t('confirmTitle'), message: t(`confirm.${action}`), confirmText: t('confirm'), cancelText: t('cancel') });
-        rowConfirmDialog.element.classList.add('demo-crud-row-confirm-dialog');
+        const isExistingDelete = action === 'delete' && previous?.state !== 'new';
+        const recordId = previous?.id === null || previous?.id === undefined ? '' : String(previous.id).trim();
+        const safeRecordId = recordId && recordId !== 'undefined' && recordId !== 'null' ? recordId : '';
+        const deleteTitle = safeRecordId ? t('deleteTitle', { id: safeRecordId }) : t('deleteTitleFallback');
+        const oldElement = rowConfirmDialog.element;
+        const oldPanel = rowConfirmDialog.panelElement;
+        const oldHeader = oldPanel?.querySelector('.demo-crud-row-confirm-dialog__header');
+        oldElement?.classList.remove('demo-crud-row-confirm-dialog--delete');
+        if (oldHeader) {
+            oldPanel.prepend(rowConfirmDialog.titleElement);
+            oldHeader.remove();
+        }
+        if (!isExistingDelete && highlightedControl === rowConfirmDialog.confirmButton) clearTutorialHighlight();
+        const confirmation = rowConfirmDialog.confirm({
+            title: isExistingDelete ? deleteTitle : t('confirmTitle'),
+            message: isExistingDelete ? t('deleteMessage') : t(`confirm.${action}`),
+            confirmText: isExistingDelete ? t('deleteConfirm') : t('confirm'),
+            cancelText: t('cancel')
+        });
+        const { element, panelElement, titleElement, messageElement, confirmButton: dialogConfirmButton } = rowConfirmDialog;
+        element.classList.add('demo-crud-row-confirm-dialog');
+        if (isExistingDelete) {
+            element.classList.add('demo-crud-row-confirm-dialog--delete');
+            const header = document.createElement('div');
+            const badge = document.createElement('span');
+            header.className = 'demo-crud-row-confirm-dialog__header';
+            badge.className = 'demo-crud-row-confirm-dialog__badge';
+            badge.setAttribute('aria-hidden', 'true');
+            badge.innerHTML = demoIcon('delete', { size: 22, strokeWidth: 2.2 });
+            header.append(badge, titleElement);
+            panelElement.prepend(header);
+            const message = t('deleteMessage');
+            const deletedIndex = message.indexOf('deleted');
+            if (deletedIndex !== -1) {
+                const state = document.createElement('strong');
+                state.textContent = 'deleted';
+                messageElement.replaceChildren(document.createTextNode(message.slice(0, deletedIndex)), state,
+                    document.createTextNode(message.slice(deletedIndex + 'deleted'.length)));
+            }
+            dialogConfirmButton.insertAdjacentHTML('afterbegin', demoIcon('delete', { size: 18, strokeWidth: 2.2 }));
+        }
         const guidedDelete = context?.stepId === 'delete-record' && action === 'delete' && id === 'REC-003'
             && rowConfirmDialog.resolveCurrent ? { resolver: rowConfirmDialog.resolveCurrent, accepted: false } : null;
         if (guidedDelete) {

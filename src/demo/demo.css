@@ -3557,7 +3557,8 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     color: #276647;
 }
 
-.demo-panel .amb-toolbar__button--show-report:not(:disabled) {
+.demo-panel .amb-toolbar__button--show-report:not(:disabled),
+.demo-panel .amb-toolbar__button--state-report:not(:disabled) {
     background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
     border-color: #bcb5d9;
     color: #4f4770;
@@ -3613,7 +3614,8 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     background: linear-gradient(180deg, #f8fff9 0%, #dff2e7 100%);
 }
 
-.demo-panel .amb-toolbar__button--show-report .amb-toolbar__button-icon {
+.demo-panel .amb-toolbar__button--show-report .amb-toolbar__button-icon,
+.demo-panel .amb-toolbar__button--state-report .amb-toolbar__button-icon {
     background: linear-gradient(180deg, #fbfaff 0%, #e9e6f8 100%);
 }
 
@@ -5128,6 +5130,171 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
         0 2px 0 #154574, 0 7px 17px rgb(15 39 71 / 27%), 0 0 16px rgb(74 168 255 / 28%);
 }
 
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__panel {
+    box-sizing: border-box;
+    width: 460px;
+    max-width: calc(100vw - 32px);
+    padding: 26px;
+    border: 1px solid #c7d7ea;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 18px 44px rgb(15 39 71 / 14%);
+}
+
+.demo-crud-row-confirm-dialog--delete .demo-crud-row-confirm-dialog__header {
+    align-items: center;
+    display: flex;
+    gap: 14px;
+    min-width: 0;
+}
+
+.demo-crud-row-confirm-dialog--delete .demo-crud-row-confirm-dialog__badge {
+    align-items: center;
+    background: #fff1f2;
+    border: 1px solid #f5c8ce;
+    border-radius: 12px;
+    box-sizing: border-box;
+    color: #c2414b;
+    display: flex;
+    flex: 0 0 44px;
+    height: 44px;
+    justify-content: center;
+    min-width: 44px;
+    width: 44px;
+}
+
+.demo-crud-row-confirm-dialog--delete .demo-crud-row-confirm-dialog__badge svg {
+    fill: none;
+    height: 22px;
+    stroke: #c2414b;
+    stroke-width: 2.2;
+    width: 22px;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__title {
+    color: #0f2747;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+body .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__message {
+    color: #294766;
+    font-size: 14.5px;
+    font-weight: 400;
+    line-height: 1.55;
+    margin: 18px 0 0;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__message strong {
+    color: #0f2747;
+    font-weight: 600;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__actions {
+    align-items: center;
+    border-top: 1px solid #e1edf8;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 18px;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button {
+    border-radius: 9px;
+    font-size: 14px;
+    min-height: 44px;
+    padding: 0 18px;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button--cancel {
+    background: #fff;
+    border: 1px solid #c7d7ea;
+    color: #24466b;
+    font-weight: 600;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button--cancel:hover {
+    background: #f4f8fc;
+    border-color: #a9c5e0;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button--cancel:active {
+    background: #eaf2fa;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button--confirm {
+    background: #c2414b;
+    border: 1px solid #c2414b;
+    box-shadow: 0 3px 7px rgb(146 44 55 / 16%);
+    color: #fff;
+    font-weight: 700;
+    padding: 0 20px;
+    text-shadow: none;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button--confirm:hover {
+    background: #a93440;
+    border-color: #a93440;
+    box-shadow: 0 3px 7px rgb(146 44 55 / 16%);
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button--confirm:active {
+    background: #922c37;
+    border-color: #922c37;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button--confirm > svg {
+    color: #fff;
+    fill: none;
+    height: 18px;
+    stroke: #fff;
+    stroke-width: 2.2;
+    width: 18px;
+}
+
+.demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__button:focus-visible {
+    outline: 2px solid #7dc7ff;
+    outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+    .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__panel {
+        max-width: calc(100vw - 24px);
+        padding: 20px;
+    }
+
+    .demo-crud-row-confirm-dialog--delete .demo-crud-row-confirm-dialog__header {
+        gap: 12px;
+    }
+
+    .demo-crud-row-confirm-dialog--delete .demo-crud-row-confirm-dialog__badge {
+        flex-basis: 40px;
+        height: 40px;
+        min-width: 40px;
+        width: 40px;
+    }
+
+    .demo-crud-row-confirm-dialog--delete .demo-crud-row-confirm-dialog__badge svg {
+        height: 21px;
+        width: 21px;
+    }
+
+    .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__title {
+        font-size: 20px;
+    }
+
+    body .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__message {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+}
+
 @keyframes demo-crud-launch-glow {
     0%, 25.4%, 53.2%, 100% {
         box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), inset 0 -1px 0 rgb(10 44 81 / 35%),
@@ -5172,6 +5339,18 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     grid-template-columns: 24px auto 24px;
     min-height: 38px;
     padding: 5px 9px;
+}
+
+.demo-example .demo-validation-heading .demo-disclosure__summary--technical {
+    gap: 10px;
+}
+
+.demo-example .demo-validation-heading .demo-disclosure__technical-icon {
+    color: #24466b;
+    height: 20px;
+    stroke: #24466b;
+    stroke-width: 2;
+    width: 20px;
 }
 
 .demo-example .demo-crud-heading .demo-disclosure__technical-leading,

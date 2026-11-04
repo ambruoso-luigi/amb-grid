@@ -3,6 +3,8 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { demoIcon } from './demo-icons.js';
+import { publicExampleTranslations } from './example-copy.js';
 
 const departments = [
     'Administration',
@@ -127,8 +129,10 @@ const createAutocompleteData = () => [
 
 export default function autocomplete(app) {
     app.innerHTML = `
-        <h2 data-i18n="examples.autocomplete.title">Autocomplete</h2>
-        <p class="demo-note" data-i18n="examples.autocomplete.intro">Autocomplete helps users choose suggested values while AMB Grid controls commit, validation, and row state.</p>
+        <div class="demo-crud-heading">
+            <h2 data-i18n="examples.autocomplete.title">Autocomplete</h2>
+            <div class="demo-crud-heading__commands">
+                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="autocomplete-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
             summary: 'How autocomplete works',
             summaryKey: 'examples.autocomplete.detailsTitle',
@@ -149,8 +153,11 @@ export default function autocomplete(app) {
                 { title: 'Long list (max 5)', titleKey: 'guides.autocomplete.city.title', badge: 'MAX 5', description: 'Suggests at most five matching cities and accepts custom text.', descriptionKey: 'guides.autocomplete.city.description' }
             ]
         })}
+            </div>
+        </div>
+        <p class="demo-note" data-i18n="examples.autocomplete.intro">Autocomplete helps users choose suggested values while AMB Grid controls commit, validation, and row state.</p>
+        <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
-            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="autocomplete-table" class="demo-business-grid demo-business-grid--viewport"></div>
         </div>
@@ -158,11 +165,37 @@ export default function autocomplete(app) {
 
     let destroyed = false;
     let activeEdit = null;
+    let demo = null;
+    let tutorialState = null;
+    let highlightedControl = null;
+    let highlightedStep = null;
+    let tutorialStarted = false;
+    let scenarioGeneration = 0;
+    const t = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`examples.autocomplete.${key}`];
+    const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
+    const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
+    const technicalGuide = app.querySelector('.demo-crud-heading .demo-disclosure--technical');
+    const technicalGuideSummary = technicalGuide.querySelector('summary');
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
+        variant: 'crud',
+        tutorialCopyPrefix: 'examples.autocomplete',
+        initiallyHidden: true,
+        externalOpenButton: tutorialLaunch,
+        panelId: 'autocomplete-tutorial',
         locale: document.documentElement.lang === 'en' ? 'en' : 'it',
         titleKey: 'examples.autocomplete.tutorialTitle',
         completedKey: 'examples.autocomplete.tutorialCompleted',
+        onRestart: resetTutorialScenario,
+        onCompleteAction: resetTutorialScenario,
+        onCompleteSuccess: finishTutorial,
+        onStateChange: state => {
+            tutorialState = state;
+            tutorialLaunch.hidden = !state.hidden;
+            tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
+            tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+            syncTutorialHighlight();
+        },
         steps: [
             {
                 id: 'show-suggestions', actionId: 'suggestions-open', instructionKey: 'examples.autocomplete.tutorialSuggestions',
@@ -188,7 +221,7 @@ export default function autocomplete(app) {
         ]
     });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
-    const demo = AMB.table({
+    demo = AMB.table({
         selector: '#autocomplete-table',
         toolbar: {
             buttons: [
@@ -288,6 +321,7 @@ export default function autocomplete(app) {
             }
         ]
     });
+    tutorialLaunch.addEventListener('click', handleTutorialLaunch);
     commandGuideToolbar.mount();
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
@@ -301,9 +335,13 @@ export default function autocomplete(app) {
             selected: null,
             context: tutorial.capture()
         };
+        globalThis.requestAnimationFrame(syncTutorialHighlight);
     };
     const handleEditorInput = event => {
-        if (activeEdit?.cell.getElement().contains(event.target)) activeEdit.selected = null;
+        if (activeEdit?.cell.getElement().contains(event.target)) {
+            activeEdit.selected = null;
+            syncTutorialHighlight();
+        }
     };
     const handleSuggestionsOpen = event => {
         const edit = activeEdit;
@@ -316,13 +354,14 @@ export default function autocomplete(app) {
             id: edit.id, field: edit.field, typed: input.value, options
         }, edit.context);
         if (advanced) edit.context = tutorial.capture();
+        syncTutorialHighlight();
     };
     const handleSuggestionChosen = event => {
         const edit = activeEdit;
         if (!edit || !edit.cell.getElement().contains(event.target)) return;
         edit.selected = String(event.text?.value ?? event.text ?? '');
     };
-    const handleEditCancelled = () => { activeEdit = null; };
+    const handleEditCancelled = () => { activeEdit = null; syncTutorialHighlight(); };
     const handleEditConfirmed = cell => {
         const edit = activeEdit;
         activeEdit = null;
@@ -335,23 +374,40 @@ export default function autocomplete(app) {
             editorClosed: !cell.getElement().querySelector('.amb-autocomplete-editor')
         };
         tutorial.notify(edit.field === 'requiredDepartment' ? 'department-committed' : 'free-value-committed', payload, edit.context);
+        syncTutorialHighlight();
     };
     demo.table.on('cellEditing', handleEditStart);
     demo.table.on('cellEditCancelled', handleEditCancelled);
     demo.table.on('cellEdited', handleEditConfirmed);
+    demo.table.on('renderComplete', syncTutorialHighlight);
+    demo.table.on('scrollVertical', syncTutorialHighlight);
+    demo.table.on('scrollHorizontal', syncTutorialHighlight);
+    demo.table.on('dataFiltered', syncTutorialHighlight);
     document.addEventListener('input', handleEditorInput, true);
     document.addEventListener('awesomplete-open', handleSuggestionsOpen, true);
+    document.addEventListener('awesomplete-close', syncTutorialHighlight, true);
     document.addEventListener('awesomplete-highlight', handleSuggestionChosen, true);
     document.addEventListener('awesomplete-selectcomplete', handleSuggestionChosen, true);
+    window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
+    syncTutorialHighlight();
 
     demo.destroy = () => {
         destroyed = true;
+        scenarioGeneration += 1;
+        clearTutorialHighlight();
         activeEdit = null;
+        tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
+        window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
         demo.table.off('cellEditing', handleEditStart);
         demo.table.off('cellEditCancelled', handleEditCancelled);
         demo.table.off('cellEdited', handleEditConfirmed);
+        demo.table.off('renderComplete', syncTutorialHighlight);
+        demo.table.off('scrollVertical', syncTutorialHighlight);
+        demo.table.off('scrollHorizontal', syncTutorialHighlight);
+        demo.table.off('dataFiltered', syncTutorialHighlight);
         document.removeEventListener('input', handleEditorInput, true);
         document.removeEventListener('awesomplete-open', handleSuggestionsOpen, true);
+        document.removeEventListener('awesomplete-close', syncTutorialHighlight, true);
         document.removeEventListener('awesomplete-highlight', handleSuggestionChosen, true);
         document.removeEventListener('awesomplete-selectcomplete', handleSuggestionChosen, true);
         reportDialog.destroy();
@@ -359,6 +415,79 @@ export default function autocomplete(app) {
         tutorial.destroy();
         originalDestroy();
     };
+
+    function syncTutorialLaunchLabel() {
+        tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+    }
+
+    function handleTutorialLaunch() {
+        if (destroyed || !tutorialState?.hidden) return;
+        tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        tutorialStarted = true;
+        tutorial.reopen();
+    }
+
+    function finishTutorial({ openGuide }) {
+        if (destroyed) return;
+        tutorialStarted = false;
+        syncTutorialLaunchLabel();
+        if (openGuide) {
+            technicalGuide.open = true;
+            technicalGuideSummary.focus({ preventScroll: true });
+        } else tutorialLaunch.focus({ preventScroll: true });
+    }
+
+    function clearTutorialHighlight() {
+        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
+        highlightedControl = null;
+    }
+
+    function syncTutorialHighlight() {
+        if (!demo || destroyed || !tutorialState || tutorialState.hidden || tutorialState.complete
+            || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+            clearTutorialHighlight();
+            highlightedStep = null;
+            return;
+        }
+        if (highlightedStep !== tutorialState.stepId) {
+            clearTutorialHighlight();
+            highlightedStep = tutorialState.stepId;
+        }
+        const field = tutorialState.stepId === 'enter-free-value' ? 'tag' : 'requiredDepartment';
+        const cell = demo.table.getRow(1)?.getCell(field)?.getElement();
+        let target = cell;
+        if (cell && activeEdit?.cell.getElement() === cell) {
+            const input = cell.querySelector('.amb-autocomplete-editor');
+            const list = input?.getAttribute('aria-expanded') === 'true'
+                ? document.getElementById(input.getAttribute('aria-controls')) : null;
+            const securityOption = tutorialState.stepId === 'choose-department' && list && !list.hidden
+                ? [...list.querySelectorAll('[role="option"]')].find(option => option.textContent.trim() === 'Security') : null;
+            target = securityOption || input?.closest('.awesomplete') || cell;
+        }
+        const rays = Boolean(target && target !== cell);
+        if (target?.isConnected && target.getClientRects().length > 0) {
+            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
+                && target.classList.contains('demo-crud-tutorial-target--pulse')
+                && target.classList.contains('demo-crud-tutorial-target--rays') === rays) return;
+            clearTutorialHighlight();
+            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+            if (rays) target.classList.add('demo-crud-tutorial-target--rays');
+            highlightedControl = target;
+        } else clearTutorialHighlight();
+    }
+
+    async function resetTutorialScenario() {
+        const generation = ++scenarioGeneration;
+        activeEdit = null;
+        clearTutorialHighlight();
+        demo.table.cancelEdit?.();
+        reportDialog.close();
+        demo.feedback.clear();
+        await demo.setData(createAutocompleteData());
+        if (destroyed || generation !== scenarioGeneration) return false;
+        syncTutorialHighlight();
+        return true;
+    }
 
     function handleValidateAutocomplete() {
         const result = demo.crud.validateAll();
@@ -390,12 +519,8 @@ export default function autocomplete(app) {
     }
 
     async function handleReload() {
-        demo.feedback.clear();
-        reportDialog.close();
-        await demo.setData(createAutocompleteData());
-        demo.feedback.show({
-            type: 'success',
-            message: 'Autocomplete demo data reloaded.'
+        if (await resetTutorialScenario()) demo.feedback.show({
+            type: 'success', message: 'Autocomplete demo data reloaded.'
         });
     }
 

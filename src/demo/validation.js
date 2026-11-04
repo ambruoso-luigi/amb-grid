@@ -3,6 +3,8 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { demoIcon } from './demo-icons.js';
+import { publicExampleTranslations } from './example-copy.js';
 
 const hasReservedDocumentPrefix = value => {
     if (value === null || value === undefined || String(value).trim() === '') return true;
@@ -221,12 +223,14 @@ const anomalyPatches = [
 
 export default function validation(app) {
     app.innerHTML = `
-        <h2 data-i18n="examples.validation.title">Validation</h2>
-        <p class="demo-note" data-i18n="examples.validation.intro" data-i18n-emphasis="examples.validation.introEmphasis">Validation shows built-in rules and custom validations defined by the developer. Edit the data or use Create anomalies to inspect errors, reports, and correction.</p>
+        <div class="demo-crud-heading demo-validation-heading">
+            <h2 data-i18n="examples.validation.title">Validation</h2>
+            <div class="demo-crud-heading__commands">
+                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="validation-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
-            summary: 'How validation works',
+            summary: 'Validation technical guide',
             summaryKey: 'examples.validation.detailsTitle',
-            summaryMeta: 'Rules · errors · constraints', summaryMetaKey: 'examples.validation.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Rules · errors · constraints', summaryMetaKey: 'examples.validation.guideMeta', summaryIcon: 'guideText', variant: 'technical',
             className: 'demo-column-guide--validation',
             points: [
                 { title: 'Field rules', titleKey: 'examples.validation.point1Title', description: 'Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.', descriptionKey: 'examples.validation.detail1', descriptionEmphasisKey: 'examples.validation.detail1Emphasis' },
@@ -246,21 +250,50 @@ export default function validation(app) {
                 { title: 'Passport/Document', titleKey: 'guides.validation.document.title', badge: 'CUSTOM', description: 'Example of custom validation: in addition to the alphanumeric format rule, a developer-defined function rejects document numbers using the reserved TMP prefix.', descriptionKey: 'guides.validation.document.description', descriptionEmphasisKey: 'guides.validation.document.emphasis' }
             ]
         })}
+            </div>
+        </div>
+        <p class="demo-note" data-i18n="examples.validation.intro" data-i18n-emphasis="examples.validation.introEmphasis">Validation shows built-in rules and custom validations defined by the developer. Edit the data or use Create anomalies to inspect errors, reports, and correction.</p>
+        <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
-            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="validation-table" class="demo-business-grid demo-business-grid--viewport demo-validation-grid"></div>
         </div>
     `;
 
     let destroyed = false;
+    let demo = null;
+    let tutorialState = null;
+    let highlightedControl = null;
+    let highlightedStep = null;
+    let tutorialStarted = false;
+    let scenarioGeneration = 0;
     const editCandidates = new Map();
     const editKey = cell => `${cell.getRow().getData().id}:${cell.getField()}`;
+    const t = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`examples.validation.${key}`];
+    const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
+    const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
+    const technicalGuide = app.querySelector('.demo-crud-heading .demo-disclosure--technical');
+    const technicalGuideSummary = technicalGuide.querySelector('summary');
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
+        variant: 'crud',
+        tutorialCopyPrefix: 'examples.validation',
+        initiallyHidden: true,
+        externalOpenButton: tutorialLaunch,
+        panelId: 'validation-tutorial',
         locale: document.documentElement.lang === 'en' ? 'en' : 'it',
         titleKey: 'examples.validation.tutorialTitle',
         completedKey: 'examples.validation.tutorialCompleted',
+        onRestart: resetTutorialScenario,
+        onCompleteAction: resetTutorialScenario,
+        onCompleteSuccess: finishTutorial,
+        onStateChange: state => {
+            tutorialState = state;
+            tutorialLaunch.hidden = !state.hidden;
+            tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
+            tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+            syncTutorialHighlight();
+        },
         steps: [
             {
                 id: 'create-anomalies', actionId: 'create-anomalies', instructionKey: 'examples.validation.tutorialAnomalies',
@@ -278,7 +311,7 @@ export default function validation(app) {
         ]
     });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
-    const demo = AMB.table({
+    demo = AMB.table({
         selector: '#validation-table',
         rowActionColumn: {
             enabled: true,
@@ -430,6 +463,7 @@ export default function validation(app) {
             }
         ]
     });
+    tutorialLaunch.addEventListener('click', handleTutorialLaunch);
     commandGuideToolbar.mount();
     const reportDialog = createDemoReportDialog();
     const originalDestroy = demo.destroy.bind(demo);
@@ -459,6 +493,12 @@ export default function validation(app) {
     demo.table.on('cellEditing', handleEditStart);
     demo.table.on('cellEditCancelled', handleEditCancelled);
     demo.table.on('cellEdited', handleEditConfirmed);
+    demo.table.on('renderComplete', syncTutorialHighlight);
+    demo.table.on('scrollVertical', syncTutorialHighlight);
+    demo.table.on('scrollHorizontal', syncTutorialHighlight);
+    demo.table.on('dataFiltered', syncTutorialHighlight);
+    window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
+    syncTutorialHighlight();
 
     const openValidationReport = () => {
         const details = {
@@ -477,17 +517,95 @@ export default function validation(app) {
 
     demo.destroy = () => {
         destroyed = true;
+        scenarioGeneration += 1;
+        clearTutorialHighlight();
         editCandidates.clear();
+        tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
+        window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
         demo.table.off('cellEditing', handleEditStart);
         demo.table.off('cellEditCancelled', handleEditCancelled);
         demo.table.off('cellEdited', handleEditConfirmed);
+        demo.table.off('renderComplete', syncTutorialHighlight);
+        demo.table.off('scrollVertical', syncTutorialHighlight);
+        demo.table.off('scrollHorizontal', syncTutorialHighlight);
+        demo.table.off('dataFiltered', syncTutorialHighlight);
         reportDialog.destroy();
         commandGuideToolbar.destroy();
         tutorial.destroy();
         originalDestroy();
     };
 
+    function syncTutorialLaunchLabel() {
+        tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+    }
+
+    function handleTutorialLaunch() {
+        if (destroyed || !tutorialState?.hidden) return;
+        tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        tutorialStarted = true;
+        tutorial.reopen();
+    }
+
+    function finishTutorial({ openGuide }) {
+        if (destroyed) return;
+        tutorialStarted = false;
+        syncTutorialLaunchLabel();
+        if (openGuide) {
+            technicalGuide.open = true;
+            technicalGuideSummary.focus({ preventScroll: true });
+        } else tutorialLaunch.focus({ preventScroll: true });
+    }
+
+    function clearTutorialHighlight() {
+        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
+        highlightedControl = null;
+    }
+
+    function syncTutorialHighlight() {
+        if (!demo || destroyed || !tutorialState || tutorialState.hidden || tutorialState.complete
+            || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+            clearTutorialHighlight();
+            highlightedStep = null;
+            return;
+        }
+        if (highlightedStep !== tutorialState.stepId) {
+            clearTutorialHighlight();
+            highlightedStep = tutorialState.stepId;
+        }
+        const stepId = tutorialState.stepId;
+        let target = null;
+        if (stepId === 'create-anomalies' || stepId === 'inspect-report') {
+            target = app.querySelector(`[data-action="${stepId === 'create-anomalies' ? 'create-anomalies' : 'show-report'}"]`);
+        } else if (stepId === 'correct-value') {
+            target = demo.table.getRow(3)?.getCell('alias')?.getElement();
+        }
+        const rays = target?.tagName === 'BUTTON';
+        if (target?.isConnected && target.getClientRects().length > 0 && !target.matches(':disabled')) {
+            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
+                && target.classList.contains('demo-crud-tutorial-target--pulse')
+                && target.classList.contains('demo-crud-tutorial-target--rays') === rays) return;
+            clearTutorialHighlight();
+            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+            if (rays) target.classList.add('demo-crud-tutorial-target--rays');
+            highlightedControl = target;
+        } else clearTutorialHighlight();
+    }
+
+    async function resetTutorialScenario() {
+        const generation = ++scenarioGeneration;
+        editCandidates.clear();
+        clearTutorialHighlight();
+        demo.table.cancelEdit?.();
+        reportDialog.close();
+        demo.feedback.clear();
+        await demo.setData(validationData.map(row => ({ ...row })));
+        if (destroyed || generation !== scenarioGeneration) return false;
+        syncTutorialHighlight();
+        return true;
+    }
+
     async function handleCreateAnomalies() {
+        const generation = scenarioGeneration;
         const context = tutorial.capture();
         const previousErrors = new Set(demo.getStateReport().errors.cells.map(error => `${error.id}:${error.field}`));
         demo.feedback.clear();
@@ -497,7 +615,7 @@ export default function validation(app) {
         });
 
         await new Promise(resolve => window.setTimeout(resolve, 0));
-        if (destroyed) return;
+        if (destroyed || generation !== scenarioGeneration) return;
         demo.validateChanges();
         const report = demo.getStateReport();
         demo.feedback.show({
@@ -515,13 +633,8 @@ export default function validation(app) {
     }
 
     async function handleReload() {
-        demo.feedback.clear();
-        reportDialog.close();
-        await demo.setData(validationData.map(row => ({ ...row })));
-        if (destroyed) return;
-        demo.feedback.show({
-            type: 'success',
-            message: 'Validation demo data reloaded.'
+        if (await resetTutorialScenario()) demo.feedback.show({
+            type: 'success', message: 'Validation demo data reloaded.'
         });
     }
 

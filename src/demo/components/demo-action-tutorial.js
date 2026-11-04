@@ -8,7 +8,7 @@ import { demoIcon } from '../demo-icons.js';
  * Capture a fresh context for each operation; feedback timers only change the displayed text.
  * Optional onRestart awaits application cleanup; onStateChange reports the current phase and visibility.
  */
-export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, onCompleteAction, onCompleteSuccess, variant = 'default', initiallyHidden = false, externalOpenButton = null, panelId = '' }) {
+export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, onCompleteAction, onCompleteSuccess, variant = 'default', tutorialCopyPrefix = 'examples.crudRowStates', initiallyHidden = false, externalOpenButton = null, panelId = '' }) {
     const isCrud = variant === 'crud';
     let language = locale === 'en' ? 'en' : 'it';
     let index = 0;
@@ -135,7 +135,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         if (destroyed) return;
         const complete = index === steps.length;
         const action = complete ? null : actionsFor(steps[index])[actionIndex];
-        root.setAttribute('aria-label', copy(isCrud && complete ? 'examples.crudRowStates.tutorialCompleteTitle' : titleKey));
+        root.setAttribute('aria-label', copy(isCrud && complete ? `${tutorialCopyPrefix}.tutorialCompleteTitle` : titleKey));
         root.setAttribute('data-tutorial-step', complete ? 'complete' : steps[index].id);
         root.setAttribute('data-tutorial-action-index', complete ? '' : String(actionIndex));
         root.setAttribute('data-feedback', String(feedbackKey !== null));
@@ -146,8 +146,8 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         root.hidden = hidden && Boolean(externalOpenButton);
         bar.hidden = hidden;
         reopenButton.hidden = !hidden || Boolean(externalOpenButton);
-        heading.textContent = copy(isCrud && complete ? 'examples.crudRowStates.tutorialCompleteTitle' : titleKey);
-        label.textContent = copy(isCrud ? 'examples.crudRowStates.tutorialLabel' : 'tutorial.title');
+        heading.textContent = copy(isCrud && complete ? `${tutorialCopyPrefix}.tutorialCompleteTitle` : titleKey);
+        label.textContent = copy(isCrud ? `${tutorialCopyPrefix}.tutorialLabel` : 'tutorial.title');
         counter.textContent = copy('tutorial.counter', { current: Math.min(index + 1, steps.length), total: steps.length });
         progress.setAttribute('aria-label', copy('tutorial.progress'));
         indicators.forEach((indicator, stepIndex) => {
@@ -180,17 +180,17 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             finishButton.disabled = completeActionPending;
             finishButton.setAttribute('aria-busy', String(completeActionPending));
             finishButton.setAttribute('aria-disabled', String(completeActionPending));
-            finishLabel.textContent = copy('examples.crudRowStates.tutorialFinish');
+            finishLabel.textContent = copy(`${tutorialCopyPrefix}.tutorialFinish`);
             completeButton.disabled = completeActionPending;
             completeButton.setAttribute('aria-busy', String(completeActionPending));
             completeButton.setAttribute('aria-disabled', String(completeActionPending));
-            completeLabel.textContent = copy('examples.crudRowStates.tutorialOpenGuide');
+            completeLabel.textContent = copy(`${tutorialCopyPrefix}.tutorialOpenGuide`);
             completeStatus.hidden = !completeActionPending && !completeActionFailed;
-            completeStatus.textContent = completeActionPending ? copy('examples.crudRowStates.tutorialRestoring')
-                : completeActionFailed ? copy('examples.crudRowStates.tutorialRestoreFailed') : '';
+            completeStatus.textContent = completeActionPending ? copy(`${tutorialCopyPrefix}.tutorialRestoring`)
+                : completeActionFailed ? copy(`${tutorialCopyPrefix}.tutorialRestoreFailed`) : '';
             skipButton.disabled = completeActionPending;
             restartButton.disabled = completeActionPending;
-            skipLabel.textContent = copy('examples.crudRowStates.tutorialClose');
+            skipLabel.textContent = copy(`${tutorialCopyPrefix}.tutorialClose`);
             restartLabel.textContent = copy('tutorial.restart');
         } else {
             skipButton.textContent = copy('tutorial.skip');

@@ -8,6 +8,8 @@ import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { demoIcon } from './demo-icons.js';
+import { publicExampleTranslations } from './example-copy.js';
 
 const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.meta.url);
 const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
@@ -166,7 +168,10 @@ const loadMunicipalities = async () => {
 export default function multifieldLookup(app) {
     app.innerHTML = `
         <div class="demo-multifield-lookup">
-            <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
+            <div class="demo-crud-heading">
+                <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
+                <div class="demo-crud-heading__commands">
+                    <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="multifield-lookup-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
             ${createDemoColumnGuide({
             summary: 'How multifield lookup works',
             summaryKey: 'examples.multifieldLookup.detailsTitle',
@@ -187,10 +192,12 @@ export default function multifieldLookup(app) {
                 { title: 'Cadastral Code', titleKey: 'guides.multifield.cadastralCode.title', badge: 'DERIVED', description: 'Derived field, hidden in the lookup and filled after selection.', descriptionKey: 'guides.multifield.cadastralCode.description' }
             ]
             })}
+                </div>
+            </div>
             <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
             <p class="demo-note" data-municipality-lookup-status role="status" aria-live="polite">Municipality lookup data is loading.</p>
+            <div class="demo-action-tutorial-host"></div>
             <div class="demo-table-workbench">
-                <div class="demo-action-tutorial-host"></div>
                 <div class="demo-command-guide-host"></div>
                 <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
             </div>
@@ -202,11 +209,42 @@ export default function multifieldLookup(app) {
     let destroyed = false;
     let activeEdit = null;
     let activeDialog = null;
+    let grid = null;
+    let tutorialState = null;
+    let highlightedControl = null;
+    let highlightedStep = null;
+    let tutorialStarted = false;
+    let scenarioGeneration = 0;
+    let dialogHighlightObserver = null;
+    let searchGlow = null;
+    const t = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`examples.multifieldLookup.${key}`];
+    const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
+    const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
+    const technicalGuide = app.querySelector('.demo-crud-heading .demo-disclosure--technical');
+    const technicalGuideSummary = technicalGuide.querySelector('summary');
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
+        variant: 'crud',
+        tutorialCopyPrefix: 'examples.multifieldLookup',
+        initiallyHidden: true,
+        externalOpenButton: tutorialLaunch,
+        panelId: 'multifield-lookup-tutorial',
         locale: document.documentElement.lang === 'en' ? 'en' : 'it',
         titleKey: 'examples.multifieldLookup.tutorialTitle',
         completedKey: 'examples.multifieldLookup.tutorialCompleted',
+        onRestart: resetTutorialScenario,
+        onCompleteAction: resetTutorialScenario,
+        onCompleteSuccess: finishTutorial,
+        onStateChange: state => {
+            tutorialState = state;
+            if (state.hidden || state.complete || state.resetting || state.destroyed) {
+                stopDialogHighlight();
+            }
+            tutorialLaunch.hidden = !state.hidden;
+            tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
+            tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+            syncTutorialHighlight();
+        },
         steps: [
             {
                 id: 'open-lookup', actionId: 'lookup-opened', instructionKey: 'examples.multifieldLookup.tutorialOpen',
@@ -279,9 +317,24 @@ export default function multifieldLookup(app) {
             tutorial.notify('lookup-opened', { id: edit.id, field: edit.field, opened }, context);
             if (activeDialog) activeDialog.context = tutorial.capture();
         }
+        if (opened && tutorialState?.stepId === 'select-municipality' && !tutorialState.hidden) {
+            dialogHighlightObserver?.disconnect();
+            dialogHighlightObserver = new MutationObserver(syncTutorialHighlight);
+            dialogHighlightObserver.observe(municipalityDialog.overlay, {
+                childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'disabled']
+            });
+            window.addEventListener('resize', syncTutorialHighlight);
+            window.addEventListener('scroll', syncTutorialHighlight, true);
+            syncTutorialHighlight();
+        }
+        const highlightObserver = dialogHighlightObserver;
         return selection.then(selected => {
             if (activeDialog?.edit === edit) activeDialog.selected = selected;
             return selected;
+        }).finally(() => {
+            highlightObserver?.disconnect();
+            if (dialogHighlightObserver === highlightObserver) stopDialogHighlight();
+            syncTutorialHighlight();
         });
     };
     const municipalityMultifieldLookup = AMB.multifieldLookup({
@@ -343,7 +396,6 @@ export default function multifieldLookup(app) {
             }
         ]
     });
-    let grid = null;
     const reportDialog = createDemoReportDialog();
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
 
@@ -424,6 +476,7 @@ export default function multifieldLookup(app) {
             })
         ]
     });
+    tutorialLaunch.addEventListener('click', handleTutorialLaunch);
     commandGuideToolbar.mount();
     const stopDecoratingLookupButtons = decorateDemoEditorButtons(tableMount, {
         selector: '.amb-lookup-editor__button',
@@ -432,8 +485,9 @@ export default function multifieldLookup(app) {
     });
     const handleEditStart = cell => {
         activeEdit = { cell, id: cell.getRow().getData().id, field: cell.getField() };
+        globalThis.requestAnimationFrame(syncTutorialHighlight);
     };
-    const handleEditCancelled = () => { activeEdit = null; activeDialog = null; };
+    const handleEditCancelled = () => { activeEdit = null; activeDialog = null; syncTutorialHighlight(); };
     const handleRowUpdated = row => {
         const dialog = activeDialog;
         if (destroyed || !dialog?.record || !dialog.selected || row.getData().id !== dialog.edit.id) return;
@@ -444,10 +498,121 @@ export default function multifieldLookup(app) {
             id: dialog.edit.id, selected: dialog.record, before: dialog.before, after, report,
             dialogClosed: !municipalityDialog.overlay || municipalityDialog.overlay.hidden
         }, dialog.context);
+        syncTutorialHighlight();
     };
     grid.table.on('cellEditing', handleEditStart);
     grid.table.on('cellEditCancelled', handleEditCancelled);
     grid.table.on('rowUpdated', handleRowUpdated);
+    grid.table.on('renderComplete', syncTutorialHighlight);
+    grid.table.on('scrollVertical', syncTutorialHighlight);
+    grid.table.on('scrollHorizontal', syncTutorialHighlight);
+    grid.table.on('dataFiltered', syncTutorialHighlight);
+    window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
+    syncTutorialHighlight();
+
+    function syncTutorialLaunchLabel() {
+        tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+    }
+
+    function handleTutorialLaunch() {
+        if (destroyed || !tutorialState?.hidden) return;
+        tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        tutorialStarted = true;
+        tutorial.reopen();
+    }
+
+    function finishTutorial({ openGuide }) {
+        if (destroyed) return;
+        tutorialStarted = false;
+        syncTutorialLaunchLabel();
+        if (openGuide) {
+            technicalGuide.open = true;
+            technicalGuideSummary.focus({ preventScroll: true });
+        } else tutorialLaunch.focus({ preventScroll: true });
+    }
+
+    function clearTutorialHighlight() {
+        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
+        highlightedControl = null;
+        searchGlow?.remove();
+        searchGlow = null;
+    }
+
+    function stopDialogHighlight() {
+        dialogHighlightObserver?.disconnect();
+        dialogHighlightObserver = null;
+        window.removeEventListener('resize', syncTutorialHighlight);
+        window.removeEventListener('scroll', syncTutorialHighlight, true);
+    }
+
+    function syncTutorialHighlight() {
+        if (!grid || destroyed || !tutorialState || tutorialState.hidden || tutorialState.complete
+            || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+            clearTutorialHighlight();
+            highlightedStep = null;
+            return;
+        }
+        if (highlightedStep !== tutorialState.stepId) {
+            clearTutorialHighlight();
+            highlightedStep = tutorialState.stepId;
+        }
+        const cell = grid.table.getRow(1)?.getCell('municipality')?.getElement();
+        let target = cell;
+        if (tutorialState.stepId === 'open-lookup' && activeEdit?.id === 1 && activeEdit.field === 'municipality') {
+            target = cell?.querySelector('.amb-lookup-editor__button') || cell;
+        } else if (tutorialState.stepId === 'select-municipality' && municipalityDialog.overlay && !municipalityDialog.overlay.hidden) {
+            const selected = municipalityDialog.filteredData?.[municipalityDialog.selectedIndex];
+            if (selected?.municipalityName === 'Salerno' && !municipalityDialog.selectButton?.disabled) {
+                target = municipalityDialog.selectButton;
+            } else {
+                const salernoRow = [...municipalityDialog.table.querySelectorAll('.amb-lookup-dialog__row')]
+                    .find(row => municipalityDialog.filteredData?.[Number(row.dataset.rowIndex)]?.municipalityName === 'Salerno');
+                target = salernoRow?.querySelector('td') || municipalityDialog.search;
+            }
+        }
+        if (target === municipalityDialog.search && target?.isConnected && target.getClientRects().length > 0) {
+            if (highlightedControl !== target || !searchGlow) {
+                clearTutorialHighlight();
+                searchGlow = document.createElement('div');
+                searchGlow.className = 'demo-crud-row-action-glow demo-crud-row-action-glow--pulse demo-crud-row-action-glow--rays';
+                searchGlow.setAttribute('aria-hidden', 'true');
+                municipalityDialog.overlay.append(searchGlow);
+                highlightedControl = target;
+            }
+            const rect = target.getBoundingClientRect();
+            searchGlow.style.left = `${rect.left}px`;
+            searchGlow.style.top = `${rect.top}px`;
+            searchGlow.style.width = `${rect.width}px`;
+            searchGlow.style.height = `${rect.height}px`;
+            return;
+        }
+        const rays = Boolean(target && target !== cell);
+        if (target?.isConnected && target.getClientRects().length > 0 && !target.matches(':disabled')) {
+            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target')
+                && target.classList.contains('demo-crud-tutorial-target--pulse')
+                && target.classList.contains('demo-crud-tutorial-target--rays') === rays) return;
+            clearTutorialHighlight();
+            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+            if (rays) target.classList.add('demo-crud-tutorial-target--rays');
+            highlightedControl = target;
+        } else clearTutorialHighlight();
+    }
+
+    async function resetTutorialScenario() {
+        const generation = ++scenarioGeneration;
+        clearTutorialHighlight();
+        stopDialogHighlight();
+        if (municipalityDialog.overlay && !municipalityDialog.overlay.hidden) municipalityDialog.destroy();
+        activeEdit = null;
+        activeDialog = null;
+        grid.table.cancelEdit?.();
+        grid.feedback.clear();
+        reportDialog.close();
+        await grid.setData(createInitialData());
+        if (destroyed || generation !== scenarioGeneration) return false;
+        syncTutorialHighlight();
+        return true;
+    }
 
     function handleAddRow() {
         grid.feedback.clear();
@@ -455,12 +620,8 @@ export default function multifieldLookup(app) {
     }
 
     async function handleReload() {
-        grid.feedback.clear();
-        reportDialog.close();
-        await grid.setData(createInitialData());
-        grid.feedback.show({
-            type: 'success',
-            message: 'Municipality demo data reloaded.'
+        if (await resetTutorialScenario()) grid.feedback.show({
+            type: 'success', message: 'Municipality demo data reloaded.'
         });
     }
 
@@ -476,11 +637,20 @@ export default function multifieldLookup(app) {
         ...grid,
         destroy() {
             destroyed = true;
+            scenarioGeneration += 1;
+            clearTutorialHighlight();
+            stopDialogHighlight();
             activeEdit = null;
             activeDialog = null;
+            tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
+            window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
             grid.table.off('cellEditing', handleEditStart);
             grid.table.off('cellEditCancelled', handleEditCancelled);
             grid.table.off('rowUpdated', handleRowUpdated);
+            grid.table.off('renderComplete', syncTutorialHighlight);
+            grid.table.off('scrollVertical', syncTutorialHighlight);
+            grid.table.off('scrollHorizontal', syncTutorialHighlight);
+            grid.table.off('dataFiltered', syncTutorialHighlight);
             reportDialog.destroy();
             stopDecoratingLookupButtons();
 
