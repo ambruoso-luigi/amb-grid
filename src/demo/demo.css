@@ -2783,7 +2783,9 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 .demo-example .demo-disclosure--technical:not([open]) {
+    box-sizing: border-box;
     display: inline-block;
+    height: 44px;
     max-width: 100%;
     width: auto;
 }
@@ -2793,11 +2795,13 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 .demo-example .demo-disclosure__summary--technical {
+    box-sizing: border-box;
     gap: 8px;
     grid-template-areas: "icon title chevron";
     grid-template-columns: 28px minmax(0, 1fr) 28px;
-    min-height: 44px;
-    padding: 8px 12px;
+    height: 42px;
+    min-height: 0;
+    padding: 0 12px;
     row-gap: 8px;
 }
 
@@ -5102,6 +5106,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     align-items: center;
     animation: demo-crud-launch-glow 4.15s ease-in-out infinite;
     border: 1px solid;
+    box-sizing: border-box;
     cursor: pointer;
     display: inline-flex;
     flex: 0 0 auto;
@@ -5109,8 +5114,10 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     font-size: 13px;
     font-weight: 700;
     gap: 7px;
-    min-height: 38px;
+    height: 44px;
+    min-height: 44px;
     padding: 6px 11px;
+    padding-block: 0;
     position: relative;
 }
 
@@ -5376,6 +5383,15 @@ body .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__message {
 
     .demo-example .demo-crud-heading .demo-disclosure--technical {
         flex: 0 1 auto;
+    }
+
+    .demo-example .demo-disclosure--technical:not([open]),
+    .demo-example .demo-disclosure__summary--technical {
+        height: auto;
+    }
+
+    .demo-example .demo-disclosure__summary--technical {
+        min-height: 42px;
     }
 
     .demo-example .demo-crud-heading__commands {
