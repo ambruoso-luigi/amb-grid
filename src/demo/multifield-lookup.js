@@ -173,9 +173,9 @@ export default function multifieldLookup(app) {
                 <div class="demo-crud-heading__commands">
                     <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="multifield-lookup-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
             ${createDemoColumnGuide({
-            summary: 'Multifield Lookup Technical Guide',
+            summary: 'Multifield Lookup technical guide',
             summaryKey: 'examples.multifieldLookup.detailsTitle',
-            summaryMeta: 'Search · multi-field mapping', summaryMetaKey: 'examples.multifieldLookup.guideMeta', summaryIcon: 'guideText', variant: 'technical',
+            summaryIcon: 'guideText', variant: 'technical',
             intro: 'This example shows how to select a record through autocomplete or a search dialog, updating the master field and its dependent fields together.',
             introKey: 'examples.multifieldLookup.guideIntro',
             points: [

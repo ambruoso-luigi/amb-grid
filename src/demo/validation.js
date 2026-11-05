@@ -228,9 +228,9 @@ export default function validation(app) {
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="validation-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
-            summary: 'Validation Technical Guide',
+            summary: 'Validation technical guide',
             summaryKey: 'examples.validation.detailsTitle',
-            summaryMeta: 'Rules · errors · constraints', summaryMetaKey: 'examples.validation.guideMeta', summaryIcon: 'guideText', variant: 'technical',
+            summaryIcon: 'guideText', variant: 'technical',
             className: 'demo-column-guide--validation',
             intro: 'This example shows built-in and custom validation rules. Edit fields, create anomalies and inspect the report to understand how errors are detected and displayed.',
             introKey: 'examples.validation.guideIntro',

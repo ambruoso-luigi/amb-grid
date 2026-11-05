@@ -3,19 +3,35 @@ import { countPrintProducts } from './utils/demo-calculations.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { demoIcon } from './demo-icons.js';
+import { publicExampleTranslations } from './example-copy.js';
 
 const formatAveragePrice = value => Number(value).toFixed(2);
+const calculationData = [
+    { id: 1001, product: 'Barcode printer', category: 'Hardware', quantity: 8, unitPrice: 84.5, deliveryDays: 3, score: 88 },
+    { id: 1002, product: 'Label printer', category: 'Hardware', quantity: 5, unitPrice: 219.9, deliveryDays: 5, score: 92 },
+    { id: 1003, product: 'Shipping labels', category: 'Supplies', quantity: 40, unitPrice: 12.75, deliveryDays: 2, score: 81 },
+    { id: 1004, product: 'Storage bin', category: 'Warehouse', quantity: 24, unitPrice: 18.2, deliveryDays: 4, score: 85 },
+    { id: 1005, product: 'Packing tape', category: 'Supplies', quantity: 36, unitPrice: 4.8, deliveryDays: 1, score: 79 },
+    { id: 1006, product: 'Safety gloves', category: 'Safety', quantity: 18, unitPrice: 9.6, deliveryDays: 3, score: 95 },
+    { id: 1007, product: 'Steel shelving', category: 'Warehouse', quantity: 6, unitPrice: 148, deliveryDays: 7, score: 90 },
+    { id: 1008, product: 'Thermal printer', category: 'Hardware', quantity: 10, unitPrice: 300, deliveryDays: 4, score: 93 },
+    { id: 1009, product: 'Bubble wrap', category: 'Supplies', quantity: 50, unitPrice: 20, deliveryDays: 2, score: 84 },
+    { id: 1010, product: 'Print server', category: 'Warehouse', quantity: 3, unitPrice: 432.25, deliveryDays: 6, score: 91 }
+];
 
 export default function columnCalculations(app) {
     let nextProductId = 1011;
 
     app.innerHTML = `
-        <h2 data-i18n="examples.columnCalculations.title">Column calculations</h2>
-        <p class="demo-note" data-i18n="examples.columnCalculations.intro" data-i18n-emphasis="examples.columnCalculations.introEmphasis">Column calculations shows built-in aggregates and custom calculations defined by the developer, updated directly in their respective columns when the data changes.</p>
+        <div class="demo-crud-heading">
+            <h2 data-i18n="examples.columnCalculations.title">Column calculations</h2>
+            <div class="demo-crud-heading__commands">
+                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="column-calculations-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
-            summary: 'Column Calculations Technical Guide',
+            summary: 'Column Calculations technical guide',
             summaryKey: 'examples.columnCalculations.detailsTitle',
-            summaryMeta: 'Count · sum · avg · min · max', summaryMetaKey: 'examples.columnCalculations.guideMeta', summaryIcon: 'guideText', variant: 'technical',
+            summaryIcon: 'guideText', variant: 'technical',
             intro: 'AMB Grid displays aggregate values in the calculation row. Each result uses its own column values and updates when the data changes.',
             introKey: 'examples.columnCalculations.detailsText',
             points: [
@@ -33,20 +49,43 @@ export default function columnCalculations(app) {
                 { title: 'Score', titleKey: 'examples.columnCalculations.score', badge: 'MAX', description: 'MAX returns the highest score.', descriptionKey: 'examples.columnCalculations.scoreCalc' }
             ]
         })}
+            </div>
+        </div>
+        <p class="demo-note" data-i18n="examples.columnCalculations.intro" data-i18n-emphasis="examples.columnCalculations.introEmphasis">Column calculations shows built-in aggregates and custom calculations defined by the developer, updated directly in their respective columns when the data changes.</p>
+        <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
-            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="column-calculations-table" class="demo-business-grid demo-business-grid--viewport demo-column-calculations-grid"></div>
         </div>
     `;
 
     let destroyed = false;
+    let grid = null;
+    let tutorialState = null;
+    let tutorialStarted = false;
+    let highlightedControl = null;
+    const t = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`examples.columnCalculations.${key}`];
+    const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
+    const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
+    const technicalGuide = app.querySelector('.demo-crud-heading .demo-disclosure--technical');
     const editCandidates = new Map();
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
+        variant: 'crud', tutorialCopyPrefix: 'examples.columnCalculations',
+        initiallyHidden: true, externalOpenButton: tutorialLaunch, panelId: 'column-calculations-tutorial',
         locale: document.documentElement.lang === 'en' ? 'en' : 'it',
         titleKey: 'examples.columnCalculations.tutorialTitle',
         completedKey: 'examples.columnCalculations.tutorialCompleted',
+        onRestart: resetTutorialScenario,
+        onCompleteAction: resetTutorialScenario,
+        onCompleteSuccess: finishTutorial,
+        onStateChange: state => {
+            tutorialState = state;
+            tutorialLaunch.hidden = !state.hidden;
+            tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
+            tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+            syncTutorialHighlight();
+        },
         steps: [
             {
                 id: 'update-sum', actionId: 'quantity-edited', instructionKey: 'examples.columnCalculations.tutorialSum',
@@ -69,7 +108,7 @@ export default function columnCalculations(app) {
         ]
     });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
-    const grid = AMB.table({
+    grid = AMB.table({
         selector: '#column-calculations-table',
         rowActionColumn: {
             enabled: true,
@@ -81,18 +120,7 @@ export default function columnCalculations(app) {
             buttons: ['add', commandGuideToolbar.button],
             onAdd: handleAdd
         },
-        data: [
-            { id: 1001, product: 'Barcode printer', category: 'Hardware', quantity: 8, unitPrice: 84.5, deliveryDays: 3, score: 88 },
-            { id: 1002, product: 'Label printer', category: 'Hardware', quantity: 5, unitPrice: 219.9, deliveryDays: 5, score: 92 },
-            { id: 1003, product: 'Shipping labels', category: 'Supplies', quantity: 40, unitPrice: 12.75, deliveryDays: 2, score: 81 },
-            { id: 1004, product: 'Storage bin', category: 'Warehouse', quantity: 24, unitPrice: 18.2, deliveryDays: 4, score: 85 },
-            { id: 1005, product: 'Packing tape', category: 'Supplies', quantity: 36, unitPrice: 4.8, deliveryDays: 1, score: 79 },
-            { id: 1006, product: 'Safety gloves', category: 'Safety', quantity: 18, unitPrice: 9.6, deliveryDays: 3, score: 95 },
-            { id: 1007, product: 'Steel shelving', category: 'Warehouse', quantity: 6, unitPrice: 148, deliveryDays: 7, score: 90 },
-            { id: 1008, product: 'Thermal printer', category: 'Hardware', quantity: 10, unitPrice: 300, deliveryDays: 4, score: 93 },
-            { id: 1009, product: 'Bubble wrap', category: 'Supplies', quantity: 50, unitPrice: 20, deliveryDays: 2, score: 84 },
-            { id: 1010, product: 'Print server', category: 'Warehouse', quantity: 3, unitPrice: 432.25, deliveryDays: 6, score: 91 }
-        ],
+        data: calculationData.map(row => ({ ...row })),
         layout: 'fitColumns',
         columns: [
             {
@@ -145,6 +173,12 @@ export default function columnCalculations(app) {
         ]
     });
     commandGuideToolbar.mount();
+    tutorialLaunch.addEventListener('click', handleTutorialLaunch);
+    window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
+    grid.table.on('renderComplete', syncTutorialHighlight);
+    grid.table.on('scrollVertical', syncTutorialHighlight);
+    grid.table.on('scrollHorizontal', syncTutorialHighlight);
+    syncTutorialHighlight();
 
     const editKey = cell => `${cell.getRow().getData().id}:${cell.getField()}`;
     const handleEditStart = cell => {
@@ -199,10 +233,71 @@ export default function columnCalculations(app) {
         return added;
     }
 
+    function syncTutorialLaunchLabel() {
+        tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+    }
+
+    function handleTutorialLaunch() {
+        if (destroyed || !tutorialState?.hidden) return;
+        tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        tutorialStarted = true;
+        tutorial.reopen();
+    }
+
+    function finishTutorial({ openGuide }) {
+        tutorialStarted = false;
+        syncTutorialLaunchLabel();
+        if (openGuide) {
+            technicalGuide.open = true;
+            technicalGuide.querySelector('summary').focus({ preventScroll: true });
+        } else tutorialLaunch.focus({ preventScroll: true });
+    }
+
+    function clearTutorialHighlight() {
+        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
+        highlightedControl = null;
+    }
+
+    function syncTutorialHighlight() {
+        if (!grid || destroyed || !tutorialState || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+            clearTutorialHighlight();
+            return;
+        }
+        const step = tutorialState.stepId;
+        const target = step === 'update-count' ? app.querySelector('[data-action="add"]')
+            : grid.table.getRow(step === 'update-sum' ? 1001 : 1004)
+                ?.getCell(step === 'update-sum' ? 'quantity' : 'product')?.getElement();
+        const rays = step === 'update-count';
+        if (target?.isConnected && target.getClientRects().length > 0 && !target.matches(':disabled')) {
+            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target--pulse')) return;
+            clearTutorialHighlight();
+            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+            if (rays) target.classList.add('demo-crud-tutorial-target--rays');
+            highlightedControl = target;
+        } else clearTutorialHighlight();
+    }
+
+    async function resetTutorialScenario() {
+        if (destroyed) return false;
+        try {
+            editCandidates.clear();
+            nextProductId = 1011;
+            await grid.setData(calculationData.map(row => ({ ...row })));
+            syncTutorialHighlight();
+            return !destroyed;
+        } catch { return false; }
+    }
+
     return {
         destroy() {
             destroyed = true;
+            clearTutorialHighlight();
             editCandidates.clear();
+            tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
+            window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
+            grid.table.off('renderComplete', syncTutorialHighlight);
+            grid.table.off('scrollVertical', syncTutorialHighlight);
+            grid.table.off('scrollHorizontal', syncTutorialHighlight);
             grid.table.off('cellEditing', handleEditStart);
             grid.table.off('cellEditCancelled', handleEditCancelled);
             grid.table.off('cellEdited', handleEditConfirmed);

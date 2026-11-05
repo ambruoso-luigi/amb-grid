@@ -2,6 +2,8 @@ import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { demoIcon } from './demo-icons.js';
+import { publicExampleTranslations } from './example-copy.js';
 
 const priorityParser = AMB.parsers.custom(value => {
     const priorities = {
@@ -159,12 +161,14 @@ const formatParsedValue = cell => {
 
 export default function parsers(app) {
     app.innerHTML = `
-        <h2 data-i18n="examples.parsers.title">Parsers</h2>
-        <p class="demo-note" data-i18n="examples.parsers.intro">Edit an input value and inspect the normalized representation produced for a predictable payload.</p>
+        <div class="demo-crud-heading">
+            <h2 data-i18n="examples.parsers.title">Parsers</h2>
+            <div class="demo-crud-heading__commands">
+                <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="parsers-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
-            summary: 'Parsers Technical Guide',
+            summary: 'Parsers technical guide',
             summaryKey: 'examples.parsers.detailsTitle',
-            summaryMeta: 'Normalization · payload', summaryMetaKey: 'examples.parsers.guideMeta', summaryIcon: 'guideText', variant: 'technical',
+            summaryIcon: 'guideText', variant: 'technical',
             intro: 'Parsers normalize visual values into backend-oriented shapes. They can reject incoherent syntax, but they do not replace validation or business rules.',
             introKey: 'examples.parsers.detailsText',
             points: [
@@ -181,21 +185,44 @@ export default function parsers(app) {
                 { title: 'Description', titleKey: 'guides.parsers.description.title', badge: 'INFO', description: 'Briefly explains the transformation demonstrated by the row.', descriptionKey: 'guides.parsers.description.description' }
             ]
         })}
+            </div>
+        </div>
+        <p class="demo-note" data-i18n="examples.parsers.intro">Edit an input value and inspect the normalized representation produced for a predictable payload.</p>
+        <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
-            <div class="demo-action-tutorial-host"></div>
             <div class="demo-command-guide-host"></div>
             <div id="parsers-table" class="demo-business-grid demo-business-grid--viewport demo-parsers-grid"></div>
         </div>
     `;
 
     let destroyed = false;
+    let demo = null;
+    let tutorialState = null;
+    let tutorialStarted = false;
+    let highlightedControl = null;
+    const t = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`examples.parsers.${key}`];
+    const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
+    const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
+    const technicalGuide = app.querySelector('.demo-crud-heading .demo-disclosure--technical');
     let pendingResult = null;
     const editCandidates = new Map();
     const tutorial = createDemoActionTutorial({
         host: app.querySelector('.demo-action-tutorial-host'),
+        variant: 'crud', tutorialCopyPrefix: 'examples.parsers',
+        initiallyHidden: true, externalOpenButton: tutorialLaunch, panelId: 'parsers-tutorial',
         locale: document.documentElement.lang === 'en' ? 'en' : 'it',
         titleKey: 'examples.parsers.tutorialTitle',
         completedKey: 'examples.parsers.tutorialCompleted',
+        onRestart: resetTutorialScenario,
+        onCompleteAction: resetTutorialScenario,
+        onCompleteSuccess: finishTutorial,
+        onStateChange: state => {
+            tutorialState = state;
+            tutorialLaunch.hidden = !state.hidden;
+            tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
+            tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+            syncTutorialHighlight();
+        },
         steps: [
             {
                 id: 'parse-decimal', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialDecimal',
@@ -215,7 +242,7 @@ export default function parsers(app) {
         ]
     });
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
-    const demo = AMB.table({
+    demo = AMB.table({
         selector: '#parsers-table',
         toolbar: {
             buttons: [commandGuideToolbar.button]
@@ -250,6 +277,12 @@ export default function parsers(app) {
         ]
     });
     commandGuideToolbar.mount();
+    tutorialLaunch.addEventListener('click', handleTutorialLaunch);
+    window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
+    demo.table.on('renderComplete', syncTutorialHighlight);
+    demo.table.on('scrollVertical', syncTutorialHighlight);
+    demo.table.on('scrollHorizontal', syncTutorialHighlight);
+    syncTutorialHighlight();
     const handleLanguageChange = () => demo.redraw(true);
     const originalDestroy = demo.destroy.bind(demo);
     const handleEditStart = cell => {
@@ -278,8 +311,14 @@ export default function parsers(app) {
 
     demo.destroy = () => {
         destroyed = true;
+        clearTutorialHighlight();
         pendingResult = null;
         editCandidates.clear();
+        tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
+        window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
+        demo.table.off('renderComplete', syncTutorialHighlight);
+        demo.table.off('scrollVertical', syncTutorialHighlight);
+        demo.table.off('scrollHorizontal', syncTutorialHighlight);
         window.removeEventListener('amb-demo-language-change', handleLanguageChange);
         demo.table.off('cellEditing', handleEditStart);
         demo.table.off('cellEditCancelled', handleEditCancelled);
@@ -309,6 +348,57 @@ export default function parsers(app) {
                 message: feedbackCopy[language]
             });
         }
+    }
+
+    function syncTutorialLaunchLabel() {
+        tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
+    }
+
+    function handleTutorialLaunch() {
+        if (destroyed || !tutorialState?.hidden) return;
+        tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        tutorialStarted = true;
+        tutorial.reopen();
+    }
+
+    function finishTutorial({ openGuide }) {
+        tutorialStarted = false;
+        syncTutorialLaunchLabel();
+        if (openGuide) {
+            technicalGuide.open = true;
+            technicalGuide.querySelector('summary').focus({ preventScroll: true });
+        } else tutorialLaunch.focus({ preventScroll: true });
+    }
+
+    function clearTutorialHighlight() {
+        highlightedControl?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
+        highlightedControl = null;
+    }
+
+    function syncTutorialHighlight() {
+        if (!demo || destroyed || !tutorialState || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+            clearTutorialHighlight();
+            return;
+        }
+        const id = { 'parse-decimal': 1, 'parse-boolean': 7, 'parse-custom': 9 }[tutorialState.stepId];
+        const target = demo.table.getRow(id)?.getCell('input')?.getElement();
+        if (target?.isConnected && target.getClientRects().length > 0) {
+            if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target--pulse')) return;
+            clearTutorialHighlight();
+            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+            highlightedControl = target;
+        } else clearTutorialHighlight();
+    }
+
+    async function resetTutorialScenario() {
+        if (destroyed) return false;
+        try {
+            pendingResult = null;
+            editCandidates.clear();
+            await demo.setData(createParserData());
+            syncTutorialHighlight();
+            return !destroyed;
+        } catch { return false; }
     }
 
     return demo;

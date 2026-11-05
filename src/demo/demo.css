@@ -2782,6 +2782,35 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     border-color: #bfd2e2;
 }
 
+.demo-example .demo-disclosure--technical:not([open]) {
+    display: inline-block;
+    max-width: 100%;
+    width: auto;
+}
+
+.demo-example .demo-disclosure--technical[open] {
+    width: 100%;
+}
+
+.demo-example .demo-disclosure__summary--technical {
+    gap: 8px;
+    grid-template-areas: "icon title chevron";
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
+    min-height: 44px;
+    padding: 8px 12px;
+    row-gap: 8px;
+}
+
+.demo-example .demo-disclosure__technical-leading,
+.demo-example .demo-disclosure__technical-chevron {
+    height: 28px;
+    width: 28px;
+}
+
+.demo-example .demo-disclosure__technical-title {
+    line-height: 1.25;
+}
+
 .demo-disclosure__summary--technical {
     align-items: center;
     background: linear-gradient(180deg, #fbfdff 0%, #f3f8fc 100%);
