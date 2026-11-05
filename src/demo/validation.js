@@ -223,15 +223,17 @@ const anomalyPatches = [
 
 export default function validation(app) {
     app.innerHTML = `
-        <div class="demo-crud-heading demo-validation-heading">
+        <div class="demo-crud-heading">
             <h2 data-i18n="examples.validation.title">Validation</h2>
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="validation-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
-            summary: 'Validation technical guide',
+            summary: 'Validation Technical Guide',
             summaryKey: 'examples.validation.detailsTitle',
             summaryMeta: 'Rules · errors · constraints', summaryMetaKey: 'examples.validation.guideMeta', summaryIcon: 'guideText', variant: 'technical',
             className: 'demo-column-guide--validation',
+            intro: 'This example shows built-in and custom validation rules. Edit fields, create anomalies and inspect the report to understand how errors are detected and displayed.',
+            introKey: 'examples.validation.guideIntro',
             points: [
                 { title: 'Field rules', titleKey: 'examples.validation.point1Title', description: 'Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.', descriptionKey: 'examples.validation.detail1', descriptionEmphasisKey: 'examples.validation.detail1Emphasis' },
                 { title: 'Visible errors', titleKey: 'examples.validation.point2Title', description: 'Leaving an invalid edited cell associates feedback with that cell and row.', descriptionKey: 'examples.validation.detail2' },

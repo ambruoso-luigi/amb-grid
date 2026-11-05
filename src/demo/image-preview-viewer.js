@@ -43,8 +43,8 @@ export default function imagePreviewViewer(app) {
             <h2 data-i18n="${prefix}.title">Image Preview & Viewer</h2>
             <p class="demo-note" data-i18n="${prefix}.intro">Explore seven photo collections in one read-only table. Hover for a preview or open the viewer to browse, zoom and pan.</p>
             ${createDemoColumnGuide({
-                summary: 'How this table works', summaryKey: `${prefix}.detailsTitle`,
-                summaryMeta: 'Images · preview · viewer', summaryMetaKey: `${prefix}.guideMeta`, summaryIcon: 'help', variant: 'technical',
+                summary: 'Image Preview & Viewer Technical Guide', summaryKey: `${prefix}.detailsTitle`,
+                summaryMeta: 'Images · preview · viewer', summaryMetaKey: `${prefix}.guideMeta`, summaryIcon: 'guideText', variant: 'technical',
                 intro: 'One read-only AMB.table uses the public image formatter to show local photos and galleries. The viewer and its controls are native to AMB Grid.', introKey: `${prefix}.detailsText`,
                 points: [
                     { title: 'Image formatter', titleKey: `${prefix}.point1Title`, description: 'AMB.formatters.image() renders thumbnails without changing their proportions; each value can contain one photo or a collection.', descriptionKey: `${prefix}.detail1` },

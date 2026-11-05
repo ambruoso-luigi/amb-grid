@@ -53,8 +53,8 @@ export default function crudRowStates(app) {
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
                 ${createDemoColumnGuide({
-            summary: 'CRUD technical guide', summaryKey: 'examples.crudRowStates.detailsTitle',
-            summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'guide', variant: 'technical',
+            summary: 'CRUD Technical Guide', summaryKey: 'examples.crudRowStates.detailsTitle',
+            summaryMeta: 'Identity · states · errors · save', summaryMetaKey: 'examples.crudRowStates.guideMeta', summaryIcon: 'guideText', variant: 'technical',
             intro: 'This is the technical guide for CRUD & Row States. The table starts with nine clean records. Prepare states explicitly restores the baseline and creates a valid lifecycle scenario.', introKey: 'examples.crudRowStates.guideIntro',
             points: [
                 { title: 'Identity and states', titleKey: 'examples.crudRowStates.point1Title', description: 'Reports distinguish persistent IDs, temporary IDs, row numbers and lifecycle states.', descriptionKey: 'examples.crudRowStates.detail1' },

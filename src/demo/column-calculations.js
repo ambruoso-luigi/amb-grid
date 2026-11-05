@@ -13,9 +13,9 @@ export default function columnCalculations(app) {
         <h2 data-i18n="examples.columnCalculations.title">Column calculations</h2>
         <p class="demo-note" data-i18n="examples.columnCalculations.intro" data-i18n-emphasis="examples.columnCalculations.introEmphasis">Column calculations shows built-in aggregates and custom calculations defined by the developer, updated directly in their respective columns when the data changes.</p>
         ${createDemoColumnGuide({
-            summary: 'How column calculations work',
+            summary: 'Column Calculations Technical Guide',
             summaryKey: 'examples.columnCalculations.detailsTitle',
-            summaryMeta: 'Count · sum · avg · min · max', summaryMetaKey: 'examples.columnCalculations.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Count · sum · avg · min · max', summaryMetaKey: 'examples.columnCalculations.guideMeta', summaryIcon: 'guideText', variant: 'technical',
             intro: 'AMB Grid displays aggregate values in the calculation row. Each result uses its own column values and updates when the data changes.',
             introKey: 'examples.columnCalculations.detailsText',
             points: [

@@ -134,9 +134,9 @@ export default function dates(app) {
         <h2 data-i18n="examples.dates.title">Dates</h2>
         <p class="demo-note" data-i18n="examples.dates.intro">Compare manual date input, multiple formats, validation ranges, and real datepicker modes.</p>
         ${createDemoColumnGuide({
-            summary: 'How dates work',
+            summary: 'Dates Technical Guide',
             summaryKey: 'examples.dates.detailsTitle',
-            summaryMeta: 'Input · formats · datepicker', summaryMetaKey: 'examples.dates.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Input · formats · datepicker', summaryMetaKey: 'examples.dates.guideMeta', summaryIcon: 'guideText', variant: 'technical',
             intro: 'The example keeps date format, editor behavior, display, validation, and range constraints aligned through shared date configurations.',
             introKey: 'examples.dates.detailsText',
             points: [

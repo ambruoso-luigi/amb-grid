@@ -173,9 +173,11 @@ export default function multifieldLookup(app) {
                 <div class="demo-crud-heading__commands">
                     <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="multifield-lookup-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
             ${createDemoColumnGuide({
-            summary: 'How multifield lookup works',
+            summary: 'Multifield Lookup Technical Guide',
             summaryKey: 'examples.multifieldLookup.detailsTitle',
-            summaryMeta: 'Search · multi-field mapping', summaryMetaKey: 'examples.multifieldLookup.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Search · multi-field mapping', summaryMetaKey: 'examples.multifieldLookup.guideMeta', summaryIcon: 'guideText', variant: 'technical',
+            intro: 'This example shows how to select a record through autocomplete or a search dialog, updating the master field and its dependent fields together.',
+            introKey: 'examples.multifieldLookup.guideIntro',
             points: [
                 { title: 'Select a record', titleKey: 'examples.multifieldLookup.point1Title', description: 'Edit Municipality to type for autocomplete or use its search button for the complete lookup.', descriptionKey: 'examples.multifieldLookup.detail1' },
                 { title: 'Master field', titleKey: 'examples.multifieldLookup.point2Title', description: 'Municipality is the actionable master field; dependent fields remain readonly.', descriptionKey: 'examples.multifieldLookup.detail2' },

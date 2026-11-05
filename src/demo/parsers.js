@@ -162,9 +162,9 @@ export default function parsers(app) {
         <h2 data-i18n="examples.parsers.title">Parsers</h2>
         <p class="demo-note" data-i18n="examples.parsers.intro">Edit an input value and inspect the normalized representation produced for a predictable payload.</p>
         ${createDemoColumnGuide({
-            summary: 'How parsers work',
+            summary: 'Parsers Technical Guide',
             summaryKey: 'examples.parsers.detailsTitle',
-            summaryMeta: 'Normalization · payload', summaryMetaKey: 'examples.parsers.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Normalization · payload', summaryMetaKey: 'examples.parsers.guideMeta', summaryIcon: 'guideText', variant: 'technical',
             intro: 'Parsers normalize visual values into backend-oriented shapes. They can reject incoherent syntax, but they do not replace validation or business rules.',
             introKey: 'examples.parsers.detailsText',
             points: [

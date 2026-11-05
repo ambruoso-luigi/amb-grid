@@ -2814,6 +2814,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     background: #eef6fc;
     border: 1px solid #cfe0ed;
     border-radius: 8px;
+    box-sizing: border-box;
     color: var(--amb-site-blue-strong);
     display: inline-flex;
     grid-area: icon;
@@ -2849,6 +2850,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     background: #ffffff;
     border: 1px solid #ccdae6;
     border-radius: 999px;
+    box-sizing: border-box;
     color: var(--amb-site-blue-strong);
     display: inline-flex;
     grid-area: chevron;
@@ -5321,7 +5323,6 @@ body .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__message {
 
 .demo-example .demo-crud-heading .demo-disclosure--technical {
     align-self: start;
-    box-shadow: none;
     margin: 0;
     max-width: 100%;
     min-width: 0;
@@ -5330,48 +5331,6 @@ body .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__message {
 .demo-example .demo-crud-heading .demo-disclosure--technical[open] {
     flex-basis: 100%;
     width: 100%;
-}
-
-.demo-example .demo-crud-heading .demo-disclosure__summary--technical {
-    background: #fff;
-    gap: 7px;
-    grid-template-areas: "icon title chevron";
-    grid-template-columns: 24px auto 24px;
-    min-height: 38px;
-    padding: 5px 9px;
-}
-
-.demo-example .demo-validation-heading .demo-disclosure__summary--technical {
-    gap: 10px;
-}
-
-.demo-example .demo-validation-heading .demo-disclosure__technical-icon {
-    color: #24466b;
-    height: 20px;
-    stroke: #24466b;
-    stroke-width: 2;
-    width: 20px;
-}
-
-.demo-example .demo-crud-heading .demo-disclosure__technical-leading,
-.demo-example .demo-crud-heading .demo-disclosure__technical-chevron {
-    border-radius: 6px;
-    height: 24px;
-    width: 24px;
-}
-
-.demo-example .demo-crud-heading .demo-disclosure__technical-meta {
-    display: none;
-}
-
-.demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__summary--technical {
-    grid-template-areas: "icon title meta chevron";
-    grid-template-columns: 24px auto minmax(0, 1fr) 24px;
-}
-
-.demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__technical-meta {
-    display: block;
-    justify-self: end;
 }
 
 .demo-example > .demo-crud-heading + .demo-note {
@@ -5392,14 +5351,5 @@ body .demo-crud-row-confirm-dialog--delete .teh-confirm-dialog__message {
 
     .demo-example .demo-crud-heading__commands {
         justify-content: flex-start;
-    }
-
-    .demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__technical-meta {
-        display: none;
-    }
-
-    .demo-example .demo-crud-heading .demo-disclosure--technical[open] .demo-disclosure__summary--technical {
-        grid-template-areas: "icon title chevron";
-        grid-template-columns: 24px minmax(0, 1fr) 24px;
     }
 }

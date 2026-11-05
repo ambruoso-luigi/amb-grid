@@ -134,9 +134,11 @@ export default function autocomplete(app) {
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="autocomplete-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
-            summary: 'How autocomplete works',
+            summary: 'Autocomplete Technical Guide',
             summaryKey: 'examples.autocomplete.detailsTitle',
-            summaryMeta: 'Assisted input · suggestions', summaryMetaKey: 'examples.autocomplete.guideMeta', summaryIcon: 'help', variant: 'technical',
+            summaryMeta: 'Assisted input · suggestions', summaryMetaKey: 'examples.autocomplete.guideMeta', summaryIcon: 'guideText', variant: 'technical',
+            intro: 'This example shows assisted input with dynamic suggestions. Compare fields that require a listed value with fields that also accept custom values.',
+            introKey: 'examples.autocomplete.guideIntro',
             points: [
                 { title: 'Suggestions', titleKey: 'examples.autocomplete.point1Title', description: 'Matching options appear and narrow while you type.', descriptionKey: 'examples.autocomplete.detail1' },
                 { title: 'Strict values', titleKey: 'examples.autocomplete.point2Title', description: 'Department fields require a value from the supplied list.', descriptionKey: 'examples.autocomplete.detail2' },
