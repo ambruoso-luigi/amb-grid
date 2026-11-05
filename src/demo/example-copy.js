@@ -1,6 +1,12 @@
 export const publicExampleTranslations = {
     it: {
         'examples.imagePreviewViewer.title': 'Image Preview & Viewer',
+        'examples.imagePreviewViewer.catalog.city.subject': 'Grandi città del mondo',
+        'examples.imagePreviewViewer.catalog.city.description': 'Skyline, metropoli e quartieri iconici tra New York e le grandi città asiatiche.',
+        'examples.imagePreviewViewer.catalog.sea.subject': 'Mare e vacanze italiane',
+        'examples.imagePreviewViewer.catalog.sea.description': 'Spiagge, borghi e panorami del Mediterraneo, tra ricordi d\'estate e località iconiche.',
+        'examples.imagePreviewViewer.catalog.retro.subject': 'Oggetti vintage anni \'80',
+        'examples.imagePreviewViewer.catalog.retro.description': 'Pubblicità e icone tecnologiche che raccontano il design, l\'innovazione e la nostalgia degli anni Ottanta.',
         'examples.imagePreviewViewer.tutorialTitle': 'Esplora Image Preview & Viewer',
         'examples.imagePreviewViewer.tutorialLabel': 'Tutorial interattivo',
         'examples.imagePreviewViewer.tutorialClose': 'Chiudi',
@@ -367,6 +373,12 @@ export const publicExampleTranslations = {
     },
     en: {
         'examples.imagePreviewViewer.title': 'Image Preview & Viewer',
+        'examples.imagePreviewViewer.catalog.city.subject': 'Great cities of the world',
+        'examples.imagePreviewViewer.catalog.city.description': 'Skylines, metropolises and iconic neighborhoods, from New York to major Asian cities.',
+        'examples.imagePreviewViewer.catalog.sea.subject': 'Italian seaside and holidays',
+        'examples.imagePreviewViewer.catalog.sea.description': 'Beaches, villages and Mediterranean landscapes, evoking summer memories and iconic destinations.',
+        'examples.imagePreviewViewer.catalog.retro.subject': 'Vintage objects of the 1980s',
+        'examples.imagePreviewViewer.catalog.retro.description': 'Advertisements and technological icons reflecting the design, innovation and nostalgia of the 1980s.',
         'examples.imagePreviewViewer.tutorialTitle': 'Explore Image Preview & Viewer',
         'examples.imagePreviewViewer.tutorialLabel': 'Interactive tutorial',
         'examples.imagePreviewViewer.tutorialClose': 'Close',
