@@ -440,11 +440,18 @@ export default function autocomplete(app) {
         const edit = activeEdit;
         activeEdit = null;
         if (destroyed || !edit || edit.cell !== cell) return;
-        const value = cell.getValue();
+        let value = cell.getValue();
+        const matchedCity = edit.field === 'city' && typeof value === 'string'
+            ? cities.find(city => city.toLocaleLowerCase('it') === value.toLocaleLowerCase('it'))
+            : undefined;
+        if (matchedCity && value !== matchedCity) {
+            cell.setValue(matchedCity);
+            value = matchedCity;
+        }
         const row = demo.getStateReport().rows.find(item => item.id === edit.id);
         const selectedNow = edit.suggestedValues.has(value)
             && (edit.selected === value || edit.highlighted === value);
-        const confirmedSuggestion = selectedNow || (acquiredSuggestion?.stepId === edit.context?.stepId
+        const confirmedSuggestion = Boolean(matchedCity) || selectedNow || (acquiredSuggestion?.stepId === edit.context?.stepId
             && acquiredSuggestion.id === edit.id && acquiredSuggestion.field === edit.field
             && acquiredSuggestion.value === value);
         const editorClosed = !cell.getElement().querySelector('.amb-autocomplete-editor');
