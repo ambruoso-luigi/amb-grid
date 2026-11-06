@@ -371,8 +371,8 @@ describe('demo action tutorial controller', () => {
             titleKey: 'examples.imagePreviewViewer.tutorialTitle',
             completedKey: 'examples.imagePreviewViewer.tutorialCompleted',
             steps: [
-                { id: 'explore-gallery', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialGallery', isComplete: payload => payload.galleryId === 'TRV-001' && payload.navigated },
-                { id: 'explore-portrait', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialPortrait', isComplete: payload => payload.galleryId === 'TRV-002' && payload.portraitViewed && payload.focusRestored }
+                { id: 'explore-gallery', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialGallery', isComplete: payload => payload.galleryId === 'CITY-001' && payload.tokyoAfterNewYork === true },
+                { id: 'explore-portrait', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialPortrait', isComplete: payload => payload.galleryId === 'SEA-001' && payload.fiordoViewed === true && payload.focusRestored === true }
             ]
         });
         controllers.push(controller);
@@ -380,14 +380,15 @@ describe('demo action tutorial controller', () => {
         const instruction = find(root, element => element.getAttribute('aria-live') === 'polite');
         expect(find(root, element => element.tagName === 'ol').children).toHaveLength(2);
         expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('1 di 2');
-        expect(controller.notify('viewer-closed', { galleryId: 'TRV-001', navigated: false }, controller.capture())).toBe(false);
-        expect(controller.notify('viewer-closed', { galleryId: 'TRV-001', navigated: true }, controller.capture())).toBe(true);
+        expect(controller.notify('viewer-closed', { galleryId: 'CITY-001', tokyoAfterNewYork: false }, controller.capture())).toBe(false);
+        expect(controller.notify('viewer-closed', { galleryId: 'CITY-001', tokyoAfterNewYork: true }, controller.capture())).toBe(true);
         expect(root.getAttribute('data-tutorial-step')).toBe('explore-portrait');
         controller.setLocale('en');
-        expect(instruction.textContent).toContain('Nature and Villages');
+        expect(instruction.textContent).toContain('Italian seaside and holidays');
         expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('2 of 2');
-        expect(controller.notify('viewer-closed', { galleryId: 'TRV-002', portraitViewed: true, focusRestored: true }, controller.capture())).toBe(true);
-        expect(instruction.textContent).toBe('Tutorial complete. You explored galleries and photos with different aspect ratios.');
+        expect(controller.notify('viewer-closed', { galleryId: 'SEA-001', fiordoViewed: true, focusRestored: false }, controller.capture())).toBe(false);
+        expect(controller.notify('viewer-closed', { galleryId: 'SEA-001', fiordoViewed: true, focusRestored: true }, controller.capture())).toBe(true);
+        expect(instruction.textContent).toBe('Tutorial complete. You explored New York and Tokyo and the vertical photograph of Fiordo di Furore.');
     });
 
     test('ignores unrelated, unsuccessful and missing-context notifications without caching them', () => {
