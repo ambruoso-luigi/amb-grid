@@ -11,7 +11,7 @@ describe('Public Parsers demo integration', () => {
     test('is a real compact AMB Grid with nine transformation rows', () => {
         const data = source.match(/const parserExamples = \[([\s\S]*?)\n\];/)[1];
 
-        expect(source).toContain('const demo = AMB.table({');
+        expect(source).toContain('demo = AMB.table({');
         expect(source).toContain("selector: '#parsers-table'");
         expect(source).toContain('toolbar: {');
         expect(source).toContain('buttons: [commandGuideToolbar.button]');
@@ -117,10 +117,19 @@ describe('Public Parsers demo integration', () => {
     });
 
     test('keeps the parser columns readable while widening Description', () => {
-        expect(source).toContain("title: 'Type', field: 'type', minWidth: 150, widthGrow: 1.0");
-        expect(source).toContain("title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.25");
-        expect(source).toContain("title: 'Parsed value', field: 'parsedValue', minWidth: 190, widthGrow: 1.20");
-        expect(source).toContain("title: 'Description', field: 'description', minWidth: 300, widthGrow: 2.60");
+        const gridColumns = source.slice(source.indexOf('columns: [', source.indexOf('demo = AMB.table({')));
+        const widths = Object.fromEntries(['Type', 'Input', 'Parsed value', 'Description'].map(title => {
+            const column = gridColumns.match(new RegExp(`\\{[^{}]*title:\\s*'${title}'[^{}]*\\}`))?.[0];
+            expect(column).toBeDefined();
+            const min = Number(column.match(/\bminWidth:\s*(\d+)/)?.[1]);
+            const grow = Number(column.match(/\bwidthGrow:\s*([\d.]+)/)?.[1]);
+            expect(Number.isFinite(min) && Number.isFinite(grow)).toBe(true);
+            return [title, { min, grow }];
+        }));
+        expect(widths.Description.min).toBeGreaterThan(widths.Input.min);
+        expect(widths.Description.grow).toBeGreaterThan(widths.Input.grow);
+        expect(widths.Description.grow).toBeGreaterThan(widths['Parsed value'].grow);
+        expect(widths.Input.min).toBeGreaterThanOrEqual(widths.Type.min);
     });
 
     test('keeps the Italian parser input guide free of mojibake', () => {

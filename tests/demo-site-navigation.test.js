@@ -341,8 +341,8 @@ describe('demo site navigation', () => {
         expect(main).toContain("import imagePreviewViewer from './image-preview-viewer.js'");
         expect(featureConfig).toContain("id: 'image-preview-viewer'");
         expect(featureConfig).not.toContain("id: 'numeric'");
-        expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Come funzionano i calcoli di colonna'");
-        expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'How column calculations work'");
+        expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Guida tecnica Column Calculations'");
+        expect(copy).toContain("'examples.columnCalculations.detailsTitle': 'Column Calculations technical guide'");
         expect(main).not.toContain('multiple-tables');
         expect(main).toContain('applyI18n();\n    initDemoMotion(container);');
     });
@@ -409,41 +409,35 @@ describe('demo site navigation', () => {
     test('keeps public example disclosures bilingual without a redundant multifield introduction', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
-            ['crud-row-states', 'crudRowStates', 'Identity · states · errors · save'],
-            ['validation', 'validation', 'Rules · errors · constraints'],
-            ['autocomplete', 'autocomplete', 'Assisted input · suggestions'],
-            ['multifield-lookup', 'multifieldLookup', 'Search · multi-field mapping'],
-            ['column-calculations', 'columnCalculations', 'Count · sum · avg · min · max'],
-            ['dates', 'dates', 'Input · formats · datepicker'],
-            ['parsers', 'parsers', 'Normalization · payload']
+            ['crud-row-states', 'crudRowStates'],
+            ['validation', 'validation'],
+            ['autocomplete', 'autocomplete'],
+            ['multifield-lookup', 'multifieldLookup'],
+            ['column-calculations', 'columnCalculations'],
+            ['dates', 'dates'],
+            ['parsers', 'parsers'],
+            ['image-preview-viewer', 'imagePreviewViewer']
         ];
 
-        examples.forEach(([fileName, key, meta]) => {
+        examples.forEach(([fileName, key]) => {
             const source = read(`src/demo/${fileName}.js`);
+            const i18nPrefix = key === 'imagePreviewViewer' ? '${prefix}' : `examples.${key}`;
 
-            expect(source).toContain(`data-i18n="examples.${key}.title"`);
+            expect(source).toContain(`data-i18n="${i18nPrefix}.title"`);
             if (key === 'multifieldLookup') {
-                expect(source).not.toContain(`data-i18n="examples.${key}.intro"`);
+                expect(source).not.toContain(`data-i18n="${i18nPrefix}.intro"`);
             } else {
-                expect(source).toContain(`data-i18n="examples.${key}.intro"`);
+                expect(source).toContain(`data-i18n="${i18nPrefix}.intro"`);
             }
             expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
-            expect(source).toContain(`summaryKey: 'examples.${key}.detailsTitle'`);
-            expect(source).toContain(`summaryMetaKey: 'examples.${key}.guideMeta'`);
-            expect(source).toContain(`summaryMeta: '${meta}'`);
-            expect(source).toContain(fileName === 'crud-row-states'
-                ? "summaryIcon: 'guide'"
-                : "summaryIcon: 'help'");
+            expect(source).toContain(key === 'imagePreviewViewer'
+                ? 'summaryKey: `${prefix}.detailsTitle`'
+                : `summaryKey: 'examples.${key}.detailsTitle'`);
+            expect(source).toContain("summaryIcon: 'guideText'");
             expect(source).toContain("variant: 'technical'");
+            expect(source).not.toContain('summaryMetaKey:');
             expect(copy.match(new RegExp(`'examples\\.${key}\\.detailsTitle'`, 'g'))).toHaveLength(2);
-            expect(copy.match(new RegExp(`'examples\\.${key}\\.guideMeta'`, 'g'))).toHaveLength(2);
         });
-
-        expect(copy).toContain("'examples.crudRowStates.guideMeta': 'Identità · stati · errori · salvataggio'");
-        expect(copy).toContain("'examples.validation.guideMeta': 'Regole · errori · vincoli'");
-        expect(copy).toContain("'examples.autocomplete.guideMeta': 'Input assistito · suggerimenti'");
-        expect(copy).toContain("'examples.multifieldLookup.guideMeta': 'Ricerca · mapping multiplo'");
-        expect(copy).toContain("'examples.parsers.guideMeta': 'Normalizzazione · payload'");
     });
 
     test('uses one demo-only passive-cell policy across public mini examples', () => {
@@ -596,21 +590,24 @@ describe('demo site navigation', () => {
             main.indexOf('const setActiveExample =')
         );
 
-        expect(copy).toContain("'examples.validation.intro': 'Validation mostra regole integrate e validazioni personalizzate definite dallo sviluppatore.");
-        expect(copy).toContain("'examples.validation.detail1': 'I campi mostrano validatori integrati come required, unique, lunghezza, pattern e formato, ma possono anche usare regole custom definite dallo sviluppatore.'");
-        expect(copy).toContain("'examples.validation.intro': 'Validation shows built-in rules and custom validations defined by the developer.");
-        expect(copy).toContain("'examples.validation.detail1': 'Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.'");
+        expect(copy).toContain("'examples.validation.intro': 'Validation mostra regole integrate e controlli personalizzati definiti dallo sviluppatore.");
+        expect(copy).toContain("'examples.validation.detail1': 'Quando confermi la modifica di una cella, AMB Grid esegue automaticamente i validatori associati.");
+        expect(copy).toContain("'examples.validation.intro': 'Validation demonstrates built-in rules and developer-defined custom checks.");
+        expect(copy).toContain("'examples.validation.detail1': 'When you commit a cell edit, AMB Grid automatically runs its configured validators.");
         [
             'examples.validation.introEmphasis',
-            'examples.validation.detail1Emphasis'
+            'examples.validation.detail3Bullet1Emphasis',
+            'examples.validation.detail3Bullet2Emphasis'
         ].forEach(key => {
             expect(copy.match(new RegExp(`'${key.replace(/\./g, '\\.')}':`, 'g'))).toHaveLength(2);
         });
-        expect(guideCopy.match(/'guides\.validation\.document\.emphasis':/g)).toHaveLength(2);
+        expect(guideCopy.match(/'guides\.validation\.fileName\.title':/g)).toHaveLength(2);
+        expect(guideCopy.match(/'guides\.validation\.fileName\.description':/g)).toHaveLength(2);
         expect(validation).toContain('data-i18n-emphasis="examples.validation.introEmphasis"');
-        expect(validation).toContain("descriptionEmphasisKey: 'examples.validation.detail1Emphasis'");
-        expect(validation).toContain("descriptionEmphasisKey: 'guides.validation.document.emphasis'");
+        expect(validation).toContain('line.dataset.i18nEmphasis = `${key}Emphasis`');
+        expect(validation).toContain("badge: 'PATTERN'");
         expect(validation).toContain("badge: 'CUSTOM'");
+        expect(validation).toContain("title: 'File name', titleKey: 'guides.validation.fileName.title'");
         expect(css).toContain('.demo-text-accent');
         expect(css).toContain('color: var(--amb-site-blue-strong);');
         expect(css).toContain('font-weight: 600;');
@@ -704,14 +701,23 @@ describe('demo site navigation', () => {
     });
 
     test('starts feature grids with coherent datasets and a unified CRUD lifecycle example', () => {
+        const arrayBody = (path, declaration) => {
+            const source = read(path);
+            const start = source.indexOf(declaration);
+            expect(start).toBeGreaterThanOrEqual(0);
+            const opening = source.indexOf('[', start + declaration.length - 1);
+            const closing = source.indexOf('];', opening);
+            expect(closing).toBeGreaterThan(opening);
+            return source.slice(opening + 1, closing);
+        };
         const slices = {
-            crudRowStates: read('src/demo/crud-row-states.js').match(/const initialData = \[([\s\S]*?)\n    \];/)[1],
-            validation: read('src/demo/validation.js').match(/const validationData = \[([\s\S]*?)\n\];/)[1],
-            autocomplete: read('src/demo/autocomplete.js').match(/const createAutocompleteData = \(\) => \[([\s\S]*?)\n\];/)[1],
-            multifield: read('src/demo/multifield-lookup.js').match(/const createInitialData = \(\) => \[([\s\S]*?)\n\];/)[1],
-            calculations: read('src/demo/column-calculations.js').match(/data: \[([\s\S]*?)\n        \],/)[1],
-            dates: read('src/demo/dates.js').match(/const dateData = \[([\s\S]*?)\n\];/)[1],
-            parsers: read('src/demo/parsers.js').match(/const parserExamples = \[([\s\S]*?)\n\];/)[1]
+            crudRowStates: arrayBody('src/demo/crud-row-states.js', 'const initialData = ['),
+            validation: arrayBody('src/demo/validation.js', 'const validationData = ['),
+            autocomplete: arrayBody('src/demo/autocomplete.js', 'const createAutocompleteData = () => ['),
+            multifield: arrayBody('src/demo/multifield-lookup.js', 'const createInitialData = () => ['),
+            calculations: arrayBody('src/demo/column-calculations.js', 'const calculationData = ['),
+            dates: arrayBody('src/demo/dates.js', 'const dateData = ['),
+            parsers: arrayBody('src/demo/parsers.js', 'const parserExamples = [')
         };
         const counts = Object.fromEntries(Object.entries(slices).map(([key, source]) => [
             key,
@@ -728,23 +734,29 @@ describe('demo site navigation', () => {
             parsers: 9
         });
         expect(slices.crudRowStates).toContain("id: 'REC-009'");
+        expect(slices.validation).toContain('id: 11');
+        expect(slices.validation).toContain("fileName: 'Note finali.txt'");
+        expect(slices.calculations).toContain('id: 1010');
         expect(read('src/demo/crud-row-states.js')).toContain('let nextId = 10;');
     });
 
     test('updates the ten-row public column calculation results', () => {
         const calculations = read('src/demo/column-calculations.js');
-        const dataSource = calculations.match(/data: \[([\s\S]*?)\n        \],/)[1];
-        const rows = [...dataSource.matchAll(/\{ id: \d+, product: '[^']+', category: '([^']+)', quantity: (\d+), unitPrice: ([\d.]+), deliveryDays: (\d+), score: (\d+) \}/g)]
-            .map(([, category, quantity, unitPrice, deliveryDays, score]) => ({
-                category,
-                quantity: Number(quantity),
-                unitPrice: Number(unitPrice),
-                deliveryDays: Number(deliveryDays),
-                score: Number(score)
-            }));
+        const start = calculations.indexOf('const calculationData = [');
+        expect(start).toBeGreaterThanOrEqual(0);
+        const dataSource = calculations.slice(start, calculations.indexOf('];', start));
+        const field = (row, name) => row.match(new RegExp(`\\b${name}:\\s*('[^']*'|[\\d.]+)`))?.[1];
+        const rows = [...dataSource.matchAll(/\{[^{}]*\bid:\s*\d+[^{}]*\}/g)].map(([row]) => ({
+            product: field(row, 'product')?.slice(1, -1),
+            category: field(row, 'category')?.slice(1, -1),
+            quantity: Number(field(row, 'quantity')),
+            unitPrice: Number(field(row, 'unitPrice')),
+            deliveryDays: Number(field(row, 'deliveryDays')),
+            score: Number(field(row, 'score'))
+        }));
 
         expect(rows).toHaveLength(10);
-        expect((dataSource.match(/product: '[^']*print[^']*'/gi) || [])).toHaveLength(4);
+        expect(rows.filter(row => row.product.toLowerCase().includes('print'))).toHaveLength(4);
         expect(new Set(rows.map(row => row.category)).size).toBe(4);
         expect(rows.reduce((sum, row) => sum + row.quantity, 0)).toBe(200);
         expect((rows.reduce((sum, row) => sum + row.unitPrice, 0) / rows.length).toFixed(2)).toBe('125.00');

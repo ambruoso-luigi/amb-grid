@@ -62,8 +62,8 @@ describe('Public demo column guides', () => {
         const main = read('src/demo/main.js');
         const requiredKeys = [
             'guides.validation.alias.description',
-            'guides.validation.document.description',
-            'guides.validation.document.emphasis',
+            'guides.validation.fileName.title',
+            'guides.validation.fileName.description',
             'guides.autocomplete.strict.description',
             'guides.multifield.municipality.description',
             'guides.rowStates.state.description',
@@ -79,6 +79,18 @@ describe('Public demo column guides', () => {
         requiredKeys.forEach(key => {
             expect(copy.match(new RegExp(`'${key.replace(/\./g, '\\.')}':`, 'g'))).toHaveLength(2);
         });
+        for (const field of ['id', 'alias', 'email', 'accessCode', 'combined', 'iban', 'fileName']) {
+            for (const suffix of ['title', 'description']) {
+                expect(copy.match(new RegExp(`'guides\\.validation\\.${field}\\.${suffix}':`, 'g'))).toHaveLength(2);
+            }
+        }
+        for (let section = 1; section <= 6; section += 1) {
+            expect(exampleCopy.match(new RegExp(`'examples\\.validation\\.point${section}Title':`, 'g'))).toHaveLength(2);
+            expect(exampleCopy.match(new RegExp(`'examples\\.validation\\.detail${section}':`, 'g'))).toHaveLength(2);
+        }
+        for (const suffix of ['Bullet1', 'Bullet2', 'End']) {
+            expect(exampleCopy.match(new RegExp(`'examples\\.validation\\.detail3${suffix}':`, 'g'))).toHaveLength(2);
+        }
         expect(main).toContain("import { demoColumnGuideTranslations } from './demo-column-guide-copy.js'");
         expect(main).toContain('...demoColumnGuideTranslations.it');
         expect(main).toContain('...demoColumnGuideTranslations.en');
@@ -114,10 +126,15 @@ describe('Public demo column guides', () => {
         const multifieldConfig = read('src/demo/multifield-lookup-config.js');
         const fullDemo = read('src/demo/full-demo.js');
 
-        expect(validation).toContain('Required, unique ignoring case, and between 3 and 20 characters.');
-        expect(validation).toContain('developer-defined function rejects document numbers using the reserved TMP prefix.');
+        expect(validation).toContain('Required, case-insensitive unique value between 3 and 20 characters.');
+        expect(validation).toContain('Uses a custom JavaScript function to check forbidden characters and other Windows file-naming rules.');
         expect(validationGuide).toContain("className: 'demo-column-guide--validation'");
-        expect(validationGuide.match(/badge: '/g)).toHaveLength(8);
+        expect(validationGuide.match(/badge: '/g)).toHaveLength(7);
+        expect(validationGuide.match(/titleKey: 'examples\.validation\.point\dTitle'/g)).toHaveLength(6);
+        expect(validationGuide).toContain("title: 'Access Code', titleKey: 'guides.validation.accessCode.title', badge: 'PATTERN'");
+        expect(validationGuide).toContain("title: 'File name', titleKey: 'guides.validation.fileName.title', badge: 'CUSTOM'");
+        expect(validation).toContain("regex: /^[A-Z]{3}[0-9]{3}$/");
+        expect(validation).toContain("validator: AMB.validators.custom(t('fileNameInvalid'), validateFileName)");
         expect(multifield).toContain("badge: 'MASTER'");
         expect(multifield).toContain('Editable master field: type for autocomplete or use the search button to open the complete lookup.');
         expect(multifield).toContain('Derived field, hidden in the lookup and filled after selection.');
@@ -189,17 +206,24 @@ describe('Public Validation demo controller usage', () => {
         );
         expect(source).toMatch(/required:\s*\{\s*message: 'Alias is required'/);
         expect(source).toContain('AMB.validators.anyOf');
-        expect(source).toContain('AMB.validators.custom');
-        expect(source).toContain('hasReservedDocumentPrefix');
+        expect(source).toContain("validator: AMB.validators.custom(t('fileNameInvalid'), validateFileName)");
+        expect(source).toContain("field: 'fileName'");
+        expect(source).toContain("fileName: 'Documento'");
+        expect(source).toContain("fileName: 'CON.txt'");
+        expect(source).toContain("fileName: 'Report?.pdf'");
+        expect(source).toContain('const fileNameViolation = value =>');
+        expect(source).toContain("regex: /^[A-Z]{3}[0-9]{3}$/");
+        expect(source).toContain("badge: 'PATTERN'");
         expect(source).toContain("badge: 'CUSTOM'");
-        expect(source).toContain("descriptionEmphasisKey: 'examples.validation.detail1Emphasis'");
-        expect(source).toContain("descriptionEmphasisKey: 'guides.validation.document.emphasis'");
-        expect(source).toContain('developer-defined function rejects document numbers using the reserved TMP prefix.');
-        expect(source).toContain('Validation shows built-in rules and custom validations defined by the developer.');
-        expect(source).toContain('Fields demonstrate built-in validators such as required, unique, length, pattern, and format, while also supporting custom rules defined by the developer.');
+        expect(source).toContain("titleKey: 'guides.validation.fileName.title'");
+        expect(source).toContain("descriptionKey: 'guides.validation.fileName.description'");
+        expect(source).toContain('Validation demonstrates built-in rules and developer-defined custom checks.');
+        expect(source).toContain('AMB Grid lets developers customize validation in two ways:');
 
         const guideCopy = read('src/demo/demo-column-guide-copy.js');
-        expect(guideCopy).toContain('una funzione definita dallo sviluppatore rifiuta i documenti con prefisso riservato TMP.');
-        expect(guideCopy).toContain('a developer-defined function rejects document numbers using the reserved TMP prefix.');
+        expect(guideCopy).toContain("'guides.validation.fileName.title': 'Nome file'");
+        expect(guideCopy).toContain("'guides.validation.fileName.title': 'File name'");
+        expect(guideCopy).toContain('Utilizza una funzione JavaScript personalizzata per verificare i caratteri vietati');
+        expect(guideCopy).toContain('Uses a custom JavaScript function to check forbidden characters');
     });
 });

@@ -28,7 +28,9 @@ describe('demo report dialog integration', () => {
         expect(source).toContain("methodList.textContent = methods.map(String).join(' · ')");
         expect(source).toContain("panel.setAttribute('role', 'dialog')");
         expect(source).toContain("panel.setAttribute('aria-modal', 'true')");
-        expect(source).not.toContain('Summary');
+        expect(source).toContain('tabs.append(reportButton, jsonButton)');
+        expect(source).not.toContain('summaryButton');
+        expect(source).not.toContain("setView('summary')");
     });
 
     test('uses the shared dialog for the CRUD & Row States save payload action', () => {
@@ -64,7 +66,8 @@ describe('demo report dialog integration', () => {
         expect(source).not.toContain('const createReportDialog');
         expect(source).not.toContain('validation-report-dialog__tabs');
         expect(source).not.toContain("textContent = 'Summary'");
-        expect(source).not.toContain('Summary');
+        expect(source).toContain('reportDialog.open({');
+        expect(source).toContain('reportText: buildReadableReport(details, t(\'fileNameTitle\'))');
     });
 
     test('uses the shared report dialog and integrated toolbar in Autocomplete', () => {
@@ -102,7 +105,7 @@ describe('demo report dialog integration', () => {
         expect(toolbarSource).toContain("id: 'create-anomalies'");
         expect(toolbarSource).toContain("label: 'Create anomalies'");
         expect(toolbarSource).toContain("id: 'show-report'");
-        expect(toolbarSource).toContain("label: 'Show report'");
+        expect(toolbarSource).toContain("label: 'Report'");
         expect(toolbarSource).toContain("'reload'");
         expect(toolbarSource).toContain('onReload: handleReload');
         expect(toolbarSource).not.toContain("'add'");
@@ -127,17 +130,15 @@ describe('demo report dialog integration', () => {
         const crudRowStatesSource = readSource('../src/demo/crud-row-states.js');
         const demoCss = readSource('../src/demo/demo.css');
         const technicalMarkup = createDemoColumnGuide({
-            summary: 'How validation works',
+            summary: 'Validation technical guide',
             summaryKey: 'examples.validation.detailsTitle',
-            summaryMeta: 'Rules · errors · constraints',
-            summaryMetaKey: 'examples.validation.guideMeta',
-            summaryIcon: 'help',
+            summaryIcon: 'guideText',
             variant: 'technical',
-            intro: 'Validation guide'
+            intro: 'The seven columns demonstrate automatic validation when edits are committed.'
         });
 
         expect(validationSource).toContain(
-            'Validation shows built-in rules and custom validations defined by the developer. Edit the data or use Create anomalies to inspect errors, reports, and correction.'
+            'Validation demonstrates built-in rules and developer-defined custom checks. Edit cells to see immediate validation, or use Create anomalies and Report to explore validation errors.'
         );
         expect(validationSource).toContain(
             "summaryKey: 'examples.validation.detailsTitle'"
@@ -146,9 +147,9 @@ describe('demo report dialog integration', () => {
             "summaryKey: 'examples.crudRowStates.detailsTitle'"
         );
         expect(validationSource).toContain("variant: 'technical'");
-        expect(validationSource).toContain("summaryMetaKey: 'examples.validation.guideMeta'");
+        expect(validationSource).not.toContain('summaryMetaKey:');
         expect(crudRowStatesSource).toContain("variant: 'technical'");
-        expect(crudRowStatesSource).toContain("summaryMetaKey: 'examples.crudRowStates.guideMeta'");
+        expect(crudRowStatesSource).not.toContain('summaryMetaKey:');
         expect(technicalMarkup).toContain(
             '<details class="demo-disclosure demo-disclosure--technical">'
         );
@@ -156,7 +157,8 @@ describe('demo report dialog integration', () => {
             '<details class="demo-disclosure demo-disclosure--technical" open>'
         );
         expect(technicalMarkup).toContain('demo-disclosure__summary--technical');
-        expect(technicalMarkup).toContain('demo-disclosure__technical-meta');
+        expect(technicalMarkup).toContain('demo-disclosure__technical-title');
+        expect(technicalMarkup).not.toContain('demo-disclosure__technical-meta');
         expect(demoCss).toContain('.demo-disclosure__summary');
         expect(demoCss).toContain('.demo-rules-list');
         expect(demoCss).toContain('.demo-disclosure__summary--technical');

@@ -911,10 +911,10 @@ describe('AMB toolbar', () => {
 
         expectOrder(readDemo('crud-row-states'), [
             "'add'",
-            "id: 'state-prepare'",
             "'save'",
             "'payload'",
             "id: 'state-report'",
+            "id: 'state-prepare'",
             "'reload'",
             'commandGuideToolbar.button'
         ]);

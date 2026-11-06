@@ -5,8 +5,10 @@ const formatImage = AMB.formatters.image({
     height: 68,
     fit: 'contain',
     preview: true,
-    viewer: true
+    viewer: true,
+    openOn: 'doubleClick'
 });
+AMB.formatters.image({ openOn: 'singleClick' });
 
 const result: HTMLElement = formatImage({
     getValue: () => [
@@ -20,5 +22,7 @@ void result;
 AMB.formatters.image({ fit: 'stretch' });
 // @ts-expect-error Width must be numeric.
 AMB.formatters.image({ width: '48' });
+// @ts-expect-error Only doubleClick and singleClick are valid activation modes.
+AMB.formatters.image({ openOn: 'click' });
 // @ts-expect-error A source URL must be a string.
 formatImage({ getValue: () => ({ src: 42 }) });

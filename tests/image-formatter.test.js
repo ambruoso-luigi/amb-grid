@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { formatters } from '../src/lib/formatters.js';
 import { normalizeImages } from '../src/lib/image-model.js';
-import { getImagePreviewMetadata, getImageViewerMetadata } from '../src/lib/image-renderer.js';
+import { getImagePreviewMetadata, getImageViewerMetadata, getImageViewerOpenOn } from '../src/lib/image-renderer.js';
 import { getImagePreviewPosition, hasImagePreviewFormatter } from '../src/lib/image-preview-runtime.js';
 
 const createElement = tagName => ({
@@ -49,6 +49,21 @@ describe('public image formatter', () => {
         for (const options of [null, [], { width: 0 }, { height: Infinity }, { fit: 'fill' }, { preview: 1 }, { viewer: 'yes' }, { unknown: true }]) {
             expect(() => formatters.image(options)).toThrow(TypeError);
         }
+    });
+
+    test('defaults to double-click opening and accepts the single-click compatibility mode', () => {
+        const defaultImage = formatters.image()(cell('/one.jpg'));
+        const singleClickImage = formatters.image({ openOn: 'singleClick', preview: false })(cell('/one.jpg'));
+        const previewOnly = formatters.image({ viewer: false, openOn: 'singleClick' })(cell('/one.jpg'));
+
+        expect(getImageViewerOpenOn(defaultImage)).toBe('doubleClick');
+        expect(getImageViewerOpenOn(singleClickImage)).toBe('singleClick');
+        expect(getImagePreviewMetadata(singleClickImage)).toBeUndefined();
+        expect(getImageViewerMetadata(singleClickImage)).toHaveLength(1);
+        expect(getImagePreviewMetadata(previewOnly)).toMatchObject({ src: '/one.jpg' });
+        expect(getImageViewerMetadata(previewOnly)).toBeUndefined();
+        expect(getImageViewerOpenOn(previewOnly)).toBeUndefined();
+        expect(() => formatters.image({ openOn: 'click' })).toThrow(TypeError);
     });
 
     test('normalizes supported values, filters invalid entries and preserves source data and order', () => {
