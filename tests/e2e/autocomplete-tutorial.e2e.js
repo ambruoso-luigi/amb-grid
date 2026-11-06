@@ -11,6 +11,15 @@ const openDemo = async page => {
     await page.locator('[data-example="autocomplete"]').click();
     await expect(page.locator('#autocomplete-table')).toBeVisible();
 };
+const launchTutorial = async (page, label = 'Avvia tutorial') => {
+    const launch = page.locator('#feature-example [data-action="tutorial-launch"]');
+    await expect(launch).toBeVisible();
+    await expect(launch).toHaveText(label);
+    await expect(tutorial(page)).toBeHidden();
+    await launch.click();
+    await expect(tutorial(page)).toBeVisible();
+    await expect(launch).toBeHidden();
+};
 const openEditor = async (page, id, field) => {
     const target = cell(page, id, field);
     return openEditorFromNavigation(page, target, 'autocomplete tutorial', '#autocomplete-table', 'input.amb-autocomplete-editor');
@@ -18,6 +27,7 @@ const openEditor = async (page, id, field) => {
 
 test('advances only after suggestions, a selected strict value and a committed free value', async ({ page }) => {
     await openDemo(page);
+    await launchTutorial(page);
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'show-suggestions');
     await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 di 3');
     await expect(tutorial(page).locator('.demo-action-tutorial__progress li')).toHaveCount(3);
@@ -41,6 +51,8 @@ test('advances only after suggestions, a selected strict value and a committed f
     await second.press('Enter');
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'choose-department');
     await page.locator('#feature-example [data-action="reload"]').click();
+    await expect(tutorial(page)).toBeVisible();
+    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'choose-department');
     const selected = await openEditor(page, 1, 'requiredDepartment');
     await selected.fill('Sec');
     await selected.press('ArrowDown');
@@ -64,15 +76,17 @@ test('advances only after suggestions, a selected strict value and a committed f
 
 test('keeps language, skip and remount behavior', async ({ page }) => {
     await openDemo(page);
+    await launchTutorial(page);
     await page.getByRole('button', { name: 'English', exact: true }).click();
     await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 3');
     await tutorial(page).locator('[data-tutorial-action="skip"]').click();
-    await expect(tutorial(page).locator('.demo-action-tutorial__bar')).toBeHidden();
-    await tutorial(page).locator('[data-tutorial-action="reopen"]').click();
-    await expect(tutorial(page).locator('.demo-action-tutorial__bar')).toBeVisible();
+    await expect(tutorial(page)).toBeHidden();
+    await launchTutorial(page, 'Resume tutorial');
+    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 3');
     await page.locator('[data-example="validation"]').click();
     await page.locator('[data-example="autocomplete"]').click();
     await expect(tutorial(page)).toHaveCount(1);
+    await launchTutorial(page, 'Start tutorial');
     await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'show-suggestions');
 });
 
@@ -80,6 +94,7 @@ for (const width of [1440, 768, 390]) {
     test(`keeps the tutorial and dropdown usable at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 820 });
         await openDemo(page);
+        await launchTutorial(page);
         await expect(tutorial(page).locator('.demo-action-tutorial__instruction')).toBeVisible();
         const input = await openEditor(page, 1, 'requiredDepartment');
         await input.fill('Sec');
