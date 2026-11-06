@@ -13,8 +13,8 @@
 .demo-image-grid {
     min-width: 0;
     max-width: 100%;
-    --amb-demo-row-height: 116px;
-    --amb-demo-visible-rows: 5;
+    --amb-demo-row-height: 136px;
+    --amb-demo-visible-rows: 3;
 }
 
 .demo-panel .demo-image-grid .tabulator-row {
@@ -33,4 +33,20 @@
 
 .demo-panel .demo-image-grid .tabulator-cell[tabulator-field="images"] {
     text-align: center;
+}
+
+.amb-image-viewer.demo-image-example-viewer .amb-image-viewer-status {
+    font-size: 13px;
+    line-height: 1.45;
+    max-height: 108px;
+    max-width: min(860px, 86vw, calc(100% - 80px));
+    overflow-y: auto;
+    pointer-events: auto;
+    white-space: normal;
+}
+
+@media (max-width: 640px) {
+    .amb-image-viewer.demo-image-example-viewer .amb-image-viewer-status {
+        font-size: 12px;
+    }
 }

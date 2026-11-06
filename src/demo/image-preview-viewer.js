@@ -4,37 +4,27 @@ import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolba
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoIcon } from './demo-icons.js';
-import lake from '../../test/images/landscape-01.jpg';
-import lakeThumbnail from '../../test/images/thumb-landscape-01.jpg';
-import sunflowers from '../../test/images/landscape-02.jpg';
-import toucan from '../../test/images/portrait-01.jpg';
-import village from '../../test/images/portrait-02.jpg';
-import travel from '../../test/images/square-01.jpg';
-import skyline from '../../test/images/panorama-01.jpg';
-import market from '../../test/images/large-01.jpg';
+import { imagePreviewViewerCatalog } from './image-preview-viewer-catalog.js';
 import './image-preview-viewer.css';
 
 const prefix = 'examples.imagePreviewViewer';
-const photoSources = { lake, sunflowers, toucan, village, travel, skyline, market };
-const photoThumbnails = { lake: lakeThumbnail };
 const language = () => document.documentElement.lang === 'en' ? 'en' : 'it';
 const translate = (locale, key) => publicExampleTranslations[locale][`${prefix}.${key}`];
-const photo = (locale, key) => ({
-    src: photoSources[key],
-    ...(photoThumbnails[key] ? { thumbnail: photoThumbnails[key] } : {}),
-    alt: translate(locale, `photo.${key}`),
-    caption: translate(locale, `photo.${key}`)
-});
-
-const imageRows = locale => [
-    { id: 'TRV-001', subject: translate(locale, 'row.horizons'), description: translate(locale, 'rowDescription.horizons'), images: ['lake', 'toucan', 'skyline'].map(key => photo(locale, key)) },
-    { id: 'TRV-002', subject: translate(locale, 'row.wildlife'), description: translate(locale, 'rowDescription.wildlife'), images: ['toucan', 'village'].map(key => photo(locale, key)) },
-    { id: 'TRV-003', subject: translate(locale, 'row.details'), description: translate(locale, 'rowDescription.details'), images: ['travel', 'market'].map(key => photo(locale, key)) },
-    { id: 'TRV-004', subject: translate(locale, 'row.countryside'), description: translate(locale, 'rowDescription.countryside'), images: ['sunflowers', 'lake'].map(key => photo(locale, key)) },
-    { id: 'CITY-001', subject: translate(locale, 'row.skyline'), description: translate(locale, 'rowDescription.skyline'), images: ['skyline', 'village'].map(key => photo(locale, key)) },
-    { id: 'CITY-002', subject: translate(locale, 'row.market'), description: translate(locale, 'rowDescription.market'), images: [photo(locale, 'market')] },
-    { id: 'CITY-003', subject: translate(locale, 'row.walk'), description: translate(locale, 'rowDescription.walk'), images: ['village', 'travel'].map(key => photo(locale, key)) }
-];
+const translateKey = (locale, key) => publicExampleTranslations[locale][key];
+const photo = (locale, id) => {
+    const entry = imagePreviewViewerCatalog.photographs[id];
+    return {
+        src: entry.assetUrl,
+        alt: translateKey(locale, entry.formatter.altKey),
+        caption: translateKey(locale, entry.formatter.captionKey)
+    };
+};
+const imageRows = locale => imagePreviewViewerCatalog.collections.map(collection => ({
+    id: collection.id,
+    subject: translateKey(locale, collection.subjectKey),
+    description: translateKey(locale, collection.descriptionKey),
+    images: collection.photoIds.map(id => photo(locale, id))
+}));
 
 const imageFormatter = () => AMB.formatters.image({ width: 152, height: 96, fit: 'contain', preview: true, viewer: true });
 
@@ -64,7 +54,7 @@ export default function imagePreviewViewer(app) {
             })}
                 </div>
             </div>
-            <p class="demo-note" data-i18n="${prefix}.intro">Explore seven photo collections in one read-only table. Hover for a preview or open the viewer to browse, zoom and pan.</p>
+            <p class="demo-note" data-i18n="${prefix}.intro">Explore three photo collections featuring thirteen images of great cities, Italian landscapes, and vintage objects. Open the thumbnails to discover galleries, captions, zoom, and photographs in different formats.</p>
             <div class="demo-action-tutorial-host"></div>
             <div class="demo-table-workbench">
                 <div class="demo-command-guide-host"></div>
@@ -103,12 +93,12 @@ export default function imagePreviewViewer(app) {
         steps: [
             {
                 id: 'explore-gallery', actionId: 'viewer-closed', instructionKey: `${prefix}.tutorialGallery`,
-                isComplete: ({ galleryId, navigated }) => galleryId === 'TRV-001' && navigated === true
+                isComplete: ({ galleryId, tokyoAfterNewYork }) => galleryId === 'CITY-001' && tokyoAfterNewYork === true
             },
             {
                 id: 'explore-portrait', actionId: 'viewer-closed', instructionKey: `${prefix}.tutorialPortrait`,
-                isComplete: ({ galleryId, portraitViewed, focusRestored }) => galleryId === 'TRV-002'
-                    && portraitViewed === true && focusRestored === true
+                isComplete: ({ galleryId, fiordoViewed, focusRestored }) => galleryId === 'SEA-001'
+                    && fiordoViewed === true && focusRestored === true
             }
         ]
     });
@@ -129,10 +119,10 @@ export default function imagePreviewViewer(app) {
     grid.table.on('scrollHorizontal', syncTutorialHighlight);
     syncTutorialHighlight();
 
-    const gallerySources = new Map([
-        ['TRV-001', [lake, toucan, skyline]],
-        ['TRV-002', [toucan, village]]
-    ]);
+    const gallerySources = new Map(imagePreviewViewerCatalog.collections.map(collection => [
+        collection.id,
+        collection.photoIds.map(id => imagePreviewViewerCatalog.photographs[id].assetUrl)
+    ]));
     const galleryForSource = source => {
         if (!(source instanceof HTMLElement) || !source.children.length) return null;
         const sources = Array.from(source.children, image => image.tagName === 'IMG' ? image.dataset.original : null);
@@ -151,10 +141,15 @@ export default function imagePreviewViewer(app) {
             source: event.target,
             galleryId,
             context: tutorial.capture(),
-            firstViewedIndex: null,
-            navigated: false,
-            portraitViewed: false
+            locale: currentLocale,
+            newYorkViewed: false,
+            tokyoAfterNewYork: false,
+            fiordoViewed: false
         };
+        const session = activeSession;
+        queueMicrotask(() => {
+            if (activeSession === session) session.source.ownerDocument.querySelector('.amb-image-viewer')?.classList.add('demo-image-example-viewer');
+        });
     };
     const onViewerViewed = event => {
         const session = activeSession;
@@ -162,25 +157,32 @@ export default function imagePreviewViewer(app) {
         const index = event.detail?.index;
         const image = event.detail?.image;
         if (!Number.isInteger(index) || !image?.naturalWidth || !image?.naturalHeight) return;
-        if (session.firstViewedIndex === null) session.firstViewedIndex = index;
-        else if (index !== session.firstViewedIndex) session.navigated = true;
-        if (session.galleryId === 'TRV-002' && image.naturalHeight > image.naturalWidth) {
-            session.portraitViewed = true;
+        if (session.galleryId === 'CITY-001') {
+            if (index === 0) session.newYorkViewed = true;
+            if (index === 1 && session.newYorkViewed) session.tokyoAfterNewYork = true;
+        }
+        if (session.galleryId === 'SEA-001' && index === 1 && image.naturalHeight > image.naturalWidth) {
+            queueMicrotask(() => {
+                if (activeSession !== session) return;
+                const caption = translateKey(session.locale, imagePreviewViewerCatalog.photographs.seaFiordoFurore.caption);
+                const status = session.source.ownerDocument.querySelector('.amb-image-viewer .amb-image-viewer-status');
+                if (status?.textContent.includes(caption)) session.fiordoViewed = true;
+            });
         }
     };
     const onViewerHidden = event => {
         const session = activeSession;
         if (!session || session.source !== event.target) return;
         activeSession = null;
-        if (session.galleryId === 'TRV-001' && session.navigated) {
-            tutorial.notify('viewer-closed', { galleryId: session.galleryId, navigated: true }, session.context);
+        if (session.galleryId === 'CITY-001' && session.tokyoAfterNewYork) {
+            tutorial.notify('viewer-closed', { galleryId: session.galleryId, tokyoAfterNewYork: true }, session.context);
         }
-        if (session.galleryId === 'TRV-002' && session.portraitViewed) {
+        if (session.galleryId === 'SEA-001' && session.fiordoViewed) {
             queueMicrotask(() => {
                 if (destroyed || activeSession) return;
                 const owner = app.querySelector('#image-preview-viewer-table');
                 const focusRestored = owner === document.activeElement || owner?.contains(document.activeElement);
-                tutorial.notify('viewer-closed', { galleryId: session.galleryId, portraitViewed: true, focusRestored }, session.context);
+                tutorial.notify('viewer-closed', { galleryId: session.galleryId, fiordoViewed: true, focusRestored }, session.context);
             });
         }
     };
@@ -253,7 +255,7 @@ export default function imagePreviewViewer(app) {
             clearTutorialHighlight();
             return;
         }
-        const id = tutorialState.stepId === 'explore-gallery' ? 'TRV-001' : 'TRV-002';
+        const id = tutorialState.stepId === 'explore-gallery' ? 'CITY-001' : 'SEA-001';
         const target = grid.table.getRow(id)?.getCell('images')?.getElement()?.querySelector('.amb-image--viewable');
         if (target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target--pulse')) return;
