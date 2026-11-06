@@ -2,9 +2,11 @@ import { normalizeImages } from './image-model.js';
 
 const previewMetadata = new WeakMap();
 const viewerMetadata = new WeakMap();
+const viewerOpenOn = new WeakMap();
 
 export const getImagePreviewMetadata = element => previewMetadata.get(element);
 export const getImageViewerMetadata = element => viewerMetadata.get(element);
+export const getImageViewerOpenOn = element => viewerOpenOn.get(element);
 
 const createPlaceholder = (label, extraClass = '') => {
     const placeholder = document.createElement('span');
@@ -13,7 +15,7 @@ const createPlaceholder = (label, extraClass = '') => {
     return placeholder;
 };
 
-export const renderImage = (value, { width, height, fit, preview, viewer }) => {
+export const renderImage = (value, { width, height, fit, preview, viewer, openOn }) => {
     const images = normalizeImages(value);
     const root = document.createElement(viewer && images.length ? 'button' : 'span');
     root.className = 'amb-image';
@@ -33,6 +35,7 @@ export const renderImage = (value, { width, height, fit, preview, viewer }) => {
             ? `Apri raccolta di ${images.length} immagini${first.alt ? ': ' + first.alt : ''}`
             : `Apri immagine${first.alt ? ': ' + first.alt : ''}`);
         viewerMetadata.set(root, images);
+        viewerOpenOn.set(root, openOn);
     }
     if (preview) {
         if (!viewer) root.tabIndex = 0;

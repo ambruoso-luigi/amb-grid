@@ -30,6 +30,7 @@ export default function crudRowStates(app) {
     let rowActionGlow = null;
     let rowActionGlowFrame = null;
     let guidedDeleteConfirmation = null;
+    let guidedRollbackConfirmation = null;
     let tutorialStarted = false;
     const t = (key, values = {}) => {
         const locale = document.documentElement.lang === 'en' ? 'en' : 'it';
@@ -266,6 +267,7 @@ export default function crudRowStates(app) {
         cancelPendingAdditions();
         clearTutorialHighlight();
         guidedDeleteConfirmation = null;
+        guidedRollbackConfirmation = null;
         app.removeEventListener('click', handleTutorialRayClick, true);
         tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
         tutorialEdits.clear();
@@ -391,13 +393,17 @@ export default function crudRowStates(app) {
     function syncTutorialHighlight() {
         if (!demo || destroyed || resettingScenario || preparingStates || !tutorialState
             || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
-            if (destroyed || resettingScenario || tutorialState?.hidden || tutorialState?.complete || tutorialState?.destroyed) guidedDeleteConfirmation = null;
+            if (destroyed || resettingScenario || tutorialState?.hidden || tutorialState?.complete || tutorialState?.destroyed) {
+                guidedDeleteConfirmation = null;
+                guidedRollbackConfirmation = null;
+            }
             clearTutorialHighlight({ resetAction: destroyed || resettingScenario || tutorialState?.complete
                 || tutorialState?.resetting || tutorialState?.restartFailed || tutorialState?.destroyed });
             return;
         }
         const { stepId, actionIndex } = tutorialState;
         if (stepId !== 'delete-record') guidedDeleteConfirmation = null;
+        if (stepId !== 'rollback-record') guidedRollbackConfirmation = null;
         const actionKey = `${stepId}:${actionIndex}`;
         if (highlightedAction !== actionKey) {
             clearTutorialHighlight();
@@ -423,7 +429,14 @@ export default function crudRowStates(app) {
         }
         else if (stepId === 'frontend-report' && actionIndex === 0) { recordId = 'REC-004'; field = 'description'; }
         else if (stepId === 'frontend-report') toolbarAction = 'state-report';
-        else if (stepId === 'rollback-record') { recordId = 'REC-004'; rowAction = 'rollback'; }
+        else if (stepId === 'rollback-record') {
+            if (guidedRollbackConfirmation?.accepted) target = null;
+            else if (guidedRollbackConfirmation?.resolver && rowConfirmDialog.resolveCurrent === guidedRollbackConfirmation.resolver
+                && rowConfirmDialog.element?.classList.contains('demo-crud-row-confirm-dialog--rollback')) {
+                target = rowConfirmDialog.confirmButton;
+                rayTarget = true;
+            } else { recordId = 'REC-004'; rowAction = 'rollback'; }
+        }
         else if (stepId === 'partial-save' && actionIndex === 1 && partialSaveDialog.resolveCurrent) {
             target = partialSaveDialog.confirmButton;
             rayTarget = true;
@@ -479,23 +492,27 @@ export default function crudRowStates(app) {
         const context = preparingStates ? null : tutorial.capture();
         const previous = crud.getStateReport().rows.find(row => row.key === id);
         const isExistingDelete = action === 'delete' && previous?.state !== 'new';
+        const isExistingRollback = action === 'rollback' && previous?.state === 'modified';
         const recordId = previous?.id === null || previous?.id === undefined ? '' : String(previous.id).trim();
         const safeRecordId = recordId && recordId !== 'undefined' && recordId !== 'null' ? recordId : '';
         const deleteTitle = safeRecordId ? t('deleteTitle', { id: safeRecordId }) : t('deleteTitleFallback');
+        const rollbackRecordId = safeRecordId && previous?.tempId !== safeRecordId && !/^(?:tmp|temp)[-_]/i.test(safeRecordId)
+            ? safeRecordId : '';
+        const rollbackTitle = rollbackRecordId ? t('rollbackTitle', { id: rollbackRecordId }) : t('rollbackTitleFallback');
         const oldElement = rowConfirmDialog.element;
         const oldPanel = rowConfirmDialog.panelElement;
         const oldHeader = oldPanel?.querySelector('.demo-crud-row-confirm-dialog__header');
-        oldElement?.classList.remove('demo-crud-row-confirm-dialog--delete');
+        oldElement?.classList.remove('demo-crud-row-confirm-dialog--delete', 'demo-crud-row-confirm-dialog--rollback');
         if (oldHeader) {
             oldPanel.prepend(rowConfirmDialog.titleElement);
             oldHeader.remove();
         }
         if (!isExistingDelete && highlightedControl === rowConfirmDialog.confirmButton) clearTutorialHighlight();
         const confirmation = rowConfirmDialog.confirm({
-            title: isExistingDelete ? deleteTitle : t('confirmTitle'),
-            message: isExistingDelete ? t('deleteMessage') : t(`confirm.${action}`),
-            confirmText: isExistingDelete ? t('deleteConfirm') : t('confirm'),
-            cancelText: t('cancel')
+            title: isExistingDelete ? deleteTitle : isExistingRollback ? rollbackTitle : t('confirmTitle'),
+            message: isExistingDelete ? t('deleteMessage') : isExistingRollback ? t('rollbackMessage') : t(`confirm.${action}`),
+            confirmText: isExistingDelete ? t('deleteConfirm') : isExistingRollback ? t('rollbackConfirm') : t('confirm'),
+            cancelText: isExistingRollback ? t('rollbackCancel') : t('cancel')
         });
         const { element, panelElement, titleElement, messageElement, confirmButton: dialogConfirmButton } = rowConfirmDialog;
         element.classList.add('demo-crud-row-confirm-dialog');
@@ -518,11 +535,28 @@ export default function crudRowStates(app) {
                     document.createTextNode(message.slice(deletedIndex + 'deleted'.length)));
             }
             dialogConfirmButton.insertAdjacentHTML('afterbegin', demoIcon('delete', { size: 18, strokeWidth: 2.2 }));
+        } else if (isExistingRollback) {
+            element.classList.add('demo-crud-row-confirm-dialog--rollback');
+            const header = document.createElement('div');
+            const badge = document.createElement('span');
+            header.className = 'demo-crud-row-confirm-dialog__header';
+            badge.className = 'demo-crud-row-confirm-dialog__badge';
+            badge.setAttribute('aria-hidden', 'true');
+            badge.innerHTML = demoIcon('undo2', { size: 22, strokeWidth: 2.2 });
+            header.append(badge, titleElement);
+            panelElement.prepend(header);
+            dialogConfirmButton.insertAdjacentHTML('afterbegin', demoIcon('undo2', { size: 18, strokeWidth: 2.2 }));
         }
         const guidedDelete = context?.stepId === 'delete-record' && action === 'delete' && id === 'REC-003'
             && rowConfirmDialog.resolveCurrent ? { resolver: rowConfirmDialog.resolveCurrent, accepted: false } : null;
+        const guidedRollback = context?.stepId === 'rollback-record' && isExistingRollback
+            && rowConfirmDialog.resolveCurrent ? { resolver: rowConfirmDialog.resolveCurrent, accepted: false } : null;
         if (guidedDelete) {
             guidedDeleteConfirmation = guidedDelete;
+            syncTutorialHighlight();
+        }
+        if (guidedRollback) {
+            guidedRollbackConfirmation = guidedRollback;
             syncTutorialHighlight();
         }
         const confirmButton = guidedDelete ? rowConfirmDialog.confirmButton : null;
@@ -539,6 +573,14 @@ export default function crudRowStates(app) {
                 // Tabulator can replace the row action after the dialog restores focus.
                 if (!confirmed) globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
                     if (isCurrentScenario(generation) && tutorialState?.stepId === 'delete-record') syncTutorialHighlight();
+                }));
+            }
+            if (guidedRollback && guidedRollbackConfirmation === guidedRollback) {
+                if (confirmed) guidedRollback.accepted = true;
+                else guidedRollbackConfirmation = null;
+                syncTutorialHighlight();
+                if (!confirmed) globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
+                    if (isCurrentScenario(generation) && tutorialState?.stepId === 'rollback-record') syncTutorialHighlight();
                 }));
             }
         }
@@ -848,6 +890,7 @@ export default function crudRowStates(app) {
         preparingStates = false;
         clearTutorialHighlight();
         guidedDeleteConfirmation = null;
+        guidedRollbackConfirmation = null;
         tutorialEdits.clear();
         tutorialRowActions.clear();
         demo.table.cancelEdit?.();

@@ -588,12 +588,15 @@ const grid = AMB.table({
 
 `preview: true` (the default) shows the first image on pointer hover or keyboard
 focus; `preview: false` disables that preview. `viewer: true` (the default)
-opens the image or gallery from the thumbnail; `viewer: false` disables opening
-it without disabling the preview. The two options are independent: the viewer
-also works with `preview: false`. Press `Enter` or `Space` on the thumbnail to
-open the viewer, use the arrow keys or its controls to navigate, and press
-`Escape` to close it. Null, empty, or invalid values show a placeholder; invalid
-entries in a collection are skipped.
+enables the viewer; `viewer: false` disables it without disabling the preview.
+With `openOn: 'doubleClick'` (the new default), one click anywhere in the image
+cell selects it, and a double click opens the image or gallery. On touch devices,
+tap the same cell twice within 600 ms. Press `Enter` or `Space` on the active
+image cell to open the viewer, use the arrow keys or its controls to navigate,
+and press `Escape` to close it. To restore the previous immediate-opening
+behavior, use `openOn: 'singleClick'`; one click or tap then opens the viewer.
+Preview and viewer settings remain independent. Null, empty, or invalid values
+show a placeholder; invalid entries in a collection are skipped.
 
 | Option | Type | Default | Meaning |
 | --- | --- | --- | --- |
@@ -602,6 +605,7 @@ entries in a collection are skipped.
 | `fit` | `'contain' \| 'cover'` | `'contain'` | Show the whole image or fill the thumbnail with possible cropping. |
 | `preview` | `boolean` | `true` | Enable the first-image preview on hover or focus. |
 | `viewer` | `boolean` | `true` | Enable opening the single image or gallery. |
+| `openOn` | `'doubleClick' \| 'singleClick'` | `'doubleClick'` | Open on double click/tap or on the first click/tap; Enter and Space work in both modes. |
 
 For example, customize a column's formatter with:
 
@@ -614,6 +618,10 @@ formatter: AMB.formatters.image({
     viewer: true
 })
 ```
+
+For the previous single-click behavior, use
+`AMB.formatters.image({ openOn: 'singleClick' })`. The default change should be
+recorded in the next changelog and release notes.
 
 Image columns can also be added, updated, removed, or replaced through the public
 AMB Grid column APIs; preview and viewer support is synchronized after successful

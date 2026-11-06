@@ -17,7 +17,8 @@ import { renderImage } from './image-renderer.js';
  * @property {number} [height=68] - Thumbnail height in pixels.
  * @property {'contain'|'cover'} [fit='contain'] - Thumbnail sizing mode.
  * @property {boolean} [preview=true] - Show the first image on pointer hover or keyboard focus.
- * @property {boolean} [viewer=true] - Open a single image or gallery from the thumbnail.
+ * @property {boolean} [viewer=true] - Enable opening a single image or gallery from its cell.
+ * @property {'doubleClick'|'singleClick'} [openOn='doubleClick'] - Open the viewer from a double click/tap on the cell, or immediately from a single click/tap. Enter and Space work in either mode.
  */
 
 const normalizeImageOptions = options => {
@@ -25,9 +26,9 @@ const normalizeImageOptions = options => {
         throw new TypeError('Image formatter options must be an object');
     }
 
-    const normalized = { width: 48, height: 68, fit: 'contain', preview: true, viewer: true, ...options };
+    const normalized = { width: 48, height: 68, fit: 'contain', preview: true, viewer: true, openOn: 'doubleClick', ...options };
     for (const key of Object.keys(options)) {
-        if (!['width', 'height', 'fit', 'preview', 'viewer'].includes(key)) {
+        if (!['width', 'height', 'fit', 'preview', 'viewer', 'openOn'].includes(key)) {
             throw new TypeError(`Unknown image formatter option: ${key}`);
         }
     }
@@ -40,6 +41,9 @@ const normalizeImageOptions = options => {
     }
     if (typeof normalized.preview !== 'boolean' || typeof normalized.viewer !== 'boolean') {
         throw new TypeError('Image preview and viewer must be booleans');
+    }
+    if (!['doubleClick', 'singleClick'].includes(normalized.openOn)) {
+        throw new TypeError('Image openOn must be doubleClick or singleClick');
     }
 
     return normalized;
@@ -87,8 +91,9 @@ export const formatters = {
     /**
      * Render a cell's first valid image as a thumbnail, with a count for additional images.
      * Accept a URL string, an image object, or an array of image objects; empty or invalid
-     * values show a placeholder. Preview opens on hover or focus, while the viewer opens
-     * a single image or gallery on activation.
+     * values show a placeholder. Preview opens on hover or focus. With the viewer enabled,
+     * one click selects the cell and a double click opens the image or gallery by default;
+     * Enter and Space open it from the active cell. Set `openOn: 'singleClick'` for immediate opening.
      *
      * @param {ImageFormatterOptions} [options={}] - Image presentation options.
      * @returns {(cell: {getValue: () => ImageValue}) => HTMLElement} Image cell formatter.

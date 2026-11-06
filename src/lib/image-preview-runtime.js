@@ -173,6 +173,8 @@ export const createImagePreviewRuntime = tableElement => {
     };
 
     const getRoot = target => target?.closest?.('.amb-image--previewable');
+    const getFocusRoot = target => getRoot(target)
+        || (target?.matches?.('.tabulator-cell') ? target.querySelector('.amb-image--previewable') : null);
     tableElement.addEventListener('pointerover', event => {
         if (event.pointerType !== 'mouse') return;
         const root = getRoot(event.target);
@@ -184,11 +186,11 @@ export const createImagePreviewRuntime = tableElement => {
         if (root && !root.contains(event.relatedTarget) && session?.root === root) close();
     }, { signal: delegated.signal });
     tableElement.addEventListener('focusin', event => {
-        const root = getRoot(event.target);
+        const root = getFocusRoot(event.target);
         if (root) start(root, true);
     }, { signal: delegated.signal });
     tableElement.addEventListener('focusout', event => {
-        const root = getRoot(event.target);
+        const root = getFocusRoot(event.target);
         if (root && !root.contains(event.relatedTarget) && session?.root === root) close();
     }, { signal: delegated.signal });
 

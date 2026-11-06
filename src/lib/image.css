@@ -17,6 +17,17 @@ button.amb-image {
     cursor: pointer;
 }
 
+.amb-image--viewable,
+.amb-image--viewable .amb-image-thumbnail,
+.amb-image--viewable img {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.amb-image--viewable img {
+    -webkit-user-drag: none;
+}
+
 .amb-image-thumbnail {
     display: block;
     width: 100%;

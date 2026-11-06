@@ -37,6 +37,7 @@ import {
     Sparkles,
     Trash2,
     TriangleAlert,
+    Undo2,
     Workflow,
     X
 } from 'lucide';
@@ -73,6 +74,7 @@ export const demoIcons = {
     payload: FileJson,
     package: Package,
     tutorialPlay: Play,
+    undo2: Undo2,
     warning: TriangleAlert,
     react: Atom,
     report: ClipboardList,

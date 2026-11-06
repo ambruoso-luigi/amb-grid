@@ -1,7 +1,8 @@
 import Viewer from 'viewerjs';
 import { createFocusTrap } from '../ui/focus-trap.js';
-import { getImageViewerMetadata } from './image-renderer.js';
+import { getImageViewerMetadata, getImageViewerOpenOn } from './image-renderer.js';
 import { closeImagePreview } from './image-preview-runtime.js';
+import { focusCellWithoutEditing } from './editors/shared.js';
 
 const activeByDocument = new WeakMap();
 let lastTouchEndAt = 0;
@@ -272,24 +273,115 @@ export const createImageViewerRuntime = tableElement => {
     if (!tableElement) return { destroy() {} };
     const aborter = new AbortController();
     const doc = tableElement.ownerDocument;
-    tableElement.addEventListener('keydown', event => {
-        const trigger = event.target.closest?.('.amb-image--viewable');
-        if (!trigger || !tableElement.contains(trigger) || !['Enter', ' '].includes(event.key)) return;
-        event.preventDefault();
-        event.stopPropagation();
-        trigger.click();
+    let touchPointer = null;
+    let recentTouchTap = null;
+    let previousTouchTap = null;
+    let lastTouchOpenAt = -Infinity;
+    const imageCell = target => {
+        const cell = target?.closest?.('.tabulator-cell');
+        return cell && tableElement.contains(cell) ? cell : null;
+    };
+    const imageControl = cell => {
+        const trigger = cell?.querySelector?.('.amb-image--viewable');
+        const items = trigger && getImageViewerMetadata(trigger);
+        return items?.length ? { trigger, items, openOn: getImageViewerOpenOn(trigger) || 'doubleClick' } : null;
+    };
+    const selectCell = cell => focusCellWithoutEditing({ getElement: () => cell });
+    const openCell = cell => {
+        const control = imageControl(cell);
+        if (!control || activeByDocument.get(doc)?.owner === tableElement) return;
+        selectCell(cell);
+        openCollection(control.items, cell, tableElement);
+    };
+    tableElement.addEventListener('focusin', event => {
+        const cell = imageCell(event.target);
+        if (cell && event.target === imageControl(cell)?.trigger) selectCell(cell);
     }, { capture: true, signal: aborter.signal });
+    tableElement.addEventListener('keydown', event => {
+        if (!['Enter', ' ', 'Spacebar'].includes(event.key) || event.repeat
+            || event.altKey || event.ctrlKey || event.metaKey) return;
+        const cell = imageCell(event.target);
+        const control = imageControl(cell);
+        if (!control || (event.target !== cell && event.target !== control.trigger)) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        openCell(cell);
+    }, { capture: true, signal: aborter.signal });
+    tableElement.addEventListener('pointerdown', event => {
+        if (event.pointerType !== 'touch') return;
+        recentTouchTap = null;
+        const cell = imageCell(event.target);
+        if (!imageControl(cell)) {
+            previousTouchTap = null;
+            touchPointer = null;
+            return;
+        }
+        touchPointer = { id: event.pointerId, cell, x: event.clientX, y: event.clientY };
+    }, { capture: true, signal: aborter.signal });
+    tableElement.addEventListener('pointerup', event => {
+        if (!touchPointer || event.pointerId !== touchPointer.id) return;
+        if (imageCell(event.target) === touchPointer.cell
+            && Math.hypot(event.clientX - touchPointer.x, event.clientY - touchPointer.y) <= 10) {
+            const at = performance.now();
+            recentTouchTap = { cell: touchPointer.cell, at };
+            lastTouchEndAt = at;
+        } else {
+            recentTouchTap = null;
+            previousTouchTap = null;
+        }
+        touchPointer = null;
+    }, { capture: true, signal: aborter.signal });
+    tableElement.addEventListener('pointercancel', () => {
+        touchPointer = null;
+        recentTouchTap = null;
+        previousTouchTap = null;
+    }, { capture: true, signal: aborter.signal });
+    tableElement.addEventListener('mousedown', event => {
+        if (event.detail > 1 && imageControl(imageCell(event.target))) event.preventDefault();
+    }, { capture: true, signal: aborter.signal });
+    tableElement.addEventListener('dragstart', event => {
+        if (imageControl(imageCell(event.target))?.trigger.contains(event.target)) event.preventDefault();
+    }, { signal: aborter.signal });
     tableElement.addEventListener('click', event => {
-        const trigger = event.target.closest?.('.amb-image--viewable');
-        if (!trigger || !tableElement.contains(trigger)) return;
-        const items = getImageViewerMetadata(trigger);
-        if (!items?.length) return;
-        openCollection(items, trigger, tableElement);
+        const cell = imageCell(event.target);
+        const control = imageControl(cell);
+        if (!control) {
+            previousTouchTap = null;
+            return;
+        }
+        if (activeByDocument.get(doc)?.owner === tableElement) {
+            event.preventDefault();
+            return;
+        }
+        selectCell(cell);
+        const now = performance.now();
+        const touch = recentTouchTap?.cell === cell && now - recentTouchTap.at < 350;
+        recentTouchTap = null;
+        if (control.openOn === 'singleClick') {
+            previousTouchTap = null;
+            openCell(cell);
+        } else if (touch && previousTouchTap?.cell === cell && now - previousTouchTap.at <= 600) {
+            previousTouchTap = null;
+            lastTouchOpenAt = now;
+            openCell(cell);
+        } else previousTouchTap = touch ? { cell, at: now } : null;
+    }, { capture: true, signal: aborter.signal });
+    tableElement.addEventListener('dblclick', event => {
+        const cell = imageCell(event.target);
+        const control = imageControl(cell);
+        if (!control || control.openOn !== 'doubleClick') return;
+        event.preventDefault();
+        if (performance.now() - lastTouchOpenAt < 350) return;
+        previousTouchTap = null;
+        openCell(cell);
     }, { signal: aborter.signal });
 
     return {
         destroy() {
             aborter.abort();
+            touchPointer = null;
+            recentTouchTap = null;
+            previousTouchTap = null;
             const active = activeByDocument.get(doc);
             if (active && active.owner === tableElement) active.dispose(false);
         }

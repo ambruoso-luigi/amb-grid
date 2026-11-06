@@ -41,7 +41,7 @@ export default function imagePreviewViewer(app) {
                 intro: 'One read-only AMB.table uses the public image formatter to show local photos and galleries. The viewer and its controls are native to AMB Grid.', introKey: `${prefix}.detailsText`,
                 points: [
                     { title: 'Image formatter', titleKey: `${prefix}.point1Title`, description: 'AMB.formatters.image() renders thumbnails without changing their proportions; each value can contain one photo or a collection.', descriptionKey: `${prefix}.detail1` },
-                    { title: 'Preview and viewer', titleKey: `${prefix}.point2Title`, description: 'Hover shows a preview. Click or press Enter to open the viewer, with zoom, pan, browsing and keyboard dismissal.', descriptionKey: `${prefix}.detail2` },
+                    { title: 'Preview and viewer', titleKey: `${prefix}.point2Title`, description: 'Hover for a preview. Click to select the image cell, double-click to open the viewer, or press Enter or Space on the selected cell.', descriptionKey: `${prefix}.detail2` },
                     { title: 'Galleries', titleKey: `${prefix}.point3Title`, description: 'The badge counts additional photos. Browsing stays within the open collection.', descriptionKey: `${prefix}.detail3` },
                     { title: 'Cleanup', titleKey: `${prefix}.point4Title`, description: 'Changing examples destroys the grid and command guide; the native runtime removes the preview and viewer.', descriptionKey: `${prefix}.detail4` }
                 ],
@@ -54,7 +54,7 @@ export default function imagePreviewViewer(app) {
             })}
                 </div>
             </div>
-            <p class="demo-note" data-i18n="${prefix}.intro">Explore three photo collections featuring thirteen images of great cities, Italian landscapes, and vintage objects. Open the thumbnails to discover galleries, captions, zoom, and photographs in different formats.</p>
+            <p class="demo-note" data-i18n="${prefix}.intro">Explore three photo collections featuring thirteen images of great cities, Italian landscapes, and vintage objects. Select an image cell, then double-click or press Enter or Space to open its gallery.</p>
             <div class="demo-action-tutorial-host"></div>
             <div class="demo-table-workbench">
                 <div class="demo-command-guide-host"></div>
