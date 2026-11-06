@@ -69,6 +69,7 @@ export default function imagePreviewViewer(app) {
     let tutorialState = null;
     let tutorialStarted = false;
     let highlightedControl = null;
+    let scenarioGeneration = 0;
     const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
     const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
     const technicalGuide = app.querySelector('.demo-crud-heading .demo-disclosure--technical');
@@ -80,7 +81,7 @@ export default function imagePreviewViewer(app) {
         locale: currentLocale,
         titleKey: `${prefix}.tutorialTitle`,
         completedKey: `${prefix}.tutorialCompleted`,
-        onRestart: () => true,
+        onRestart: resetTutorialScenario,
         onCompleteAction: () => true,
         onCompleteSuccess: finishTutorial,
         onStateChange: state => {
@@ -209,6 +210,7 @@ export default function imagePreviewViewer(app) {
         destroy() {
             if (destroyed) return;
             destroyed = true;
+            scenarioGeneration += 1;
             clearTutorialHighlight();
             tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
             grid.table.off('renderComplete', syncTutorialHighlight);
@@ -232,8 +234,24 @@ export default function imagePreviewViewer(app) {
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
         tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        const resuming = tutorialStarted;
         tutorialStarted = true;
-        tutorial.reopen();
+        if (resuming) tutorial.reopen();
+        else void tutorial.restart();
+    }
+
+    async function resetTutorialScenario() {
+        const generation = ++scenarioGeneration;
+        const session = activeSession;
+        activeSession = null;
+        clearTutorialHighlight();
+        session?.source.ownerDocument.querySelector('.amb-image-viewer .viewer-button')?.click();
+        try {
+            await grid.setData(imageRows(currentLocale));
+            if (destroyed || generation !== scenarioGeneration) return false;
+            syncTutorialHighlight();
+            return true;
+        } catch { return false; }
     }
 
     function finishTutorial({ openGuide }) {

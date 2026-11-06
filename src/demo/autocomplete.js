@@ -519,8 +519,10 @@ export default function autocomplete(app) {
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
         tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        const resuming = tutorialStarted;
         tutorialStarted = true;
-        tutorial.reopen();
+        if (resuming) tutorial.reopen();
+        else void tutorial.restart();
     }
 
     function finishTutorial({ openGuide }) {
@@ -623,7 +625,11 @@ export default function autocomplete(app) {
     }
 
     async function handleReload() {
-        if (await resetTutorialScenario()) demo.feedback.show({
+        const wasHidden = tutorialState?.hidden;
+        const reset = tutorialStarted ? tutorial.restart() : resetTutorialScenario();
+        if (tutorialStarted && wasHidden) tutorial.skip();
+        const restored = await reset;
+        if (restored) demo.feedback.show({
             type: 'success', message: 'Autocomplete demo data reloaded.'
         });
     }

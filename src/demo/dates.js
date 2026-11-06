@@ -353,8 +353,10 @@ export default function dates(app) {
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
         tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        const resuming = tutorialStarted;
         tutorialStarted = true;
-        tutorial.reopen();
+        if (resuming) tutorial.reopen();
+        else void tutorial.restart();
     }
 
     function finishTutorial({ openGuide }) {

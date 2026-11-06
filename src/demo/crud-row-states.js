@@ -376,8 +376,10 @@ export default function crudRowStates(app) {
 
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
+        const resuming = tutorialStarted;
         tutorialStarted = true;
-        tutorial.reopen();
+        if (resuming) tutorial.reopen();
+        else void tutorial.restart();
     }
 
     function finishTutorial({ openGuide }) {
@@ -936,7 +938,11 @@ export default function crudRowStates(app) {
     }
 
     async function handleReload() {
-        if (await resetToCleanBaseline()) demo.feedback.show({ type: 'success', message: t('reloaded') });
+        const wasHidden = tutorialState?.hidden;
+        const reset = tutorialStarted ? tutorial.restart() : resetToCleanBaseline();
+        if (tutorialStarted && wasHidden) tutorial.skip();
+        const restored = await reset;
+        if (restored) demo.feedback.show({ type: 'success', message: t('reloaded') });
     }
 
     function handleShowReport() {

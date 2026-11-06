@@ -519,8 +519,10 @@ export default function multifieldLookup(app) {
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
         tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        const resuming = tutorialStarted;
         tutorialStarted = true;
-        tutorial.reopen();
+        if (resuming) tutorial.reopen();
+        else void tutorial.restart();
     }
 
     function finishTutorial({ openGuide }) {
@@ -622,7 +624,11 @@ export default function multifieldLookup(app) {
     }
 
     async function handleReload() {
-        if (await resetTutorialScenario()) grid.feedback.show({
+        const wasHidden = tutorialState?.hidden;
+        const reset = tutorialStarted ? tutorial.restart() : resetTutorialScenario();
+        if (tutorialStarted && wasHidden) tutorial.skip();
+        const restored = await reset;
+        if (restored) grid.feedback.show({
             type: 'success', message: 'Municipality demo data reloaded.'
         });
     }

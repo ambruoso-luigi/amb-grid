@@ -723,8 +723,10 @@ export default function validation(app) {
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
         tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
+        const resuming = tutorialStarted;
         tutorialStarted = true;
-        tutorial.reopen();
+        if (resuming) tutorial.reopen();
+        else void tutorial.restart();
     }
 
     function finishTutorial({ openGuide }) {
@@ -884,8 +886,10 @@ export default function validation(app) {
     }
 
     async function handleReload() {
-        const restored = tutorialState && !tutorialState.hidden
-            ? await tutorial.restart() : await resetTutorialScenario();
+        const wasHidden = tutorialState?.hidden;
+        const reset = tutorialStarted ? tutorial.restart() : resetTutorialScenario();
+        if (tutorialStarted && wasHidden) tutorial.skip();
+        const restored = await reset;
         if (restored) demo.feedback.show({
             type: 'success', message: 'Validation demo data reloaded.'
         });
