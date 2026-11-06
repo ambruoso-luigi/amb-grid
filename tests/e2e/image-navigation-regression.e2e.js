@@ -4,7 +4,6 @@ import { enterNavigationWithClick } from './helpers/focus-diagnostics.js';
 const grid = page => page.locator('#img11-grid');
 const row = (page, index) => grid(page).locator('.tabulator-row').nth(index);
 const cell = (page, index, field) => row(page, index).locator(`[tabulator-field="${field}"]`);
-const image = (page, index) => cell(page, index, 'images').locator('.amb-image--viewable');
 const viewer = page => page.getByRole('dialog', { name: 'Raccolta immagini' });
 
 const install = async (page, mixed, options = {}) => {
@@ -116,16 +115,16 @@ for (const field of ['id', 'description', 'testCase']) {
                 await page.keyboard.press('ArrowRight');
             }
         }
-        const trigger = first.locator('.amb-image--viewable');
-        await expect(trigger).toBeFocused();
+        const imageTarget = first.locator('[tabulator-field="images"]');
+        await expectNavigationFocus(imageTarget);
         await page.keyboard.press('ArrowDown');
-        await expect(a.locator('.tabulator-row').nth(1).locator('.amb-image--viewable')).toBeFocused();
+        await expectNavigationFocus(a.locator('.tabulator-row').nth(1).locator('[tabulator-field="images"]'));
         await page.keyboard.press('ArrowUp');
-        await expect(trigger).toBeFocused();
+        await expectNavigationFocus(imageTarget);
         await page.keyboard.press('Enter');
         await expect(viewer(page)).toHaveCount(1);
         await page.keyboard.press('Escape');
-        await expect(trigger).toBeFocused();
+        await expectNavigationFocus(imageTarget);
         await page.keyboard.press('ArrowLeft');
         await expectNavigationFocus(first.locator('[tabulator-field="description"]'));
         await start.click();
@@ -136,11 +135,11 @@ for (const field of ['id', 'description', 'testCase']) {
         await b.locator('[tabulator-field="description"]').click();
         await expectNavigationFocus(b.locator('[tabulator-field="description"]'));
         await page.keyboard.press('Tab');
-        await expect(b.locator('.amb-image--viewable')).toBeFocused();
+        await expectNavigationFocus(b.locator('[tabulator-field="images"]'));
         await page.keyboard.press('Shift+Tab');
         await expectNavigationFocus(b.locator('[tabulator-field="description"]'));
         await page.keyboard.press('ArrowRight');
-        await expect(b.locator('.amb-image--viewable')).toBeFocused();
+        await expectNavigationFocus(b.locator('[tabulator-field="images"]'));
     });
 }
 
@@ -172,7 +171,7 @@ test('mixed readonly click, editable:false and editable callbacks separate navig
         await expectNavigationFocus(cell(page, 0, field));
     }
     await page.keyboard.press('ArrowRight');
-    await expect(image(page, 0)).toBeFocused();
+    await expect(cell(page, 0, 'images')).toBeFocused();
     await page.keyboard.press('ArrowLeft');
     await expectNavigationFocus(cell(page, 0, 'callbackLocked'));
     // Navigation Tab retains readonly destinations without activating editors.
@@ -220,12 +219,12 @@ test('custom spatial bindings traverse readonly cells while default arrow bindin
 
 test('disabled keyboard navigation preserves native image activation without spatial movement', async ({ page }) => {
     await install(page, true, { keyboardNavigation: { enabled: false } });
-    await image(page, 0).click();
+    await cell(page, 0, 'images').dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await page.keyboard.press('Escape');
-    await expect(image(page, 0)).toBeFocused();
+    await expect(cell(page, 0, 'images')).toBeFocused();
     await page.keyboard.press('ArrowLeft');
-    await expect(image(page, 0)).toBeFocused();
+    await expect(cell(page, 0, 'images')).toBeFocused();
     await page.keyboard.press('Space');
     await expect(viewer(page)).toHaveCount(1);
     await page.keyboard.press('Escape');
@@ -287,7 +286,7 @@ for (const mixed of [false, true]) {
         await page.keyboard.press('ArrowLeft');
         await expect(row(page, 1).locator('.amb-selection-column__input')).toBeFocused();
         await page.keyboard.press('Shift+Tab');
-        await expect(image(page, 0)).toBeFocused();
+        await expect(cell(page, 0, 'images')).toBeFocused();
         await expect(row(page, 1)).toHaveClass(/tabulator-selected/);
         await expect(grid(page).locator('.tabulator-selected')).toHaveCount(1);
         await expect(viewer(page)).toHaveCount(0);
@@ -309,7 +308,7 @@ test('mixed image controls preserve native activation, placeholders, focus and r
     await page.keyboard.press('Enter');
     await expect(grid(page).locator('.tabulator-editing')).toHaveCount(0);
     await page.keyboard.press('ArrowRight');
-    await expect(image(page, 0)).toBeFocused();
+    await expect(cell(page, 0, 'images')).toBeFocused();
     for (const key of ['Enter', 'Space']) {
         await page.keyboard.press(key);
         await expect(viewer(page)).toHaveCount(1);
@@ -317,7 +316,7 @@ test('mixed image controls preserve native activation, placeholders, focus and r
         await expect(viewer(page).getByRole('status')).toContainText('Immagine 2 di 2');
         await page.keyboard.press('Escape');
         await expect(viewer(page)).toHaveCount(0);
-        await expect(image(page, 0)).toBeFocused();
+        await expect(cell(page, 0, 'images')).toBeFocused();
     }
     await page.keyboard.press('ArrowDown');
     await expect(cell(page, 1, 'images')).toBeFocused();
@@ -325,11 +324,11 @@ test('mixed image controls preserve native activation, placeholders, focus and r
     await expect(viewer(page)).toHaveCount(0);
     await expect(grid(page).locator('.tabulator-editing')).toHaveCount(0);
     await page.keyboard.press('ArrowDown');
-    await expect(image(page, 2)).toBeFocused();
+    await expect(cell(page, 2, 'images')).toBeFocused();
     await page.keyboard.press('ArrowUp');
     await expect(cell(page, 1, 'images')).toBeFocused();
     await page.keyboard.press('ArrowUp');
-    await expect(image(page, 0)).toBeFocused();
+    await expect(cell(page, 0, 'images')).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(viewer(page)).toHaveCount(1);
     await page.evaluate(() => window.__img11.grid.destroy());
@@ -340,12 +339,12 @@ test('mixed image controls preserve native activation, placeholders, focus and r
     await page.goto('/test/#img11-before');
     await tabIntoGrid(page);
     for (let index = 0; index < 4; index += 1) await page.keyboard.press('ArrowRight');
-    await expect(image(page, 0)).toBeFocused();
+    await expect(cell(page, 0, 'images')).toBeFocused();
     await expect(grid(page).locator('.tabulator-selected')).toHaveCount(0);
     await page.goto('/test/#img11-after');
     await expect(page.locator('#img11-after')).toBeFocused();
     await page.keyboard.press('Shift+Tab');
-    await expect(image(page, 2)).toBeFocused();
+    await expect(cell(page, 2, 'images')).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(page.locator('#img11-after')).toBeFocused();
     expect(errors).toEqual([]);

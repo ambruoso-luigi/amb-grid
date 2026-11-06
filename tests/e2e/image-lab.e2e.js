@@ -7,21 +7,33 @@ const row = (page, id) => page.locator('#image-formatter-test-table .tabulator-r
     has: page.locator('[tabulator-field="id"]').filter({ hasText: new RegExp(`^${id}$`) })
 });
 const trigger = (page, id) => row(page, id).locator('button.amb-image--viewable');
+const imageCell = (page, id) => row(page, id).locator('[tabulator-field="images"]');
 const viewer = page => page.getByRole('dialog', { name: 'Raccolta immagini' });
 const load = async page => {
     await page.goto('/test/');
     await expect(page.locator('#image-formatter-test-table .tabulator-row')).toHaveCount(15);
     await expect(page.locator('#image-secondary-test-table .tabulator-row')).toHaveCount(2);
-    await page.evaluate(() => document.querySelector('.image-lab').addEventListener('click', event => {
-        const target = event.target.closest('button.amb-image--viewable');
-        if (target) window.__imageLabLastTrigger = target;
-    }, true));
+    await page.evaluate(() => {
+        document.addEventListener('focusin', event => {
+            const cell = event.target.closest?.('[tabulator-field="images"]');
+            if (cell?.querySelector('.amb-image--viewable')) window.__imageLabLastCell = cell;
+        }, true);
+        document.addEventListener('click', event => {
+            const cell = event.target.closest?.('[tabulator-field="images"]');
+            if (cell?.querySelector('.amb-image--viewable')) window.__imageLabLastCell = cell;
+        }, true);
+    });
 };
-const expectRestoredFocus = async (page, owner) => {
+const expectRestoredFocus = async (page, cell, owner) => {
     expect(await page.evaluate(selector => {
-        const original = window.__imageLabLastTrigger;
-        return document.activeElement === (original?.isConnected ? original : document.querySelector(selector));
+        const original = window.__imageLabLastCell;
+        const current = document.activeElement;
+        if (!original) return false;
+        return original.isConnected
+            ? current === original
+            : current === document.querySelector(selector);
     }, owner)).toBe(true);
+    if (await page.evaluate(() => window.__imageLabLastCell?.isConnected)) await expect(cell).toBeFocused();
 };
 const close = async page => {
     await page.keyboard.press('Escape');
@@ -42,7 +54,6 @@ const tabUntil = async (page, target, limit = 110) => {
     }
     await expect(target).toBeFocused();
 };
-const imageCell = (page, id) => row(page, id).locator('[tabulator-field="images"]');
 const expectKeyboardFocus = async target => {
     await expect(target).toBeFocused();
     expect(await target.evaluate(element => {
@@ -76,14 +87,14 @@ test.describe('keyboard-only image laboratory', () => {
             await expect(row(page, 1).locator('.tabulator-editing')).toHaveCount(0);
         }
         await page.keyboard.press('Tab');
-        await expectKeyboardFocus(trigger(page, 1));
+        await expectKeyboardFocus(imageCell(page, 1));
         await page.keyboard.press('ArrowDown');
-        await expectKeyboardFocus(trigger(page, 2));
+        await expectKeyboardFocus(imageCell(page, 2));
         await page.keyboard.press('ArrowUp');
-        await expectKeyboardFocus(trigger(page, 1));
+        await expectKeyboardFocus(imageCell(page, 1));
         await page.keyboard.press('ArrowDown');
         await page.keyboard.press('ArrowDown');
-        await expectKeyboardFocus(trigger(page, 3));
+        await expectKeyboardFocus(imageCell(page, 3));
         for (const key of ['Enter', 'Space']) {
             await page.keyboard.press(key);
             await expect(viewer(page)).toHaveCount(1);
@@ -93,7 +104,7 @@ test.describe('keyboard-only image laboratory', () => {
             await page.keyboard.press('ArrowLeft');
             await expect(viewer(page).getByRole('status')).toContainText('Immagine 1 di 5');
             await close(page);
-            await expectKeyboardFocus(trigger(page, 3));
+            await expectKeyboardFocus(imageCell(page, 3));
         }
         await page.keyboard.press('ArrowLeft');
         await page.keyboard.press('Shift+Tab');
@@ -117,12 +128,12 @@ test.describe('keyboard-only image laboratory', () => {
         await page.keyboard.press('Space');
         await page.keyboard.press('ArrowRight');
         await page.keyboard.press('ArrowRight');
-        await expectKeyboardFocus(firstB.locator('.amb-image'));
+        await expectKeyboardFocus(firstB.locator('[tabulator-field="images"]'));
         await page.keyboard.press('Enter');
         await close(page);
-        await expect(firstB.locator('.amb-image')).toBeFocused();
+        await expect(firstB.locator('[tabulator-field="images"]')).toBeFocused();
         await page.keyboard.press('ArrowDown');
-        await expect(b.locator('.tabulator-row').nth(1).locator('.amb-image')).toBeFocused();
+        await expect(b.locator('.tabulator-row').nth(1).locator('[tabulator-field="images"]')).toBeFocused();
         await expect(b.locator('.tabulator-selected')).toHaveCount(1);
         await expect(row(page, 1)).toHaveClass(/tabulator-selected/);
 
@@ -140,10 +151,10 @@ test.describe('keyboard-only image laboratory', () => {
         await expect(row(page, 1)).toBeAttached();
         await tabUntil(page, row(page, 1).locator('.amb-selection-column'));
         for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowRight');
-        await expectKeyboardFocus(trigger(page, 1));
+        await expectKeyboardFocus(imageCell(page, 1));
         await page.keyboard.press('Space');
         await close(page);
-        await expect(trigger(page, 1)).toBeFocused();
+        await expect(imageCell(page, 1)).toBeFocused();
         await expect(page.locator('#image-formatter-test-table .tabulator-selected')).toHaveCount(0);
         await expect(b.locator('.tabulator-selected')).toHaveCount(1);
         await expect(page.locator('.amb-image-viewer-source')).toHaveCount(0);
@@ -194,7 +205,7 @@ test.describe('keyboard-only image laboratory', () => {
         await enterImageGridWithTab(page);
         await page.keyboard.press('ArrowRight');
         await page.keyboard.press('ArrowRight');
-        await expectKeyboardFocus(trigger(page, 1));
+        await expectKeyboardFocus(imageCell(page, 1));
         await expect.poll(() => trigger(page, 1).evaluate(element => {
             const box = element.getBoundingClientRect();
             const holder = element.closest('.tabulator').querySelector('.tabulator-tableholder').getBoundingClientRect();
@@ -202,11 +213,11 @@ test.describe('keyboard-only image laboratory', () => {
                 && box.left >= 0 && box.right <= innerWidth;
         })).toBe(true);
         await page.keyboard.press('ArrowDown');
-        await expectKeyboardFocus(trigger(page, 2));
+        await expectKeyboardFocus(imageCell(page, 2));
         await page.screenshot({ path: testInfo.outputPath('keyboard-mobile.png') });
         await page.keyboard.press('Enter');
         await close(page);
-        await expectKeyboardFocus(trigger(page, 2));
+        await expectKeyboardFocus(imageCell(page, 2));
     });
 });
 
@@ -245,22 +256,21 @@ test('photographs, fixture counts and other technical grids render correctly', a
 });
 
 test('single and gallery keyboard flow, metadata, navigation and distinct thumbnail', async ({ page }) => {
-    await load(page);
-    await trigger(page, 1).scrollIntoViewIfNeeded();
-    await expect.poll(() => trigger(page, 1).evaluate(async element => {
-        element.focus();
-        await new Promise(requestAnimationFrame);
-        await new Promise(requestAnimationFrame);
-        return element.isConnected && document.activeElement === element;
-    })).toBe(true);
+    await enterImageGridWithTab(page);
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expectKeyboardFocus(imageCell(page, 1));
     await page.keyboard.press('Enter');
     await expect(viewer(page).getByRole('status')).toHaveText('Immagine 1 di 1');
     await close(page);
-    await expectRestoredFocus(page, '#image-formatter-test-table');
-    await trigger(page, 1).press('Space');
+    await expectRestoredFocus(page, imageCell(page, 1), '#image-formatter-test-table');
+    await page.keyboard.press('Space');
     await expect(viewer(page)).toHaveCount(1);
     await close(page);
-    await trigger(page, 3).click();
+    await imageCell(page, 3).click();
+    await expect(imageCell(page, 3)).toBeFocused();
+    await expect(viewer(page)).toHaveCount(0);
+    await imageCell(page, 3).dblclick();
     await expect(viewer(page).locator('.viewer-list li')).toHaveCount(5);
     for (let index = 0; index < 4; index += 1) await page.keyboard.press('ArrowRight');
     await expect(viewer(page).getByRole('status')).toContainText('Immagine 5 di 5');
@@ -273,15 +283,15 @@ test('single and gallery keyboard flow, metadata, navigation and distinct thumbn
     await expect(viewer(page).getByLabel('Precedente', { exact: true })).toHaveAttribute('aria-disabled', 'true');
     await close(page);
     await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/thumb-landscape-01.jpg');
-    await trigger(page, 7).click();
+    await imageCell(page, 7).dblclick();
     await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await close(page);
-    await trigger(page, 2).click();
+    await imageCell(page, 2).dblclick();
     await expect(viewer(page).getByRole('status')).toContainText('Girasoli · 1200 × 800');
     await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('alt', 'Campo di girasoli e paesaggio rurale');
     await close(page);
     for (const [id, count] of [[12, 2], [13, 1], [15, 1]]) {
-        await trigger(page, id).click();
+        await imageCell(page, id).dblclick();
         await expect(viewer(page).locator('.viewer-list li')).toHaveCount(count);
         if (id === 13) {
             await expect(row(page, id).locator('img')).toHaveAttribute('alt', '');
@@ -295,7 +305,7 @@ test('photograph orientations fit and high resolution supports zoom, pan and res
     await load(page);
     const image = () => viewer(page).locator('.viewer-canvas img');
     for (const [id, count] of [[4, 3], [5, 2]]) {
-        await trigger(page, id).click();
+        await imageCell(page, id).dblclick();
         for (let index = 0; index < count; index += 1) {
             await expect.poll(() => image().evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
             const bounds = await image().boundingBox();
@@ -307,7 +317,7 @@ test('photograph orientations fit and high resolution supports zoom, pan and res
         }
         await close(page);
     }
-    await trigger(page, 6).click();
+    await imageCell(page, 6).dblclick();
     await expect.poll(() => image().evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
     const initial = await image().boundingBox();
     await viewer(page).getByLabel('Ingrandisci', { exact: true }).click();
@@ -346,7 +356,7 @@ test('special metadata stays text and missing original closes without unhandled 
         headers: { ...route.request().headers(), accept: 'image/jpeg' }
     }));
     await load(page);
-    await trigger(page, 14).click();
+    await imageCell(page, 14).dblclick();
     await expect(viewer(page).getByRole('status')).toContainText('<script>window.__imageLabUnsafe=true</script>');
     await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('alt', 'Mercato <img src=x onerror="window.__imageLabUnsafe=true"> & "frutta"');
     await expect(viewer(page).locator('script, [onerror]')).toHaveCount(0);
@@ -354,10 +364,10 @@ test('special metadata stays text and missing original closes without unhandled 
     await close(page);
     expect((await request.get('/test/images/intentionally-missing.jpg', { headers: { Accept: 'image/jpeg' } })).status()).toBe(404);
     await expect(row(page, 11).locator('.amb-image-placeholder')).toHaveText('Immagine non disponibile');
-    await trigger(page, 11).click();
+    await imageCell(page, 11).dblclick();
     await expect(viewer(page).getByRole('status')).toContainText('originale non disponibile');
     await close(page);
-    await expectRestoredFocus(page, '#image-formatter-test-table');
+    await expectRestoredFocus(page, imageCell(page, 11), '#image-formatter-test-table');
     expect(missingResponses).toContain(404);
     expect(errors).toEqual([]);
 });
@@ -370,7 +380,7 @@ test('preview and viewer switches are independent and preserve original data', a
     await trigger(page, 1).hover();
     await page.clock.runFor(1000);
     await expect(page.locator('.amb-image-preview')).toHaveCount(0);
-    await trigger(page, 1).click();
+    await imageCell(page, 1).dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await close(page);
     await page.getByLabel('Preview enabled', { exact: true }).check();
@@ -391,7 +401,7 @@ test('data update, reset, destroy, restore and recreate clean up only grid A', a
     page.on('pageerror', error => errors.push(error.message));
     await load(page);
     const otherRows = await page.locator('#column-calculations-test-table .tabulator-row').count();
-    await trigger(page, 1).click();
+    await imageCell(page, 1).dblclick();
     await programmaticGridAction(page, 'update');
     await expect(page.locator('#image-lab-status')).toContainText('Riga 01 aggiornata');
     await expect(row(page, 1).locator('img')).toHaveAttribute('src', '/test/images/panorama-01.jpg');
@@ -401,18 +411,18 @@ test('data update, reset, destroy, restore and recreate clean up only grid A', a
     await page.getByRole('button', { name: 'Restore original data', exact: true }).click();
     await expect(row(page, 1).locator('img')).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await expect(page.locator('#image-lab-status')).toContainText('Fixture originali ripristinate');
-    await trigger(page, 3).click();
+    await imageCell(page, 3).dblclick();
     await programmaticGridAction(page, 'destroy');
     await expect(viewer(page)).toHaveCount(0);
     await expect(page.locator('.amb-image-viewer-source, .amb-image-preview')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Update data', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: 'Restore grid A', exact: true }).click();
     await expect(trigger(page, 1)).toHaveCount(1);
-    await trigger(page, 1).click();
+    await imageCell(page, 1).dblclick();
     await programmaticGridAction(page, 'recreate');
     await expect(viewer(page)).toHaveCount(0);
     await expect(page.locator('#image-formatter-test-table .tabulator-row')).toHaveCount(15);
-    await trigger(page, 1).click();
+    await imageCell(page, 1).dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await close(page);
     await expect(page.locator('#column-calculations-test-table .tabulator-row')).toHaveCount(otherRows);
@@ -421,19 +431,19 @@ test('data update, reset, destroy, restore and recreate clean up only grid A', a
 
 test('grid B keeps its viewer and focus when grid A is destroyed', async ({ page }) => {
     await load(page);
-    const secondary = page.locator('#image-secondary-test-table .tabulator-row').nth(1).locator('button.amb-image--viewable');
-    await trigger(page, 1).click();
+    const secondary = page.locator('#image-secondary-test-table .tabulator-row').nth(1).locator('[tabulator-field="images"]');
+    await imageCell(page, 1).dblclick();
     await close(page);
-    await secondary.click();
+    await secondary.dblclick();
     await expect(viewer(page).locator('.viewer-list li')).toHaveCount(2);
     await programmaticGridAction(page, 'destroy');
     await expect(viewer(page)).toHaveCount(1);
     await page.keyboard.press('ArrowRight');
     await expect(viewer(page).getByRole('status')).toContainText('Immagine 2 di 2');
     await close(page);
-    await expectRestoredFocus(page, '#image-secondary-test-table');
+    await expectRestoredFocus(page, secondary, '#image-secondary-test-table');
     await page.getByRole('button', { name: 'Restore grid A', exact: true }).click();
-    await secondary.click();
+    await secondary.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await close(page);
 });
@@ -448,14 +458,14 @@ test('mobile viewport keeps lab controls and viewer usable', async ({ page }, te
         expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
     }
     await page.screenshot({ path: testInfo.outputPath('image-lab-mobile.png') });
-    await trigger(page, 3).click();
+    await imageCell(page, 3).dblclick();
     await expect(viewer(page)).toBeVisible();
     const toolbar = await viewer(page).locator('.viewer-toolbar').boundingBox();
     expect(toolbar.x).toBeGreaterThanOrEqual(0);
     expect(toolbar.x + toolbar.width).toBeLessThanOrEqual(390);
     await page.screenshot({ path: testInfo.outputPath('image-lab-mobile-viewer.png') });
     await close(page);
-    await expectRestoredFocus(page, '#image-formatter-test-table');
+    await expectRestoredFocus(page, imageCell(page, 3), '#image-formatter-test-table');
 });
 
 test('zoom tooltip allows central and uncovered pan after zoom, wheel and reopen', async ({ page }, testInfo) => {
@@ -480,7 +490,7 @@ test('zoom tooltip allows central and uncovered pan after zoom, wheel and reopen
         expect(box.y + box.height).toBeGreaterThanOrEqual(899.5);
     };
     for (let session = 0; session < 2; session += 1) {
-        await trigger(page, 6).click();
+        await imageCell(page, 6).dblclick();
         await expect.poll(() => image().evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
         const fit = await image().boundingBox();
         for (let step = 0; step < 14 && (await image().boundingBox()).width < 2160; step += 1) await zoom();
@@ -535,7 +545,7 @@ test('zoom tooltip allows central and uncovered pan after zoom, wheel and reopen
 test('real gallery resets zoom and position between all five photograph formats', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await load(page);
-    await trigger(page, 3).click();
+    await imageCell(page, 3).dblclick();
     const image = () => viewer(page).locator('.viewer-canvas img');
     const captions = ['Lago alpino', 'Tucano', 'Panorama urbano', 'Oggetti da viaggio', 'Mercato all’aperto'];
     const expectFit = async index => {
@@ -573,7 +583,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768
         const caption = 'Fotografia ad alta risoluzione: verificare dettagli, proporzioni e leggibilità senza sovrapposizioni ai comandi. '.repeat(2)
             + 'Riferimento: ' + 'ABCDEFGHIJ'.repeat(8);
         await programmaticGridAction(page, 'updateRows', [{ id: 14, images: { src: '/test/images/large-01.jpg', alt: 'Mercato all’aperto', caption } }]);
-        await trigger(page, 14).click();
+        await imageCell(page, 14).dblclick();
         await expect(viewer(page).getByRole('status')).toContainText(caption);
         await expect(viewer(page).getByLabel('Chiudi immagini', { exact: true })).toBeFocused();
         await page.keyboard.press('Tab');
@@ -596,8 +606,8 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768
             })).toBe(true);
         }
         await close(page);
-        await expectRestoredFocus(page, '#image-formatter-test-table');
-        await trigger(page, 3).click();
+        await expectRestoredFocus(page, imageCell(page, 14), '#image-formatter-test-table');
+        await imageCell(page, 3).dblclick();
         await expect(viewer(page).locator('.viewer-list li')).toHaveCount(5);
         await viewer(page).getByRole('button', { name: 'Immagine 2 di 5', exact: true }).click();
         await expect(viewer(page).getByRole('status')).toContainText('Immagine 2 di 5');
@@ -613,7 +623,7 @@ test('an unavailable thumbnail falls back to its original photograph', async ({ 
     await load(page);
     await row(page, 7).locator('img').scrollIntoViewIfNeeded();
     await expect(row(page, 7).locator('img')).toHaveAttribute('src', '/test/images/landscape-01.jpg');
-    await trigger(page, 7).click();
+    await imageCell(page, 7).dblclick();
     const image = viewer(page).locator('.viewer-canvas img');
     await expect(image).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
@@ -624,7 +634,7 @@ test('an unavailable thumbnail falls back to its original photograph', async ({ 
 test('an unavailable original can display its valid thumbnail', async ({ page }) => {
     await page.route('**/test/images/landscape-01.jpg', route => route.fulfill({ status: 404, body: '' }));
     await load(page);
-    await trigger(page, 7).click();
+    await imageCell(page, 7).dblclick();
     const image = viewer(page).locator('.viewer-canvas img');
     await expect(image).toHaveAttribute('src', /\/test\/images\/thumb-landscape-01\.jpg$/);
     await expect.poll(() => image.evaluate(element => element.complete && element.naturalWidth > 0)).toBe(true);
@@ -632,7 +642,7 @@ test('an unavailable original can display its valid thumbnail', async ({ page })
     const originalSource = await oldThumbnail.evaluate(element => element.src);
     await close(page);
     await page.unroute('**/test/images/landscape-01.jpg');
-    await trigger(page, 3).click();
+    await imageCell(page, 3).dblclick();
     await oldThumbnail.evaluate(element => element.dispatchEvent(new Event('error')));
     expect(await oldThumbnail.evaluate(element => element.src)).toBe(originalSource);
     await expect(viewer(page).getByRole('status')).toContainText('Immagine 1 di 5');
@@ -666,10 +676,10 @@ test.describe('image grid selection', () => {
         await expectSelection(row(page, 1), false);
         await expect(viewer(page)).toHaveCount(0);
 
-        await trigger(page, 1).click();
+        await imageCell(page, 1).dblclick();
         await expect(viewer(page)).toHaveCount(1);
         await close(page);
-        await expectRestoredFocus(page, '#image-formatter-test-table');
+        await expectRestoredFocus(page, imageCell(page, 1), '#image-formatter-test-table');
         await expectSelection(row(page, 1), false);
         await expectSelection(row(page, 2), true);
         await checkbox(row(page, 1)).press('Space');
@@ -678,10 +688,12 @@ test.describe('image grid selection', () => {
         await expectSelection(row(page, 1), false);
         await expect(viewer(page)).toHaveCount(0);
         for (const key of ['Enter', 'Space']) {
-            await trigger(page, 2).press(key);
+            await imageCell(page, 2).click();
+            await expect(imageCell(page, 2)).toBeFocused();
+            await page.keyboard.press(key);
             await expect(viewer(page)).toHaveCount(1);
             await close(page);
-            await expectRestoredFocus(page, '#image-formatter-test-table');
+            await expectRestoredFocus(page, imageCell(page, 2), '#image-formatter-test-table');
             await expectSelection(row(page, 2), true);
         }
         await checkbox(row(page, 2)).click();
@@ -755,7 +767,7 @@ test.describe('image grid selection', () => {
         await expect(primary(page).locator('.tabulator-row')).toHaveCount(0);
         expect(await oldSelection.evaluate(element => element.isConnected)).toBe(false);
         await expectSelection(secondaryRow(page, 0), true);
-        await secondaryRow(page, 0).locator('button.amb-image--viewable').click();
+        await secondaryRow(page, 0).locator('[tabulator-field="images"]').dblclick();
         await expect(viewer(page)).toHaveCount(1);
         await close(page);
         await expectSelection(secondaryRow(page, 0), true);
@@ -780,13 +792,13 @@ test.describe('image grid selection', () => {
             const inputBox = await checkbox(row(page, 1)).boundingBox();
             expect(inputBox.x).toBeGreaterThanOrEqual(0);
             expect(inputBox.x + inputBox.width).toBeLessThanOrEqual(viewport.width);
-            await trigger(page, 1).click();
+            await imageCell(page, 1).dblclick();
             await expect(viewer(page)).toHaveCount(1);
             await close(page);
             await expectSelection(row(page, 1), true);
             await checkbox(secondaryRow(page, 0)).check();
             await expectSelection(secondaryRow(page, 0), true);
-            await secondaryRow(page, 0).locator('button.amb-image--viewable').click();
+            await secondaryRow(page, 0).locator('[tabulator-field="images"]').dblclick();
             await expect(viewer(page)).toHaveCount(1);
             await close(page);
             await expectSelection(secondaryRow(page, 0), true);
