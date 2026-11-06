@@ -67,9 +67,24 @@ const cities = [
     'Helsinki',
     'Lisbon',
     'London',
+    'Macerata',
     'Madrid',
+    'Magenta',
+    'Maiori',
+    'Malcesine',
     'Manchester',
+    'Manfredonia',
+    'Mantova',
+    'Maranello',
+    'Marano di Napoli',
+    'Marcianise',
+    'Marino',
+    'Marsala',
     'Marseille',
+    'Martina Franca',
+    'Massa',
+    'Matera',
+    'Mazara del Vallo',
     'Milan',
     'Munich',
     'Naples',
@@ -109,22 +124,22 @@ const buildReport = result => {
 
     lines.push('');
     lines.push('Unknown strict values remain visible and are reported above.');
-    lines.push('Custom values in the free column are accepted.');
+    lines.push('Custom values in Free autocomplete and Long list (max 5) are accepted.');
 
     return lines.join('\n');
 };
 
 const createAutocompleteData = () => [
-    { id: 1, task: 'Prepare onboarding pack', department: 'Human Resources', requiredDepartment: 'Administration', tag: 'internal', city: 'Milan' },
-    { id: 2, task: 'Review access controls', department: 'Information Technology', requiredDepartment: 'Security', tag: 'review', city: 'Berlin' },
-    { id: 3, task: 'Check monthly close', department: 'Finance', requiredDepartment: 'Accounting', tag: 'urgent', city: 'London' },
-    { id: 4, task: 'Update support workflow', department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' },
-    { id: 5, task: 'Draft campaign brief', department: 'Marketing', requiredDepartment: 'Design', tag: 'priority', city: 'Paris' },
-    { id: 6, task: 'Plan delivery route', department: 'Logistics', requiredDepartment: 'Purchasing', tag: 'support', city: 'Bologna' },
-    { id: 7, task: 'Review supplier terms', department: 'Legal', requiredDepartment: 'Purchasing', tag: 'approved', city: 'Madrid' },
-    { id: 8, task: 'Prepare product research', department: 'Product', requiredDepartment: 'Research and Development', tag: 'important', city: 'Amsterdam' },
-    { id: 9, task: 'Schedule quality audit', department: 'Quality Assurance', requiredDepartment: 'Engineering', tag: 'pending', city: 'Vienna' },
-    { id: 10, task: 'Update sales forecast', department: 'Sales', requiredDepartment: 'Business Development', tag: 'business', city: 'Boston' }
+    { id: 1, department: '', requiredDepartment: 'Administration', tag: 'internal', city: 'Milan' },
+    { id: 2, department: 'Information Technology', requiredDepartment: 'Security', tag: 'review', city: 'Berlin' },
+    { id: 3, department: '', requiredDepartment: 'Accounting', tag: 'urgent', city: 'London' },
+    { id: 4, department: 'Operations', requiredDepartment: 'Support', tag: 'external', city: 'Rome' },
+    { id: 5, department: 'Marketing', requiredDepartment: 'Design', tag: 'priority', city: 'Paris' },
+    { id: 6, department: '', requiredDepartment: 'Purchasing', tag: 'support', city: 'Bologna' },
+    { id: 7, department: 'Legal', requiredDepartment: 'Purchasing', tag: 'approved', city: 'Madrid' },
+    { id: 8, department: 'Product', requiredDepartment: 'Research and Development', tag: 'important', city: 'Amsterdam' },
+    { id: 9, department: 'Quality Assurance', requiredDepartment: 'Engineering', tag: 'pending', city: 'Vienna' },
+    { id: 10, department: 'Sales', requiredDepartment: 'Business Development', tag: 'business', city: 'Boston' }
 ];
 
 export default function autocomplete(app) {
@@ -137,27 +152,27 @@ export default function autocomplete(app) {
             summary: 'Autocomplete technical guide',
             summaryKey: 'examples.autocomplete.detailsTitle',
             summaryIcon: 'guideText', variant: 'technical',
-            intro: 'This example shows assisted input with dynamic suggestions. Compare fields that require a listed value with fields that also accept custom values.',
+            intro: 'This example shows how AMB Grid assists data entry through dynamic suggestions. Compare optional and required fields, list-restricted and free values, and filtering within large lists.',
             introKey: 'examples.autocomplete.guideIntro',
             points: [
-                { title: 'Suggestions', titleKey: 'examples.autocomplete.point1Title', description: 'Matching options appear and narrow while you type.', descriptionKey: 'examples.autocomplete.detail1' },
-                { title: 'Strict values', titleKey: 'examples.autocomplete.point2Title', description: 'Department fields require a value from the supplied list.', descriptionKey: 'examples.autocomplete.detail2' },
-                { title: 'Free values', titleKey: 'examples.autocomplete.point3Title', description: 'Tag and city also accept custom values that are not in the suggestions.', descriptionKey: 'examples.autocomplete.detail3' },
-                { title: 'Keyboard', titleKey: 'examples.autocomplete.point4Title', description: 'Use the arrow keys to navigate suggestions and confirm without leaving the keyboard.', descriptionKey: 'examples.autocomplete.detail4' },
-                { title: 'Committed value', titleKey: 'examples.autocomplete.point5Title', description: 'The confirmed option becomes the cell value used by validation and the CRUD payload.', descriptionKey: 'examples.autocomplete.detail5' }
+                { title: 'Suggestions', titleKey: 'examples.autocomplete.point1Title', description: 'As you type, AMB Grid suggests values matching the entered text. Suggestions narrow progressively and can be selected using the mouse or keyboard.', descriptionKey: 'examples.autocomplete.detail1' },
+                { title: 'Strict values', titleKey: 'examples.autocomplete.point2Title', description: 'Department strict is optional: it may remain empty, but any entered value must belong to the available list. Department required is mandatory and must contain a valid department.', descriptionKey: 'examples.autocomplete.detail2' },
+                { title: 'Free values', titleKey: 'examples.autocomplete.point3Title', description: 'Free autocomplete suggests existing values but also accepts new ones. The Long list (max 5) column provides the same flexibility for city names.', descriptionKey: 'examples.autocomplete.detail3' },
+                { title: 'Keyboard', titleKey: 'examples.autocomplete.point4Title', description: 'Use the arrow keys to navigate suggestions and confirm your selection with the editor controls, without using the mouse.', descriptionKey: 'examples.autocomplete.detail4' },
+                { title: 'Large lists', titleKey: 'examples.autocomplete.point5Title', description: 'Long list (max 5) demonstrates how AMB Grid handles large lists: matching values are filtered as you type, and the menu displays no more than five suggestions at once. This limit is configurable and does not reduce the available values.', descriptionKey: 'examples.autocomplete.detail5' },
+                { title: 'Committed value', titleKey: 'examples.autocomplete.point6Title', description: 'Once you confirm a suggested or custom value, it becomes the cell value used by validation rules and the CRUD payload.', descriptionKey: 'examples.autocomplete.detail6' }
             ],
             columns: [
-                { title: 'ID', titleKey: 'guides.autocomplete.id.title', badge: 'READONLY', description: 'Persistent identifier for the example row.', descriptionKey: 'guides.autocomplete.id.description' },
-                { title: 'Task', titleKey: 'guides.autocomplete.task.title', badge: 'TEXT', description: 'Trimmed free text with an 80-character editor limit.', descriptionKey: 'guides.autocomplete.task.description' },
-                { title: 'Department strict', titleKey: 'guides.autocomplete.strict.title', badge: 'STRICT', description: 'Optional value, but when entered it must match the department list.', descriptionKey: 'guides.autocomplete.strict.description' },
-                { title: 'Department required', titleKey: 'guides.autocomplete.required.title', badge: 'REQUIRED', description: 'Must contain a department selected from the supplied list.', descriptionKey: 'guides.autocomplete.required.description' },
-                { title: 'Free autocomplete', titleKey: 'guides.autocomplete.free.title', badge: 'FREE', description: 'Suggests known tags while also accepting a custom value.', descriptionKey: 'guides.autocomplete.free.description' },
-                { title: 'Long list (max 5)', titleKey: 'guides.autocomplete.city.title', badge: 'MAX 5', description: 'Suggests at most five matching cities and accepts custom text.', descriptionKey: 'guides.autocomplete.city.description' }
+                { title: 'ID', titleKey: 'guides.autocomplete.id.title', badge: 'READONLY', description: 'Persistent, non-editable row identifier.', descriptionKey: 'guides.autocomplete.id.description' },
+                { title: 'Department strict', titleKey: 'guides.autocomplete.strict.title', badge: 'STRICT', description: 'Optional field: it may remain empty, but entered values must match the department list.', descriptionKey: 'guides.autocomplete.strict.description' },
+                { title: 'Department required', titleKey: 'guides.autocomplete.required.title', badge: 'REQUIRED', description: 'Mandatory field: requires a valid department from the list.', descriptionKey: 'guides.autocomplete.required.description' },
+                { title: 'Free autocomplete', titleKey: 'guides.autocomplete.free.title', badge: 'FREE', description: 'Suggests existing tags while also allowing new values not included in the list.', descriptionKey: 'guides.autocomplete.free.description' },
+                { title: 'Long list (max 5)', titleKey: 'guides.autocomplete.city.title', badge: 'MAX 5', description: 'Suggests cities from a large list, displaying no more than five filtered suggestions. Custom values are also accepted.', descriptionKey: 'guides.autocomplete.city.description' }
             ]
         })}
             </div>
         </div>
-        <p class="demo-note" data-i18n="examples.autocomplete.intro">Autocomplete helps users choose suggested values while AMB Grid controls commit, validation, and row state.</p>
+        <p class="demo-note" data-i18n="examples.autocomplete.intro">Type in the fields to explore dynamic suggestions, compare restricted and free values, and see how large lists are filtered.</p>
         <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
@@ -173,6 +188,8 @@ export default function autocomplete(app) {
     let highlightedStep = null;
     let tutorialStarted = false;
     let scenarioGeneration = 0;
+    let cityFilter = null;
+    let acquiredSuggestion = null;
     const t = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`examples.autocomplete.${key}`];
     const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
     const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
@@ -192,6 +209,10 @@ export default function autocomplete(app) {
         onCompleteAction: resetTutorialScenario,
         onCompleteSuccess: finishTutorial,
         onStateChange: state => {
+            if (state.stepId !== tutorialState?.stepId || state.resetting) {
+                cityFilter = null;
+                acquiredSuggestion = null;
+            }
             tutorialState = state;
             tutorialLaunch.hidden = !state.hidden;
             tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
@@ -200,25 +221,46 @@ export default function autocomplete(app) {
         },
         steps: [
             {
-                id: 'show-suggestions', actionId: 'suggestions-open', instructionKey: 'examples.autocomplete.tutorialSuggestions',
-                isComplete: ({ id, field, typed, options }) => id === 1 && field === 'requiredDepartment'
-                    && typed !== 'Administration' && options.includes('Security')
+                id: 'choose-optional-department', actionId: 'department-committed', instructionKey: 'examples.autocomplete.tutorialOptional',
+                isComplete: ({ id, field, value, confirmedSuggestion, row, editorClosed }) => id === 1
+                    && field === 'department' && departments.includes(value) && confirmedSuggestion && editorClosed
+                    && row?.after?.department === value && !row.cellErrors.some(error => error.field === field)
             },
             {
-                id: 'choose-department', actionId: 'department-committed', instructionKey: 'examples.autocomplete.tutorialChoose',
-                isComplete: ({ id, field, value, selected, previous, row, editorClosed }) => id === 1
-                    && field === 'requiredDepartment' && value === 'Security' && selected === value
-                    && previous !== value && departments.includes(value) && editorClosed
-                    && row?.state === 'modified' && row.after?.requiredDepartment === value
-                    && !row.cellErrors.some(error => error.field === field)
+                id: 'choose-required-department', actionId: 'department-committed', instructionKey: 'examples.autocomplete.tutorialRequired',
+                isComplete: ({ id, field, value, confirmedSuggestion, row, editorClosed }) => id === 1
+                    && field === 'requiredDepartment' && departments.includes(value) && confirmedSuggestion && editorClosed
+                    && row?.after?.requiredDepartment === value && !row.cellErrors.some(error => error.field === field)
             },
             {
-                id: 'enter-free-value', actionId: 'free-value-committed', instructionKey: 'examples.autocomplete.tutorialFree',
-                isComplete: ({ id, field, value, previous, row, editorClosed }) => id === 1
-                    && field === 'tag' && typeof value === 'string' && value.trim().length > 0
-                    && value !== previous && !tags.includes(value) && editorClosed
-                    && row?.state === 'modified' && row.after?.tag === value
-                    && !row.cellErrors.some(error => error.field === field)
+                id: 'enter-free-value', actions: [
+                    {
+                        actionId: 'free-suggestions-open', instructionKey: 'examples.autocomplete.tutorialFree',
+                        isComplete: ({ id, field, typed, options }) => id === 1 && field === 'tag'
+                            && typed.trim().length > 0 && options.some(option => tags.includes(option))
+                    },
+                    {
+                        actionId: 'free-value-committed', instructionKey: 'examples.autocomplete.tutorialFree',
+                        isComplete: ({ id, field, value, previous, row, editorClosed }) => id === 1
+                            && field === 'tag' && typeof value === 'string' && value.trim().length > 0
+                            && value !== previous && !tags.includes(value) && editorClosed
+                            && row?.after?.tag === value && !row.cellErrors.some(error => error.field === field)
+                    }
+                ]
+            },
+            {
+                id: 'filter-long-list', actions: [
+                    {
+                        actionId: 'city-filtered', instructionKey: 'examples.autocomplete.tutorialLongList',
+                        isComplete: ({ id, field, narrowings }) => id === 1 && field === 'city' && narrowings >= 2
+                    },
+                    {
+                        actionId: 'city-committed', instructionKey: 'examples.autocomplete.tutorialLongList',
+                        isComplete: ({ id, field, value, confirmedSuggestion, row, editorClosed }) => id === 1
+                            && field === 'city' && cities.includes(value) && confirmedSuggestion && editorClosed
+                            && row?.after?.city === value && !row.cellErrors.some(error => error.field === field)
+                    }
+                ]
             }
         ]
     });
@@ -249,13 +291,6 @@ export default function autocomplete(app) {
         columns: [
             { title: 'ID', field: 'id', minWidth: 65, widthGrow: 0.4, cssClass: 'demo-cell--passive' },
             {
-                title: 'Task',
-                field: 'task',
-                minWidth: 155,
-                widthGrow: 1.45,
-                editor: AMB.editors.text({ trim: true, maxLength: 80 })
-            },
-            {
                 title: 'Department strict',
                 field: 'department',
                 minWidth: 145,
@@ -263,6 +298,7 @@ export default function autocomplete(app) {
                 editor: AMB.editors.autocomplete(departments, {
                     allowEmpty: true,
                     allowCustomValue: false,
+                    commitMatchedValue: false,
                     invalidBehavior: 'commitRaw',
                     placeholder: 'Type to search...'
                 }),
@@ -283,6 +319,7 @@ export default function autocomplete(app) {
                 editor: AMB.editors.autocomplete(departments, {
                     allowEmpty: false,
                     allowCustomValue: false,
+                    commitMatchedValue: false,
                     invalidBehavior: 'commitRaw',
                     placeholder: 'Type to search...'
                 }),
@@ -317,8 +354,9 @@ export default function autocomplete(app) {
                 editor: AMB.editors.autocomplete(cities, {
                     allowEmpty: true,
                     allowCustomValue: true,
+                    commitMatchedValue: false,
                     maxOptions: 5,
-                    placeholder: 'Try B, M, or R...'
+                    placeholder: 'Try Ma to filter cities...'
                 })
             }
         ]
@@ -335,6 +373,9 @@ export default function autocomplete(app) {
             field: cell.getField(),
             previous: cell.getValue(),
             selected: null,
+            highlighted: null,
+            typed: false,
+            suggestedValues: new Set(),
             context: tutorial.capture()
         };
         globalThis.requestAnimationFrame(syncTutorialHighlight);
@@ -342,6 +383,8 @@ export default function autocomplete(app) {
     const handleEditorInput = event => {
         if (activeEdit?.cell.getElement().contains(event.target)) {
             activeEdit.selected = null;
+            activeEdit.highlighted = null;
+            activeEdit.typed = true;
             syncTutorialHighlight();
         }
     };
@@ -352,13 +395,41 @@ export default function autocomplete(app) {
         const list = document.getElementById(input.getAttribute('aria-controls'));
         if (input.getAttribute('aria-expanded') !== 'true' || !list || list.hidden) return;
         const options = [...list.querySelectorAll('[role="option"]')].map(option => option.textContent.trim());
-        const advanced = tutorial.notify('suggestions-open', {
-            id: edit.id, field: edit.field, typed: input.value, options
-        }, edit.context);
+        edit.suggestedValues = new Set(options);
+        if (!edit.typed || !edit.context || edit.context.stepId !== tutorialState?.stepId) {
+            syncTutorialHighlight();
+            return;
+        }
+        let advanced = false;
+        if (edit.context.stepId === 'enter-free-value') {
+            advanced = tutorial.notify('free-suggestions-open', {
+                id: edit.id, field: edit.field, typed: input.value, options
+            }, edit.context);
+        } else if (edit.context.stepId === 'filter-long-list' && edit.id === 1 && edit.field === 'city'
+            && options.length > 0 && options.length <= 5 && options.every(option => cities.includes(option))) {
+            const query = input.value.trim().toLocaleLowerCase('it');
+            const matches = cities.filter(city => city.toLocaleLowerCase('it').startsWith(query)).length;
+            if (query && matches >= options.length && options.every(option => option.toLocaleLowerCase('it').startsWith(query))) {
+                if (cityFilter && query.startsWith(cityFilter.query) && query.length > cityFilter.query.length
+                    && matches < cityFilter.matches) {
+                    cityFilter = { query, matches, narrowings: cityFilter.narrowings + 1 };
+                } else if (!cityFilter || !query.startsWith(cityFilter.query)) {
+                    cityFilter = matches > 5 ? { query, matches, narrowings: 0 } : null;
+                }
+                if (cityFilter) advanced = tutorial.notify('city-filtered', {
+                    id: edit.id, field: edit.field, narrowings: cityFilter.narrowings
+                }, edit.context);
+            }
+        }
         if (advanced) edit.context = tutorial.capture();
         syncTutorialHighlight();
     };
-    const handleSuggestionChosen = event => {
+    const handleSuggestionHighlighted = event => {
+        const edit = activeEdit;
+        if (!edit || !edit.cell.getElement().contains(event.target)) return;
+        edit.highlighted = String(event.text?.value ?? event.text ?? '');
+    };
+    const handleSuggestionSelected = event => {
         const edit = activeEdit;
         if (!edit || !edit.cell.getElement().contains(event.target)) return;
         edit.selected = String(event.text?.value ?? event.text ?? '');
@@ -370,12 +441,25 @@ export default function autocomplete(app) {
         if (destroyed || !edit || edit.cell !== cell) return;
         const value = cell.getValue();
         const row = demo.getStateReport().rows.find(item => item.id === edit.id);
+        const selectedNow = edit.suggestedValues.has(value)
+            && (edit.selected === value || edit.highlighted === value);
+        const confirmedSuggestion = selectedNow || (acquiredSuggestion?.stepId === edit.context?.stepId
+            && acquiredSuggestion.id === edit.id && acquiredSuggestion.field === edit.field
+            && acquiredSuggestion.value === value);
+        const editorClosed = !cell.getElement().querySelector('.amb-autocomplete-editor');
+        if (edit.context && (edit.field !== 'city' || edit.context.actionIndex === 1)
+            && selectedNow && editorClosed && row?.after?.[edit.field] === value
+            && !row.cellErrors.some(error => error.field === edit.field)) {
+            acquiredSuggestion = { stepId: edit.context.stepId, id: edit.id, field: edit.field, value };
+        }
         const payload = {
             id: edit.id, field: edit.field, value, previous: edit.previous,
-            selected: edit.selected, row,
-            editorClosed: !cell.getElement().querySelector('.amb-autocomplete-editor')
+            selected: edit.selected, highlighted: edit.highlighted, confirmedSuggestion, row,
+            editorClosed
         };
-        tutorial.notify(edit.field === 'requiredDepartment' ? 'department-committed' : 'free-value-committed', payload, edit.context);
+        const actionId = edit.field === 'department' || edit.field === 'requiredDepartment'
+            ? 'department-committed' : edit.field === 'city' ? 'city-committed' : 'free-value-committed';
+        tutorial.notify(actionId, payload, edit.context);
         syncTutorialHighlight();
     };
     demo.table.on('cellEditing', handleEditStart);
@@ -388,8 +472,8 @@ export default function autocomplete(app) {
     document.addEventListener('input', handleEditorInput, true);
     document.addEventListener('awesomplete-open', handleSuggestionsOpen, true);
     document.addEventListener('awesomplete-close', syncTutorialHighlight, true);
-    document.addEventListener('awesomplete-highlight', handleSuggestionChosen, true);
-    document.addEventListener('awesomplete-selectcomplete', handleSuggestionChosen, true);
+    document.addEventListener('awesomplete-highlight', handleSuggestionHighlighted, true);
+    document.addEventListener('awesomplete-selectcomplete', handleSuggestionSelected, true);
     window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
     syncTutorialHighlight();
 
@@ -398,6 +482,8 @@ export default function autocomplete(app) {
         scenarioGeneration += 1;
         clearTutorialHighlight();
         activeEdit = null;
+        cityFilter = null;
+        acquiredSuggestion = null;
         tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
         window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
         demo.table.off('cellEditing', handleEditStart);
@@ -410,8 +496,8 @@ export default function autocomplete(app) {
         document.removeEventListener('input', handleEditorInput, true);
         document.removeEventListener('awesomplete-open', handleSuggestionsOpen, true);
         document.removeEventListener('awesomplete-close', syncTutorialHighlight, true);
-        document.removeEventListener('awesomplete-highlight', handleSuggestionChosen, true);
-        document.removeEventListener('awesomplete-selectcomplete', handleSuggestionChosen, true);
+        document.removeEventListener('awesomplete-highlight', handleSuggestionHighlighted, true);
+        document.removeEventListener('awesomplete-selectcomplete', handleSuggestionSelected, true);
         reportDialog.destroy();
         commandGuideToolbar.destroy();
         tutorial.destroy();
@@ -455,16 +541,22 @@ export default function autocomplete(app) {
             clearTutorialHighlight();
             highlightedStep = tutorialState.stepId;
         }
-        const field = tutorialState.stepId === 'enter-free-value' ? 'tag' : 'requiredDepartment';
+        const field = {
+            'choose-optional-department': 'department',
+            'choose-required-department': 'requiredDepartment',
+            'enter-free-value': 'tag',
+            'filter-long-list': 'city'
+        }[tutorialState.stepId];
+        if (!field) return clearTutorialHighlight();
         const cell = demo.table.getRow(1)?.getCell(field)?.getElement();
         let target = cell;
         if (cell && activeEdit?.cell.getElement() === cell) {
             const input = cell.querySelector('.amb-autocomplete-editor');
             const list = input?.getAttribute('aria-expanded') === 'true'
                 ? document.getElementById(input.getAttribute('aria-controls')) : null;
-            const securityOption = tutorialState.stepId === 'choose-department' && list && !list.hidden
-                ? [...list.querySelectorAll('[role="option"]')].find(option => option.textContent.trim() === 'Security') : null;
-            target = securityOption || input?.closest('.awesomplete') || cell;
+            const selectedOption = list && !list.hidden
+                ? list.querySelector('[role="option"][aria-selected="true"]') : null;
+            target = selectedOption || input?.closest('.awesomplete') || cell;
         }
         const rays = Boolean(target && target !== cell);
         if (target?.isConnected && target.getClientRects().length > 0) {
@@ -481,6 +573,8 @@ export default function autocomplete(app) {
     async function resetTutorialScenario() {
         const generation = ++scenarioGeneration;
         activeEdit = null;
+        cityFilter = null;
+        acquiredSuggestion = null;
         clearTutorialHighlight();
         demo.table.cancelEdit?.();
         reportDialog.close();
