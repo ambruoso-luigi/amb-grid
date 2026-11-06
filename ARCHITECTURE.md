@@ -10,7 +10,7 @@ AMB Grid is a framework-agnostic JavaScript library for editable CRUD data grids
 
 The library owns the public grid contract exposed through the `AMB` namespace and, in particular, the controller returned by `AMB.table(...)`. It coordinates the application-level behavior around the grid, including row lifecycle, editing rules, validation, lookup behavior, rollback, selection, search and filtering, calculations, save payload generation, feedback UI, and lifecycle cleanup.
 
-Tabulator is the internal table engine. It provides the low-level table runtime and component primitives, but it is not the primary application-facing API. Normal application code should use the AMB Grid controller and public helpers. Direct access to the internal engine is an advanced escape hatch and may bypass AMB Grid coordination.
+The internal table engine provides low-level table runtime and component primitives, but it is not the primary application-facing API. Normal application code should use the AMB Grid controller and public helpers. Direct access to the internal engine is an advanced escape hatch and may bypass AMB Grid coordination.
 
 AMB Grid does not own the application backend. The consuming application remains responsible for API calls, persistence, authentication, authorization, authoritative business rules, server-side validation, and database security. AMB Grid prepares and exposes data and CRUD payloads, but it does not decide how or where those payloads are persisted.
 
@@ -63,18 +63,18 @@ AMB Grid internal runtime/modules
         +-- UI components and binders
         |
         v
-Third-party runtime dependencies
+Standalone runtime dependencies
         |
-        +-- Tabulator
-        +-- Awesomplete
-        +-- vanilla-datepicker
+        +-- internal table engine
+        +-- autocomplete runtime
+        +-- calendar runtime
 ```
 
 The package exposes the `AMB` namespace together with selected named exports. `AMB.table(...)` is the primary grid creation path and returns the controller that applications should normally use for grid operations.
 
 The controller is not a second table engine. It is the AMB Grid coordination layer around the internal table runtime: it composes focused method groups and connects CRUD state, validation, lookup behavior, UI helpers, navigation, calculations, history, and cleanup to the same grid instance.
 
-The external runtime libraries remain implementation dependencies of AMB Grid. Tabulator supplies the table engine, Awesomplete supports autocomplete behavior, and vanilla-datepicker supplies calendar selection. Consumers should normally interact with AMB Grid abstractions rather than those runtimes directly.
+The standalone runtime dependencies remain implementation details of AMB Grid. They supply the internal table engine, autocomplete behavior, and calendar selection. Consumers should normally interact with AMB Grid abstractions rather than those runtimes directly.
 
 ## 4. Repository structure
 
@@ -349,8 +349,8 @@ Rollback restores the AMB baseline for modified or deleted persisted rows. Rolli
 
 Validation does not replace CRUD state, and CRUD state does not imply validity. AMB Grid tracks application-level row and field errors separately from row lifecycle state.
 
-`CrudHelper` retains those errors independently from Tabulator DOM elements. When
-Tabulator recreates rows or cells during rendering or pagination, AMB Grid
+`CrudHelper` retains those errors independently from internal table engine DOM elements. When
+the engine recreates rows or cells during rendering or pagination, AMB Grid
 resynchronizes the visual indicators from the tracked state; the DOM is never
 the primary validation source. Row lifecycle state and row validity therefore
 remain distinct concepts.
@@ -424,7 +424,7 @@ The npm package exposes the root JavaScript API, the stylesheet subpath, and Typ
 
 The standalone build starts from `src/library-legacy-entry.js` and produces `amb-grid.umd.js`. It exposes the public browser global directly as `AMB` and is intended for applications that do not use ESM imports or a bundler.
 
-Unlike the modern ESM build, the standalone artifact incorporates the JavaScript runtime dependencies needed by AMB Grid so consumers do not load Tabulator, Awesomplete, or the datepicker as separate scripts.
+Unlike the modern ESM build, the standalone artifact incorporates the JavaScript runtime dependencies needed by AMB Grid so consumers do not load the internal table engine, autocomplete runtime, or calendar runtime as separate scripts.
 
 The standalone release archive is built from the verified distribution artifacts and contains the UMD bundle, AMB Grid stylesheet, README, license, version metadata, and optional source maps. It is a release artifact, not a separate implementation of the library.
 

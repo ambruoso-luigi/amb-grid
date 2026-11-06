@@ -23,6 +23,10 @@ All notable changes to AMB Grid are documented in this file.
 - Shortened the Angular site navigation label to `Angular`.
 - Added `AMB.formatters.image()` with thumbnails, hover/focus previews, and a
   viewer for single images and multi-image galleries.
+- Changed the default image viewer activation to double click: one click selects
+  the entire image cell, Enter and Space open it from the keyboard, and a second
+  tap on the same cell within 600 ms opens it on touch devices. Set
+  `openOn: 'singleClick'` to retain the previous immediate-opening behavior.
 - Integrated private image runtimes with per-grid ownership and lifecycle
   cleanup through `grid.destroy()`.
 - Synchronized image runtimes after successful dynamic column additions,

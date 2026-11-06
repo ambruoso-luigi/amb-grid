@@ -593,7 +593,8 @@ With `openOn: 'doubleClick'` (the new default), one click anywhere in the image
 cell selects it, and a double click opens the image or gallery. On touch devices,
 tap the same cell twice within 600 ms. Press `Enter` or `Space` on the active
 image cell to open the viewer, use the arrow keys or its controls to navigate,
-and press `Escape` to close it. To restore the previous immediate-opening
+and press `Escape` to close it and restore focus to the activating control or
+image cell. To restore the previous immediate-opening
 behavior, use `openOn: 'singleClick'`; one click or tap then opens the viewer.
 Preview and viewer settings remain independent. Null, empty, or invalid values
 show a placeholder; invalid entries in a collection are skipped.
@@ -620,8 +621,8 @@ formatter: AMB.formatters.image({
 ```
 
 For the previous single-click behavior, use
-`AMB.formatters.image({ openOn: 'singleClick' })`. The default change should be
-recorded in the next changelog and release notes.
+`AMB.formatters.image({ openOn: 'singleClick' })`. The default behavior change
+is recorded in the [Changelog](CHANGELOG.md).
 
 Image columns can also be added, updated, removed, or replaced through the public
 AMB Grid column APIs; preview and viewer support is synchronized after successful

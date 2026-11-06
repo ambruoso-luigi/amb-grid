@@ -199,8 +199,9 @@ export const readonlyImageGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> =
                 label: 'Immagini e viewer',
                 groups: [{ items: [
                     { tokens: [action('Passa sulla miniatura')], text: 'Mostra l’anteprima della prima immagine.' },
-                    { tokens: [action('Click sulla miniatura')], text: 'Seleziona la cella Immagini senza aprire il visualizzatore.' },
-                    { tokens: [action('Doppio clic sulla miniatura'), key('Enter'), key('Space')], text: 'Aprono il visualizzatore dalla cella Immagini selezionata.' },
+                    { tokens: [action('Clic sulla cella Immagini')], text: 'Seleziona la cella senza aprire il visualizzatore.' },
+                    { tokens: [action('Doppio clic sulla cella Immagini')], text: 'Apre la raccolta.' },
+                    { tokens: [key('Invio'), key('Spazio')], text: 'Aprono la raccolta dalla cella selezionata.' },
                     { tokens: [key('←'), key('→')], text: 'Nel visualizzatore passano all’immagine precedente o successiva della raccolta.' },
                     { tokens: [action('Controlli del viewer')], text: 'Consentono di ingrandire, ridurre, ripristinare e spostare l’immagine ingrandita.' },
                     { tokens: [key('Esc')], text: 'Chiude il visualizzatore e riporta il focus alla miniatura o alla griglia.' }
@@ -225,8 +226,9 @@ export const readonlyImageGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> =
                 label: 'Images and viewer',
                 groups: [{ items: [
                     { tokens: [action('Hover over a thumbnail')], text: 'Shows a preview of the first image.' },
-                    { tokens: [action('Click a thumbnail')], text: 'Selects the Images cell without opening the viewer.' },
-                    { tokens: [action('Double-click a thumbnail'), key('Enter'), key('Space')], text: 'Open the viewer from the selected Images cell.' },
+                    { tokens: [action('Click the Images cell')], text: 'Selects the cell without opening the viewer.' },
+                    { tokens: [action('Double-click the Images cell')], text: 'Opens the collection.' },
+                    { tokens: [key('Enter'), key('Space')], text: 'Open the collection from the selected cell.' },
                     { tokens: [key('←'), key('→')], text: 'In the viewer, move to the previous or next image in the collection.' },
                     { tokens: [action('Viewer controls')], text: 'Zoom in, zoom out, reset and pan an enlarged image.' },
                     { tokens: [key('Esc')], text: 'Closes the viewer and returns focus to the thumbnail or grid.' }
