@@ -35,6 +35,7 @@ const tags = [
     'business',
     'external',
     'follow-up',
+    'home',
     'internal',
     'important',
     'pending',
