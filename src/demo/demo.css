@@ -3928,6 +3928,21 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     color: var(--demo-muted);
 }
 
+.demo-multifield-lookup__disclaimer {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    color: var(--amb-site-muted);
+}
+
+.demo-multifield-lookup__disclaimer[hidden] {
+    display: none;
+}
+
+.demo-multifield-lookup__disclaimer svg {
+    flex: none;
+}
+
 .demo-multifield-lookup .amb-lookup-editor__button {
     align-items: center;
     background: var(--amb-site-surface-soft);

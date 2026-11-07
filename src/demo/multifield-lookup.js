@@ -12,9 +12,6 @@ import { demoIcon } from './demo-icons.js';
 import { publicExampleTranslations } from './example-copy.js';
 
 const DATASET_URL = new URL('./data/italian-municipalities.demo.json', import.meta.url);
-const DATASET_WARNING = 'This dataset is provided for demonstration purposes only. '
-    + 'It may be incomplete, outdated, or inaccurate. '
-    + 'Do not use it as an official source for production systems.';
 
 const filterMunicipalities = (records, query) => {
     const normalizedQuery = String(query || '').trim().toLowerCase();
@@ -176,27 +173,30 @@ export default function multifieldLookup(app) {
             summary: 'Multifield Lookup technical guide',
             summaryKey: 'examples.multifieldLookup.detailsTitle',
             summaryIcon: 'guideText', variant: 'technical',
-            intro: 'This example shows how to select a record through autocomplete or a search dialog, updating the master field and its dependent fields together.',
+            intro: 'Multifield Lookup lets users select a record through autocomplete or a search dialog, updating the main field and all related fields together. This example uses a demonstration dataset of Italian municipalities.',
             introKey: 'examples.multifieldLookup.guideIntro',
             points: [
-                { title: 'Select a record', titleKey: 'examples.multifieldLookup.point1Title', description: 'Edit Municipality to type for autocomplete or use its search button for the complete lookup.', descriptionKey: 'examples.multifieldLookup.detail1' },
-                { title: 'Master field', titleKey: 'examples.multifieldLookup.point2Title', description: 'Municipality is the actionable master field; dependent fields remain readonly.', descriptionKey: 'examples.multifieldLookup.detail2' },
-                { title: 'Dependent fields', titleKey: 'examples.multifieldLookup.point3Title', description: 'Province, Region, Postal Code, ISTAT Code, and Cadastral Code update together.', descriptionKey: 'examples.multifieldLookup.detail3' },
-                { title: 'Search', titleKey: 'examples.multifieldLookup.point4Title', description: 'Search the lookup dataset to narrow the available municipalities before selection.', descriptionKey: 'examples.multifieldLookup.detail4' },
-                { title: 'Consistent data', titleKey: 'examples.multifieldLookup.point5Title', description: 'Selecting one record prevents combinations of dependent values that do not belong together.', descriptionKey: 'examples.multifieldLookup.detail5' }
+                { title: 'Select a record', titleKey: 'examples.multifieldLookup.point1Title', description: 'You can edit Municipality directly in the cell or use the Search button to open the complete lookup dialog. Both methods let you select a municipality from the dataset.', descriptionKey: 'examples.multifieldLookup.detail1' },
+                { title: 'Master field', titleKey: 'examples.multifieldLookup.point2Title', description: 'Municipality is the editable master field. Selecting a municipality automatically determines the values of the related fields in the same row.', descriptionKey: 'examples.multifieldLookup.detail2' },
+                { title: 'Dependent fields', titleKey: 'examples.multifieldLookup.point3Title', description: 'Province, Region, Postal Code, ISTAT Code, and Cadastral Code are readonly derived fields. Their values are updated together after selecting a municipality.', descriptionKey: 'examples.multifieldLookup.detail3' },
+                { title: 'Search dialog', titleKey: 'examples.multifieldLookup.point4Title', description: 'The Search button opens a dialog where you can search municipalities by name, province, region, or postal code. Select and confirm the desired record to update the row.', descriptionKey: 'examples.multifieldLookup.detail4' },
+                { title: 'Inline autocomplete', titleKey: 'examples.multifieldLookup.point5Title', description: 'You can also search directly in the Municipality cell. As you type, AMB Grid suggests a matching municipality name. Confirming a recognized municipality updates all related fields.', descriptionKey: 'examples.multifieldLookup.detail5' },
+                { title: 'Consistent data', titleKey: 'examples.multifieldLookup.point6Title', description: 'Each selection applies values from the same record, preventing inconsistent combinations of municipality, province, region, and administrative codes.', descriptionKey: 'examples.multifieldLookup.detail6' },
+                { title: 'Demonstration data', titleKey: 'examples.multifieldLookup.point7Title', description: 'The Italian municipalities dataset is provided exclusively to demonstrate Multifield Lookup. The information may be incomplete, outdated, or inaccurate. Do not use this data as an official source in production applications.', descriptionKey: 'examples.multifieldLookup.detail7' }
             ],
             columns: [
-                { title: 'Municipality', titleKey: 'guides.multifield.municipality.title', badge: 'MASTER', description: 'Editable master field: type for autocomplete or use the search button to open the complete lookup.', descriptionKey: 'guides.multifield.municipality.description' },
-                { title: 'Province', titleKey: 'guides.multifield.province.title', badge: 'DERIVED', description: 'Readonly value filled automatically from the selected municipality.', descriptionKey: 'guides.multifield.province.description' },
-                { title: 'Region', titleKey: 'guides.multifield.region.title', badge: 'DERIVED', description: 'Readonly region synchronized with the master selection.', descriptionKey: 'guides.multifield.region.description' },
-                { title: 'Postal Code', titleKey: 'guides.multifield.postalCode.title', badge: 'DERIVED', description: 'Readonly postal code supplied by the selected record.', descriptionKey: 'guides.multifield.postalCode.description' },
-                { title: 'ISTAT Code', titleKey: 'guides.multifield.istatCode.title', badge: 'DERIVED', description: 'Readonly ISTAT identifier supplied by the selected record.', descriptionKey: 'guides.multifield.istatCode.description' },
-                { title: 'Cadastral Code', titleKey: 'guides.multifield.cadastralCode.title', badge: 'DERIVED', description: 'Derived field, hidden in the lookup and filled after selection.', descriptionKey: 'guides.multifield.cadastralCode.description' }
+                { title: 'Municipality', titleKey: 'guides.multifield.municipality.title', badge: 'MASTER', description: 'Editable master field with autocomplete and a search dialog. Selection updates all related fields.', descriptionKey: 'guides.multifield.municipality.description' },
+                { title: 'Province', titleKey: 'guides.multifield.province.title', badge: 'DERIVED', description: 'Province of the selected municipality, filled automatically and readonly.', descriptionKey: 'guides.multifield.province.description' },
+                { title: 'Region', titleKey: 'guides.multifield.region.title', badge: 'DERIVED', description: 'Region automatically synchronized with the selected municipality.', descriptionKey: 'guides.multifield.region.description' },
+                { title: 'Postal Code', titleKey: 'guides.multifield.postalCode.title', badge: 'DERIVED', description: 'Postal code associated with the selected record, not directly editable.', descriptionKey: 'guides.multifield.postalCode.description' },
+                { title: 'ISTAT Code', titleKey: 'guides.multifield.istatCode.title', badge: 'DERIVED', description: 'Municipality ISTAT identifier automatically retrieved from the record.', descriptionKey: 'guides.multifield.istatCode.description' },
+                { title: 'Cadastral Code', titleKey: 'guides.multifield.cadastralCode.title', badge: 'DERIVED', description: 'Municipality cadastral identifier, updated automatically even though it is hidden in the search dialog.', descriptionKey: 'guides.multifield.cadastralCode.description' }
             ]
             })}
                 </div>
             </div>
-            <p class="demo-warning"><strong data-i18n="examples.multifieldLookup.warning">Demo data warning:</strong> <span data-i18n="examples.multifieldLookup.warningText">${DATASET_WARNING}</span></p>
+            <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Search and select a municipality using autocomplete or the search dialog. Related fields update automatically.</p>
+            <p class="demo-note demo-multifield-lookup__disclaimer" data-multifield-disclaimer>${demoIcon('info', { size: 16 })}<span data-i18n="examples.multifieldLookup.disclaimer">Demonstration data, not suitable as an official source.</span></p>
             <p class="demo-note" data-municipality-lookup-status role="status" aria-live="polite">Municipality lookup data is loading.</p>
             <div class="demo-action-tutorial-host"></div>
             <div class="demo-table-workbench">
@@ -208,9 +208,11 @@ export default function multifieldLookup(app) {
 
     const tableMount = app.querySelector('#municipality-table');
     const lookupStatus = app.querySelector('[data-municipality-lookup-status]');
+    const disclaimer = app.querySelector('[data-multifield-disclaimer]');
     let destroyed = false;
     let activeEdit = null;
     let activeDialog = null;
+    let inlineCandidate = null;
     let grid = null;
     let tutorialState = null;
     let highlightedControl = null;
@@ -219,6 +221,11 @@ export default function multifieldLookup(app) {
     let scenarioGeneration = 0;
     let dialogHighlightObserver = null;
     let searchGlow = null;
+    function hasCompleteMapping(selected, before, after, report) {
+        return Boolean(selected && before && after && before.istatCode !== selected.istatCode
+            && Object.entries(MUNICIPALITY_MAP_TO_ROW).every(([field, source]) => after[field] === selected[source])
+            && report?.state === 'modified' && !report.hasErrors);
+    }
     const t = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`examples.multifieldLookup.${key}`];
     const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
     const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
@@ -239,6 +246,7 @@ export default function multifieldLookup(app) {
         onCompleteSuccess: finishTutorial,
         onStateChange: state => {
             tutorialState = state;
+            disclaimer.hidden = !state.hidden;
             if (state.hidden || state.complete || state.resetting || state.destroyed) {
                 stopDialogHighlight();
             }
@@ -249,18 +257,16 @@ export default function multifieldLookup(app) {
         },
         steps: [
             {
-                id: 'open-lookup', actionId: 'lookup-opened', instructionKey: 'examples.multifieldLookup.tutorialOpen',
-                isComplete: ({ id, field, opened }) => id === 1 && field === 'municipality' && opened
+                id: 'search-by-postal-code', actionId: 'dialog-mapping-complete', instructionKey: 'examples.multifieldLookup.tutorialOpen',
+                isComplete: ({ id, field, searchedPostalCode, selected, before, after, report, dialogClosed }) => id === 1
+                    && field === 'municipality' && searchedPostalCode === selected?.postalCode && dialogClosed
+                    && hasCompleteMapping(selected, before, after, report)
             },
             {
-                id: 'select-municipality', actionId: 'mapping-applied', instructionKey: 'examples.multifieldLookup.tutorialSelect',
-                isComplete: ({ id, selected, before, after, report, dialogClosed }) => {
-                    if (id !== 1 || selected?.municipalityName !== 'Salerno' || !dialogClosed) return false;
-                    const mappedFields = Object.entries(MUNICIPALITY_MAP_TO_ROW);
-                    const changedFields = mappedFields.filter(([field]) => before[field] !== after[field]);
-                    return changedFields.length >= 2 && mappedFields.every(([field, source]) => after[field] === selected[source])
-                        && report?.state === 'modified' && !report.hasErrors;
-                }
+                id: 'inline-autocomplete', actionId: 'inline-mapping-complete', instructionKey: 'examples.multifieldLookup.tutorialSelect',
+                isComplete: ({ id, field, typed, selected, before, after, report, editorClosed }) => id === 2
+                    && field === 'municipality' && typed && editorClosed
+                    && hasCompleteMapping(selected, before, after, report)
             }
         ]
     });
@@ -311,15 +317,23 @@ export default function multifieldLookup(app) {
         const edit = activeEdit;
         const context = tutorial.capture();
         const selection = originalDialogOpen(options);
-        activeDialog = edit && edit.id === 1 && edit.field === 'municipality'
-            ? { edit, before: { ...edit.cell.getRow().getData() }, selected: null, context: null }
+        if (edit) edit.openedDialog = true;
+        activeDialog = edit?.id === 1 && edit.field === 'municipality' && edit.searchClicked
+            && context?.stepId === 'search-by-postal-code'
+            ? { edit, before: { ...edit.cell.getRow().getData() }, selected: null, record: null,
+                searchedPostalCode: null, closed: false, context }
             : null;
         const opened = Boolean(municipalityDialog.overlay && !municipalityDialog.overlay.hidden);
-        if (opened && edit) {
-            tutorial.notify('lookup-opened', { id: edit.id, field: edit.field, opened }, context);
-            if (activeDialog) activeDialog.context = tutorial.capture();
+        const dialog = activeDialog;
+        if (opened && dialog) {
+            municipalityDialog.search.addEventListener('input', () => {
+                const query = municipalityDialog.search?.value.trim() || '';
+                dialog.searchedPostalCode = /^\d{5}$/.test(query)
+                    && municipalityDialog.filteredData.some(record => record.postalCode === query) ? query : null;
+                syncTutorialHighlight();
+            });
         }
-        if (opened && tutorialState?.stepId === 'select-municipality' && !tutorialState.hidden) {
+        if (opened && dialog && !tutorialState.hidden) {
             dialogHighlightObserver?.disconnect();
             dialogHighlightObserver = new MutationObserver(syncTutorialHighlight);
             dialogHighlightObserver.observe(municipalityDialog.overlay, {
@@ -331,7 +345,13 @@ export default function multifieldLookup(app) {
         }
         const highlightObserver = dialogHighlightObserver;
         return selection.then(selected => {
-            if (activeDialog?.edit === edit) activeDialog.selected = selected;
+            if (activeDialog === dialog) {
+                if (!selected) activeDialog = null;
+                else {
+                    dialog.selected = selected;
+                    dialog.closed = !municipalityDialog.overlay || municipalityDialog.overlay.hidden;
+                }
+            }
             return selected;
         }).finally(() => {
             highlightObserver?.disconnect();
@@ -399,6 +419,7 @@ export default function multifieldLookup(app) {
         ]
     });
     const reportDialog = createDemoReportDialog();
+    const rowConfirmDialog = new AMB.ConfirmDialog();
     const commandGuideToolbar = createDemoCommandGuideToolbar(app);
 
     grid = AMB.table({
@@ -420,7 +441,10 @@ export default function multifieldLookup(app) {
         },
         layout: 'fitColumns',
         rowActionColumn: {
-            enabled: true
+            enabled: true,
+            actions: { delete: false, rollback: true },
+            confirmRollbackMessage: 'Restore this row?',
+            confirmProvider: handleRowConfirmation
         },
         columns: [
             municipalityMultifieldLookup.masterColumn({
@@ -432,7 +456,13 @@ export default function multifieldLookup(app) {
                         const dialog = activeDialog;
                         if (dialog?.edit.cell === cell && dialog.selected?.istatCode === record.istatCode) {
                             dialog.record = record;
-                            dialog.patch = patch;
+                        } else if (activeEdit?.cell === cell && activeEdit.id === 2
+                            && activeEdit.field === 'municipality' && !activeEdit.openedDialog
+                            && activeEdit.typedValue && activeEdit.typedValue.length < record.municipalityName.length
+                            && record.municipalityName.toLowerCase().startsWith(activeEdit.typedValue.toLowerCase())
+                            && activeEdit.context?.stepId === 'inline-autocomplete') {
+                            inlineCandidate = { edit: activeEdit, before: activeEdit.before, record,
+                                context: activeEdit.context, editorClosed: false };
                         }
                     },
                     dialogTitle: 'Select an Italian municipality',
@@ -486,29 +516,72 @@ export default function multifieldLookup(app) {
         label: 'Search'
     });
     const handleEditStart = cell => {
-        activeEdit = { cell, id: cell.getRow().getData().id, field: cell.getField() };
+        activeEdit = { cell, id: cell.getRow().getData().id, field: cell.getField(),
+            before: { ...cell.getRow().getData() }, context: tutorial.capture(), typedValue: '',
+            openedDialog: false, searchClicked: false };
         globalThis.requestAnimationFrame(syncTutorialHighlight);
     };
-    const handleEditCancelled = () => { activeEdit = null; activeDialog = null; syncTutorialHighlight(); };
+    const handleEditorInput = event => {
+        if (activeEdit?.cell.getElement().contains(event.target)
+            && event.target.matches('.amb-lookup-editor__input')) activeEdit.typedValue = event.target.value.trim();
+    };
+    const handleSearchClick = event => {
+        if (activeEdit?.cell.getElement().contains(event.target)
+            && event.target.closest('.amb-lookup-editor__button')) activeEdit.searchClicked = true;
+    };
+    const handleEditCancelled = cell => {
+        if (activeEdit?.cell === cell) {
+            if (inlineCandidate?.edit === activeEdit) inlineCandidate = null;
+            if (activeDialog?.edit === activeEdit && !activeDialog.selected) activeDialog = null;
+            activeEdit = null;
+        }
+        syncTutorialHighlight();
+    };
+    const handleEditConfirmed = cell => {
+        if (inlineCandidate?.edit.cell === cell) {
+            inlineCandidate.editorClosed = !cell.getElement().querySelector('.amb-lookup-editor');
+            completeInlineCandidate();
+        }
+        if (activeEdit?.cell === cell) activeEdit = null;
+        syncTutorialHighlight();
+    };
+    const completeDialogCandidate = () => {
+        const dialog = activeDialog;
+        if (!dialog?.closed || !dialog.record || !dialog.searchedPostalCode) return;
+        const after = { ...dialog.edit.cell.getRow().getData() };
+        const report = grid.getStateReport().rows.find(row => row.id === dialog.edit.id);
+        if (tutorial.notify('dialog-mapping-complete', {
+            id: dialog.edit.id, field: dialog.edit.field, searchedPostalCode: dialog.searchedPostalCode,
+            selected: dialog.record, before: dialog.before, after, report, dialogClosed: dialog.closed
+        }, dialog.context)) activeDialog = null;
+    };
+    const completeInlineCandidate = () => {
+        const candidate = inlineCandidate;
+        if (!candidate?.editorClosed) return;
+        const after = { ...candidate.edit.cell.getRow().getData() };
+        const report = grid.getStateReport().rows.find(row => row.id === candidate.edit.id);
+        if (tutorial.notify('inline-mapping-complete', {
+            id: candidate.edit.id, field: candidate.edit.field, typed: Boolean(candidate.edit.typedValue),
+            selected: candidate.record, before: candidate.before, after, report, editorClosed: true
+        }, candidate.context)) inlineCandidate = null;
+    };
     const handleRowUpdated = row => {
         const dialog = activeDialog;
-        if (destroyed || !dialog?.record || !dialog.selected || row.getData().id !== dialog.edit.id) return;
-        activeDialog = null;
-        const after = { ...row.getData() };
-        const report = grid.getStateReport().rows.find(row => row.id === dialog.edit.id);
-        tutorial.notify('mapping-applied', {
-            id: dialog.edit.id, selected: dialog.record, before: dialog.before, after, report,
-            dialogClosed: !municipalityDialog.overlay || municipalityDialog.overlay.hidden
-        }, dialog.context);
+        if (destroyed) return;
+        if (dialog?.edit.id === row.getData().id) completeDialogCandidate();
+        if (inlineCandidate?.edit.id === row.getData().id) completeInlineCandidate();
         syncTutorialHighlight();
     };
     grid.table.on('cellEditing', handleEditStart);
     grid.table.on('cellEditCancelled', handleEditCancelled);
+    grid.table.on('cellEdited', handleEditConfirmed);
     grid.table.on('rowUpdated', handleRowUpdated);
     grid.table.on('renderComplete', syncTutorialHighlight);
     grid.table.on('scrollVertical', syncTutorialHighlight);
     grid.table.on('scrollHorizontal', syncTutorialHighlight);
     grid.table.on('dataFiltered', syncTutorialHighlight);
+    document.addEventListener('input', handleEditorInput, true);
+    document.addEventListener('click', handleSearchClick, true);
     window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
     syncTutorialHighlight();
 
@@ -533,6 +606,32 @@ export default function multifieldLookup(app) {
             technicalGuide.open = true;
             technicalGuideSummary.focus({ preventScroll: true });
         } else tutorialLaunch.focus({ preventScroll: true });
+    }
+
+    async function handleRowConfirmation({ action, id }) {
+        if (action !== 'rollback') return false;
+        const generation = scenarioGeneration;
+        const recordId = typeof id === 'number' && Number.isFinite(id)
+            || typeof id === 'string' && /^\d+$/.test(id.trim()) ? String(id).trim() : '';
+        const confirmation = rowConfirmDialog.confirm({
+            title: recordId ? t('rollbackTitle').replace('{id}', recordId) : t('rollbackTitleFallback'),
+            message: t('rollbackMessage'), confirmText: t('rollbackConfirm'), cancelText: t('rollbackCancel')
+        });
+        const { element, panelElement, titleElement, confirmButton } = rowConfirmDialog;
+        element.classList.add('demo-crud-row-confirm-dialog', 'demo-crud-row-confirm-dialog--rollback');
+        if (!panelElement.querySelector('.demo-crud-row-confirm-dialog__header')) {
+            const header = document.createElement('div');
+            const badge = document.createElement('span');
+            header.className = 'demo-crud-row-confirm-dialog__header';
+            badge.className = 'demo-crud-row-confirm-dialog__badge';
+            badge.setAttribute('aria-hidden', 'true');
+            badge.innerHTML = demoIcon('undo2', { size: 22, strokeWidth: 2.2 });
+            header.append(badge, titleElement);
+            panelElement.prepend(header);
+        }
+        confirmButton.insertAdjacentHTML('afterbegin', demoIcon('undo2', { size: 18, strokeWidth: 2.2 }));
+        const confirmed = await confirmation;
+        return confirmed && !destroyed && generation === scenarioGeneration;
     }
 
     function clearTutorialHighlight() {
@@ -560,19 +659,22 @@ export default function multifieldLookup(app) {
             clearTutorialHighlight();
             highlightedStep = tutorialState.stepId;
         }
-        const cell = grid.table.getRow(1)?.getCell('municipality')?.getElement();
+        const stepId = tutorialState.stepId;
+        const rowId = stepId === 'inline-autocomplete' ? 2 : 1;
+        const cell = grid.table.getRow(rowId)?.getCell('municipality')?.getElement();
         let target = cell;
-        if (tutorialState.stepId === 'open-lookup' && activeEdit?.id === 1 && activeEdit.field === 'municipality') {
+        if (stepId === 'search-by-postal-code' && activeEdit?.id === 1 && activeEdit.field === 'municipality'
+            && (!municipalityDialog.overlay || municipalityDialog.overlay.hidden)) {
             target = cell?.querySelector('.amb-lookup-editor__button') || cell;
-        } else if (tutorialState.stepId === 'select-municipality' && municipalityDialog.overlay && !municipalityDialog.overlay.hidden) {
-            const selected = municipalityDialog.filteredData?.[municipalityDialog.selectedIndex];
-            if (selected?.municipalityName === 'Salerno' && !municipalityDialog.selectButton?.disabled) {
-                target = municipalityDialog.selectButton;
-            } else {
-                const salernoRow = [...municipalityDialog.table.querySelectorAll('.amb-lookup-dialog__row')]
-                    .find(row => municipalityDialog.filteredData?.[Number(row.dataset.rowIndex)]?.municipalityName === 'Salerno');
-                target = salernoRow?.querySelector('td') || municipalityDialog.search;
-            }
+        } else if (stepId === 'search-by-postal-code' && municipalityDialog.overlay && !municipalityDialog.overlay.hidden) {
+            const selectedRow = municipalityDialog.table?.querySelector(
+                `.amb-lookup-dialog__row[data-row-index="${municipalityDialog.selectedIndex}"]`
+            );
+            target = activeDialog?.searchedPostalCode && selectedRow
+                ? municipalityDialog.selectButton : municipalityDialog.search;
+        } else if (stepId === 'inline-autocomplete' && activeEdit?.id === 2
+            && activeEdit.field === 'municipality') {
+            target = cell?.querySelector('.amb-lookup-editor__input') || cell;
         }
         if (target === municipalityDialog.search && target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl !== target || !searchGlow) {
@@ -609,7 +711,9 @@ export default function multifieldLookup(app) {
         if (municipalityDialog.overlay && !municipalityDialog.overlay.hidden) municipalityDialog.destroy();
         activeEdit = null;
         activeDialog = null;
+        inlineCandidate = null;
         grid.table.cancelEdit?.();
+        rowConfirmDialog.destroy();
         grid.feedback.clear();
         reportDialog.close();
         await grid.setData(createInitialData());
@@ -650,19 +754,24 @@ export default function multifieldLookup(app) {
             stopDialogHighlight();
             activeEdit = null;
             activeDialog = null;
+            inlineCandidate = null;
             tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
             window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
             grid.table.off('cellEditing', handleEditStart);
             grid.table.off('cellEditCancelled', handleEditCancelled);
+            grid.table.off('cellEdited', handleEditConfirmed);
             grid.table.off('rowUpdated', handleRowUpdated);
             grid.table.off('renderComplete', syncTutorialHighlight);
             grid.table.off('scrollVertical', syncTutorialHighlight);
             grid.table.off('scrollHorizontal', syncTutorialHighlight);
             grid.table.off('dataFiltered', syncTutorialHighlight);
+            document.removeEventListener('input', handleEditorInput, true);
+            document.removeEventListener('click', handleSearchClick, true);
             reportDialog.destroy();
             stopDecoratingLookupButtons();
 
             municipalityDialog.destroy();
+            rowConfirmDialog.destroy();
 
             commandGuideToolbar.destroy();
             tutorial.destroy();
