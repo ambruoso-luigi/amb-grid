@@ -3930,16 +3930,18 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 
 .demo-example > .demo-multifield-lookup__disclaimer {
     align-items: flex-start;
-    background: #fffaf0;
+    background: #fff8e8;
     border: 1px solid #e2bf67;
     border-radius: 10px;
     box-sizing: border-box;
     color: #111827;
     display: flex;
     gap: 10px;
-    margin-bottom: 8px;
-    margin-top: 6px;
+    margin-bottom: 10px;
+    margin-top: 8px;
+    max-width: 760px;
     padding: 10px 12px;
+    width: 100%;
 }
 
 .demo-multifield-lookup__disclaimer[hidden] {
@@ -3948,7 +3950,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 
 .demo-multifield-lookup__disclaimer-icon {
     align-items: center;
-    background: #fff3cd;
+    background: #fff1bf;
     border: 1px solid #efd48a;
     border-radius: 999px;
     box-sizing: border-box;
@@ -3956,8 +3958,17 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     display: inline-flex;
     flex: none;
     justify-content: center;
-    height: 26px;
-    width: 26px;
+    height: 28px;
+    margin-top: 1px;
+    min-width: 28px;
+    width: 28px;
+}
+
+.demo-multifield-lookup__disclaimer > span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
 .demo-multifield-lookup__disclaimer strong {
@@ -3966,14 +3977,16 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     font-size: 13px;
     font-weight: 700;
     line-height: 1.2;
-    margin-bottom: 2px;
+    margin: 0;
 }
 
 .demo-multifield-lookup__disclaimer-text {
     color: #111827;
     display: block;
     font-size: 13px;
+    font-weight: 400;
     line-height: 1.35;
+    margin: 0;
 }
 
 .demo-multifield-grid {
