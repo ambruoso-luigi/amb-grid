@@ -196,12 +196,12 @@ export default function multifieldLookup(app) {
                 </div>
             </div>
             <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Search and select a municipality using autocomplete or the search dialog. Related fields update automatically.</p>
-            <p class="demo-note demo-multifield-lookup__disclaimer" data-multifield-disclaimer>${demoIcon('info', { size: 16 })}<span data-i18n="examples.multifieldLookup.disclaimer">Demonstration data, not suitable as an official source.</span></p>
+            <p class="demo-note demo-multifield-lookup__disclaimer" data-multifield-disclaimer><span class="demo-multifield-lookup__disclaimer-icon" aria-hidden="true">${demoIcon('warning', { size: 17 })}</span><span><strong data-i18n="examples.multifieldLookup.disclaimerTitle">Demonstration data</strong><span data-i18n="examples.multifieldLookup.disclaimerText">The dataset is provided for demonstration purposes only and is not an official source.</span></span></p>
             <p class="demo-note" data-municipality-lookup-status role="status" aria-live="polite">Municipality lookup data is loading.</p>
             <div class="demo-action-tutorial-host"></div>
             <div class="demo-table-workbench">
                 <div class="demo-command-guide-host"></div>
-                <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport"></div>
+                <div id="municipality-table" class="demo-business-grid demo-business-grid--viewport demo-multifield-grid"></div>
             </div>
         </div>
     `;
@@ -458,11 +458,11 @@ export default function multifieldLookup(app) {
                             dialog.record = record;
                         } else if (activeEdit?.cell === cell && activeEdit.id === 2
                             && activeEdit.field === 'municipality' && !activeEdit.openedDialog
-                            && activeEdit.typedValue && activeEdit.typedValue.length < record.municipalityName.length
+                            && activeEdit.typedValue
                             && record.municipalityName.toLowerCase().startsWith(activeEdit.typedValue.toLowerCase())
                             && activeEdit.context?.stepId === 'inline-autocomplete') {
                             inlineCandidate = { edit: activeEdit, before: activeEdit.before, record,
-                                context: activeEdit.context, editorClosed: false };
+                                context: activeEdit.context, finished: false };
                         }
                     },
                     dialogTitle: 'Select an Italian municipality',
@@ -530,8 +530,11 @@ export default function multifieldLookup(app) {
             && event.target.closest('.amb-lookup-editor__button')) activeEdit.searchClicked = true;
     };
     const handleEditCancelled = cell => {
+        if (inlineCandidate?.edit.cell === cell) {
+            inlineCandidate.finished = true;
+            completeInlineCandidate();
+        }
         if (activeEdit?.cell === cell) {
-            if (inlineCandidate?.edit === activeEdit) inlineCandidate = null;
             if (activeDialog?.edit === activeEdit && !activeDialog.selected) activeDialog = null;
             activeEdit = null;
         }
@@ -539,7 +542,7 @@ export default function multifieldLookup(app) {
     };
     const handleEditConfirmed = cell => {
         if (inlineCandidate?.edit.cell === cell) {
-            inlineCandidate.editorClosed = !cell.getElement().querySelector('.amb-lookup-editor');
+            inlineCandidate.finished = true;
             completeInlineCandidate();
         }
         if (activeEdit?.cell === cell) activeEdit = null;
@@ -557,7 +560,7 @@ export default function multifieldLookup(app) {
     };
     const completeInlineCandidate = () => {
         const candidate = inlineCandidate;
-        if (!candidate?.editorClosed) return;
+        if (!candidate?.finished) return;
         const after = { ...candidate.edit.cell.getRow().getData() };
         const report = grid.getStateReport().rows.find(row => row.id === candidate.edit.id);
         if (tutorial.notify('inline-mapping-complete', {
