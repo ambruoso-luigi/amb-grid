@@ -196,7 +196,10 @@ export default function multifieldLookup(app) {
                 </div>
             </div>
             <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Search and select a municipality using autocomplete or the search dialog. Related fields update automatically.</p>
-            <p class="demo-note demo-multifield-lookup__disclaimer" data-multifield-disclaimer><span class="demo-multifield-lookup__disclaimer-icon" aria-hidden="true">${demoIcon('warning', { size: 18 })}</span><span><strong data-i18n="examples.multifieldLookup.disclaimerTitle">Demonstration data</strong><span class="demo-multifield-lookup__disclaimer-text" data-i18n="examples.multifieldLookup.disclaimerText">The dataset is provided for demonstration purposes only and is not an official source.</span></span></p>
+            <div class="demo-multifield-lookup__disclaimer" data-multifield-disclaimer role="note">
+                <div class="demo-multifield-lookup__disclaimer-heading">${demoIcon('warning', { size: 16 })}<strong data-i18n="examples.multifieldLookup.disclaimerTitle">Demonstration data</strong></div>
+                <p class="demo-multifield-lookup__disclaimer-text" data-i18n="examples.multifieldLookup.disclaimerText">The dataset is provided for demonstration purposes only and is not an official source.</p>
+            </div>
             <p class="demo-note" data-municipality-lookup-status role="status" aria-live="polite">Municipality lookup data is loading.</p>
             <div class="demo-action-tutorial-host"></div>
             <div class="demo-table-workbench">
@@ -348,7 +351,7 @@ export default function multifieldLookup(app) {
         }
         const highlightObserver = dialogHighlightObserver;
         return selection.then(selected => {
-            if (activeDialog === dialog) {
+            if (dialog && activeDialog === dialog) {
                 if (!selected) activeDialog = null;
                 else {
                     dialog.selected = selected;

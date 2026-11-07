@@ -3928,64 +3928,51 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     color: var(--demo-muted);
 }
 
-.demo-example > .demo-multifield-lookup__disclaimer {
-    align-items: flex-start;
-    background: #fff8e8;
-    border: 1px solid #e2bf67;
-    border-radius: 10px;
+.demo-multifield-lookup [data-multifield-disclaimer] {
     box-sizing: border-box;
-    color: #111827;
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    margin-top: 8px;
-    max-width: 760px;
-    padding: 10px 12px;
+    display: block;
     width: 100%;
+    max-width: 470px;
+    margin: 8px 0 10px;
+    padding: 11px 14px;
+    background: #fff8ed;
+    border: 1px solid #efd49c;
+    border-left: 4px solid #e4a11a;
+    border-radius: 12px;
+    box-shadow: none;
+    color: #111827;
 }
 
-.demo-multifield-lookup__disclaimer[hidden] {
+.demo-multifield-lookup [data-multifield-disclaimer][hidden] {
     display: none;
 }
 
-.demo-multifield-lookup__disclaimer-icon {
+.demo-multifield-lookup__disclaimer-heading {
     align-items: center;
-    background: #fff1bf;
-    border: 1px solid #efd48a;
-    border-radius: 999px;
-    box-sizing: border-box;
-    color: #b7791f;
-    display: inline-flex;
-    flex: none;
-    justify-content: center;
-    height: 28px;
-    margin-top: 1px;
-    min-width: 28px;
-    width: 28px;
-}
-
-.demo-multifield-lookup__disclaimer > span:last-child {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
+    gap: 8px;
+    margin: 0 0 6px;
 }
 
-.demo-multifield-lookup__disclaimer strong {
+.demo-multifield-lookup__disclaimer-heading svg {
+    color: #b7791f;
+    flex: none;
+    height: 16px;
+    width: 16px;
+}
+
+.demo-multifield-lookup__disclaimer-heading strong {
     color: #111827;
-    display: block;
     font-size: 13px;
     font-weight: 700;
-    line-height: 1.2;
-    margin: 0;
+    line-height: 1.3;
 }
 
 .demo-multifield-lookup__disclaimer-text {
     color: #111827;
-    display: block;
     font-size: 13px;
     font-weight: 400;
-    line-height: 1.35;
+    line-height: 1.4;
     margin: 0;
 }
 
