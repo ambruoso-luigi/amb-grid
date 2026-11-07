@@ -4393,12 +4393,12 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     z-index: 1;
 }
 
-:is(#crud-row-states-table, #validation-table) .amb-row-action-button.demo-crud-tutorial-target::after,
-:is(#crud-row-states-table, #validation-table) .amb-row-action-button.demo-crud-tutorial-target--rays::before {
+:is(#crud-row-states-table, #validation-table, #column-calculations-table) .amb-row-action-button.demo-crud-tutorial-target::after,
+:is(#crud-row-states-table, #validation-table, #column-calculations-table) .amb-row-action-button.demo-crud-tutorial-target--rays::before {
     content: none;
 }
 
-:is(#crud-row-states-table, #validation-table) .amb-row-action-button.demo-crud-tutorial-target:hover {
+:is(#crud-row-states-table, #validation-table, #column-calculations-table) .amb-row-action-button.demo-crud-tutorial-target:hover {
     transform: none;
 }
 
