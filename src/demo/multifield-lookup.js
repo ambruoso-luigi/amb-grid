@@ -196,7 +196,7 @@ export default function multifieldLookup(app) {
                 </div>
             </div>
             <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Search and select a municipality using autocomplete or the search dialog. Related fields update automatically.</p>
-            <p class="demo-note demo-multifield-lookup__disclaimer" data-multifield-disclaimer><span class="demo-multifield-lookup__disclaimer-icon" aria-hidden="true">${demoIcon('warning', { size: 17 })}</span><span><strong data-i18n="examples.multifieldLookup.disclaimerTitle">Demonstration data</strong><span data-i18n="examples.multifieldLookup.disclaimerText">The dataset is provided for demonstration purposes only and is not an official source.</span></span></p>
+            <p class="demo-note demo-multifield-lookup__disclaimer" data-multifield-disclaimer><span class="demo-multifield-lookup__disclaimer-icon" aria-hidden="true">${demoIcon('warning', { size: 18 })}</span><span><strong data-i18n="examples.multifieldLookup.disclaimerTitle">Demonstration data</strong><span class="demo-multifield-lookup__disclaimer-text" data-i18n="examples.multifieldLookup.disclaimerText">The dataset is provided for demonstration purposes only and is not an official source.</span></span></p>
             <p class="demo-note" data-municipality-lookup-status role="status" aria-live="polite">Municipality lookup data is loading.</p>
             <div class="demo-action-tutorial-host"></div>
             <div class="demo-table-workbench">
@@ -264,8 +264,8 @@ export default function multifieldLookup(app) {
             },
             {
                 id: 'inline-autocomplete', actionId: 'inline-mapping-complete', instructionKey: 'examples.multifieldLookup.tutorialSelect',
-                isComplete: ({ id, field, typed, selected, before, after, report, editorClosed }) => id === 2
-                    && field === 'municipality' && typed && editorClosed
+                isComplete: ({ id, field, typed, selected, before, after, report }) => id === 2
+                    && field === 'municipality' && typed
                     && hasCompleteMapping(selected, before, after, report)
             }
         ]
@@ -317,7 +317,10 @@ export default function multifieldLookup(app) {
         const edit = activeEdit;
         const context = tutorial.capture();
         const selection = originalDialogOpen(options);
-        if (edit) edit.openedDialog = true;
+        if (edit) {
+            edit.openedDialog = true;
+            if (edit.id === 2) inlineCandidate = null;
+        }
         activeDialog = edit?.id === 1 && edit.field === 'municipality' && edit.searchClicked
             && context?.stepId === 'search-by-postal-code'
             ? { edit, before: { ...edit.cell.getRow().getData() }, selected: null, record: null,
@@ -459,10 +462,9 @@ export default function multifieldLookup(app) {
                         } else if (activeEdit?.cell === cell && activeEdit.id === 2
                             && activeEdit.field === 'municipality' && !activeEdit.openedDialog
                             && activeEdit.typedValue
-                            && record.municipalityName.toLowerCase().startsWith(activeEdit.typedValue.toLowerCase())
                             && activeEdit.context?.stepId === 'inline-autocomplete') {
                             inlineCandidate = { edit: activeEdit, before: activeEdit.before, record,
-                                context: activeEdit.context, finished: false };
+                                context: activeEdit.context };
                         }
                     },
                     dialogTitle: 'Select an Italian municipality',
@@ -531,7 +533,6 @@ export default function multifieldLookup(app) {
     };
     const handleEditCancelled = cell => {
         if (inlineCandidate?.edit.cell === cell) {
-            inlineCandidate.finished = true;
             completeInlineCandidate();
         }
         if (activeEdit?.cell === cell) {
@@ -542,7 +543,6 @@ export default function multifieldLookup(app) {
     };
     const handleEditConfirmed = cell => {
         if (inlineCandidate?.edit.cell === cell) {
-            inlineCandidate.finished = true;
             completeInlineCandidate();
         }
         if (activeEdit?.cell === cell) activeEdit = null;
@@ -560,12 +560,13 @@ export default function multifieldLookup(app) {
     };
     const completeInlineCandidate = () => {
         const candidate = inlineCandidate;
-        if (!candidate?.finished) return;
+        if (!candidate) return;
         const after = { ...candidate.edit.cell.getRow().getData() };
         const report = grid.getStateReport().rows.find(row => row.id === candidate.edit.id);
+        if (!hasCompleteMapping(candidate.record, candidate.before, after, report)) return;
         if (tutorial.notify('inline-mapping-complete', {
             id: candidate.edit.id, field: candidate.edit.field, typed: Boolean(candidate.edit.typedValue),
-            selected: candidate.record, before: candidate.before, after, report, editorClosed: true
+            selected: candidate.record, before: candidate.before, after, report
         }, candidate.context)) inlineCandidate = null;
     };
     const handleRowUpdated = row => {
@@ -575,11 +576,15 @@ export default function multifieldLookup(app) {
         if (inlineCandidate?.edit.id === row.getData().id) completeInlineCandidate();
         syncTutorialHighlight();
     };
+    const handleRenderComplete = () => {
+        completeInlineCandidate();
+        syncTutorialHighlight();
+    };
     grid.table.on('cellEditing', handleEditStart);
     grid.table.on('cellEditCancelled', handleEditCancelled);
     grid.table.on('cellEdited', handleEditConfirmed);
     grid.table.on('rowUpdated', handleRowUpdated);
-    grid.table.on('renderComplete', syncTutorialHighlight);
+    grid.table.on('renderComplete', handleRenderComplete);
     grid.table.on('scrollVertical', syncTutorialHighlight);
     grid.table.on('scrollHorizontal', syncTutorialHighlight);
     grid.table.on('dataFiltered', syncTutorialHighlight);
@@ -764,7 +769,7 @@ export default function multifieldLookup(app) {
             grid.table.off('cellEditCancelled', handleEditCancelled);
             grid.table.off('cellEdited', handleEditConfirmed);
             grid.table.off('rowUpdated', handleRowUpdated);
-            grid.table.off('renderComplete', syncTutorialHighlight);
+            grid.table.off('renderComplete', handleRenderComplete);
             grid.table.off('scrollVertical', syncTutorialHighlight);
             grid.table.off('scrollHorizontal', syncTutorialHighlight);
             grid.table.off('dataFiltered', syncTutorialHighlight);
