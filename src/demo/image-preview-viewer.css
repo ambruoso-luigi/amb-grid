@@ -38,7 +38,10 @@
 .amb-image-viewer.demo-image-example-viewer .amb-image-viewer-status {
     top: auto;
     bottom: calc(var(--demo-image-controls-height, 0px) + 8px);
-    left: 16px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: max-content;
     background: rgb(24 35 51 / 92%);
     border-radius: 6px;
     color: #fff;
@@ -50,6 +53,7 @@
     overflow-y: auto;
     padding: 8px 10px;
     pointer-events: auto;
+    text-align: left;
     white-space: normal;
 }
 
