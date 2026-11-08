@@ -40,10 +40,11 @@ export default function imagePreviewViewer(app) {
                 summaryIcon: 'guideText', variant: 'technical',
                 intro: 'One read-only AMB.table uses the public image formatter to show local photos and galleries. The viewer and its controls are native to AMB Grid.', introKey: `${prefix}.detailsText`,
                 points: [
-                    { title: 'Image formatter', titleKey: `${prefix}.point1Title`, description: 'AMB.formatters.image() renders thumbnails without changing their proportions; each value can contain one photo or a collection.', descriptionKey: `${prefix}.detail1` },
-                    { title: 'Preview and viewer', titleKey: `${prefix}.point2Title`, description: 'Hover for a preview. Click to select the image cell, double-click to open the viewer, or press Enter or Space on the selected cell.', descriptionKey: `${prefix}.detail2` },
-                    { title: 'Galleries', titleKey: `${prefix}.point3Title`, description: 'The badge counts additional photos. Browsing stays within the open collection.', descriptionKey: `${prefix}.detail3` },
-                    { title: 'Cleanup', titleKey: `${prefix}.point4Title`, description: 'Changing examples destroys the grid and command guide; the native runtime removes the preview and viewer.', descriptionKey: `${prefix}.detail4` }
+                    { title: 'Preview and opening', titleKey: `${prefix}.point1Title`, description: 'Hover for a preview. Select the image cell and double-click or press Enter or Space to open the viewer.', descriptionKey: `${prefix}.detail1` },
+                    { title: 'Gallery navigation', titleKey: `${prefix}.point2Title`, description: 'Browse the collection with the navigation buttons or left and right arrows.', descriptionKey: `${prefix}.detail2` },
+                    { title: 'Zoom and natural size', titleKey: `${prefix}.point3Title`, description: 'Zoom using the controls, mouse wheel or arrow keys; use 1:1 for natural size and Reset for the fitted view.', descriptionKey: `${prefix}.detail3` },
+                    { title: 'Captions', titleKey: `${prefix}.point4Title`, description: 'Each photo has a caption and image number.', descriptionKey: `${prefix}.detail4` },
+                    { title: 'Keyboard and closing', titleKey: `${prefix}.point5Title`, description: 'Use Tab and Enter for controls; Esc closes the viewer and restores focus.', descriptionKey: `${prefix}.detail5` }
                 ],
                 columns: [
                     { title: 'Record ID', badge: 'ID', description: 'Unique identifier for each collection.', descriptionKey: `${prefix}.column.idDescription` },
@@ -93,13 +94,16 @@ export default function imagePreviewViewer(app) {
         },
         steps: [
             {
-                id: 'explore-gallery', actionId: 'viewer-closed', instructionKey: `${prefix}.tutorialGallery`,
+                id: 'navigate-city', actionId: 'viewer-closed', instructionKey: `${prefix}.tutorialGallery`,
                 isComplete: ({ galleryId, tokyoAfterNewYork }) => galleryId === 'CITY-001' && tokyoAfterNewYork === true
             },
             {
-                id: 'explore-portrait', actionId: 'viewer-closed', instructionKey: `${prefix}.tutorialPortrait`,
-                isComplete: ({ galleryId, fiordoViewed, focusRestored }) => galleryId === 'SEA-001'
-                    && fiordoViewed === true && focusRestored === true
+                id: 'zoom-seaside', actionId: 'viewer-closed', instructionKey: `${prefix}.tutorialZoom`,
+                isComplete: ({ galleryId, zoomed }) => galleryId === 'SEA-001' && zoomed === true
+            },
+            {
+                id: 'natural-size-retro', actionId: 'viewer-closed', instructionKey: `${prefix}.tutorialNaturalSize`,
+                isComplete: ({ galleryId, naturalSize }) => galleryId === 'RETRO-001' && naturalSize === true
             }
         ]
     });
@@ -133,6 +137,8 @@ export default function imagePreviewViewer(app) {
         return null;
     };
     const onViewerShown = event => {
+        activeSession?.aborter.abort();
+        activeSession?.resizeObserver?.disconnect();
         const galleryId = galleryForSource(event.target);
         if (!galleryId) {
             activeSession = null;
@@ -142,14 +148,46 @@ export default function imagePreviewViewer(app) {
             source: event.target,
             galleryId,
             context: tutorial.capture(),
-            locale: currentLocale,
+            generation: scenarioGeneration,
             newYorkViewed: false,
             tokyoAfterNewYork: false,
-            fiordoViewed: false
+            currentIndex: null,
+            currentImage: null,
+            initialRatio: null,
+            zoomed: false,
+            naturalSize: false,
+            pendingNaturalAction: null,
+            aborter: new AbortController(),
+            resizeObserver: null
         };
+        clearTutorialHighlight();
         const session = activeSession;
         queueMicrotask(() => {
-            if (activeSession === session) session.source.ownerDocument.querySelector('.amb-image-viewer')?.classList.add('demo-image-example-viewer');
+            if (destroyed || activeSession !== session) return;
+            const root = session.source.ownerDocument.querySelector('.amb-image-viewer');
+            if (!root) return;
+            root.classList.add('demo-image-example-viewer');
+            const updateCaptionOffset = () => {
+                const rootBounds = root.getBoundingClientRect();
+                const controls = [...root.querySelectorAll('.viewer-footer, .viewer-toolbar, .viewer-navbar, .viewer-title')];
+                const occupied = controls.filter(element => element.getClientRects().length)
+                    .map(element => rootBounds.bottom - element.getBoundingClientRect().top);
+                root.style.setProperty('--demo-image-controls-height', `${Math.max(0, ...occupied)}px`);
+            };
+            session.resizeObserver = new ResizeObserver(updateCaptionOffset);
+            session.resizeObserver.observe(root);
+            root.querySelectorAll('.viewer-footer, .viewer-toolbar, .viewer-navbar, .viewer-title')
+                .forEach(element => session.resizeObserver.observe(element));
+            updateCaptionOffset();
+            const trackNaturalAction = event => {
+                const control = event.target.closest?.('[data-viewer-action="one-to-one"]');
+                if (!control || !root.contains(control) || session.galleryId !== 'RETRO-001'
+                    || session.context?.stepId !== 'natural-size-retro' || session.currentIndex !== 0
+                    || (event.type === 'keydown' && event.key !== 'Enter')) return;
+                session.pendingNaturalAction = { event, image: session.currentImage, index: session.currentIndex };
+            };
+            root.addEventListener('click', trackNaturalAction, { capture: true, signal: session.aborter.signal });
+            root.addEventListener('keydown', trackNaturalAction, { capture: true, signal: session.aborter.signal });
         });
     };
     const onViewerViewed = event => {
@@ -158,37 +196,45 @@ export default function imagePreviewViewer(app) {
         const index = event.detail?.index;
         const image = event.detail?.image;
         if (!Number.isInteger(index) || !image?.naturalWidth || !image?.naturalHeight) return;
+        session.currentIndex = index;
+        session.currentImage = image;
+        session.initialRatio = parseFloat(image.style.width) / image.naturalWidth;
+        session.pendingNaturalAction = null;
         if (session.galleryId === 'CITY-001') {
             if (index === 0) session.newYorkViewed = true;
             if (index === 1 && session.newYorkViewed) session.tokyoAfterNewYork = true;
         }
-        if (session.galleryId === 'SEA-001' && index === 1 && image.naturalHeight > image.naturalWidth) {
-            queueMicrotask(() => {
-                if (activeSession !== session) return;
-                const caption = translateKey(session.locale, imagePreviewViewerCatalog.photographs.seaFiordoFurore.caption);
-                const status = session.source.ownerDocument.querySelector('.amb-image-viewer .amb-image-viewer-status');
-                if (status?.textContent.includes(caption)) session.fiordoViewed = true;
-            });
+    };
+    const onViewerZoomed = event => {
+        const session = activeSession;
+        if (!session || destroyed || session.source !== event.target || session.generation !== scenarioGeneration) return;
+        const { ratio, oldRatio, originalEvent } = event.detail || {};
+        if (!Number.isFinite(ratio) || !session.currentImage || !Number.isInteger(session.currentIndex)) return;
+        if (session.context?.stepId === 'zoom-seaside' && session.galleryId === 'SEA-001'
+            && originalEvent && Number.isFinite(session.initialRatio) && ratio > oldRatio
+            && ratio > session.initialRatio + 0.001) session.zoomed = true;
+        const pending = session.pendingNaturalAction;
+        if (session.context?.stepId === 'natural-size-retro' && session.galleryId === 'RETRO-001'
+            && pending?.event === originalEvent && pending.index === 0 && pending.image === session.currentImage
+            && Math.abs(ratio - 1) < 0.001
+            && Math.abs(parseFloat(session.currentImage.style.width) / session.currentImage.naturalWidth - 1) < 0.001) {
+            session.naturalSize = true;
         }
+        session.pendingNaturalAction = null;
     };
     const onViewerHidden = event => {
         const session = activeSession;
         if (!session || session.source !== event.target) return;
         activeSession = null;
-        if (session.galleryId === 'CITY-001' && session.tokyoAfterNewYork) {
-            tutorial.notify('viewer-closed', { galleryId: session.galleryId, tokyoAfterNewYork: true }, session.context);
-        }
-        if (session.galleryId === 'SEA-001' && session.fiordoViewed) {
-            queueMicrotask(() => {
-                if (destroyed || activeSession) return;
-                const owner = app.querySelector('#image-preview-viewer-table');
-                const focusRestored = owner === document.activeElement || owner?.contains(document.activeElement);
-                tutorial.notify('viewer-closed', { galleryId: session.galleryId, fiordoViewed: true, focusRestored }, session.context);
-            });
-        }
+        session.aborter.abort();
+        session.resizeObserver?.disconnect();
+        tutorial.notify('viewer-closed', { galleryId: session.galleryId, tokyoAfterNewYork: session.tokyoAfterNewYork,
+            zoomed: session.zoomed, naturalSize: session.naturalSize }, session.context);
+        syncTutorialHighlight();
     };
     document.addEventListener('shown', onViewerShown, true);
     document.addEventListener('viewed', onViewerViewed, true);
+    document.addEventListener('zoomed', onViewerZoomed, true);
     document.addEventListener('hidden', onViewerHidden, true);
 
     const updateHeader = (field, key) => {
@@ -218,7 +264,10 @@ export default function imagePreviewViewer(app) {
             grid.table.off('scrollHorizontal', syncTutorialHighlight);
             document.removeEventListener('shown', onViewerShown, true);
             document.removeEventListener('viewed', onViewerViewed, true);
+            document.removeEventListener('zoomed', onViewerZoomed, true);
             document.removeEventListener('hidden', onViewerHidden, true);
+            activeSession?.aborter.abort();
+            activeSession?.resizeObserver?.disconnect();
             activeSession = null;
             window.removeEventListener('amb-demo-language-change', onLanguageChange);
             commandGuideToolbar.destroy();
@@ -244,6 +293,8 @@ export default function imagePreviewViewer(app) {
         const generation = ++scenarioGeneration;
         const session = activeSession;
         activeSession = null;
+        session?.aborter.abort();
+        session?.resizeObserver?.disconnect();
         clearTutorialHighlight();
         session?.source.ownerDocument.querySelector('.amb-image-viewer .viewer-button')?.click();
         try {
@@ -269,11 +320,11 @@ export default function imagePreviewViewer(app) {
     }
 
     function syncTutorialHighlight() {
-        if (!grid || destroyed || !tutorialState || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
+        if (!grid || destroyed || activeSession || !tutorialState || tutorialState.hidden || tutorialState.complete || tutorialState.resetting || tutorialState.restartFailed || tutorialState.destroyed) {
             clearTutorialHighlight();
             return;
         }
-        const id = tutorialState.stepId === 'explore-gallery' ? 'CITY-001' : 'SEA-001';
+        const id = { 'navigate-city': 'CITY-001', 'zoom-seaside': 'SEA-001', 'natural-size-retro': 'RETRO-001' }[tutorialState.stepId];
         const target = grid.table.getRow(id)?.getCell('images')?.getElement()?.querySelector('.amb-image--viewable');
         if (target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target--pulse')) return;

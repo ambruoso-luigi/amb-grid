@@ -197,14 +197,23 @@ export const readonlyImageGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> =
             },
             advanced: {
                 label: 'Immagini e viewer',
-                groups: [{ items: [
-                    { tokens: [action('Passa sulla miniatura')], text: 'Mostra l’anteprima della prima immagine.' },
-                    { tokens: [action('Clic sulla cella Immagini')], text: 'Seleziona la cella senza aprire il visualizzatore.' },
-                    { tokens: [action('Doppio clic sulla cella Immagini')], text: 'Apre la raccolta.' },
-                    { tokens: [key('Invio'), key('Spazio')], text: 'Aprono la raccolta dalla cella selezionata.' },
-                    { tokens: [key('←'), key('→')], text: 'Nel visualizzatore passano all’immagine precedente o successiva della raccolta.' },
-                    { tokens: [action('Controlli del viewer')], text: 'Consentono di ingrandire, ridurre, ripristinare e spostare l’immagine ingrandita.' },
-                    { tokens: [key('Esc')], text: 'Chiude il visualizzatore e riporta il focus alla miniatura o alla griglia.' }
+                groups: [{ title: 'Cella Immagini', items: [
+                    { tokens: [action('Passa sulla miniatura')], text: 'Mostra l’anteprima della prima fotografia.' },
+                    { tokens: [action('Clic sulla cella Immagini')], text: 'Seleziona la cella senza aprire il viewer.' },
+                    { tokens: [action('Doppio clic sulla cella Immagini')], text: 'Apre la raccolta fotografica.' },
+                    { tokens: [key('Invio'), key('Spazio')], text: 'Aprono la raccolta dalla cella selezionata.' }
+                ] }, { title: 'Viewer aperto', items: [
+                    { tokens: [key('←'), key('→')], text: 'Visualizzano la foto precedente o successiva.' },
+                    { tokens: [key('↑'), key('↓')], text: 'Ingrandiscono o riducono la fotografia.' },
+                    { tokens: [action('Rotella del mouse')], text: 'Aumenta o diminuisce lo zoom.' },
+                    { tokens: [action('Pulsante + / −')], text: 'Ingrandisce o riduce la fotografia.' },
+                    { tokens: [action('Pulsante 1:1')], text: 'Alterna la dimensione naturale e quella precedente.' },
+                    { tokens: [key('Ctrl+1'), key('Ctrl+0')], text: 'Alternano la dimensione naturale e quella precedente.' },
+                    { tokens: [action('Pulsante Reset')], text: 'Ripristina la visualizzazione iniziale adattata alla finestra.' },
+                    { tokens: [action('Trascina la fotografia ingrandita')], text: 'Sposta la porzione visibile della foto.' },
+                    { tokens: [key('Tab')], text: 'Sposta il focus tra i controlli del viewer.' },
+                    { tokens: [key('Invio')], text: 'Attiva il pulsante che possiede il focus.' },
+                    { tokens: [key('Esc')], text: 'Chiude il viewer e restituisce il focus alla griglia.' }
                 ] }]
             }
         }
@@ -224,14 +233,23 @@ export const readonlyImageGuideCopy: Record<DemoCommandGuideLocale, GuideCopy> =
             },
             advanced: {
                 label: 'Images and viewer',
-                groups: [{ items: [
+                groups: [{ title: 'Images cell', items: [
                     { tokens: [action('Hover over a thumbnail')], text: 'Shows a preview of the first image.' },
                     { tokens: [action('Click the Images cell')], text: 'Selects the cell without opening the viewer.' },
-                    { tokens: [action('Double-click the Images cell')], text: 'Opens the collection.' },
-                    { tokens: [key('Enter'), key('Space')], text: 'Open the collection from the selected cell.' },
-                    { tokens: [key('←'), key('→')], text: 'In the viewer, move to the previous or next image in the collection.' },
-                    { tokens: [action('Viewer controls')], text: 'Zoom in, zoom out, reset and pan an enlarged image.' },
-                    { tokens: [key('Esc')], text: 'Closes the viewer and returns focus to the thumbnail or grid.' }
+                    { tokens: [action('Double-click the Images cell')], text: 'Opens the photo collection.' },
+                    { tokens: [key('Enter'), key('Space')], text: 'Open the collection from the selected cell.' }
+                ] }, { title: 'Viewer open', items: [
+                    { tokens: [key('←'), key('→')], text: 'Show the previous or next photo.' },
+                    { tokens: [key('↑'), key('↓')], text: 'Zoom in or out.' },
+                    { tokens: [action('Mouse wheel')], text: 'Zooms in or out.' },
+                    { tokens: [action('+ / − button')], text: 'Increases or decreases zoom.' },
+                    { tokens: [action('1:1 button')], text: 'Toggles between natural and previous image size.' },
+                    { tokens: [key('Ctrl+1'), key('Ctrl+0')], text: 'Toggle between natural and previous image size.' },
+                    { tokens: [action('Reset button')], text: 'Restores the initial fitted view.' },
+                    { tokens: [action('Drag the zoomed image')], text: 'Moves the visible area of the enlarged photo.' },
+                    { tokens: [key('Tab')], text: 'Moves focus between viewer controls.' },
+                    { tokens: [key('Enter')], text: 'Activates the focused viewer button.' },
+                    { tokens: [key('Esc')], text: 'Closes the viewer and returns focus to the grid.' }
                 ] }]
             }
         }
