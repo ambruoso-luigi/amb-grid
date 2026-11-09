@@ -1,6 +1,5 @@
 import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
-import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
@@ -83,53 +82,7 @@ const dateData = [
     { id: 10, eventName: 'Year-end review', manualDate: '15/12/2027', pickerDate: '16/12/2027', isoDate: '2027-12-15', compactDate: '20271215', pickerOnlyDate: '17-12-2027' }
 ];
 
-const reportCopy = {
-    it: {
-        title: 'Report validazione date',
-        valid: 'valido',
-        invalid: 'non valido',
-        result: 'Risultato validazione',
-        errors: 'Errori',
-        noErrors: 'Nessun errore di validazione sulle date.',
-        row: 'Riga'
-    },
-    en: {
-        title: 'Date validation report',
-        valid: 'valid',
-        invalid: 'invalid',
-        result: 'Validation result',
-        errors: 'Errors',
-        noErrors: 'No date validation errors.',
-        row: 'Row'
-    }
-};
-
 const getLanguage = () => document.documentElement.lang === 'en' ? 'en' : 'it';
-
-const buildDateReport = result => {
-    const copy = reportCopy[getLanguage()];
-    const lines = [
-        `${copy.result}: ${result.isValid ? copy.valid : copy.invalid}`,
-        `${copy.errors}: ${result.errors.length}`,
-        ''
-    ];
-
-    if (result.errors.length === 0) {
-        lines.push(copy.noErrors);
-        return lines.join('\n');
-    }
-
-    result.errors.forEach(error => {
-        const rowLabel = error.rowNumber !== null && error.rowNumber !== undefined
-            ? `${copy.row} ${error.rowNumber}`
-            : `ID ${error.id || error.tempId || 'unknown'}`;
-        const codeLabel = error.code ? ` [${error.code}]` : '';
-
-        lines.push(`- ${rowLabel}, ${error.field}${codeLabel}: ${error.message}`);
-    });
-
-    return lines.join('\n');
-};
 
 export default function dates(app) {
     app.innerHTML = `
@@ -141,26 +94,28 @@ export default function dates(app) {
                     summary: 'Dates technical guide',
                     summaryKey: 'examples.dates.detailsTitle',
                     summaryIcon: 'guideText', variant: 'technical',
-                    intro: 'The example keeps date format, editor behavior, display, validation, and range constraints aligned through shared date configurations.',
+                    intro: 'AMB Grid lets developers configure date formats, editing modes, and validation rules. This example compares manual typing, an optional calendar, and picker-only date selection.',
                     introKey: 'examples.dates.detailsText',
                     points: [
                         { title: 'Multiple formats', titleKey: 'examples.dates.point1Title', description: 'Manual, ISO-style, compact, and dash-separated dates use their declared formats.', descriptionKey: 'examples.dates.detail1' },
-                        { title: 'Manual and picker', titleKey: 'examples.dates.point2Title', description: 'Some cells accept typing, some add a calendar button, and picker-only opens the calendar directly.', descriptionKey: 'examples.dates.detail2' },
-                        { title: 'Visible validation', titleKey: 'examples.dates.point3Title', description: 'Invalid typed values remain visible so validation can explain syntax, calendar, or range errors.', descriptionKey: 'examples.dates.detail3' },
-                        { title: 'Allowed range', titleKey: 'examples.dates.point4Title', description: 'Every date stays between 01/01/2025 and 31/12/2027.', descriptionKey: 'examples.dates.detail4' }
+                        { title: 'Manual input', titleKey: 'examples.dates.point2Title', description: 'Manual date and Picker date allow typing.', descriptionKey: 'examples.dates.detail2' },
+                        { title: 'Manual with calendar', titleKey: 'examples.dates.point3Title', description: 'Picker date also provides an optional calendar.', descriptionKey: 'examples.dates.detail3' },
+                        { title: 'Picker only', titleKey: 'examples.dates.point4Title', description: 'Picker-only date uses the calendar.', descriptionKey: 'examples.dates.detail4' },
+                        { title: 'Automatic validation', titleKey: 'examples.dates.point5Title', description: 'Committed dates are validated automatically.', descriptionKey: 'examples.dates.detail5' },
+                        { title: 'Allowed range', titleKey: 'examples.dates.point6Title', description: 'Dates range from 01/01/2025 through 31/12/2027.', descriptionKey: 'examples.dates.detail6' }
                     ],
                     columns: [
-                        { title: 'Event', titleKey: 'guides.dates.event.title', badge: 'TEXT', description: 'Editable event name.', descriptionKey: 'guides.dates.event.description' },
-                        { title: 'Manual date', titleKey: 'guides.dates.manual.title', badge: 'DD/MM/YYYY', description: 'Manual input with calendar-date and range validation.', descriptionKey: 'guides.dates.manual.description' },
-                        { title: 'Picker date', titleKey: 'guides.dates.picker.title', badge: 'MANUAL + PICKER', description: 'Supports typing and calendar selection with F2 or the calendar button.', descriptionKey: 'guides.dates.picker.description' },
-                        { title: 'ISO-style date', titleKey: 'guides.dates.iso.title', badge: 'ISO', description: 'Accepts YYYY-M-D or YYYY-MM-DD according to the date configuration.', descriptionKey: 'guides.dates.iso.description' },
-                        { title: 'Compact date', titleKey: 'guides.dates.compact.title', badge: 'YYYYMMDD', description: 'Legacy compact date using exactly eight digits.', descriptionKey: 'guides.dates.compact.description' },
-                        { title: 'Picker-only date', titleKey: 'guides.dates.pickerOnly.title', badge: 'PICKER', description: 'Enter or F2 opens the calendar; the selected value is stored as DD-MM-YYYY.', descriptionKey: 'guides.dates.pickerOnly.description' }
+                        { title: 'Event', titleKey: 'guides.dates.event.title', badge: 'TEXT', description: 'Editable event name.', descriptionKey: 'examples.dates.eventDescription' },
+                        { title: 'Manual date', titleKey: 'guides.dates.manual.title', badge: 'DD/MM/YYYY', description: 'Manual input with calendar-date and range validation.', descriptionKey: 'examples.dates.manualDescription' },
+                        { title: 'Picker date', titleKey: 'guides.dates.picker.title', badge: 'MANUAL + PICKER', description: 'Supports typing and calendar selection with F2 or the calendar button.', descriptionKey: 'examples.dates.pickerDescription' },
+                        { title: 'ISO-style date', titleKey: 'guides.dates.iso.title', badge: 'ISO', description: 'Accepts year-month-day dates, such as YYYY-MM-DD.', descriptionKey: 'examples.dates.isoDescription' },
+                        { title: 'Compact date', titleKey: 'guides.dates.compact.title', badge: 'YYYYMMDD', description: 'Uses an eight-digit compact format without separators.', descriptionKey: 'examples.dates.compactDescription' },
+                        { title: 'Picker-only date', titleKey: 'guides.dates.pickerOnly.title', badge: 'PICKER', description: 'Selects dates through the calendar and displays them in DD-MM-YYYY format.', descriptionKey: 'examples.dates.pickerOnlyDescription' }
                     ]
                 })}
             </div>
         </div>
-        <p class="demo-note" data-i18n="examples.dates.intro">Compare manual date input, multiple formats, validation ranges, and real datepicker modes.</p>
+        <p class="demo-note" data-i18n="examples.dates.intro">Explore different date formats, manual entry, calendar selection, and automatic date validation.</p>
         <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
@@ -173,7 +128,11 @@ export default function dates(app) {
     let tutorialState = null;
     let tutorialStarted = false;
     let highlightedControl = null;
+    let activeCandidate = null;
+    let scenarioGeneration = 0;
     const editCandidates = new Map();
+    const dateParser = AMB.parsers.date({ inputFormat: dateItPicker.editor.format, outputFormat: 'yyyy-mm-dd', allowEmpty: false });
+    const pickerValidator = AMB.validators.date(dateItPicker.validator);
     const t = key => publicExampleTranslations[getLanguage()][`examples.dates.${key}`];
     const tutorialLaunch = app.querySelector('[data-action="tutorial-launch"]');
     const tutorialLaunchLabel = tutorialLaunch.querySelector('span');
@@ -198,18 +157,11 @@ export default function dates(app) {
         steps: [
             {
                 id: 'manual-date', actionId: 'date-edited', instructionKey: 'examples.dates.tutorialManual',
-                isComplete: ({ id, field, previous, value, rowValue }) => id === 1 && field === 'manualDate'
-                    && previous !== value && value === '06/06/2026' && rowValue === value
+                isComplete: ({ id, field, mode, valid }) => id === 1 && field === 'pickerDate' && mode === 'manual' && valid
             },
             {
                 id: 'picker-date', actionId: 'date-edited', instructionKey: 'examples.dates.tutorialPicker',
-                isComplete: ({ id, field, previous, value, rowValue }) => id === 1 && field === 'pickerOnlyDate'
-                    && previous !== value && value === '16-06-2026' && rowValue === value
-            },
-            {
-                id: 'validate-date', actionId: 'dates-validated', instructionKey: 'examples.dates.tutorialValidate',
-                isComplete: ({ value, result, reportOpened }) => value === '31/02/2026' && reportOpened
-                    && result.isValid === false && result.errors.some(error => error.id === 2 && error.field === 'manualDate')
+                isComplete: ({ id, field, mode, valid }) => id === 2 && field === 'pickerDate' && mode === 'picker' && valid
             }
         ]
     });
@@ -217,8 +169,7 @@ export default function dates(app) {
     demo = AMB.table({
         selector: '#dates-table',
         toolbar: {
-            buttons: ['validate', commandGuideToolbar.button],
-            onValidate: handleValidateDates
+            buttons: [commandGuideToolbar.button]
         },
         data: dateData.map(row => ({ ...row })),
         layout: 'fitColumns',
@@ -266,14 +217,11 @@ export default function dates(app) {
     demo.table.on('scrollHorizontal', syncTutorialHighlight);
     syncTutorialHighlight();
 
-    const reportDialog = createDemoReportDialog();
     const stopDecoratingDateButtons = decorateDemoEditorButtons(app.querySelector('#dates-table'), {
         selector: '.amb-date-editor-picker-button',
         icon: 'date',
         label: 'Open calendar'
     });
-    const validateButton = app.querySelector('[data-action="validate"]');
-    const validateLabel = validateButton && validateButton.querySelector('.amb-toolbar__button-label');
     const originalDestroy = demo.destroy.bind(demo);
 
     const editKey = cell => `${cell.getRow().getData().id}:${cell.getField()}`;
@@ -282,40 +230,102 @@ export default function dates(app) {
         const id = cell.getRow().getData().id;
         const field = cell.getField();
         globalThis.requestAnimationFrame(syncTutorialHighlight);
-        if (context?.stepId === 'manual-date' && id === 1 && field === 'manualDate'
-            || context?.stepId === 'picker-date' && id === 1 && field === 'pickerOnlyDate') {
-            editCandidates.set(editKey(cell), { context, id, field, previous: cell.getValue() });
+        activeCandidate = null;
+        if ((context?.stepId === 'manual-date' && id === 1 || context?.stepId === 'picker-date' && id === 2)
+            && field === 'pickerDate') {
+            activeCandidate = { context, id, field, cell, previous: cell.getValue(), generation: scenarioGeneration,
+                mode: null, pickerOpened: false, selectedDate: null, selectionIntent: null };
+            editCandidates.set(editKey(cell), activeCandidate);
         }
     };
-    const handleEditCancelled = cell => editCandidates.delete(editKey(cell));
+    const handleEditCancelled = cell => {
+        const candidate = editCandidates.get(editKey(cell));
+        editCandidates.delete(editKey(cell));
+        if (activeCandidate === candidate) activeCandidate = null;
+    };
     const handleEditConfirmed = cell => {
         const key = editKey(cell);
         const candidate = editCandidates.get(key);
         editCandidates.delete(key);
+        if (activeCandidate === candidate) activeCandidate = null;
         if (destroyed || !candidate) return;
+        const value = cell.getValue();
+        const normalized = dateParser.parse(value);
+        const previous = dateParser.parse(candidate.previous);
+        const rowValue = dateParser.parse(cell.getRow().getData()[candidate.field]);
+        const report = demo.getStateReport().rows.find(row => row.id === candidate.id);
+        const valid = Boolean(normalized && previous && normalized !== previous && normalized === rowValue
+            && pickerValidator.validate(value).isValid && report && !report.rowError
+            && !report.cellErrors.some(error => error.field === candidate.field)
+            && (candidate.mode !== 'picker' || candidate.pickerOpened && candidate.selectedDate === normalized));
         tutorial.notify('date-edited', {
-            ...candidate,
-            value: cell.getValue(),
-            rowValue: cell.getRow().getData()[candidate.field]
+            id: candidate.id, field: candidate.field, mode: candidate.mode, valid
         }, candidate.context);
         syncTutorialHighlight();
+    };
+    const pickerDateParser = AMB.parsers.date({ inputFormat: 'Date', outputFormat: 'yyyy-mm-dd', allowEmpty: false });
+    const activeEditorContains = target => activeCandidate && activeCandidate.generation === scenarioGeneration
+        && activeCandidate.cell.getElement().contains(target);
+    const handleManualInput = event => {
+        if (event.isTrusted && event.target.matches?.('.amb-date-editor') && activeEditorContains(event.target)) {
+            activeCandidate.mode = 'manual';
+            activeCandidate.selectedDate = null;
+            activeCandidate.selectionIntent = null;
+        }
+    };
+    const handlePickerShow = event => {
+        if (event.target.matches?.('.amb-date-editor-picker-anchor') && activeEditorContains(event.target)) {
+            activeCandidate.pickerOpened = true;
+        }
+    };
+    const handlePickerIntent = event => {
+        const candidate = activeCandidate;
+        if (!candidate || !candidate.pickerOpened || candidate.generation !== scenarioGeneration || !event.isTrusted) return;
+        const popup = document.querySelector('.datepicker.active');
+        if (!popup) return;
+        let day;
+        if (event.type === 'click') {
+            day = event.target.closest?.('.datepicker-cell[data-date]');
+            if (!day || !popup.contains(day) || day.classList.contains('disabled')) return;
+        } else {
+            if (event.key !== 'Enter' || !event.target.matches?.('.amb-date-editor-picker-anchor')
+                || !activeEditorContains(event.target)) return;
+            day = popup.querySelector('.datepicker-cell.focused[data-date]:not(.disabled)');
+        }
+        if (!day) return;
+        const selectedDate = pickerDateParser.parse(new Date(Number(day.dataset.date)));
+        if (!selectedDate) return;
+        const intent = { selectedDate };
+        candidate.selectionIntent = intent;
+        queueMicrotask(() => {
+            if (candidate.selectionIntent === intent) candidate.selectionIntent = null;
+        });
+    };
+    const handlePickerSelection = event => {
+        const candidate = activeCandidate;
+        if (!candidate || !event.target.matches?.('.amb-date-editor-picker-anchor') || !activeEditorContains(event.target)) return;
+        const selectedDate = pickerDateParser.parse(event.detail?.date);
+        if (!candidate.pickerOpened || !selectedDate || selectedDate !== candidate.selectionIntent?.selectedDate) return;
+        candidate.mode = 'picker';
+        candidate.selectedDate = selectedDate;
+        candidate.selectionIntent = null;
     };
     demo.table.on('cellEditing', handleEditStart);
     demo.table.on('cellEditCancelled', handleEditCancelled);
     demo.table.on('cellEdited', handleEditConfirmed);
     demo.table.on('cellEdited', syncTutorialHighlight);
-
-    if (validateButton) {
-        validateButton.dataset.i18nTitle = 'examples.dates.validateTitle';
-    }
-    if (validateLabel) {
-        validateLabel.dataset.i18n = 'examples.dates.validate';
-    }
+    document.addEventListener('input', handleManualInput, true);
+    document.addEventListener('show', handlePickerShow, true);
+    document.addEventListener('click', handlePickerIntent, true);
+    document.addEventListener('keydown', handlePickerIntent, true);
+    document.addEventListener('changeDate', handlePickerSelection, true);
 
     demo.destroy = () => {
         destroyed = true;
+        scenarioGeneration += 1;
         clearTutorialHighlight();
         editCandidates.clear();
+        activeCandidate = null;
         tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
         window.removeEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
         demo.table.off('renderComplete', syncTutorialHighlight);
@@ -325,26 +335,16 @@ export default function dates(app) {
         demo.table.off('cellEditCancelled', handleEditCancelled);
         demo.table.off('cellEdited', handleEditConfirmed);
         demo.table.off('cellEdited', syncTutorialHighlight);
-        reportDialog.destroy();
+        document.removeEventListener('input', handleManualInput, true);
+        document.removeEventListener('show', handlePickerShow, true);
+        document.removeEventListener('click', handlePickerIntent, true);
+        document.removeEventListener('keydown', handlePickerIntent, true);
+        document.removeEventListener('changeDate', handlePickerSelection, true);
         stopDecoratingDateButtons();
         commandGuideToolbar.destroy();
         tutorial.destroy();
         originalDestroy();
     };
-
-    function handleValidateDates() {
-        const context = tutorial.capture();
-        const result = demo.crud.validateAll();
-
-        reportDialog.open({
-            title: reportCopy[getLanguage()].title,
-            reportText: buildDateReport(result),
-            jsonData: result
-        });
-        const value = demo.table.getRow(2)?.getData().manualDate;
-        const reportOpened = Boolean(document.querySelector('.demo-report-dialog:not([hidden]) .demo-report-dialog__panel[role="dialog"]'));
-        tutorial.notify('dates-validated', { value, result, reportOpened }, context);
-    }
 
     function syncTutorialLaunchLabel() {
         tutorialLaunchLabel.textContent = t(tutorialStarted ? 'tutorialResume' : 'tutorialStart');
@@ -379,13 +379,11 @@ export default function dates(app) {
             return;
         }
         const step = tutorialState.stepId;
-        const field = step === 'picker-date' ? 'pickerOnlyDate' : 'manualDate';
-        const rowId = step === 'validate-date' ? 2 : 1;
-        const invalidEntered = step === 'validate-date' && demo.table.getRow(2)?.getData().manualDate === '31/02/2026';
-        const cell = demo.table.getRow(rowId)?.getCell(field)?.getElement();
+        const rowId = step === 'picker-date' ? 2 : 1;
+        const cell = demo.table.getRow(rowId)?.getCell('pickerDate')?.getElement();
         const pickerButton = step === 'picker-date' ? cell?.querySelector('.amb-date-editor-picker-button') : null;
-        const target = invalidEntered ? validateButton : pickerButton || cell;
-        const rays = target === validateButton || target === pickerButton;
+        const target = pickerButton || cell;
+        const rays = target === pickerButton;
         if (target?.isConnected && target.getClientRects().length > 0 && !target.matches(':disabled')) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target--pulse')) return;
             clearTutorialHighlight();
@@ -397,10 +395,13 @@ export default function dates(app) {
 
     async function resetTutorialScenario() {
         if (destroyed) return false;
+        const generation = ++scenarioGeneration;
         try {
-            reportDialog.close();
-            await demo.setData(dateData.map(row => ({ ...row })));
             editCandidates.clear();
+            activeCandidate = null;
+            demo.table.cancelEdit?.();
+            await demo.setData(dateData.map(row => ({ ...row })));
+            if (destroyed || generation !== scenarioGeneration) return false;
             syncTutorialHighlight();
             return !destroyed;
         } catch { return false; }
