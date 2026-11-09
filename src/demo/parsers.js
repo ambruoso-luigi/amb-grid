@@ -3,17 +3,13 @@ import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
 import { demoIcon } from './demo-icons.js';
-import { publicExampleTranslations } from './example-copy.js';
+import { parserRowCopy, publicExampleTranslations } from './example-copy.js';
 
-const priorityParser = AMB.parsers.custom(value => {
-    const priorities = {
-        High: 'H',
-        Medium: 'M',
-        Low: 'L'
-    };
-
-    return priorities[String(value ?? '').trim()] ?? null;
-});
+const normalizeDescription = value => {
+    const text = String(value ?? '').trim();
+    return text ? text.toUpperCase().replace(/\s+/g, '_') : null;
+};
+const descriptionParser = AMB.parsers.custom(normalizeDescription);
 
 const parserFactories = {
     decimal: () => AMB.parsers.decimalToPayload(),
@@ -24,7 +20,7 @@ const parserFactories = {
     time: () => AMB.parsers.timeToPayload(),
     boolean: () => AMB.parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' }),
     emptyToNull: () => AMB.parsers.emptyToNull(),
-    custom: () => priorityParser
+    custom: () => descriptionParser
 };
 
 const textParserEditor = AMB.editors.text({ maxLength: 80 });
@@ -43,7 +39,7 @@ const parserInputEditor = (cell, onRendered, success, cancel) => {
 };
 
 const parserExamples = [
-    { id: 1, type: 'Decimal', parserKey: 'decimal', parserName: 'decimalToPayload()', input: '-123.123,01', description: 'Visual decimal to payload decimal string.' },
+    { id: 1, type: 'Decimal', parserKey: 'decimal', parserName: 'decimalToPayload()', input: '12,50', description: 'Converts a comma-separated decimal into a normalized string using a decimal point.' },
     { id: 2, type: 'Integer', parserKey: 'integer', parserName: 'integerToPayload()', input: '1.234', description: 'Grouped integer to payload integer string.' },
     { id: 3, type: 'Date', parserKey: 'date', parserName: 'dateToPayload()', input: '16/06/2026', description: 'Date normalized to YYYY-MM-DD.' },
     { id: 4, type: 'Compact date', parserKey: 'compactDate', parserName: 'dateToPayload()', input: '20260616', description: 'Compact legacy date normalized to YYYY-MM-DD.' },
@@ -51,45 +47,12 @@ const parserExamples = [
     { id: 6, type: 'Time', parserKey: 'time', parserName: 'timeToPayload()', input: '9:05', description: 'Time normalized to HH:MM:SS.' },
     { id: 7, type: 'Boolean', parserKey: 'boolean', parserName: 'booleanToPayload({ trueValue: \'Y\', falseValue: \'N\' })', input: true, description: 'Application boolean converted to a configured backend value.' },
     { id: 8, type: 'Empty to null', parserKey: 'emptyToNull', parserName: 'emptyToNull()', input: '   ', description: 'Whitespace-only input becomes a real null value.', acceptsNull: true },
-    { id: 9, type: 'Custom', parserKey: 'custom', parserName: 'custom(priority => ...)', input: 'High', description: 'Application-defined rule that converts a business priority into the value expected by the payload.' }
+    { id: 9, type: 'Custom', parserKey: 'custom', parserName: 'custom(normalizeDescription)', input: 'Main warehouse', description: 'Application-defined rule that converts a description into an uppercase code with underscores.' }
 ];
 
 const feedbackCopy = {
     it: 'Il parser non riconosce questo input. Il valore normalizzato è null.',
     en: 'The parser cannot normalize this input. The parsed value is null.'
-};
-
-const parserRowCopy = {
-    it: {
-        decimal: ['Decimale', 'Decimale visuale convertito in stringa decimale per il payload.'],
-        integer: ['Intero', 'Intero raggruppato convertito in stringa intera per il payload.'],
-        date: ['Data', 'Data normalizzata nel formato YYYY-MM-DD.'],
-        compactDate: ['Data compatta', 'Data legacy compatta normalizzata nel formato YYYY-MM-DD.'],
-        dateTime: ['Data e ora', 'Data e ora normalizzate includendo i secondi.'],
-        time: ['Ora', 'Ora normalizzata nel formato HH:MM:SS.'],
-        boolean: ['Booleano', 'Booleano applicativo convertito nel valore backend configurato.'],
-        emptyToNull: ['Vuoto a null', 'Un input di soli spazi diventa un vero valore null.'],
-        custom: [
-            'Personalizzato',
-            'Regola applicativa personalizzata che converte una priorità business nel valore previsto dal payload.',
-            'Regola applicativa personalizzata'
-        ]
-    },
-    en: {
-        decimal: ['Decimal', 'Visual decimal to payload decimal string.'],
-        integer: ['Integer', 'Grouped integer to payload integer string.'],
-        date: ['Date', 'Date normalized to YYYY-MM-DD.'],
-        compactDate: ['Compact date', 'Compact legacy date normalized to YYYY-MM-DD.'],
-        dateTime: ['DateTime', 'Date and time normalized with seconds.'],
-        time: ['Time', 'Time normalized to HH:MM:SS.'],
-        boolean: ['Boolean', 'Application boolean converted to a configured backend value.'],
-        emptyToNull: ['Empty to null', 'Whitespace-only input becomes a real null value.'],
-        custom: [
-            'Custom',
-            'Application-defined rule that converts a business priority into the value expected by the payload.',
-            'Application-defined rule'
-        ]
-    }
 };
 
 const parseExampleValue = example => {
@@ -159,6 +122,26 @@ const formatParsedValue = cell => {
     return output;
 };
 
+const formatParserInput = cell => {
+    if (cell.getRow().getData().parserKey !== 'boolean') {
+        const text = document.createElement('span');
+        text.textContent = String(cell.getValue() ?? '');
+        return text;
+    }
+
+    const visual = document.createElement('span');
+    const checkbox = document.createElement('input');
+    visual.className = 'amb-checkbox-editor amb-checkbox-editor--no-label';
+    visual.setAttribute('aria-hidden', 'true');
+    visual.style.pointerEvents = 'none';
+    checkbox.type = 'checkbox';
+    checkbox.className = 'amb-checkbox-editor__input';
+    checkbox.checked = cell.getValue() === true;
+    checkbox.tabIndex = -1;
+    visual.append(checkbox);
+    return visual;
+};
+
 export default function parsers(app) {
     app.innerHTML = `
         <div class="demo-crud-heading">
@@ -169,25 +152,25 @@ export default function parsers(app) {
             summary: 'Parsers technical guide',
             summaryKey: 'examples.parsers.detailsTitle',
             summaryIcon: 'guideText', variant: 'technical',
-            intro: 'Parsers normalize visual values into backend-oriented shapes. They can reject incoherent syntax, but they do not replace validation or business rules.',
+            intro: 'AMB Grid parsers transform user input into predictable backend-oriented values. This example demonstrates normalization of numbers, dates, times, booleans, and text using built-in and custom parsers.',
             introKey: 'examples.parsers.detailsText',
             points: [
-                { title: 'Normalization', titleKey: 'examples.parsers.point1Title', description: 'Each row applies one public AMB parser to the edited Input value.', descriptionKey: 'examples.parsers.detail1' },
-                { title: 'Payload shape', titleKey: 'examples.parsers.point2Title', description: 'Parsed value shows the predictable representation intended for application payloads.', descriptionKey: 'examples.parsers.detail2' },
-                { title: 'Separate validation', titleKey: 'examples.parsers.point3Title', description: 'A parser transforms syntax; validation and business rules still decide whether data is acceptable.', descriptionKey: 'examples.parsers.detail3' },
-                { title: 'Built-in parsers', titleKey: 'examples.parsers.point4Title', description: 'AMB Grid provides ready-to-use parsers for common payload transformations such as numbers, dates, times, booleans and null values. Their options can be configured for the application contract.', descriptionKey: 'examples.parsers.detail4' },
-                { title: 'Custom parsers', titleKey: 'examples.parsers.point5Title', description: 'When a business rule needs a specific transformation, AMB.parsers.custom(parseFn) lets the application define its own reusable parsing logic.', descriptionKey: 'examples.parsers.detail5' }
+                { title: 'Normalization', titleKey: 'examples.parsers.point1Title', description: 'Each row uses a parser to transform the Input value. The result is displayed immediately in the Parsed value column.', descriptionKey: 'examples.parsers.detail1' },
+                { title: 'Payload format', titleKey: 'examples.parsers.point2Title', description: 'Parsed value represents the normalized result intended for the application or backend. For example, 125,50 becomes 125.50, and 8:30 becomes 08:30:00.', descriptionKey: 'examples.parsers.detail2' },
+                { title: 'Parsers and validation', titleKey: 'examples.parsers.point3Title', description: 'A parser transforms a value into the desired format. Some parsers may return null when a format cannot be recognized, but validation and business rules remain separate responsibilities.', descriptionKey: 'examples.parsers.detail3' },
+                { title: 'Built-in parsers', titleKey: 'examples.parsers.point4Title', description: 'AMB Grid includes parsers for integers, decimals, dates, date-times, times, booleans, and empty values. Parsers can be configured to match application-specific formats.', descriptionKey: 'examples.parsers.detail4' },
+                { title: 'Custom parsers', titleKey: 'examples.parsers.point5Title', description: 'With AMB.parsers.custom(parseFn), developers can define JavaScript functions for application-specific transformations. In this example, a description is converted into an uppercase code with underscores replacing spaces.', descriptionKey: 'examples.parsers.detail5' }
             ],
             columns: [
-                { title: 'Type', titleKey: 'guides.parsers.type.title', badge: 'PARSER', description: 'Identifies the transformation and its public parser.', descriptionKey: 'guides.parsers.type.description' },
-                { title: 'Input', titleKey: 'guides.parsers.input.title', badge: 'EDITABLE', description: 'Visual value entered and edited by the user.', descriptionKey: 'guides.parsers.input.description' },
-                { title: 'Parsed value', titleKey: 'guides.parsers.output.title', badge: 'READONLY', description: 'Normalized result produced by the parser, including a real null.', descriptionKey: 'guides.parsers.output.description' },
-                { title: 'Description', titleKey: 'guides.parsers.description.title', badge: 'INFO', description: 'Briefly explains the transformation demonstrated by the row.', descriptionKey: 'guides.parsers.description.description' }
+                { title: 'Type', titleKey: 'guides.parsers.type.title', badge: 'PARSER', description: 'Identifies the transformation type and the public parser being used.', descriptionKey: 'guides.parsers.type.description' },
+                { title: 'Input', titleKey: 'guides.parsers.input.title', badge: 'EDITABLE', description: 'User-provided value. The Boolean row uses a checkbox.', descriptionKey: 'guides.parsers.input.description' },
+                { title: 'Parsed value', titleKey: 'guides.parsers.output.title', badge: 'READONLY', description: 'Normalized parser result, including a real null value.', descriptionKey: 'guides.parsers.output.description' },
+                { title: 'Description', titleKey: 'guides.parsers.description.title', badge: 'INFO', description: 'Briefly explains the transformation performed by the row.', descriptionKey: 'guides.parsers.description.description' }
             ]
         })}
             </div>
         </div>
-        <p class="demo-note" data-i18n="examples.parsers.intro">Edit an input value and inspect the normalized representation produced for a predictable payload.</p>
+        <p class="demo-note" data-i18n="examples.parsers.intro">Edit Input values and see how parsers transform numbers, times, and text into normalized backend data.</p>
         <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
@@ -227,17 +210,20 @@ export default function parsers(app) {
             {
                 id: 'parse-decimal', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialDecimal',
                 isComplete: ({ id, field, parserKey, previous, input, parsedValue }) => id === 1 && field === 'input'
-                    && parserKey === 'decimal' && previous !== input && input === '1.234,56' && parsedValue === '1234.56'
+                    && parserKey === 'decimal' && previous !== input && typeof input === 'string'
+                    && input.includes(',') && typeof parsedValue === 'string' && /^-?\d+\.\d+$/.test(parsedValue)
             },
             {
-                id: 'parse-boolean', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialBoolean',
-                isComplete: ({ id, field, parserKey, previous, input, parsedValue }) => id === 7 && field === 'input'
-                    && parserKey === 'boolean' && previous !== input && input === false && parsedValue === 'N'
+                id: 'parse-time', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialTime',
+                isComplete: ({ id, field, parserKey, previous, input, parsedValue }) => id === 6 && field === 'input'
+                    && parserKey === 'time' && previous !== input && typeof parsedValue === 'string'
+                    && /^\d{2}:\d{2}:\d{2}$/.test(parsedValue)
             },
             {
                 id: 'parse-custom', actionId: 'parser-updated', instructionKey: 'examples.parsers.tutorialCustom',
                 isComplete: ({ id, field, parserKey, previous, input, parsedValue }) => id === 9 && field === 'input'
-                    && parserKey === 'custom' && previous !== input && input === 'Low' && parsedValue === 'L'
+                    && parserKey === 'custom' && previous !== input && typeof input === 'string'
+                    && /^\S+(?:\s+\S+)+$/.test(input.trim()) && typeof parsedValue === 'string' && parsedValue.length > 0
             }
         ]
     });
@@ -260,6 +246,7 @@ export default function parsers(app) {
             {
                 title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.25,
                 editor: parserInputEditor,
+                formatter: formatParserInput,
                 cellEdited: handleInputEdited
             },
             {
@@ -287,12 +274,17 @@ export default function parsers(app) {
     const originalDestroy = demo.destroy.bind(demo);
     const handleEditStart = cell => {
         if (cell.getField() !== 'input') return;
+        pendingResult = null;
+        editCandidates.clear();
         const context = tutorial.capture();
         if (!context) return;
         const id = cell.getRow().getData().id;
         editCandidates.set(id, { context, id, field: 'input', previous: cell.getValue() });
     };
-    const handleEditCancelled = cell => editCandidates.delete(cell.getRow().getData().id);
+    const handleEditCancelled = cell => {
+        editCandidates.delete(cell.getRow().getData().id);
+        pendingResult = null;
+    };
     const handleRowUpdated = row => {
         const candidate = pendingResult;
         if (destroyed || !candidate || row.getData().id !== candidate.id) return;
@@ -382,12 +374,12 @@ export default function parsers(app) {
             clearTutorialHighlight();
             return;
         }
-        const id = { 'parse-decimal': 1, 'parse-boolean': 7, 'parse-custom': 9 }[tutorialState.stepId];
+        const id = { 'parse-decimal': 1, 'parse-time': 6, 'parse-custom': 9 }[tutorialState.stepId];
         const target = demo.table.getRow(id)?.getCell('input')?.getElement();
         if (target?.isConnected && target.getClientRects().length > 0) {
             if (highlightedControl === target && target.classList.contains('demo-crud-tutorial-target--pulse')) return;
             clearTutorialHighlight();
-            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse');
+            target.classList.add('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
             highlightedControl = target;
         } else clearTutorialHighlight();
     }
@@ -397,6 +389,7 @@ export default function parsers(app) {
         try {
             pendingResult = null;
             editCandidates.clear();
+            demo.table.cancelEdit?.();
             await demo.setData(createParserData());
             syncTutorialHighlight();
             return !destroyed;

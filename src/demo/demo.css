@@ -4455,6 +4455,11 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     animation: demo-crud-rays 4.15s ease-in-out infinite;
 }
 
+.demo-parsers-grid .tabulator-cell.demo-crud-tutorial-target--rays {
+    overflow: visible;
+    z-index: 2;
+}
+
 @keyframes demo-crud-rays {
     0%, 25.4%, 53.2%, 100% {
         opacity: 0.08;
