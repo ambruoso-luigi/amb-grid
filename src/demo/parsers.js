@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { demoIcon } from './demo-icons.js';
 import { parserRowCopy, publicExampleTranslations } from './example-copy.js';
 
@@ -24,19 +25,7 @@ const parserFactories = {
 };
 
 const textParserEditor = AMB.editors.text({ maxLength: 80 });
-const booleanParserEditor = AMB.editors.checkbox({
-    checkedValue: true,
-    uncheckedValue: false
-});
-
-const parserInputEditor = (cell, onRendered, success, cancel) => {
-    const rowData = cell.getRow().getData();
-    const editor = rowData.parserKey === 'boolean'
-        ? booleanParserEditor
-        : textParserEditor;
-
-    return editor(cell, onRendered, success, cancel);
-};
+const formatBooleanInput = createDemoCheckboxFormatter();
 
 const parserExamples = [
     { id: 1, type: 'Decimal', parserKey: 'decimal', parserName: 'decimalToPayload()', input: '12,50', description: 'Converts a comma-separated decimal into a normalized string using a decimal point.' },
@@ -129,17 +118,7 @@ const formatParserInput = cell => {
         return text;
     }
 
-    const visual = document.createElement('span');
-    const checkbox = document.createElement('input');
-    visual.className = 'amb-checkbox-editor amb-checkbox-editor--no-label';
-    visual.setAttribute('aria-hidden', 'true');
-    visual.style.pointerEvents = 'none';
-    checkbox.type = 'checkbox';
-    checkbox.className = 'amb-checkbox-editor__input';
-    checkbox.checked = cell.getValue() === true;
-    checkbox.tabIndex = -1;
-    visual.append(checkbox);
-    return visual;
+    return formatBooleanInput(cell);
 };
 
 export default function parsers(app) {
@@ -245,8 +224,14 @@ export default function parsers(app) {
             },
             {
                 title: 'Input', field: 'input', minWidth: 190, widthGrow: 1.25,
-                editor: parserInputEditor,
+                editor: textParserEditor,
+                editable: cell => cell.getRow().getData().id !== 7,
                 formatter: formatParserInput,
+                cellClick: (event, cell) => {
+                    const { id, parserKey } = cell.getRow().getData();
+                    if (id !== 7 || parserKey !== 'boolean' || event.detail > 1) return;
+                    cell.setValue(!cell.getValue());
+                },
                 cellEdited: handleInputEdited
             },
             {
