@@ -225,28 +225,35 @@ export default function dates(app) {
     const originalDestroy = demo.destroy.bind(demo);
 
     const editKey = cell => `${cell.getRow().getData().id}:${cell.getField()}`;
+    const detachPickerSelection = candidate => {
+        candidate?.pickerAnchor?.removeEventListener('changeDate', handlePickerSelection, true);
+        if (candidate) candidate.pickerAnchor = null;
+    };
     const handleEditStart = cell => {
         const context = tutorial.capture();
         const id = cell.getRow().getData().id;
         const field = cell.getField();
         globalThis.requestAnimationFrame(syncTutorialHighlight);
+        detachPickerSelection(activeCandidate);
         activeCandidate = null;
         if ((context?.stepId === 'manual-date' && id === 1 || context?.stepId === 'picker-date' && id === 2)
             && field === 'pickerDate') {
             activeCandidate = { context, id, field, cell, previous: cell.getValue(), generation: scenarioGeneration,
-                mode: null, pickerOpened: false, selectedDate: null, selectionIntent: null };
+                mode: null, pickerOpened: false, selectedDate: null, pickerAnchor: null };
             editCandidates.set(editKey(cell), activeCandidate);
         }
     };
     const handleEditCancelled = cell => {
         const candidate = editCandidates.get(editKey(cell));
         editCandidates.delete(editKey(cell));
+        detachPickerSelection(candidate);
         if (activeCandidate === candidate) activeCandidate = null;
     };
     const handleEditConfirmed = cell => {
         const key = editKey(cell);
         const candidate = editCandidates.get(key);
         editCandidates.delete(key);
+        detachPickerSelection(candidate);
         if (activeCandidate === candidate) activeCandidate = null;
         if (destroyed || !candidate) return;
         const value = cell.getValue();
@@ -270,45 +277,25 @@ export default function dates(app) {
         if (event.isTrusted && event.target.matches?.('.amb-date-editor') && activeEditorContains(event.target)) {
             activeCandidate.mode = 'manual';
             activeCandidate.selectedDate = null;
-            activeCandidate.selectionIntent = null;
         }
     };
     const handlePickerShow = event => {
         if (event.target.matches?.('.amb-date-editor-picker-anchor') && activeEditorContains(event.target)) {
             activeCandidate.pickerOpened = true;
+            if (activeCandidate.pickerAnchor !== event.target) {
+                detachPickerSelection(activeCandidate);
+                activeCandidate.pickerAnchor = event.target;
+                event.target.addEventListener('changeDate', handlePickerSelection, true);
+            }
         }
-    };
-    const handlePickerIntent = event => {
-        const candidate = activeCandidate;
-        if (!candidate || !candidate.pickerOpened || candidate.generation !== scenarioGeneration || !event.isTrusted) return;
-        const popup = document.querySelector('.datepicker.active');
-        if (!popup) return;
-        let day;
-        if (event.type === 'click') {
-            day = event.target.closest?.('.datepicker-cell[data-date]');
-            if (!day || !popup.contains(day) || day.classList.contains('disabled')) return;
-        } else {
-            if (event.key !== 'Enter' || !event.target.matches?.('.amb-date-editor-picker-anchor')
-                || !activeEditorContains(event.target)) return;
-            day = popup.querySelector('.datepicker-cell.focused[data-date]:not(.disabled)');
-        }
-        if (!day) return;
-        const selectedDate = pickerDateParser.parse(new Date(Number(day.dataset.date)));
-        if (!selectedDate) return;
-        const intent = { selectedDate };
-        candidate.selectionIntent = intent;
-        queueMicrotask(() => {
-            if (candidate.selectionIntent === intent) candidate.selectionIntent = null;
-        });
     };
     const handlePickerSelection = event => {
         const candidate = activeCandidate;
-        if (!candidate || !event.target.matches?.('.amb-date-editor-picker-anchor') || !activeEditorContains(event.target)) return;
+        if (!candidate || candidate.generation !== scenarioGeneration || candidate.pickerAnchor !== event.target) return;
         const selectedDate = pickerDateParser.parse(event.detail?.date);
-        if (!candidate.pickerOpened || !selectedDate || selectedDate !== candidate.selectionIntent?.selectedDate) return;
+        if (!candidate.pickerOpened || !selectedDate) return;
         candidate.mode = 'picker';
         candidate.selectedDate = selectedDate;
-        candidate.selectionIntent = null;
     };
     demo.table.on('cellEditing', handleEditStart);
     demo.table.on('cellEditCancelled', handleEditCancelled);
@@ -316,14 +303,12 @@ export default function dates(app) {
     demo.table.on('cellEdited', syncTutorialHighlight);
     document.addEventListener('input', handleManualInput, true);
     document.addEventListener('show', handlePickerShow, true);
-    document.addEventListener('click', handlePickerIntent, true);
-    document.addEventListener('keydown', handlePickerIntent, true);
-    document.addEventListener('changeDate', handlePickerSelection, true);
 
     demo.destroy = () => {
         destroyed = true;
         scenarioGeneration += 1;
         clearTutorialHighlight();
+        detachPickerSelection(activeCandidate);
         editCandidates.clear();
         activeCandidate = null;
         tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
@@ -337,9 +322,6 @@ export default function dates(app) {
         demo.table.off('cellEdited', syncTutorialHighlight);
         document.removeEventListener('input', handleManualInput, true);
         document.removeEventListener('show', handlePickerShow, true);
-        document.removeEventListener('click', handlePickerIntent, true);
-        document.removeEventListener('keydown', handlePickerIntent, true);
-        document.removeEventListener('changeDate', handlePickerSelection, true);
         stopDecoratingDateButtons();
         commandGuideToolbar.destroy();
         tutorial.destroy();
@@ -397,6 +379,7 @@ export default function dates(app) {
         if (destroyed) return false;
         const generation = ++scenarioGeneration;
         try {
+            detachPickerSelection(activeCandidate);
             editCandidates.clear();
             activeCandidate = null;
             demo.table.cancelEdit?.();
