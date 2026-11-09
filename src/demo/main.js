@@ -19,7 +19,7 @@ import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
 import { animateCycleDetail, initDemoMotion } from './demo-motion.js';
 import { publicExampleTranslations } from './example-copy.js';
 import { demoColumnGuideTranslations } from './demo-column-guide-copy.js';
-import { renderDemoFooter } from './demo-footer.js';
+import { renderDemoFooter, listenDemoFooterLanguage } from './demo-footer.js';
 import { readDemoLanguage } from './demo-language-switch.js';
 import { mountSiteNavbar } from './components/site-navbar.js';
 import { bindDemoColumnGuideAnimations } from './utils/demo-column-guide.js';
@@ -186,17 +186,6 @@ const translations = {
         'footer.cta.guide': 'Guida JavaScript',
         'footer.cta.examples': 'Vedi esempi',
         'footer.cta.github': 'GitHub',
-        'footer.resources': 'Risorse',
-        'footer.projectLinks': 'Progetto',
-        'footer.tagline': 'Libreria CRUD framework-agnostic per applicazioni business.',
-        'footer.project': 'Progetto open source',
-        'footer.demo': 'Demo principale',
-        'footer.examples': 'Esempi funzionali',
-        'footer.guide': 'Guida JavaScript',
-        'footer.github': 'GitHub',
-        'footer.issues': 'Issues / Feedback',
-        'footer.license': 'Apache 2.0',
-        'footer.maintainer': 'Creato e mantenuto da Luigi Ambruoso'
     },
     en: {
         ...publicExampleTranslations.en,
@@ -345,21 +334,11 @@ const translations = {
         'footer.cta.guide': 'JavaScript guide',
         'footer.cta.examples': 'View examples',
         'footer.cta.github': 'GitHub',
-        'footer.resources': 'Resources',
-        'footer.projectLinks': 'Project',
-        'footer.tagline': 'Framework-agnostic CRUD grid library for business applications.',
-        'footer.project': 'Open-source project',
-        'footer.demo': 'Main demo',
-        'footer.examples': 'Feature examples',
-        'footer.guide': 'JavaScript guide',
-        'footer.github': 'GitHub',
-        'footer.issues': 'Issues / Feedback',
-        'footer.license': 'Apache 2.0',
-        'footer.maintainer': 'Created and maintained by Luigi Ambruoso'
     }
 };
 
 const root = document.querySelector('#app');
+listenDemoFooterLanguage(root);
 let currentMainDemo = null;
 let currentFeatureExample = null;
 let currentReactDemoUnmount = null;
@@ -795,10 +774,8 @@ const renderShell = selectedId => {
                 </div>
                 <section id="feature-example" class="demo-example demo-panel"></section>
             </section>
-
-            ${renderDemoFooter()}
-
         </main>
+        ${renderDemoFooter()}
     `;
 
     root.querySelectorAll('[data-example]').forEach(button => {
@@ -899,7 +876,7 @@ const renderReactGuide = async () => {
     const token = reactDemoLoadToken + 1;
 
     reactDemoLoadToken = token;
-    root.innerHTML = '<div id="react-demo-root"></div>';
+    root.innerHTML = `<div id="react-demo-root"></div>${renderDemoFooter()}`;
     window.scrollTo(0, 0);
 
     const { mountReactDemo } = await import('../../examples/react-demo/src/mount.tsx');

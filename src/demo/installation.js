@@ -1,6 +1,6 @@
 import './demo.css';
 import './installation.css';
-import { renderDemoFooter } from './demo-footer.js';
+import { mountDemoFooter } from './demo-footer.js';
 import { renderDemoBrand } from './demo-brand.js';
 import { readDemoLanguage } from './demo-language-switch.js';
 import { demoIcon, demoYoutubeIcon } from './demo-icons.js';
@@ -110,9 +110,12 @@ const render = () => {
           <section class="installation-next" aria-labelledby="installation-next-title"><h3 id="installation-next-title">${text('next')}</h3><p class="demo-note">${text('nextText')}</p><nav class="installation-frameworks" aria-label="${text('next')}"><a href="/#getting-started-javascript"><span>JavaScript →</span><small>${text('dedicatedGuide')}</small></a><a href="/#getting-started-react"><span>React →</span><small>${text('dedicatedGuide')}</small></a><a href="/vue/"><span>Vue →</span><small>${text('frameworkOverview')}</small></a><a href="/#framework-integrations"><span>Angular →</span><small>${text('frameworkOverview')}</small></a></nav></section>
         </div>
       </section>
-      ${renderDemoFooter({ demoHref: '/#javascript-demo', examplesHref: '/#feature-examples', guideHref: '/#getting-started-javascript' })}</main>`;
+      </main>`;
     document.documentElement.lang = language;
     document.title = text('title');
     document.querySelector('meta[name="description"]')?.setAttribute('content', text('description'));
 };
 render();
+const footerHost = document.createElement('div');
+root.after(footerHost);
+mountDemoFooter(footerHost);

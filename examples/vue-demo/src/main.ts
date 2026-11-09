@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { AMB } from 'amb-grid';
 import 'amb-grid/style.css';
+import { mountDemoFooter } from '../../../src/demo/demo-footer.js';
 import { mountSiteNavbar } from '../../../src/demo/components/site-navbar.js';
 import App from './App.vue';
 import { language } from './language';
@@ -13,3 +14,4 @@ mountSiteNavbar(document.querySelector('#site-navbar'), {
   onLanguageChange: next => { language.value = next; }
 });
 createApp(App).mount('#app');
+mountDemoFooter(document.querySelector('#site-footer'));

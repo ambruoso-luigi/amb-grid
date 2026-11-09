@@ -148,10 +148,8 @@ export default function gettingStartedJavaScript(app) {
                     </div>
                 </div>
             </section>
-
-            ${renderDemoFooter({ demoHref: '#javascript-demo' })}
-
         </main>
+        ${renderDemoFooter()}
     `;
 
     return null;

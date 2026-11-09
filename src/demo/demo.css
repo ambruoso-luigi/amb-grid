@@ -4721,81 +4721,6 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     justify-content: flex-end;
 }
 
-.demo-footer {
-    align-items: start;
-    background: #f7f9fb;
-    border-top: 1px solid var(--amb-site-border);
-    display: grid;
-    gap: 32px;
-    grid-template-columns: minmax(240px, 1.45fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr);
-    margin-top: clamp(52px, 8vw, 96px);
-    padding: 42px clamp(20px, 4vw, 48px) 24px;
-}
-
-.demo-footer__brand {
-    display: grid;
-    gap: 9px;
-}
-
-.demo-footer__brand .demo-brand {
-    width: 128px;
-}
-
-.demo-footer__brand p,
-.demo-footer__brand span,
-.demo-footer__meta {
-    color: var(--demo-muted);
-    font-size: 13px;
-    line-height: 1.5;
-    margin: 0;
-}
-
-.demo-footer__group {
-    display: grid;
-    gap: 10px;
-}
-
-.demo-footer__group h2 {
-    color: var(--amb-site-navy);
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    margin: 0 0 4px;
-    text-transform: uppercase;
-}
-
-.demo-footer__group a {
-    color: var(--amb-site-slate);
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: color 140ms ease;
-}
-
-.demo-footer__group a:hover {
-    color: var(--amb-site-blue-strong);
-}
-
-.demo-footer__group a:focus-visible {
-    border-radius: 4px;
-    box-shadow: var(--amb-site-ring);
-    outline: none;
-}
-
-.demo-footer__note {
-    color: var(--demo-muted);
-    font-size: 13px;
-}
-
-.demo-footer__meta {
-    border-top: 1px solid #d9e3ed;
-    display: flex;
-    flex-wrap: wrap;
-    grid-column: 1 / -1;
-    gap: 6px;
-    margin-top: 8px;
-    padding-top: 16px;
-}
-
 @keyframes demo-framework-direction-hover {
     0% {
         opacity: 1;
@@ -4995,14 +4920,6 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
         padding: clamp(18px, 4vw, 28px);
     }
 
-    .demo-footer {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .demo-footer__meta {
-        justify-content: flex-start;
-        text-align: left;
-    }
 }
 
 @media (max-width: 760px) {
@@ -5122,11 +5039,6 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
         bottom: 12px;
         left: 14px;
         max-width: calc(100% - 28px);
-    }
-
-    .demo-footer {
-        gap: 22px;
-        grid-template-columns: 1fr;
     }
 
     .demo-report-dialog {
