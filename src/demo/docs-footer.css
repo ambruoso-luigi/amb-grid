@@ -1,0 +1,24 @@
+.amb-docs-footer-host {
+    clear: both;
+    width: 100%;
+}
+
+.amb-docs-footer-host .demo-footer {
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    font-style: normal;
+}
+
+.amb-docs-footer-host .demo-footer__group {
+    float: none;
+    width: auto;
+    margin-top: 0;
+    border-left: 0;
+    padding-left: 0;
+}
+
+.amb-docs-footer-host .demo-footer section {
+    background: none;
+    border: 0;
+    margin-right: 0;
+    padding: 0;
+}
