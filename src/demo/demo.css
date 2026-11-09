@@ -4112,6 +4112,13 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     outline: none;
 }
 
+.demo-panel .demo-parsers-grid .demo-parser-boolean-visual {
+    display: block;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+}
+
 .demo-panel .demo-business-grid .demo-inspection-visual,
 .demo-panel .demo-business-grid .amb-checkbox-editor::before {
     background-color: var(--demo-checkbox-fill);

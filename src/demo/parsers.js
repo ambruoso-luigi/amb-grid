@@ -118,7 +118,7 @@ const formatParserInput = cell => {
         return text;
     }
 
-    return formatBooleanInput(cell);
+    return `<span class="demo-parser-boolean-visual">${formatBooleanInput(cell)}</span>`;
 };
 
 export default function parsers(app) {
