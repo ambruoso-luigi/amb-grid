@@ -48,8 +48,8 @@ const translations = {
         'language.enTitle': 'English',
         'language.switchToIt': 'Cambia lingua in italiano',
         'language.switchToEn': 'Cambia lingua in inglese',
-        'hero.title': 'Griglie CRUD per applicazioni business',
-        'hero.description': 'AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.',
+        'hero.title': 'Griglie CRUD per il business',
+        'hero.description': 'Editing, validazione e gestione delle modifiche nello stesso flusso, con payload pronti per il backend. Senza vincoli di framework.',
         'hero.secondary': 'Vedi esempi funzionali',
         'hero.videoLabel': 'Demo AMB Grid',
         'hero.videoOpen': 'Apri Demo AMB Grid su YouTube',
@@ -196,8 +196,8 @@ const translations = {
         'language.enTitle': 'English',
         'language.switchToIt': 'Switch language to Italian',
         'language.switchToEn': 'Switch language to English',
-        'hero.title': 'CRUD data grids for business applications',
-        'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.',
+        'hero.title': 'CRUD grids for business',
+        'hero.description': 'Editing, validation, and change management in one workflow, with backend-ready payloads. Framework-agnostic.',
         'hero.secondary': 'View feature examples',
         'hero.videoLabel': 'AMB Grid Demo',
         'hero.videoOpen': 'Open the AMB Grid Demo on YouTube',
@@ -461,7 +461,7 @@ const cycleDetailCopy = {
 
 const applyI18n = () => {
     document.documentElement.lang = currentLang;
-    document.title = currentLang === 'it'
+    document.title = currentView === 'home' ? 'AMB Grid' : currentLang === 'it'
         ? 'AMB Grid - Demo legacy-friendly'
         : 'AMB Grid - Legacy-friendly demo';
 
@@ -603,8 +603,8 @@ const renderShell = selectedId => {
                 <div class="demo-hero__brand">${renderDemoBrand({ href: '#top' })}</div>
                 <div class="demo-hero__body">
                     <div class="demo-hero__content" id="top">
-                        <h1 data-i18n="hero.title">Griglie CRUD per applicazioni business</h1>
-                        <p class="demo-hero__text" data-i18n="hero.description">AMB Grid coordina stati riga, validazione, lookup, rollback, salvataggio e payload pronti per il backend senza imporre un framework.</p>
+                        <h1 data-i18n="hero.title">Griglie CRUD per il business</h1>
+                        <p class="demo-hero__text" data-i18n="hero.description">Editing, validazione e gestione delle modifiche nello stesso flusso, con payload pronti per il backend. Senza vincoli di framework.</p>
                         <div class="demo-hero__actions">
                             <a class="demo-button demo-button--primary" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
                         </div>
@@ -695,6 +695,28 @@ const renderShell = selectedId => {
                 </div>
             </section>
 
+            <section class="demo-section" id="feature-examples">
+                <div class="demo-section-heading">
+                    <p class="demo-kicker" data-i18n="examples.kicker">Mini-demo tecniche</p>
+                    <h2 data-i18n="examples.title">Esempi funzionali</h2>
+                    <p class="demo-note" data-i18n="examples.description">Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.</p>
+                </div>
+                <div class="demo-feature-grid" aria-label="Feature examples">
+                    ${featureExamples.map(example => `
+                        <button
+                            type="button"
+                            class="demo-feature-card${example.id === selectedId ? ' is-active' : ''}"
+                            data-example="${example.id}"
+                        >
+                            <span class="demo-feature-card__title" data-i18n="${example.titleKey}">${getText(example.titleKey)}</span>
+                            <span class="demo-feature-card__description" data-i18n="${example.descriptionKey}">${getText(example.descriptionKey)}</span>
+                            <span class="demo-feature-card__action" data-i18n="examples.open">Apri esempio</span>
+                        </button>
+                    `).join('')}
+                </div>
+                <section id="feature-example" class="demo-example demo-panel"></section>
+            </section>
+
             <section class="demo-section demo-section--flow">
                 <div class="demo-section-heading">
                     <p class="demo-kicker" data-i18n="cycle.kicker">Flusso applicativo</p>
@@ -753,27 +775,6 @@ const renderShell = selectedId => {
                 </section>
             </section>
 
-            <section class="demo-section" id="feature-examples">
-                <div class="demo-section-heading">
-                    <p class="demo-kicker" data-i18n="examples.kicker">Mini-demo tecniche</p>
-                    <h2 data-i18n="examples.title">Esempi funzionali</h2>
-                    <p class="demo-note" data-i18n="examples.description">Le demo esistenti restano accessibili come esempi focalizzati su singole capacità di AMB Grid.</p>
-                </div>
-                <div class="demo-feature-grid" aria-label="Feature examples">
-                    ${featureExamples.map(example => `
-                        <button
-                            type="button"
-                            class="demo-feature-card${example.id === selectedId ? ' is-active' : ''}"
-                            data-example="${example.id}"
-                        >
-                            <span class="demo-feature-card__title" data-i18n="${example.titleKey}">${getText(example.titleKey)}</span>
-                            <span class="demo-feature-card__description" data-i18n="${example.descriptionKey}">${getText(example.descriptionKey)}</span>
-                            <span class="demo-feature-card__action" data-i18n="examples.open">Apri esempio</span>
-                        </button>
-                    `).join('')}
-                </div>
-                <section id="feature-example" class="demo-example demo-panel"></section>
-            </section>
         </main>
         ${renderDemoFooter()}
     `;
