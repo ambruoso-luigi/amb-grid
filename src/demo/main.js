@@ -51,6 +51,7 @@ const translations = {
         'hero.title': 'Griglie CRUD per il business',
         'hero.description': 'Editing, validazione e gestione delle modifiche nello stesso flusso, con payload pronti per il backend. Senza vincoli di framework.',
         'hero.secondary': 'Vedi esempi funzionali',
+        'hero.flowCta': 'Scopri il flusso applicativo',
         'hero.videoLabel': 'Demo AMB Grid',
         'hero.videoOpen': 'Apri Demo AMB Grid su YouTube',
         'video.youtube': 'YouTube',
@@ -199,6 +200,7 @@ const translations = {
         'hero.title': 'CRUD grids for business',
         'hero.description': 'Editing, validation, and change management in one workflow, with backend-ready payloads. Framework-agnostic.',
         'hero.secondary': 'View feature examples',
+        'hero.flowCta': 'Explore the application flow',
         'hero.videoLabel': 'AMB Grid Demo',
         'hero.videoOpen': 'Open the AMB Grid Demo on YouTube',
         'video.youtube': 'YouTube',
@@ -607,6 +609,7 @@ const renderShell = selectedId => {
                         <p class="demo-hero__text" data-i18n="hero.description">Editing, validazione e gestione delle modifiche nello stesso flusso, con payload pronti per il backend. Senza vincoli di framework.</p>
                         <div class="demo-hero__actions">
                             <a class="demo-button demo-button--primary" href="#feature-examples">${demoIcon('selected', { className: 'demo-icon demo-hero-cta-icon' })}<span data-i18n="hero.secondary">Vedi esempi funzionali</span></a>
+                            <a class="demo-button demo-button--flow" href="#application-flow">${demoIcon('crud', { className: 'demo-icon demo-hero-cta-icon', size: 18, strokeWidth: 2.1 })}<span data-i18n="hero.flowCta">Scopri il flusso applicativo</span></a>
                         </div>
                     </div>
                 </div>
@@ -717,7 +720,7 @@ const renderShell = selectedId => {
                 <section id="feature-example" class="demo-example demo-panel"></section>
             </section>
 
-            <section class="demo-section demo-section--flow">
+            <section class="demo-section demo-section--flow" id="application-flow">
                 <div class="demo-section-heading">
                     <p class="demo-kicker" data-i18n="cycle.kicker">Flusso applicativo</p>
                     <h2 data-i18n="cycle.title">CRUD, validazione e payload nello stesso ciclo</h2>

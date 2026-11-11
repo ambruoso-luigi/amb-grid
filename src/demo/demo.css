@@ -227,7 +227,7 @@ a {
 
 .demo-hero__brand .demo-brand__logo {
     display: block;
-    width: clamp(250px, 22vw, 350px);
+    width: clamp(275px, 24.2vw, 385px);
     max-width: 100%;
     height: auto;
     object-fit: contain;
@@ -297,6 +297,11 @@ a {
 }
 
 .demo-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 12px;
     margin-top: clamp(16px, 2vw, 22px);
 }
 
@@ -308,6 +313,47 @@ a {
     font-weight: 800;
     min-height: 48px;
     padding: 11px 18px;
+}
+
+.demo-hero__actions .demo-button--flow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 48px;
+    padding: 11px 18px;
+    border: 1px solid #91AEC8;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F1F7FD 100%);
+    color: #10233F;
+    font-size: inherit;
+    font-weight: 800;
+    line-height: 1.25;
+    text-decoration: none;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 92%), 0 2px 0 #B5CCDE, 0 8px 18px rgb(16 35 63 / 12%);
+    transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+.demo-hero__actions .demo-hero-cta-icon {
+    width: 18px;
+    height: 18px;
+    color: currentColor;
+}
+
+.demo-hero__actions .demo-button--flow:hover {
+    background: linear-gradient(180deg, #F7FBFF 0%, #E4F0FA 100%);
+    border-color: #4D84B2;
+    color: #10233F;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 96%), 0 2px 0 #91AEC8, 0 10px 20px rgb(16 35 63 / 16%);
+}
+
+.demo-hero__actions .demo-button--flow:focus-visible {
+    outline: 2px solid #1D5F99;
+    outline-offset: 3px;
+}
+
+.demo-hero__actions .demo-button--flow:active {
+    box-shadow: inset 0 2px 4px rgb(16 35 63 / 9%), 0 1px 0 #91AEC8, 0 3px 8px rgb(16 35 63 / 10%);
 }
 
 /* Buttons / CTA */
@@ -4994,8 +5040,9 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     }
 
     .demo-hero__brand .demo-brand__logo {
-        width: min(234px, 78vw);
+        width: min(257px, 85vw);
         max-width: 100%;
+        height: auto;
     }
 
     .demo-hero__text {
