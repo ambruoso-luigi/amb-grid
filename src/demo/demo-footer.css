@@ -30,8 +30,8 @@
 .demo-footer a.demo-footer__author { color: var(--footer-heading); font-size: 15px; font-weight: 700; }
 .demo-footer a.demo-footer__github { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; }
 .demo-footer .demo-footer__github svg { display: block; width: 16px; height: 16px; flex: 0 0 16px; fill: currentColor; }
-.demo-footer .demo-footer__linkedin { display: inline-flex; align-items: center; gap: 7px; }
-.demo-footer__linkedin svg { width: 16px; height: 16px; flex: none; }
+.demo-footer .demo-footer__linkedin { display: inline-flex; align-items: center; gap: 8px; }
+.demo-footer__linkedin svg { display: block; width: 20px; height: 20px; flex: 0 0 20px; }
 .demo-footer p.demo-footer__copyright { border-top: 1px solid var(--footer-border); margin-top: 20px; padding-top: 14px; font-size: 12.5px; }
 @media (max-width: 1024px) {
     .demo-footer { padding-left: 24px; padding-right: 24px; }

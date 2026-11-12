@@ -30,7 +30,7 @@ export const renderDemoFooter = () => {
                     <h2 data-footer-copy="author">${text.author}</h2>
                     <a class="demo-footer__author" href="https://www.linkedin.com/in/luigi-ambruoso/" target="_blank" rel="noopener noreferrer">Luigi Ambruoso</a>
                     <p data-footer-copy="description">${text.description}</p>
-                    <a class="demo-footer__linkedin" href="https://www.linkedin.com/in/luigi-ambruoso/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.447-2.136 2.941v5.665H9.351V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.452H3.555V9h3.564v11.452Z"/></svg><span data-footer-copy="linkedin">${text.linkedin}</span></a>
+                    <a class="demo-footer__linkedin" href="https://www.linkedin.com/in/luigi-ambruoso/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect width="24" height="24" rx="4" fill="#0A66C2"/><path fill="#FFFFFF" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.447-2.136 2.941v5.665H9.351V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.452H3.555V9h3.564v11.452Z"/></svg><span data-footer-copy="linkedin">${text.linkedin}</span></a>
                 </section>
             </div>
             <p class="demo-footer__copyright">© ${year} AMB Grid · <span data-footer-copy="copyright">${text.copyright}</span></p>
