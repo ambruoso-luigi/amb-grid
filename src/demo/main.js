@@ -600,7 +600,7 @@ const bindCycleDetails = () => {
 const renderShell = selectedId => {
     activeCycleDetail = null;
     root.innerHTML = `
-        <main class="demo-page site-container">
+        <main class="demo-page site-container demo-page--home">
             <header class="demo-hero">
                 <div class="demo-hero__brand">${renderDemoBrand({ href: '#top' })}</div>
                 <div class="demo-hero__body">

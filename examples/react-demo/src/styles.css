@@ -36,12 +36,12 @@ button, a { outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .react-demo-language button { transition: none; } }
 
 /* React integration hero: geometry aligned with the JavaScript guide hero. */
-.react-hero-shell { border-radius: 8px; display: grid; gap: clamp(16px, 2.2vw, 28px); margin-top: 22px; padding: clamp(22px, 3.4vw, 44px); }
+.react-hero-shell { border-radius: 8px; display: grid; gap: clamp(16px, 2.2vw, 28px); margin-top: 22px; padding: clamp(22px, 3.4vw, 44px); padding-block: clamp(28px, 3vw, 36px); }
 .react-demo-topbar { gap: 18px; min-height: initial; }
 .react-demo-brand { flex: 0 0 auto; }.react-demo-brand img { object-fit: contain; }
 .react-demo-language { box-sizing: border-box; gap: 2px; height: 30px; padding: 2px; width: 130px; }.react-demo-language button { flex: 1 1 0; min-width: 0; padding: 5px 9px; }
 .react-demo-home-link { justify-self: start; width: fit-content; }
-.react-hero-shell { align-items: start; column-gap: clamp(28px, 4.5vw, 72px); grid-template-areas: "brand video" "copy video"; grid-template-columns: minmax(0, 1fr) minmax(300px, 480px); }.react-hero-brand { grid-area: brand; }.react-hero { display: block; grid-area: copy; padding-top: 0; }.react-video-preview { align-self: start; grid-area: video; }.react-hero__copy { max-width: none; }.react-hero__content { max-width: 760px; }
+.react-hero-shell { align-items: start; column-gap: clamp(28px, 4.5vw, 72px); grid-template-areas: "brand video" "copy video"; grid-template-columns: minmax(0, 1fr) minmax(300px, 480px); }.react-hero-brand { grid-area: brand; }.react-hero { display: block; grid-area: copy; padding-top: 0; }.react-video-preview { align-self: center; grid-area: video; }.react-hero__copy { gap: clamp(14px, 1.5vw, 18px); max-width: none; }.react-hero__content { max-width: 760px; }
 .react-identity { max-width: 760px; }.react-identity__copy { display: grid; gap: 4px; }.react-identity__copy strong, .react-identity__copy small { display: block; }.react-identity__copy strong { color: #075c70; font-size: 14px; font-weight: 850; letter-spacing: .04em; text-transform: uppercase; }.react-identity__copy small { color: #4b5a6c; font-size: 14px; font-weight: 400; line-height: 1.45; margin: 0; max-width: 620px; }
 .react-hero h1 { font-size: clamp(32px, 3.8vw, 54px); font-weight: 700; letter-spacing: 0; line-height: 1.04; margin: 0 0 12px; max-width: 920px; }.react-hero__content > p:not(.react-hero__stack) { font-size: clamp(15px, 1.4vw, 18px); margin-bottom: 0; max-width: 900px; }.react-hero__stack { line-height: 1.5; }
 
