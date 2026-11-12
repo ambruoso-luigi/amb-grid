@@ -2702,7 +2702,12 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 #feature-example.demo-example.demo-panel {
-    padding: 48px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-inline: 0;
+    padding: 48px 0;
 }
 
 .demo-example > h2 {
@@ -4899,7 +4904,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     }
 
     #feature-example.demo-example.demo-panel {
-        padding: 32px;
+        padding: 32px 0;
     }
 
     .demo-hero {
@@ -5047,7 +5052,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     }
 
     #feature-example.demo-example.demo-panel {
-        padding: 18px 16px 20px;
+        padding: 18px 0 20px;
     }
 
     .demo-guide-page h1 {
