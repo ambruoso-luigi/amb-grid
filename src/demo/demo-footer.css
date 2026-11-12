@@ -14,17 +14,22 @@
 .demo-footer__inner { max-width: 1824px; margin: 0 auto; }
 .demo-footer__grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); column-gap: 40px; row-gap: 22px; }
 .demo-footer .demo-brand { display: inline-block; max-width: 100%; }
+.demo-footer__brand .demo-brand { position: relative; }
+.demo-footer__brand .demo-brand::after { content: ""; position: absolute; left: 0; bottom: -5px; width: 32px; height: 2px; border-radius: 2px; background: #27B7D8; pointer-events: none; }
 .demo-footer .demo-brand__logo { display: block; width: 136px; max-width: 100%; height: auto; object-fit: contain; }
 .demo-footer .demo-brand:hover .demo-brand__logo { filter: none; transform: none; }
 .demo-footer p { color: var(--footer-muted); font-size: 14px; font-weight: 400; line-height: 1.5; margin: 0; }
 .demo-footer__brand p:first-of-type { margin-top: 12px; }
 .demo-footer__brand p + p { margin-top: 6px; }
+.demo-footer__brand p:last-of-type { color: #102B4E; font-size: 13px; font-weight: 700; letter-spacing: 0.015em; }
 .demo-footer__group { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
-.demo-footer__group h2 { color: var(--footer-heading); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.5; margin: 0 0 4px; text-transform: uppercase; }
+.demo-footer__group h2 { color: var(--footer-heading); font-size: 14px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.5; margin: 0 0 4px; text-transform: uppercase; }
 .demo-footer a:not(.demo-brand) { color: var(--footer-link); font-size: 14px; font-weight: 600; line-height: 1.5; text-decoration: none; transition: color 140ms ease; }
 .demo-footer a:not(.demo-brand):hover { color: var(--footer-heading); text-decoration: underline; }
 .demo-footer a:focus-visible { outline: 2px solid #17679A; outline-offset: 3px; border-radius: 3px; }
 .demo-footer a.demo-footer__author { color: var(--footer-heading); font-size: 15px; font-weight: 700; }
+.demo-footer a.demo-footer__github { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; }
+.demo-footer .demo-footer__github svg { display: block; width: 16px; height: 16px; flex: 0 0 16px; fill: currentColor; }
 .demo-footer .demo-footer__linkedin { display: inline-flex; align-items: center; gap: 7px; }
 .demo-footer__linkedin svg { width: 16px; height: 16px; flex: none; }
 .demo-footer p.demo-footer__copyright { border-top: 1px solid var(--footer-border); margin-top: 20px; padding-top: 14px; font-size: 12.5px; }
