@@ -961,27 +961,27 @@ a {
     opacity: 1;
 }
 
-.demo-flow-card:nth-child(1) {
+.demo-flow-card[data-cycle-detail="edit"] {
     --flow-accent: var(--amb-site-blue);
     --flow-soft: #edf6fd;
 }
 
-.demo-flow-card:nth-child(2) {
+.demo-flow-card[data-cycle-detail="keyboard"] {
     --flow-accent: #0e7490;
     --flow-soft: #ecfeff;
 }
 
-.demo-flow-card:nth-child(3) {
+.demo-flow-card[data-cycle-detail="validate"] {
     --flow-accent: #247a54;
     --flow-soft: #eef9f2;
 }
 
-.demo-flow-card:nth-child(4) {
+.demo-flow-card[data-cycle-detail="payload"] {
     --flow-accent: #6d5aa8;
     --flow-soft: #f4f1ff;
 }
 
-.demo-flow-card:nth-child(5) {
+.demo-flow-card[data-cycle-detail="align"] {
     --flow-accent: #9b6a17;
     --flow-soft: #fff8e8;
 }
