@@ -15,7 +15,7 @@ export default function gettingStartedJavaScript(app) {
                             </span>
                             <div class="demo-framework-identity__copy">
                                 <p class="demo-framework-identity__title" data-i18n="guide.identity.title">Integrazione JavaScript</p>
-                                <p data-i18n="guide.identity.description">AMB Grid utilizzata direttamente in Vanilla JavaScript, senza framework applicativi obbligatori.</p>
+                                <p data-i18n="guide.identity.description">Integrazione diretta, senza framework.</p>
                             </div>
                         </div>
                         <div class="demo-guide-hero__content">

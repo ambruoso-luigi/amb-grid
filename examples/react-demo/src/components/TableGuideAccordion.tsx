@@ -19,6 +19,11 @@ const integration = [
 
 type Language = 'it' | 'en';
 
+const summaryCopy = {
+  it: { title: 'Come funziona questa demo', description: 'Editing, validazione, payload e sincronizzazione React.' },
+  en: { title: 'How this demo works', description: 'Editing, validation, payloads, and React synchronization.' },
+} as const;
+
 const fields = (language: Language) => [
   [language === 'it' ? 'Fornitore' : 'Supplier', 'LOOKUP', language === 'it'
     ? 'Ricerca un fornitore tramite codice, nome o città e aggiorna più dati della riga con mapToRow.'
@@ -36,6 +41,7 @@ const fields = (language: Language) => [
 type TableGuideAccordionProps = { language: Language };
 
 export function TableGuideAccordion({ language }: TableGuideAccordionProps) {
+  const summary = summaryCopy[language];
   const [open, setOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const cards = (items: typeof operations | typeof integration) => items.map(([title, description, Icon]) => (
@@ -45,7 +51,7 @@ export function TableGuideAccordion({ language }: TableGuideAccordionProps) {
   return (
     <section className="react-table-guide">
       <button aria-controls="react-table-guide-content" aria-expanded={open} className="react-table-guide__trigger" onClick={() => setOpen((current) => !current)} type="button">
-        <span className="react-table-guide__trigger-copy"><span className="react-table-guide__help-icon"><CircleHelp aria-hidden="true" size={18} /></span><span><strong>Come funziona questa demo</strong><small>Editing, validazione, save e UI React sincronizzata con AMB Grid.</small></span></span>
+        <span className="react-table-guide__trigger-copy"><span className="react-table-guide__help-icon"><CircleHelp aria-hidden="true" size={18} /></span><span><strong>{summary.title}</strong><small>{summary.description}</small></span></span>
         <ChevronDown aria-hidden="true" className="react-table-guide__chevron" data-open={open} size={20} />
       </button>
       <motion.div animate={{ gridTemplateRows: open ? '1fr' : '0fr', opacity: open ? 1 : 0 }} aria-hidden={!open} className="react-table-guide__content" id="react-table-guide-content" initial={false} transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}>
