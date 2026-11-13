@@ -19,8 +19,8 @@ export default function gettingStartedJavaScript(app) {
                             </div>
                         </div>
                         <div class="demo-guide-hero__content">
-                            <h1 data-i18n="guide.title">AMB Grid con JavaScript</h1>
-                            <p class="demo-hero__text" data-i18n="guide.description">Demo tabellare e guida essenziale per usare AMB Grid con JavaScript moderno o direttamente nel browser, senza framework obbligatori.</p>
+                            <h1 data-i18n="guide.title">Gestionale Magazzino</h1>
+                            <p class="demo-hero__text" data-i18n="guide.description">Demo tabellare e guida essenziale per gestire prodotti, giacenze e modifiche in JavaScript moderno o direttamente nel browser, senza framework obbligatori.</p>
                             <p class="demo-framework-identity__stack" data-i18n="guide.identity.stack">JavaScript · Tailwind CSS · daisyUI · Motion · Lucide</p>
                         </div>
                     </div>

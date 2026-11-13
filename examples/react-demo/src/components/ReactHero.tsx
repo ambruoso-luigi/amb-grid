@@ -7,15 +7,15 @@ type Language = 'it' | 'en';
 const copy = {
   it: {
     integration: 'INTEGRAZIONE REACT',
-    title: 'AMB Grid con React',
-    description: 'Una demo reale con lifecycle React, componenti TypeScript, UI moderna e la stessa logica CRUD di AMB Grid.',
+    title: 'Gestionale di inventario',
+    description: 'Una demo reale con lifecycle React, componenti TypeScript e UI moderna per la gestione di inventario con AMB Grid.',
     videoLabel: 'Demo React',
     videoOpen: 'Apri Demo React su YouTube',
   },
   en: {
     integration: 'REACT INTEGRATION',
-    title: 'AMB Grid with React',
-    description: 'A real demo with the React lifecycle, TypeScript components, a modern UI and the same AMB Grid CRUD logic.',
+    title: 'Inventory management',
+    description: 'A real-world demo using the React lifecycle, TypeScript components, and a modern UI for inventory management with AMB Grid.',
     videoLabel: 'React Demo',
     videoOpen: 'Open the React Demo on YouTube',
   },

@@ -221,7 +221,7 @@ export default async function fullDemo(app, options = {}) {
             <div class="demo-app-shell card bg-base-100">
                 <div class="demo-app-shell__meta card-body">
                     ${showHeader ? `<p class="demo-kicker" data-i18n="mainDemo.kicker">Demo principale · Legacy-friendly</p>
-                    <h2 data-i18n="mainDemo.title">Gestionale Magazzino Classico</h2>
+                    <h2 data-i18n="mainDemo.title">Gestionale Magazzino</h2>
                     <p class="demo-note" data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.</p>` : ''}
                 </div>
                 ${createDemoColumnGuide({
