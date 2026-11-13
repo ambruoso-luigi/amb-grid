@@ -174,9 +174,9 @@ a {
 
 /* Hero */
 .demo-hero {
-    background: linear-gradient(180deg, #F7F9FC 0%, #E8EFF6 46%, #D6E2EE 100%);
+    background: linear-gradient(180deg, #F8FAFD 0%, #EEF3F8 44%, #E1E9F2 100%);
     border: 1px solid rgb(124 150 176 / 68%);
-    border-top: 3px solid #27B7D8;
+    border-top: 3px solid #1E5F97;
     border-radius: 8px;
     box-shadow:
         0 1px 0 rgb(255 255 255 / 86%) inset,
@@ -195,7 +195,7 @@ a {
 }
 
 .demo-hero::before {
-    background: linear-gradient(110deg, rgb(16 43 78 / 8%) 0%, rgb(42 72 106 / 4%) 46%, transparent 76%);
+    background: linear-gradient(115deg, rgb(16 43 78 / 5%) 0%, rgb(42 72 106 / 2.5%) 42%, transparent 74%);
     content: "";
     inset: 0;
     pointer-events: none;
