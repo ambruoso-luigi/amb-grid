@@ -1482,6 +1482,8 @@ a {
         linear-gradient(125deg, color-mix(in srgb, var(--framework-accent) 14%, transparent) 0%, transparent 58%),
         var(--amb-site-surface);
     border-top: 3px solid var(--framework-accent);
+    align-items: start;
+    padding-block: clamp(28px, 3vw, 36px);
     row-gap: 14px;
 }
 
@@ -1564,7 +1566,6 @@ a {
 }
 
 .js-guide-page .demo-framework-identity__stack {
-    color: #50677c;
     font-size: 13px;
     font-weight: 600;
     line-height: 1.5;
@@ -1630,6 +1631,11 @@ a {
 
 .demo-guide-hero__brand {
     grid-area: brand;
+}
+
+.js-guide-page .demo-guide-hero__brand {
+    display: flex;
+    align-items: flex-start;
 }
 
 .demo-guide-video {
@@ -5019,6 +5025,10 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 
     .demo-guide-hero {
         padding: clamp(18px, 4vw, 28px);
+    }
+
+    .js-guide-page .demo-guide-hero {
+        padding-block: clamp(18px, 4vw, 28px);
     }
 
 }
