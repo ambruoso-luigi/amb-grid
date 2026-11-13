@@ -44,9 +44,10 @@ body { min-width: 320px; min-height: 100vh; margin: 0; }
   grid-template-columns: minmax(0, 1fr) minmax(300px, 480px);
   align-items: start;
   column-gap: clamp(28px, 4.5vw, 72px);
-  row-gap: clamp(16px, 2.2vw, 28px);
+  row-gap: 14px;
   overflow: hidden;
-  padding: clamp(22px, 3.4vw, 44px);
+  padding-inline: clamp(22px, 3.4vw, 44px);
+  padding-block: clamp(28px, 3vw, 36px);
   border: 1px solid #d8dee8;
   border-top: 3px solid #1f8d73;
   border-radius: 8px;
@@ -70,7 +71,7 @@ body { min-width: 320px; min-height: 100vh; margin: 0; }
   grid-area: content;
   display: grid;
   align-content: start;
-  gap: clamp(20px, 3vw, 34px);
+  gap: 12px;
   min-width: 0;
   max-width: 760px;
   animation: enter-up 650ms 80ms both;
@@ -128,15 +129,12 @@ body { min-width: 320px; min-height: 100vh; margin: 0; }
 .vue-hero h1 {
   max-width: 920px;
   margin: 0 0 12px;
-  color: #102950;
+  color: #10233F;
   font-size: clamp(32px, 3.8vw, 54px);
   font-weight: 700;
+  letter-spacing: 0;
   line-height: 1.04;
   text-wrap: balance;
-}
-
-.vue-hero h1 span {
-  color: #1f8d73;
 }
 
 .vue-hero__intro > p {
@@ -147,9 +145,19 @@ body { min-width: 320px; min-height: 100vh; margin: 0; }
   line-height: 1.55;
 }
 
+.vue-hero__intro > .vue-hero__stack {
+  color: #176E5A;
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.015em;
+  line-height: 1.5;
+  margin: 16px 0 0;
+  max-width: 760px;
+}
+
 .vue-video-preview {
   grid-area: video;
-  align-self: start;
+  align-self: center;
   position: relative;
   display: block;
   width: 100%;
@@ -251,6 +259,7 @@ body { min-width: 320px; min-height: 100vh; margin: 0; }
   }
 
   .vue-video-preview {
+    align-self: start;
     max-width: 640px;
   }
 }

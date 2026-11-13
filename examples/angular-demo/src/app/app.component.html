@@ -13,20 +13,15 @@
           </svg>
         </span>
         <span class="portfolio-identity__copy">
-          <strong>Integrazione Angular</strong>
+          <strong>{{ language() === 'it' ? 'Integrazione Angular' : 'Angular integration' }}</strong>
           <small>Angular 22 + TypeScript</small>
         </span>
       </div>
 
       <div class="portfolio-hero__intro">
-        <h1 id="hero-title">Live Multi-Asset <span>Portfolio</span></h1>
-        <p>Un portfolio finanziario con quotazioni simulate in aggiornamento, Timeline degli strumenti e calcoli di valore e P/L realizzati con Angular e AMB Grid.</p>
-        <ul class="portfolio-hero__assets" aria-label="Categorie del portfolio">
-          <li>Stocks</li>
-          <li>ETF</li>
-          <li>Bonds</li>
-          <li>Crypto</li>
-        </ul>
+        <h1 id="hero-title">Live Multi-Asset Portfolio</h1>
+        <p>{{ language() === 'it' ? 'Un portfolio finanziario con quotazioni simulate in aggiornamento, timeline degli strumenti e calcoli di valore e P/L realizzati con Angular e AMB Grid.' : 'A financial portfolio with updating simulated quotes, instrument timelines, and value and P/L calculations built with Angular and AMB Grid.' }}</p>
+        <p class="portfolio-hero__stack">Angular 22 · TypeScript · Signals · Standalone Components</p>
       </div>
     </div>
 
@@ -35,7 +30,7 @@
       href="https://www.youtube.com/watch?v=2qhXHt0Upps"
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Apri la demo video di AMB Grid su YouTube (nuova scheda)"
+      [attr.aria-label]="language() === 'it' ? 'Apri la demo video di AMB Grid su YouTube (nuova scheda)' : 'Open the AMB Grid video demo on YouTube (new tab)'"
     >
       <img
         class="video-preview__image"

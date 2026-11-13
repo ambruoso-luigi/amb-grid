@@ -6,13 +6,13 @@ const props = defineProps<{ language: 'it' | 'en' }>();
 const copy = {
   it: {
     integration: 'Integrazione Vue',
-    description: 'Antiquariato, design e oggetti con una storia.',
+    description: 'Catalogo dimostrativo di antiquariato, design e oggetti con una storia.',
     videoLabel: 'Demo AMB Grid',
     videoOpen: 'Apri la demo video di AMB Grid su YouTube (nuova scheda)'
   },
   en: {
     integration: 'Vue integration',
-    description: 'Antiques, design and objects with a story.',
+    description: 'A demonstration catalog of antiques, design, and objects with a story.',
     videoLabel: 'AMB Grid Demo',
     videoOpen: 'Open the AMB Grid video demo on YouTube (new tab)'
   }
@@ -39,8 +39,9 @@ const text = computed(() => copy[props.language]);
         </span>
       </div>
       <div class="vue-hero__intro">
-        <h1 id="hero-title">Atelier <span>del Tempo</span></h1>
+        <h1 id="hero-title">Atelier del Tempo</h1>
         <p>{{ text.description }}</p>
+        <p class="vue-hero__stack">Vue 3 · TypeScript · Composition API · Vite</p>
       </div>
     </div>
     <a class="vue-video-preview" href="https://www.youtube.com/watch?v=2qhXHt0Upps"

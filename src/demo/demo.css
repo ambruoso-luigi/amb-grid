@@ -1566,10 +1566,12 @@ a {
 }
 
 .js-guide-page .demo-framework-identity__stack {
+    color: color-mix(in srgb, var(--framework-accent) 76%, #172033);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 750;
+    letter-spacing: 0.015em;
     line-height: 1.5;
-    margin-top: 16px;
+    margin: 16px 0 0;
 }
 
 .demo-guide-hero {
