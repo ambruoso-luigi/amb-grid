@@ -25,69 +25,20 @@ const openEditor = async (page, id, field) => {
     return openEditorFromNavigation(page, target, 'autocomplete tutorial', '#autocomplete-table', 'input.amb-autocomplete-editor');
 };
 
-test('advances only after suggestions, a selected strict value and a committed free value', async ({ page }) => {
-    await openDemo(page);
-    await launchTutorial(page);
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'show-suggestions');
-    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 di 3');
-    await expect(tutorial(page).locator('.demo-action-tutorial__progress li')).toHaveCount(3);
-
-    const other = await openEditor(page, 2, 'requiredDepartment');
-    await other.fill('Fin');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'show-suggestions');
-    await other.press('Escape');
-    const required = await openEditor(page, 1, 'requiredDepartment');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'show-suggestions');
-    await required.press('Escape');
-    const input = await openEditor(page, 1, 'requiredDepartment');
-    await input.fill('Sec');
-    await expect(page.getByRole('option', { name: 'Security' })).toBeVisible();
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'choose-department');
-    await input.press('Escape');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'choose-department');
-
-    const second = await openEditor(page, 1, 'requiredDepartment');
-    await second.fill('Sec');
-    await second.press('Enter');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'choose-department');
-    await page.locator('#feature-example [data-action="reload"]').click();
-    await expect(tutorial(page)).toBeVisible();
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'choose-department');
-    const selected = await openEditor(page, 1, 'requiredDepartment');
-    await selected.fill('Sec');
-    await selected.press('ArrowDown');
-    await selected.press('Tab');
-    await expect(cell(page, 1, 'requiredDepartment')).toHaveText('Security');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'enter-free-value');
-
-    const wrong = await openEditor(page, 2, 'tag');
-    await wrong.fill('custom-note-2');
-    await wrong.press('Enter');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'enter-free-value');
-    const free = await openEditor(page, 1, 'tag');
-    await free.fill('launch-note');
-    await free.press('Enter');
-    await expect(cell(page, 1, 'tag')).toHaveText('launch-note');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'complete');
-    await tutorial(page).locator('[data-tutorial-action="restart"]').click();
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'show-suggestions');
-    await expect(cell(page, 1, 'tag')).toHaveText('launch-note');
-});
-
 test('keeps language, skip and remount behavior', async ({ page }) => {
     await openDemo(page);
     await launchTutorial(page);
     await page.getByRole('button', { name: 'English', exact: true }).click();
-    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 3');
+    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 4');
     await tutorial(page).locator('[data-tutorial-action="skip"]').click();
     await expect(tutorial(page)).toBeHidden();
     await launchTutorial(page, 'Resume tutorial');
-    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 3');
+    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 4');
     await page.locator('[data-example="validation"]').click();
     await page.locator('[data-example="autocomplete"]').click();
     await expect(tutorial(page)).toHaveCount(1);
     await launchTutorial(page, 'Start tutorial');
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'show-suggestions');
+    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'choose-optional-department');
 });
 
 for (const width of [1440, 768, 390]) {

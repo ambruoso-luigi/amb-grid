@@ -100,7 +100,7 @@ test.describe('CRUD & Row States lifecycle', () => {
         await expect(cell(page, 'REC-010', '_state')).toHaveText('saved');
         await expect(cell(page, 'REC-004', 'description')).toHaveAttribute('data-cell-error', 'true');
         await row(page, 'REC-004').locator('[data-action="rollback"]').click();
-        await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+        await page.locator('.teh-confirm-dialog--visible .teh-confirm-dialog__button--confirm').click();
         await expect(cell(page, 'REC-004', 'description')).toHaveText('Compliance evidence requires review');
         await expect(cell(page, 'REC-004', '_ambErrorCount')).toHaveText('0');
     });
@@ -115,7 +115,7 @@ test.describe('CRUD & Row States lifecycle', () => {
         await expect(row(page, 'REC-002')).toHaveAttribute('data-demo-server-error', 'true');
         await expect(cell(page, 'REC-002', '_state')).toHaveText('modified');
         await row(page, 'REC-002').locator('[data-action="rollback"]').click();
-        await page.getByRole('button', { name: 'Confirm', exact: true }).click();
+        await page.locator('.teh-confirm-dialog--visible .teh-confirm-dialog__button--confirm').click();
         await expect(cell(page, 'REC-002', '_ambErrorCount')).toHaveText('0');
         await expect(row(page, 'REC-002')).not.toHaveAttribute('data-demo-server-error');
         await cell(page, 'REC-001', 'archived').click();

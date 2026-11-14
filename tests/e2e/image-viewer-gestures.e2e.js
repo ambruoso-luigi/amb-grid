@@ -22,7 +22,7 @@ const install = async page => {
             columns: [{ title: 'Images', field: 'images', formatter: AMB.formatters.image({ preview: false }) }]
         });
     });
-    await page.locator('#img05-grid button.amb-image--viewable').click();
+    await page.locator('#img05-grid button.amb-image--viewable').dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await expect(viewer(page).locator('.viewer-canvas img')).toHaveCount(1);
 };
@@ -191,7 +191,7 @@ test('simulated swipe, pinch and cancel preserve gallery navigation and cleanup'
         expectBounded(await state(page));
         await page.keyboard.press('Escape');
         await expect(viewer(page)).toHaveCount(0);
-        await page.locator('#img05-grid button.amb-image--viewable').click();
+        await page.locator('#img05-grid button.amb-image--viewable').dblclick();
         await expect(viewer(page)).toHaveCount(1);
         await page.evaluate(() => window.__img05.destroy());
         await expect(viewer(page)).toHaveCount(0);
@@ -207,7 +207,7 @@ test('simulated swipe, pinch and cancel preserve gallery navigation and cleanup'
                 columns: [{ title: 'Image', field: 'image', formatter: AMB.formatters.image({ preview: false }) }]
             });
         });
-        await page.locator('#img05-single button.amb-image--viewable').click();
+        await page.locator('#img05-single button.amb-image--viewable').dblclick();
         await expect(viewer(page)).toHaveCount(1);
         await swipe(cdp, -800);
         expect((await state(page)).index).toBe(0);
@@ -228,7 +228,7 @@ test('a second intentional touch after immediate reopen still activates the tool
             document.addEventListener('pointerup', event => {
                 if (!event.target.closest('.viewer-container')) return;
                 window.__img05.handoffAt = performance.now();
-                document.querySelector('#img05-grid button.amb-image--viewable').click();
+                document.querySelector('#img05-grid button.amb-image--viewable').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
             }, { once: true });
         });
         const canvas = await viewer(page).locator('.viewer-canvas').boundingBox();

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 const requiredDepartmentCell = page => page.locator('#autocomplete-table .tabulator-row')
-    .filter({ hasText: 'Prepare onboarding pack' })
+    .filter({ has: page.locator('[tabulator-field="id"]', { hasText: /^1$/ }) })
     .locator('.tabulator-cell[tabulator-field="requiredDepartment"]');
 
 test.describe('autocomplete live space input', () => {

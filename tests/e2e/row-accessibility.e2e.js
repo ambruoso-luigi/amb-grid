@@ -190,7 +190,7 @@ test.describe('row controls accessibility', () => {
         const rollbackRow = secondRow;
         const rollback = rollbackRow.locator('.amb-row-action-button--rollback');
         const idCell = rollbackRow.locator('.tabulator-cell[tabulator-field="id"]');
-        const previousRowLastCell = firstRow.locator('.tabulator-cell[tabulator-field="documentNumber"]');
+        const previousRowLastCell = firstRow.locator('.tabulator-cell[tabulator-field="fileName"]');
 
         await expect(rollbackRow.locator('.tabulator-cell[tabulator-field="id"]')).toHaveText('2');
         await enterNavigationWithClick(page, idCell, 'Validation Rollback keyboard setup', '#validation-table');
@@ -207,7 +207,7 @@ test.describe('row controls accessibility', () => {
         await page.keyboard.press('Shift+Tab');
         await expect(previousRowLastCell).toBeFocused();
         await expect(previousRowLastCell).not.toHaveClass(/tabulator-editing/);
-        expect(await getActiveGridFocus(page)).toMatchObject({ field: 'documentNumber', action: null });
+        expect(await getActiveGridFocus(page)).toMatchObject({ field: 'fileName', action: null });
 
         await page.keyboard.press('Tab');
         await expect(idCell).toBeFocused();

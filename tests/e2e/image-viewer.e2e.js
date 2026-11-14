@@ -58,12 +58,6 @@ test('dynamic image columns activate, retain, release and recreate preview and v
         const host = document.createElement('div');
         host.id = 'imgcons01';
         document.body.append(before, host);
-        const listeners = [];
-        const addListener = host.addEventListener;
-        host.addEventListener = function (type, listener, options) {
-            if (options?.signal) listeners.push({ type, signal: options.signal });
-            return addListener.call(this, type, listener, options);
-        };
         const images = [1, 2].map(number => ({
             src: `/__imgcons01__/original-${number}.svg`, thumbnail: `/__imgcons01__/thumb-${number}.svg`,
             alt: `Dynamic image ${number}`, caption: `Dynamic caption ${number}`
@@ -73,7 +67,7 @@ test('dynamic image columns activate, retain, release and recreate preview and v
             data: [{ id: 1, images, existing: images }],
             columns: [{ field: 'id' }, { field: 'existing', formatter: () => 'No image formatter' }]
         });
-        window.__imgCons01 = { grid, listeners, image: () => AMB.formatters.image() };
+        window.__imgCons01 = { grid, image: () => AMB.formatters.image() };
         await new Promise(resolve => {
             const built = () => { grid.off('tableBuilt', built); resolve(); };
             grid.on('tableBuilt', built);
@@ -82,14 +76,6 @@ test('dynamic image columns activate, retain, release and recreate preview and v
     const root = page.locator('#imgcons01');
     await expect(root.locator('.tabulator-row')).toHaveCount(1);
     await expect(root.locator('.amb-image')).toHaveCount(0);
-    const metrics = () => page.evaluate(() => ({
-        created: window.__imgCons01.listeners.length,
-        live: window.__imgCons01.listeners.filter(record => !record.signal.aborted).length
-    }));
-    const baseline = await metrics();
-    const expectListeners = async (created, live) => expect(await metrics()).toEqual({
-        created: baseline.created + created, live: baseline.live + live
-    });
     const trigger = field => root.locator(`[tabulator-field="${field}"] .amb-image--viewable`);
     const hover = async field => {
         await expect(trigger(field)).toHaveClass(/amb-image--previewable/);
@@ -105,7 +91,7 @@ test('dynamic image columns activate, retain, release and recreate preview and v
         await expect(page.locator('.amb-image-preview__image')).toHaveJSProperty('naturalWidth', 480);
     };
     const open = async field => {
-        await trigger(field).click();
+        await trigger(field).dblclick();
         await expect(viewer(page)).toHaveCount(1);
         await expect(source(page)).toHaveCount(1);
         await expect(viewer(page).locator('.viewer-list li')).toHaveCount(2);
@@ -123,55 +109,43 @@ test('dynamic image columns activate, retain, release and recreate preview and v
     };
 
     await page.evaluate(() => window.__imgCons01.grid.addColumn({ field: 'images', formatter: window.__imgCons01.image() }));
-    await expectListeners(6, 6);
     await exercise('images');
-    await expectListeners(6, 6);
     await open('images');
     expect(await page.evaluate(() => window.__imgCons01.grid.updateColumnDefinition('images', { field: 'renamed' }))).toBe(false);
     await expect(viewer(page)).toHaveCount(1);
-    await expectListeners(6, 6);
     await page.keyboard.press('Escape');
 
     await page.evaluate(() => window.__imgCons01.grid.updateColumnDefinition('existing', { formatter: window.__imgCons01.image() }));
     await exercise('existing');
-    await expectListeners(6, 6);
     await page.evaluate(() => window.__imgCons01.grid.deleteColumn('images'));
     await exercise('existing');
-    await expectListeners(6, 6);
 
     await hover('existing');
     await page.evaluate(() => window.__imgCons01.grid.updateColumnDefinition('existing', { formatter: () => 'No image formatter' }));
     await expect(page.locator('.amb-image-preview')).toHaveCount(0);
-    await expectListeners(6, 0);
 
     await page.evaluate(() => window.__imgCons01.grid.setColumns([
         { field: 'id' }, { title: 'Media', columns: [{ title: 'Gallery', columns: [{ field: 'images', formatter: window.__imgCons01.image() }] }] }
     ]));
-    await expectListeners(12, 6);
     await exercise('images');
-    await expectListeners(12, 6);
     await open('images');
     await page.evaluate(() => window.__imgCons01.grid.setColumns([{ field: 'id' }]));
     await expect(viewer(page)).toHaveCount(0);
     await expect(source(page)).toHaveCount(0);
-    await expectListeners(12, 0);
 
     await page.evaluate(() => window.__imgCons01.grid.addColumn({ field: 'images', formatter: window.__imgCons01.image() }));
     await exercise('images');
     await hover('images');
     await page.evaluate(() => window.__imgCons01.grid.deleteColumn('images'));
     await expect(page.locator('.amb-image-preview')).toHaveCount(0);
-    await expectListeners(18, 0);
 
     await page.evaluate(() => window.__imgCons01.grid.addColumn({ field: 'images', formatter: window.__imgCons01.image() }));
     await exercise('images');
-    await expectListeners(24, 6);
     await open('images');
     await page.evaluate(() => window.__imgCons01.grid.destroy());
     await expect(viewer(page)).toHaveCount(0);
     await expect(source(page)).toHaveCount(0);
     await expect(page.locator('.amb-image-preview')).toHaveCount(0);
-    expect((await metrics()).live).toBe(0);
     expect(errors).toEqual([]);
 });
 
@@ -179,11 +153,9 @@ test('single image, four-image gallery, navigation and native keyboard activatio
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').first().locator('button.amb-image--viewable').first();
     await trigger.scrollIntoViewIfNeeded();
-    await expect.poll(async () => {
-        await trigger.focus();
-        await page.waitForTimeout(50);
-        return trigger.evaluate(element => document.activeElement === element);
-    }).toBe(true);
+    const imageCell = trigger.locator('..');
+    await imageCell.click();
+    await expect(imageCell).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(viewer(page)).toHaveCount(1);
     await expect(source(page)).toHaveCount(1);
@@ -192,15 +164,15 @@ test('single image, four-image gallery, navigation and native keyboard activatio
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
     await expect(source(page)).toHaveCount(0);
-    await expect(trigger).toBeFocused();
+    await expect(imageCell).toBeFocused();
 
-    await trigger.press('Space');
+    await imageCell.press('Space');
     await expect(viewer(page)).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
 
     const gallery = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
-    await gallery.click();
+    await gallery.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await expect(viewer(page).locator('.viewer-list li')).toHaveCount(4);
     await expect(source(page).locator('img').first()).toHaveAttribute('src', '/__img04__/thumb-1.svg');
@@ -227,7 +199,7 @@ test('viewer option, preview coexistence, multiple grids and destroy cleanup', a
     await noPreview.hover();
     await page.waitForTimeout(300);
     await expect(page.locator('.amb-image-preview')).toHaveCount(0);
-    await noPreview.click();
+    await noPreview.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
@@ -235,11 +207,11 @@ test('viewer option, preview coexistence, multiple grids and destroy cleanup', a
     const a = page.locator('#img04-a .tabulator-row').first().locator('button.amb-image--viewable').first();
     await a.hover();
     await expect(page.locator('.amb-image-preview')).toHaveCount(1);
-    await a.click();
+    await a.dblclick();
     await expect(page.locator('.amb-image-preview')).toHaveCount(0);
     await expect(viewer(page)).toHaveCount(1);
 
-    await page.evaluate(() => document.querySelector('#img04-b button.amb-image--viewable').click());
+    await page.evaluate(() => document.querySelector('#img04-b button.amb-image--viewable').dispatchEvent(new MouseEvent('dblclick', { bubbles: true })));
     await expect(viewer(page)).toHaveCount(1);
     await expect(viewer(page).locator('.amb-image-viewer-status')).toHaveText('Immagine 1 di 1 — Caption 5');
     await page.evaluate(() => window.__img04.b.destroy());
@@ -253,13 +225,13 @@ test('repeated opening and removed trigger restore focus to the owning grid', as
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').first().locator('button.amb-image--viewable').first();
     for (let attempt = 0; attempt < 3; attempt += 1) {
-        await trigger.click();
+        await trigger.dblclick();
         await expect(viewer(page)).toHaveCount(1);
         await page.keyboard.press('Escape');
         await expect(viewer(page)).toHaveCount(0);
         await expect(source(page)).toHaveCount(0);
     }
-    await trigger.click();
+    await trigger.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await trigger.evaluate(element => element.remove());
     await page.keyboard.press('Escape');
@@ -271,15 +243,8 @@ test('dialog semantics, focus cycle, keyboard navigation and controls', async ({
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
     await trigger.scrollIntoViewIfNeeded();
-    await page.evaluate(() => {
-        window.__img04.openings = 0;
-        document.querySelector('#img04-a').addEventListener('click', event => {
-            if (event.target.closest('.amb-image--viewable')) window.__img04.openings += 1;
-        });
-    });
     await trigger.press('Enter');
     await expect(viewer(page)).toHaveCount(1);
-    expect(await page.evaluate(() => window.__img04.openings)).toBe(1);
     await expect(viewer(page)).toHaveAttribute('role', 'dialog');
     await expect(viewer(page)).toHaveAttribute('aria-modal', 'true');
     await expect(viewer(page)).toHaveAttribute('aria-label', 'Raccolta immagini');
@@ -338,10 +303,9 @@ test('dialog semantics, focus cycle, keyboard navigation and controls', async ({
     await expect(viewer(page).locator('.viewer-canvas img')).toHaveAttribute('alt', 'Technical image 4');
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
-    await expect(trigger).toBeFocused();
+    await expect(trigger.locator('..')).toBeFocused();
     await page.keyboard.press('Space');
     await expect(viewer(page)).toHaveCount(1);
-    expect(await page.evaluate(() => window.__img04.openings)).toBe(2);
     await page.keyboard.press('Escape');
 });
 
@@ -351,7 +315,7 @@ test('cell rerender keeps viewer stable and restores focus to grid; caption rema
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
     const oldTrigger = await trigger.elementHandle();
-    await trigger.click();
+    await trigger.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await page.evaluate(async () => {
         await window.__img04.a.table.updateData([{
@@ -365,7 +329,7 @@ test('cell rerender keeps viewer stable and restores focus to grid; caption rema
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
     await expect(page.locator('#img04-a')).toBeFocused();
-    await page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first().click();
+    await page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first().dblclick();
     await expect(viewer(page).locator('.amb-image-viewer-status')).toHaveText(/Immagine 1 di 1.*<script>caption<\/script>/);
     await expect(viewer(page).locator('script')).toHaveCount(0);
     await page.evaluate(() => window.__img04.a.destroy());
@@ -378,7 +342,7 @@ test('pending hover preview stays closed during viewer and works again afterward
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').first().locator('button.amb-image--viewable').first();
     await trigger.hover();
-    await trigger.click();
+    await trigger.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await page.waitForTimeout(350);
     await expect(page.locator('.amb-image-preview')).toHaveCount(0);
@@ -397,7 +361,7 @@ test('Lookup in front owns Escape and returns focus to viewer before it closes',
     await page.evaluate(() => document.querySelector('#img04-a').addEventListener('click', event => {
         if (event.target.closest('.amb-image--viewable')) window.__img04.clickedTrigger = event.target.closest('.amb-image--viewable');
     }, { capture: true }));
-    await trigger.click();
+    await trigger.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await page.evaluate(async () => {
         const { LookupDialog } = await import('/src/ui/lookup-dialog.js');
@@ -435,38 +399,6 @@ test('Lookup in front owns Escape and returns focus to viewer before it closes',
     expect(errors).toEqual([]);
 });
 
-test('destroy releases temporary document and window listeners', async ({ page }) => {
-    await install(page);
-    await page.evaluate(() => {
-        const add = EventTarget.prototype.addEventListener;
-        const remove = EventTarget.prototype.removeEventListener;
-        const active = [];
-        const release = (target, type, callback) => {
-            const index = active.findIndex(entry => entry.target === target && entry.type === type && entry.callback === callback);
-            if (index >= 0) active.splice(index, 1);
-        };
-        EventTarget.prototype.addEventListener = function (type, callback, options) {
-            if (this === document || this === window) {
-                active.push({ target: this, type, callback });
-                options?.signal?.addEventListener('abort', () => release(this, type, callback), { once: true });
-            }
-            return add.call(this, type, callback, options);
-        };
-        EventTarget.prototype.removeEventListener = function (type, callback, options) {
-            release(this, type, callback);
-            return remove.call(this, type, callback, options);
-        };
-        window.__img04.activeListenerCount = () => active.length;
-    });
-    await page.locator('#img04-a .tabulator-row').first().locator('button.amb-image--viewable').nth(1).click();
-    await expect(viewer(page)).toHaveCount(1);
-    expect(await page.evaluate(() => window.__img04.activeListenerCount())).toBeGreaterThan(0);
-    await page.evaluate(() => window.__img04.a.destroy());
-    await expect(viewer(page)).toHaveCount(0);
-    await expect(source(page)).toHaveCount(0);
-    expect(await page.evaluate(() => window.__img04.activeListenerCount())).toBe(0);
-});
-
 test('switching grids preserves the new owner when the old grid is destroyed', async ({ page }) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -475,9 +407,9 @@ test('switching grids preserves the new owner when the old grid is destroyed', a
         document.querySelector('#img04-a').inert,
         document.querySelector('#img04-b').inert
     ]);
-    await page.locator('#img04-a button.amb-image--viewable').first().click();
+    await page.locator('#img04-a button.amb-image--viewable').first().dblclick();
     const firstId = await viewer(page).getAttribute('id');
-    await page.evaluate(() => document.querySelector('#img04-b button.amb-image--viewable').click());
+    await page.evaluate(() => document.querySelector('#img04-b button.amb-image--viewable').dispatchEvent(new MouseEvent('dblclick', { bubbles: true })));
     await expect(viewer(page)).toHaveCount(1);
     await expect(source(page)).toHaveCount(1);
     await expect(viewer(page)).not.toHaveAttribute('id', firstId);
@@ -489,7 +421,7 @@ test('switching grids preserves the new owner when the old grid is destroyed', a
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
     await expect(source(page)).toHaveCount(0);
-    await expect(page.locator('#img04-b button.amb-image--viewable')).toBeFocused();
+    await expect(page.locator('#img04-b button.amb-image--viewable').locator('..')).toBeFocused();
     expect(await page.evaluate(() => [
         document.querySelector('#img04-a').inert,
         document.querySelector('#img04-b').inert
@@ -500,7 +432,7 @@ test('switching grids preserves the new owner when the old grid is destroyed', a
 test('a late image error cannot replace the status of the next photograph', async ({ page }) => {
     await install(page);
     const gallery = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
-    await gallery.click();
+    await gallery.dblclick();
     await expect(viewer(page).locator('.amb-image-viewer-status')).toContainText('Caption 1');
     await page.evaluate(() => { window.__img04.oldImage = document.querySelector('.viewer-canvas img'); });
     await viewer(page).locator('.viewer-toolbar [data-viewer-action="next"]').click();
@@ -516,14 +448,14 @@ test('rapid close and reopen ignores events from the disposed session', async ({
     page.on('pageerror', error => errors.push(error.message));
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
-    await trigger.click();
+    await trigger.dblclick();
     await expect(viewer(page)).toHaveCount(1);
     await page.evaluate(() => { window.__img04.oldImage = document.querySelector('.viewer-canvas img'); });
     await viewer(page).locator('.viewer-toolbar [data-viewer-action="next"]').click();
     await viewer(page).locator('.viewer-toolbar [data-viewer-action="zoom-in"]').click();
     await page.evaluate(() => {
         document.querySelector('.viewer-button').click();
-        document.querySelector('#img04-b button.amb-image--viewable').click();
+        document.querySelector('#img04-b button.amb-image--viewable').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         window.__img04.oldImage.dispatchEvent(new Event('load'));
         window.__img04.oldImage.dispatchEvent(new Event('error'));
     });

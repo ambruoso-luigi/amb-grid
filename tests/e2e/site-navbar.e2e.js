@@ -21,7 +21,7 @@ test('keeps the shared navbar sticky and remounts the React demo', async ({ page
     await expect(page.locator('.demo-hero__brand .demo-brand__logo')).toBeVisible();
     await navbar.getByRole('button', { name: /Demo/ }).click();
     await expect(navbar.getByRole('button', { name: /Demo/ })).toHaveAttribute('aria-expanded', 'true');
-    await page.locator('.demo-hero').click();
+    await page.locator('.demo-hero h1').click();
     await expect(navbar.getByRole('button', { name: /Demo/ })).toHaveAttribute('aria-expanded', 'false');
     await navbar.getByRole('button', { name: /Demo/ }).click();
     await page.keyboard.press('Escape');

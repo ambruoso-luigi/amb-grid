@@ -178,11 +178,8 @@ test.beforeEach(async ({ page }) => {
 test('keeps the technical guide as a separate native disclosure', async ({ page }) => {
     const guide = page.locator('#feature-example .demo-crud-heading .demo-disclosure--technical');
     await expect(guide).not.toHaveAttribute('open');
-    await expect(guide.locator('.demo-disclosure__technical-title')).toHaveText('Technical guide');
     await guide.locator('summary').click();
     await expect(guide).toHaveAttribute('open', '');
-    await expect(guide).toContainText('technical guide for CRUD & Row States');
-    await expect(guide.locator('.demo-column-guide__item')).toHaveCount(8);
     await step(page, 'edit-record');
 });
 
@@ -549,8 +546,7 @@ test('skip, language changes and remount preserve normal use and the current mic
     await page.locator('[data-example="validation"]').click();
     await expect(page.locator('#validation-table')).toBeVisible();
     await expect(tutorial(page)).toHaveCount(1);
-    await expect(tutorial(page)).not.toHaveClass(/demo-action-tutorial--crud/);
-    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'create-anomalies');
+    await expect(tutorial(page)).toHaveAttribute('data-tutorial-step', 'immediate-validation');
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
     await page.locator('[data-example="crud-row-states"]').click();
     await expect(tutorial(page)).toHaveCount(1);

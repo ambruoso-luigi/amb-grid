@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 const firstCell = (page, tableSelector, field) => page
     .locator(`${tableSelector} .tabulator-row`)
