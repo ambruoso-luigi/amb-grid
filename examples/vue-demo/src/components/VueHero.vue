@@ -6,13 +6,13 @@ const props = defineProps<{ language: 'it' | 'en' }>();
 const copy = {
   it: {
     integration: 'Integrazione Vue',
-    description: 'Un catalogo interattivo di antiquariato e design, con fotografie, schede descrittive e collezioni da esplorare.',
+    description: 'Un catalogo interattivo di antiquariato e design, con gallerie fotografiche, anteprime e visualizzatore immagini con zoom.',
     videoLabel: 'Demo AMB Grid',
     videoOpen: 'Apri la demo video di AMB Grid su YouTube (nuova scheda)'
   },
   en: {
     integration: 'Vue integration',
-    description: 'An interactive antiques and design catalog featuring photographs, detailed descriptions, and collections to explore.',
+    description: 'An interactive antiques and design catalog with photo galleries, previews, and an image viewer with zoom.',
     videoLabel: 'AMB Grid Demo',
     videoOpen: 'Open the AMB Grid video demo on YouTube (new tab)'
   }

@@ -7,7 +7,7 @@ type Language = 'it' | 'en';
 const copy = {
   it: {
     integration: 'INTEGRAZIONE REACT',
-    title: 'Gestionale inventario',
+    title: 'Gestione inventario',
     description: 'Una demo reale con lifecycle React, componenti TypeScript e UI moderna per la gestione di inventario con AMB Grid.',
     videoLabel: 'Demo React',
     videoOpen: 'Apri Demo React su YouTube',
