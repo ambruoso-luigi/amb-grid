@@ -27,6 +27,12 @@ const imageRows = locale => imagePreviewViewerCatalog.collections.map(collection
 }));
 
 const imageFormatter = () => AMB.formatters.image({ width: 152, height: 96, fit: 'contain', preview: true, viewer: true });
+const descriptionFormatter = cell => {
+    const note = document.createElement('span');
+    note.className = 'demo-image-description-note';
+    note.textContent = cell.getValue() ?? '';
+    return note;
+};
 
 export default function imagePreviewViewer(app) {
     app.innerHTML = `
@@ -114,7 +120,7 @@ export default function imagePreviewViewer(app) {
             { title: translate(currentLocale, 'column.id'), field: 'id', minWidth: 78, widthGrow: 0.55, cssClass: 'demo-cell--passive' },
             { title: translate(currentLocale, 'column.subject'), field: 'subject', minWidth: 112, widthGrow: 1.15, cssClass: 'demo-cell--passive' },
             { title: translate(currentLocale, 'column.images'), field: 'images', minWidth: 180, widthGrow: 1.2, formatter: imageFormatter() },
-            { title: translate(currentLocale, 'column.description'), field: 'description', minWidth: 175, widthGrow: 1.65, cssClass: 'demo-cell--passive' }
+            { title: translate(currentLocale, 'column.description'), field: 'description', minWidth: 175, widthGrow: 1.65, formatter: descriptionFormatter, variableHeight: true, cssClass: 'demo-cell--passive' }
         ]
     });
     commandGuideToolbar.mount();

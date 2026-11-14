@@ -262,8 +262,8 @@ export default function multifieldLookup(app) {
         steps: [
             {
                 id: 'search-by-postal-code', actionId: 'dialog-mapping-complete', instructionKey: 'examples.multifieldLookup.tutorialOpen',
-                isComplete: ({ id, field, searchedPostalCode, selected, before, after, report, dialogClosed }) => id === 1
-                    && field === 'municipality' && searchedPostalCode === selected?.postalCode && dialogClosed
+                isComplete: ({ id, field, selected, before, after, report, dialogClosed }) => id === 1
+                    && field === 'municipality' && dialogClosed
                     && hasCompleteMapping(selected, before, after, report)
             },
             {
@@ -325,21 +325,13 @@ export default function multifieldLookup(app) {
             edit.openedDialog = true;
             if (edit.id === 2) inlineCandidate = null;
         }
-        activeDialog = edit?.id === 1 && edit.field === 'municipality' && edit.searchClicked
+        const opened = Boolean(municipalityDialog.overlay && !municipalityDialog.overlay.hidden);
+        activeDialog = opened && edit?.id === 1 && edit.field === 'municipality'
             && context?.stepId === 'search-by-postal-code'
             ? { edit, before: { ...edit.cell.getRow().getData() }, selected: null, record: null,
-                searchedPostalCode: null, closed: false, context }
+                closed: false, context }
             : null;
-        const opened = Boolean(municipalityDialog.overlay && !municipalityDialog.overlay.hidden);
         const dialog = activeDialog;
-        if (opened && dialog) {
-            municipalityDialog.search.addEventListener('input', () => {
-                const query = municipalityDialog.search?.value.trim() || '';
-                dialog.searchedPostalCode = /^\d{5}$/.test(query)
-                    && municipalityDialog.filteredData.some(record => record.postalCode === query) ? query : null;
-                syncTutorialHighlight();
-            });
-        }
         if (opened && dialog && !tutorialState.hidden) {
             dialogHighlightObserver?.disconnect();
             dialogHighlightObserver = new MutationObserver(syncTutorialHighlight);
@@ -524,16 +516,12 @@ export default function multifieldLookup(app) {
     const handleEditStart = cell => {
         activeEdit = { cell, id: cell.getRow().getData().id, field: cell.getField(),
             before: { ...cell.getRow().getData() }, context: tutorial.capture(), typedValue: '',
-            openedDialog: false, searchClicked: false };
+            openedDialog: false };
         globalThis.requestAnimationFrame(syncTutorialHighlight);
     };
     const handleEditorInput = event => {
         if (activeEdit?.cell.getElement().contains(event.target)
             && event.target.matches('.amb-lookup-editor__input')) activeEdit.typedValue = event.target.value.trim();
-    };
-    const handleSearchClick = event => {
-        if (activeEdit?.cell.getElement().contains(event.target)
-            && event.target.closest('.amb-lookup-editor__button')) activeEdit.searchClicked = true;
     };
     const handleEditCancelled = cell => {
         if (inlineCandidate?.edit.cell === cell) {
@@ -554,11 +542,11 @@ export default function multifieldLookup(app) {
     };
     const completeDialogCandidate = () => {
         const dialog = activeDialog;
-        if (!dialog?.closed || !dialog.record || !dialog.searchedPostalCode) return;
+        if (!dialog?.closed || !dialog.record) return;
         const after = { ...dialog.edit.cell.getRow().getData() };
         const report = grid.getStateReport().rows.find(row => row.id === dialog.edit.id);
         if (tutorial.notify('dialog-mapping-complete', {
-            id: dialog.edit.id, field: dialog.edit.field, searchedPostalCode: dialog.searchedPostalCode,
+            id: dialog.edit.id, field: dialog.edit.field,
             selected: dialog.record, before: dialog.before, after, report, dialogClosed: dialog.closed
         }, dialog.context)) activeDialog = null;
     };
@@ -593,7 +581,6 @@ export default function multifieldLookup(app) {
     grid.table.on('scrollHorizontal', syncTutorialHighlight);
     grid.table.on('dataFiltered', syncTutorialHighlight);
     document.addEventListener('input', handleEditorInput, true);
-    document.addEventListener('click', handleSearchClick, true);
     window.addEventListener('amb-demo-language-change', syncTutorialLaunchLabel);
     syncTutorialHighlight();
 
@@ -682,7 +669,7 @@ export default function multifieldLookup(app) {
             const selectedRow = municipalityDialog.table?.querySelector(
                 `.amb-lookup-dialog__row[data-row-index="${municipalityDialog.selectedIndex}"]`
             );
-            target = activeDialog?.searchedPostalCode && selectedRow
+            target = selectedRow
                 ? municipalityDialog.selectButton : municipalityDialog.search;
         } else if (stepId === 'inline-autocomplete' && activeEdit?.id === 2
             && activeEdit.field === 'municipality') {
@@ -778,7 +765,6 @@ export default function multifieldLookup(app) {
             grid.table.off('scrollHorizontal', syncTutorialHighlight);
             grid.table.off('dataFiltered', syncTutorialHighlight);
             document.removeEventListener('input', handleEditorInput, true);
-            document.removeEventListener('click', handleSearchClick, true);
             reportDialog.destroy();
             stopDecoratingLookupButtons();
 
