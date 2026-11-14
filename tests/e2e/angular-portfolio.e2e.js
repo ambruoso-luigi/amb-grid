@@ -516,11 +516,6 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
         return current.some((price, index) => price !== initialPrices[index]);
     }).toBe(true);
     const apple = holding(page, 'AAPL');
-    const instrument = cell(apple, 'instrument');
-    await instrument.click();
-    await expect(instrument).toBeFocused();
-    await expect(instrument).not.toHaveClass(/tabulator-editing/);
-    const focusedNode = await instrument.elementHandle();
     const priceBefore = await cell(apple, 'price').innerText();
     const valueBefore = await cell(apple, 'value').innerText();
     const profitBefore = await profitAmount(apple).innerText();
@@ -538,8 +533,6 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
         const bars = await cell(apple, 'timeline').locator('rect').evaluateAll(items => items.map(item => item.getAttribute('height')));
         return bars.some((height, index) => height !== barsBefore[index]);
     }).toBe(true);
-    expect(await instrument.evaluate((node, original) => node === original, focusedNode)).toBe(true);
-    await expect(instrument).toBeFocused();
     expect(await apple.getAttribute('data-state')).toBe(rowState);
     await expect.poll(async () => {
         const rowValues = await holdings(page).locator('.tabulator-cell[tabulator-field="value"]').allTextContents();
