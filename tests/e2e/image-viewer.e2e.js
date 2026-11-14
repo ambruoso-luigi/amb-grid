@@ -224,6 +224,7 @@ test('viewer option, preview coexistence, multiple grids and destroy cleanup', a
 test('repeated opening and removed trigger restore focus to the owning grid', async ({ page }) => {
     await install(page);
     const trigger = page.locator('#img04-a .tabulator-row').first().locator('button.amb-image--viewable').first();
+    const cell = page.locator('#img04-a .tabulator-row').first().locator('[tabulator-field="images"]');
     for (let attempt = 0; attempt < 3; attempt += 1) {
         await trigger.dblclick();
         await expect(viewer(page)).toHaveCount(1);
@@ -236,7 +237,7 @@ test('repeated opening and removed trigger restore focus to the owning grid', as
     await trigger.evaluate(element => element.remove());
     await page.keyboard.press('Escape');
     await expect(viewer(page)).toHaveCount(0);
-    await expect(page.locator('#img04-a')).toBeFocused();
+    await expect(cell).toBeFocused();
 });
 
 test('dialog semantics, focus cycle, keyboard navigation and controls', async ({ page }) => {

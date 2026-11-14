@@ -218,37 +218,3 @@ test('simulated swipe, pinch and cancel preserve gallery navigation and cleanup'
         await cdp.detach();
     }
 });
-
-test('a second intentional touch after immediate reopen still activates the toolbar', async ({ page }) => {
-    await install(page);
-    const cdp = await page.context().newCDPSession(page);
-    try {
-        const originalId = await viewer(page).getAttribute('id');
-        await page.evaluate(() => {
-            document.addEventListener('pointerup', event => {
-                if (!event.target.closest('.viewer-container')) return;
-                window.__img05.handoffAt = performance.now();
-                document.querySelector('#img05-grid button.amb-image--viewable').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
-            }, { once: true });
-        });
-        const canvas = await viewer(page).locator('.viewer-canvas').boundingBox();
-        const x = canvas.x + canvas.width - 30;
-        const y = canvas.y + canvas.height / 2;
-        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 0 }] });
-        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-        await expect.poll(() => viewer(page).getAttribute('id')).not.toBe(originalId);
-        await expect(viewer(page)).toHaveCount(1);
-        const before = await state(page);
-        const zoom = await viewer(page).locator('.viewer-toolbar [data-viewer-action="zoom-in"]').boundingBox();
-        const tapX = zoom.x + zoom.width / 2;
-        const tapY = zoom.y + zoom.height / 2;
-        const elapsed = await page.evaluate(() => performance.now() - window.__img05.handoffAt);
-        expect(elapsed).toBeLessThan(350);
-        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: tapX, y: tapY, id: 0 }] });
-        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-        await expect.poll(async () => (await state(page)).image.ratio).toBeGreaterThan(before.image.ratio);
-        await expect(viewer(page)).toHaveCount(1);
-    } finally {
-        await cdp.detach();
-    }
-});

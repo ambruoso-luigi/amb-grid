@@ -517,8 +517,9 @@ test('Angular portfolio renders fixed holdings, integrated totals, guide and liv
     }).toBe(true);
     const apple = holding(page, 'AAPL');
     const instrument = cell(apple, 'instrument');
-    await instrument.focus();
+    await instrument.click();
     await expect(instrument).toBeFocused();
+    await expect(instrument).not.toHaveClass(/tabulator-editing/);
     const focusedNode = await instrument.elementHandle();
     const priceBefore = await cell(apple, 'price').innerText();
     const valueBefore = await cell(apple, 'value').innerText();
