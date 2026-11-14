@@ -36,21 +36,20 @@ describe('Public column calculations demo', () => {
         const copy = read('src/demo/example-copy.js');
 
         expect(source).toContain('data-i18n-emphasis="examples.columnCalculations.introEmphasis"');
-        expect(source).toContain("descriptionEmphasisKey: 'examples.columnCalculations.detail1Emphasis'");
-        expect(source).toContain("descriptionEmphasisKey: 'examples.columnCalculations.productCalcEmphasis'");
-        expect(source).toContain("badge: 'PRINT'");
+        expect(source).toContain("label: 'PRINT'");
         expect(source).toContain('topCalc: countPrintProducts');
-        expect(source).toContain('Example of a custom calculation: a developer-defined function counts product names containing “print”.');
-        expect(source).toContain('Each calculation receives the values from its own column. In addition to built-in aggregates, the developer can provide a custom calculation function.');
-
-        [
-            'examples.columnCalculations.introEmphasis',
-            'examples.columnCalculations.detail1Emphasis',
-            'examples.columnCalculations.productCalcEmphasis'
-        ].forEach(key => {
+        for (const calc of ['count', 'unique', 'sum', 'avg', 'min', 'max']) {
+            expect(source).toContain(`topCalc: '${calc}'`);
+        }
+        expect(source).toContain('Deleted rows are excluded from aggregates until restored.');
+        const keys = ['examples.columnCalculations.introEmphasis'];
+        for (let i = 1; i <= 5; i++) {
+            keys.push(`examples.columnCalculations.point${i}Title`, `examples.columnCalculations.detail${i}`);
+        }
+        keys.forEach(key => {
             expect(copy.match(new RegExp(`'${key.replace(/\./g, '\\.')}':`, 'g'))).toHaveLength(2);
         });
         expect(copy).toContain('Column calculations shows built-in aggregates and custom calculations defined by the developer, updated directly in their respective columns when the data changes.');
-        expect(copy).toContain('Ogni calcolo riceve i valori della propria colonna. Oltre agli aggregati integrati, lo sviluppatore può fornire una funzione di calcolo personalizzata.');
+        expect(copy).toContain('Rollback restores the row and includes it in the calculations again.');
     });
 });

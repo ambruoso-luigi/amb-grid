@@ -123,7 +123,7 @@ describe('demo site navigation', () => {
         expect(guide).toContain('class="demo-guide-hero__brand"');
         expect(guide).toContain("renderDemoBrand({ href: '#top' })");
         expect(guide).not.toContain('demo-topbar');
-        expect(main).toContain("root.innerHTML = '<div id=\"react-demo-root\"></div>'");
+        expect(main).toContain('<div id="react-demo-root"></div>${renderDemoFooter()}');
         expect(brand).toContain("new URL('./amb-grid-logo.png', import.meta.url).href");
         expect(brand).toContain('class="demo-brand__logo"');
         expect(brand).toContain('alt="AMB Grid"');
@@ -241,7 +241,7 @@ describe('demo site navigation', () => {
         expect(guide).toContain('id="javascript-demo"');
     });
 
-    test('uses a video preview and one feature-examples CTA in the home hero', () => {
+    test('uses a video preview and two anchored CTAs in the home hero', () => {
         const main = read('src/demo/main.js');
         const css = read('src/demo/demo.css');
 
@@ -256,12 +256,14 @@ describe('demo site navigation', () => {
         expect(main).not.toContain('demo-secondary-home-link');
         expect(main.match(/href="#feature-examples"/g)).toHaveLength(1);
         expect(main).toContain('class="demo-button demo-button--primary" href="#feature-examples"');
+        expect(main).toContain('class="demo-button demo-button--flow" href="#application-flow"');
+        expect(main).toContain('id="application-flow"');
         expect(main).not.toContain('data-i18n="hero.primary"');
         expect(main).not.toContain('demo-hero__metrics');
         expect(main).not.toContain("'hero.statState'");
         expect(main).not.toContain("'hero.statPayload'");
         expect(main).not.toContain("'hero.statIntegration'");
-        expect(main).toContain("'hero.description': 'AMB Grid coordinates row states, validation, lookups, rollback, saving, and backend-ready payloads without forcing a framework.'");
+        expect(main).toContain("'hero.description': 'Editing, validation, and change management in one workflow, with backend-ready payloads. Framework-agnostic.'");
         expect(main).not.toContain("'hero.description': 'AMB Grid adds a framework-agnostic CRUD layer on top of Tabulator");
         expect(read('src/demo/getting-started-javascript.js')).not.toMatch(/Tabulator|Awesomplete|vanilla-datepicker/);
         expect(main).not.toContain('class="demo-hero-visual"');
@@ -406,7 +408,7 @@ describe('demo site navigation', () => {
         });
     });
 
-    test('keeps public example disclosures bilingual without a redundant multifield introduction', () => {
+    test('keeps public example disclosures and introductions bilingual', () => {
         const copy = read('src/demo/example-copy.js');
         const examples = [
             ['crud-row-states', 'crudRowStates'],
@@ -424,11 +426,7 @@ describe('demo site navigation', () => {
             const i18nPrefix = key === 'imagePreviewViewer' ? '${prefix}' : `examples.${key}`;
 
             expect(source).toContain(`data-i18n="${i18nPrefix}.title"`);
-            if (key === 'multifieldLookup') {
-                expect(source).not.toContain(`data-i18n="${i18nPrefix}.intro"`);
-            } else {
-                expect(source).toContain(`data-i18n="${i18nPrefix}.intro"`);
-            }
+            expect(source).toContain(`data-i18n="${i18nPrefix}.intro"`);
             expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
             expect(source).toContain(key === 'imagePreviewViewer'
                 ? 'summaryKey: `${prefix}.detailsTitle`'
@@ -472,7 +470,8 @@ describe('demo site navigation', () => {
         expect(parsers).toContain("title: 'Parsed value'");
         expect(parsers).toContain("title: 'Description'");
         expect(parsers.match(/editable: false/g)).toHaveLength(3);
-        expect(parsers).toContain('editor: parserInputEditor');
+        expect(parsers).toContain('editor: textParserEditor');
+        expect(parsers).toContain('cell.setValue(!cell.getValue())');
 
         const calculations = read('src/demo/column-calculations.js');
         expect(calculations).toContain('topCalc');
@@ -657,9 +656,9 @@ describe('demo site navigation', () => {
         const validation = read('src/demo/validation.js');
         const css = read('src/demo/demo.css');
         const validationGridRule = css.match(/\.demo-validation-grid\s*\{([\s\S]*?)\n\}/)?.[1] || '';
-        const validationRowRule = css.match(/\.demo-panel \.demo-validation-grid \.tabulator-row\s*\{([\s\S]*?)\n\}/)?.[1] || '';
-        const validationCellRule = css.match(/\.demo-panel \.demo-validation-grid \.tabulator-cell\s*\{([\s\S]*?)\n\}/)?.[1] || '';
-        const validationActionCellRule = css.match(/\.demo-panel\s+\.demo-validation-grid\s+\.tabulator-cell:has\(\.amb-row-actions\)\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+        const validationRowRule = css.match(/\.demo-panel :is\(\.demo-validation-grid, \.demo-multifield-grid\) \.tabulator-row\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+        const validationCellRule = css.match(/\.demo-panel :is\(\.demo-validation-grid, \.demo-multifield-grid\) \.tabulator-cell\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+        const validationActionCellRule = css.match(/\.demo-panel :is\(\.demo-validation-grid, \.demo-multifield-grid\) \.tabulator-cell:has\(\.amb-row-actions\)\s*\{([\s\S]*?)\n\}/)?.[1] || '';
         const featureSources = [
             'crud-row-states',
             'validation',
@@ -770,16 +769,17 @@ describe('demo site navigation', () => {
 
         expect(css).toContain('width: min(100% - 12px, 1824px);');
         expect(main).toContain("'cycle.keyboardTitle': 'Editing orientato alla tastiera'");
-        expect(main).toContain("'cycle.keyboardText': 'Navigazione, editing e controlli gestibili interamente da tastiera, anche tra righe, pagine ed editor complessi.'");
+        expect(main).toContain("'cycle.keyboardText': 'Modifica e naviga tra le celle come in un foglio di calcolo, utilizzando tastiera, editor dedicati e controlli interattivi.'");
         expect(main).toContain("'cycle.keyboardTitle': 'Keyboard-first editing'");
-        expect(main).toContain("'cycle.keyboardText': 'Navigation, editing and controls can be managed entirely from the keyboard, across rows, pages and complex editors.'");
+        expect(main).toContain("'cycle.keyboardText': 'Edit and navigate cells like a spreadsheet, using the keyboard, dedicated editors, and interactive controls.'");
         expect(main).toContain('data-i18n="cycle.keyboardTitle"');
         expect(main).toContain('data-i18n="cycle.keyboardText"');
         expect(main).toContain('const renderShell = selectedId => {\n    activeCycleDetail = null;');
-        expect(main).toContain("openCycleDetail('edit');");
+        expect(main).toContain("openCycleDetail('keyboard');");
         expect(main).toContain("card.setAttribute('aria-selected', String(isActive));");
         expect(main).toContain('panel.dataset.cycleAccent = id;');
-        expect(main).toContain('data-cycle-accent="edit"');
+        expect(main).toContain('data-cycle-accent="keyboard"');
+        expect(main.indexOf('data-cycle-detail="keyboard"')).toBeLessThan(main.indexOf('data-cycle-detail="edit"'));
         expect(css).toContain('.demo-flow-card.is-active');
         expect(css).toContain('caret-color: transparent;');
         expect(main).toContain("demoIcon('arrowRight', { className: 'demo-flow-card__connector-icon', size: 20 })");
@@ -787,9 +787,9 @@ describe('demo site navigation', () => {
         expect(main).toContain("'cycle.detail.edit.group2Title': 'Stato automatico della riga'");
         expect(main).toContain("'cycle.detail.edit.group4Title': 'Editing nel contesto'");
         expect(css).toContain('@media (prefers-reduced-motion: reduce)');
-        expect(main).toContain("'cycle.detail.keyboard.group1Title': 'Navigazione continua'");
+        expect(main).toContain("'cycle.detail.keyboard.group1Title': 'Navigazione tra le celle'");
         expect(main).toContain("'cycle.detail.keyboard.group3Title': 'Controlli e azioni'");
-        expect(main).toContain("'cycle.detail.keyboard.group4Title': 'Editor e dialog'");
+        expect(main).toContain("'cycle.detail.keyboard.group4Title': 'Immagini e visualizzatore'");
         expect(css).toContain('.demo-cycle-detail[data-cycle-accent="keyboard"] .demo-cycle-detail__groups h4');
         expect(main).toContain("'cycle.validateText': 'Validazione, errori contestuali e parser mantengono separate qualità del dato e forma del payload.'");
         expect(main).toContain("'cycle.detail.validate.title': 'Qualità del dato e forma del payload restano separate'");

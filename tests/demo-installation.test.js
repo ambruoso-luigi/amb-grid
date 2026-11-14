@@ -10,7 +10,9 @@ describe('installation page', () => {
         const css = read('src/demo/installation.css');
         expect(html).toContain('/src/demo/installation.js');
         expect(source).toContain("mountSiteNavbar(document.querySelector('#site-navbar')");
-        expect(source).toContain('renderDemoFooter({');
+        expect(source).toContain("import { mountDemoFooter } from './demo-footer.js'");
+        expect(source).toContain('root.after(footerHost)');
+        expect(source.match(/mountDemoFooter\(footerHost\)/g)).toHaveLength(1);
         expect(source).toContain("renderDemoBrand({ href: '/#top' })");
         expect(source).toContain("hero: 'Installa AMB Grid'");
         expect(source).toContain("hero: 'Install AMB Grid'");
@@ -69,7 +71,7 @@ describe('installation page', () => {
         expect(source.indexOf('id="npm"')).toBeLessThan(source.indexOf('id="standalone"'));
         expect(source.indexOf('id="standalone"')).toBeLessThan(source.indexOf('class="installation-verification"'));
         expect(source.indexOf('class="installation-verification"')).toBeLessThan(source.indexOf('class="installation-next"'));
-        expect(source.indexOf('class="installation-next"')).toBeLessThan(source.indexOf('${renderDemoFooter({'));
+        expect(source.indexOf('class="installation-next"')).toBeLessThan(source.indexOf('mountDemoFooter(footerHost)'));
         expect(source).toContain('AMB Grid è indipendente dal framework utilizzato.');
         expect(source).toContain('AMB Grid is framework-agnostic.');
         expect(source).toContain('Dopo aver caricato AMB Grid');

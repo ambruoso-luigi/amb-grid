@@ -136,8 +136,9 @@ describe('Public demo column guides', () => {
         expect(validation).toContain("regex: /^[A-Z]{3}[0-9]{3}$/");
         expect(validation).toContain("validator: AMB.validators.custom(t('fileNameInvalid'), validateFileName)");
         expect(multifield).toContain("badge: 'MASTER'");
-        expect(multifield).toContain('Editable master field: type for autocomplete or use the search button to open the complete lookup.');
-        expect(multifield).toContain('Derived field, hidden in the lookup and filled after selection.');
+        expect(multifield).toContain('Editable master field with autocomplete and a search dialog. Selection updates all related fields.');
+        expect(multifield).toContain('Province of the selected municipality, filled automatically and readonly.');
+        expect(multifield).toContain('Each selection applies values from the same record');
         expect(multifieldConfig).toContain("{ field: 'cadastralCode', title: 'Cadastral Code', visible: false }");
         expect(fullDemo).toContain('matching PRD-A001 format and unique ignoring case.');
         expect(fullDemo).toContain('Required integer with a minimum value of zero.');

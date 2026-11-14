@@ -360,7 +360,7 @@ describe('demo action tutorial controller', () => {
         expect(document.activeElement).toBeNull();
     });
 
-    test('supports two image steps and a dedicated completion message without changing the shared defaults', () => {
+    test('supports three image steps and a dedicated completion message without changing the shared defaults', () => {
         const windowMock = new EventTarget();
         vi.stubGlobal('window', windowMock);
         vi.stubGlobal('document', { createElement: tag => new ElementMock(tag), documentElement: { lang: 'it' }, activeElement: null });
@@ -371,24 +371,31 @@ describe('demo action tutorial controller', () => {
             titleKey: 'examples.imagePreviewViewer.tutorialTitle',
             completedKey: 'examples.imagePreviewViewer.tutorialCompleted',
             steps: [
-                { id: 'explore-gallery', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialGallery', isComplete: payload => payload.galleryId === 'CITY-001' && payload.tokyoAfterNewYork === true },
-                { id: 'explore-portrait', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialPortrait', isComplete: payload => payload.galleryId === 'SEA-001' && payload.fiordoViewed === true && payload.focusRestored === true }
+                { id: 'navigate-city', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialGallery', isComplete: payload => payload.galleryId === 'CITY-001' && payload.tokyoAfterNewYork === true },
+                { id: 'zoom-seaside', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialZoom', isComplete: payload => payload.galleryId === 'SEA-001' && payload.zoomed === true },
+                { id: 'natural-size-retro', actionId: 'viewer-closed', instructionKey: 'examples.imagePreviewViewer.tutorialNaturalSize', isComplete: payload => payload.galleryId === 'RETRO-001' && payload.naturalSize === true }
             ]
         });
         controllers.push(controller);
         const root = host.children[0];
         const instruction = find(root, element => element.getAttribute('aria-live') === 'polite');
-        expect(find(root, element => element.tagName === 'ol').children).toHaveLength(2);
-        expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('1 di 2');
+        expect(find(root, element => element.tagName === 'ol').children).toHaveLength(3);
+        expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('1 di 3');
+        expect(controller.notify('unrelated', {}, controller.capture())).toBe(false);
         expect(controller.notify('viewer-closed', { galleryId: 'CITY-001', tokyoAfterNewYork: false }, controller.capture())).toBe(false);
         expect(controller.notify('viewer-closed', { galleryId: 'CITY-001', tokyoAfterNewYork: true }, controller.capture())).toBe(true);
-        expect(root.getAttribute('data-tutorial-step')).toBe('explore-portrait');
+        expect(root.getAttribute('data-tutorial-step')).toBe('zoom-seaside');
         controller.setLocale('en');
         expect(instruction.textContent).toContain('Italian seaside and holidays');
-        expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('2 of 2');
-        expect(controller.notify('viewer-closed', { galleryId: 'SEA-001', fiordoViewed: true, focusRestored: false }, controller.capture())).toBe(false);
-        expect(controller.notify('viewer-closed', { galleryId: 'SEA-001', fiordoViewed: true, focusRestored: true }, controller.capture())).toBe(true);
-        expect(instruction.textContent).toBe('Tutorial complete. You explored New York and Tokyo and the vertical photograph of Fiordo di Furore.');
+        expect(find(root, element => element.className === 'demo-action-tutorial__counter').textContent).toBe('2 of 3');
+        const context = controller.capture();
+        expect(controller.notify('viewer-closed', { galleryId: 'SEA-001', zoomed: false }, context)).toBe(false);
+        expect(controller.notify('viewer-closed', { galleryId: 'SEA-001', zoomed: true }, context)).toBe(true);
+        expect(controller.notify('viewer-closed', { galleryId: 'RETRO-001', naturalSize: true }, context)).toBe(false);
+        expect(root.getAttribute('data-tutorial-step')).toBe('natural-size-retro');
+        expect(controller.notify('viewer-closed', { galleryId: 'RETRO-001', naturalSize: false }, controller.capture())).toBe(false);
+        expect(controller.notify('viewer-closed', { galleryId: 'RETRO-001', naturalSize: true }, controller.capture())).toBe(true);
+        expect(instruction.textContent).toBe('Tutorial complete. You navigated through the photos, zoomed in on an image, and used the 1:1 control to display it at its natural size.');
     });
 
     test('ignores unrelated, unsuccessful and missing-context notifications without caching them', () => {

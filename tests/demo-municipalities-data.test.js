@@ -105,7 +105,10 @@ describe('Italian municipalities demo dataset', () => {
         expect(demoSource).toContain("masterField: {");
         expect(demoSource).toContain("title: 'Municipality'");
         expect(demoSource).toContain("dependentColumn('province'");
-        expect(demoSource).toContain('This dataset is provided for demonstration purposes only.');
+        expect(demoSource).toContain("descriptionKey: 'examples.multifieldLookup.detail7'");
+        const copy = fs.readFileSync(new URL('../src/demo/example-copy.js', import.meta.url), 'utf8');
+        expect(copy).toContain('Non utilizzare questi dati come fonte ufficiale in applicazioni di produzione.');
+        expect(copy).toContain('Do not use this data as an official source in production applications.');
     });
 
     test('loads the tracked demo dataset through a Vite-managed module URL', () => {

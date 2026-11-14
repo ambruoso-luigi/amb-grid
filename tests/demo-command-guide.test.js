@@ -273,7 +273,7 @@ describe('demo command guide', () => {
         expect(navigation.hidden).toBe(false);
         expect(images.hidden).toBe(false);
         expect([editing, whileEditing, checkbox].every(tab => tab.hidden)).toBe(true);
-        expect(readonlyImageGuideCopy.it.tabs.advanced.groups[0].items.map(item => item.tokens.map(token => token.label)))
+        expect(readonlyImageGuideCopy.it.tabs.advanced.groups.flatMap(group => group.items.map(item => item.tokens.map(token => token.label))))
             .toContainEqual(['Esc']);
         navigation.keydown('ArrowRight');
         expect(images.getAttribute('aria-selected')).toBe('true');

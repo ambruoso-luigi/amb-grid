@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { parsers } from '../src/lib/parsers.js';
+import { parserRowCopy } from '../src/demo/example-copy.js';
 
 const source = readFileSync(
     new URL('../src/demo/parsers.js', import.meta.url),
@@ -46,13 +47,11 @@ describe('Public Parsers demo integration', () => {
         expect(parsers.timeToPayload().parse('9:05')).toBe('09:05:00');
         expect(parsers.booleanToPayload({ trueValue: 'Y', falseValue: 'N' }).parse(true)).toBe('Y');
         expect(parsers.emptyToNull().parse('   ')).toBeNull();
-        expect(parsers.custom(value => ({ High: 'H' }[value] ?? null)).parse('High')).toBe('H');
-        expect(source).toContain('const priorityParser = AMB.parsers.custom');
-        expect(source).toContain("input: 'High'");
+        expect(parsers.custom(value => String(value ?? '').trim().toUpperCase().replace(/\s+/g, '_') || null).parse('Main warehouse')).toBe('MAIN_WAREHOUSE');
+        expect(source).toContain('const descriptionParser = AMB.parsers.custom(normalizeDescription)');
+        expect(source).toContain("input: 'Main warehouse'");
         expect(source).toContain("parserKey: 'custom'");
-        expect(source).toContain("High: 'H'");
-        expect(source).toContain("Medium: 'M'");
-        expect(source).toContain("Low: 'L'");
+        expect(source).toContain("text.toUpperCase().replace(/\\s+/g, '_')");
         expect(source).not.toMatch(/AMB\.parsers\.(trim|uppercase|removeSpaces|digitsOnly|ibanToPayload|fiscalCodeToPayload)/);
     });
 
@@ -66,7 +65,8 @@ describe('Public Parsers demo integration', () => {
             source.indexOf("title: 'Description', field: 'description'")
         );
 
-        expect(inputColumn).toContain('editor: parserInputEditor');
+        expect(inputColumn).toContain('editor: textParserEditor');
+        expect(inputColumn).toContain('cellClick: (event, cell) =>');
         expect(inputColumn).toContain('cellEdited: handleInputEdited');
         expect(parsedColumn).toContain('editable: false');
         expect(parsedColumn).toContain('formatter: formatParsedValue');
@@ -78,11 +78,12 @@ describe('Public Parsers demo integration', () => {
         expect(source).not.toContain('parsedValue: String(');
     });
 
-    test('edits Boolean rows with a strict boolean editor', () => {
-        expect(source).toContain("const booleanParserEditor = AMB.editors.checkbox({");
-        expect(source).toContain('checkedValue: true');
-        expect(source).toContain('uncheckedValue: false');
-        expect(source).toContain("rowData.parserKey === 'boolean'");
+    test('toggles Boolean rows through the shared checkbox formatter and cell click', () => {
+        expect(source).toContain('const formatBooleanInput = createDemoCheckboxFormatter()');
+        expect(source).toContain("editable: cell => cell.getRow().getData().id !== 7");
+        expect(source).toContain("parserKey !== 'boolean'");
+        expect(source).toContain('cell.setValue(!cell.getValue())');
+        expect(source).not.toContain('booleanParserEditor');
         expect(source).toContain('input: true');
         expect(source).not.toContain("input: 'true'");
         expect(source).not.toContain("input: 'false'");
@@ -96,7 +97,7 @@ describe('Public Parsers demo integration', () => {
         expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
         expect(source).toContain("summaryKey: 'examples.parsers.detailsTitle'");
         expect(source).toContain("descriptionKey: 'guides.parsers.output.description'");
-        expect(source).toContain('they do not replace validation or business rules');
+        expect(source).toContain('validation and business rules remain separate responsibilities');
         expect(source).toContain("window.addEventListener('amb-demo-language-change'");
         expect(source).toContain("window.removeEventListener('amb-demo-language-change'");
     });
@@ -108,8 +109,11 @@ describe('Public Parsers demo integration', () => {
         );
 
         expect(source).toContain("parserKey: 'custom'");
-        expect(source).toContain('Regola applicativa personalizzata');
-        expect(source).toContain('Application-defined rule');
+        for (const language of ['it', 'en']) {
+            const [, description, emphasis] = parserRowCopy[language].custom;
+            expect(emphasis).toBeTruthy();
+            expect(description).toContain(emphasis);
+        }
         expect(descriptionFormatter).toContain("accent.className = 'demo-text-accent'");
         expect(descriptionFormatter).toContain('document.createElement(\'span\')');
         expect(descriptionFormatter).toContain('document.createTextNode(');
@@ -119,7 +123,7 @@ describe('Public Parsers demo integration', () => {
     test('keeps the parser columns readable while widening Description', () => {
         const gridColumns = source.slice(source.indexOf('columns: [', source.indexOf('demo = AMB.table({')));
         const widths = Object.fromEntries(['Type', 'Input', 'Parsed value', 'Description'].map(title => {
-            const column = gridColumns.match(new RegExp(`\\{[^{}]*title:\\s*'${title}'[^{}]*\\}`))?.[0];
+            const column = gridColumns.match(new RegExp(`title:\\s*'${title}'[\\s\\S]*?(?=title:\\s*'|\\n\\s*\\]\\s*\\n)`))?.[0];
             expect(column).toBeDefined();
             const min = Number(column.match(/\bminWidth:\s*(\d+)/)?.[1]);
             const grow = Number(column.match(/\bwidthGrow:\s*([\d.]+)/)?.[1]);
@@ -138,7 +142,7 @@ describe('Public Parsers demo integration', () => {
             'utf8'
         );
 
-        expect(guideCopy).toContain("Valore visuale inserito e modificato dall'utente.");
+        expect(guideCopy).toContain("Valore inserito dall'utente. Nella riga Booleano utilizza una checkbox.");
         expect(guideCopy).not.toContain('dallâ€™utente');
     });
 });

@@ -7,14 +7,14 @@ const source = readFileSync(
 );
 
 describe('Public Dates demo integration', () => {
-    test('uses the shared public-demo structure and standard Validate toolbar action', () => {
+    test('uses the shared public-demo structure and contextual validation', () => {
         expect(source).toContain("import { createDemoColumnGuide } from './utils/demo-column-guide.js'");
         expect(source).toContain("summaryKey: 'examples.dates.detailsTitle'");
         expect(source).toContain('class="demo-table-workbench"');
         expect(source).toContain('class="demo-business-grid demo-business-grid--viewport"');
-        expect(source).toContain("buttons: ['validate', commandGuideToolbar.button]");
-        expect(source).toContain('onValidate: handleValidateDates');
-        expect(source).toContain("validateLabel.dataset.i18n = 'examples.dates.validate'");
+        expect(source).toContain('buttons: [commandGuideToolbar.button]');
+        expect(source).not.toContain('handleValidateDates');
+        expect(source).toContain('pickerValidator.validate(value).isValid');
         expect(source).not.toContain("id: 'validate-dates'");
         expect(source).not.toContain("height: '320px'");
     });
@@ -44,13 +44,12 @@ describe('Public Dates demo integration', () => {
         expect(data).not.toContain("pickerOnlyDate: ''");
     });
 
-    test('opens the shared bilingual report dialog instead of fixed output', () => {
-        expect(source).toContain(
-            "import { createDemoReportDialog } from './utils/demo-report-dialog.js'"
-        );
-        expect(source).toContain("title: reportCopy[getLanguage()].title");
-        expect(source).toContain('reportText: buildDateReport(result)');
-        expect(source).toContain('jsonData: result');
+    test('guides manual and picker edits through the contextual tutorial', () => {
+        expect(source).toContain("id: 'manual-date', actionId: 'date-edited'");
+        expect(source).toContain("id: 'picker-date', actionId: 'date-edited'");
+        expect(source).toContain("tutorial.notify('date-edited'");
+        expect(source).toContain("demo.table.on('cellEdited', handleEditConfirmed)");
+        expect(source).not.toContain('createDemoReportDialog');
         expect(source).not.toContain('id="dates-output"');
     });
 });

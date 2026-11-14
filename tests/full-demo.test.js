@@ -38,7 +38,8 @@ const demoDatabase = JSON.parse(fs.readFileSync(
 describe('Legacy-friendly warehouse demo', () => {
     test('uses legacy-friendly naming with warehouse scenario', () => {
         expect(source).toContain('Demo principale · Legacy-friendly');
-        expect(source).toContain('Gestionale Magazzino Classico');
+        expect(source).toContain('Gestione prodotti e giacenze');
+        expect(mainDemoSource).toContain("'mainDemo.title': 'Products and stock management'");
         expect(source).toContain('Demo gestionale classica per contesti server-rendered e legacy-friendly');
         expect(source).not.toContain('Classic Warehouse Backoffice');
         expect(source).toContain('fakeApi.getProducts()');
@@ -49,7 +50,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("summary: 'How this table works'");
         expect(source).toContain("summaryKey: 'mainDemo.guide.summary'");
         expect(source).toContain("summaryIcon: 'guide'");
-        expect(source).toContain("summaryDescription: 'Editing, validation, lookup and saving'");
+        expect(source).toContain("summaryDescription: 'Editing, validation, lookups, and payload management'");
         expect(source).toContain("summaryDescriptionKey: 'mainDemo.guide.summaryDescription'");
         expect(source).toContain("title: 'Edit and add'");
         expect(source).toContain("title: 'Selection and row actions'");
@@ -57,10 +58,10 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain("title: 'Payload and save'");
         expect(source).toContain("title: 'Search and filters'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'Come funziona questa tabella'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validazione, lookup e salvataggio'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validazione, lookup e gestione del payload'");
         expect(demoColumnGuideCopySource).toContain("'mainDemo.guide.actions.title': 'Selezione e azioni riga'");
         expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'How this table works'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validation, lookup and saving'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validation, lookups, and payload management'");
         expect(demoColumnGuideCopySource).toContain("'mainDemo.guide.actions.title': 'Selection and row actions'");
         expect(source).toContain('bindDemoColumnGuideAnimations, createDemoColumnGuide');
         expect(source).toContain('const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app)');
@@ -331,7 +332,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('class="demo-app-shell card bg-base-100"');
         expect(source).toContain('data-theme="light"');
         expect(source).toContain('data-i18n="mainDemo.kicker">Demo principale · Legacy-friendly');
-        expect(source).toContain('data-i18n="mainDemo.title">Gestionale Magazzino Classico');
+        expect(source).toContain('data-i18n="mainDemo.title">Gestione prodotti e giacenze');
         expect(source).toContain('data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.');
         expect(source).not.toContain('Pannello operativo');
         expect(source).not.toContain('Dati magazzino editabili');

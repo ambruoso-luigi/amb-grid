@@ -69,7 +69,8 @@ describe('shared site navbar', () => {
         const hero = read('examples/react-demo/src/components/ReactHero.tsx');
 
         expect(html).toContain('id="site-navbar"');
-        expect(main).toContain("root.innerHTML = '<div id=\"react-demo-root\"></div>'");
+        expect(main).toContain('id="react-demo-root"');
+        expect(main).toContain('<div id="react-demo-root"></div>${renderDemoFooter()}');
         expect(app).toContain("readDemoLanguage");
         expect(app).toContain("amb-demo-language-change");
         expect(hero).toContain('className="react-hero-brand"');
