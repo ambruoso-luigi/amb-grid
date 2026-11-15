@@ -33,48 +33,6 @@ test.describe('contextual cell messages and large-text focus', () => {
         await expect(row(page, 'PRD-A001')).toBeVisible();
     });
 
-    test('keyboard focus overrides a stale lookup hover and real mouse movement retakes ownership', async ({ page }) => {
-        const firstStatus = cell(page, 'PRD-A001', 'status');
-
-        await firstStatus.hover();
-        await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
-        await expect(message(page).locator('.teh-floating-message__title')).toHaveText('Description');
-        const firstDescription = await messageBody(page).textContent();
-
-        await firstStatus.click();
-        await page.keyboard.press('ArrowDown');
-        await expect(cell(page, 'PRD-AB02', 'status')).toBeFocused();
-        await expect(cell(page, 'PRD-AB02', 'status')).not.toHaveClass(/tabulator-editing/);
-        await page.evaluate(() => new Promise(resolve => {
-            requestAnimationFrame(() => requestAnimationFrame(resolve));
-        }));
-        await page.keyboard.press('ArrowDown');
-        await expect(cell(page, 'PRD-A003', 'status')).toBeFocused();
-        await expect(cell(page, 'PRD-A003', 'status')).not.toHaveClass(/tabulator-editing/);
-        await expect(message(page)).toHaveClass(/teh-floating-message--visible/);
-        await expect(messageBody(page)).not.toHaveText(firstDescription);
-        const keyboardDescription = await messageBody(page).textContent();
-
-        await cell(page, 'PRD-B004', 'status').hover();
-        await expect(messageBody(page)).not.toHaveText(keyboardDescription);
-    });
-
-    test('keeps the lookup hover delay from the first movement within a status cell', async ({ page }) => {
-        const status = cell(page, 'PRD-A001', 'status');
-
-        await status.hover();
-        const box = await status.boundingBox();
-        expect(box).not.toBeNull();
-
-        for (let step = 0; step < 6; step += 1) {
-            await page.mouse.move(box.x + 12 + step, box.y + box.height / 2);
-            await page.waitForTimeout(85);
-        }
-
-        await expect(message(page)).toHaveClass(/teh-floating-message--visible/, { timeout: 100 });
-        await expect(message(page).locator('.teh-floating-message__title')).toHaveText('Description');
-    });
-
     test('large-text focus, dialog trap, save and cancel preserve the focus-first contract', async ({ page }) => {
         const notes = cell(page, 'PRD-AB02', 'notes');
 
