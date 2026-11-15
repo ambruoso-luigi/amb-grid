@@ -6,15 +6,18 @@ import {
   OnDestroy,
   ViewChild,
   ViewEncapsulation,
+  inject,
   signal,
 } from '@angular/core';
 import { AMB } from 'amb-grid';
+import type { Subscription } from 'rxjs';
 import { INSTRUMENT_CATALOG } from './instrument-catalog';
 import { categoryClass, instrumentIdentity } from './instrument-identity';
 import { availableInstruments, instrumentSelectionPatch, isDuplicateInstrument, positionKey } from './instrument-lookup';
-import { MarketSimulator, TIMELINE_CAPACITY } from './market-simulator';
+import { TIMELINE_CAPACITY } from './market-simulator';
+import { SimulatedMarketFeed } from './simulated-market-feed.service';
 import { calculateChangePercent, calculatePortfolioTotals, calculatePosition } from './portfolio-calculations';
-import { INITIAL_POSITIONS, INITIAL_QUOTES } from './portfolio-seed';
+import { INITIAL_POSITIONS } from './portfolio-seed';
 import type { AssetCategory, Instrument } from './portfolio.models';
 
 interface HoldingsRow {
@@ -202,6 +205,7 @@ function instrumentCell(row: HoldingsRow): HTMLElement {
   encapsulation: ViewEncapsulation.None,
   templateUrl: './portfolio-grid.component.html',
   styleUrl: './portfolio-grid.component.css',
+  providers: [SimulatedMarketFeed],
 })
 export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   @ViewChild('gridHost', { static: true }) private gridHost!: ElementRef<HTMLElement>;
@@ -213,11 +217,10 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
   readonly visibleCount = signal(INITIAL_POSITIONS.length);
   readonly totalCount = signal(INITIAL_POSITIONS.length);
   readonly categoryFilters = CATEGORY_FILTERS;
-  private readonly market = new MarketSimulator(INSTRUMENT_CATALOG, INITIAL_QUOTES);
+  private readonly feed = inject(SimulatedMarketFeed);
   private readonly lookupDialog = new AMB.LookupDialog();
   private grid: ReturnType<typeof AMB.table> | null = null;
-  private timer: ReturnType<typeof setInterval> | null = null;
-  private cursor = 0;
+  private feedSubscription: Subscription | null = null;
   private activeLookupKey: string | null = null;
   private readonly pendingIdentityFormats = new Set<string>();
   private filterInstalled = false;
@@ -229,12 +232,12 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       && (!query || [row.instrument, row.ticker, row.type].some((value) => value.toLocaleLowerCase().includes(query)));
   };
   private readonly onVisibilityChange = () => {
-    if (document.hidden) this.stopTimer();
-    else this.startTimer();
+    if (document.hidden) this.stopFeed();
+    else this.startFeed();
   };
 
   private quoteFor(row: HoldingsRow) {
-    return this.market.quoteFor(row.instrumentId);
+    return this.feed.quoteFor(row.instrumentId);
   }
 
   setSearch(query: string): void {
@@ -333,7 +336,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       svg.setAttribute('role', 'img');
       content.append(svg);
     }
-    const history = this.market.historyFor(row.instrumentId);
+    const history = this.feed.historyFor(row.instrumentId);
     const previousClose = this.quoteFor(row).previousClose;
     const low = Math.min(...history);
     const high = Math.max(...history);
@@ -430,7 +433,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
           const row = cell.getRow().getData() as HoldingsRow;
           const key = positionKey(row);
           const selection = instrumentSelectionPatch(
-            this.grid.getData() as HoldingsRow[], key, instrument, this.market.quoteFor(instrument.id).price,
+            this.grid.getData() as HoldingsRow[], key, instrument, this.feed.quoteFor(instrument.id).price,
           );
           if (!selection) {
             this.lookupError.set(`${instrument.name} is already in the portfolio. Choose another instrument.`);
@@ -456,7 +459,7 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
     });
     const initialHoldings = initialRows();
     const allHoldings = () => (this.grid?.getData() as HoldingsRow[] | undefined) ?? initialHoldings;
-    const portfolioTotals = () => calculatePortfolioTotals(allHoldings(), (id) => this.market.quoteFor(id));
+    const portfolioTotals = () => calculatePortfolioTotals(allHoldings(), (id) => this.feed.quoteFor(id));
     this.grid = AMB.table({
       selector: this.gridHost.nativeElement,
       data: initialHoldings,
@@ -549,44 +552,36 @@ export class PortfolioGridComponent implements AfterViewInit, OnDestroy {
       if (cell.getField() === 'instrument') this.activeLookupKey = null;
     });
     document.addEventListener('visibilitychange', this.onVisibilityChange);
-    this.startTimer();
+    this.startFeed();
   }
 
   toggleMarket(): void {
     this.live.update((current) => !current);
-    if (this.live()) this.startTimer();
-    else this.stopTimer();
+    if (this.live()) this.startFeed();
+    else this.stopFeed();
   }
 
-  private startTimer(): void {
-    if (this.timer || !this.grid || !this.live() || document.hidden) return;
-    this.timer = setInterval(() => this.tick(), 900);
+  private startFeed(): void {
+    if (this.feedSubscription || !this.grid || !this.live() || document.hidden) return;
+    this.feedSubscription = this.feed.ticks(() =>
+      (this.grid?.getData() as HoldingsRow[] | undefined)?.map((row) => row.instrumentId) ?? [],
+    ).subscribe(({ instrumentIds }) => {
+      if (!this.grid) return;
+      for (const row of this.grid.getData() as HoldingsRow[]) {
+        if (instrumentIds.includes(row.instrumentId)) this.refreshLiveCells(row);
+      }
+      this.grid.recalc();
+    });
   }
 
-  private stopTimer(): void {
-    if (this.timer) clearInterval(this.timer);
-    this.timer = null;
+  private stopFeed(): void {
+    this.feedSubscription?.unsubscribe();
+    this.feedSubscription = null;
   }
 
-  private tick(): void {
-    if (!this.grid) return;
-    const rows = this.grid.getData() as HoldingsRow[];
-    const heldInstrumentIds = [...new Set(rows.map((row) => row.instrumentId).filter(Boolean))];
-    if (heldInstrumentIds.length === 0) return;
-    const nextIds = Array.from({ length: Math.min(4, heldInstrumentIds.length) }, (_, index) =>
-      heldInstrumentIds[(this.cursor + index) % heldInstrumentIds.length]!,
-    );
-    this.cursor = (this.cursor + nextIds.length) % heldInstrumentIds.length;
-    this.market.advance(nextIds);
-    for (const row of rows) {
-      if (nextIds.includes(row.instrumentId)) this.refreshLiveCells(row);
-    }
-    this.grid.recalc();
-  }
-
-  /** Releases the timer, document listener, lookup dialog and AMB-owned grid DOM. */
+  /** Releases the feed, document listener, lookup dialog and AMB-owned grid DOM. */
   ngOnDestroy(): void {
-    this.stopTimer();
+    this.stopFeed();
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.pendingIdentityFormats.clear();
     this.activeLookupKey = null;

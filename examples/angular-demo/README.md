@@ -1,7 +1,7 @@
 # Angular live portfolio demo
 
 The portfolio catalog and initial positions are simulated data. Prices, average
-costs, and previous closes are in EUR; no market feed or FX conversion is used.
+costs, and previous closes are in EUR; no external market feed or FX conversion is used.
 For bonds, quantity counts EUR 100 nominal lots and price is EUR per lot.
 
 Calculations in `src/app/portfolio/portfolio-calculations.ts` use:
@@ -84,17 +84,21 @@ Angular CLI workspace remains available through its own `npm run dev`.
 
 ## Simulated live market
 
-The portfolio uses a seeded, in-memory EUR random walk. Every 900 ms it updates
-four held instruments, with fixed Previous Close and per-category bands: Stock
+The component-scoped Angular service `SimulatedMarketFeed` publishes a local
+RxJS stream, using the unchanged `MarketSimulator` for a seeded, in-memory EUR
+random walk. Every 900 ms it updates up to four currently held instruments,
+with fixed Previous Close and per-category bands: Stock
 ±7%, ETF ±5%, Bond ±2%, Crypto ±15%. These are simulation settings, not market
-limits. Each Timeline keeps its latest 32 price samples. Pause stops the timer;
-the timer also stops while the browser tab is hidden.
+limits. Each Timeline keeps its latest 32 price samples. There is no WebSocket
+server or connection and no real financial quote. Pause unsubscribes from the
+feed, and `visibilitychange` suspends it while the browser tab is hidden. It
+resumes when visible only if Live is active, preserving market state and rotation.
 
 Live Price, Change %, Value, P/L and Timeline are rendered from the market store.
 They do not enter AMB Grid CRUD data or its save payload. Sorting on these live
-columns is disabled, and the demo offers no export of live values. Market ticks
-update the five financial cells granularly and call `grid.recalc()` without changing row states or
-snapshots. Pause stops quotes, while manual edits still refresh totals. Angular
-creates the table in `ngAfterViewInit()` and destroys the grid, dialog, timer and
-visibility listener in `ngOnDestroy()`; Angular owns the host and AMB Grid owns
-the table DOM.
+columns is disabled, and the demo offers no export of live values. Feed events
+update the Timeline, Price, Value and P/L cells selectively and call `grid.recalc()`
+without changing row states or snapshots. Pause stops quotes, while manual edits
+still refresh totals. Angular creates the table in `ngAfterViewInit()` and, in
+`ngOnDestroy()`, unsubscribes and destroys the grid, dialog and visibility
+listener; Angular owns the host and AMB Grid owns the table DOM.
