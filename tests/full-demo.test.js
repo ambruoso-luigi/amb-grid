@@ -37,7 +37,7 @@ const demoDatabase = JSON.parse(fs.readFileSync(
 
 describe('Legacy-friendly warehouse demo', () => {
     test('uses legacy-friendly naming with warehouse scenario', () => {
-        expect(source).toContain('Demo principale · Legacy-friendly');
+        expect(source).not.toContain('Demo principale · Legacy-friendly');
         expect(source).toContain('Gestione prodotti e giacenze');
         expect(mainDemoSource).toContain("'mainDemo.title': 'Products and stock management'");
         expect(source).toContain('Demo gestionale classica per contesti server-rendered e legacy-friendly');
@@ -46,22 +46,20 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('fakeApi.saveProductChanges(payload)');
     });
 
-    test('configures the main guide with its rich summary without changing its content', () => {
-        expect(source).toContain("summary: 'How this table works'");
+    test('configures the main technical guide without changing its content', () => {
+        expect(source).toContain("variant: 'technical'");
+        expect(source).toContain("summary: 'Demo technical guide'");
         expect(source).toContain("summaryKey: 'mainDemo.guide.summary'");
         expect(source).toContain("summaryIcon: 'guide'");
-        expect(source).toContain("summaryDescription: 'Editing, validation, lookups, and payload management'");
-        expect(source).toContain("summaryDescriptionKey: 'mainDemo.guide.summaryDescription'");
+        expect(source).not.toContain('mainDemo.guide.summaryDescription');
         expect(source).toContain("title: 'Edit and add'");
         expect(source).toContain("title: 'Selection and row actions'");
         expect(source).toContain("title: 'Validation and lookup'");
         expect(source).toContain("title: 'Payload and save'");
         expect(source).toContain("title: 'Search and filters'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'Come funziona questa tabella'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validazione, lookup e gestione del payload'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'Guida tecnica demo'");
         expect(demoColumnGuideCopySource).toContain("'mainDemo.guide.actions.title': 'Selezione e azioni riga'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'How this table works'");
-        expect(mainDemoSource).toContain("'mainDemo.guide.summaryDescription': 'Editing, validation, lookups, and payload management'");
+        expect(mainDemoSource).toContain("'mainDemo.guide.summary': 'Demo technical guide'");
         expect(demoColumnGuideCopySource).toContain("'mainDemo.guide.actions.title': 'Selection and row actions'");
         expect(source).toContain('bindDemoColumnGuideAnimations, createDemoColumnGuide');
         expect(source).toContain('const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app)');
@@ -331,7 +329,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('class="demo-inventory-panel card bg-base-100 text-base-content"');
         expect(source).toContain('class="demo-app-shell card bg-base-100"');
         expect(source).toContain('data-theme="light"');
-        expect(source).toContain('data-i18n="mainDemo.kicker">Demo principale · Legacy-friendly');
+        expect(source).not.toContain('data-i18n="mainDemo.kicker"');
+        expect(source).toContain('class="demo-main-tutorial-host"');
         expect(source).toContain('data-i18n="mainDemo.title">Gestione prodotti e giacenze');
         expect(source).toContain('data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.');
         expect(source).not.toContain('Pannello operativo');
@@ -343,8 +342,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(mainDemoSource).not.toContain('mainDemo.panelKicker');
         expect(mainDemoSource).not.toContain('mainDemo.panelTitle');
         expect(mainDemoSource).not.toContain('mainDemo.panelText');
-        expect(mainDemoSource).toContain("'mainDemo.kicker': 'Demo principale · Legacy-friendly'");
-        expect(mainDemoSource).toContain("'mainDemo.kicker': 'Main demo · Legacy-friendly'");
+        expect(mainDemoSource).not.toContain("'mainDemo.kicker'");
         expect(source).not.toContain('class="demo-app-shell__chips"');
         expect(source).not.toContain('data-i18n="mainDemo.chipPagination"');
         expect(source).not.toContain('data-i18n="mainDemo.chipValidation"');

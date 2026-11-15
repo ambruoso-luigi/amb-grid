@@ -220,15 +220,14 @@ export default async function fullDemo(app, options = {}) {
         <div class="demo-inventory-panel card bg-base-100 text-base-content" data-theme="light">
             <div class="demo-app-shell card bg-base-100">
                 <div class="demo-app-shell__meta card-body">
-                    ${showHeader ? `<p class="demo-kicker" data-i18n="mainDemo.kicker">Demo principale · Legacy-friendly</p>
-                    <h2 data-i18n="mainDemo.title">Gestione prodotti e giacenze</h2>
+                    ${showHeader ? `<h2 data-i18n="mainDemo.title">Gestione prodotti e giacenze</h2>
                     <p class="demo-note" data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.</p>` : ''}
+                    <div class="demo-main-tutorial-host"></div>
                 </div>
                 ${createDemoColumnGuide({
-                    summary: 'How this table works',
+                    variant: 'technical',
+                    summary: 'Demo technical guide',
                     summaryKey: 'mainDemo.guide.summary',
-                    summaryDescription: 'Editing, validation, lookups, and payload management',
-                    summaryDescriptionKey: 'mainDemo.guide.summaryDescription',
                     summaryIcon: 'guide',
                     intro: 'Edit inventory data directly while AMB Grid coordinates CRUD state, validation, lookup, search, payload, and save actions.',
                     introKey: 'mainDemo.guide.intro',

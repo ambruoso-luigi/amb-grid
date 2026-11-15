@@ -1867,6 +1867,125 @@ a {
     margin-bottom: 0;
 }
 
+/* The JavaScript guide shares the header tracks so its body spans the grid. */
+.js-guide-page #javascript-demo .demo-app-shell {
+    gap: 0 20px;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.js-guide-page #javascript-demo .demo-app-shell__meta {
+    display: contents;
+}
+
+.js-guide-page #javascript-demo .demo-app-shell__meta h2 {
+    align-self: center;
+    grid-area: 1 / 1;
+    margin: 0;
+    min-width: 0;
+}
+
+.js-guide-page #javascript-demo .demo-app-shell__meta .demo-note {
+    grid-area: 2 / 1 / 3 / -1;
+    margin: 10px 0 0;
+    max-width: 920px;
+}
+
+.js-guide-page #javascript-demo .demo-main-tutorial-host {
+    grid-area: 3 / 1 / 4 / -1;
+    min-width: 0;
+}
+
+.js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    display: grid;
+    grid-area: 1 / 1 / 5 / -1;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    margin: 0;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.js-guide-page #javascript-demo .demo-disclosure__summary--technical {
+    align-self: center;
+    background: var(--framework-accent-soft);
+    border: 1px solid var(--framework-accent-border);
+    border-radius: 8px;
+    color: var(--amb-site-navy);
+    gap: 8px;
+    grid-area: 1 / 2;
+    grid-template-areas: "icon title chevron";
+    grid-template-columns: 30px minmax(0, 1fr) 32px;
+    min-height: 44px;
+    padding: 5px 10px;
+    pointer-events: auto;
+}
+
+.js-guide-page #javascript-demo .demo-disclosure__summary--technical:hover {
+    background: var(--amb-site-js-soft);
+    border-color: var(--framework-accent);
+    box-shadow: 0 2px 6px rgb(100 70 20 / 10%);
+}
+
+.js-guide-page #javascript-demo .demo-disclosure__summary--technical:focus-visible {
+    outline: 2px solid var(--framework-accent);
+    outline-offset: 2px;
+}
+
+.js-guide-page #javascript-demo .demo-disclosure__technical-leading,
+.js-guide-page #javascript-demo .demo-disclosure__technical-chevron {
+    background: #fffdf7;
+    border-color: var(--framework-accent-border);
+    color: #76510a;
+}
+
+.js-guide-page #javascript-demo .demo-disclosure__body {
+    grid-area: 4 / 1 / 5 / -1;
+}
+
+.js-guide-page #javascript-demo .demo-disclosure__content {
+    border: 1px solid var(--framework-accent-border);
+    border-left: 3px solid var(--framework-accent);
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.js-guide-page #javascript-demo .demo-table-workbench {
+    grid-area: 5 / 1 / 6 / -1;
+    margin-top: 20px;
+}
+
+@media (max-width: 760px) {
+    .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical {
+        grid-row: 1 / 6;
+    }
+
+    .js-guide-page #javascript-demo .demo-disclosure__summary--technical {
+        grid-area: 2 / 1 / 3 / -1;
+        justify-self: start;
+        margin-top: 12px;
+        max-width: 100%;
+    }
+
+    .js-guide-page #javascript-demo .demo-app-shell__meta .demo-note {
+        grid-row: 3;
+    }
+
+    .js-guide-page #javascript-demo .demo-main-tutorial-host {
+        grid-row: 4;
+    }
+
+    .js-guide-page #javascript-demo .demo-disclosure__body {
+        grid-row: 5;
+    }
+
+    .js-guide-page #javascript-demo .demo-table-workbench {
+        grid-row: 6;
+    }
+}
+
 .demo-table-workbench {
     max-width: 100%;
     min-width: 0;
@@ -2360,6 +2479,27 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     height: 34px;
     justify-content: center;
     width: 34px;
+}
+
+.js-guide-page #javascript-getting-started .demo-kicker,
+.js-guide-page #javascript-getting-started .demo-guide-install-link a {
+    color: #76510a;
+}
+
+.js-guide-page #javascript-getting-started .demo-guide-install-link a:hover,
+.js-guide-page #javascript-getting-started .demo-guide-install-link a:focus-visible {
+    color: #513600;
+    text-decoration: underline;
+}
+
+.js-guide-page #javascript-getting-started .demo-guide-step {
+    border-top-color: var(--framework-accent-border);
+}
+
+.js-guide-page #javascript-getting-started .demo-guide-step__number {
+    background: var(--amb-site-js-soft);
+    border: 1px solid var(--framework-accent-border);
+    color: #513600;
 }
 
 .demo-code-block {
