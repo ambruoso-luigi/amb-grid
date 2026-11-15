@@ -58,19 +58,19 @@ export default function gettingStartedJavaScript(app) {
                     <p class="demo-guide-install-link"><span data-i18n="guide.installPrompt">Devi ancora installare AMB Grid?</span> <a href="/install/" data-i18n="guide.installLink">Vai alla pagina Installazione →</a></p>
                 </div>
 
-                <div class="demo-guide-steps" aria-label="JavaScript getting started steps">
-                    <article class="demo-guide-step">
-                        <span class="demo-guide-step__number">1</span>
-                        <div>
+                <ol class="demo-guide-steps" aria-label="JavaScript getting started steps">
+                    <li class="demo-guide-step">
+                        <span class="demo-guide-step__number" aria-hidden="true">1</span>
+                        <div class="demo-guide-step__body">
                             <h3 data-i18n="guide.step1.title">Prepara il container</h3>
                             <p class="demo-note" data-i18n="guide.step1.text">Crea nel markup un punto di mount dedicato alla griglia.</p>
                             <pre class="demo-code-block"><code>&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;</code></pre>
                         </div>
-                    </article>
+                    </li>
 
-                    <article class="demo-guide-step">
-                        <span class="demo-guide-step__number">2</span>
-                        <div>
+                    <li class="demo-guide-step">
+                        <span class="demo-guide-step__number" aria-hidden="true">2</span>
+                        <div class="demo-guide-step__body">
                             <h3 data-i18n="guide.step2.title">Definisci dati e colonne</h3>
                             <p class="demo-note" data-i18n="guide.step2.text">Parti da un dataset piccolo e da colonne esplicite. I validator possono essere aggiunti dove servono regole applicative.</p>
                             <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> rows = [
@@ -90,11 +90,11 @@ export default function gettingStartedJavaScript(app) {
   }
 ];</code></pre>
                         </div>
-                    </article>
+                    </li>
 
-                    <article class="demo-guide-step">
-                        <span class="demo-guide-step__number">3</span>
-                        <div>
+                    <li class="demo-guide-step">
+                        <span class="demo-guide-step__number" aria-hidden="true">3</span>
+                        <div class="demo-guide-step__body">
                             <h3 data-i18n="guide.step3.title">Crea la griglia CRUD</h3>
                             <p class="demo-note" data-i18n="guide.step3.text">AMB.table monta la griglia e coordina stati riga, validazione e payload attraverso l’API pubblica di AMB Grid.</p>
                             <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
@@ -112,11 +112,11 @@ export default function gettingStartedJavaScript(app) {
   }
 });</code></pre>
                         </div>
-                    </article>
+                    </li>
 
-                    <article class="demo-guide-step">
-                        <span class="demo-guide-step__number">4</span>
-                        <div>
+                    <li class="demo-guide-step">
+                        <span class="demo-guide-step__number" aria-hidden="true">4</span>
+                        <div class="demo-guide-step__body">
                             <h3 data-i18n="guide.step4.title">Leggi il payload</h3>
                             <p class="demo-note" data-i18n="guide.step4.text">Quando l'applicazione deve salvare, leggi il payload CRUD generato da AMB Grid e invialo al tuo backend.</p>
                             <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> payload = grid.crud.<span class="syntax-function">getSavePayload</span>();
@@ -125,9 +125,9 @@ export default function gettingStartedJavaScript(app) {
   <span class="syntax-keyword">await</span> <span class="syntax-function">saveRows</span>(payload.changes);
 }</code></pre>
                         </div>
-                    </article>
+                    </li>
 
-                </div>
+                </ol>
                 <div class="demo-guide-app-css">
                     <h3 data-i18n="guide.appCss.title">CSS applicativo facoltativo</h3>
                     <p class="demo-note" data-i18n="guide.appCss.text">Se usi un wrapper .inventory-page, puoi gestire la spaziatura della pagina separatamente dallo stylesheet di AMB Grid.</p>

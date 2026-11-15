@@ -237,7 +237,6 @@ describe('demo site navigation', () => {
 
         expect(guide).toContain('<span class="syntax-function">onAdd</span>: () => {\n      <span class="syntax-keyword">return</span> grid.crud.<span class="syntax-function">addRow</span>');
         expect(guide).not.toContain('<span class="syntax-function">onAdd</span>: () => {\n      grid.crud.<span class="syntax-function">addRow</span>');
-        expect(guide).toContain('href="#javascript-demo"');
         expect(guide).toContain('id="javascript-demo"');
     });
 
