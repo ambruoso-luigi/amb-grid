@@ -224,7 +224,7 @@ describe('Legacy-friendly warehouse demo', () => {
     });
 
     test('includes inventory fields in newly inserted products', () => {
-        expect(source).toContain("itemCode: ''");
+        expect(source).toContain('itemCode,');
         expect(source).toContain("productName: ''");
         expect(source).toContain("warehouse: ''");
         expect(source).toContain('stockQuantity: 0');
@@ -235,12 +235,12 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('demo.getSavePayload({');
     });
 
-    test('uses the same simple Add row pattern as the base demos', () => {
-        expect(source).toContain('function handleAdd()');
+    test('generates an item code and navigates after adding a row', () => {
+        expect(source).toContain('async function handleAdd()');
         expect(source).toContain('demo.feedback.clear()');
-        expect(source).toContain('return crud.addRow({');
-        expect(source).not.toContain('async function handleAdd()');
-        expect(source).not.toContain('await crud.addRow');
+        expect(source).toContain('generateInventoryItemCode(demo.getData())');
+        expect(source).toContain('await crud.addRow({');
+        expect(source).toContain("demo.navigateCellNext(rowIdentifier, 'itemCode')");
         expect(source).not.toContain('setPage(');
         expect(source).not.toContain('scrollToRow');
         expect(source).not.toContain('setTimeout');

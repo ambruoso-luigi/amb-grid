@@ -323,7 +323,7 @@ const openCrudRowStatesDemo = async page => {
 };
 
 test.describe('browser addRow focus regression', () => {
-    test('Gestionale Magazzino Classico focuses itemCode after repeated toolbar Add row', async ({ page }) => {
+    test('Gestionale Magazzino Classico focuses productName after repeated toolbar Add row', async ({ page }) => {
         await openInventoryDemo(page);
 
         for (let iteration = 1; iteration <= 3; iteration += 1) {
@@ -331,7 +331,7 @@ test.describe('browser addRow focus regression', () => {
                 scenario: 'Gestionale Magazzino Classico paginated rowActionColumn via toolbar',
                 iteration,
                 tableSelector: '#inventory-table',
-                targetField: 'itemCode',
+                targetField: 'productName',
                 addButtonSelector: '#javascript-demo .amb-toolbar__button--add'
             });
 

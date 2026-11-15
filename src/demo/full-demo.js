@@ -2,6 +2,7 @@ import { AMB } from '../index.js';
 import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
+import { generateInventoryItemCode } from './utils/inventory-item-code.js';
 import { bindDemoColumnGuideAnimations, createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuide } from './components/demo-command-guide.ts';
 import { commandGuideCopy } from './components/demo-command-guide-copy.ts';
@@ -13,6 +14,7 @@ const messages = {
     it: {
         reloaded: 'Dati ricaricati.',
         noChanges: 'Non ci sono modifiche da salvare.',
+        noUniqueProductCode: 'Non è disponibile un codice prodotto univoco.',
         invalid: 'Correggi gli errori evidenziati prima di salvare.',
         saved: 'Modifiche salvate e stati riallineati.',
         partialSaved: 'Modifiche valide salvate. Le righe con errori restano da correggere.',
@@ -49,6 +51,7 @@ const messages = {
     en: {
         reloaded: 'Data reloaded.',
         noChanges: 'There are no changes to save.',
+        noUniqueProductCode: 'No unique product code is available.',
         invalid: 'Fix highlighted errors before saving.',
         saved: 'Changes saved and row states aligned.',
         partialSaved: 'Valid changes saved. Rows with errors are still pending correction.',
@@ -239,7 +242,7 @@ export default async function fullDemo(app, options = {}) {
                         { title: 'Search and filters', titleKey: 'mainDemo.guide.search.title', description: 'Search and filter controls narrow the visible inventory without changing the underlying data.', descriptionKey: 'mainDemo.guide.search.description' }
                     ],
                     columns: [
-                        { title: 'Item code', titleKey: 'guides.main.itemCode.title', badge: 'UNIQUE', description: 'Required uppercase trimmed code matching PRD-A001 format and unique ignoring case.', descriptionKey: 'guides.main.itemCode.description' },
+                        { title: 'Item code', titleKey: 'guides.main.itemCode.title', badge: 'UNIQUE', description: 'Product code automatically generated for new rows, editable and validated against the PRD-XXXX format. It must be unique, case-insensitively.', descriptionKey: 'guides.main.itemCode.description' },
                         { title: 'Product name', titleKey: 'guides.main.productName.title', badge: 'REQUIRED', description: 'Required trimmed text with a minimum length of 3 characters.', descriptionKey: 'guides.main.productName.description' },
                         { title: 'Warehouse', titleKey: 'guides.main.warehouse.title', badge: 'AUTOCOMPLETE', description: 'Required value selected from the known warehouse options.', descriptionKey: 'guides.main.warehouse.description' },
                         { title: 'Stock quantity', titleKey: 'guides.main.stock.title', badge: 'INTEGER', description: 'Required integer with a minimum value of zero.', descriptionKey: 'guides.main.stock.description' },
@@ -611,11 +614,17 @@ export default async function fullDemo(app, options = {}) {
         });
     }
 
-    function handleAdd() {
+    async function handleAdd() {
         demo.feedback.clear();
-        return crud.addRow({
+        const itemCode = generateInventoryItemCode(demo.getData());
+        if (itemCode === null) {
+            demo.feedback.show({ type: 'warning', message: t('noUniqueProductCode') });
+            return null;
+        }
+
+        const row = await crud.addRow({
             id: null,
-            itemCode: '',
+            itemCode,
             productName: '',
             warehouse: '',
             stockQuantity: 0,
@@ -625,6 +634,10 @@ export default async function fullDemo(app, options = {}) {
             requiresInspection: false,
             notes: ''
         });
+        const data = row?.getData?.();
+        const rowIdentifier = data?.id ?? data?._ambTempId;
+        if (rowIdentifier != null) demo.navigateCellNext(rowIdentifier, 'itemCode');
+        return row;
     }
 
     async function handleReload() {

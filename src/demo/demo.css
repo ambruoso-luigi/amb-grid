@@ -4655,6 +4655,30 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     --amb-row-error-bg: #fbdddd;
 }
 
+.demo-panel #inventory-table .tabulator-row .tabulator-cell:not(.tabulator-editing):focus {
+    outline: 2px solid #986A00;
+    outline-offset: -2px;
+}
+
+.demo-panel #inventory-table .tabulator-row .tabulator-cell[data-cell-error="true"]:not(.tabulator-editing):focus {
+    outline-offset: 1px;
+}
+
+.demo-panel #inventory-table .tabulator-row.tabulator-selected[data-state="clean"]:not([data-row-error="true"]):not([data-has-cell-error="true"]) {
+    background-color: #FFF7E6 !important;
+}
+
+.demo-panel #inventory-table .amb-selection-column__input,
+.demo-panel #inventory-table .tabulator-header .tabulator-col:first-child input[type="checkbox"] {
+    accent-color: #986A00;
+}
+
+.demo-panel #inventory-table .amb-selection-column__input:focus-visible,
+.demo-panel #inventory-table .tabulator-header .tabulator-col:first-child input[type="checkbox"]:focus-visible {
+    outline: 2px solid #986A00;
+    outline-offset: 2px;
+}
+
 .demo-panel #inventory-table .tabulator-row[data-state="new"] {
     box-shadow: inset 4px 0 0 #367bb5;
 }
