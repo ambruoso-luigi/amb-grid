@@ -140,7 +140,7 @@ describe('Public demo column guides', () => {
         expect(multifield).toContain('Province of the selected municipality, filled automatically and readonly.');
         expect(multifield).toContain('Each selection applies values from the same record');
         expect(multifieldConfig).toContain("{ field: 'cadastralCode', title: 'Cadastral Code', visible: false }");
-        expect(fullDemo).toContain('matching PRD-A001 format and unique ignoring case.');
+        expect(fullDemo).toContain('Product code automatically generated for new rows, editable and validated against the PRD-XXXX format. It must be unique, case-insensitively.');
         expect(fullDemo).toContain('Required integer with a minimum value of zero.');
         expect(fullDemo).toContain('Required status selected from a searchable lookup dialog.');
         expect(fullDemo).toContain('Selection and row actions');

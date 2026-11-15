@@ -75,15 +75,19 @@ test.describe('row controls accessibility', () => {
         await addButton.click();
         const newRow = page.locator('#inventory-table .tabulator-row[data-state="new"]');
         const itemCode = newRow.locator('[tabulator-field="itemCode"]');
+        const productName = newRow.locator('[tabulator-field="productName"]');
         const removeNewButton = newRow.locator('.amb-row-action-button--remove-new');
 
         try {
             await expect(newRow).toBeVisible();
             await expect(addButton).not.toHaveAttribute('aria-busy', 'true');
-            await expect(itemCode.locator('input.amb-cell-editor')).toBeFocused();
+            await expect(itemCode).toHaveText(/^PRD-[A-Z0-9]{4}$/);
+            await expect(productName.locator('input.amb-cell-editor')).toBeFocused();
             await page.keyboard.press('Escape');
-            await expect(itemCode).toBeFocused();
+            await expect(productName).toBeFocused();
             await expect(newRow.locator('.tabulator-editing')).toHaveCount(0);
+            await page.keyboard.press('ArrowLeft');
+            await expect(itemCode).toBeFocused();
             await page.keyboard.press('ArrowLeft');
             await expect(removeNewButton).toBeVisible();
             await expect(removeNewButton).toBeEnabled();
