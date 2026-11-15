@@ -139,14 +139,6 @@ export default function gettingStartedJavaScript(app) {
   <span class="syntax-property">margin-top</span>: <span class="syntax-number">16px</span>;
 }</code></pre>
                 </div>
-                <div class="demo-guide-next">
-                    <h3 data-i18n="guide.next.title">Prossimi passi</h3>
-                    <p class="demo-note" data-i18n="guide.next.text">Rivedi la demo completa per vedere lookup, autocomplete, toolbar, rollback, validazione e payload nello stesso flusso.</p>
-                    <div class="demo-guide-actions">
-                        <a class="demo-button demo-button--primary" href="#javascript-demo">${demoIcon('arrowRight')}<span data-i18n="guide.openMainDemo">Torna alla demo</span></a>
-                        <a class="demo-button" href="#feature-examples">${demoIcon('selected')}<span data-i18n="guide.openExamples">Vedi esempi funzionali</span></a>
-                    </div>
-                </div>
             </section>
         </main>
         ${renderDemoFooter()}

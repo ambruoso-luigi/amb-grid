@@ -220,10 +220,10 @@ export default async function fullDemo(app, options = {}) {
         <div class="demo-inventory-panel card bg-base-100 text-base-content" data-theme="light">
             <div class="demo-app-shell card bg-base-100">
                 <div class="demo-app-shell__meta card-body">
-                    ${showHeader ? `<h2 data-i18n="mainDemo.title">Gestione prodotti e giacenze</h2>
-                    <p class="demo-note" data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.</p>` : ''}
-                    <div class="demo-main-tutorial-host"></div>
+                    ${showHeader ? `<h2 data-i18n="mainDemo.title">Gestione prodotti e giacenze</h2>` : ''}
                 </div>
+                ${showHeader ? `<p class="demo-note demo-main-description" data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.</p>` : ''}
+                <div class="demo-main-tutorial-host"></div>
                 ${createDemoColumnGuide({
                     variant: 'technical',
                     summary: 'Demo technical guide',
