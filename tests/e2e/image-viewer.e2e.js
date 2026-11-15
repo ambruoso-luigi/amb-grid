@@ -242,9 +242,13 @@ test('repeated opening and removed trigger restore focus to the owning grid', as
 
 test('dialog semantics, focus cycle, keyboard navigation and controls', async ({ page }) => {
     await install(page);
-    const trigger = page.locator('#img04-a .tabulator-row').nth(1).locator('button.amb-image--viewable').first();
-    await trigger.scrollIntoViewIfNeeded();
-    await trigger.press('Enter');
+    const imageCell = page.locator('#img04-a .tabulator-row')
+        .nth(1)
+        .locator('.tabulator-cell[tabulator-field="images"]');
+    await imageCell.scrollIntoViewIfNeeded();
+    await imageCell.focus();
+    await expect(imageCell).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(viewer(page)).toHaveCount(1);
     await expect(viewer(page)).toHaveAttribute('role', 'dialog');
     await expect(viewer(page)).toHaveAttribute('aria-modal', 'true');

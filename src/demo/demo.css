@@ -2576,11 +2576,11 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 
 .js-guide-page #javascript-getting-started .demo-guide-step__number {
     align-items: center;
-    background: #c89b12;
+    background: #986A00;
     border: 0;
     border-radius: 50%;
     box-shadow: none;
-    color: #10233f;
+    color: #FFFFFF;
     display: flex;
     font-size: 15px;
     font-weight: 800;
