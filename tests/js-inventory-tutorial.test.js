@@ -3,7 +3,7 @@ import { createInventoryTutorial, inventoryTutorialSteps } from '../src/demo/com
 import { fakeApi } from '../demo/fake-backend/fake-api.js';
 
 class ElementMock extends EventTarget {
-    constructor(tag = 'div') { super(); this.tagName = tag; this.children = []; this.attributes = new Map(); this.textContent = ''; }
+    constructor(tag = 'div') { super(); this.tagName = tag; this.children = []; this.attributes = new Map(); this.textContent = ''; this.style = {}; }
     append(...children) { children.forEach(child => { child.parentNode = this; this.children.push(child); }); }
     replaceChildren(...children) { this.children = []; this.append(...children); }
     setAttribute(key, value) { this.attributes.set(key, value); }
@@ -188,6 +188,160 @@ test('finish and open-guide wait for one reset each without repeating it on clos
         }
         expect(resetData).toHaveBeenCalledTimes(2);
         expect(technicalGuide.open).toBe(true);
+        instance.destroy();
+    } finally {
+        vi.doUnmock('../src/demo/components/demo-action-tutorial.js');
+    }
+});
+
+test.each(['navigation', 'editing', 'navigation-same'])('recognizes asynchronous F2 from %s and requires a searched, applied result', async mode => {
+    vi.resetModules();
+    let config;
+    let index = 0;
+    let stepId = 'dialog-lookup';
+    const context = () => ({ generation: 1, stepId, actionIndex: index });
+    const tutorial = {
+        capture: context,
+        notify(id, payload, captured) {
+            if (captured?.generation !== 1 || captured.stepId !== stepId || captured.actionIndex !== index) return false;
+            const step = config.steps.find(item => item.id === stepId);
+            const action = step.actions[index];
+            if (action.actionId !== id || !action.isComplete(payload)) return false;
+            index += 1;
+            if (index === step.actions.length) { stepId = 'mouse'; index = 0; }
+            config.onStateChange({ hidden: false, stepId, actionIndex: index, resetting: false });
+            return true;
+        },
+        destroy: vi.fn(), reopen: vi.fn(), restart: vi.fn()
+    };
+    vi.doMock('../src/demo/components/demo-action-tutorial.js', () => ({
+        createDemoActionTutorial: options => { config = options; options.onStateChange({ hidden: false, stepId, actionIndex: index }); return tutorial; }
+    }));
+    try {
+        const { createInventoryTutorial: createWithMock } = await import('../src/demo/components/js-inventory-tutorial.js');
+        const doc = Object.assign(new EventTarget(), { createElement: tag => new ElementMock(tag), documentElement: { lang: 'en' }, body: new ElementMock('body') });
+        vi.stubGlobal('document', doc);
+        vi.stubGlobal('window', new EventTarget());
+        const observers = [];
+        if (mode === 'navigation-same') vi.stubGlobal('MutationObserver', class {
+            constructor(callback) { this.callback = callback; observers.push(this); }
+            observe() {}
+            disconnect() {}
+        });
+        const host = new ElementMock();
+        const launch = new ElementMock('button');
+        launch.querySelector = () => new ElementMock('span');
+        const app = new ElementMock();
+        const root = new ElementMock();
+        root.contains = () => true;
+        app.querySelector = () => root;
+        const handlers = new Map();
+        const demo = { table: { on: (name, fn) => handlers.set(name, fn), off: vi.fn() }, getStateReport: () => ({ rows: [] }) };
+        let resolveSelection;
+        const overlay = { hidden: false, isConnected: true, getClientRects: () => [1], contains: () => true, querySelector: () => null };
+        const statusDialog = { open: () => { statusDialog.overlay = overlay; return new Promise(resolve => { resolveSelection = resolve; }); } };
+        const instance = createWithMock({ host, launch, app, demo, statusDialog, statusOptions: ['A085', 'AB03'], locale: 'en', resetData: async () => true });
+        const element = { isConnected: false, contains: () => false, getAttribute: () => 'status', closest: selector => selector === '.tabulator-cell' ? element : null, classList: { contains: () => mode === 'editing' } };
+        let value = 'AB03';
+        const cell = { getElement: () => element, getField: () => 'status', getValue: () => value, getRow: () => ({ getData: () => ({ id: 1 }) }) };
+        const key = new Event('keydown');
+        Object.defineProperties(key, { key: { value: 'F2' }, target: { value: element } });
+        if (mode === 'editing') handlers.get('cellEditing')(cell);
+        app.dispatchEvent(key);
+        config.onStateChange({ hidden: true, stepId, actionIndex: index });
+        await Promise.resolve();
+        config.onStateChange({ hidden: false, stepId, actionIndex: index });
+        if (mode === 'editing') handlers.get('cellEditing')(cell);
+        const withoutF2 = statusDialog.open();
+        expect(index).toBe(0);
+        resolveSelection(null);
+        await withoutF2;
+        app.dispatchEvent(key);
+        expect(index).toBe(0);
+        if (mode !== 'editing') handlers.get('cellEditing')(cell);
+        overlay.hidden = true;
+        const invisible = statusDialog.open();
+        expect(index).toBe(0);
+        resolveSelection(null);
+        await invisible;
+        overlay.hidden = false;
+        app.dispatchEvent(key);
+        const pending = statusDialog.open();
+        expect(index).toBe(1);
+        const selectedCode = mode === 'navigation-same' ? 'AB03' : 'A085';
+        const search = { value: selectedCode, matches: () => true };
+        const input = new Event('input');
+        Object.defineProperty(input, 'target', { value: search });
+        doc.dispatchEvent(input);
+        expect(index).toBe(2);
+        resolveSelection(null);
+        await pending;
+        expect(stepId).toBe('dialog-lookup');
+        expect(index).toBe(2);
+        app.dispatchEvent(key);
+        const retried = statusDialog.open();
+        doc.dispatchEvent(input);
+        resolveSelection({ id: selectedCode });
+        await retried;
+        value = selectedCode;
+        if (mode === 'navigation-same') observers[observers.length - 1].callback();
+        else handlers.get('cellEdited')(cell);
+        expect(stepId).toBe('mouse');
+        instance.destroy();
+    } finally {
+        vi.doUnmock('../src/demo/components/demo-action-tutorial.js');
+    }
+});
+
+test('moves the shared highlights with tutorial state and clears them on close', async () => {
+    vi.resetModules();
+    let config;
+    const tutorial = { capture: () => null, notify: () => false, destroy: vi.fn(), reopen: vi.fn(), restart: vi.fn() };
+    vi.doMock('../src/demo/components/demo-action-tutorial.js', () => ({
+        createDemoActionTutorial: options => { config = options; options.onStateChange({ hidden: true }); return tutorial; }
+    }));
+    try {
+        const { createInventoryTutorial: createWithMock } = await import('../src/demo/components/js-inventory-tutorial.js');
+        const doc = Object.assign(new EventTarget(), { createElement: tag => new ElementMock(tag), documentElement: { lang: 'en' }, body: new ElementMock('body') });
+        vi.stubGlobal('document', doc);
+        vi.stubGlobal('window', new EventTarget());
+        const target = (tagName = 'DIV') => {
+            const classes = new Set();
+            return { tagName, isConnected: true, getClientRects: () => [1], getBoundingClientRect: () => ({ left: 0, top: 0, width: 20, height: 20 }), closest: () => null,
+                classList: { add: (...names) => names.forEach(name => classes.add(name)), remove: (...names) => names.forEach(name => classes.delete(name)), contains: name => classes.has(name) } };
+        };
+        const cells = Object.fromEntries(['productName', 'stockQuantity', 'unitPrice', 'status'].map(field => [field, target()]));
+        const add = target('BUTTON');
+        const save = target('BUTTON');
+        const search = target('INPUT');
+        const result = target('TR');
+        const confirm = target('BUTTON');
+        const root = new ElementMock();
+        root.querySelectorAll = selector => [cells[selector.match(/tabulator-field="([^"]+)/)?.[1]]].filter(Boolean);
+        const app = new ElementMock();
+        app.querySelector = selector => selector === '#inventory-table' ? root : selector === '[data-action="add"]' ? add : selector === '[data-action="save"]' ? save : null;
+        const host = new ElementMock();
+        const launch = new ElementMock('button');
+        launch.querySelector = () => new ElementMock('span');
+        const dialog = { open: vi.fn(), overlay: { querySelector: selector => selector.includes('__search') ? search : result } };
+        const instance = createWithMock({ host, launch, app, demo: { table: { on: vi.fn(), off: vi.fn() } }, statusDialog: dialog, statusOptions: [], locale: 'en', resetData: async () => true });
+        const hasHighlight = element => element.classList.contains('demo-crud-tutorial-target');
+        for (const [stepId, actionIndex, expected] of [
+            ['arrows', 0, cells.productName], ['enter', 0, cells.productName],
+            ['tab', 0, cells.stockQuantity], ['tab', 1, cells.unitPrice],
+            ['escape', 0, cells.productName], ['escape', 1, null],
+            ['direct-lookup', 0, cells.status], ['dialog-lookup', 0, cells.status],
+            ['dialog-lookup', 1, search], ['dialog-lookup', 2, result],
+            ['mouse', 0, cells.productName], ['add', 0, add], ['partial-save', 0, save]
+        ]) {
+            config.onStateChange({ hidden: false, stepId, actionIndex });
+            for (const element of [...Object.values(cells), add, save, search, result]) expect(hasHighlight(element)).toBe(element === expected);
+        }
+        config.onStateChange({ hidden: false, stepId: 'partial-save', actionIndex: 1 });
+        instance.partialOpened({ hasValidChanges: true, hasInvalidChanges: true }, {}, true, confirm);
+        expect(hasHighlight(confirm)).toBe(true);
+        config.onStateChange({ hidden: true, stepId: 'partial-save', actionIndex: 1, destroyed: true });
+        expect(hasHighlight(confirm)).toBe(false);
         instance.destroy();
     } finally {
         vi.doUnmock('../src/demo/components/demo-action-tutorial.js');

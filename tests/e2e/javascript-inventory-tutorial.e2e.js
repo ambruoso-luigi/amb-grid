@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
+import { enterNavigationWithClick, openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 test('inventory tutorial preserves unsaved changes until confirmed and resets on close and restart', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
@@ -61,6 +61,8 @@ test('inventory tutorial preserves unsaved changes until confirmed and resets on
     await launch.click();
     await expect(confirmation).toBeVisible();
     await expect(confirmation.locator('.teh-confirm-dialog__title')).toHaveText('Avviare il tutorial?');
+    await expect(confirmation).toHaveClass(/demo-crud-partial-save-dialog/);
+    await expect(confirmation.locator('.demo-crud-partial-save-dialog__details-heading')).toContainText('Modifiche che verranno annullate');
     await confirmation.getByRole('button', { name: 'Annulla' }).click();
     await expect(confirmation).toHaveCount(0);
     await expect(productName).toHaveText('Prodotto modificato prima del tutorial');
@@ -96,4 +98,67 @@ test('inventory tutorial preserves unsaved changes until confirmed and resets on
     await expectReady();
     await expect(tutorial.locator('.demo-action-tutorial__counter')).toHaveText('1 di 9');
     await expect(tutorial.locator('.demo-action-tutorial__progress > li')).toHaveCount(9);
+});
+
+test('inventory tutorial reaches and completes the F2 lookup through real interactions', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
+    await page.goto('/src/demo/index.html#getting-started-javascript');
+    const demo = page.locator('#javascript-demo');
+    const grid = demo.locator('#inventory-table.tabulator');
+    const tutorial = demo.locator('#javascript-inventory-tutorial');
+    const row = grid.locator('.tabulator-row').filter({ has: page.locator('.tabulator-cell[tabulator-field="itemCode"]', { hasText: 'PRD-A001' }) });
+    const cell = field => row.locator(`.tabulator-cell[tabulator-field="${field}"]`);
+    const step = async (id, actionIndex = '0') => {
+        await expect(tutorial).toHaveAttribute('data-tutorial-step', id);
+        await expect(tutorial).toHaveAttribute('data-tutorial-action-index', actionIndex);
+    };
+    await expect(grid).toBeVisible();
+    await demo.locator('[data-action="tutorial-launch"]').click();
+    await expect(tutorial).toHaveAttribute('data-resetting', 'false');
+    await step('arrows');
+    await enterNavigationWithClick(page, cell('itemCode'), 'Tutorial arrow start', '#inventory-table');
+    await page.keyboard.press('ArrowRight');
+    await step('enter');
+
+    const name = await openEditorFromNavigation(page, cell('productName'), 'Tutorial product name', '#inventory-table');
+    await name.fill('Prodotto tutorial modificato');
+    await name.press('Enter');
+    await step('tab');
+
+    const quantity = await openEditorFromNavigation(page, cell('stockQuantity'), 'Tutorial stock', '#inventory-table');
+    await quantity.fill('123');
+    await quantity.press('Tab');
+    await step('tab', '1');
+    await expect(cell('unitPrice').locator('input.amb-cell-editor')).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await step('escape');
+    await page.keyboard.press('Enter');
+
+    const temporaryName = await openEditorFromNavigation(page, cell('productName'), 'Tutorial cancel edit', '#inventory-table');
+    await temporaryName.fill('Nome temporaneo tutorial');
+    await step('escape', '1');
+    await temporaryName.press('Escape');
+    await expect(cell('productName')).toHaveText('Prodotto tutorial modificato');
+    await step('direct-lookup');
+
+    const statusInput = await openEditorFromNavigation(page, cell('status'), 'Tutorial direct status', '#inventory-table', '.amb-lookup-editor__input');
+    await statusInput.fill('AB03');
+    await statusInput.press('Enter');
+    await expect(cell('status')).toHaveText('AB03');
+    await step('dialog-lookup');
+
+    await enterNavigationWithClick(page, cell('status'), 'Tutorial F2 status', '#inventory-table');
+    await page.keyboard.press('F2');
+    const dialog = page.locator('.amb-lookup-dialog');
+    await expect(dialog).toBeVisible();
+    await step('dialog-lookup', '1');
+    await dialog.locator('.amb-lookup-dialog__search').fill('A085');
+    await step('dialog-lookup', '2');
+    const result = dialog.locator('.amb-lookup-dialog__row').filter({ hasText: 'A085' });
+    await expect(result).toBeVisible();
+    await result.click();
+    await dialog.locator('.amb-lookup-dialog__button--primary').click();
+    await expect(dialog).toHaveCount(0);
+    await expect(cell('status')).toHaveText('A085');
+    await step('mouse');
 });

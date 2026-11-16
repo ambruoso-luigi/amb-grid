@@ -55,6 +55,10 @@ const messages = {
         removeNewCancel: 'Annulla',
         tutorialResetTitle: 'Avviare il tutorial?',
         tutorialResetMessage: 'Le modifiche non salvate verranno annullate per preparare il tutorial.',
+        tutorialResetIntro: 'La tabella contiene modifiche non salvate.',
+        tutorialResetDetails: 'Modifiche che verranno annullate',
+        tutorialResetDetail: 'Avviando il tutorial, le modifiche attualmente presenti nella tabella saranno eliminate per ripristinare i dati iniziali.',
+        tutorialResetExplanation: 'Durante il tutorial potrai modificare liberamente i dati. Alla chiusura verrà ripristinata la situazione iniziale.',
         tutorialResetConfirm: 'Avvia tutorial',
         tutorialResetCancel: 'Annulla',
         tutorialResetError: 'Impossibile ripristinare i dati del tutorial. Riprova.',
@@ -105,6 +109,10 @@ const messages = {
         removeNewCancel: 'Cancel',
         tutorialResetTitle: 'Start the tutorial?',
         tutorialResetMessage: 'Unsaved changes will be discarded to prepare the tutorial.',
+        tutorialResetIntro: 'The grid contains unsaved changes.',
+        tutorialResetDetails: 'Changes that will be discarded',
+        tutorialResetDetail: 'Starting the tutorial will discard the current grid changes to restore the initial data.',
+        tutorialResetExplanation: 'You can freely edit data during the tutorial. The initial state will be restored when you close it.',
         tutorialResetConfirm: 'Start tutorial',
         tutorialResetCancel: 'Cancel',
         tutorialResetError: 'Unable to restore tutorial data. Please try again.',
@@ -542,10 +550,17 @@ export default async function fullDemo(app, options = {}) {
         app, demo, statusDialog, statusOptions,
         resetData: resetTutorialData,
         hasPendingChanges: () => demo.getStateReport().hasChanges || Boolean(app.querySelector('#inventory-table .tabulator-editing')),
-        confirmStart: () => tutorialConfirmDialog.confirm({
-            title: t('tutorialResetTitle'), message: t('tutorialResetMessage'),
-            confirmText: t('tutorialResetConfirm'), cancelText: t('tutorialResetCancel')
-        }),
+        confirmStart: () => {
+            const confirmation = tutorialConfirmDialog.confirm({
+                title: t('tutorialResetTitle'), message: t('tutorialResetIntro'),
+                confirmText: t('tutorialResetConfirm'), cancelText: t('tutorialResetCancel')
+            });
+            decoratePartialSaveDialog(tutorialConfirmDialog, {
+                intro: t('tutorialResetIntro'), detailsHeading: t('tutorialResetDetails'),
+                detailsLines: [t('tutorialResetDetail')], explanation: t('tutorialResetExplanation')
+            });
+            return confirmation;
+        },
         onResetError: () => demo.feedback.show({ type: 'error', message: t('tutorialResetError') }),
         technicalGuide: app.querySelector('.demo-disclosure--technical'),
         locale: getLanguage()
@@ -800,8 +815,9 @@ export default async function fullDemo(app, options = {}) {
                 detailsLines: invalidRows,
                 explanation: t('partialExplanation')
             });
-            tutorialContext = inventoryTutorial.partialOpened(payload, tutorialContext, Boolean(partialSaveDialog.resolveCurrent));
+            tutorialContext = inventoryTutorial.partialOpened(payload, tutorialContext, Boolean(partialSaveDialog.resolveCurrent), partialSaveDialog.confirmButton);
             const confirmed = await confirmation;
+            inventoryTutorial.partialClosed();
 
             if (resetGeneration !== tutorialResetGeneration) return;
 
