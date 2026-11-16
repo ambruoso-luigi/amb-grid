@@ -304,11 +304,12 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('payload.hasValidChanges === false && payload.hasInvalidChanges === true');
         expect(source).toContain('&& payload.isPartialSave');
         expect(source).toContain('if (!payload.canSave) {');
-        expect(source).toContain('await partialSaveDialog.confirm({');
+        expect(source).toContain('const confirmation = partialSaveDialog.confirm({');
+        expect(source).toContain('const confirmed = await confirmation;');
         expect(source).toContain("confirmText: t('partialSaveConfirm')");
         expect(source).toContain("cancelText: t('partialSaveCancel')");
-        expect(source).toContain("partialSaveConfirm: 'Salva modifiche valide'");
-        expect(source).toContain("partialSaveConfirm: 'Save valid changes'");
+        expect(source).toContain("partialSaveConfirm: 'Salva righe valide'");
+        expect(source).toContain("partialSaveConfirm: 'Save valid rows'");
         expect(source).toContain('fakeApi.saveProductChanges(payload)');
         expect(source).toContain('crud.applyBackendIds(result.generatedIds || [])');
         expect(source).toContain('crud.markValidChangesSaved()');

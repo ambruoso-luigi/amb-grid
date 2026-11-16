@@ -5,6 +5,7 @@ import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuideToolbar } from './utils/demo-command-guide-toolbar.js';
 import { createDemoActionTutorial } from './components/demo-action-tutorial.js';
+import { decorateDangerRowDialog, decoratePartialSaveDialog } from './components/demo-confirm-presentation.js';
 import { demoIcon } from './demo-icons.js';
 
 export default function crudRowStates(app) {
@@ -519,15 +520,7 @@ export default function crudRowStates(app) {
         const { element, panelElement, titleElement, messageElement, confirmButton: dialogConfirmButton } = rowConfirmDialog;
         element.classList.add('demo-crud-row-confirm-dialog');
         if (isExistingDelete) {
-            element.classList.add('demo-crud-row-confirm-dialog--delete');
-            const header = document.createElement('div');
-            const badge = document.createElement('span');
-            header.className = 'demo-crud-row-confirm-dialog__header';
-            badge.className = 'demo-crud-row-confirm-dialog__badge';
-            badge.setAttribute('aria-hidden', 'true');
-            badge.innerHTML = demoIcon('delete', { size: 22, strokeWidth: 2.2 });
-            header.append(badge, titleElement);
-            panelElement.prepend(header);
+            decorateDangerRowDialog(rowConfirmDialog);
             const message = t('deleteMessage');
             const deletedIndex = message.indexOf('deleted');
             if (deletedIndex !== -1) {
@@ -536,7 +529,6 @@ export default function crudRowStates(app) {
                 messageElement.replaceChildren(document.createTextNode(message.slice(0, deletedIndex)), state,
                     document.createTextNode(message.slice(deletedIndex + 'deleted'.length)));
             }
-            dialogConfirmButton.insertAdjacentHTML('afterbegin', demoIcon('delete', { size: 18, strokeWidth: 2.2 }));
         } else if (isExistingRollback) {
             element.classList.add('demo-crud-row-confirm-dialog--rollback');
             const header = document.createElement('div');
@@ -789,43 +781,6 @@ export default function crudRowStates(app) {
         return runAfterEditSettled(() => saveChangedRows(context, generation));
     }
 
-    function decoratePartialSaveDialog(invalidRows) {
-        const { element, panelElement, titleElement, messageElement, confirmButton } = partialSaveDialog;
-        if (!element.classList.contains('demo-crud-partial-save-dialog')) {
-            element.classList.add('demo-crud-partial-save-dialog');
-            const header = document.createElement('div');
-            header.className = 'demo-crud-partial-save-dialog__header';
-            const badge = document.createElement('span');
-            badge.className = 'demo-crud-partial-save-dialog__badge';
-            badge.innerHTML = demoIcon('warning', { size: 24, strokeWidth: 2.2 });
-            header.append(badge, titleElement);
-            panelElement.prepend(header);
-        }
-        const intro = document.createElement('span');
-        intro.className = 'demo-crud-partial-save-dialog__intro';
-        intro.textContent = t('partialMessage');
-        const details = document.createElement('span');
-        details.className = 'demo-crud-partial-save-dialog__details';
-        const detailsHeading = document.createElement('span');
-        detailsHeading.className = 'demo-crud-partial-save-dialog__details-heading';
-        detailsHeading.innerHTML = demoIcon('warning', { size: 16, strokeWidth: 2.1 });
-        const count = document.createElement('span');
-        count.textContent = t(invalidRows.length === 1 ? 'partialExcludedOne' : 'partialExcludedMany', { count: invalidRows.length });
-        detailsHeading.append(count);
-        details.append(detailsHeading);
-        invalidRows.forEach(row => {
-            const line = document.createElement('span');
-            line.className = 'demo-crud-partial-save-dialog__details-line';
-            line.textContent = row;
-            details.append(line);
-        });
-        const explanation = document.createElement('span');
-        explanation.className = 'demo-crud-partial-save-dialog__explanation';
-        explanation.textContent = t('partialExplanation');
-        messageElement.replaceChildren(intro, details, explanation);
-        confirmButton.insertAdjacentHTML('afterbegin', demoIcon('check', { size: 18, strokeWidth: 2.6 }));
-    }
-
     async function saveChangedRows(context, generation) {
         if (!isCurrentScenario(generation)) return;
         demo.feedback.clear();
@@ -840,7 +795,12 @@ export default function crudRowStates(app) {
                 return `${identifier} — ${row.errors.map(error => error.message).join(' ')}`;
             });
             const confirmation = partialSaveDialog.confirm({ title: t('partialTitle'), message: t('partialMessage'), confirmText: t('saveValid'), cancelText: t('cancel') });
-            decoratePartialSaveDialog(invalidRows);
+            decoratePartialSaveDialog(partialSaveDialog, {
+                intro: t('partialMessage'),
+                detailsHeading: t(invalidRows.length === 1 ? 'partialExcludedOne' : 'partialExcludedMany', { count: invalidRows.length }),
+                detailsLines: invalidRows,
+                explanation: t('partialExplanation')
+            });
             refreshErrorCounts();
             if (tutorial.notify('partial-save-opened', { opened: Boolean(partialSaveDialog.resolveCurrent), report: crud.getStateReport() }, context)) context = tutorial.capture();
             syncTutorialHighlight();

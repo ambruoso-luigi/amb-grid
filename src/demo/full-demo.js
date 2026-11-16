@@ -3,6 +3,7 @@ import { fakeApi } from '../../demo/fake-backend/fake-api.js';
 import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { generateInventoryItemCode } from './utils/inventory-item-code.js';
+import { decorateDangerRowDialog, decoratePartialSaveDialog } from './components/demo-confirm-presentation.js';
 import { bindDemoColumnGuideAnimations, createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuide } from './components/demo-command-guide.ts';
 import { commandGuideCopy } from './components/demo-command-guide-copy.ts';
@@ -40,9 +41,17 @@ const messages = {
         deleted: 'Eliminate',
         generatedIds: 'ID backend generati',
         rowsStillNeedingCorrection: 'Righe rimaste da correggere',
-        partialSaveTitle: 'Sono presenti righe con errori',
-        partialSaveConfirm: 'Salva modifiche valide',
+        partialSaveTitle: 'Alcune righe non sono valide',
+        partialSaveConfirm: 'Salva righe valide',
         partialSaveCancel: 'Annulla',
+        partialSaveIntro: 'Vuoi salvare soltanto le modifiche valide?',
+        partialExcludedOne: '1 riga esclusa dal salvataggio',
+        partialExcludedMany: '{count} righe escluse dal salvataggio',
+        partialExplanation: 'Le modifiche valide saranno salvate. Le righe con errori resteranno disponibili per la correzione.',
+        removeNewTitle: 'Rimuovere la nuova riga?',
+        removeNewBody: 'La riga non è ancora stata salvata. Se prosegui, le informazioni inserite verranno eliminate.',
+        removeNewConfirm: 'Rimuovi riga',
+        removeNewCancel: 'Annulla',
         row: 'Riga',
         validChangesCanSave: '{count} modifiche valide possono comunque essere salvate.',
         invalidRowsRemainPending: 'Le righe con errori resteranno in attesa di correzione.',
@@ -77,9 +86,17 @@ const messages = {
         deleted: 'Deleted',
         generatedIds: 'Generated backend IDs',
         rowsStillNeedingCorrection: 'Rows still needing correction',
-        partialSaveTitle: 'Some changed rows contain errors',
-        partialSaveConfirm: 'Save valid changes',
+        partialSaveTitle: 'Some rows are invalid',
+        partialSaveConfirm: 'Save valid rows',
         partialSaveCancel: 'Cancel',
+        partialSaveIntro: 'Would you like to save only valid changes?',
+        partialExcludedOne: '1 row excluded from saving',
+        partialExcludedMany: '{count} rows excluded from saving',
+        partialExplanation: 'Valid changes will be saved. Rows with errors will remain available for correction.',
+        removeNewTitle: 'Remove the new row?',
+        removeNewBody: 'This row has not been saved yet. If you continue, the information entered in it will be discarded.',
+        removeNewConfirm: 'Remove row',
+        removeNewCancel: 'Cancel',
         row: 'Row',
         validChangesCanSave: '{count} valid changes can still be saved.',
         invalidRowsRemainPending: 'Rows with errors will remain pending for correction.',
@@ -167,15 +184,6 @@ const buildValidationReport = validateResult => [
     '',
     ...getInvalidChangedRowLines(validateResult)
 ];
-
-const buildPartialSaveMessage = ({ payload, validateResult }) => [
-    ...getInvalidChangedRowLines(validateResult),
-    '',
-    t('validChangesCanSave').replace('{count}', getValidChangesCount(payload)),
-    t('invalidRowsRemainPending'),
-    '',
-    t('saveValidChangesQuestion')
-].join('\n');
 
 const buildSaveReport = ({ result, applyIdsResult, savedResult, payload, validateResult }) => [
     t('saveTitle'),
@@ -279,6 +287,7 @@ export default async function fullDemo(app, options = {}) {
     const statusDialog = new AMB.LookupDialog();
     const reportDialog = createDemoReportDialog();
     const partialSaveDialog = new AMB.ConfirmDialog();
+    const rowConfirmDialog = new AMB.ConfirmDialog();
     const warehouseOptions = await fakeApi.getWarehouses();
     const statusOptions = (await fakeApi.getStatuses()).map(status => status.id);
     const products = await fakeApi.getProducts();
@@ -295,6 +304,7 @@ export default async function fullDemo(app, options = {}) {
             enabled: true,
             width: 55,
             confirmRemoveNewMessage: demoRowActionMessages.removeNew,
+            confirmProvider: handleRowConfirmation,
             labels: demoRowActionLabels
         },
         search: {
@@ -538,6 +548,7 @@ export default async function fullDemo(app, options = {}) {
         commandGuide = null;
         reportDialog.destroy();
         partialSaveDialog.destroy();
+        rowConfirmDialog.destroy();
         app.style.removeProperty('--demo-table-height');
         document.body.classList.remove('demo-main-demo-active');
         if (extraClasses.length) {
@@ -557,6 +568,18 @@ export default async function fullDemo(app, options = {}) {
         const trigger = event?.currentTarget;
 
         commandGuide?.toggle(trigger instanceof HTMLElement ? trigger : undefined);
+    }
+
+    function handleRowConfirmation({ action, message }) {
+        const removeNew = action === 'remove-new';
+        const confirmation = rowConfirmDialog.confirm(removeNew ? {
+            title: t('removeNewTitle'),
+            message: t('removeNewBody'),
+            confirmText: t('removeNewConfirm'),
+            cancelText: t('removeNewCancel')
+        } : { message });
+        if (removeNew) decorateDangerRowDialog(rowConfirmDialog);
+        return confirmation;
     }
 
     function openPayloadReport(payload = demo.getSavePayload({
@@ -692,12 +715,23 @@ export default async function fullDemo(app, options = {}) {
             && payload.hasInvalidChanges
             && payload.isPartialSave
             && payload.canSave) {
-            const confirmed = await partialSaveDialog.confirm({
+            const confirmation = partialSaveDialog.confirm({
                 title: t('partialSaveTitle'),
-                message: buildPartialSaveMessage({ payload, validateResult }),
+                message: t('partialSaveIntro'),
                 confirmText: t('partialSaveConfirm'),
                 cancelText: t('partialSaveCancel')
             });
+            const invalidRows = validateResult.rows.filter(row => !row.isValid).map(row => {
+                const identifier = row.id ?? row.tempId ?? `${t('row')} ${row.rowNumber}`;
+                return `${identifier} — ${row.errors.map(error => error.message).join(' ')}`;
+            });
+            decoratePartialSaveDialog(partialSaveDialog, {
+                intro: t('partialSaveIntro'),
+                detailsHeading: t(invalidRows.length === 1 ? 'partialExcludedOne' : 'partialExcludedMany').replace('{count}', invalidRows.length),
+                detailsLines: [...invalidRows, `${t('validChangedRows')}: ${getValidChangesCount(payload)}`],
+                explanation: t('partialExplanation')
+            });
+            const confirmed = await confirmation;
 
             if (!confirmed) {
                 return;

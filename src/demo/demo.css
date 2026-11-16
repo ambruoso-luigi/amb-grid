@@ -2011,22 +2011,6 @@ body.demo-main-demo-active .teh-confirm-dialog__message {
     white-space: pre-line;
 }
 
-body.demo-main-demo-active > .teh-floating-message--info {
-    background: #FFFBF3;
-    border-color: #E6C98B;
-    border-left-color: #986A00;
-    color: #50677C;
-}
-
-body.demo-main-demo-active > .teh-floating-message--info .teh-floating-message__title {
-    color: #10233F;
-    border-bottom-color: #E6C98B;
-}
-
-body.demo-main-demo-active > .teh-floating-message--info .teh-floating-message__body {
-    color: #50677C;
-}
-
 :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-confirm-dialog__panel {
     width: min(520px, 100%);
     padding: clamp(22px, 4vw, 30px);
@@ -4664,8 +4648,6 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 .demo-panel #inventory-table {
-    --amb-color-focus: #986A00;
-    --amb-focus-ring: 0 0 0 3px rgb(152 106 0 / 18%);
     --amb-row-new-bg: #dcebff;
     --amb-row-modified-bg: #fff0c2;
     --amb-row-saved-bg: #ddf2e3;
@@ -4673,38 +4655,21 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     --amb-row-error-bg: #fbdddd;
 }
 
-.demo-panel #inventory-table .amb-row-action-button:focus-visible {
-    outline: 1px solid #986A00;
-    box-shadow: 0 0 0 3px rgb(152 106 0 / 18%);
+.demo-panel #inventory-table .tabulator-row .amb-selection-column__input {
+    border-radius: 4px;
 }
 
-.demo-panel #inventory-table .tabulator-row .tabulator-cell:not(.tabulator-editing):focus {
-    outline: 2px solid #986A00;
-    outline-offset: -2px;
+.demo-panel #inventory-table .tabulator-row .amb-selection-column__input:focus,
+.demo-panel #inventory-table .tabulator-row .amb-selection-column__input:focus-visible {
+    outline: 1px solid var(--amb-site-blue);
+    outline-offset: 0;
+    box-shadow: 0 0 0 3px rgb(29 95 153 / 20%);
+    border-radius: 4px;
 }
 
-.demo-panel #inventory-table .tabulator-row .tabulator-cell[data-cell-error="true"]:not(.tabulator-editing):focus {
-    outline-offset: 1px;
-}
-
-.demo-panel #inventory-table .tabulator-cell.demo-business-checkbox-cell:not([data-cell-error="true"]):focus-visible {
-    box-shadow: inset 0 0 0 2px #986A00;
+.demo-panel #inventory-table .tabulator-row .tabulator-cell.demo-business-checkbox-cell:not([data-cell-error="true"]):focus {
+    box-shadow: inset 0 0 0 2px var(--amb-site-blue);
     outline: none;
-}
-
-.demo-panel #inventory-table .tabulator-row.tabulator-selected[data-state="clean"]:not([data-row-error="true"]):not([data-has-cell-error="true"]) {
-    background-color: #FFF7E6 !important;
-}
-
-.demo-panel #inventory-table .amb-selection-column__input,
-.demo-panel #inventory-table .tabulator-header .tabulator-col:first-child input[type="checkbox"] {
-    accent-color: #986A00;
-}
-
-.demo-panel #inventory-table .amb-selection-column__input:focus-visible,
-.demo-panel #inventory-table .tabulator-header .tabulator-col:first-child input[type="checkbox"]:focus-visible {
-    outline: 2px solid #986A00;
-    outline-offset: 2px;
 }
 
 .demo-panel #inventory-table .tabulator-row[data-state="new"] {
