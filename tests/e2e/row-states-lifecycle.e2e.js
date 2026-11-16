@@ -19,16 +19,31 @@ const selectCell = async (page, target, value) => {
 const selectValue = (page, id, field, value) => selectCell(page, cell(page, id, field), value);
 const feedback = page => page.locator('#feature-example .amb-feedback-region__message');
 const addRecord = async (page, description) => {
+    const tempIds = () => table(page).locator('.demo-crud-temp-id[data-demo-temp-id]')
+        .evaluateAll(elements => elements.map(element => element.dataset.demoTempId));
+    const existingIds = new Set(await tempIds());
     await action(page, 'add').click();
     await expect(action(page, 'add')).not.toHaveAttribute('aria-busy', 'true');
-    const newRow = table(page).locator('.tabulator-row[data-state="new"]').filter({ hasText: 'New vendor risk assessment' });
+    let newIds = [];
+    await expect.poll(async () => {
+        newIds = (await tempIds()).filter(id => !existingIds.has(id));
+        return newIds.length;
+    }).toBe(1);
+    const newRow = table(page).locator('.tabulator-row[data-state="new"]').filter({
+        has: page.locator(`.demo-crud-temp-id[data-demo-temp-id=${JSON.stringify(newIds[0])}]`)
+    });
     await expect(newRow).toBeVisible();
     const descriptionCell = newRow.locator('.tabulator-cell[tabulator-field="description"]');
-    const input = await openEditorFromNavigation(page, descriptionCell, 'New record description', '#crud-row-states-table');
+    let input = descriptionCell.locator('input.amb-cell-editor');
+    if (await input.count()) {
+        await expect(input).toBeFocused();
+    } else {
+        input = await openEditorFromNavigation(page, descriptionCell, 'New record description', '#crud-row-states-table');
+    }
     await input.fill(description);
     await input.press('Enter');
     await expect(input).toHaveCount(0);
-    return table(page).locator('.tabulator-row').filter({ hasText: description });
+    return newRow;
 };
 const readDialog = async (page, name) => {
     const dialog = page.getByRole('dialog', { name, exact: true });
