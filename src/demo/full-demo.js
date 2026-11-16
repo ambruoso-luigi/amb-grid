@@ -4,6 +4,7 @@ import { createDemoReportDialog } from './utils/demo-report-dialog.js';
 import { createDemoCheckboxFormatter } from './utils/demo-checkbox.js';
 import { generateInventoryItemCode } from './utils/inventory-item-code.js';
 import { decorateDangerRowDialog, decoratePartialSaveDialog } from './components/demo-confirm-presentation.js';
+import { createInventoryTutorial } from './components/js-inventory-tutorial.js';
 import { bindDemoColumnGuideAnimations, createDemoColumnGuide } from './utils/demo-column-guide.js';
 import { createDemoCommandGuide } from './components/demo-command-guide.ts';
 import { commandGuideCopy } from './components/demo-command-guide-copy.ts';
@@ -269,6 +270,14 @@ export default async function fullDemo(app, options = {}) {
         </div>
     `;
 
+    const tutorialLaunch = document.createElement('button');
+    tutorialLaunch.type = 'button';
+    tutorialLaunch.className = 'demo-crud-tutorial-launch';
+    tutorialLaunch.dataset.action = 'tutorial-launch';
+    tutorialLaunch.setAttribute('aria-controls', 'javascript-inventory-tutorial');
+    tutorialLaunch.setAttribute('aria-expanded', 'false');
+    tutorialLaunch.innerHTML = `${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Avvia tutorial</span>`;
+    app.querySelector('.demo-disclosure--technical').after(tutorialLaunch);
     const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app);
 
     const statusLookup = AMB.lookup({
@@ -514,6 +523,13 @@ export default async function fullDemo(app, options = {}) {
 
     const demo = AMB.table(tableOptions);
     crud = demo.crud;
+    const inventoryTutorial = createInventoryTutorial({
+        host: app.querySelector('.demo-main-tutorial-host'),
+        launch: app.querySelector('[data-action="tutorial-launch"]'),
+        app, demo, statusDialog, statusOptions,
+        technicalGuide: app.querySelector('.demo-disclosure--technical'),
+        locale: getLanguage()
+    });
     const commandGuideHost = app.querySelector('.demo-command-guide-host');
     const commandGuideTrigger = app.querySelector('[data-action="demo-command-guide"]');
     const updateCommandGuideTrigger = () => {
@@ -544,6 +560,7 @@ export default async function fullDemo(app, options = {}) {
     demo.destroy = () => {
         destroyColumnGuideAnimations();
         window.removeEventListener('amb-demo-language-change', handleDemoLanguageChange);
+        inventoryTutorial.destroy();
         commandGuide?.destroy();
         commandGuide = null;
         reportDialog.destroy();
@@ -638,6 +655,7 @@ export default async function fullDemo(app, options = {}) {
     }
 
     async function handleAdd() {
+        const tutorialContext = inventoryTutorial.capture();
         demo.feedback.clear();
         const itemCode = generateInventoryItemCode(demo.getData());
         if (itemCode === null) {
@@ -660,6 +678,7 @@ export default async function fullDemo(app, options = {}) {
         const data = row?.getData?.();
         const rowIdentifier = data?.id ?? data?._ambTempId;
         if (rowIdentifier != null) demo.navigateCellNext(rowIdentifier, 'itemCode');
+        inventoryTutorial.added(row, tutorialContext);
         return row;
     }
 
@@ -686,6 +705,8 @@ export default async function fullDemo(app, options = {}) {
     }
 
     async function handleSave() {
+        let tutorialContext = inventoryTutorial.capture();
+        let partialConfirmed = false;
         demo.feedback.clear();
 
         const validateResult = demo.validateChanges();
@@ -726,16 +747,18 @@ export default async function fullDemo(app, options = {}) {
                 return `${identifier} — ${row.errors.map(error => error.message).join(' ')}`;
             });
             decoratePartialSaveDialog(partialSaveDialog, {
-                intro: t('partialSaveIntro'),
+                intro: `${t('partialSaveIntro')}\n${t('validChangedRows')}: ${getValidChangesCount(payload)}`,
                 detailsHeading: t(invalidRows.length === 1 ? 'partialExcludedOne' : 'partialExcludedMany').replace('{count}', invalidRows.length),
-                detailsLines: [...invalidRows, `${t('validChangedRows')}: ${getValidChangesCount(payload)}`],
+                detailsLines: invalidRows,
                 explanation: t('partialExplanation')
             });
+            tutorialContext = inventoryTutorial.partialOpened(payload, tutorialContext, Boolean(partialSaveDialog.resolveCurrent));
             const confirmed = await confirmation;
 
             if (!confirmed) {
                 return;
             }
+            partialConfirmed = true;
         }
 
         if (!payload.canSave) {
@@ -752,6 +775,7 @@ export default async function fullDemo(app, options = {}) {
         if (result.ok) {
             const applyIdsResult = crud.applyBackendIds(result.generatedIds || []);
             const savedResult = crud.markValidChangesSaved();
+            inventoryTutorial.partialSaved(tutorialContext, partialConfirmed, result, savedResult, crud.getStateReport());
             const details = {
                 result,
                 applyIdsResult,

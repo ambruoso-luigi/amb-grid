@@ -21,8 +21,10 @@ const feedback = page => page.locator('#feature-example .amb-feedback-region__me
 const addRecord = async (page, description) => {
     await action(page, 'add').click();
     await expect(action(page, 'add')).not.toHaveAttribute('aria-busy', 'true');
-    const input = page.locator('#crud-row-states-table input.amb-cell-editor');
-    await expect(input).toBeFocused();
+    const newRow = table(page).locator('.tabulator-row[data-state="new"]').filter({ hasText: 'New vendor risk assessment' });
+    await expect(newRow).toBeVisible();
+    const descriptionCell = newRow.locator('.tabulator-cell[tabulator-field="description"]');
+    const input = await openEditorFromNavigation(page, descriptionCell, 'New record description', '#crud-row-states-table');
     await input.fill(description);
     await input.press('Enter');
     await expect(input).toHaveCount(0);
