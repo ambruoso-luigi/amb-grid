@@ -246,6 +246,11 @@ export const fakeApi = {
         return clone(state.products);
     },
 
+    async resetDemoProducts() {
+        state.products = createDemoProducts(101, state.warehouses, state.statuses);
+        return clone(state.products);
+    },
+
     async saveProductChanges(payload) {
         const changes = payload.changes || {};
         const missingDelete = (changes.deleted || []).find(change => {

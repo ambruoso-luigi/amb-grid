@@ -53,6 +53,11 @@ const messages = {
         removeNewBody: 'La riga non è ancora stata salvata. Se prosegui, le informazioni inserite verranno eliminate.',
         removeNewConfirm: 'Rimuovi riga',
         removeNewCancel: 'Annulla',
+        tutorialResetTitle: 'Avviare il tutorial?',
+        tutorialResetMessage: 'Le modifiche non salvate verranno annullate per preparare il tutorial.',
+        tutorialResetConfirm: 'Avvia tutorial',
+        tutorialResetCancel: 'Annulla',
+        tutorialResetError: 'Impossibile ripristinare i dati del tutorial. Riprova.',
         row: 'Riga',
         validChangesCanSave: '{count} modifiche valide possono comunque essere salvate.',
         invalidRowsRemainPending: 'Le righe con errori resteranno in attesa di correzione.',
@@ -98,6 +103,11 @@ const messages = {
         removeNewBody: 'This row has not been saved yet. If you continue, the information entered in it will be discarded.',
         removeNewConfirm: 'Remove row',
         removeNewCancel: 'Cancel',
+        tutorialResetTitle: 'Start the tutorial?',
+        tutorialResetMessage: 'Unsaved changes will be discarded to prepare the tutorial.',
+        tutorialResetConfirm: 'Start tutorial',
+        tutorialResetCancel: 'Cancel',
+        tutorialResetError: 'Unable to restore tutorial data. Please try again.',
         row: 'Row',
         validChangesCanSave: '{count} valid changes can still be saved.',
         invalidRowsRemainPending: 'Rows with errors will remain pending for correction.',
@@ -277,7 +287,7 @@ export default async function fullDemo(app, options = {}) {
     tutorialLaunch.setAttribute('aria-controls', 'javascript-inventory-tutorial');
     tutorialLaunch.setAttribute('aria-expanded', 'false');
     tutorialLaunch.innerHTML = `${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Avvia tutorial</span>`;
-    app.querySelector('.demo-disclosure--technical').after(tutorialLaunch);
+    app.querySelector('.demo-disclosure--technical').before(tutorialLaunch);
     const destroyColumnGuideAnimations = bindDemoColumnGuideAnimations(app);
 
     const statusLookup = AMB.lookup({
@@ -297,11 +307,14 @@ export default async function fullDemo(app, options = {}) {
     const reportDialog = createDemoReportDialog();
     const partialSaveDialog = new AMB.ConfirmDialog();
     const rowConfirmDialog = new AMB.ConfirmDialog();
+    const tutorialConfirmDialog = new AMB.ConfirmDialog();
     const warehouseOptions = await fakeApi.getWarehouses();
     const statusOptions = (await fakeApi.getStatuses()).map(status => status.id);
     const products = await fakeApi.getProducts();
     let crud = null;
     let commandGuide = null;
+    let tutorialResetGeneration = 0;
+    let demoDisposed = false;
 
     const tableOptions = {
         selector: '#inventory-table',
@@ -527,6 +540,13 @@ export default async function fullDemo(app, options = {}) {
         host: app.querySelector('.demo-main-tutorial-host'),
         launch: app.querySelector('[data-action="tutorial-launch"]'),
         app, demo, statusDialog, statusOptions,
+        resetData: resetTutorialData,
+        hasPendingChanges: () => demo.getStateReport().hasChanges || Boolean(app.querySelector('#inventory-table .tabulator-editing')),
+        confirmStart: () => tutorialConfirmDialog.confirm({
+            title: t('tutorialResetTitle'), message: t('tutorialResetMessage'),
+            confirmText: t('tutorialResetConfirm'), cancelText: t('tutorialResetCancel')
+        }),
+        onResetError: () => demo.feedback.show({ type: 'error', message: t('tutorialResetError') }),
         technicalGuide: app.querySelector('.demo-disclosure--technical'),
         locale: getLanguage()
     });
@@ -558,6 +578,8 @@ export default async function fullDemo(app, options = {}) {
     const originalDestroy = demo.destroy.bind(demo);
 
     demo.destroy = () => {
+        demoDisposed = true;
+        tutorialResetGeneration += 1;
         destroyColumnGuideAnimations();
         window.removeEventListener('amb-demo-language-change', handleDemoLanguageChange);
         inventoryTutorial.destroy();
@@ -566,6 +588,7 @@ export default async function fullDemo(app, options = {}) {
         reportDialog.destroy();
         partialSaveDialog.destroy();
         rowConfirmDialog.destroy();
+        tutorialConfirmDialog.destroy();
         app.style.removeProperty('--demo-table-height');
         document.body.classList.remove('demo-main-demo-active');
         if (extraClasses.length) {
@@ -585,6 +608,28 @@ export default async function fullDemo(app, options = {}) {
         const trigger = event?.currentTarget;
 
         commandGuide?.toggle(trigger instanceof HTMLElement ? trigger : undefined);
+    }
+
+    async function resetTutorialData() {
+        tutorialResetGeneration += 1;
+        if (statusDialog.resolve) statusDialog.close(null);
+        demo.table.cancelEdit?.();
+        partialSaveDialog.destroy();
+        rowConfirmDialog.destroy();
+        reportDialog.close();
+        demo.feedback.clear();
+        demo.clearSelection();
+        demo.clearSearch();
+        demo.setSearchFields([]);
+        demo.setSearchOptions({ caseSensitive: false, wholeWord: false });
+        demo.clearFilter(true);
+        const products = await fakeApi.resetDemoProducts();
+        if (demoDisposed) return false;
+        await demo.setData(products);
+        if (demoDisposed) return false;
+        await demo.setPage(1);
+        demo.feedback.clear();
+        return true;
     }
 
     function handleRowConfirmation({ action, message }) {
@@ -655,6 +700,7 @@ export default async function fullDemo(app, options = {}) {
     }
 
     async function handleAdd() {
+        const resetGeneration = tutorialResetGeneration;
         const tutorialContext = inventoryTutorial.capture();
         demo.feedback.clear();
         const itemCode = generateInventoryItemCode(demo.getData());
@@ -675,6 +721,7 @@ export default async function fullDemo(app, options = {}) {
             requiresInspection: false,
             notes: ''
         });
+        if (resetGeneration !== tutorialResetGeneration) return row;
         const data = row?.getData?.();
         const rowIdentifier = data?.id ?? data?._ambTempId;
         if (rowIdentifier != null) demo.navigateCellNext(rowIdentifier, 'itemCode');
@@ -705,6 +752,7 @@ export default async function fullDemo(app, options = {}) {
     }
 
     async function handleSave() {
+        const resetGeneration = tutorialResetGeneration;
         let tutorialContext = inventoryTutorial.capture();
         let partialConfirmed = false;
         demo.feedback.clear();
@@ -755,6 +803,8 @@ export default async function fullDemo(app, options = {}) {
             tutorialContext = inventoryTutorial.partialOpened(payload, tutorialContext, Boolean(partialSaveDialog.resolveCurrent));
             const confirmed = await confirmation;
 
+            if (resetGeneration !== tutorialResetGeneration) return;
+
             if (!confirmed) {
                 return;
             }
@@ -771,6 +821,8 @@ export default async function fullDemo(app, options = {}) {
         }
 
         const result = await fakeApi.saveProductChanges(payload);
+
+        if (resetGeneration !== tutorialResetGeneration) return;
 
         if (result.ok) {
             const applyIdsResult = crud.applyBackendIds(result.generatedIds || []);

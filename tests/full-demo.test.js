@@ -241,7 +241,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('generateInventoryItemCode(demo.getData())');
         expect(source).toContain('await crud.addRow({');
         expect(source).toContain("demo.navigateCellNext(rowIdentifier, 'itemCode')");
-        expect(source).not.toContain('setPage(');
+        const handleAddSource = source.slice(source.indexOf('async function handleAdd()'), source.indexOf('async function handleReload()'));
+        expect(handleAddSource).not.toContain('setPage(');
         expect(source).not.toContain('scrollToRow');
         expect(source).not.toContain('setTimeout');
     });
