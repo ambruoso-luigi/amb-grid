@@ -41,7 +41,7 @@ test('inventory tutorial preserves unsaved changes until confirmed and resets on
     };
     const expectReady = async () => {
         await expect(tutorial).toBeVisible();
-        await expect(tutorial).toHaveAttribute('data-tutorial-step', 'arrows');
+        await expect(tutorial).toHaveAttribute('data-tutorial-step', 'keyboard-edit');
         await expect(tutorial).toHaveAttribute('data-resetting', 'false');
         await expect(tutorial).toHaveAttribute('aria-busy', 'false');
         await expect(productName).toHaveText(originalName);
@@ -96,8 +96,8 @@ test('inventory tutorial preserves unsaved changes until confirmed and resets on
     await expectClosedAndReset();
     await launch.click();
     await expectReady();
-    await expect(tutorial.locator('.demo-action-tutorial__counter')).toHaveText('1 di 9');
-    await expect(tutorial.locator('.demo-action-tutorial__progress > li')).toHaveCount(9);
+    await expect(tutorial.locator('.demo-action-tutorial__counter')).toHaveText('1 di 10');
+    await expect(tutorial.locator('.demo-action-tutorial__progress > li')).toHaveCount(10);
 });
 
 test('inventory tutorial reaches and completes the F2 lookup through real interactions', async ({ page }) => {
@@ -115,39 +115,46 @@ test('inventory tutorial reaches and completes the F2 lookup through real intera
     await expect(grid).toBeVisible();
     await demo.locator('[data-action="tutorial-launch"]').click();
     await expect(tutorial).toHaveAttribute('data-resetting', 'false');
-    await step('arrows');
-    await enterNavigationWithClick(page, cell('itemCode'), 'Tutorial arrow start', '#inventory-table');
+    await step('keyboard-edit');
+    await enterNavigationWithClick(page, cell('warehouse'), 'Tutorial arrow start', '#inventory-table');
     await page.keyboard.press('ArrowRight');
-    await step('enter');
-
-    const name = await openEditorFromNavigation(page, cell('productName'), 'Tutorial product name', '#inventory-table');
-    await name.fill('Prodotto tutorial modificato');
-    await name.press('Enter');
+    await step('keyboard-edit', '1');
+    await page.keyboard.press('Enter');
+    const stockInput = cell('stockQuantity').locator('input');
+    await expect(stockInput).toBeVisible();
+    const originalStock = Number(await stockInput.inputValue());
+    await stockInput.fill(String(originalStock + 1));
+    await stockInput.press('Enter');
     await step('tab');
 
     const quantity = await openEditorFromNavigation(page, cell('stockQuantity'), 'Tutorial stock', '#inventory-table');
-    await quantity.fill('123');
+    await quantity.fill(String(originalStock + 2));
     await quantity.press('Tab');
-    await step('tab', '1');
-    await expect(cell('unitPrice').locator('input.amb-cell-editor')).toBeFocused();
-    await page.keyboard.press('Shift+Tab');
     await step('escape');
-    await page.keyboard.press('Enter');
-
-    const temporaryName = await openEditorFromNavigation(page, cell('productName'), 'Tutorial cancel edit', '#inventory-table');
-    await temporaryName.fill('Nome temporaneo tutorial');
+    const price = cell('unitPrice').locator('input');
+    await expect(price).toBeFocused();
+    await price.fill('987.65');
     await step('escape', '1');
-    await temporaryName.press('Escape');
-    await expect(cell('productName')).toHaveText('Prodotto tutorial modificato');
+    await price.press('Escape');
+    await step('pages');
+    await expect(cell('stockQuantity')).toContainText(String(originalStock + 2));
+    await enterNavigationWithClick(page, cell('productName'), 'Tutorial pagination', '#inventory-table');
+    await page.keyboard.press('Alt+PageDown');
+    await step('pages', '1');
+    await page.keyboard.press('Alt+PageUp');
     await step('direct-lookup');
 
     const statusInput = await openEditorFromNavigation(page, cell('status'), 'Tutorial direct status', '#inventory-table', '.amb-lookup-editor__input');
-    await statusInput.fill('AB03');
+    const oldStatus = await statusInput.inputValue();
+    const newStatus = oldStatus === 'AB03' ? 'A085' : 'AB03';
+    await statusInput.fill(newStatus);
     await statusInput.press('Enter');
-    await expect(cell('status')).toHaveText('AB03');
+    await expect(cell('status')).toHaveText(newStatus);
     await step('dialog-lookup');
 
-    await enterNavigationWithClick(page, cell('status'), 'Tutorial F2 status', '#inventory-table');
+    const otherRow = grid.locator('.tabulator-row').nth(1);
+    const otherStatus = otherRow.locator('.tabulator-cell[tabulator-field="status"]');
+    await enterNavigationWithClick(page, otherStatus, 'Tutorial F2 status', '#inventory-table');
     await page.keyboard.press('F2');
     const dialog = page.locator('.amb-lookup-dialog');
     await expect(dialog).toBeVisible();
@@ -159,6 +166,6 @@ test('inventory tutorial reaches and completes the F2 lookup through real intera
     await result.click();
     await dialog.locator('.amb-lookup-dialog__button--primary').click();
     await expect(dialog).toHaveCount(0);
-    await expect(cell('status')).toHaveText('A085');
-    await step('mouse');
+    await expect(otherStatus).toHaveText('A085');
+    await step('date-picker');
 });

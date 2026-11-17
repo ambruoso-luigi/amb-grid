@@ -20,12 +20,12 @@ const predicate = (step, index = 0) => inventoryTutorialSteps.find(item => item.
 
 describe('inventory tutorial action conditions', () => {
     test.each(['it', 'en'])('provides the four step instructions in %s', language => {
-        for (const key of ['arrows', 'enter', 'tabForward', 'escapePrepare', 'escapeCancel', 'pageNext', 'pagePrevious', 'pageUnavailable', 'pageSingle']) {
+        for (const key of ['arrows', 'enter', 'tabForward', 'escapePrepare', 'escapeCancel', 'pageNext', 'pagePrevious', 'pageUnavailable', 'pageSingle', 'direct', 'dialogOpen', 'dialogSearch', 'dialogSelect', 'dateOpen', 'dateMove', 'dateCommit', 'notesOpen', 'notesInput', 'notesSave']) {
             expect(publicExampleTranslations[language][`examples.javascriptInventory.${key}`]).toBeTruthy();
         }
     });
     test('defines nine steps and requires observed navigation and edits', () => {
-        expect(inventoryTutorialSteps.map(step => step.id)).toEqual(['keyboard-edit', 'tab', 'escape', 'pages', 'direct-lookup', 'dialog-lookup', 'mouse', 'add', 'partial-save']);
+        expect(inventoryTutorialSteps.map(step => step.id)).toEqual(['keyboard-edit', 'tab', 'escape', 'pages', 'direct-lookup', 'dialog-lookup', 'date-picker', 'notes', 'add', 'partial-save']);
         const from = {}, to = {};
         expect(predicate('keyboard-edit')({ from, to, firstRow: false, field: 'stockQuantity' })).toBe(false);
         expect(predicate('keyboard-edit')({ from, to, firstRow: true, field: 'stockQuantity' })).toBe(true);
@@ -57,10 +57,20 @@ describe('inventory tutorial action conditions', () => {
 
     test('requires F2, a search, and an applied valid selection', () => {
         expect(predicate('dialog-lookup')({ opened: true, key: 'Enter' })).toBe(false);
-        expect(predicate('dialog-lookup')({ opened: true, key: 'F2' })).toBe(true);
+        expect(predicate('dialog-lookup')({ opened: true, key: 'F2', differentRow: false })).toBe(false);
+        expect(predicate('dialog-lookup')({ opened: true, key: 'F2', differentRow: true })).toBe(true);
         expect(predicate('dialog-lookup', 1)({ searched: false })).toBe(false);
         expect(predicate('dialog-lookup', 2)({ selected: true, applied: false, valid: true })).toBe(false);
         expect(predicate('dialog-lookup', 2)({ selected: true, applied: true, valid: true })).toBe(true);
+    });
+
+    test('requires committed calendar and Notes changes', () => {
+        expect(predicate('date-picker')({ opened: false, f2: true, cell: true })).toBe(false);
+        expect(predicate('date-picker', 1)({ opened: true, moved: false })).toBe(false);
+        expect(predicate('date-picker', 2)({ selected: true, valid: true, before: '10/04/2025', after: '11/04/2025', committed: false, applied: true })).toBe(false);
+        expect(predicate('notes')({ doubleClick: false, opened: true, textarea: true })).toBe(false);
+        expect(predicate('notes', 1)({ text: '  ', before: '' })).toBe(false);
+        expect(predicate('notes', 2)({ saved: false, closed: true, applied: true, before: 'a', after: 'b', committed: true })).toBe(false);
     });
 
     test('requires a real new row with a generated code', () => {
@@ -317,7 +327,7 @@ test.each(['navigation', 'editing', 'navigation-same'])('recognizes asynchronous
     vi.resetModules();
     let config;
     let index = 0;
-    let stepId = 'dialog-lookup';
+    let stepId = 'direct-lookup';
     const context = () => ({ generation: 1, stepId, actionIndex: index });
     const tutorial = {
         capture: context,
@@ -327,7 +337,7 @@ test.each(['navigation', 'editing', 'navigation-same'])('recognizes asynchronous
             const action = step.actions[index];
             if (action.actionId !== id || !action.isComplete(payload)) return false;
             index += 1;
-            if (index === step.actions.length) { stepId = 'mouse'; index = 0; }
+            if (index === step.actions.length) { stepId = stepId === 'direct-lookup' ? 'dialog-lookup' : 'date-picker'; index = 0; }
             config.onStateChange({ hidden: false, stepId, actionIndex: index, resetting: false });
             return true;
         },
@@ -342,7 +352,7 @@ test.each(['navigation', 'editing', 'navigation-same'])('recognizes asynchronous
         vi.stubGlobal('document', doc);
         vi.stubGlobal('window', new EventTarget());
         const observers = [];
-        if (mode === 'navigation-same') vi.stubGlobal('MutationObserver', class {
+        vi.stubGlobal('MutationObserver', class {
             constructor(callback) { this.callback = callback; observers.push(this); }
             observe() {}
             disconnect() {}
@@ -360,16 +370,32 @@ test.each(['navigation', 'editing', 'navigation-same'])('recognizes asynchronous
         const overlay = { hidden: false, isConnected: true, getClientRects: () => [1], contains: () => true, querySelector: () => null };
         const statusDialog = { open: () => { statusDialog.overlay = overlay; return new Promise(resolve => { resolveSelection = resolve; }); } };
         const instance = createWithMock({ host, launch, app, demo, statusDialog, statusOptions: ['A085', 'AB03'], locale: 'en', resetData: async () => true });
+        const directElement = { isConnected: false, contains: () => true, getAttribute: () => 'status', closest: selector => selector === '.tabulator-cell' ? directElement : null, classList: { contains: () => false } };
+        let directValue = 'AB03';
+        const directCell = { getElement: () => directElement, getField: () => 'status', getValue: () => directValue, getRow: () => ({ getData: () => ({ id: 1 }) }) };
+        const directKey = new Event('keydown');
+        Object.defineProperties(directKey, { key: { value: 'Enter' }, target: { value: directElement } });
+        app.dispatchEvent(directKey);
+        handlers.get('cellEditing')(directCell);
+        const directInput = new Event('input');
+        Object.defineProperty(directInput, 'target', { value: { value: 'A085' } });
+        doc.dispatchEvent(directInput);
+        directValue = 'A085';
+        handlers.get('cellEdited')(directCell);
+        expect(stepId).toBe('dialog-lookup');
+        const sameRowKey = new Event('keydown');
+        Object.defineProperties(sameRowKey, { key: { value: 'F2' }, target: { value: directElement } });
+        app.dispatchEvent(sameRowKey);
+        handlers.get('cellEditing')(directCell);
+        const sameRowDialog = statusDialog.open();
+        expect(index).toBe(0);
+        resolveSelection(null);
+        await sameRowDialog;
         const element = { isConnected: false, contains: () => false, getAttribute: () => 'status', closest: selector => selector === '.tabulator-cell' ? element : null, classList: { contains: () => mode === 'editing' } };
         let value = 'AB03';
-        const cell = { getElement: () => element, getField: () => 'status', getValue: () => value, getRow: () => ({ getData: () => ({ id: 1 }) }) };
+        const cell = { getElement: () => element, getField: () => 'status', getValue: () => value, getRow: () => ({ getData: () => ({ id: 2 }) }) };
         const key = new Event('keydown');
         Object.defineProperties(key, { key: { value: 'F2' }, target: { value: element } });
-        if (mode === 'editing') handlers.get('cellEditing')(cell);
-        app.dispatchEvent(key);
-        config.onStateChange({ hidden: true, stepId, actionIndex: index });
-        await Promise.resolve();
-        config.onStateChange({ hidden: false, stepId, actionIndex: index });
         if (mode === 'editing') handlers.get('cellEditing')(cell);
         const withoutF2 = statusDialog.open();
         expect(index).toBe(0);
@@ -392,6 +418,8 @@ test.each(['navigation', 'editing', 'navigation-same'])('recognizes asynchronous
         const input = new Event('input');
         Object.defineProperty(input, 'target', { value: search });
         doc.dispatchEvent(input);
+        expect(index).toBe(1);
+        observers[observers.length - 1].callback([{ type: 'childList' }]);
         expect(index).toBe(2);
         resolveSelection(null);
         await pending;
@@ -400,16 +428,125 @@ test.each(['navigation', 'editing', 'navigation-same'])('recognizes asynchronous
         app.dispatchEvent(key);
         const retried = statusDialog.open();
         doc.dispatchEvent(input);
+        observers[observers.length - 1].callback([{ type: 'childList' }]);
         resolveSelection({ id: selectedCode });
         await retried;
         value = selectedCode;
-        if (mode === 'navigation-same') observers[observers.length - 1].callback();
+        if (mode === 'navigation-same') observers[observers.length - 1].callback([]);
         else handlers.get('cellEdited')(cell);
-        expect(stepId).toBe('mouse');
+        expect(stepId).toBe('date-picker');
         instance.destroy();
     } finally {
         vi.doUnmock('../src/demo/components/demo-action-tutorial.js');
     }
+});
+
+test('tracks calendar and Notes sessions through their popup and editing events', async () => {
+    vi.resetModules();
+    let config;
+    let stepId = 'date-picker';
+    let index = 0;
+    const capture = () => ({ generation: 1, stepId, actionIndex: index });
+    const tutorial = {
+        capture,
+        notify(id, payload, context) {
+            if (context?.stepId !== stepId || context.actionIndex !== index) return false;
+            const step = config.steps.find(item => item.id === stepId);
+            const action = step.actions[index];
+            if (action.actionId !== id || !action.isComplete(payload)) return false;
+            if (++index === step.actions.length) { stepId = stepId === 'date-picker' ? 'notes' : 'add'; index = 0; }
+            config.onStateChange({ hidden: false, stepId, actionIndex: index });
+            return true;
+        },
+        destroy: vi.fn(), restart: vi.fn(), reopen: vi.fn()
+    };
+    vi.doMock('../src/demo/components/demo-action-tutorial.js', () => ({ createDemoActionTutorial: options => { config = options; options.onStateChange({ hidden: false, stepId, actionIndex: index }); return tutorial; } }));
+    try {
+        const { createInventoryTutorial: createWithMock } = await import('../src/demo/components/js-inventory-tutorial.js');
+        let popup = null;
+        const doc = Object.assign(new EventTarget(), { createElement: tag => new ElementMock(tag), documentElement: { lang: 'en' }, body: new ElementMock('body'), querySelector: () => popup });
+        const addListener = vi.spyOn(doc, 'addEventListener');
+        const removeListener = vi.spyOn(doc, 'removeEventListener');
+        vi.stubGlobal('document', doc);
+        vi.stubGlobal('window', new EventTarget());
+        const app = new ElementMock();
+        const root = new ElementMock();
+        root.contains = () => true;
+        app.querySelector = () => root;
+        const host = new ElementMock();
+        const launch = new ElementMock('button');
+        launch.querySelector = () => new ElementMock('span');
+        const handlers = new Map();
+        const data = { id: 4, lastCheckDate: '10/04/2025', notes: 'Old' };
+        const row = { getData: () => data };
+        const anchor = {};
+        const makeCell = field => {
+            const element = { isConnected: false, getAttribute: () => field, closest: selector => selector === '.tabulator-cell' ? element : null,
+                contains: () => false, querySelector: () => anchor, classList: { contains: () => false } };
+            return { element, cell: { getElement: () => element, getField: () => field, getRow: () => row, getValue: () => data[field] } };
+        };
+        const dateCell = makeCell('lastCheckDate');
+        const notesCell = makeCell('notes');
+        const instance = createWithMock({ host, launch, app, demo: { table: { on: (name, fn) => handlers.set(name, fn), off: vi.fn() }, getStateReport: () => ({ rows: [] }) }, statusDialog: { open: vi.fn() }, statusOptions: [], locale: 'en', resetData: async () => true });
+        const send = (target, type, subject, props = {}) => {
+            const event = new Event(type);
+            Object.defineProperty(event, 'target', { value: subject });
+            for (const [key, value] of Object.entries(props)) Object.defineProperty(event, key, { value });
+            target.dispatchEvent(event);
+        };
+        let day = '1';
+        const classList = { add: vi.fn(), remove: vi.fn(), contains: () => false };
+        const calendar = { isConnected: true, tagName: 'DIV', classList, getClientRects: () => [1], closest: () => null, contains: () => false,
+            querySelector: () => ({ getAttribute: () => day }) };
+        send(app, 'keydown', dateCell.element, { key: 'F2' });
+        expect(index).toBe(0);
+        handlers.get('cellEditing')(dateCell.cell);
+        popup = calendar;
+        await Promise.resolve();
+        expect(index).toBe(1);
+        send(doc, 'keydown', anchor, { key: 'ArrowRight' });
+        expect(index).toBe(1);
+        day = '2';
+        await Promise.resolve();
+        expect(index).toBe(2);
+        send(doc, 'keydown', anchor, { key: 'Enter' });
+        send(doc, 'changeDate', anchor, { detail: { date: new Date(2025, 3, 11) } });
+        expect(stepId).toBe('date-picker');
+        data.lastCheckDate = '11/04/2025';
+        handlers.get('cellEdited')(dateCell.cell);
+        expect(stepId).toBe('notes');
+
+        const textarea = { value: 'Old', matches: selector => selector.includes('__textarea') };
+        const button = { closest: selector => selector.includes('--primary') ? button : null };
+        const dialog = { isConnected: true, tagName: 'DIV', classList, getClientRects: () => [1], closest: () => null,
+            contains: target => target === textarea || target === button, querySelector: selector => selector.includes('__textarea') ? textarea : button };
+        popup = dialog;
+        send(app, 'dblclick', notesCell.element);
+        expect(index).toBe(0);
+        handlers.get('cellEditing')(notesCell.cell);
+        await Promise.resolve();
+        expect(index).toBe(1);
+        textarea.value = 'Old plus note';
+        send(doc, 'input', textarea);
+        expect(index).toBe(2);
+        handlers.get('cellEditCancelled')(notesCell.cell);
+        expect(stepId).toBe('notes');
+        send(app, 'dblclick', notesCell.element);
+        handlers.get('cellEditing')(notesCell.cell);
+        await Promise.resolve();
+        send(doc, 'click', button);
+        data.notes = textarea.value;
+        handlers.get('cellEdited')(notesCell.cell);
+        expect(stepId).toBe('notes');
+        dialog.isConnected = false;
+        await Promise.resolve();
+        expect(stepId).toBe('add');
+        instance.destroy();
+        for (const type of ['input', 'keydown', 'changeDate', 'hide', 'click']) {
+            const handler = addListener.mock.calls.find(call => call[0] === type)?.[1];
+            expect(removeListener).toHaveBeenCalledWith(type, handler, true);
+        }
+    } finally { vi.doUnmock('../src/demo/components/demo-action-tutorial.js'); }
 });
 
 test('moves the shared highlights with tutorial state and clears them on close', async () => {
@@ -429,7 +566,7 @@ test('moves the shared highlights with tutorial state and clears them on close',
             return { tagName, isConnected: true, getClientRects: () => [1], getBoundingClientRect: () => ({ left: 0, top: 0, width: 20, height: 20 }), closest: () => null,
                 classList: { add: (...names) => names.forEach(name => classes.add(name)), remove: (...names) => names.forEach(name => classes.delete(name)), contains: name => classes.has(name) } };
         };
-        const cells = Object.fromEntries(['productName', 'stockQuantity', 'unitPrice', 'status'].map(field => [field, target()]));
+        const cells = Object.fromEntries(['productName', 'stockQuantity', 'unitPrice', 'status', 'lastCheckDate', 'notes'].map(field => [field, target()]));
         const add = target('BUTTON');
         const save = target('BUTTON');
         const search = target('INPUT');
@@ -451,7 +588,7 @@ test('moves the shared highlights with tutorial state and clears them on close',
             ['escape', 0, cells.unitPrice], ['escape', 1, cells.unitPrice], ['pages', 0, cells.productName],
             ['direct-lookup', 0, cells.status], ['dialog-lookup', 0, cells.status],
             ['dialog-lookup', 1, search], ['dialog-lookup', 2, result],
-            ['mouse', 0, cells.productName], ['add', 0, add], ['partial-save', 0, save]
+            ['date-picker', 0, cells.lastCheckDate], ['notes', 0, cells.notes], ['add', 0, add], ['partial-save', 0, save]
         ]) {
             config.onStateChange({ hidden: false, stepId, actionIndex });
             for (const element of [...Object.values(cells), add, save, search, result]) expect(hasHighlight(element)).toBe(element === expected);
