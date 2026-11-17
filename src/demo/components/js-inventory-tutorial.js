@@ -41,10 +41,10 @@ export const inventoryTutorialSteps = [
         action('notes-input', 'notesInput', p => Boolean(p.text?.trim()) && p.text !== p.before),
         action('notes-save', 'notesSave', p => p.saved && p.closed && p.applied && changed(p))
     ] },
-    { id: 'add', actions: [action('added', 'add', p => p.present && p.state === 'new' && /^PRD-[A-Z0-9]{4}$/.test(p.code))] },
+    { id: 'add', actions: [action('added', 'add', p => p.present && p.ready && p.state === 'new' && /^PRD-[A-Z0-9]{4}$/.test(p.code))] },
     { id: 'partial-save', actions: [
         action('partial-open', 'partialOpen', p => p.opened && p.valid && p.invalid),
-        action('partial-saved', 'partialConfirm', p => p.confirmed && p.ok && p.saved > 0 && p.pendingInvalid > 0)
+        action('partial-saved', 'partialConfirm', p => p.confirmed && p.ok && p.prepared && p.backendSaved > 0 && p.saved > 0 && p.pendingInvalid > 0)
     ] }
 ];
 
@@ -75,9 +75,13 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     let notesRequest = null;
     let popupSession = null;
     let popupObserver = null;
+    let partialSummary = null;
     const label = launch.querySelector('span');
     const translate = key => publicExampleTranslations[document.documentElement.lang === 'en' ? 'en' : 'it'][`${prefix}.${key}`];
     const pageNote = () => demo.table.getPageMax?.() <= 1 ? translate('pageSingle') : translate('pageUnavailable');
+    const noteText = current => current?.complete && partialSummary
+        ? translate('partialSummary').replace('{saved}', partialSummary.saved).replace('{pending}', partialSummary.pending)
+        : current?.stepId === 'pages' && current.actionIndex === 0 && demo.table.getPage?.() >= demo.table.getPageMax?.() ? pageNote() : translate('tutorialResetNote');
     const originalOpen = statusDialog.open;
     const notify = (id, payload, context = tutorial.capture()) => tutorial.notify(id, payload, context);
     const note = document.createElement('p');
@@ -151,6 +155,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         preferredRow = null; partialButton = null; dialogObserver?.disconnect(); dialogObserver = null;
         commitObserver?.disconnect(); commitObserver = null; clearHighlight();
         directRowId = null; dateRequest = null; notesRequest = null; popupSession = null;
+        partialSummary = null;
         popupObserver?.disconnect(); popupObserver = null;
     };
     const runReset = async () => {
@@ -201,7 +206,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             launch.setAttribute('aria-expanded', String(!next.hidden));
             label.textContent = translate(started ? 'tutorialResume' : 'tutorialStart');
             note.hidden = next.hidden;
-            note.textContent = next.stepId === 'pages' && next.actionIndex === 0 && demo.table.getPage?.() >= demo.table.getPageMax?.() ? pageNote() : translate('tutorialResetNote');
+            note.textContent = noteText(next);
             const closeButton = host.querySelector('[data-tutorial-action="skip"]');
             if (closeButton) closeButton.disabled = next.resetting || next.destroyed;
             syncHighlight();
@@ -314,7 +319,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     };
     const onLanguage = () => {
         label.textContent = translate(started ? 'tutorialResume' : 'tutorialStart');
-        note.textContent = state?.stepId === 'pages' && state.actionIndex === 0 && demo.table.getPage?.() >= demo.table.getPageMax?.() ? pageNote() : translate('tutorialResetNote');
+        note.textContent = noteText(state);
     };
     const onPointer = event => {
         move = null;
@@ -537,10 +542,10 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     window.addEventListener('scroll', syncHighlight, true);
     return {
         capture: () => tutorial.capture(),
-        added(row, context) {
+        added(row, context, ready) {
             const data = row?.getData?.();
             const report = demo.getStateReport().rows.find(item => item.tempId && item.tempId === data?._ambTempId);
-            notify('added', { present: demo.getData().some(item => item._ambTempId === data?._ambTempId), state: report?.state, code: data?.itemCode }, context);
+            return notify('added', { present: Boolean(data?._ambTempId) && demo.getData().some(item => item._ambTempId === data._ambTempId), ready, state: report?.state, code: data?.itemCode }, context);
         },
         partialOpened(payload, context, opened, button) {
             partialButton = button;
@@ -549,8 +554,12 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             return context;
         },
         partialClosed() { partialButton = null; syncHighlight(); },
-        partialSaved(context, confirmed, result, saved, report) {
-            notify('partial-saved', { confirmed, ok: result.ok, saved: saved.saved.length, pendingInvalid: report.invalidChangedRowsCount }, context);
+        partialSaved(context, confirmed, result, saved, report, prepared) {
+            const backendSaved = ['inserted', 'updated', 'deleted'].reduce((total, key) => total + (result.saved?.[key]?.length || 0), 0);
+            partialSummary = { saved: saved.saved.length, pending: report.invalidChangedRowsCount };
+            const accepted = notify('partial-saved', { confirmed, ok: result.ok, prepared, backendSaved, saved: saved.saved.length, pendingInvalid: report.invalidChangedRowsCount }, context);
+            if (!accepted) partialSummary = null;
+            return accepted;
         },
         destroy() {
             destroyed = true;

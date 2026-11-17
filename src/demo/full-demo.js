@@ -12,6 +12,83 @@ import { demoIcon } from './demo-icons.js';
 
 const DEMO_SAVE_POLICY = 'valid-only';
 
+export function createInventorySavedHighlights() {
+    const highlighted = new Map();
+    const clear = () => {
+        for (const [element, listener] of highlighted) {
+            element.removeEventListener('animationend', listener);
+            element.classList.remove('demo-inventory-just-saved');
+        }
+        highlighted.clear();
+    };
+    const show = (rows, saved) => {
+        clear();
+        for (const row of rows) {
+            const data = row.getData();
+            if (!saved.some(item => (item.id != null && item.id === data.id) || (item.tempId && item.tempId === data._ambTempId))) continue;
+            const element = row.getElement();
+            if (!element?.isConnected || !element.getClientRects().length) continue;
+            const holder = element.closest('.tabulator-tableholder');
+            if (holder) {
+                const rect = element.getBoundingClientRect();
+                const bounds = holder.getBoundingClientRect();
+                if (rect.bottom <= bounds.top || rect.top >= bounds.bottom) continue;
+            }
+            const onEnd = event => {
+                if (event.target !== element || event.animationName !== 'demo-inventory-saved') return;
+                element.removeEventListener('animationend', onEnd);
+                element.classList.remove('demo-inventory-just-saved');
+                highlighted.delete(element);
+            };
+            element.addEventListener('animationend', onEnd);
+            highlighted.set(element, onEnd);
+            element.classList.add('demo-inventory-just-saved');
+        }
+    };
+    return { show, clear };
+}
+
+export async function showInventoryRow(demo, row) {
+    const data = row?.getData?.();
+    const identifier = data?.id ?? data?._ambTempId;
+    if (identifier == null) return false;
+    try {
+        await demo.setPageToRow(identifier);
+        await row.scrollTo?.('nearest', false);
+    } catch {
+        return false;
+    }
+    const element = row.getElement?.();
+    if (!element?.isConnected || !element.getClientRects().length) return false;
+    const holder = element.closest?.('.tabulator-tableholder');
+    if (!holder) return true;
+    const rect = element.getBoundingClientRect();
+    const bounds = holder.getBoundingClientRect();
+    return rect.bottom > bounds.top && rect.top < bounds.bottom;
+}
+
+export async function addInventoryTopRow(demo, rowData, isCurrent) {
+    const rows = await demo.addData([rowData], true);
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (!row || !isCurrent()) return { row, ready: false };
+    const data = row.getData();
+    const identifier = data?.id ?? data?._ambTempId;
+    const visible = await showInventoryRow(demo, row);
+    if (!isCurrent()) return { row, ready: false };
+    if (visible && identifier != null) await demo.navigateCellNext(identifier, 'itemCode');
+    if (!isCurrent()) return { row, ready: false };
+    return { row, ready: visible && Boolean(row.getCell?.('productName')) };
+}
+
+export async function presentGuidedInventorySave({ demo, row, savedHighlights, savedResult, isCurrent, showFeedback, notify }) {
+    const prepared = await showInventoryRow(demo, row);
+    if (!isCurrent()) return false;
+    if (prepared) savedHighlights.show(demo.table.getRows('active'), savedResult.saved);
+    showFeedback(prepared);
+    if (prepared) notify();
+    return prepared;
+}
+
 const messages = {
     it: {
         reloaded: 'Dati ricaricati.',
@@ -20,6 +97,7 @@ const messages = {
         invalid: 'Correggi gli errori evidenziati prima di salvare.',
         saved: 'Modifiche salvate e stati riallineati.',
         partialSaved: 'Modifiche valide salvate. Le righe con errori restano da correggere.',
+        rowUnavailable: 'La nuova riga non è visibile: verifica i filtri della tabella.',
         saveError: 'Il backend fake ha restituito errori di validazione.',
         payloadTitle: 'Payload di salvataggio',
         reportTitle: 'Report stato righe',
@@ -74,6 +152,7 @@ const messages = {
         invalid: 'Fix highlighted errors before saving.',
         saved: 'Changes saved and row states aligned.',
         partialSaved: 'Valid changes saved. Rows with errors are still pending correction.',
+        rowUnavailable: 'The new row is not visible: check the table filters.',
         saveError: 'The fake backend returned validation errors.',
         payloadTitle: 'Save payload',
         reportTitle: 'Row state report',
@@ -323,6 +402,8 @@ export default async function fullDemo(app, options = {}) {
     let commandGuide = null;
     let tutorialResetGeneration = 0;
     let demoDisposed = false;
+    let tutorialNewRow = null;
+    const savedHighlights = createInventorySavedHighlights();
 
     const tableOptions = {
         selector: '#inventory-table',
@@ -594,6 +675,7 @@ export default async function fullDemo(app, options = {}) {
 
     demo.destroy = () => {
         demoDisposed = true;
+        savedHighlights.clear();
         tutorialResetGeneration += 1;
         destroyColumnGuideAnimations();
         window.removeEventListener('amb-demo-language-change', handleDemoLanguageChange);
@@ -724,7 +806,7 @@ export default async function fullDemo(app, options = {}) {
             return null;
         }
 
-        const row = await crud.addRow({
+        const { row, ready } = await addInventoryTopRow(demo, {
             id: null,
             itemCode,
             productName: '',
@@ -735,12 +817,11 @@ export default async function fullDemo(app, options = {}) {
             status: '',
             requiresInspection: false,
             notes: ''
-        });
+        }, () => resetGeneration === tutorialResetGeneration && !demoDisposed);
         if (resetGeneration !== tutorialResetGeneration) return row;
-        const data = row?.getData?.();
-        const rowIdentifier = data?.id ?? data?._ambTempId;
-        if (rowIdentifier != null) demo.navigateCellNext(rowIdentifier, 'itemCode');
-        inventoryTutorial.added(row, tutorialContext);
+        if (!row) return null;
+        if (!ready) demo.feedback.show({ type: 'warning', message: t('rowUnavailable') });
+        if (inventoryTutorial.added(row, tutorialContext, ready)) tutorialNewRow = row;
         return row;
     }
 
@@ -843,25 +924,42 @@ export default async function fullDemo(app, options = {}) {
         if (result.ok) {
             const applyIdsResult = crud.applyBackendIds(result.generatedIds || []);
             const savedResult = crud.markValidChangesSaved();
-            inventoryTutorial.partialSaved(tutorialContext, partialConfirmed, result, savedResult, crud.getStateReport());
+            const report = crud.getStateReport();
             const details = {
                 result,
                 applyIdsResult,
                 savedResult,
                 payload,
                 validateResult,
-                report: crud.getStateReport()
+                report
             };
-
-            reportDialog.open({
-                title: t('saveTitle'),
-                reportLines: buildSaveReport(details),
-                jsonData: details
-            });
-            demo.feedback.show({
-                type: 'success',
-                message: payload.isPartialSave ? t('partialSaved') : t('saved')
-            });
+            const current = inventoryTutorial.capture();
+            const newRowData = tutorialNewRow?.getData?.();
+            const pendingNewRow = newRowData?._ambTempId && report.invalidChangedRows.some(row => row.tempId === newRowData._ambTempId && row.state === 'new');
+            const backendSavedCount = ['inserted', 'updated', 'deleted'].reduce((total, key) => total + (result.saved?.[key]?.length || 0), 0);
+            const appliedIds = applyIdsResult.applied.length === (result.generatedIds || []).length;
+            const guided = partialConfirmed && payload.isPartialSave && tutorialContext?.stepId === 'partial-save'
+                && tutorialContext.actionIndex === 1 && current?.generation === tutorialContext.generation
+                && current?.stepId === tutorialContext.stepId && current?.actionIndex === tutorialContext.actionIndex
+                && backendSavedCount > 0 && appliedIds && savedResult.saved.length > 0 && pendingNewRow;
+            if (guided) {
+                await presentGuidedInventorySave({
+                    demo, row: tutorialNewRow, savedHighlights, savedResult,
+                    isCurrent: () => resetGeneration === tutorialResetGeneration && !demoDisposed,
+                    showFeedback: prepared => demo.feedback.show({ type: 'success', message: prepared ? t('partialSaved') : `${t('partialSaved')} ${t('rowUnavailable')}` }),
+                    notify: () => inventoryTutorial.partialSaved(tutorialContext, partialConfirmed, result, savedResult, report, true)
+                });
+            } else {
+                reportDialog.open({
+                    title: t('saveTitle'),
+                    reportLines: buildSaveReport(details),
+                    jsonData: details
+                });
+                demo.feedback.show({
+                    type: 'success',
+                    message: payload.isPartialSave ? t('partialSaved') : t('saved')
+                });
+            }
             return;
         }
 

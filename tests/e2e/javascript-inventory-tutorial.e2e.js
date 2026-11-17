@@ -169,3 +169,17 @@ test('inventory tutorial reaches and completes the F2 lookup through real intera
     await expect(otherStatus).toHaveText('A085');
     await step('date-picker');
 });
+
+test('adding a product displays its new row on the first page and opens Product name', async ({ page }) => {
+    await page.goto('/src/demo/index.html#getting-started-javascript');
+    const demo = page.locator('#javascript-demo');
+    const grid = demo.locator('#inventory-table.tabulator');
+    await expect(grid).toBeVisible();
+    await grid.locator('.tabulator-page[data-page="next"]').click();
+    await demo.locator('[data-action="add"]').click();
+    const firstRow = grid.locator('.tabulator-row').first();
+    await expect(firstRow).toHaveAttribute('data-state', 'new');
+    await expect(firstRow.locator('.tabulator-cell[tabulator-field="itemCode"]')).toHaveText(/^PRD-[A-Z0-9]{4}$/);
+    await expect(firstRow.locator('.tabulator-cell[tabulator-field="productName"] input')).toBeFocused();
+    await expect(grid.locator('.tabulator-page[data-page="1"]')).toHaveClass(/active/);
+});

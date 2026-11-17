@@ -75,15 +75,17 @@ describe('inventory tutorial action conditions', () => {
 
     test('requires a real new row with a generated code', () => {
         const add = predicate('add');
-        expect(add({ present: true, state: 'new', code: 'invalid' })).toBe(false);
-        expect(add({ present: true, state: 'new', code: 'PRD-X00A' })).toBe(true);
+        expect(add({ present: true, ready: true, state: 'new', code: 'invalid' })).toBe(false);
+        expect(add({ present: true, ready: false, state: 'new', code: 'PRD-X00A' })).toBe(false);
+        expect(add({ present: true, ready: true, state: 'new', code: 'PRD-X00A' })).toBe(true);
     });
 
     test('requires confirmation, successful saving and remaining invalid rows', () => {
         const save = predicate('partial-save', 1);
         expect(save({ confirmed: false, ok: true, saved: 1, pendingInvalid: 1 })).toBe(false);
-        expect(save({ confirmed: true, ok: true, saved: 1, pendingInvalid: 0 })).toBe(false);
-        expect(save({ confirmed: true, ok: true, saved: 1, pendingInvalid: 1 })).toBe(true);
+        expect(save({ confirmed: true, ok: true, prepared: true, backendSaved: 1, saved: 1, pendingInvalid: 0 })).toBe(false);
+        expect(save({ confirmed: true, ok: true, prepared: false, backendSaved: 1, saved: 1, pendingInvalid: 1 })).toBe(false);
+        expect(save({ confirmed: true, ok: true, prepared: true, backendSaved: 1, saved: 1, pendingInvalid: 1 })).toBe(true);
     });
 });
 
@@ -546,6 +548,44 @@ test('tracks calendar and Notes sessions through their popup and editing events'
             const handler = addListener.mock.calls.find(call => call[0] === type)?.[1];
             expect(removeListener).toHaveBeenCalledWith(type, handler, true);
         }
+    } finally { vi.doUnmock('../src/demo/components/demo-action-tutorial.js'); }
+});
+
+test('shows the actual save counts only after prepared completion', async () => {
+    vi.resetModules();
+    let config;
+    let complete = false;
+    const context = { generation: 3, stepId: 'partial-save', actionIndex: 1 };
+    const tutorial = {
+        capture: () => complete ? null : context,
+        notify(id, payload, captured) {
+            if (captured !== context || id !== 'partial-saved' || !config.steps.at(-1).actions[1].isComplete(payload)) return false;
+            complete = true;
+            config.onStateChange({ hidden: false, complete: true, stepId: null, actionIndex: 0 });
+            return true;
+        },
+        destroy: vi.fn(), restart: vi.fn(), reopen: vi.fn()
+    };
+    vi.doMock('../src/demo/components/demo-action-tutorial.js', () => ({ createDemoActionTutorial: options => { config = options; options.onStateChange({ hidden: false, stepId: 'partial-save', actionIndex: 1 }); return tutorial; } }));
+    try {
+        const { createInventoryTutorial: createWithMock } = await import('../src/demo/components/js-inventory-tutorial.js');
+        const doc = Object.assign(new EventTarget(), { createElement: tag => new ElementMock(tag), documentElement: { lang: 'en' } });
+        vi.stubGlobal('document', doc);
+        vi.stubGlobal('window', new EventTarget());
+        const host = new ElementMock();
+        const launch = new ElementMock('button');
+        launch.querySelector = () => new ElementMock('span');
+        const app = new ElementMock();
+        app.querySelector = () => new ElementMock();
+        const instance = createWithMock({ host, launch, app, demo: { table: { on: vi.fn(), off: vi.fn() } }, statusDialog: { open: vi.fn() }, statusOptions: [], resetData: async () => true });
+        const result = { ok: true, saved: { inserted: [], updated: [{}, {}], deleted: [] } };
+        const saved = { saved: [{}, {}] };
+        const report = { invalidChangedRowsCount: 3 };
+        expect(instance.partialSaved(context, true, result, saved, report, false)).toBe(false);
+        expect(complete).toBe(false);
+        expect(instance.partialSaved(context, true, result, saved, report, true)).toBe(true);
+        expect(host.children[0].textContent).toBe('Valid changes saved: 2. Rows still needing correction: 3.');
+        instance.destroy();
     } finally { vi.doUnmock('../src/demo/components/demo-action-tutorial.js'); }
 });
 

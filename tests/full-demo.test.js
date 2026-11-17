@@ -1,6 +1,9 @@
 import fs from 'node:fs';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { createDemoColumnGuide } from '../src/demo/utils/demo-column-guide.js';
+import { addInventoryTopRow, createInventorySavedHighlights, presentGuidedInventorySave, showInventoryRow } from '../src/demo/full-demo.js';
+
+vi.mock('../src/index.js', () => ({ AMB: {} }));
 
 const source = fs.readFileSync(
     new URL('../src/demo/full-demo.js', import.meta.url),
@@ -34,6 +37,77 @@ const demoDatabase = JSON.parse(fs.readFileSync(
     new URL('../demo/fake-backend/database.json', import.meta.url),
     'utf8'
 ));
+
+test('shows a managed row through pagination without changing its data', async () => {
+    const element = { isConnected: true, getClientRects: () => [1] };
+    const row = { getData: () => ({ id: null, _ambTempId: 'temp-1' }), getElement: () => element, scrollTo: vi.fn(async () => {}) };
+    const demo = { setPageToRow: vi.fn(async () => {}) };
+    expect(await showInventoryRow(demo, row)).toBe(true);
+    expect(demo.setPageToRow).toHaveBeenCalledWith('temp-1');
+    expect(row.scrollTo).toHaveBeenCalledWith('nearest', false);
+    demo.setPageToRow.mockRejectedValueOnce(new Error('filtered out'));
+    expect(await showInventoryRow(demo, row)).toBe(false);
+});
+
+test('inserts one managed row at the top, shows it and navigates to Product name', async () => {
+    const data = { itemCode: 'PRD-X00A', productName: '', id: null, _ambTempId: 'new-1', _ambState: 'new' };
+    const row = { getData: () => data, getCell: field => field === 'productName' ? {} : null,
+        getElement: () => ({ isConnected: true, getClientRects: () => [1] }), scrollTo: vi.fn(async () => {}) };
+    const demo = { addData: vi.fn(async () => [row]), setPageToRow: vi.fn(async () => {}), navigateCellNext: vi.fn(async () => {}) };
+    expect(await addInventoryTopRow(demo, data, () => true)).toEqual({ row, ready: true });
+    expect(demo.addData).toHaveBeenCalledOnce();
+    expect(demo.addData).toHaveBeenCalledWith([data], true);
+    expect(demo.setPageToRow).toHaveBeenCalledWith('new-1');
+    expect(demo.navigateCellNext).toHaveBeenCalledWith('new-1', 'itemCode');
+    expect(data).toMatchObject({ _ambTempId: 'new-1', _ambState: 'new', productName: '' });
+});
+
+test('highlights only visible saved rows and removes animation listeners', () => {
+    const makeElement = visible => {
+        const element = new EventTarget();
+        const classes = new Set();
+        Object.assign(element, { isConnected: visible, getClientRects: () => [1], closest: () => null,
+            classList: { add: value => classes.add(value), remove: value => classes.delete(value), contains: value => classes.has(value) } });
+        return element;
+    };
+    const saved = makeElement(true);
+    const invalid = makeElement(true);
+    const hidden = makeElement(false);
+    const row = (id, element) => ({ getData: () => ({ id }), getElement: () => element });
+    const effect = createInventorySavedHighlights();
+    effect.show([row(1, saved), row(2, invalid), row(3, hidden)], [{ id: 1 }, { id: 3 }]);
+    expect(saved.classList.contains('demo-inventory-just-saved')).toBe(true);
+    expect(invalid.classList.contains('demo-inventory-just-saved')).toBe(false);
+    expect(hidden.classList.contains('demo-inventory-just-saved')).toBe(false);
+    const end = new Event('animationend');
+    Object.defineProperty(end, 'animationName', { value: 'demo-inventory-saved' });
+    saved.dispatchEvent(end);
+    expect(saved.classList.contains('demo-inventory-just-saved')).toBe(false);
+    effect.show([row(1, saved)], [{ id: 1 }]);
+    effect.clear();
+    expect(saved.classList.contains('demo-inventory-just-saved')).toBe(false);
+});
+
+test('finishes guided saving only after pagination, highlighting, and feedback', async () => {
+    let finishPage;
+    const page = new Promise(resolve => { finishPage = resolve; });
+    const events = [];
+    const element = { isConnected: true, getClientRects: () => [1] };
+    const row = { getData: () => ({ _ambTempId: 'new-row' }), getElement: () => element, scrollTo: async () => events.push('scroll') };
+    const demo = { setPageToRow: () => page, table: { getRows: () => [] } };
+    const result = presentGuidedInventorySave({ demo, row, savedResult: { saved: [{ id: 5 }] }, isCurrent: () => true,
+        savedHighlights: { show: () => events.push('highlight') }, showFeedback: () => events.push('feedback'), notify: () => events.push('complete') });
+    await Promise.resolve();
+    expect(events).toEqual([]);
+    finishPage();
+    expect(await result).toBe(true);
+    expect(events).toEqual(['scroll', 'highlight', 'feedback', 'complete']);
+    demo.setPageToRow = () => Promise.reject(new Error('filtered out'));
+    events.length = 0;
+    expect(await presentGuidedInventorySave({ demo, row, savedResult: { saved: [] }, isCurrent: () => true,
+        savedHighlights: { show: () => events.push('highlight') }, showFeedback: () => events.push('feedback'), notify: () => events.push('complete') })).toBe(false);
+    expect(events).toEqual(['feedback']);
+});
 
 describe('Legacy-friendly warehouse demo', () => {
     test('uses legacy-friendly naming with warehouse scenario', () => {
@@ -239,8 +313,9 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('async function handleAdd()');
         expect(source).toContain('demo.feedback.clear()');
         expect(source).toContain('generateInventoryItemCode(demo.getData())');
-        expect(source).toContain('await crud.addRow({');
-        expect(source).toContain("demo.navigateCellNext(rowIdentifier, 'itemCode')");
+        expect(source).toContain('await demo.addData([rowData], true)');
+        expect(source).toContain('demo.setPageToRow(identifier)');
+        expect(source).toContain("demo.navigateCellNext(identifier, 'itemCode')");
         const handleAddSource = source.slice(source.indexOf('async function handleAdd()'), source.indexOf('async function handleReload()'));
         expect(handleAddSource).not.toContain('setPage(');
         expect(source).not.toContain('scrollToRow');
@@ -315,6 +390,17 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('crud.applyBackendIds(result.generatedIds || [])');
         expect(source).toContain('crud.markValidChangesSaved()');
         expect(source).toContain('message: payload.isPartialSave ? t(\'partialSaved\') : t(\'saved\')');
+    });
+
+    test('prepares guided results before completing and keeps ordinary save reports', () => {
+        const save = source.slice(source.indexOf('async function handleSave()'));
+        expect(save.indexOf('fakeApi.saveProductChanges(payload)')).toBeLessThan(save.indexOf('crud.applyBackendIds('));
+        expect(save.indexOf('crud.applyBackendIds(')).toBeLessThan(save.indexOf('crud.markValidChangesSaved()'));
+        expect(save).toContain("row.tempId === newRowData._ambTempId && row.state === 'new'");
+        expect(save).toContain('await presentGuidedInventorySave({');
+        expect(save).toMatch(/if \(guided\) \{[\s\S]*?\} else \{\s*reportDialog\.open\(/);
+        expect(demoCss).toContain('@keyframes demo-inventory-saved');
+        expect(demoCss).toMatch(/prefers-reduced-motion:[\s\S]*?\.demo-inventory-just-saved/);
     });
 
     test('confirms only Remove new while reserving ConfirmDialog for partial save', () => {
