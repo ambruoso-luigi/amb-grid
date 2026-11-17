@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { createInventoryTutorial, inventoryTutorialSteps } from '../src/demo/components/js-inventory-tutorial.js';
 import { fakeApi } from '../demo/fake-backend/fake-api.js';
+import { publicExampleTranslations } from '../src/demo/example-copy.js';
 
 class ElementMock extends EventTarget {
     constructor(tag = 'div') { super(); this.tagName = tag; this.children = []; this.attributes = new Map(); this.textContent = ''; this.style = {}; }
@@ -18,24 +19,40 @@ afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 const predicate = (step, index = 0) => inventoryTutorialSteps.find(item => item.id === step).actions[index].isComplete;
 
 describe('inventory tutorial action conditions', () => {
-    test('defines nine steps without pagination and checks the specified Tab cells', () => {
-        expect(inventoryTutorialSteps.map(step => step.id)).toEqual(['arrows', 'enter', 'tab', 'escape', 'direct-lookup', 'dialog-lookup', 'mouse', 'add', 'partial-save']);
-        const cell = {};
-        expect(predicate('arrows')({ from: cell, to: cell })).toBe(false);
-        expect(predicate('arrows')({ from: cell, to: {} })).toBe(true);
-        expect(predicate('tab', 0)({ from: 'stockQuantity', to: 'unitPrice', editing: true, committed: true, changed: false })).toBe(false);
-        expect(predicate('tab', 0)({ from: 'stockQuantity', to: 'unitPrice', editing: true, committed: true, changed: true })).toBe(true);
-        expect(predicate('tab', 1)({ from: 'unitPrice', to: 'notes', editing: true })).toBe(false);
-        expect(predicate('tab', 1)({ from: 'unitPrice', to: 'stockQuantity', editing: true })).toBe(true);
+    test.each(['it', 'en'])('provides the four step instructions in %s', language => {
+        for (const key of ['arrows', 'enter', 'tabForward', 'escapePrepare', 'escapeCancel', 'pageNext', 'pagePrevious', 'pageUnavailable', 'pageSingle']) {
+            expect(publicExampleTranslations[language][`examples.javascriptInventory.${key}`]).toBeTruthy();
+        }
+    });
+    test('defines nine steps and requires observed navigation and edits', () => {
+        expect(inventoryTutorialSteps.map(step => step.id)).toEqual(['keyboard-edit', 'tab', 'escape', 'pages', 'direct-lookup', 'dialog-lookup', 'mouse', 'add', 'partial-save']);
+        const from = {}, to = {};
+        expect(predicate('keyboard-edit')({ from, to, firstRow: false, field: 'stockQuantity' })).toBe(false);
+        expect(predicate('keyboard-edit')({ from, to, firstRow: true, field: 'stockQuantity' })).toBe(true);
+        const edit = { field: 'stockQuantity', sameRow: true, openedBy: 'Enter', confirmed: true, typed: true, before: 2, after: 3, committed: true, changedRow: true };
+        expect(predicate('keyboard-edit', 1)({ ...edit, confirmed: false })).toBe(false);
+        expect(predicate('keyboard-edit', 1)({ ...edit, after: 3.5 })).toBe(false);
+        expect(predicate('keyboard-edit', 1)({ ...edit, after: -1 })).toBe(false);
+        expect(predicate('keyboard-edit', 1)(edit)).toBe(true);
+        const tab = { from: 'stockQuantity', to: 'unitPrice', openedBy: 'Enter', sameRow: true, editing: true, committed: true, changed: true, valid: true };
+        expect(predicate('tab')({ ...tab, editing: false })).toBe(false);
+        expect(predicate('tab')(tab)).toBe(true);
     });
 
-    test('requires an unchanged value after a real cancellation', () => {
-        const prepare = predicate('escape');
-        expect(prepare({ before: 'A', temporary: 'A', text: true, openedBy: 'Enter' })).toBe(false);
-        expect(prepare({ before: 'A', temporary: 'B', text: true, openedBy: 'Enter' })).toBe(true);
-        const cancel = predicate('escape', 1);
-        expect(cancel({ before: 'A', temporary: 'B', after: 'B', closed: true })).toBe(false);
-        expect(cancel({ before: 'A', temporary: 'B', after: 'A', closed: true })).toBe(true);
+    test('requires a changed temporary price and a real cancellation', () => {
+        expect(predicate('escape')({ before: 10, temporary: '10.00', field: 'unitPrice', continued: true })).toBe(false);
+        expect(predicate('escape')({ before: 10, temporary: '12', field: 'unitPrice', continued: false })).toBe(false);
+        expect(predicate('escape')({ before: 10, temporary: '12', field: 'unitPrice', continued: true })).toBe(true);
+        const cancel = { before: 10, temporary: '12', after: 10, field: 'unitPrice', continued: true, closed: true, cancelled: true };
+        expect(predicate('escape', 1)({ ...cancel, closed: false })).toBe(false);
+        expect(predicate('escape', 1)(cancel)).toBe(true);
+    });
+
+    test('requires rendered page transitions and return to the starting page', () => {
+        expect(predicate('pages')({ shortcut: true, rendered: false, before: 3, after: 4 })).toBe(false);
+        expect(predicate('pages')({ shortcut: true, rendered: true, before: 3, after: 4 })).toBe(true);
+        expect(predicate('pages', 1)({ shortcut: true, rendered: true, before: 4, after: 2, original: 3 })).toBe(false);
+        expect(predicate('pages', 1)({ shortcut: true, rendered: true, before: 4, after: 3, original: 3 })).toBe(true);
     });
 
     test('requires F2, a search, and an applied valid selection', () => {
@@ -58,6 +75,108 @@ describe('inventory tutorial action conditions', () => {
         expect(save({ confirmed: true, ok: true, saved: 1, pendingInvalid: 0 })).toBe(false);
         expect(save({ confirmed: true, ok: true, saved: 1, pendingInvalid: 1 })).toBe(true);
     });
+});
+
+test('tracks the keyboard workflow through real controller events and action contexts', async () => {
+    const doc = Object.assign(new EventTarget(), {
+        createElement: tag => new ElementMock(tag),
+        createTextNode: text => Object.assign(new ElementMock('#text'), { textContent: text }),
+        documentElement: { lang: 'en' }, activeElement: null
+    });
+    vi.stubGlobal('document', doc);
+    vi.stubGlobal('window', new EventTarget());
+    const host = new ElementMock();
+    const launch = new ElementMock('button');
+    launch.querySelector = () => new ElementMock('span');
+    const root = new ElementMock();
+    const app = new ElementMock();
+    app.querySelector = () => root;
+    root.contains = () => true;
+    const rowElement = { isConnected: true, getClientRects: () => [1], closest: () => null, querySelector: () => null };
+    root.querySelectorAll = selector => selector === '.tabulator-row' ? [rowElement] : [];
+    const values = { id: 7, productName: 'Item', stockQuantity: 5, unitPrice: 12 };
+    const row = { getData: () => values };
+    const makeCell = field => {
+        const classes = new Set();
+        const element = { isConnected: false, getAttribute: () => field,
+            closest: selector => selector === '.tabulator-cell' ? element : selector === '.tabulator-row' ? rowElement : null,
+            contains: target => target === element || target?.cellElement === element,
+            classList: { contains: name => classes.has(name), add: name => classes.add(name), remove: name => classes.delete(name) } };
+        const input = { cellElement: element, value: '', closest: () => element };
+        return { element, input, classes, cell: { getElement: () => element, getField: () => field, getRow: () => row, getValue: () => values[field] } };
+    };
+    const name = makeCell('productName');
+    const stock = makeCell('stockQuantity');
+    const price = makeCell('unitPrice');
+    const handlers = new Map();
+    let page = 3;
+    const demo = { table: { on: (event, fn) => handlers.set(event, fn), off: vi.fn(), getPage: () => page, getPageMax: () => 5 },
+        getStateReport: () => ({ rows: [{ id: 7, hasChanges: true }] }) };
+    const instance = createInventoryTutorial({ host, launch, app, demo, statusDialog: { open: vi.fn() }, statusOptions: [], locale: 'en', resetData: async () => true, hasPendingChanges: () => false });
+    launch.dispatchEvent(new Event('click'));
+    await vi.waitFor(() => expect(instance.capture()?.stepId).toBe('keyboard-edit'));
+    const send = (target, type, subject, properties = {}) => {
+        const event = new Event(type);
+        Object.defineProperty(event, 'target', { value: subject });
+        for (const [key, value] of Object.entries(properties)) Object.defineProperty(event, key, { value });
+        target.dispatchEvent(event);
+    };
+    const key = (subject, value, extra = {}) => send(app, 'keydown', subject, { key: value, ...extra });
+    const focus = subject => send(app, 'focusin', subject);
+    const input = (entry, value) => { entry.input.value = value; send(doc, 'input', entry.input); };
+    const open = entry => { entry.classes.add('tabulator-editing'); handlers.get('cellEditing')(entry.cell); };
+    const commit = (entry, value) => { values[entry.cell.getField()] = value; entry.classes.delete('tabulator-editing'); handlers.get('cellEdited')(entry.cell); };
+
+    send(app, 'pointerdown', stock.element);
+    focus(stock.element);
+    expect(instance.capture().actionIndex).toBe(0);
+    key(name.element, 'ArrowRight');
+    expect(instance.capture().actionIndex).toBe(0);
+    focus(stock.element);
+    expect(instance.capture().actionIndex).toBe(1);
+    key(stock.element, 'Enter');
+    open(stock);
+    input(stock, '6');
+    key(stock.input, 'Enter');
+    expect(instance.capture().stepId).toBe('keyboard-edit');
+    commit(stock, 6);
+    expect(instance.capture().stepId).toBe('tab');
+
+    key(stock.element, 'Enter');
+    open(stock);
+    input(stock, '8');
+    key(stock.input, 'Tab');
+    expect(instance.capture().stepId).toBe('tab');
+    commit(stock, 8);
+    focus(price.element);
+    expect(instance.capture().stepId).toBe('tab');
+    open(price);
+    expect(instance.capture().stepId).toBe('escape');
+    expect(price.classes.has('tabulator-editing')).toBe(true);
+    input(price, '19');
+    expect(instance.capture().actionIndex).toBe(1);
+    key(price.input, 'Escape');
+    expect(instance.capture().stepId).toBe('escape');
+    price.classes.delete('tabulator-editing');
+    handlers.get('cellEditCancelled')(price.cell);
+    expect(instance.capture().stepId).toBe('pages');
+    expect(values.stockQuantity).toBe(8);
+    expect(values.unitPrice).toBe(12);
+
+    key(name.element, 'PageDown', { altKey: true });
+    expect(instance.capture().actionIndex).toBe(0);
+    page = 4;
+    handlers.get('renderComplete')();
+    expect(instance.capture().actionIndex).toBe(0);
+    focus(name.element);
+    expect(instance.capture().actionIndex).toBe(1);
+    key(name.element, 'PageUp', { altKey: true });
+    expect(instance.capture().stepId).toBe('pages');
+    page = 3;
+    handlers.get('renderComplete')();
+    focus(name.element);
+    expect(instance.capture().stepId).toBe('direct-lookup');
+    instance.destroy();
 });
 
 test('starts closed, opens explicitly, and removes listeners without changing data', async () => {
@@ -87,18 +206,18 @@ test('starts closed, opens explicitly, and removes listeners without changing da
     expect(host.children[0].hidden).toBe(true);
     expect(controller.capture()).toBeNull();
     launch.dispatchEvent(new Event('click'));
-    await vi.waitFor(() => expect(controller.capture()?.stepId).toBe('arrows'));
+    await vi.waitFor(() => expect(controller.capture()?.stepId).toBe('keyboard-edit'));
     expect(host.children[0].hidden).toBe(false);
-    expect(controller.capture().stepId).toBe('arrows');
+    expect(controller.capture().stepId).toBe('keyboard-edit');
     const find = (element, action) => element.getAttribute?.('data-tutorial-action') === action
         ? element : element.children?.map(child => find(child, action)).find(Boolean);
     doc.documentElement.lang = 'it';
     win.dispatchEvent(new Event('amb-demo-language-change'));
-    expect(controller.capture().stepId).toBe('arrows');
+    expect(controller.capture().stepId).toBe('keyboard-edit');
     find(host.children[0], 'restart').dispatchEvent(new Event('click'));
     await vi.waitFor(() => expect(resetData).toHaveBeenCalledTimes(2));
-    await vi.waitFor(() => expect(controller.capture()?.stepId).toBe('arrows'));
-    expect(controller.capture().stepId).toBe('arrows');
+    await vi.waitFor(() => expect(controller.capture()?.stepId).toBe('keyboard-edit'));
+    expect(controller.capture().stepId).toBe('keyboard-edit');
     find(host.children[0], 'skip').dispatchEvent(new Event('click'));
     await vi.waitFor(() => expect(resetData).toHaveBeenCalledTimes(3));
     expect(host.children[0].hidden).toBe(true);
@@ -327,9 +446,9 @@ test('moves the shared highlights with tutorial state and clears them on close',
         const instance = createWithMock({ host, launch, app, demo: { table: { on: vi.fn(), off: vi.fn() } }, statusDialog: dialog, statusOptions: [], locale: 'en', resetData: async () => true });
         const hasHighlight = element => element.classList.contains('demo-crud-tutorial-target');
         for (const [stepId, actionIndex, expected] of [
-            ['arrows', 0, cells.productName], ['enter', 0, cells.productName],
-            ['tab', 0, cells.stockQuantity], ['tab', 1, cells.unitPrice],
-            ['escape', 0, cells.productName], ['escape', 1, null],
+            ['keyboard-edit', 0, cells.stockQuantity], ['keyboard-edit', 1, cells.stockQuantity],
+            ['tab', 0, cells.stockQuantity],
+            ['escape', 0, cells.unitPrice], ['escape', 1, cells.unitPrice], ['pages', 0, cells.productName],
             ['direct-lookup', 0, cells.status], ['dialog-lookup', 0, cells.status],
             ['dialog-lookup', 1, search], ['dialog-lookup', 2, result],
             ['mouse', 0, cells.productName], ['add', 0, add], ['partial-save', 0, save]
