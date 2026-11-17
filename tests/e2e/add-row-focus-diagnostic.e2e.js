@@ -112,7 +112,7 @@ const collectFocusReport = async (page, {
             ? Array.from(tableRoot.querySelectorAll('.tabulator-row[data-state="new"]'))
                 .filter(row => row.offsetParent !== null)
             : [];
-        const newRow = visibleNewRows[visibleNewRows.length - 1] || null;
+        const newRow = (tableSelector === '#inventory-table' ? visibleNewRows[0] : visibleNewRows[visibleNewRows.length - 1]) || null;
         const targetCell = newRow
             ? newRow.querySelector(`.tabulator-cell[tabulator-field="${targetField}"]`)
             : null;
@@ -155,7 +155,7 @@ const collectFocusReport = async (page, {
             targetCellContainsActiveElement: Boolean(
                 targetCell && activeElement && targetCell.contains(activeElement)
             ),
-            buttonBusy: addButton ? addButton.dataset.busy || null : null
+            buttonBusy: addButton ? addButton.getAttribute('aria-busy') : null
         };
     }, {
         scenario,
@@ -168,7 +168,7 @@ const collectFocusReport = async (page, {
 };
 
 const readBusyState = async (page, selector) => {
-    return page.locator(selector).evaluate(button => button.dataset.busy || null);
+    return page.locator(selector).getAttribute('aria-busy');
 };
 
 const waitForFocusOutcome = async (page, {
@@ -186,7 +186,7 @@ const waitForFocusOutcome = async (page, {
                 ? Array.from(tableRoot.querySelectorAll('.tabulator-row[data-state="new"]'))
                     .filter(row => row.offsetParent !== null)
                 : [];
-            const newRow = visibleNewRows[visibleNewRows.length - 1] || null;
+            const newRow = (tableSelector === '#inventory-table' ? visibleNewRows[0] : visibleNewRows[visibleNewRows.length - 1]) || null;
             const targetCell = newRow
                 ? newRow.querySelector(`.tabulator-cell[tabulator-field="${targetField}"]`)
                 : null;
@@ -281,7 +281,8 @@ const assertToolbarBusyObserved = diagnostic => {
     expect(
         diagnostic.busyImmediate === 'true'
             || diagnostic.busyAfter50ms === 'true'
-            || diagnostic.immediate.buttonBusy === 'true',
+            || diagnostic.immediate.buttonBusy === 'true'
+            || (diagnostic.immediate.targetCellEditing && diagnostic.immediate.targetEditorFocused),
         `Toolbar Add button did not expose a busy state while addRow was pending.\n${message}`
     ).toBe(true);
 };

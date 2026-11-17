@@ -49,17 +49,44 @@ test('shows a managed row through pagination without changing its data', async (
     expect(await showInventoryRow(demo, row)).toBe(false);
 });
 
-test('inserts one managed row at the top, shows it and navigates to Product name', async () => {
-    const data = { itemCode: 'PRD-X00A', productName: '', id: null, _ambTempId: 'new-1', _ambState: 'new' };
-    const row = { getData: () => data, getCell: field => field === 'productName' ? {} : null,
-        getElement: () => ({ isConnected: true, getClientRects: () => [1] }), scrollTo: vi.fn(async () => {}) };
-    const demo = { addData: vi.fn(async () => [row]), setPageToRow: vi.fn(async () => {}), navigateCellNext: vi.fn(async () => {}) };
-    expect(await addInventoryTopRow(demo, data, () => true)).toEqual({ row, ready: true });
-    expect(demo.addData).toHaveBeenCalledOnce();
-    expect(demo.addData).toHaveBeenCalledWith([data], true);
-    expect(demo.setPageToRow).toHaveBeenCalledWith('new-1');
-    expect(demo.navigateCellNext).toHaveBeenCalledWith('new-1', 'itemCode');
-    expect(data).toMatchObject({ _ambTempId: 'new-1', _ambState: 'new', productName: '' });
+test('inserts consecutive rows at the top and waits for each Product name editor to gain focus', async () => {
+    const doc = { activeElement: null };
+    vi.stubGlobal('document', doc);
+    try {
+        const data = { itemCode: 'PRD-X00A', productName: '', id: null, _ambTempId: 'new-1', _ambState: 'new' };
+        const editor = {};
+        let editing = false;
+        const element = Object.assign(new EventTarget(), { querySelector: () => editing ? editor : null, classList: { contains: () => editing } });
+        const cell = { getElement: () => element, edit: vi.fn(() => { editing = true; }) };
+        const row = { getData: () => data, getCell: field => field === 'productName' ? cell : null,
+            getElement: () => ({ isConnected: true, getClientRects: () => [1] }), scrollTo: vi.fn(async () => {}) };
+        const demo = { addData: vi.fn(async () => [row]), setPageToRow: vi.fn(async () => {}), table: { on: vi.fn(), off: vi.fn() } };
+        for (let index = 1; index <= 2; index += 1) {
+            editing = false;
+            doc.activeElement = null;
+            let finished = false;
+            const pending = addInventoryTopRow(demo, data, () => true).then(result => { finished = true; return result; });
+            await vi.waitFor(() => expect(cell.edit).toHaveBeenCalledTimes(index));
+            expect(finished).toBe(false);
+            doc.activeElement = editor;
+            element.dispatchEvent(new Event('focusin'));
+            expect(await pending).toEqual({ row, ready: true });
+        }
+        expect(demo.addData).toHaveBeenCalledTimes(2);
+        expect(demo.addData).toHaveBeenCalledWith([data], true);
+        expect(demo.setPageToRow).toHaveBeenCalledWith('new-1');
+        expect(demo.table.off).toHaveBeenCalledTimes(4);
+        expect(data).toMatchObject({ _ambTempId: 'new-1', _ambState: 'new', productName: '' });
+        editing = false;
+        doc.activeElement = null;
+        cell.edit.mockReturnValueOnce(false);
+        expect(await addInventoryTopRow(demo, data, () => true)).toEqual({ row, ready: false });
+        const cancelled = addInventoryTopRow(demo, data, () => true);
+        await vi.waitFor(() => expect(cell.edit).toHaveBeenCalledTimes(4));
+        const cancelListener = demo.table.on.mock.calls.filter(call => call[0] === 'cellEditCancelled').at(-1)[1];
+        cancelListener(cell);
+        expect(await cancelled).toEqual({ row, ready: false });
+    } finally { vi.unstubAllGlobals(); }
 });
 
 test('highlights only visible saved rows and removes animation listeners', () => {
@@ -315,7 +342,8 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).toContain('generateInventoryItemCode(demo.getData())');
         expect(source).toContain('await demo.addData([rowData], true)');
         expect(source).toContain('demo.setPageToRow(identifier)');
-        expect(source).toContain("demo.navigateCellNext(identifier, 'itemCode')");
+        expect(source).toContain("row.getCell?.('productName')");
+        expect(source).toContain('cell.edit()');
         const handleAddSource = source.slice(source.indexOf('async function handleAdd()'), source.indexOf('async function handleReload()'));
         expect(handleAddSource).not.toContain('setPage(');
         expect(source).not.toContain('scrollToRow');
@@ -546,7 +574,7 @@ describe('Legacy-friendly warehouse demo', () => {
         expect(source).not.toContain('const inspectionPointerToggleCells = new WeakSet()');
         expect(source).not.toContain('dataset.demoInspectionPointerToggle');
         expect(source).not.toContain('const shouldEditInspectionCheckbox = cell =>');
-        expect(source).not.toContain("classList.contains('tabulator-editing')");
+        expect(source.slice(source.indexOf('export default async function fullDemo'))).not.toContain("classList.contains('tabulator-editing')");
         expect(source).not.toContain("cellElement.querySelector('.amb-checkbox-editor__input')");
         expect(source).not.toContain("dispatchEvent(new Event('change'");
         expect(source).not.toContain('demo-inspection-checkbox');

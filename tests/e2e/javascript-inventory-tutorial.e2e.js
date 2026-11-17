@@ -166,8 +166,15 @@ test('inventory tutorial reaches and completes the F2 lookup through real intera
     await result.click();
     await dialog.locator('.amb-lookup-dialog__button--primary').click();
     await expect(dialog).toHaveCount(0);
-    await expect(otherStatus).toHaveText('A085');
     await step('date-picker');
+    await expect.poll(() => otherStatus.evaluate(element => {
+        const input = element.querySelector('.amb-lookup-editor__input');
+        return input ? input.value : element.textContent.trim();
+    })).toBe('A085');
+    const reopenedInput = otherStatus.locator('.amb-lookup-editor__input');
+    if (await reopenedInput.count()) await reopenedInput.press('Enter');
+    await expect(otherStatus).not.toHaveClass(/tabulator-editing/);
+    await expect(otherStatus).toHaveText('A085');
 });
 
 test('adding a product displays its new row on the first page and opens Product name', async ({ page }) => {

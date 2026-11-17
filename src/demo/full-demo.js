@@ -71,13 +71,39 @@ export async function addInventoryTopRow(demo, rowData, isCurrent) {
     const rows = await demo.addData([rowData], true);
     const row = Array.isArray(rows) ? rows[0] : null;
     if (!row || !isCurrent()) return { row, ready: false };
-    const data = row.getData();
-    const identifier = data?.id ?? data?._ambTempId;
     const visible = await showInventoryRow(demo, row);
     if (!isCurrent()) return { row, ready: false };
-    if (visible && identifier != null) await demo.navigateCellNext(identifier, 'itemCode');
-    if (!isCurrent()) return { row, ready: false };
-    return { row, ready: visible && Boolean(row.getCell?.('productName')) };
+    const cell = visible ? row.getCell?.('productName') : null;
+    const element = cell?.getElement?.();
+    if (!element || typeof cell.edit !== 'function') return { row, ready: false };
+    const ready = await new Promise(resolve => {
+        let settled = false;
+        const finish = result => {
+            if (settled) return;
+            settled = true;
+            element.removeEventListener('focusin', onFocus);
+            demo.table.off?.('cellEdited', onClose);
+            demo.table.off?.('cellEditCancelled', onClose);
+            resolve(result && isCurrent());
+        };
+        const isReady = () => {
+            const editor = element.querySelector('input, textarea, select, [contenteditable="true"]');
+            return Boolean(element.classList.contains('tabulator-editing') && editor && document.activeElement === editor);
+        };
+        const onFocus = () => { if (isReady()) finish(true); };
+        const onClose = edited => { if (edited === cell || edited?.getElement?.() === element) finish(false); };
+        element.addEventListener('focusin', onFocus);
+        demo.table.on?.('cellEdited', onClose);
+        demo.table.on?.('cellEditCancelled', onClose);
+        try {
+            const result = cell.edit();
+            if (isReady()) finish(true);
+            else if (result === false || !element.classList.contains('tabulator-editing')) finish(false);
+        } catch {
+            finish(false);
+        }
+    });
+    return { row, ready };
 }
 
 export async function presentGuidedInventorySave({ demo, row, savedHighlights, savedResult, isCurrent, showFeedback, notify }) {
