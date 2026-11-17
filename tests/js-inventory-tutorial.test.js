@@ -24,6 +24,15 @@ describe('inventory tutorial action conditions', () => {
             expect(publicExampleTranslations[language][`examples.javascriptInventory.${key}`]).toBeTruthy();
         }
     });
+    test.each(['it', 'en'])('provides completion and command guide text in %s', language => {
+        const copy = publicExampleTranslations[language];
+        for (const key of ['tutorialCompleted', 'tutorialCompleteTitle', 'tutorialFinish', 'tutorialOpenGuide', 'partialSummary']) {
+            expect(copy[`examples.javascriptInventory.${key}`]).toBeTruthy();
+        }
+        expect(copy['examples.javascriptInventory.partialSummary']).toContain('{saved}');
+        expect(copy['examples.javascriptInventory.partialSummary']).toContain('{pending}');
+        expect(copy['examples.javascriptInventory.tutorialOpenGuide']).not.toMatch(/tecnica|technical/i);
+    });
     test('defines nine steps and requires observed navigation and edits', () => {
         expect(inventoryTutorialSteps.map(step => step.id)).toEqual(['keyboard-edit', 'tab', 'escape', 'pages', 'direct-lookup', 'dialog-lookup', 'date-picker', 'notes', 'add', 'partial-save']);
         const from = {}, to = {};
@@ -124,7 +133,10 @@ test('tracks the keyboard workflow through real controller events and action con
     let page = 3;
     const demo = { table: { on: (event, fn) => handlers.set(event, fn), off: vi.fn(), getPage: () => page, getPageMax: () => 5 },
         getStateReport: () => ({ rows: [{ id: 7, hasChanges: true }] }) };
-    const instance = createInventoryTutorial({ host, launch, app, demo, statusDialog: { open: vi.fn() }, statusOptions: [], locale: 'en', resetData: async () => true, hasPendingChanges: () => false });
+    let dirty = false;
+    const resetData = vi.fn(async () => true);
+    const confirmRestart = vi.fn(async () => false);
+    const instance = createInventoryTutorial({ host, launch, app, demo, statusDialog: { open: vi.fn() }, statusOptions: [], locale: 'en', resetData, hasPendingChanges: () => dirty, confirmRestart });
     launch.dispatchEvent(new Event('click'));
     await vi.waitFor(() => expect(instance.capture()?.stepId).toBe('keyboard-edit'));
     const send = (target, type, subject, properties = {}) => {
@@ -146,6 +158,14 @@ test('tracks the keyboard workflow through real controller events and action con
     expect(instance.capture().actionIndex).toBe(0);
     focus(stock.element);
     expect(instance.capture().actionIndex).toBe(1);
+    dirty = true;
+    const progress = instance.capture();
+    const findAction = (element, action) => element.getAttribute?.('data-tutorial-action') === action
+        ? element : element.children?.map(child => findAction(child, action)).find(Boolean);
+    findAction(host, 'restart').dispatchEvent(new Event('click'));
+    await vi.waitFor(() => expect(confirmRestart).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(instance.capture()).toEqual(progress));
+    expect(resetData).toHaveBeenCalledTimes(1);
     key(stock.element, 'Enter');
     open(stock);
     input(stock, '6');
@@ -167,6 +187,14 @@ test('tracks the keyboard workflow through real controller events and action con
     expect(price.classes.has('tabulator-editing')).toBe(true);
     input(price, '19');
     expect(instance.capture().actionIndex).toBe(1);
+    const beforeClose = instance.capture();
+    findAction(host, 'skip').dispatchEvent(new Event('click'));
+    expect(instance.capture()).toBeNull();
+    expect(values.stockQuantity).toBe(8);
+    launch.dispatchEvent(new Event('click'));
+    await vi.waitFor(() => expect(instance.capture()?.stepId).toBe('escape'));
+    expect(instance.capture().actionIndex).toBe(1);
+    expect(instance.capture().generation).not.toBe(beforeClose.generation);
     key(price.input, 'Escape');
     expect(instance.capture().stepId).toBe('escape');
     price.classes.delete('tabulator-editing');
@@ -214,7 +242,9 @@ test('starts closed, opens explicitly, and removes listeners without changing da
     const originalOpen = vi.fn();
     const statusDialog = { open: originalOpen };
     const resetData = vi.fn(async () => true);
-    const controller = createInventoryTutorial({ host, launch, app, demo, statusDialog, statusOptions: [], locale: 'en', resetData, hasPendingChanges: () => false });
+    let dirty = false;
+    const confirmRestart = vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    const controller = createInventoryTutorial({ host, launch, app, demo, statusDialog, statusOptions: [], locale: 'en', resetData, hasPendingChanges: () => dirty, confirmRestart });
     expect(host.children[0].hidden).toBe(true);
     expect(controller.capture()).toBeNull();
     launch.dispatchEvent(new Event('click'));
@@ -226,13 +256,23 @@ test('starts closed, opens explicitly, and removes listeners without changing da
     doc.documentElement.lang = 'it';
     win.dispatchEvent(new Event('amb-demo-language-change'));
     expect(controller.capture().stepId).toBe('keyboard-edit');
+    dirty = true;
+    const beforeRestart = controller.capture();
+    find(host.children[0], 'restart').dispatchEvent(new Event('click'));
+    await vi.waitFor(() => expect(confirmRestart).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(controller.capture()).toEqual(beforeRestart));
+    expect(resetData).toHaveBeenCalledTimes(1);
     find(host.children[0], 'restart').dispatchEvent(new Event('click'));
     await vi.waitFor(() => expect(resetData).toHaveBeenCalledTimes(2));
     await vi.waitFor(() => expect(controller.capture()?.stepId).toBe('keyboard-edit'));
     expect(controller.capture().stepId).toBe('keyboard-edit');
     find(host.children[0], 'skip').dispatchEvent(new Event('click'));
-    await vi.waitFor(() => expect(resetData).toHaveBeenCalledTimes(3));
+    expect(resetData).toHaveBeenCalledTimes(2);
     expect(host.children[0].hidden).toBe(true);
+    expect(label.textContent).toBe('Riprendi tutorial');
+    launch.dispatchEvent(new Event('click'));
+    await vi.waitFor(() => expect(controller.capture()?.stepId).toBe('keyboard-edit'));
+    expect(resetData).toHaveBeenCalledTimes(2);
     expect(data).toEqual([{ id: 1, productName: 'kept' }]);
     controller.destroy();
     expect(host.children).toHaveLength(0);
@@ -281,7 +321,7 @@ test('does not reset or start when the user declines to discard existing changes
     controller.destroy();
 });
 
-test('finish and open-guide wait for one reset each without repeating it on close', async () => {
+test('finish preserves data and opens the command guide only when requested', async () => {
     vi.resetModules();
     let options;
     const controllerMock = { capture: vi.fn(), destroy: vi.fn(), reopen: vi.fn(), restart: vi.fn() };
@@ -304,12 +344,18 @@ test('finish and open-guide wait for one reset each without repeating it on clos
         launch.querySelector = () => new ElementMock('span');
         const app = new ElementMock();
         app.querySelector = () => new ElementMock();
-        const summary = new ElementMock('summary');
-        const technicalGuide = { open: false, querySelector: () => summary };
+        const onOpenCommandGuide = vi.fn();
         const resetData = vi.fn(async () => true);
+        const confirmStart = vi.fn(async () => false);
+        const confirmRestart = vi.fn(async () => true);
+        const originalProducts = await fakeApi.resetDemoProducts();
+        const savedProduct = { ...originalProducts[0], productName: 'Saved before finishing' };
+        expect((await fakeApi.saveProductChanges({ changes: { updated: [{ after: savedProduct }] } })).ok).toBe(true);
+        const pendingRow = { _ambTempId: 'pending-new', productName: '', state: 'new' };
         const instance = createWithMock({
-            host, launch, app, demo: { table: { on: vi.fn(), off: vi.fn() } },
-            statusDialog: { open: vi.fn() }, statusOptions: [], technicalGuide, locale: 'en', resetData
+            host, launch, app, demo: { table: { on: vi.fn(), off: vi.fn() }, getData: () => [pendingRow] },
+            statusDialog: { open: vi.fn() }, statusOptions: [], onOpenCommandGuide, locale: 'en', resetData,
+            hasPendingChanges: () => true, confirmStart, confirmRestart
         });
         for (const openGuide of [false, true]) {
             options.onStateChange({ hidden: false, resetting: false, destroyed: false });
@@ -317,8 +363,14 @@ test('finish and open-guide wait for one reset each without repeating it on clos
             options.onStateChange({ hidden: true, resetting: false, destroyed: false });
             options.onCompleteSuccess({ openGuide });
         }
-        expect(resetData).toHaveBeenCalledTimes(2);
-        expect(technicalGuide.open).toBe(true);
+        expect(resetData).not.toHaveBeenCalled();
+        expect(onOpenCommandGuide).toHaveBeenCalledTimes(1);
+        expect((await fakeApi.getProducts())[0].productName).toBe(savedProduct.productName);
+        expect(pendingRow).toMatchObject({ productName: '', state: 'new' });
+        expect(await options.onBeforeRestart()).toBe(false);
+        expect(confirmStart).toHaveBeenCalledTimes(1);
+        expect(confirmRestart).not.toHaveBeenCalled();
+        await fakeApi.resetDemoProducts();
         instance.destroy();
     } finally {
         vi.doUnmock('../src/demo/components/demo-action-tutorial.js');

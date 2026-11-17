@@ -11,6 +11,7 @@ import { commandGuideCopy } from './components/demo-command-guide-copy.ts';
 import { demoIcon } from './demo-icons.js';
 
 const DEMO_SAVE_POLICY = 'valid-only';
+let savedSinceTutorialReset = false;
 
 export function createInventorySavedHighlights() {
     const highlighted = new Map();
@@ -158,13 +159,16 @@ const messages = {
         removeNewConfirm: 'Rimuovi riga',
         removeNewCancel: 'Annulla',
         tutorialResetTitle: 'Avviare il tutorial?',
-        tutorialResetMessage: 'Le modifiche non salvate verranno annullate per preparare il tutorial.',
-        tutorialResetIntro: 'La tabella contiene modifiche non salvate.',
+        tutorialResetMessage: 'Avviare una nuova sessione ripristina i dati iniziali.',
+        tutorialResetIntro: 'Le modifiche effettuate nella demo saranno annullate.',
         tutorialResetDetails: 'Modifiche che verranno annullate',
-        tutorialResetDetail: 'Avviando il tutorial, le modifiche attualmente presenti nella tabella saranno eliminate per ripristinare i dati iniziali.',
-        tutorialResetExplanation: 'Durante il tutorial potrai modificare liberamente i dati. Alla chiusura verrà ripristinata la situazione iniziale.',
+        tutorialResetDetail: 'Le modifiche pendenti e quelle già salvate saranno eliminate.',
+        tutorialResetExplanation: 'Avviando una nuova sessione, la tabella tornerà ai dati iniziali.',
         tutorialResetConfirm: 'Avvia tutorial',
         tutorialResetCancel: 'Annulla',
+        tutorialRestartTitle: 'Ricominciare il tutorial?',
+        tutorialRestartExplanation: 'La tabella tornerà ai dati iniziali e il tutorial ripartirà dal primo passaggio.',
+        tutorialRestartConfirm: 'Ricomincia',
         tutorialResetError: 'Impossibile ripristinare i dati del tutorial. Riprova.',
         row: 'Riga',
         validChangesCanSave: '{count} modifiche valide possono comunque essere salvate.',
@@ -213,13 +217,16 @@ const messages = {
         removeNewConfirm: 'Remove row',
         removeNewCancel: 'Cancel',
         tutorialResetTitle: 'Start the tutorial?',
-        tutorialResetMessage: 'Unsaved changes will be discarded to prepare the tutorial.',
-        tutorialResetIntro: 'The grid contains unsaved changes.',
+        tutorialResetMessage: 'Starting a new session restores the initial data.',
+        tutorialResetIntro: 'Changes made in the demo will be discarded.',
         tutorialResetDetails: 'Changes that will be discarded',
-        tutorialResetDetail: 'Starting the tutorial will discard the current grid changes to restore the initial data.',
-        tutorialResetExplanation: 'You can freely edit data during the tutorial. The initial state will be restored when you close it.',
+        tutorialResetDetail: 'Pending and already saved changes will be discarded.',
+        tutorialResetExplanation: 'Starting a new session restores the initial grid data.',
         tutorialResetConfirm: 'Start tutorial',
         tutorialResetCancel: 'Cancel',
+        tutorialRestartTitle: 'Restart the tutorial?',
+        tutorialRestartExplanation: 'The table will return to its initial data and the tutorial will restart from the first step.',
+        tutorialRestartConfirm: 'Restart',
         tutorialResetError: 'Unable to restore tutorial data. Please try again.',
         row: 'Row',
         validChangesCanSave: '{count} valid changes can still be saved.',
@@ -656,22 +663,24 @@ export default async function fullDemo(app, options = {}) {
         launch: app.querySelector('[data-action="tutorial-launch"]'),
         app, demo, statusDialog, statusOptions,
         resetData: resetTutorialData,
-        hasPendingChanges: () => demo.getStateReport().hasChanges || Boolean(app.querySelector('#inventory-table .tabulator-editing')),
-        confirmStart: () => {
+        hasPendingChanges: () => savedSinceTutorialReset || demo.getStateReport().hasChanges || Boolean(app.querySelector('#inventory-table .tabulator-editing')),
+        confirmStart: () => confirmTutorialReset(false),
+        confirmRestart: () => confirmTutorialReset(true),
+        onOpenCommandGuide: () => commandGuide?.open(commandGuideTrigger instanceof HTMLElement ? commandGuideTrigger : undefined),
+        onResetError: () => demo.feedback.show({ type: 'error', message: t('tutorialResetError') }),
+        locale: getLanguage()
+    });
+    function confirmTutorialReset(restart) {
             const confirmation = tutorialConfirmDialog.confirm({
-                title: t('tutorialResetTitle'), message: t('tutorialResetIntro'),
-                confirmText: t('tutorialResetConfirm'), cancelText: t('tutorialResetCancel')
+                title: t(restart ? 'tutorialRestartTitle' : 'tutorialResetTitle'), message: t('tutorialResetIntro'),
+                confirmText: t(restart ? 'tutorialRestartConfirm' : 'tutorialResetConfirm'), cancelText: t('tutorialResetCancel')
             });
             decoratePartialSaveDialog(tutorialConfirmDialog, {
                 intro: t('tutorialResetIntro'), detailsHeading: t('tutorialResetDetails'),
-                detailsLines: [t('tutorialResetDetail')], explanation: t('tutorialResetExplanation')
+                detailsLines: [t('tutorialResetDetail')], explanation: t(restart ? 'tutorialRestartExplanation' : 'tutorialResetExplanation')
             });
             return confirmation;
-        },
-        onResetError: () => demo.feedback.show({ type: 'error', message: t('tutorialResetError') }),
-        technicalGuide: app.querySelector('.demo-disclosure--technical'),
-        locale: getLanguage()
-    });
+    }
     const commandGuideHost = app.querySelector('.demo-command-guide-host');
     const commandGuideTrigger = app.querySelector('[data-action="demo-command-guide"]');
     const updateCommandGuideTrigger = () => {
@@ -751,6 +760,7 @@ export default async function fullDemo(app, options = {}) {
         await demo.setData(products);
         if (demoDisposed) return false;
         await demo.setPage(1);
+        savedSinceTutorialReset = false;
         demo.feedback.clear();
         return true;
     }
@@ -948,6 +958,7 @@ export default async function fullDemo(app, options = {}) {
         if (resetGeneration !== tutorialResetGeneration) return;
 
         if (result.ok) {
+            savedSinceTutorialReset ||= ['inserted', 'updated', 'deleted'].some(key => (result.saved?.[key]?.length || 0) > 0);
             const applyIdsResult = crud.applyBackendIds(result.generatedIds || []);
             const savedResult = crud.markValidChangesSaved();
             const report = crud.getStateReport();

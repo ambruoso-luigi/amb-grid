@@ -48,7 +48,7 @@ export const inventoryTutorialSteps = [
     ] }
 ];
 
-export function createInventoryTutorial({ host, launch, app, demo, statusDialog, statusOptions, technicalGuide, locale, resetData, hasPendingChanges, confirmStart, onResetError }) {
+export function createInventoryTutorial({ host, launch, app, demo, statusDialog, statusOptions, locale, resetData, hasPendingChanges, confirmStart, confirmRestart, onOpenCommandGuide, onResetError }) {
     let active = null;
     let intent = null;
     let move = null;
@@ -62,7 +62,6 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     let resetting = false;
     let destroyed = false;
     let completing = false;
-    let skipCloseReset = false;
     let root = null;
     let highlighted = null;
     let inputGlow = null;
@@ -166,8 +165,11 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         label.textContent = translate('tutorialRestoring');
         clearTracking();
         try {
-            return await resetData() !== false;
+            const success = await resetData() !== false;
+            if (!success && !destroyed) onResetError?.();
+            return success;
         } catch {
+            if (!destroyed) onResetError?.();
             return false;
         } finally {
             resetting = false;
@@ -181,18 +183,14 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         panelId: 'javascript-inventory-tutorial', locale,
         titleKey: `${prefix}.tutorialTitle`, completedKey: `${prefix}.tutorialCompleted`, tutorialCopyPrefix: prefix,
         steps: inventoryTutorialSteps,
+        onBeforeRestart: () => !hasPendingChanges?.() ? true : (started ? confirmRestart?.() : confirmStart?.()) ?? false,
         onRestart: runReset,
-        onCompleteAction: async () => {
-            completing = true;
-            const success = await runReset();
-            completing = false;
-            if (success) skipCloseReset = true;
-            return success;
-        },
+        onCompleteAction: () => { completing = true; return true; },
         onCompleteSuccess: ({ openGuide }) => {
             started = false;
+            completing = false;
             label.textContent = translate('tutorialStart');
-            if (openGuide && technicalGuide) { technicalGuide.open = true; technicalGuide.querySelector('summary')?.focus(); }
+            if (openGuide && onOpenCommandGuide) onOpenCommandGuide();
             else launch.focus();
         },
         onStateChange: next => {
@@ -200,6 +198,17 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             if (next.hidden || (state?.stepId && state.stepId !== next.stepId)) {
                 dateRequest = null; notesRequest = null; popupSession = null;
                 popupObserver?.disconnect(); popupObserver = null;
+                if (next.hidden) {
+                    intent = null; move = null; pageIntent = null; f2Intent = null;
+                    if (dialogCandidate) dialogCandidate.context = null;
+                    if (active) active.context = null;
+                    dialogObserver?.disconnect(); dialogObserver = null;
+                    commitObserver?.disconnect(); commitObserver = null;
+                } else if (state?.stepId === 'dialog-lookup') {
+                    dialogCandidate = null;
+                    dialogObserver?.disconnect(); dialogObserver = null;
+                    commitObserver?.disconnect(); commitObserver = null;
+                }
             }
             state = next;
             launch.hidden = !next.hidden;
@@ -208,21 +217,10 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             note.hidden = next.hidden;
             note.textContent = noteText(next);
             const closeButton = host.querySelector('[data-tutorial-action="skip"]');
-            if (closeButton) closeButton.disabled = next.resetting || next.destroyed;
+            if (closeButton) closeButton.disabled = next.resetting || next.beforeRestartPending || next.destroyed;
             syncHighlight();
             if (wasOpen && next.hidden && !next.destroyed && !completing) {
-                if (skipCloseReset) { skipCloseReset = false; return; }
-                void runReset().then(success => {
-                    if (destroyed) return;
-                    if (success) {
-                        started = false;
-                        label.textContent = translate('tutorialStart');
-                        launch.focus({ preventScroll: true });
-                    } else {
-                        tutorial.reopen();
-                        onResetError?.();
-                    }
-                });
+                launch.focus({ preventScroll: true });
             }
         }
     });
@@ -269,8 +267,20 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         const day = popup.querySelector('.datepicker-cell.day.focused') || popup.querySelector('.datepicker-cell.day.selected');
         return day?.getAttribute('data-date') ?? null;
     };
+    const resumePopup = kind => {
+        const context = tutorial.capture();
+        const stepId = kind === 'date' ? 'date-picker' : 'notes';
+        const field = kind === 'date' ? 'lastCheckDate' : 'notes';
+        if (context?.stepId !== stepId || context.actionIndex === 0 || active?.cell.getField() !== field) return null;
+        const popup = document.querySelector?.(kind === 'date' ? '.datepicker.active' : '.amb-large-text-editor');
+        if (!visible(popup)) return null;
+        active.context = context;
+        popupSession = { kind, popup, cell: active.cell, before: active.before, context, selected: false, saved: false };
+        syncHighlight();
+        return popupSession;
+    };
     const onDocumentKey = event => {
-        const session = popupSession;
+        const session = popupSession || resumePopup('date');
         if (!session || session.kind !== 'date' || active?.cell !== session.cell || !visible(session.popup)) return;
         const anchor = session.cell.getElement().querySelector?.('.amb-date-editor-picker-anchor');
         if (event.target !== anchor && !session.popup.contains(event.target)) return;
@@ -299,7 +309,11 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         if (event.target === anchor) { popupSession = null; syncHighlight(); }
     };
     const onDocumentClick = event => {
-        const session = popupSession;
+        if (dialogCandidate && !dialogCandidate.context && statusDialog.overlay?.contains(event.target)) {
+            const context = tutorial.capture();
+            if (context?.stepId === 'dialog-lookup') dialogCandidate.context = context;
+        }
+        const session = popupSession || resumePopup('notes');
         if (session?.kind === 'notes' && session.popup.contains(event.target) && event.target.closest?.('.amb-large-text-editor__button--primary')) session.saved = true;
     };
     let starting = false;
@@ -308,10 +322,12 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         starting = true;
         launch.disabled = true;
         try {
-            if (hasPendingChanges() && !await confirmStart()) return;
-            if (destroyed) return;
-            started = true;
-            await tutorial.restart();
+            if (started) {
+                tutorial.reopen();
+            } else if (await tutorial.restart() === true && !destroyed) {
+                started = true;
+                label.textContent = translate('tutorialResume');
+            }
         } finally {
             starting = false;
             if (!resetting) launch.disabled = false;
@@ -349,6 +365,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key) && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !cell.classList.contains('tabulator-editing')) move = { from: cell, context };
             if (event.key === 'Enter' && !cell.classList.contains('tabulator-editing')) intent = { kind: 'Enter', cell, context };
             if (active && cell === active.cell.getElement()) {
+                if (!active.context) active.context = context;
                 if (event.key === 'Enter') active.confirmed = true;
                 if (event.key === 'Escape') active.cancelled = true;
                 if (event.key === 'Tab' && !event.shiftKey) move = { from: cell, row: active.cell.getRow(), field: active.cell.getField(), before: active.before, context, tab: 'tab-forward' };
@@ -378,7 +395,23 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             if (notify('move', { from: previous.from, to: cell, field: cell.getAttribute('tabulator-field'), firstRow: row && row === firstRow && previous.from.closest('.tabulator-row') === row }, previous.context)) targetRow = row;
         }
     };
+    const observeDialog = () => {
+        dialogObserver?.disconnect();
+        if (typeof MutationObserver !== 'function' || !statusDialog.overlay) return;
+        dialogObserver = new MutationObserver(records => {
+            const candidate = dialogCandidate;
+            if (candidate?.pendingSearch && records.some(record => record.type === 'childList')) {
+                candidate.searched = true;
+                candidate.pendingSearch = '';
+                if (notify('dialog-search', { searched: true }, candidate.context)) candidate.context = tutorial.capture();
+            }
+            syncHighlight();
+        });
+        dialogObserver.observe(statusDialog.overlay, { childList: true, subtree: true });
+    };
     const onInput = event => {
+        if (!popupSession && event.target.matches?.('.amb-large-text-editor__textarea')) resumePopup('notes');
+        if (active && !active.context && active.cell.getElement().contains(event.target)) active.context = tutorial.capture();
         if (popupSession?.kind === 'notes' && popupSession.popup.contains(event.target) && event.target.matches('.amb-large-text-editor__textarea')) {
             const session = popupSession;
             if (notify('notes-input', { text: event.target.value, before: String(session.before ?? '') }, session.context)) session.context = tutorial.capture();
@@ -389,6 +422,12 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             if (notify('temporary', { before: active.before, temporary: active.temporary, field: active.cell.getField(), continued: active.continued }, active.context)) active.context = tutorial.capture();
         }
         if (dialogCandidate && statusDialog.overlay?.contains(event.target) && event.target.matches('.amb-lookup-dialog__search')) {
+            if (!dialogCandidate.context) {
+                const context = tutorial.capture();
+                if (context?.stepId !== 'dialog-lookup') return;
+                dialogCandidate.context = context;
+                observeDialog();
+            }
             dialogCandidate.pendingSearch = event.target.value.trim();
             queueMicrotask(syncHighlight);
         }
@@ -479,19 +518,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             if (context.actionIndex === 0) notify('dialog-open', { opened, key: 'F2', differentRow }, request.context);
             if (opened && (differentRow || context.actionIndex > 0)) {
                 dialogCandidate = { context: tutorial.capture(), selected: null, searched: false };
-                dialogObserver?.disconnect();
-                if (typeof MutationObserver === 'function') {
-                    dialogObserver = new MutationObserver(records => {
-                        const candidate = dialogCandidate;
-                        if (candidate?.pendingSearch && records.some(record => record.type === 'childList')) {
-                            candidate.searched = true;
-                            candidate.pendingSearch = '';
-                            if (notify('dialog-search', { searched: true }, candidate.context)) candidate.context = tutorial.capture();
-                        }
-                        syncHighlight();
-                    });
-                    dialogObserver.observe(statusDialog.overlay, { childList: true, subtree: true });
-                }
+                observeDialog();
                 syncHighlight();
             }
         }

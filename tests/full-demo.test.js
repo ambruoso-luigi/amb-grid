@@ -136,6 +136,16 @@ test('finishes guided saving only after pagination, highlighting, and feedback',
     expect(events).toEqual(['feedback']);
 });
 
+test('tracks saved backend changes until reset and opens the existing command guide', () => {
+    expect(source).toContain('let savedSinceTutorialReset = false');
+    expect(source).toContain('savedSinceTutorialReset ||=');
+    expect(source).toContain('hasPendingChanges: () => savedSinceTutorialReset || demo.getStateReport().hasChanges');
+    const reset = source.slice(source.indexOf('async function resetTutorialData()'), source.indexOf('function handleRowConfirmation'));
+    expect(reset).toContain('savedSinceTutorialReset = false');
+    expect(source).toContain('onOpenCommandGuide: () => commandGuide?.open(');
+    expect(source).not.toContain("technicalGuide: app.querySelector('.demo-disclosure--technical')");
+});
+
 describe('Legacy-friendly warehouse demo', () => {
     test('uses legacy-friendly naming with warehouse scenario', () => {
         expect(source).not.toContain('Demo principale · Legacy-friendly');

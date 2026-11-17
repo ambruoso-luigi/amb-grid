@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { enterNavigationWithClick, openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
-test('inventory tutorial preserves unsaved changes until confirmed and resets on close and restart', async ({ page }) => {
+test('inventory tutorial resumes without discarding changes and confirms restart', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
     await page.goto('/src/demo/index.html#getting-started-javascript');
 
@@ -47,13 +47,11 @@ test('inventory tutorial preserves unsaved changes until confirmed and resets on
         await expect(productName).toHaveText(originalName);
         await expect(row).toHaveAttribute('data-state', 'clean');
     };
-    const expectClosedAndReset = async () => {
+    const expectClosed = async () => {
         await expect(tutorial).toBeHidden();
         await expect(launch).toBeVisible();
         await expect(launch).toBeEnabled();
         await expect(launch).toHaveAttribute('aria-busy', 'false');
-        await expect(productName).toHaveText(originalName);
-        await expect(row).toHaveAttribute('data-state', 'clean');
         await expect(confirmation).toHaveCount(0);
     };
 
@@ -74,14 +72,30 @@ test('inventory tutorial preserves unsaved changes until confirmed and resets on
     await confirmation.getByRole('button', { name: 'Avvia tutorial' }).click();
     await expectReady();
 
+    const warehouse = row.locator('.tabulator-cell[tabulator-field="warehouse"]');
+    await enterNavigationWithClick(page, warehouse, 'Tutorial resume setup', '#inventory-table');
+    await page.keyboard.press('ArrowRight');
+    await expect(tutorial).toHaveAttribute('data-tutorial-action-index', '1');
     await editName('Prodotto modificato durante il tutorial');
     await tutorial.locator('[data-tutorial-action="skip"]').click();
-    await expectClosedAndReset();
+    await expectClosed();
+    await expect(productName).toHaveText('Prodotto modificato durante il tutorial');
+    await expect(row).toHaveAttribute('data-state', 'modified');
+    await expect(launch).toHaveText('Riprendi tutorial');
 
     await launch.click();
-    await expectReady();
-    await editName('Prodotto modificato prima del riavvio');
+    await expect(tutorial).toBeVisible();
+    await expect(tutorial).toHaveAttribute('data-tutorial-step', 'keyboard-edit');
+    await expect(tutorial).toHaveAttribute('data-tutorial-action-index', '1');
+    await expect(productName).toHaveText('Prodotto modificato durante il tutorial');
     await tutorial.locator('[data-tutorial-action="restart"]').click();
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation.locator('.teh-confirm-dialog__title')).toHaveText('Ricominciare il tutorial?');
+    await confirmation.getByRole('button', { name: 'Annulla' }).click();
+    await expect(tutorial).toHaveAttribute('data-tutorial-action-index', '1');
+    await expect(productName).toHaveText('Prodotto modificato durante il tutorial');
+    await tutorial.locator('[data-tutorial-action="restart"]').click();
+    await confirmation.getByRole('button', { name: 'Ricomincia' }).click();
     await expectReady();
     await expect(tutorial.locator('[data-tutorial-action="restart"]')).toBeEnabled();
     await demo.locator('[data-action="show-report"]').click();
@@ -93,7 +107,7 @@ test('inventory tutorial preserves unsaved changes until confirmed and resets on
     await reportDialog.getByRole('button', { name: 'Close', exact: true }).click();
 
     await tutorial.locator('[data-tutorial-action="skip"]').click();
-    await expectClosedAndReset();
+    await expectClosed();
     await launch.click();
     await expectReady();
     await expect(tutorial.locator('.demo-action-tutorial__counter')).toHaveText('1 di 10');

@@ -8,7 +8,7 @@ import { demoIcon } from '../demo-icons.js';
  * Capture a fresh context for each operation; feedback timers only change the displayed text.
  * Optional onRestart awaits application cleanup; onStateChange reports the current phase and visibility.
  */
-export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onRestart, onStateChange, onCompleteAction, onCompleteSuccess, variant = 'default', tutorialCopyPrefix = 'examples.crudRowStates', initiallyHidden = false, externalOpenButton = null, panelId = '' }) {
+export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey, completedKey = 'tutorial.completed', onBeforeRestart, onRestart, onStateChange, onCompleteAction, onCompleteSuccess, variant = 'default', tutorialCopyPrefix = 'examples.crudRowStates', initiallyHidden = false, externalOpenButton = null, panelId = '' }) {
     const isCrud = variant === 'crud';
     let language = locale === 'en' ? 'en' : 'it';
     let index = 0;
@@ -23,6 +23,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     let renderedInstructionSource = null;
     let renderedInstructionEmphasis = false;
     let resetting = false;
+    let beforeRestartPending = false;
     let restartFailed = false;
     let restartSequence = 0;
     let completeActionPending = false;
@@ -139,7 +140,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         root.setAttribute('data-tutorial-step', complete ? 'complete' : steps[index].id);
         root.setAttribute('data-tutorial-action-index', complete ? '' : String(actionIndex));
         root.setAttribute('data-feedback', String(feedbackKey !== null));
-        root.setAttribute('aria-busy', String(resetting || completeActionPending));
+        root.setAttribute('aria-busy', String(resetting || beforeRestartPending || completeActionPending));
         root.setAttribute('data-resetting', String(resetting));
         if (isCrud) root.setAttribute('data-completing', String(completeActionPending));
         if (isCrud) root.setAttribute('data-hidden', String(hidden));
@@ -188,8 +189,8 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             completeStatus.hidden = !completeActionPending && !completeActionFailed;
             completeStatus.textContent = completeActionPending ? copy(`${tutorialCopyPrefix}.tutorialRestoring`)
                 : completeActionFailed ? copy(`${tutorialCopyPrefix}.tutorialRestoreFailed`) : '';
-            skipButton.disabled = completeActionPending;
-            restartButton.disabled = completeActionPending;
+            skipButton.disabled = completeActionPending || beforeRestartPending || (Boolean(onBeforeRestart) && resetting);
+            restartButton.disabled = completeActionPending || beforeRestartPending || (Boolean(onBeforeRestart) && resetting);
             skipLabel.textContent = copy(`${tutorialCopyPrefix}.tutorialClose`);
             restartLabel.textContent = copy('tutorial.restart');
         } else {
@@ -197,12 +198,12 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             restartButton.textContent = copy('tutorial.restart');
         }
         reopenButton.textContent = copy('tutorial.reopen');
-        restartButton.setAttribute('aria-disabled', String(resetting || completeActionPending));
-        onStateChange?.({ stepId: complete ? null : steps[index].id, actionIndex, hidden, complete, resetting, restartFailed, destroyed });
+        restartButton.setAttribute('aria-disabled', String(resetting || beforeRestartPending || completeActionPending));
+        onStateChange?.({ stepId: complete ? null : steps[index].id, actionIndex, hidden, complete, resetting, ...(onBeforeRestart ? { beforeRestartPending } : {}), restartFailed, destroyed });
     }
 
     function skip() {
-        if (destroyed || hidden || completeActionPending) return;
+        if (destroyed || hidden || completeActionPending || beforeRestartPending || (onBeforeRestart && resetting)) return;
         const restoreFocus = [skipButton, restartButton].includes(document.activeElement);
         clearFeedback();
         hidden = true;
@@ -220,8 +221,8 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         if (restoreFocus) restartButton.focus({ preventScroll: true });
     }
 
-    function restart() {
-        if (destroyed || resetting || completeActionPending) return;
+    function beginRestart() {
+        const previous = onBeforeRestart ? { index, actionIndex, hidden } : null;
         clearFeedback();
         completeActionFailed = false;
         index = 0;
@@ -236,6 +237,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             const finish = succeeded => {
                 if (destroyed || sequence !== restartSequence) return false;
                 resetting = false;
+                if (!succeeded && previous) ({ index, actionIndex, hidden } = previous);
                 restartFailed = !succeeded;
                 render();
                 return succeeded;
@@ -247,6 +249,29 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             }
         }
         render();
+    }
+
+    function restart() {
+        if (destroyed || resetting || beforeRestartPending || completeActionPending) return;
+        if (typeof onBeforeRestart !== 'function') return beginRestart();
+        beforeRestartPending = true;
+        const sequence = ++restartSequence;
+        render();
+        const finish = (approved, failed = false) => {
+            if (destroyed || sequence !== restartSequence) return false;
+            beforeRestartPending = false;
+            if (!approved) {
+                if (failed) feedbackKey = 'tutorial.restartFailed';
+                render();
+                return false;
+            }
+            return beginRestart();
+        };
+        try {
+            return Promise.resolve(onBeforeRestart()).then(value => finish(value === true), () => finish(false, true));
+        } catch {
+            return Promise.resolve(finish(false, true));
+        }
     }
 
     function setLocale(nextLocale) {
@@ -298,13 +323,13 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     render();
 
     return {
-        capture: () => destroyed || hidden || resetting || restartFailed || index === steps.length ? null : {
+        capture: () => destroyed || hidden || resetting || beforeRestartPending || restartFailed || index === steps.length ? null : {
             generation, stepId: steps[index].id,
             ...(hasMicroActions(steps[index]) ? { actionIndex } : {})
         },
         notify(actionId, payload, context) {
             const step = steps[index];
-            if (destroyed || hidden || resetting || restartFailed || !step || !context || context.generation !== generation || context.stepId !== step.id) return false;
+            if (destroyed || hidden || resetting || beforeRestartPending || restartFailed || !step || !context || context.generation !== generation || context.stepId !== step.id) return false;
             const actions = actionsFor(step);
             const hasActions = hasMicroActions(step);
             if (hasActions && context.actionIndex !== actionIndex) return false;

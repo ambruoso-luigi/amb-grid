@@ -57,6 +57,47 @@ afterEach(() => {
 });
 
 describe('demo action tutorial controller', () => {
+    test('optional restart guard preserves progress when declined and prevents concurrent restarts', async () => {
+        let decide;
+        const guard = vi.fn(() => new Promise(resolve => { decide = resolve; }));
+        const reset = vi.fn(async () => true);
+        const { controller, root, button } = mount(undefined, { variant: 'crud', onBeforeRestart: guard, onRestart: reset });
+        controller.notify('prepare-states', { succeeded: true }, controller.capture());
+        const before = controller.capture();
+        const cancelled = controller.restart();
+        expect(root.getAttribute('aria-busy')).toBe('true');
+        expect(button('restart').disabled).toBe(true);
+        expect(controller.capture()).toBeNull();
+        controller.restart();
+        expect(guard).toHaveBeenCalledTimes(1);
+        decide(false);
+        expect(await cancelled).toBe(false);
+        expect(controller.capture()).toEqual(before);
+        expect(reset).not.toHaveBeenCalled();
+        expect(root.getAttribute('data-tutorial-step')).toBe('open-report');
+        const approved = controller.restart();
+        decide(true);
+        expect(await approved).toBe(true);
+        expect(reset).toHaveBeenCalledTimes(1);
+        expect(controller.capture().stepId).toBe('prepare-states');
+        expect(controller.notify('open-report', { succeeded: true }, before)).toBe(false);
+    });
+
+    test('a failed restart guard leaves the current step usable', async () => {
+        const { controller } = mount(undefined, { onBeforeRestart: () => Promise.reject(new Error('failed')), onRestart: vi.fn() });
+        const before = controller.capture();
+        expect(await controller.restart()).toBe(false);
+        expect(controller.capture()).toEqual(before);
+        expect(controller.notify('prepare-states', { succeeded: true }, before)).toBe(true);
+    });
+
+    test('a failed guarded reset retains the previous step for a retry', async () => {
+        const { controller, root } = mount(undefined, { onBeforeRestart: () => true, onRestart: () => false });
+        controller.notify('prepare-states', { succeeded: true }, controller.capture());
+        expect(await controller.restart()).toBe(false);
+        expect(root.getAttribute('data-tutorial-step')).toBe('open-report');
+        expect(root.getAttribute('data-resetting')).toBe('false');
+    });
     test('starts hidden with an external opener and restores focus without resetting progress', () => {
         const externalOpenButton = new ElementMock('button');
         const { root, controller, button } = mount(undefined, {
