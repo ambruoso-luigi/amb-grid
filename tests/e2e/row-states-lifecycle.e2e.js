@@ -26,11 +26,12 @@ const addRecord = async (page, description) => {
     await expect(action(page, 'add')).not.toHaveAttribute('aria-busy', 'true');
     let newIds = [];
     await expect.poll(async () => {
-        newIds = (await tempIds()).filter(id => !existingIds.has(id));
+        newIds = [...new Set((await tempIds()).filter(id => id && !existingIds.has(id)))];
         return newIds.length;
     }).toBe(1);
+    const newId = newIds[0];
     const newRow = table(page).locator('.tabulator-row[data-state="new"]').filter({
-        has: page.locator(`.demo-crud-temp-id[data-demo-temp-id=${JSON.stringify(newIds[0])}]`)
+        has: page.locator(`.demo-crud-temp-id[data-demo-temp-id=${JSON.stringify(newId)}]`)
     });
     await expect(newRow).toBeVisible();
     const descriptionCell = newRow.locator('.tabulator-cell[tabulator-field="description"]');
