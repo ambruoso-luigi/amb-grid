@@ -195,6 +195,7 @@ describe('demo action tutorial controller', () => {
         guideButton.click();
         finishButton.click();
         expect(onCompleteAction).toHaveBeenCalledTimes(1);
+        expect(onCompleteAction).toHaveBeenCalledWith({ openGuide: true });
         expect(root.hidden).toBe(false);
         expect(root.getAttribute('aria-busy')).toBe('true');
         expect(guideButton.disabled).toBe(true);
@@ -238,6 +239,7 @@ describe('demo action tutorial controller', () => {
         button('finish').click();
         await Promise.resolve();
         expect(onCompleteAction).toHaveBeenCalledTimes(1);
+        expect(onCompleteAction).toHaveBeenCalledWith({ openGuide: false });
         expect(root.hidden).toBe(true);
         expect(root.getAttribute('data-tutorial-step')).toBe('last');
         expect(onCompleteSuccess).toHaveBeenCalledTimes(1);

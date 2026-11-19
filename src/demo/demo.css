@@ -5638,6 +5638,14 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     display: none;
 }
 
+#javascript-demo .demo-crud-tutorial-launch[data-demo-inventory-finished] {
+    animation: none;
+}
+
+#javascript-demo .demo-crud-tutorial-launch[data-demo-inventory-finished]::before {
+    content: none;
+}
+
 .demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled) {
     animation: demo-crud-launch-glow 4.15s ease-in-out infinite;
     position: relative;

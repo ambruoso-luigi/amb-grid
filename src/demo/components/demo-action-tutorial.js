@@ -288,7 +288,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
         render();
         let succeeded = false;
         try {
-            succeeded = await onCompleteAction?.() === true;
+            succeeded = await onCompleteAction?.({ openGuide }) === true;
         } catch {
             succeeded = false;
         }

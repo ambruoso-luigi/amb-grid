@@ -166,29 +166,56 @@ test('inventory tutorial reaches and completes the F2 lookup through real intera
     await expect(cell('status')).toHaveText(newStatus);
     await step('dialog-lookup');
 
-    const otherRow = grid.locator('.tabulator-row').nth(1);
-    const otherStatus = otherRow.locator('.tabulator-cell[tabulator-field="status"]');
-    await enterNavigationWithClick(page, otherStatus, 'Tutorial F2 status', '#inventory-table');
+    const sameStatus = cell('status');
+    const lookupStatus = newStatus === 'A085' ? 'AB03' : 'A085';
+    await enterNavigationWithClick(page, sameStatus, 'Tutorial F2 status', '#inventory-table');
     await page.keyboard.press('F2');
     const dialog = page.locator('.amb-lookup-dialog');
     await expect(dialog).toBeVisible();
     await step('dialog-lookup', '1');
-    await dialog.locator('.amb-lookup-dialog__search').fill('A085');
+    await dialog.locator('.amb-lookup-dialog__search').fill(lookupStatus);
     await step('dialog-lookup', '2');
-    const result = dialog.locator('.amb-lookup-dialog__row').filter({ hasText: 'A085' });
+    const result = dialog.locator('.amb-lookup-dialog__row').filter({ hasText: lookupStatus });
     await expect(result).toBeVisible();
     await result.click();
     await dialog.locator('.amb-lookup-dialog__button--primary').click();
     await expect(dialog).toHaveCount(0);
     await step('date-picker');
-    await expect.poll(() => otherStatus.evaluate(element => {
+    await expect.poll(() => sameStatus.evaluate(element => {
         const input = element.querySelector('.amb-lookup-editor__input');
         return input ? input.value : element.textContent.trim();
-    })).toBe('A085');
-    const reopenedInput = otherStatus.locator('.amb-lookup-editor__input');
+    })).toBe(lookupStatus);
+    const reopenedInput = sameStatus.locator('.amb-lookup-editor__input');
     if (await reopenedInput.count()) await reopenedInput.press('Enter');
-    await expect(otherStatus).not.toHaveClass(/tabulator-editing/);
-    await expect(otherStatus).toHaveText('A085');
+    await expect(sameStatus).not.toHaveClass(/tabulator-editing/);
+    await expect(sameStatus).toHaveText(lookupStatus);
+
+    const dateCell = cell('lastCheckDate');
+    await enterNavigationWithClick(page, dateCell, 'Tutorial date picker', '#inventory-table');
+    await page.keyboard.press('F2');
+    const calendar = page.locator('.datepicker.active');
+    await expect(calendar).toBeVisible();
+    await step('date-picker', '1');
+    await expect(calendar).not.toHaveClass(/demo-crud-tutorial-target/);
+    await expect(calendar.locator('.datepicker-picker')).toHaveClass(/demo-crud-tutorial-target/);
+    const bounds = await calendar.boundingBox();
+    const viewport = page.viewportSize();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.y).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height);
+    const focusedDay = calendar.locator('.datepicker-cell.day.focused');
+    const previousDay = await focusedDay.getAttribute('data-date');
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => focusedDay.getAttribute('data-date')).not.toBe(previousDay);
+    await step('date-picker', '2');
+    await page.keyboard.press('Enter');
+    await expect(calendar).toHaveCount(0);
+    await step('date-picker', '3');
+    const dateInput = dateCell.locator('input.amb-date-editor');
+    await expect(dateInput).toBeVisible();
+    await dateInput.press('Enter');
+    await step('notes');
 });
 
 test('adding a product displays its new row on the first page and opens Product name', async ({ page }) => {

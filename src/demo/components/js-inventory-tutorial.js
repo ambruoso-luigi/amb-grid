@@ -27,13 +27,14 @@ export const inventoryTutorialSteps = [
     ] },
     { id: 'direct-lookup', actions: [action('direct', 'direct', p => p.existing && p.openedBy === 'Enter' && p.typed && !p.dialog && p.valid && changed(p))] },
     { id: 'dialog-lookup', actions: [
-        action('dialog-open', 'dialogOpen', p => p.opened && p.key === 'F2' && p.differentRow),
+        action('dialog-open', 'dialogOpen', p => p.opened && p.key === 'F2'),
         action('dialog-search', 'dialogSearch', p => p.searched),
         action('dialog-select', 'dialogSelect', p => p.selected && p.applied && p.valid)
     ] },
     { id: 'date-picker', actions: [
         action('date-open', 'dateOpen', p => p.opened && p.f2 && p.cell),
         action('date-move', 'dateMove', p => p.opened && p.moved),
+        action('date-select', 'dateSelect', p => p.selected && p.closed && p.valid && p.after !== p.before),
         action('date-commit', 'dateCommit', p => p.selected && p.valid && changed(p) && p.applied)
     ] },
     { id: 'notes', actions: [
@@ -53,6 +54,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     let intent = null;
     let move = null;
     let targetRow = null;
+    let navigationStartRow = null;
     let pageIntent = null;
     let originalPage = null;
     let dialogCandidate = null;
@@ -70,6 +72,9 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     let dialogObserver = null;
     let commitObserver = null;
     let directRowId = null;
+    let directRow = null;
+    let suggestedTabRow = null;
+    let suggestedStatusRow = null;
     let dateRequest = null;
     let notesRequest = null;
     let popupSession = null;
@@ -100,6 +105,12 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         const bounds = holder.getBoundingClientRect();
         return rect.right > bounds.left && rect.left < bounds.right && rect.bottom > bounds.top && rect.top < bounds.bottom;
     };
+    const firstVisibleRow = () => [...(root?.querySelectorAll?.('.tabulator-row') || [])].find(visible);
+    const rowUsable = (row, field) => Boolean(row && root.contains(row) && visible(row) && row.querySelector?.(`.tabulator-cell[tabulator-field="${field}"]`));
+    const alternativeRow = (origin, field, allowOrigin) => {
+        const rows = [...(root?.querySelectorAll?.('.tabulator-row') || [])].filter(row => rowUsable(row, field));
+        return rows.find(row => row !== origin) || (allowOrigin ? rows[0] : null) || null;
+    };
     const syncHighlight = () => {
         if (!root || destroyed || !state || state.hidden || state.complete || state.resetting || state.restartFailed || state.destroyed) {
             clearHighlight();
@@ -109,11 +120,22 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         let target = null;
         if (stepId === 'add') target = app.querySelector('[data-action="add"]');
         else if (stepId === 'partial-save') target = actionIndex === 1 && partialButton?.isConnected ? partialButton : app.querySelector('[data-action="save"]');
-        else if (stepId === 'dialog-lookup' && actionIndex > 0 && statusDialog.overlay) {
-            target = actionIndex === 1 ? statusDialog.overlay.querySelector('.amb-lookup-dialog__search')
-                : statusDialog.overlay.querySelector('.amb-lookup-dialog__row--selected, .amb-lookup-dialog__row');
+        else if (stepId === 'pages') target = null;
+        else if (stepId === 'keyboard-edit' && actionIndex === 0) {
+            const row = firstVisibleRow();
+            const field = navigationStartRow === row && row ? 'stockQuantity' : 'itemCode';
+            target = row?.querySelector?.(`.tabulator-cell[tabulator-field="${field}"]`) || null;
+        } else if (stepId === 'tab') {
+            if (!rowUsable(suggestedTabRow, 'stockQuantity')) suggestedTabRow = alternativeRow(targetRow || preferredRow, 'stockQuantity', true);
+            target = suggestedTabRow?.querySelector?.(`.tabulator-cell[tabulator-field="${move?.tab ? 'unitPrice' : 'stockQuantity'}"]`) || null;
+        } else if (stepId === 'dialog-lookup' && actionIndex === 0) {
+            const origin = directRow?.getElement?.() || directRow?.element || null;
+            if (!rowUsable(suggestedStatusRow, 'status')) suggestedStatusRow = rowUsable(origin, 'status') ? origin : alternativeRow(null, 'status', true);
+            target = suggestedStatusRow?.querySelector?.('.tabulator-cell[tabulator-field="status"]') || null;
+        } else if (stepId === 'dialog-lookup' && actionIndex > 0 && statusDialog.overlay) {
+            target = statusDialog.overlay.querySelector('.amb-lookup-dialog__search');
         } else if (stepId === 'date-picker' && actionIndex > 0 && popupSession?.popup) {
-            target = popupSession.popup;
+            target = popupSession.popup.querySelector('.datepicker-picker');
         } else if (stepId === 'notes' && actionIndex > 0 && popupSession?.popup) {
             target = popupSession.popup.querySelector(actionIndex === 1 ? '.amb-large-text-editor__textarea' : '.amb-large-text-editor__button--primary');
         } else {
@@ -144,16 +166,17 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
                 inputGlow.className = 'demo-crud-row-action-glow demo-crud-row-action-glow--pulse';
                 inputGlow.setAttribute('aria-hidden', 'true');
                 const rect = target.getBoundingClientRect();
-                Object.assign(inputGlow.style, { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px`, zIndex: '10001' });
-                document.body.append(inputGlow);
+                const modal = statusDialog.overlay?.contains?.(target) ? statusDialog.overlay : null;
+                Object.assign(inputGlow.style, { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px`, zIndex: modal ? '1' : '10001' });
+                (modal || document.body).append(inputGlow);
             }
         }
     };
     const clearTracking = () => {
-        active = null; intent = null; move = null; targetRow = null; pageIntent = null; originalPage = null; dialogCandidate = null; f2Intent = null;
+        active = null; intent = null; move = null; targetRow = null; navigationStartRow = null; pageIntent = null; originalPage = null; dialogCandidate = null; f2Intent = null;
         preferredRow = null; partialButton = null; dialogObserver?.disconnect(); dialogObserver = null;
         commitObserver?.disconnect(); commitObserver = null; clearHighlight();
-        directRowId = null; dateRequest = null; notesRequest = null; popupSession = null;
+        directRowId = null; directRow = null; suggestedTabRow = null; suggestedStatusRow = null; dateRequest = null; notesRequest = null; popupSession = null;
         partialSummary = null;
         popupObserver?.disconnect(); popupObserver = null;
     };
@@ -185,16 +208,26 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         steps: inventoryTutorialSteps,
         onBeforeRestart: () => !hasPendingChanges?.() ? true : (started ? confirmRestart?.() : confirmStart?.()) ?? false,
         onRestart: runReset,
-        onCompleteAction: () => { completing = true; return true; },
+        onCompleteAction: async ({ openGuide }) => {
+            if (openGuide) { completing = true; return true; }
+            const success = await runReset();
+            completing = success;
+            return success;
+        },
         onCompleteSuccess: ({ openGuide }) => {
             started = false;
             completing = false;
             label.textContent = translate('tutorialStart');
+            if (!openGuide) launch.setAttribute('data-demo-inventory-finished', 'true');
             if (openGuide && onOpenCommandGuide) onOpenCommandGuide();
             else launch.focus();
         },
         onStateChange: next => {
             const wasOpen = state && !state.hidden;
+            if (state?.stepId !== next.stepId) {
+                if (next.stepId === 'tab') suggestedTabRow = null;
+                if (next.stepId === 'dialog-lookup') suggestedStatusRow = null;
+            }
             if (next.hidden || (state?.stepId && state.stepId !== next.stepId)) {
                 dateRequest = null; notesRequest = null; popupSession = null;
                 popupObserver?.disconnect(); popupObserver = null;
@@ -285,12 +318,19 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         const anchor = session.cell.getElement().querySelector?.('.amb-date-editor-picker-anchor');
         if (event.target !== anchor && !session.popup.contains(event.target)) return;
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+            if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || session.context?.actionIndex !== 1) return;
             const before = dayMarker(session.popup);
-            queueMicrotask(() => {
-                if (popupSession !== session || !visible(session.popup)) return;
+            const context = session.context;
+            const checkMovement = () => {
+                const current = tutorial.capture();
+                if (popupSession !== session || active?.cell !== session.cell || !visible(session.popup)
+                    || current?.stepId !== 'date-picker' || current.actionIndex !== 1
+                    || current.generation !== context?.generation || session.context !== context) return;
                 const after = dayMarker(session.popup);
-                if (before !== null && after !== null && before !== after && notify('date-move', { opened: true, moved: true }, session.context)) session.context = tutorial.capture();
-            });
+                if (before !== null && after !== null && before !== after && notify('date-move', { opened: true, moved: true }, context)) session.context = tutorial.capture();
+            };
+            if (typeof requestAnimationFrame === 'function') requestAnimationFrame(checkMovement);
+            else queueMicrotask(checkMovement);
         } else if (event.key === 'Enter' && session.context?.actionIndex === 2) {
             session.enterPressed = true;
         }
@@ -300,13 +340,29 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         if (session?.kind !== 'date' || !session.enterPressed || active?.cell !== session.cell) return;
         const anchor = session.cell.getElement().querySelector?.('.amb-date-editor-picker-anchor');
         const date = event.detail?.date;
-        if (event.target === anchor && date instanceof Date && Number.isFinite(date.getTime())) session.selected = date;
+        if (event.target === anchor && date instanceof Date && Number.isFinite(date.getTime())) {
+            session.selected = date;
+            queueMicrotask(() => confirmDateSelection(session));
+        }
+    };
+    const confirmDateSelection = session => {
+        if (popupSession !== session || active?.cell !== session.cell || !session.selected || visible(session.popup)) return;
+        const date = session.selected;
+        const formatted = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        const value = session.cell.getElement().querySelector?.('input.amb-date-editor')?.value;
+        if (notify('date-select', { selected: true, closed: true, valid: value === formatted, before: session.before, after: value }, session.context)) {
+            session.context = tutorial.capture();
+        }
+        syncHighlight();
     };
     const onDateHide = event => {
         const session = popupSession;
-        if (session?.kind !== 'date' || session.selected) return;
+        if (session?.kind !== 'date') return;
         const anchor = session.cell.getElement().querySelector?.('.amb-date-editor-picker-anchor');
-        if (event.target === anchor) { popupSession = null; syncHighlight(); }
+        if (event.target === anchor) {
+            if (session.selected) queueMicrotask(() => confirmDateSelection(session));
+            else { popupSession = null; syncHighlight(); }
+        }
     };
     const onDocumentClick = event => {
         if (dialogCandidate && !dialogCandidate.context && statusDialog.overlay?.contains(event.target)) {
@@ -326,6 +382,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
                 tutorial.reopen();
             } else if (await tutorial.restart() === true && !destroyed) {
                 started = true;
+                launch.removeAttribute('data-demo-inventory-finished');
                 label.textContent = translate('tutorialResume');
             }
         } finally {
@@ -342,6 +399,10 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         pageIntent = null;
         f2Intent = null;
         const cell = cellOf(event.target);
+        if (state?.stepId === 'keyboard-edit' && state.actionIndex === 0 && cell && root.contains(cell)) {
+            const row = cell.closest('.tabulator-row');
+            navigationStartRow = row === firstVisibleRow() && cell.getAttribute('tabulator-field') !== 'stockQuantity' ? row : null;
+        }
         if (cell && root.contains(cell)) { preferredRow = cell.closest('.tabulator-row'); intent = { kind: 'mouse', cell, context: tutorial.capture() }; syncHighlight(); }
     };
     const onKey = event => {
@@ -374,6 +435,10 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     };
     const onFocus = event => {
         const cell = cellOf(event.target);
+        if (state?.stepId === 'keyboard-edit' && state.actionIndex === 0 && cell && root.contains(cell) && !move) {
+            const row = cell.closest('.tabulator-row');
+            navigationStartRow = row === firstVisibleRow() && cell.getAttribute('tabulator-field') !== 'stockQuantity' ? row : null;
+        }
         if (cell && root.contains(cell)) { preferredRow = cell.closest('.tabulator-row'); syncHighlight(); }
         if (f2Intent && cell && cell !== f2Intent.cell) f2Intent = null;
         if (pageIntent && cell && root.contains(cell) && pageIntent.rendered) {
@@ -391,7 +456,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             if (advanced && active) { active.context = tutorial.capture(); active.continued = true; }
         } else {
             const row = cell.closest('.tabulator-row');
-            const firstRow = [...(root.querySelectorAll?.('.tabulator-row') || [])].find(visible);
+            const firstRow = firstVisibleRow();
             if (notify('move', { from: previous.from, to: cell, field: cell.getAttribute('tabulator-field'), firstRow: row && row === firstRow && previous.from.closest('.tabulator-row') === row }, previous.context)) targetRow = row;
         }
     };
@@ -465,7 +530,11 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             notify('dialog-select', { selected: dialogCandidate.searched, applied: cell.getValue() === dialogCandidate.selected.id, valid: payload.valid }, dialogCandidate.context);
             dialogCandidate = null;
         } else if (cell.getField() === 'status') {
-            if (notify('direct', payload, edit.context)) directRowId = data.id;
+            const oldId = directRowId;
+            const oldRow = directRow;
+            directRowId = data.id;
+            directRow = { getElement: () => cell.getRow().getElement?.() || cell.getElement().closest('.tabulator-row') };
+            if (!notify('direct', payload, edit.context)) { directRowId = oldId; directRow = oldRow; }
         } else if (popupSession?.cell === cell && popupSession.kind === 'date') {
             const session = popupSession;
             const value = cell.getValue();
@@ -514,9 +583,8 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             && context?.stepId === 'dialog-lookup' && context.generation === request.context.generation
             && context.actionIndex === request.context.actionIndex) {
             const opened = Boolean(statusDialog.overlay?.isConnected && !statusDialog.overlay.hidden && statusDialog.overlay.getClientRects().length);
-            const differentRow = directRowId != null && edit.cell.getRow().getData().id != null && edit.cell.getRow().getData().id !== directRowId;
-            if (context.actionIndex === 0) notify('dialog-open', { opened, key: 'F2', differentRow }, request.context);
-            if (opened && (differentRow || context.actionIndex > 0)) {
+            const accepted = context.actionIndex > 0 || notify('dialog-open', { opened, key: 'F2' }, request.context);
+            if (opened && accepted) {
                 dialogCandidate = { context: tutorial.capture(), selected: null, searched: false };
                 observeDialog();
                 syncHighlight();
