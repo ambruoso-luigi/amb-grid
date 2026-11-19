@@ -34,6 +34,7 @@ const expectRestoredFocus = async (page, cell, owner) => {
             : current === document.querySelector(selector);
     }, owner)).toBe(true);
     if (await page.evaluate(() => window.__imageLabLastCell?.isConnected)) await expect(cell).toBeFocused();
+    else await expect(page.locator(owner)).toBeFocused();
 };
 const close = async page => {
     await page.keyboard.press('Escape');
@@ -402,18 +403,29 @@ test('data update, reset, destroy, restore and recreate clean up only grid A', a
     await load(page);
     const otherRows = await page.locator('#column-calculations-test-table .tabulator-row').count();
     await imageCell(page, 1).dblclick();
+    await close(page);
+    await expectRestoredFocus(page, imageCell(page, 1), '#image-formatter-test-table');
+    await imageCell(page, 1).dblclick();
+    await page.evaluate(() => { window.__imageLabOldImage = window.__imageLabLastCell.querySelector('.amb-image--viewable'); });
     await programmaticGridAction(page, 'update');
     await expect(page.locator('#image-lab-status')).toContainText('Riga 01 aggiornata');
     await expect(row(page, 1).locator('img')).toHaveAttribute('src', '/test/images/panorama-01.jpg');
     await expect(viewer(page)).toHaveCount(1);
+    expect(await page.evaluate(() => window.__imageLabOldImage.isConnected)).toBe(false);
+    expect(await imageCell(page, 1).evaluate(element => element === window.__imageLabLastCell && element.isConnected)).toBe(true);
+    await close(page);
+    await expectRestoredFocus(page, imageCell(page, 1), '#image-formatter-test-table');
+    await imageCell(page, 1).dblclick();
+    await programmaticGridAction(page, 'reset');
+    expect(await page.evaluate(() => window.__imageLabLastCell.isConnected)).toBe(false);
     await close(page);
     await expect(page.locator('#image-formatter-test-table')).toBeFocused();
-    await page.getByRole('button', { name: 'Restore original data', exact: true }).click();
     await expect(row(page, 1).locator('img')).toHaveAttribute('src', '/test/images/landscape-01.jpg');
     await expect(page.locator('#image-lab-status')).toContainText('Fixture originali ripristinate');
     await imageCell(page, 3).dblclick();
     await programmaticGridAction(page, 'destroy');
     await expect(viewer(page)).toHaveCount(0);
+    expect(await page.evaluate(() => document.activeElement === window.__imageLabLastCell || document.activeElement === document.querySelector('#image-formatter-test-table'))).toBe(false);
     await expect(page.locator('.amb-image-viewer-source, .amb-image-preview')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Update data', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: 'Restore grid A', exact: true }).click();

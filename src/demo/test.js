@@ -1286,6 +1286,7 @@ export const imageLabTestHarness = {
     destroy: destroyImageFormatterGrid,
     recreate: mountImageFormatterGrid,
     update: () => updateImageLabData(false),
+    reset: () => updateImageLabData(true),
     updateRows: rows => currentImageFormatterGrid?.updateData(structuredClone(rows))
 };
 

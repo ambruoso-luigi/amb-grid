@@ -33,6 +33,10 @@ describe('inventory tutorial action conditions', () => {
         expect(copy['examples.javascriptInventory.partialSummary']).toContain('{saved}');
         expect(copy['examples.javascriptInventory.partialSummary']).toContain('{pending}');
         expect(copy['examples.javascriptInventory.tutorialOpenGuide']).not.toMatch(/tecnica|technical/i);
+        const completion = copy['examples.javascriptInventory.tutorialCompleted'];
+        expect(completion).toContain(language === 'it' ? 'Fine' : 'Finish');
+        expect(completion).toContain(language === 'it' ? 'Apri guida comandi' : 'Open command guide');
+        expect(completion).toMatch(language === 'it' ? /ripristinare.*conservare/ : /restore.*keep/);
     });
     test('defines nine steps and requires observed navigation and edits', () => {
         expect(inventoryTutorialSteps.map(step => step.id)).toEqual(['keyboard-edit', 'tab', 'escape', 'pages', 'direct-lookup', 'dialog-lookup', 'date-picker', 'notes', 'add', 'partial-save']);
