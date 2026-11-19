@@ -9,6 +9,7 @@ import { bindDemoColumnGuideAnimations, createDemoColumnGuide } from './utils/de
 import { createDemoCommandGuide } from './components/demo-command-guide.ts';
 import { commandGuideCopy } from './components/demo-command-guide-copy.ts';
 import { demoIcon } from './demo-icons.js';
+import { decorateDemoEditorButtons } from './utils/decorate-demo-editor-button.js';
 
 const DEMO_SAVE_POLICY = 'valid-only';
 let savedSinceTutorialReset = false;
@@ -365,7 +366,6 @@ export default async function fullDemo(app, options = {}) {
                     ${showHeader ? `<h2 data-i18n="mainDemo.title">Gestione prodotti e giacenze</h2>` : ''}
                 </div>
                 ${showHeader ? `<p class="demo-note demo-main-description" data-i18n="mainDemo.description">Demo gestionale classica per contesti server-rendered e legacy-friendly: modifica prodotti, valida i dati e prepara il payload backend nello stesso flusso.</p>` : ''}
-                <div class="demo-main-tutorial-host"></div>
                 ${createDemoColumnGuide({
                     variant: 'technical',
                     summary: 'Demo technical guide',
@@ -392,6 +392,7 @@ export default async function fullDemo(app, options = {}) {
                         { title: 'Notes', titleKey: 'guides.main.notes.title', badge: 'LONG TEXT', description: 'Free long text edited in a dialog and shown as a compact preview.', descriptionKey: 'guides.main.notes.description' }
                     ]
                 })}
+                <div class="demo-main-tutorial-host"></div>
                 <div class="demo-table-workbench">
                     <div class="demo-command-guide-host"></div>
                     <div id="inventory-table" class="amb-demo-inventory-grid demo-business-grid"></div>
@@ -424,6 +425,12 @@ export default async function fullDemo(app, options = {}) {
         load: ({ query }) => fakeApi.searchStatuses(query)
     });
     const statusDialog = new AMB.LookupDialog();
+    const openStatusDialog = statusDialog.open;
+    statusDialog.open = function (...args) {
+        const result = openStatusDialog.apply(this, args);
+        this.overlay?.classList.add('demo-inventory-status-dialog');
+        return result;
+    };
     const reportDialog = createDemoReportDialog();
     const partialSaveDialog = new AMB.ConfirmDialog();
     const rowConfirmDialog = new AMB.ConfirmDialog();
@@ -657,6 +664,12 @@ export default async function fullDemo(app, options = {}) {
     }
 
     const demo = AMB.table(tableOptions);
+    const stopLookupIcons = decorateDemoEditorButtons(app.querySelector('#inventory-table'), {
+        selector: '.amb-lookup-editor__button', icon: 'lookup', label: 'Search', strokeWidth: 2.5
+    });
+    const stopDateIcons = decorateDemoEditorButtons(app.querySelector('#inventory-table'), {
+        selector: '.amb-date-editor-picker-button', icon: 'date', label: 'Open calendar'
+    });
     crud = demo.crud;
     const inventoryTutorial = createInventoryTutorial({
         host: app.querySelector('.demo-main-tutorial-host'),
@@ -710,6 +723,8 @@ export default async function fullDemo(app, options = {}) {
 
     demo.destroy = () => {
         demoDisposed = true;
+        stopLookupIcons();
+        stopDateIcons();
         savedHighlights.clear();
         tutorialResetGeneration += 1;
         destroyColumnGuideAnimations();

@@ -3,7 +3,8 @@ import { demoIcon } from '../demo-icons.js';
 export const decorateDemoEditorButtons = (root, {
     selector,
     icon,
-    label
+    label,
+    strokeWidth = 2
 }) => {
     const decorate = () => {
         root.querySelectorAll(selector).forEach(button => {
@@ -11,7 +12,7 @@ export const decorateDemoEditorButtons = (root, {
 
             button.dataset.demoIconDecorated = 'true';
             button.setAttribute('aria-label', button.getAttribute('aria-label') || label);
-            button.innerHTML = `${demoIcon(icon, { size: 17 })}<span class="demo-visually-hidden">${label}</span>`;
+            button.innerHTML = `${demoIcon(icon, { size: 17, strokeWidth })}<span class="demo-visually-hidden">${label}</span>`;
         });
     };
 

@@ -229,6 +229,7 @@ export default function validation(app) {
     app.innerHTML = `
         <div class="demo-crud-heading">
             <h2 data-i18n="examples.validation.title">Validation</h2>
+                <p class="demo-note" data-i18n="examples.validation.intro" data-i18n-emphasis="examples.validation.introEmphasis">Validation demonstrates built-in rules and developer-defined custom checks. Edit cells to see immediate validation, or use Create anomalies and Report to explore validation errors.</p>
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="validation-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
         ${createDemoColumnGuide({
@@ -258,7 +259,7 @@ export default function validation(app) {
         })}
             </div>
         </div>
-        <p class="demo-note" data-i18n="examples.validation.intro" data-i18n-emphasis="examples.validation.introEmphasis">Validation demonstrates built-in rules and developer-defined custom checks. Edit cells to see immediate validation, or use Create anomalies and Report to explore validation errors.</p>
+
         <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
@@ -722,14 +723,16 @@ export default function validation(app) {
 
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
-        tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
         const resuming = tutorialStarted;
         tutorialStarted = true;
         if (resuming) tutorial.reopen();
-        else void tutorial.restart();
+        else void tutorial.restart().then(started => {
+            if (started && !destroyed) tutorialLaunch.removeAttribute('data-demo-tutorial-finished');
+        });
     }
 
     function finishTutorial({ openGuide }) {
+        if (!openGuide && !destroyed) tutorialLaunch.setAttribute('data-demo-tutorial-finished', '');
         if (destroyed) return;
         tutorialStarted = false;
         syncTutorialLaunchLabel();

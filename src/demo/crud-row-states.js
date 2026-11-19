@@ -52,6 +52,7 @@ export default function crudRowStates(app) {
     app.innerHTML = `
         <div class="demo-crud-heading">
             <h2 data-i18n="examples.crudRowStates.title">CRUD &amp; Row States</h2>
+                <p class="demo-note" data-i18n="examples.crudRowStates.intro">Edit business records, inspect lifecycle states and errors, and compare reports with the save payload.</p>
             <div class="demo-crud-heading__commands">
                 <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="crud-row-states-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
                 ${createDemoColumnGuide({
@@ -77,7 +78,7 @@ export default function crudRowStates(app) {
                 })}
             </div>
         </div>
-        <p class="demo-note" data-i18n="examples.crudRowStates.intro">Edit business records, inspect lifecycle states and errors, and compare reports with the save payload.</p>
+
         <div class="demo-action-tutorial-host"></div>
         <div class="demo-table-workbench">
             <div class="demo-command-guide-host"></div>
@@ -244,7 +245,6 @@ export default function crudRowStates(app) {
         ]
     });
     const crud = demo.crud;
-    app.addEventListener('click', handleTutorialRayClick, true);
     tutorialLaunch.addEventListener('click', handleTutorialLaunch);
     commandGuideToolbar.mount();
     const originalDestroy = demo.destroy.bind(demo);
@@ -269,7 +269,6 @@ export default function crudRowStates(app) {
         clearTutorialHighlight();
         guidedDeleteConfirmation = null;
         guidedRollbackConfirmation = null;
-        app.removeEventListener('click', handleTutorialRayClick, true);
         tutorialLaunch.removeEventListener('click', handleTutorialLaunch);
         tutorialEdits.clear();
         tutorialRowActions.clear();
@@ -367,23 +366,18 @@ export default function crudRowStates(app) {
         rowActionGlow.style.height = `${rect.height}px`;
     }
 
-    function handleTutorialRayClick(event) {
-        const button = event.target.closest?.('button');
-        if (!button || destroyed) return;
-        if (button === tutorialLaunch && !tutorialLaunch.hidden) {
-            button.setAttribute('data-demo-crud-rays-consumed', '');
-        }
-    }
-
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
         const resuming = tutorialStarted;
         tutorialStarted = true;
         if (resuming) tutorial.reopen();
-        else void tutorial.restart();
+        else void tutorial.restart().then(started => {
+            if (started && !destroyed) tutorialLaunch.removeAttribute('data-demo-tutorial-finished');
+        });
     }
 
     function finishTutorial({ openGuide }) {
+        if (!openGuide && !destroyed) tutorialLaunch.setAttribute('data-demo-tutorial-finished', '');
         if (destroyed) return;
         tutorialStarted = false;
         tutorialLaunchLabel.textContent = t('tutorialStart');
@@ -553,13 +547,10 @@ export default function crudRowStates(app) {
             guidedRollbackConfirmation = guidedRollback;
             syncTutorialHighlight();
         }
-        const confirmButton = guidedDelete ? rowConfirmDialog.confirmButton : null;
-        confirmButton?.addEventListener('click', handleTutorialRayClick, true);
         let confirmed = false;
         try {
             confirmed = await trackScenarioOperation(confirmation);
         } finally {
-            confirmButton?.removeEventListener('click', handleTutorialRayClick, true);
             if (guidedDelete && guidedDeleteConfirmation === guidedDelete) {
                 if (confirmed) guidedDelete.accepted = true;
                 else guidedDeleteConfirmation = null;
@@ -804,11 +795,7 @@ export default function crudRowStates(app) {
             refreshErrorCounts();
             if (tutorial.notify('partial-save-opened', { opened: Boolean(partialSaveDialog.resolveCurrent), report: crud.getStateReport() }, context)) context = tutorial.capture();
             syncTutorialHighlight();
-            const confirmButton = partialSaveDialog.confirmButton;
-            confirmButton.addEventListener('click', handleTutorialRayClick, true);
-            let confirmed;
-            try { confirmed = await confirmation; }
-            finally { confirmButton.removeEventListener('click', handleTutorialRayClick, true); }
+            const confirmed = await confirmation;
             if (!isCurrentScenario(generation)) return;
             syncTutorialHighlight();
             if (!confirmed || destroyed) return destroyed ? undefined : demo.feedback.show({ type: 'info', message: t('cancelled') });

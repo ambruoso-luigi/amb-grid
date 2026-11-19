@@ -167,6 +167,7 @@ export default function multifieldLookup(app) {
         <div class="demo-multifield-lookup">
             <div class="demo-crud-heading">
                 <h2 data-i18n="examples.multifieldLookup.title">Multifield lookup</h2>
+                <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Search and select a municipality using autocomplete or the search dialog. Related fields update automatically.</p>
                 <div class="demo-crud-heading__commands">
                     <button type="button" class="demo-crud-tutorial-launch" data-action="tutorial-launch" aria-controls="multifield-lookup-tutorial" aria-expanded="false">${demoIcon('tutorialPlay', { size: 21, strokeWidth: 2.6 })}<span>Start tutorial</span></button>
             ${createDemoColumnGuide({
@@ -195,7 +196,7 @@ export default function multifieldLookup(app) {
             })}
                 </div>
             </div>
-            <p class="demo-note" data-i18n="examples.multifieldLookup.intro">Search and select a municipality using autocomplete or the search dialog. Related fields update automatically.</p>
+
             <div class="demo-multifield-lookup__disclaimer" data-multifield-disclaimer role="note">
                 ${demoIcon('warning', { size: 16 })}
                 <strong data-i18n="examples.multifieldLookup.disclaimerTitle">Demonstration data:</strong>
@@ -590,14 +591,16 @@ export default function multifieldLookup(app) {
 
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
-        tutorialLaunch.setAttribute('data-demo-crud-rays-consumed', '');
         const resuming = tutorialStarted;
         tutorialStarted = true;
         if (resuming) tutorial.reopen();
-        else void tutorial.restart();
+        else void tutorial.restart().then(started => {
+            if (started && !destroyed) tutorialLaunch.removeAttribute('data-demo-tutorial-finished');
+        });
     }
 
     function finishTutorial({ openGuide }) {
+        if (!openGuide && !destroyed) tutorialLaunch.setAttribute('data-demo-tutorial-finished', '');
         if (destroyed) return;
         tutorialStarted = false;
         syncTutorialLaunchLabel();
