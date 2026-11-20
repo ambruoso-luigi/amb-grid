@@ -32,6 +32,7 @@ describe('inventory tutorial action conditions', () => {
         }
         expect(copy['examples.javascriptInventory.partialSummary']).toContain('{saved}');
         expect(copy['examples.javascriptInventory.partialSummary']).toContain('{pending}');
+        expect(copy).not.toHaveProperty('examples.javascriptInventory.tutorialResetNote');
         expect(copy['examples.javascriptInventory.tutorialOpenGuide']).not.toMatch(/tecnica|technical/i);
         const completion = copy['examples.javascriptInventory.tutorialCompleted'];
         expect(completion).toContain(language === 'it' ? 'Fine' : 'Finish');
@@ -158,7 +159,8 @@ test('tracks the keyboard workflow through real controller events and action con
     let dirty = false;
     const resetData = vi.fn(async () => true);
     const confirmRestart = vi.fn(async () => false);
-    const instance = createInventoryTutorial({ host, launch, app, demo, statusDialog: { open: vi.fn() }, statusOptions: [], locale: 'en', resetData, hasPendingChanges: () => dirty, confirmRestart });
+    const confirmStart = vi.fn(async () => true);
+    const instance = createInventoryTutorial({ host, launch, app, demo, statusDialog: { open: vi.fn() }, statusOptions: [], locale: 'en', resetData, hasPendingChanges: () => dirty, confirmRestart, confirmStart });
     launch.dispatchEvent(new Event('click'));
     await vi.waitFor(() => expect(instance.capture()?.stepId).toBe('keyboard-edit'));
     const send = (target, type, subject, properties = {}) => {
@@ -209,14 +211,6 @@ test('tracks the keyboard workflow through real controller events and action con
     expect(price.classes.has('tabulator-editing')).toBe(true);
     input(price, '19');
     expect(instance.capture().actionIndex).toBe(1);
-    const beforeClose = instance.capture();
-    findAction(host, 'skip').dispatchEvent(new Event('click'));
-    expect(instance.capture()).toBeNull();
-    expect(values.stockQuantity).toBe(8);
-    launch.dispatchEvent(new Event('click'));
-    await vi.waitFor(() => expect(instance.capture()?.stepId).toBe('escape'));
-    expect(instance.capture().actionIndex).toBe(1);
-    expect(instance.capture().generation).not.toBe(beforeClose.generation);
     key(price.input, 'Escape');
     expect(instance.capture().stepId).toBe('escape');
     price.classes.delete('tabulator-editing');
@@ -238,6 +232,17 @@ test('tracks the keyboard workflow through real controller events and action con
     handlers.get('renderComplete')();
     focus(name.element);
     expect(instance.capture().stepId).toBe('direct-lookup');
+    const oldContext = instance.capture();
+    findAction(host, 'skip').dispatchEvent(new Event('click'));
+    expect(instance.capture()).toBeNull();
+    expect(values.stockQuantity).toBe(8);
+    expect(resetData).toHaveBeenCalledTimes(1);
+    launch.dispatchEvent(new Event('click'));
+    await vi.waitFor(() => expect(instance.capture()?.stepId).toBe('keyboard-edit'));
+    expect(instance.capture().actionIndex).toBe(0);
+    expect(instance.capture().generation).not.toBe(oldContext.generation);
+    expect(confirmStart).toHaveBeenCalledOnce();
+    expect(resetData).toHaveBeenCalledTimes(2);
     instance.destroy();
 });
 
@@ -266,7 +271,8 @@ test('starts closed, opens explicitly, and removes listeners without changing da
     const resetData = vi.fn(async () => true);
     let dirty = false;
     const confirmRestart = vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
-    const controller = createInventoryTutorial({ host, launch, app, demo, statusDialog, statusOptions: [], locale: 'en', resetData, hasPendingChanges: () => dirty, confirmRestart });
+    const confirmStart = vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    const controller = createInventoryTutorial({ host, launch, app, demo, statusDialog, statusOptions: [], locale: 'en', resetData, hasPendingChanges: () => dirty, confirmRestart, confirmStart });
     expect(host.children[0].hidden).toBe(true);
     expect(controller.capture()).toBeNull();
     launch.dispatchEvent(new Event('click'));
@@ -291,10 +297,18 @@ test('starts closed, opens explicitly, and removes listeners without changing da
     find(host.children[0], 'skip').dispatchEvent(new Event('click'));
     expect(resetData).toHaveBeenCalledTimes(2);
     expect(host.children[0].hidden).toBe(true);
-    expect(label.textContent).toBe('Riprendi tutorial');
+    expect(label.textContent).toBe('Avvia tutorial');
+    launch.dispatchEvent(new Event('click'));
+    await vi.waitFor(() => expect(confirmStart).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(launch.disabled).toBe(false));
+    expect(controller.capture()).toBeNull();
+    expect(resetData).toHaveBeenCalledTimes(2);
+    expect(label.textContent).toBe('Avvia tutorial');
     launch.dispatchEvent(new Event('click'));
     await vi.waitFor(() => expect(controller.capture()?.stepId).toBe('keyboard-edit'));
-    expect(resetData).toHaveBeenCalledTimes(2);
+    expect(confirmStart).toHaveBeenCalledTimes(2);
+    expect(resetData).toHaveBeenCalledTimes(3);
+    expect(controller.capture().actionIndex).toBe(0);
     expect(data).toEqual([{ id: 1, productName: 'kept' }]);
     controller.destroy();
     expect(host.children).toHaveLength(0);
@@ -743,11 +757,13 @@ test('shows the actual save counts only after prepared completion', async () => 
         const app = new ElementMock();
         app.querySelector = () => new ElementMock();
         const instance = createWithMock({ host, launch, app, demo: { table: { on: vi.fn(), off: vi.fn() } }, statusDialog: { open: vi.fn() }, statusOptions: [], resetData: async () => true });
+        expect(host.children).toHaveLength(0);
         const result = { ok: true, saved: { inserted: [], updated: [{}, {}], deleted: [] } };
         const saved = { saved: [{}, {}] };
         const report = { invalidChangedRowsCount: 3 };
         expect(instance.partialSaved(context, true, result, saved, report, false)).toBe(false);
         expect(complete).toBe(false);
+        expect(host.children).toHaveLength(0);
         expect(instance.partialSaved(context, true, result, saved, report, true)).toBe(true);
         expect(host.children[0].textContent).toBe('Valid changes saved: 2. Rows still needing correction: 3.');
         instance.destroy();

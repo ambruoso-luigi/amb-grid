@@ -32,7 +32,7 @@ test('keeps language, skip and remount behavior', async ({ page }) => {
     await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 4');
     await tutorial(page).locator('[data-tutorial-action="skip"]').click();
     await expect(tutorial(page)).toBeHidden();
-    await launchTutorial(page, 'Resume tutorial');
+    await launchTutorial(page, 'Start tutorial');
     await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 of 4');
     await page.locator('[data-example="validation"]').click();
     await page.locator('[data-example="autocomplete"]').click();

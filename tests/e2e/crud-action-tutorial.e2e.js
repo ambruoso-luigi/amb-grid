@@ -336,8 +336,14 @@ for (const locale of ['en', 'it']) {
         }
         await expect(action(page, 'tutorial-launch')).toHaveText(locale === 'it' ? 'Avvia tutorial' : 'Start tutorial');
         const launchAnimation = await action(page, 'tutorial-launch').evaluate(element => getComputedStyle(element).animationName);
-        expect(launchAnimation).toBe(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
+        expect(launchAnimation).toBe(locale === 'it' || await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)
             ? 'none' : 'demo-crud-launch-glow');
+        const rays = await action(page, 'tutorial-launch').evaluate(element => ({
+            content: getComputedStyle(element, '::before').content,
+            display: getComputedStyle(element, '::before').display
+        }));
+        if (locale === 'it') expect(rays).toEqual({ content: 'none', display: 'none' });
+        else expect(rays.content).not.toBe('none');
         await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
         await expect(page.locator('.demo-crud-tutorial-target--pulse')).toHaveCount(0);
         await expect(page.locator('#crud-row-states-table .tabulator-row')).toHaveCount(9);
@@ -352,6 +358,7 @@ for (const locale of ['en', 'it']) {
         await closeReport(page);
         await action(page, 'tutorial-launch').click();
         await step(page, 'edit-record');
+        await expect(action(page, 'tutorial-launch')).not.toHaveAttribute('data-demo-tutorial-finished', '');
         await control(page, 'restart').click();
         await restarted(page);
         await expect(cell(page, 'REC-003', '_state')).toHaveText('clean');
@@ -515,12 +522,12 @@ test('prepare states stays outside the tutorial and generates no frontend errors
     await closeReport(page);
 });
 
-test('skip, language changes and remount preserve normal use and the current micro-action', async ({ page }) => {
+test('skip preserves data until a fresh start and language changes remain usable', async ({ page }) => {
     await reachFrontendError(page);
     await control(page, 'skip').click();
     await expect(tutorial(page)).toBeHidden();
     await expect(action(page, 'tutorial-launch')).toBeVisible();
-    await expect(action(page, 'tutorial-launch')).toHaveText('Resume tutorial');
+    await expect(action(page, 'tutorial-launch')).toHaveText('Start tutorial');
     await expect(action(page, 'tutorial-launch')).toHaveAttribute('aria-expanded', 'false');
     await expect(control(page, 'reopen')).toBeHidden();
     await expect(page.locator('.demo-crud-tutorial-target')).toHaveCount(0);
@@ -533,13 +540,12 @@ test('skip, language changes and remount preserve normal use and the current mic
     await step(page, 'frontend-report', 1);
     await closeReport(page);
     await action(page, 'tutorial-launch').click();
-    await expect(action(page, 'state-report')).toHaveClass(/demo-crud-tutorial-target/);
-    await expect(cell(page, 'REC-002', 'description')).toHaveText('Preserve user changes');
-    await expect(cell(page, 'REC-004', '_ambErrorCount')).toHaveText('1');
-    await expect(page.locator('.demo-crud-temp-id')).toHaveCount(1);
+    await restarted(page);
+    await expect(cell(page, 'REC-002', 'description')).toHaveText('Contract review in progress');
+    await expect(cell(page, 'REC-004', '_ambErrorCount')).toHaveText('0');
+    await expect(page.locator('.demo-crud-temp-id')).toHaveCount(0);
     await page.locator('[data-language-toggle]').click();
-    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('4 di 8');
-    await expect(tutorial(page).locator('.demo-action-tutorial__instruction')).toContainText('Apri Report');
+    await expect(tutorial(page).locator('.demo-action-tutorial__counter')).toHaveText('1 di 8');
     await control(page, 'restart').click();
     await restarted(page);
     await expect(cell(page, 'REC-002', 'description')).toHaveText('Contract review in progress');

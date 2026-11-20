@@ -85,12 +85,24 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     const pageNote = () => demo.table.getPageMax?.() <= 1 ? translate('pageSingle') : translate('pageUnavailable');
     const noteText = current => current?.complete && partialSummary
         ? translate('partialSummary').replace('{saved}', partialSummary.saved).replace('{pending}', partialSummary.pending)
-        : current?.stepId === 'pages' && current.actionIndex === 0 && demo.table.getPage?.() >= demo.table.getPageMax?.() ? pageNote() : translate('tutorialResetNote');
+        : current?.stepId === 'pages' && current.actionIndex === 0 && demo.table.getPage?.() >= demo.table.getPageMax?.() ? pageNote() : '';
     const originalOpen = statusDialog.open;
     const notify = (id, payload, context = tutorial.capture()) => tutorial.notify(id, payload, context);
-    const note = document.createElement('p');
-    note.className = 'demo-main-tutorial-note';
-    note.hidden = true;
+    let note = null;
+    const syncNote = current => {
+        const text = current && !current.hidden ? noteText(current) : '';
+        if (!text) {
+            note?.remove();
+            note = null;
+            return;
+        }
+        if (!note) {
+            note = document.createElement('p');
+            note.className = 'demo-main-tutorial-note';
+            (host.querySelector('.demo-action-tutorial__bar') || host).append(note);
+        }
+        note.textContent = text;
+    };
     const clearHighlight = () => {
         highlighted?.classList.remove('demo-crud-tutorial-target', 'demo-crud-tutorial-target--pulse', 'demo-crud-tutorial-target--rays');
         highlighted = null;
@@ -224,6 +236,9 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         },
         onStateChange: next => {
             const wasOpen = state && !state.hidden;
+            if (wasOpen && next.hidden && !state.complete && !state.resetting && !next.resetting && !next.destroyed && !completing) {
+                started = false;
+            }
             if (state?.stepId !== next.stepId) {
                 if (next.stepId === 'tab') suggestedTabRow = null;
                 if (next.stepId === 'dialog-lookup') suggestedStatusRow = null;
@@ -247,8 +262,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             launch.hidden = !next.hidden;
             launch.setAttribute('aria-expanded', String(!next.hidden));
             label.textContent = translate(started ? 'tutorialResume' : 'tutorialStart');
-            note.hidden = next.hidden;
-            note.textContent = noteText(next);
+            syncNote(next);
             const closeButton = host.querySelector('[data-tutorial-action="skip"]');
             if (closeButton) closeButton.disabled = next.resetting || next.beforeRestartPending || next.destroyed;
             syncHighlight();
@@ -257,7 +271,6 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             }
         }
     });
-    (host.querySelector('.demo-action-tutorial__bar') || host).append(note);
     root = app.querySelector('#inventory-table');
     const cellOf = target => target?.closest?.('.tabulator-cell');
     const observePopup = () => {
@@ -378,9 +391,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
         starting = true;
         launch.disabled = true;
         try {
-            if (started) {
-                tutorial.reopen();
-            } else if (await tutorial.restart() === true && !destroyed) {
+            if (await tutorial.restart() === true && !destroyed) {
                 started = true;
                 launch.removeAttribute('data-demo-inventory-finished');
                 label.textContent = translate('tutorialResume');
@@ -392,7 +403,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     };
     const onLanguage = () => {
         label.textContent = translate(started ? 'tutorialResume' : 'tutorialStart');
-        note.textContent = noteText(state);
+        syncNote(state);
     };
     const onPointer = event => {
         move = null;
@@ -569,7 +580,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
     };
     const onPageRender = () => {
         if (pageIntent && demo.table.getPage?.() !== pageIntent.before) pageIntent.rendered = true;
-        if (state?.stepId === 'pages' && state.actionIndex === 0) note.textContent = demo.table.getPage?.() >= demo.table.getPageMax?.() ? pageNote() : translate('tutorialResetNote');
+        if (state?.stepId === 'pages' && state.actionIndex === 0) syncNote(state);
         syncHighlight();
     };
     statusDialog.open = function (...args) {
@@ -679,7 +690,7 @@ export function createInventoryTutorial({ host, launch, app, demo, statusDialog,
             window.removeEventListener('scroll', syncHighlight, true);
             statusDialog.open = originalOpen;
             tutorial.destroy();
-            note.remove();
+            note?.remove();
         }
     };
 }

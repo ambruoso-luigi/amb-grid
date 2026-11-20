@@ -11,6 +11,10 @@ test.each(['crud-row-states', 'validation', 'autocomplete', 'multifield-lookup',
         expect(heading.indexOf('.intro"')).toBeLessThan(heading.indexOf('createDemoColumnGuide({'));
         const launch = source.slice(source.indexOf('function handleTutorialLaunch()'), source.indexOf('function finishTutorial('));
         const finish = source.slice(source.indexOf('function finishTutorial('), source.indexOf('function finishTutorial(') + 400);
+        expect(source).toContain('!tutorialState.hidden && state.hidden && !tutorialState.complete');
+        expect(source).toContain('!tutorialState.resetting && !state.resetting && !state.destroyed) tutorialStarted = false');
+        expect(launch).toContain('tutorial.restart()');
+        expect(launch).not.toContain('tutorial.reopen()');
         expect(launch).not.toContain("setAttribute('data-demo-crud-rays-consumed'");
         expect(launch).toContain("if (started && !destroyed) tutorialLaunch.removeAttribute('data-demo-tutorial-finished')");
         expect(finish).toContain("if (!openGuide && !destroyed) tutorialLaunch.setAttribute('data-demo-tutorial-finished'");
@@ -57,6 +61,12 @@ test('keeps the JavaScript guide before its tutorial and scopes visual styles', 
     expect(source).toContain('stopLookupIcons();');
     expect(source).toContain('stopDateIcons();');
     expect(css).toContain('.demo-crud-tutorial-launch[data-demo-tutorial-finished]:not([hidden])::before');
+    expect(css).toMatch(/data-demo-tutorial-finished\]:not\(\[hidden\]\)::before\s*\{[^}]*animation:\s*none;[^}]*content:\s*none;[^}]*display:\s*none;/);
+    expect(css).toMatch(/data-demo-inventory-finished\]::before\s*\{[^}]*animation:\s*none;[^}]*content:\s*none;[^}]*display:\s*none;/);
+    expect(css).toContain('.demo-disclosure--technical[open]::details-content');
+    expect(css).not.toContain('.demo-disclosure--technical[open] > .demo-disclosure__body { grid-row:');
     expect(css).toContain('#javascript-demo .amb-lookup-editor__button');
     expect(css).toContain('#javascript-demo .tabulator-cell');
+    expect(css).toMatch(/#javascript-demo \.demo-action-tutorial__instruction\s*\{[^}]*font-size:\s*16px;[^}]*font-weight:\s*500;[^}]*line-height:\s*1\.45;/);
+    expect(css).toMatch(/#javascript-demo \.demo-action-tutorial__instruction strong\s*\{[^}]*color:\s*#0f2747;[^}]*font-weight:\s*750;/);
 });

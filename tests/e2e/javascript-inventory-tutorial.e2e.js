@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { enterNavigationWithClick, openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
-test('inventory tutorial resumes without discarding changes and confirms restart', async ({ page }) => {
+test('inventory tutorial closes without resetting and confirms a fresh start', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
     await page.goto('/src/demo/index.html#getting-started-javascript');
 
@@ -81,18 +81,23 @@ test('inventory tutorial resumes without discarding changes and confirms restart
     await expectClosed();
     await expect(productName).toHaveText('Prodotto modificato durante il tutorial');
     await expect(row).toHaveAttribute('data-state', 'modified');
-    await expect(launch).toHaveText('Riprendi tutorial');
+    await expect(launch).toHaveText('Avvia tutorial');
 
     await launch.click();
-    await expect(tutorial).toBeVisible();
-    await expect(tutorial).toHaveAttribute('data-tutorial-step', 'keyboard-edit');
-    await expect(tutorial).toHaveAttribute('data-tutorial-action-index', '1');
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole('button', { name: 'Annulla' }).click();
+    await expectClosed();
     await expect(productName).toHaveText('Prodotto modificato durante il tutorial');
+    await launch.click();
+    await confirmation.getByRole('button', { name: 'Avvia tutorial' }).click();
+    await expectReady();
+    await expect(tutorial).toHaveAttribute('data-tutorial-action-index', '0');
+    await editName('Prodotto modificato durante il tutorial');
     await tutorial.locator('[data-tutorial-action="restart"]').click();
     await expect(confirmation).toBeVisible();
     await expect(confirmation.locator('.teh-confirm-dialog__title')).toHaveText('Ricominciare il tutorial?');
     await confirmation.getByRole('button', { name: 'Annulla' }).click();
-    await expect(tutorial).toHaveAttribute('data-tutorial-action-index', '1');
+    await expect(tutorial).toHaveAttribute('data-tutorial-action-index', '0');
     await expect(productName).toHaveText('Prodotto modificato durante il tutorial');
     await tutorial.locator('[data-tutorial-action="restart"]').click();
     await confirmation.getByRole('button', { name: 'Ricomincia' }).click();

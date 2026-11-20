@@ -149,6 +149,8 @@ export default function dates(app) {
         onCompleteAction: resetTutorialScenario,
         onCompleteSuccess: finishTutorial,
         onStateChange: state => {
+            if (tutorialState && !tutorialState.hidden && state.hidden && !tutorialState.complete
+                && !tutorialState.resetting && !state.resetting && !state.destroyed) tutorialStarted = false;
             tutorialState = state;
             tutorialLaunch.hidden = !state.hidden;
             tutorialLaunch.setAttribute('aria-expanded', String(!state.hidden));
@@ -335,10 +337,8 @@ export default function dates(app) {
 
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
-        const resuming = tutorialStarted;
         tutorialStarted = true;
-        if (resuming) tutorial.reopen();
-        else void tutorial.restart().then(started => {
+        void tutorial.restart().then(started => {
             if (started && !destroyed) tutorialLaunch.removeAttribute('data-demo-tutorial-finished');
         });
     }

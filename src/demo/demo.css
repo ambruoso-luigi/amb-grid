@@ -1867,9 +1867,9 @@ a {
     margin-bottom: 0;
 }
 
-/* The disclosure occupies its own grid row when open. */
+/* Title and commands, followed by description, guide, tutorial and table. */
 .js-guide-page #javascript-demo .demo-app-shell {
-    gap: 0 20px;
+    gap: 0 8px;
     grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
@@ -1897,7 +1897,7 @@ a {
 }
 
 .js-guide-page #javascript-demo .demo-main-tutorial-host {
-    grid-area: 3 / 1 / 4 / -1;
+    grid-area: 4 / 1 / 5 / -1;
     min-width: 0;
 }
 
@@ -1909,22 +1909,20 @@ a {
 }
 
 .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical {
-    align-self: center;
-    background: var(--framework-accent-soft);
-    border: 1px solid var(--framework-accent-border);
-    border-radius: 8px;
-    grid-area: 1 / 3;
-    margin: 0 0 0 -10px;
-    min-width: 0;
+    display: contents;
 }
 
 .js-guide-page #javascript-demo .demo-disclosure__summary--technical {
-    background: transparent;
+    align-self: center;
+    background: var(--framework-accent-soft);
+    border: 1px solid var(--framework-accent-border);
     border-radius: 8px;
     color: var(--amb-site-navy);
     gap: 8px;
     grid-template-areas: "icon title chevron";
     grid-template-columns: 30px minmax(0, 1fr) 32px;
+    grid-area: 1 / 3;
+    justify-self: end;
     min-height: 42px;
     padding: 5px 10px;
 }
@@ -1947,21 +1945,19 @@ a {
     color: #76510a;
 }
 
-.js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-}
-
-.js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical[open] {
+.js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical[open]::details-content {
     background: #fff;
     border: 1px solid var(--framework-accent-border);
-    grid-area: 4 / 1 / 5 / -1;
-    margin: 16px 0 0;
-    width: 100%;
+    grid-area: 3 / 1 / 4 / -1;
+    border-radius: 8px;
+    margin-top: 12px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .js-guide-page #javascript-demo .demo-disclosure--technical[open] .demo-disclosure__summary--technical {
     background: var(--framework-accent-soft);
-    border-radius: 7px 7px 0 0;
+    border-radius: 8px;
 }
 
 .js-guide-page #javascript-demo .demo-disclosure__content {
@@ -1971,95 +1967,6 @@ a {
 .js-guide-page #javascript-demo .demo-table-workbench {
     grid-area: 5 / 1 / 6 / -1;
     margin-top: 20px;
-}
-
-@media (max-width: 760px) {
-    .js-guide-page #javascript-demo .demo-app-shell {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell__meta {
-        grid-column: 1 / -1;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell > .demo-crud-tutorial-launch {
-        grid-area: 2 / 1;
-        justify-self: start;
-        margin: 12px 0 0;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical {
-        grid-area: 2 / 2;
-        justify-self: start;
-        margin: 12px 0 0 10px;
-        max-width: 100%;
-    }
-
-    .js-guide-page #javascript-demo .demo-main-description {
-        grid-row: 3;
-    }
-
-    .js-guide-page #javascript-demo .demo-main-tutorial-host {
-        grid-row: 4;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) .demo-main-description {
-        grid-row: 3;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) .demo-main-tutorial-host {
-        grid-row: 4;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical[open] {
-        grid-area: 5 / 1 / 6 / -1;
-        justify-self: stretch;
-        margin-top: 16px;
-    }
-
-    .js-guide-page #javascript-demo .demo-table-workbench {
-        grid-row: 6;
-    }
-}
-
-@media (max-width: 480px) {
-    .js-guide-page #javascript-demo .demo-app-shell,
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell > .demo-crud-tutorial-launch {
-        grid-area: 2 / 1;
-        justify-self: start;
-        margin: 10px 0 0;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical {
-        grid-area: 3 / 1;
-        margin: 10px 0 0;
-    }
-
-    .js-guide-page #javascript-demo .demo-main-description,
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) .demo-main-description {
-        grid-row: 4;
-    }
-
-    .js-guide-page #javascript-demo .demo-main-tutorial-host,
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) .demo-main-tutorial-host {
-        grid-row: 5;
-    }
-
-    .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical[open] {
-        grid-area: 6 / 1;
-    }
-
-    .js-guide-page #javascript-demo .demo-table-workbench {
-        grid-row: 7;
-    }
 }
 
 .demo-table-workbench {
@@ -5621,11 +5528,13 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
     grid-area: 1 / 3;
 }
 
-.demo-example .demo-crud-heading:has(> .demo-note) .demo-disclosure--technical[open] > .demo-disclosure__body {
+.demo-example .demo-crud-heading:has(> .demo-note) .demo-disclosure--technical[open]::details-content {
     border: 1px solid var(--framework-accent-border, #c7d8e6);
     border-radius: 8px;
     grid-column: 1 / -1;
     grid-row: 3;
+    margin-top: 4px;
+    min-width: 0;
     overflow: hidden;
 }
 
@@ -5679,7 +5588,9 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 }
 
 #javascript-demo .demo-crud-tutorial-launch[data-demo-inventory-finished]::before {
+    animation: none;
     content: none;
+    display: none;
 }
 
 .demo-example .demo-crud-tutorial-launch[data-demo-tutorial-finished] {
@@ -5689,6 +5600,7 @@ body :is(.demo-crud-partial-save-dialog, .demo-crud-row-confirm-dialog) .teh-con
 .demo-example .demo-crud-tutorial-launch[data-demo-tutorial-finished]:not([hidden])::before {
     animation: none;
     content: none;
+    display: none;
 }
 
 .demo-action-tutorial--crud[data-tutorial-step="complete"] .demo-action-tutorial__complete-button[data-tutorial-action="finish"]:not(:disabled) {
@@ -6126,40 +6038,37 @@ body .demo-crud-row-confirm-dialog--rollback .teh-confirm-dialog__message {
         grid-area: 2 / 2;
     }
     .demo-example .demo-crud-heading > .demo-note { grid-row: 3; }
-    .demo-example .demo-crud-heading:has(> .demo-note) .demo-disclosure--technical[open] > .demo-disclosure__body { grid-row: 4; }
+    .demo-example .demo-crud-heading:has(> .demo-note) .demo-disclosure--technical[open]::details-content { grid-row: 4; }
 }
 
 @media (max-width: 480px) {
     .demo-example .demo-crud-heading:has(> .demo-note):has(.demo-disclosure--technical[open]) { grid-template-columns: minmax(0, 1fr); }
     .demo-example .demo-crud-heading:has(> .demo-note) .demo-disclosure--technical[open] > summary { grid-area: 3 / 1; justify-self: start; }
     .demo-example .demo-crud-heading:has(> .demo-note):has(.demo-disclosure--technical[open]) > .demo-note { grid-row: 4; }
-    .demo-example .demo-crud-heading:has(> .demo-note) .demo-disclosure--technical[open] > .demo-disclosure__body { grid-row: 5; }
+    .demo-example .demo-crud-heading:has(> .demo-note) .demo-disclosure--technical[open]::details-content { grid-row: 5; }
 }
 
-.js-guide-page #javascript-demo .demo-main-tutorial-host { grid-area: 4 / 1 / 5 / -1; }
 .js-guide-page #javascript-demo .demo-main-tutorial-host:has(.demo-action-tutorial:not([hidden])) { margin-top: 12px; }
-.js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical[open] { display: contents; }
-.js-guide-page #javascript-demo .demo-disclosure--technical[open] > summary { grid-area: 1 / 3; }
-.js-guide-page #javascript-demo .demo-disclosure--technical[open] > .demo-disclosure__body {
-    border: 1px solid var(--framework-accent-border);
-    border-radius: 8px;
-    grid-area: 3 / 1 / 4 / -1;
-    margin-top: 12px;
-    overflow: hidden;
-}
 
 @media (max-width: 760px) {
-    .js-guide-page #javascript-demo .demo-disclosure--technical[open] > summary { grid-area: 2 / 2; }
-    .js-guide-page #javascript-demo .demo-disclosure--technical[open] > .demo-disclosure__body { grid-area: 4 / 1 / 5 / -1; }
-    .js-guide-page #javascript-demo .demo-main-tutorial-host,
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) .demo-main-tutorial-host { grid-row: 5; }
+    .js-guide-page #javascript-demo .demo-app-shell { grid-template-columns: minmax(0, 1fr) auto auto; }
+    .js-guide-page #javascript-demo .demo-app-shell__meta { grid-area: 1 / 1 / 2 / -1; }
+    .js-guide-page #javascript-demo .demo-app-shell > .demo-crud-tutorial-launch { grid-area: 2 / 2; margin-top: 10px; }
+    .js-guide-page #javascript-demo .demo-disclosure__summary--technical { grid-area: 2 / 3; margin-top: 10px; }
+    .js-guide-page #javascript-demo .demo-main-description { grid-area: 3 / 1 / 4 / -1; }
+    .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical[open]::details-content { grid-area: 4 / 1 / 5 / -1; }
+    .js-guide-page #javascript-demo .demo-main-tutorial-host { grid-area: 5 / 1 / 6 / -1; }
+    .js-guide-page #javascript-demo .demo-table-workbench { grid-area: 6 / 1 / 7 / -1; }
 }
 
-@media (max-width: 480px) {
-    .js-guide-page #javascript-demo .demo-disclosure--technical[open] > summary { grid-area: 3 / 1; justify-self: start; }
-    .js-guide-page #javascript-demo .demo-disclosure--technical[open] > .demo-disclosure__body { grid-area: 5 / 1 / 6 / -1; }
-    .js-guide-page #javascript-demo .demo-main-tutorial-host,
-    .js-guide-page #javascript-demo .demo-app-shell:has(> .demo-disclosure--technical[open]) .demo-main-tutorial-host { grid-row: 6; }
+@media (max-width: 600px) {
+    .js-guide-page #javascript-demo .demo-app-shell { grid-template-columns: minmax(0, 1fr); }
+    .js-guide-page #javascript-demo .demo-app-shell > .demo-crud-tutorial-launch { grid-area: 2 / 1; justify-self: end; }
+    .js-guide-page #javascript-demo .demo-disclosure__summary--technical { grid-area: 3 / 1; justify-self: end; }
+    .js-guide-page #javascript-demo .demo-main-description { grid-area: 4 / 1; }
+    .js-guide-page #javascript-demo .demo-app-shell > .demo-disclosure--technical[open]::details-content { grid-area: 5 / 1; }
+    .js-guide-page #javascript-demo .demo-main-tutorial-host { grid-area: 6 / 1; }
+    .js-guide-page #javascript-demo .demo-table-workbench { grid-area: 7 / 1; }
 }
 
 #javascript-demo .amb-lookup-editor__button,
@@ -6190,7 +6099,8 @@ body .demo-crud-row-confirm-dialog--rollback .teh-confirm-dialog__message {
 #javascript-demo .amb-toolbar__search-input { font-size: 14px; font-weight: 500; }
 #javascript-demo .tabulator-footer { font-size: 13.5px; font-weight: 650; }
 #javascript-demo .tabulator-footer .tabulator-page, #javascript-demo .tabulator-footer .tabulator-page-size { font-size: 13.5px; font-weight: 650; }
-#javascript-demo .demo-action-tutorial__instruction { font-size: 17px; font-weight: 650; line-height: 1.5; }
+#javascript-demo .demo-action-tutorial__instruction { color: #183b63; font-size: 16px; font-weight: 500; line-height: 1.45; }
+#javascript-demo .demo-action-tutorial__instruction strong { color: #0f2747; font-size: inherit; font-weight: 750; line-height: inherit; }
 #javascript-demo .demo-action-tutorial__title { font-size: 18px; font-weight: 800; }
 #javascript-demo .demo-action-tutorial__counter { font-size: 14px; font-weight: 800; }
 .js-guide-page #javascript-demo .demo-main-tutorial-note { font-size: 14px; font-weight: 500; }

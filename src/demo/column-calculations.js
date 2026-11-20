@@ -87,6 +87,8 @@ export default function columnCalculations(app) {
         onCompleteAction: resetTutorialScenario,
         onCompleteSuccess: finishTutorial,
         onStateChange: state => {
+            if (tutorialState && !tutorialState.hidden && state.hidden && !tutorialState.complete
+                && !tutorialState.resetting && !state.resetting && !state.destroyed) tutorialStarted = false;
             tutorialState = state;
             if (state.hidden || state.complete || state.resetting || state.destroyed) {
                 editCandidates.clear();
@@ -346,10 +348,8 @@ export default function columnCalculations(app) {
 
     function handleTutorialLaunch() {
         if (destroyed || !tutorialState?.hidden) return;
-        const resuming = tutorialStarted;
         tutorialStarted = true;
-        if (resuming) tutorial.reopen();
-        else void tutorial.restart().then(started => {
+        void tutorial.restart().then(started => {
             if (started && !destroyed) tutorialLaunch.removeAttribute('data-demo-tutorial-finished');
         });
     }
