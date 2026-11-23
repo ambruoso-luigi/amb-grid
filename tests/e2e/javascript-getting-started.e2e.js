@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const titles = {
-    it: ['Prepara il container', 'Definisci dati e colonne', 'Crea la griglia CRUD', 'Leggi il payload'],
-    en: ['Prepare the container', 'Define data and columns', 'Create the CRUD grid', 'Read the payload']
+    it: ['Prepara il contenitore', 'Definisci dati e colonne', 'Crea la griglia CRUD', 'Ottieni il payload CRUD'],
+    en: ['Prepare the container', 'Define data and columns', 'Create the CRUD grid', 'Get the CRUD payload']
 };
 
 for (const language of ['it', 'en']) {
@@ -16,16 +16,28 @@ for (const language of ['it', 'en']) {
         await expect(steps).toHaveCount(4);
         await expect(steps.locator('.demo-guide-step__number')).toHaveText(['1', '2', '3', '4']);
         await expect(steps.locator('h3')).toHaveText(titles[language]);
+        await expect(guide.locator('[data-i18n="guide.startText"]')).toContainText(language === 'it' ? 'Quattro passaggi' : 'Four steps');
+        await expect(guide.locator('[data-i18n="guide.step1.text"]')).toContainText(language === 'it' ? 'elemento HTML' : 'HTML element');
+        await expect(guide.locator('[data-i18n="guide.step2.text"]')).toContainText(language === 'it' ? 'array di oggetti' : 'array of JavaScript objects');
+        await expect(guide.locator('[data-i18n="guide.step3.text"]')).toContainText('AMB.table()');
+        await expect(guide.locator('[data-i18n="guide.step4.note"]')).toContainText(language === 'it' ? 'non esegue il salvataggio' : 'does not save');
         await expect(guide.locator('.demo-guide-next')).toHaveCount(0);
         await expect(guide.getByText(language === 'it' ? 'Devi ancora installare AMB Grid?' : 'Need to install AMB Grid first?')).toBeVisible();
         await expect(guide.getByRole('link', { name: language === 'it' ? 'Vai alla pagina Installazione →' : 'Go to the Installation page →' })).toHaveAttribute('href', '/install/');
         await expect(steps.nth(2).locator('code')).toContainText('AMB.table');
         await expect(steps.nth(3).locator('code')).toContainText('getSavePayload');
         await expect(steps.nth(3).locator('code')).toContainText('payload.changes');
-        const appCss = guide.locator('.demo-guide-app-css');
-        await expect(appCss.getByRole('heading', { name: language === 'it' ? 'CSS applicativo facoltativo' : 'Optional application CSS' })).toBeVisible();
-        await expect(appCss.locator('code')).toContainText('.inventory-page');
-        await expect(appCss.locator('code')).toContainText('#grid');
+        await expect(guide.locator('.demo-guide-app-css')).toHaveCount(0);
+        await expect(guide.locator('[data-i18n="guide.step4.note"]')).toBeVisible();
+        const snippets = await steps.locator('code').allTextContents();
+        expect(snippets).toHaveLength(4);
+        expect(snippets[0]).toBe('<div id="grid"></div>');
+        expect(snippets[1].match(/const rows\s*=/g)).toHaveLength(1);
+        expect(snippets[2]).toContain("buttons: ['add', 'payload']");
+        expect(snippets[2]).toContain('grid.addRow(');
+        expect(snippets[3]).toBe('const payload = grid.getSavePayload();\n\nconsole.log(payload.changes);');
+        expect(snippets.join('\n')).not.toMatch(/grid\.crud|saveRows/);
+        expect(() => new Function('AMB', snippets.slice(1).join('\n'))).not.toThrow();
         await expect(page.locator('#javascript-integration')).toHaveCount(0);
         await expect(page.locator('.demo-guide-mode-card')).toHaveCount(0);
         await expect(guide).not.toContainText('npm install');
@@ -35,6 +47,47 @@ for (const language of ['it', 'en']) {
         await expect(page.locator('.installation-hero h1')).toHaveText(language === 'it' ? 'Installa AMB Grid' : 'Install AMB Grid');
     });
 }
+
+test('the displayed snippets create an isolated grid and expose its changes', async ({ page }) => {
+    await page.goto('/#getting-started-javascript');
+    await expect(page.locator('#inventory-table.tabulator')).toBeVisible();
+    await page.evaluate(() => {
+        const snippets = [...document.querySelectorAll('#javascript-getting-started .demo-guide-step code')].map(code => code.textContent);
+        const fixture = document.createElement('section');
+        fixture.id = 'guide-snippet-test';
+        fixture.innerHTML = snippets[0];
+        document.body.append(fixture);
+        const messages = [];
+        const example = new Function('AMB', 'console', `${snippets[1]}\n${snippets[2]}\nreturn { grid, showPayload: () => { ${snippets[3]} } };`)(window.AMB, { log: value => messages.push(value) });
+        window.__guideSnippetTest = { ...example, messages, fixture };
+    });
+    try {
+        const fixture = page.locator('#guide-snippet-test');
+        await expect(fixture.locator('#grid .tabulator-row')).toHaveCount(2);
+        const add = fixture.locator('.amb-toolbar__button--add');
+        const payloadButton = fixture.locator('.amb-toolbar__button--payload');
+        await expect(add).toBeEnabled();
+        await expect(payloadButton).toBeEnabled();
+        await expect(fixture.locator('.amb-toolbar__button')).toHaveCount(2);
+        await add.click();
+        await expect(fixture.locator('#grid .tabulator-row')).toHaveCount(3);
+        await expect(fixture.locator('#grid .tabulator-row[data-state="new"]')).toHaveCount(1);
+        await expect.poll(() => page.evaluate(() => window.__guideSnippetTest.grid.getSavePayload().changes.inserted.length)).toBe(1);
+        const changes = await page.evaluate(() => window.__guideSnippetTest.grid.getSavePayload().changes);
+        expect(changes.inserted[0]).toMatchObject({ id: null, sku: '', productName: '', stockQuantity: 0 });
+        await payloadButton.click();
+        await expect.poll(() => page.evaluate(() => window.__guideSnippetTest.messages.length)).toBe(1);
+        await page.evaluate(() => window.__guideSnippetTest.showPayload());
+        const messages = await page.evaluate(() => window.__guideSnippetTest.messages);
+        expect(messages).toEqual([changes, changes]);
+    } finally {
+        await page.evaluate(() => {
+            window.__guideSnippetTest.grid.destroy();
+            window.__guideSnippetTest.fixture.remove();
+            delete window.__guideSnippetTest;
+        });
+    }
+});
 
 test('the technical guide expands below the heading on desktop and mobile', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });

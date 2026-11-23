@@ -54,7 +54,7 @@ export default function gettingStartedJavaScript(app) {
                 <div class="demo-section-heading">
                     <p class="demo-kicker" data-i18n="guide.badge">JavaScript</p>
                     <h2 data-i18n="guide.startTitle">Inizia con AMB Grid in JavaScript</h2>
-                    <p class="demo-note" data-i18n="guide.startText">Dopo la demo completa, questi step mostrano il minimo necessario per preparare container, dati, colonne e payload in una pagina JavaScript.</p>
+                    <p class="demo-note" data-i18n="guide.startText">Quattro passaggi per creare una prima griglia con AMB Grid: prepara il contenitore, definisci dati e colonne, inizializza la tabella e ottieni il payload delle modifiche. È un esempio minimo, distinto dal gestionale completo mostrato sopra.</p>
                     <p class="demo-guide-install-link"><span data-i18n="guide.installPrompt">Devi ancora installare AMB Grid?</span> <a href="/install/" data-i18n="guide.installLink">Vai alla pagina Installazione →</a></p>
                 </div>
 
@@ -62,8 +62,9 @@ export default function gettingStartedJavaScript(app) {
                     <li class="demo-guide-step">
                         <span class="demo-guide-step__number" aria-hidden="true">1</span>
                         <div class="demo-guide-step__body">
-                            <h3 data-i18n="guide.step1.title">Prepara il container</h3>
-                            <p class="demo-note" data-i18n="guide.step1.text">Crea nel markup un punto di mount dedicato alla griglia.</p>
+                            <h3 data-i18n="guide.step1.title">Prepara il contenitore</h3>
+                            <p class="demo-note" data-i18n="guide.step1.text">AMB Grid viene montata all'interno di un normale elemento HTML. Aggiungi un contenitore con un identificatore univoco nella posizione in cui vuoi visualizzare la griglia.</p>
+                            <p class="demo-note" data-i18n="guide.step1.text2">La libreria utilizzerà questo elemento per generare la tabella e gestirne le interazioni, senza richiedere una struttura HTML complessa.</p>
                             <pre class="demo-code-block"><code>&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;</code></pre>
                         </div>
                     </li>
@@ -72,7 +73,9 @@ export default function gettingStartedJavaScript(app) {
                         <span class="demo-guide-step__number" aria-hidden="true">2</span>
                         <div class="demo-guide-step__body">
                             <h3 data-i18n="guide.step2.title">Definisci dati e colonne</h3>
-                            <p class="demo-note" data-i18n="guide.step2.text">Parti da un dataset piccolo e da colonne esplicite. I validator possono essere aggiunti dove servono regole applicative.</p>
+                            <p class="demo-note" data-i18n="guide.step2.text">I dati della griglia sono rappresentati da un array di oggetti JavaScript. Ogni oggetto corrisponde a una riga e le sue proprietà identificano i valori delle celle.</p>
+                            <p class="demo-note" data-i18n="guide.step2.text2">Le colonne definiscono quali informazioni visualizzare e come modificarle. Puoi associare editor, formatter e validatori ai singoli campi, mantenendo la configurazione separata dai dati.</p>
+                            <p class="demo-note" data-i18n="guide.step2.text3">In questo esempio utilizziamo un piccolo elenco di prodotti e tre colonne, di cui una con validazione numerica.</p>
                             <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> rows = [
   { <span class="syntax-property">id</span>: <span class="syntax-number">1</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">'SKU-1001'</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">'Steel shelving unit'</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">42</span> },
   { <span class="syntax-property">id</span>: <span class="syntax-number">2</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">'SKU-1002'</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">'Barcode scanner'</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">8</span> }
@@ -96,7 +99,9 @@ export default function gettingStartedJavaScript(app) {
                         <span class="demo-guide-step__number" aria-hidden="true">3</span>
                         <div class="demo-guide-step__body">
                             <h3 data-i18n="guide.step3.title">Crea la griglia CRUD</h3>
-                            <p class="demo-note" data-i18n="guide.step3.text">AMB.table monta la griglia e coordina stati riga, validazione e payload attraverso l’API pubblica di AMB Grid.</p>
+                            <p class="demo-note" data-i18n="guide.step3.text">Con AMB.table() puoi creare una griglia utilizzando il contenitore HTML, i dati e le colonne definiti nei passaggi precedenti.</p>
+                            <p class="demo-note" data-i18n="guide.step3.text2">AMB Grid gestisce l'editing delle celle, le validazioni e lo stato delle righe. Le modifiche vengono tracciate per consentire all'applicazione di distinguere i record nuovi, modificati ed eliminati.</p>
+                            <p class="demo-note" data-i18n="guide.step3.text3">Puoi inoltre configurare una toolbar con le azioni necessarie alla tua applicazione.</p>
                             <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
   <span class="syntax-property">selector</span>: <span class="syntax-string">'#grid'</span>,
   <span class="syntax-property">data</span>: rows,
@@ -104,11 +109,11 @@ export default function gettingStartedJavaScript(app) {
   <span class="syntax-property">layout</span>: <span class="syntax-string">'fitColumns'</span>,
   <span class="syntax-property">rowActionColumn</span>: { <span class="syntax-property">enabled</span>: <span class="syntax-keyword">true</span> },
   <span class="syntax-property">toolbar</span>: {
-    <span class="syntax-property">buttons</span>: [<span class="syntax-string">'add'</span>, <span class="syntax-string">'reload'</span>, <span class="syntax-string">'save'</span>, <span class="syntax-string">'payload'</span>, <span class="syntax-string">'validate'</span>],
-    <span class="syntax-function">onAdd</span>: () => {
-      <span class="syntax-keyword">return</span> grid.crud.<span class="syntax-function">addRow</span>({ <span class="syntax-property">id</span>: <span class="syntax-keyword">null</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">''</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">''</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">0</span> });
-    },
-    <span class="syntax-function">onPayload</span>: ({ payload }) => console.<span class="syntax-function">log</span>(payload)
+    <span class="syntax-property">buttons</span>: [<span class="syntax-string">'add'</span>, <span class="syntax-string">'payload'</span>],
+    <span class="syntax-function">onAdd</span>: ({ grid }) => grid.<span class="syntax-function">addRow</span>({
+      <span class="syntax-property">id</span>: <span class="syntax-keyword">null</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">''</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">''</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">0</span>
+    }),
+    <span class="syntax-function">onPayload</span>: ({ payload }) => console.<span class="syntax-function">log</span>(payload.changes)
   }
 });</code></pre>
                         </div>
@@ -117,28 +122,18 @@ export default function gettingStartedJavaScript(app) {
                     <li class="demo-guide-step">
                         <span class="demo-guide-step__number" aria-hidden="true">4</span>
                         <div class="demo-guide-step__body">
-                            <h3 data-i18n="guide.step4.title">Leggi il payload</h3>
-                            <p class="demo-note" data-i18n="guide.step4.text">Quando l'applicazione deve salvare, leggi il payload CRUD generato da AMB Grid e invialo al tuo backend.</p>
-                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> payload = grid.crud.<span class="syntax-function">getSavePayload</span>();
+                            <h3 data-i18n="guide.step4.title">Ottieni il payload CRUD</h3>
+                            <p class="demo-note" data-i18n="guide.step4.text">AMB Grid tiene traccia delle modifiche effettuate dall'utente. Quando l'applicazione deve salvare, può ottenere un payload che distingue le operazioni da inviare al backend.</p>
+                            <p class="demo-note" data-i18n="guide.step4.text2">Il payload contiene le informazioni necessarie per identificare i record inseriti, modificati ed eliminati.</p>
+                            <p class="demo-note" data-i18n="guide.step4.text3">La comunicazione con il server rimane responsabilità dell'applicazione. Dopo un salvataggio riuscito, AMB Grid mette a disposizione API specifiche per aggiornare lo stato delle righe e riallineare i dati confermati.</p>
+                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> payload = grid.<span class="syntax-function">getSavePayload</span>();
 
-<span class="syntax-keyword">if</span> (payload.canSave) {
-  <span class="syntax-keyword">await</span> <span class="syntax-function">saveRows</span>(payload.changes);
-}</code></pre>
+console.<span class="syntax-function">log</span>(payload.changes);</code></pre>
+                            <p class="demo-note" data-i18n="guide.step4.note">Il payload descrive le modifiche, ma non esegue il salvataggio. L'invio al backend e la conferma dei record salvati sono operazioni applicative approfondite nella documentazione tecnica.</p>
                         </div>
                     </li>
 
                 </ol>
-                <div class="demo-guide-app-css">
-                    <h3 data-i18n="guide.appCss.title">CSS applicativo facoltativo</h3>
-                    <p class="demo-note" data-i18n="guide.appCss.text">Se usi un wrapper .inventory-page, puoi gestire la spaziatura della pagina separatamente dallo stylesheet di AMB Grid.</p>
-                    <pre class="demo-code-block demo-code-block--compact"><code><span class="syntax-selector">.inventory-page</span> {
-  <span class="syntax-property">padding</span>: <span class="syntax-number">24px</span>;
-}
-
-<span class="syntax-selector">#grid</span> {
-  <span class="syntax-property">margin-top</span>: <span class="syntax-number">16px</span>;
-}</code></pre>
-                </div>
             </section>
         </main>
         ${renderDemoFooter()}

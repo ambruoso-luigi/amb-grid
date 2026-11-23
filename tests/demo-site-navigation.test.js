@@ -156,10 +156,10 @@ describe('demo site navigation', () => {
         expect(main).toContain("'guide.installLink': 'Vai alla pagina Installazione →'");
         expect(main).toContain("'guide.installLink': 'Go to the Installation page →'");
         for (const [step, it, en] of [
-            [1, 'Prepara il container', 'Prepare the container'],
+            [1, 'Prepara il contenitore', 'Prepare the container'],
             [2, 'Definisci dati e colonne', 'Define data and columns'],
             [3, 'Crea la griglia CRUD', 'Create the CRUD grid'],
-            [4, 'Leggi il payload', 'Read the payload']
+            [4, 'Ottieni il payload CRUD', 'Get the CRUD payload']
         ]) {
             expect(guide).toContain(`data-i18n="guide.step${step}.title"`);
             expect(main).toContain(`'guide.step${step}.title': '${it}'`);
@@ -167,11 +167,9 @@ describe('demo site navigation', () => {
         }
         expect(guide).toContain('getSavePayload');
         expect(guide).toContain('class="syntax-function">table</span>');
-        expect(guide).toContain('demo-guide-app-css');
-        expect(guide).toContain('syntax-selector">.inventory-page');
-        expect(guide).toContain('syntax-selector">#grid');
-        expect(main).toContain("'guide.appCss.title': 'CSS applicativo facoltativo'");
-        expect(main).toContain("'guide.appCss.title': 'Optional application CSS'");
+        expect(guide).not.toContain('demo-guide-app-css');
+        expect(main).not.toContain('guide.appCss.');
+        expect(guide).toContain('data-i18n="guide.step4.note"');
         expect(guide).not.toContain('npm install');
         expect(guide).not.toContain("'amb-grid'</span>");
         expect(guide).not.toContain("'amb-grid/style.css'");
@@ -235,8 +233,8 @@ describe('demo site navigation', () => {
     test('keeps the JavaScript guide add-row snippets promise-aware', () => {
         const guide = read('src/demo/getting-started-javascript.js');
 
-        expect(guide).toContain('<span class="syntax-function">onAdd</span>: () => {\n      <span class="syntax-keyword">return</span> grid.crud.<span class="syntax-function">addRow</span>');
-        expect(guide).not.toContain('<span class="syntax-function">onAdd</span>: () => {\n      grid.crud.<span class="syntax-function">addRow</span>');
+        expect(guide).toContain('<span class="syntax-function">onAdd</span>: ({ grid }) => grid.<span class="syntax-function">addRow</span>');
+        expect(guide).not.toContain('grid.crud.');
         expect(guide).toContain('id="javascript-demo"');
     });
 
