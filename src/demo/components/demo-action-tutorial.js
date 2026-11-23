@@ -28,6 +28,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
     let restartSequence = 0;
     let completeActionPending = false;
     let completeActionFailed = false;
+    let pendingFocusCleanup = null;
     const root = document.createElement('section');
     const bar = document.createElement('div');
     const identity = document.createElement('div');
@@ -253,7 +254,38 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
 
     function restart() {
         if (destroyed || resetting || beforeRestartPending || completeActionPending) return;
-        if (typeof onBeforeRestart !== 'function') return beginRestart();
+        const restoreExternalFocus = hidden && externalOpenButton && document.activeElement === externalOpenButton;
+        let focusMoved = false;
+        const trackFocus = event => {
+            if (event.target !== externalOpenButton && event.target !== document.body && event.target !== document.documentElement) focusMoved = true;
+        };
+        const trackInteraction = () => { focusMoved = true; };
+        if (restoreExternalFocus) {
+            document.addEventListener?.('focusin', trackFocus, true);
+            document.addEventListener?.('pointerdown', trackInteraction, true);
+            document.addEventListener?.('keydown', trackInteraction, true);
+            pendingFocusCleanup = () => {
+                document.removeEventListener?.('focusin', trackFocus, true);
+                document.removeEventListener?.('pointerdown', trackInteraction, true);
+                document.removeEventListener?.('keydown', trackInteraction, true);
+                pendingFocusCleanup = null;
+            };
+        }
+        const finishFocus = result => {
+            if (restoreExternalFocus) {
+                pendingFocusCleanup?.();
+                const current = document.activeElement;
+                if (result !== false && !destroyed && !hidden && !resetting && !restartFailed && !focusMoved
+                    && (!current || current === document.body || current === document.documentElement || current === externalOpenButton)) {
+                    restartButton.focus({ preventScroll: true });
+                }
+            }
+            return result;
+        };
+        if (typeof onBeforeRestart !== 'function') {
+            const result = beginRestart();
+            return restoreExternalFocus && result?.then ? result.then(finishFocus) : finishFocus(result);
+        }
         beforeRestartPending = true;
         const sequence = ++restartSequence;
         render();
@@ -268,9 +300,9 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             return beginRestart();
         };
         try {
-            return Promise.resolve(onBeforeRestart()).then(value => finish(value === true), () => finish(false, true));
+            return Promise.resolve(onBeforeRestart()).then(value => finish(value === true), () => finish(false, true)).then(finishFocus);
         } catch {
-            return Promise.resolve(finish(false, true));
+            return Promise.resolve(finish(false, true)).then(finishFocus);
         }
     }
 
@@ -358,6 +390,7 @@ export function createDemoActionTutorial({ host, steps, locale = 'it', titleKey,
             if (destroyed) return;
             clearFeedback();
             destroyed = true;
+            pendingFocusCleanup?.();
             generation += 1;
             restartSequence += 1;
             completeActionPending = false;

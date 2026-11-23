@@ -46,7 +46,10 @@ test('the technical guide expands below the heading on desktop and mobile', asyn
     const disclosure = shell.locator(':scope > .demo-disclosure--technical');
     const summary = disclosure.locator('summary');
     const content = disclosure.locator('.demo-disclosure__content');
-    const table = demo.locator('#inventory-table');
+    const launch = shell.locator('[data-action="tutorial-launch"]');
+    const workbench = shell.locator('.demo-table-workbench');
+    const tutorial = shell.locator('#javascript-inventory-tutorial');
+    const table = workbench.locator('#inventory-table');
     await expect(table).toBeVisible();
 
     for (const width of [1280, 390]) {
@@ -54,12 +57,14 @@ test('the technical guide expands below the heading on desktop and mobile', asyn
         await expect(heading).toBeVisible();
         await expect(disclosure).not.toHaveAttribute('open');
         await expect(summary).toBeVisible();
-        const closedBox = await disclosure.boundingBox();
+        const closedBox = await summary.boundingBox();
         const shellBox = await shell.boundingBox();
         expect(closedBox.width).toBeLessThan(shellBox.width);
         if (width > 760) {
             const headingBox = await heading.boundingBox();
-            expect(closedBox.x).toBeGreaterThanOrEqual(headingBox.x + headingBox.width - 1);
+            const launchBox = await launch.boundingBox();
+            expect(launchBox.x).toBeGreaterThanOrEqual(headingBox.x + headingBox.width - 1);
+            expect(closedBox.x).toBeGreaterThanOrEqual(launchBox.x + launchBox.width - 1);
         }
 
         await summary.focus();
@@ -69,12 +74,17 @@ test('the technical guide expands below the heading on desktop and mobile', asyn
         await expect(heading).toBeVisible();
         const headingBox = await heading.boundingBox();
         const descriptionBox = await description.boundingBox();
-        const openBox = await disclosure.boundingBox();
-        const tableBox = await table.boundingBox();
+        const openBox = await content.boundingBox();
+        const tableBox = await workbench.boundingBox();
         expect(openBox.y).toBeGreaterThanOrEqual(descriptionBox.y + descriptionBox.height - 1);
         expect(openBox.y).toBeGreaterThanOrEqual(headingBox.y + headingBox.height - 1);
-        expect(openBox.width).toBeGreaterThanOrEqual(shellBox.width - 2);
+        expect(openBox.width).toBeGreaterThanOrEqual(shellBox.width - 4);
         expect(tableBox.y).toBeGreaterThanOrEqual(openBox.y + openBox.height - 1);
+        if (await tutorial.isVisible()) {
+            const tutorialBox = await tutorial.boundingBox();
+            expect(tutorialBox.y).toBeGreaterThanOrEqual(openBox.y + openBox.height - 1);
+            expect(tableBox.y).toBeGreaterThanOrEqual(tutorialBox.y + tutorialBox.height - 1);
+        }
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 
         await summary.focus();

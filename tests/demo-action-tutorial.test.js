@@ -31,11 +31,11 @@ const mount = (customSteps, options = {}) => {
     const windowMock = new EventTarget();
     const removeListener = vi.spyOn(windowMock, 'removeEventListener');
     vi.stubGlobal('window', windowMock);
-    vi.stubGlobal('document', {
+    vi.stubGlobal('document', Object.assign(new EventTarget(), {
         createElement: tag => new ElementMock(tag),
         createTextNode: text => Object.assign(new ElementMock('#text'), { textContent: text }),
-        documentElement: { lang: 'it' }, activeElement: null
-    });
+        documentElement: { lang: 'it' }, body: new ElementMock('body'), activeElement: null
+    }));
     const host = new ElementMock('div');
     const steps = customSteps ?? ['prepare-states', 'open-report', 'commit-restricted', 'backend-rejected', 'save-corrected'].map((id, index) => ({
         id,
@@ -124,6 +124,42 @@ describe('demo action tutorial controller', () => {
         expect(controller.capture().stepId).toBe('open-report');
         expect(document.activeElement).toBe(button('restart'));
     });
+
+    test.each(['untouched', 'focus changed', 'interaction', 'failed', 'destroyed'])(
+        'restores focus after an external asynchronous start only when appropriate: %s', async scenario => {
+            let finishReset;
+            const externalOpenButton = new ElementMock('button');
+            const reset = vi.fn(() => new Promise(resolve => { finishReset = resolve; }));
+            const { controller, root, button } = mount(undefined, {
+                variant: 'crud', initiallyHidden: true, externalOpenButton, onRestart: reset,
+                onStateChange: state => { if (!state.hidden && state.resetting) document.activeElement = document.body; }
+            });
+            externalOpenButton.focus();
+            const pending = controller.restart();
+            expect(root.hidden).toBe(false);
+            expect(root.getAttribute('data-resetting')).toBe('true');
+            expect(controller.capture()).toBeNull();
+            expect(document.activeElement).toBe(document.body);
+            if (scenario === 'focus changed') {
+                const other = new ElementMock('button');
+                other.focus();
+                const event = new Event('focusin');
+                Object.defineProperty(event, 'target', { value: other });
+                document.dispatchEvent(event);
+            }
+            if (scenario === 'interaction') document.dispatchEvent(new Event('pointerdown'));
+            if (scenario === 'destroyed') controller.destroy();
+            finishReset(scenario !== 'failed');
+            await pending;
+            expect(reset).toHaveBeenCalledOnce();
+            if (scenario === 'untouched') {
+                expect(document.activeElement).toBe(button('restart'));
+                expect(controller.capture().stepId).toBe('prepare-states');
+            } else {
+                expect(document.activeElement).not.toBe(button('restart'));
+            }
+        }
+    );
 
     test('applies the CRUD variant only when requested and preserves tutorial controls', () => {
         const standard = mount();

@@ -568,7 +568,7 @@ test('skip preserves data until a fresh start and language changes remain usable
     await expect(page.locator('.demo-report-dialog')).toHaveCount(1);
 });
 
-test('keeps keyboard navigation local when hiding and reopening the tutorial', async ({ page }) => {
+test('keeps keyboard navigation local when starting a new tutorial session', async ({ page }) => {
     await control(page, 'restart').focus();
     await page.keyboard.press('Tab');
     await expect(control(page, 'skip')).toBeFocused();
@@ -578,8 +578,15 @@ test('keeps keyboard navigation local when hiding and reopening the tutorial', a
     await page.keyboard.press('Enter');
     await expect(action(page, 'tutorial-launch')).toBeFocused();
     await page.keyboard.press('Space');
-    await expect(control(page, 'restart')).toBeFocused();
     await step(page, 'edit-record');
+    await expect(tutorial(page)).toHaveAttribute('data-resetting', 'false');
+    await expect(action(page, 'tutorial-launch')).toBeHidden();
+    await expect(control(page, 'restart')).toBeFocused();
+    await expect(page.locator('#crud-row-states-table .tabulator-editing')).toHaveCount(0);
+    await page.keyboard.press('Tab');
+    await expect(control(page, 'skip')).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(control(page, 'restart')).toBeFocused();
     await page.keyboard.press('Tab');
     await page.keyboard.press('Tab');
     await expect(action(page, 'add')).toBeFocused();
