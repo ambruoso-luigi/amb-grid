@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { Activity, CheckCircle2, CircleAlert } from 'lucide-react';
+import { CheckCircle2, CircleAlert } from 'lucide-react';
 import { InventoryGrid, type InventoryGridController } from './InventoryGrid';
-import { InventoryKpis, type InventorySnapshot } from './InventoryKpis';
+import { InventoryKpis } from './InventoryKpis';
+import { inventorySnapshot, type InventorySnapshot } from '../inventory-metrics';
 import { InventoryToolbar, type InventoryFilters } from './InventoryToolbar';
 import { PayloadSheet, type InventoryPayload } from './PayloadSheet';
 import { PartialSaveAlert } from './ui/alert-dialog';
@@ -19,19 +20,6 @@ type SaveResponse = {
 type Language = 'it' | 'en';
 type InventoryShellProps = { language: Language };
 
-const copy = {
-  it: {
-    workspace: 'Area operativa',
-    title: 'Operazioni inventario',
-    description: 'Gestione prodotti, stato modifiche e flusso operativo della tabella.',
-  },
-  en: {
-    workspace: 'Live workspace',
-    title: 'Inventory Operations',
-    description: 'Manage products, change status and the table workflow.',
-  },
-} as const;
-
 const emptyPayload: InventoryPayload = {
   canSave: false,
   hasChanges: false,
@@ -45,12 +33,11 @@ const emptySnapshot: InventorySnapshot = {
   products: 0,
   modified: 0,
   errors: 0,
-  pending: 0,
-  totalStock: 0,
-  inventoryValue: 0,
+  ready: 0,
+  lowStock: 0,
+  onHold: 0,
 };
 
-const asNumber = (value: unknown) => typeof value === 'number' ? value : Number(value) || 0;
 const getObjectValue = (object: object, field: string) => Object.entries(object).find(([key]) => key === field)?.[1];
 const applyGridView = (controller: InventoryGridController, query: string, filters: InventoryFilters) => {
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -70,7 +57,6 @@ const applyGridView = (controller: InventoryGridController, query: string, filte
 
 export function InventoryShell({ language }: InventoryShellProps) {
   const shouldReduceMotion = useReducedMotion();
-  const text = copy[language];
   const [grid, setGrid] = useState<InventoryGridController | null>(null);
   const [snapshot, setSnapshot] = useState(emptySnapshot);
   const [payload, setPayload] = useState<InventoryPayload>(emptyPayload);
@@ -125,18 +111,7 @@ export function InventoryShell({ language }: InventoryShellProps) {
   const syncFromGrid = useCallback((controller: InventoryGridController) => {
     const report = controller.getStateReport();
     const nextPayload = controller.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-    const calcResults = controller.getCalcResults();
-    const bottomValue = getObjectValue(calcResults, 'bottom');
-    const bottom = bottomValue && typeof bottomValue === 'object' ? bottomValue : {};
-
-    setSnapshot({
-      products: report.totalRows,
-      modified: report.changedRowsCount,
-      errors: controller.getCellErrors().length,
-      pending: report.changedRowsCount,
-      totalStock: asNumber(getObjectValue(bottom, 'stockQuantity')),
-      inventoryValue: asNumber(getObjectValue(bottom, 'inventoryValue')),
-    });
+    setSnapshot(inventorySnapshot(report));
     setPayload(nextPayload);
   }, []);
 
@@ -266,16 +241,11 @@ export function InventoryShell({ language }: InventoryShellProps) {
   return (
     <motion.section animate={{ opacity: 1, y: 0 }} className="inventory-operations" id="inventory-operations" initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }} transition={{ duration: 0.45, ease: 'easeOut' }}>
       <div className="inventory-workspace">
-        <header className="inventory-workspace__header">
-          <div><span className="inventory-workspace__eyebrow"><Activity aria-hidden="true" size={14} /> {text.workspace}</span><h2>{text.title}</h2><p>{text.description}</p></div>
-          <span className="inventory-workspace__tag">React + TypeScript</span>
-        </header>
-
-        <InventoryKpis snapshot={snapshot} />
+        <InventoryKpis language={language} snapshot={snapshot} />
         <div className="demo-command-guide-host" ref={commandGuideHostRef} />
-        <InventoryToolbar busy={busy} commandGuideTriggerRef={commandGuideTriggerRef} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} language={language} onAdd={addProduct} onCommandGuideToggle={handleCommandGuideToggle} onFiltersChange={updateFilters} onFiltersClose={() => setFiltersOpen(false)} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={() => grid && void loadProducts(grid)} onSave={() => void prepareSave()} onSearch={updateSearch} onValidate={() => void validate()} pending={snapshot.pending} searchQuery={searchQuery} />
+        <InventoryToolbar busy={busy} commandGuideTriggerRef={commandGuideTriggerRef} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} language={language} onAdd={addProduct} onCommandGuideToggle={handleCommandGuideToggle} onFiltersChange={updateFilters} onFiltersClose={() => setFiltersOpen(false)} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={() => grid && void loadProducts(grid)} onSave={() => void prepareSave()} onSearch={updateSearch} onValidate={() => void validate()} pending={snapshot.modified} searchQuery={searchQuery} />
         {feedback && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-feedback" data-tone={feedback.tone} initial={shouldReduceMotion ? false : { opacity: 0, y: -4 }} role="status">{feedback.tone === 'success' ? <CheckCircle2 aria-hidden="true" size={16} /> : <CircleAlert aria-hidden="true" size={16} />}{feedback.text}</motion.div>}
-        <div className="react-demo-grid-shell" aria-busy={busy}><InventoryGrid onReady={handleGridReady} onStateChange={syncFromGrid} /></div>
+        <div className="react-demo-grid-shell" aria-busy={busy}><InventoryGrid language={language} onReady={handleGridReady} onStateChange={syncFromGrid} /></div>
       </div>
       <PayloadSheet onOpenChange={setPayloadOpen} open={payloadOpen} payload={payload} />
       <PartialSaveAlert invalidCount={payload.summary.invalidChangedRowsCount} onConfirm={() => void saveValidChanges()} onOpenChange={setPartialSaveOpen} open={partialSaveOpen} validCount={payload.summary.validChangedRowsCount} />

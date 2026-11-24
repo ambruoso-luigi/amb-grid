@@ -89,6 +89,50 @@ test('the displayed snippets create an isolated grid and expose its changes', as
     }
 });
 
+for (const width of [1280, 768, 390]) {
+    test(`JavaScript guide displays and copies the four snippets at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.addInitScript(() => {
+            localStorage.setItem('amb-grid-demo-language', 'it');
+            window.__guideCopied = [];
+            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__guideCopied.push(text); } } });
+        });
+        await page.goto('/#getting-started-javascript');
+        const guide = page.locator('#javascript-getting-started');
+        const steps = guide.locator('.demo-guide-step');
+        await expect(steps).toHaveCount(4);
+        await expect(guide.locator('.demo-guide-code-panel__header')).toHaveCount(4);
+        await expect(guide.locator('.demo-guide-code-panel__language')).toHaveText(['HTML', 'JavaScript', 'JavaScript', 'JavaScript']);
+        const originals = await steps.locator('code').allTextContents();
+        for (let i = 0; i < 4; i += 1) {
+            const step = steps.nth(i);
+            const explanation = step.locator('.demo-guide-step__explanation');
+            const panel = step.locator('.demo-guide-code-panel');
+            const button = panel.locator('button');
+            await expect(explanation).toBeVisible();
+            await expect(panel).toBeVisible();
+            await expect(button).toHaveText('Copia');
+            const [left, right] = await Promise.all([explanation.boundingBox(), panel.boundingBox()]);
+            if (width > 640) {
+                expect(right.x).toBeGreaterThan(left.x + left.width);
+                expect(Math.abs(right.y - left.y)).toBeLessThan(2);
+            } else expect(right.y).toBeGreaterThanOrEqual(left.y + left.height);
+            if (i === 0) { await button.focus(); await page.keyboard.press('Enter'); }
+            else await button.click();
+            await expect(button).toHaveText('Copiato');
+            await expect(panel.locator('[aria-live="polite"]')).toHaveText('Copiato');
+        }
+        expect(await page.evaluate(() => window.__guideCopied)).toEqual(originals);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+        await page.getByRole('button', { name: 'English', exact: true }).click();
+        const lastCopy = guide.locator('.demo-guide-code-panel__copy').last();
+        await lastCopy.click();
+        await expect(lastCopy).toHaveText('Copied');
+        await expect(guide.locator('.demo-guide-code-panel__status').last()).toHaveText('Copied');
+        expect(await steps.locator('code').allTextContents()).toEqual(originals);
+    });
+}
+
 test('the technical guide expands below the heading on desktop and mobile', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/#getting-started-javascript');

@@ -25,11 +25,6 @@ export default function App() {
     <main className="react-demo-page">
       <ReactHero language={language} />
       <section aria-label="React integration demo" className="react-demo-panel">
-        <header className="react-demo-intro">
-          <p className="react-demo-intro__kicker">Demo React + TypeScript</p>
-          <h2>{language === 'it' ? 'Inventario interattivo' : 'Interactive inventory'}</h2>
-          <p>Una demo moderna che mostra come integrare AMB Grid in un'applicazione React + TypeScript, mantenendo la stessa logica CRUD, validazione e payload della libreria.</p>
-        </header>
         <TableGuideAccordion language={language} />
         <InventoryShell language={language} />
       </section>

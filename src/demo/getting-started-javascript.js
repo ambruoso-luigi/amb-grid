@@ -2,7 +2,57 @@ import { demoIcon, demoYoutubeIcon, frameworkIcon } from './demo-icons.js';
 import { renderDemoBrand } from './demo-brand.js';
 import { renderDemoFooter } from './demo-footer.js';
 
-export default function gettingStartedJavaScript(app) {
+export function bindGuideCodeCopy(app, translate) {
+    const buttons = [...(app.querySelectorAll?.('#javascript-getting-started .demo-guide-code-panel__copy') || [])];
+    const entries = [];
+    let destroyed = false;
+    const render = entry => {
+        const key = entry.state === 'success' ? 'guide.copied' : entry.state === 'error' ? 'guide.copyError' : 'guide.copy';
+        const text = translate(key);
+        entry.label.textContent = text;
+        entry.icon.innerHTML = demoIcon(entry.state === 'success' ? 'check' : 'copy', { size: 14 });
+        entry.status.textContent = entry.state === 'idle' ? '' : text;
+        entry.button.dataset.copyState = entry.state;
+    };
+    for (const button of buttons) {
+        const panel = button.closest('.demo-guide-code-panel');
+        const entry = { button, code: panel.querySelector('code'), icon: button.querySelector('.demo-guide-code-panel__icon'),
+            label: button.querySelector('[data-i18n="guide.copy"]'), status: panel.querySelector('.demo-guide-code-panel__status'), state: 'idle', timer: null, sequence: 0 };
+        entry.click = async () => {
+            const sequence = ++entry.sequence;
+            clearTimeout(entry.timer);
+            entry.state = 'idle';
+            render(entry);
+            try {
+                if (!globalThis.navigator?.clipboard?.writeText) throw new Error('Clipboard unavailable');
+                await globalThis.navigator.clipboard.writeText(entry.code.textContent);
+                if (destroyed || sequence !== entry.sequence) return;
+                entry.state = 'success';
+            } catch {
+                if (destroyed || sequence !== entry.sequence) return;
+                entry.state = 'error';
+            }
+            render(entry);
+            entry.timer = setTimeout(() => { entry.state = 'idle'; render(entry); }, 1600);
+        };
+        button.addEventListener('click', entry.click);
+        entries.push(entry);
+    }
+    const onLanguage = () => entries.forEach(render);
+    if (entries.length) window.addEventListener('amb-demo-language-change', onLanguage);
+    return {
+        destroy() {
+            destroyed = true;
+            for (const entry of entries) {
+                clearTimeout(entry.timer);
+                entry.button.removeEventListener('click', entry.click);
+            }
+            if (entries.length) window.removeEventListener('amb-demo-language-change', onLanguage);
+        }
+    };
+}
+
+export default function gettingStartedJavaScript(app, { translate = key => ({ 'guide.copy': 'Copia', 'guide.copied': 'Copiato', 'guide.copyError': 'Copia non riuscita' })[key] } = {}) {
     app.innerHTML = `
         <main class="demo-page demo-guide-page js-guide-page site-container site-container--wide">
             <header class="demo-guide-hero">
@@ -60,23 +110,42 @@ export default function gettingStartedJavaScript(app) {
 
                 <ol class="demo-guide-steps" aria-label="JavaScript getting started steps">
                     <li class="demo-guide-step">
-                        <span class="demo-guide-step__number" aria-hidden="true">1</span>
-                        <div class="demo-guide-step__body">
-                            <h3 data-i18n="guide.step1.title">Prepara il contenitore</h3>
-                            <p class="demo-note" data-i18n="guide.step1.text">AMB Grid viene montata all'interno di un normale elemento HTML. Aggiungi un contenitore con un identificatore univoco nella posizione in cui vuoi visualizzare la griglia.</p>
-                            <p class="demo-note" data-i18n="guide.step1.text2">La libreria utilizzerà questo elemento per generare la tabella e gestirne le interazioni, senza richiedere una struttura HTML complessa.</p>
-                            <pre class="demo-code-block"><code>&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;</code></pre>
+                        <div class="demo-guide-step__explanation">
+                            <div class="demo-guide-step__heading"><span class="demo-guide-step__number" aria-hidden="true">1</span><h3 data-i18n="guide.step1.title">Prepara il contenitore</h3></div>
+                            <div class="demo-guide-step__body">
+                                <p class="demo-note" data-i18n="guide.step1.text">AMB Grid viene montata all'interno di un normale elemento HTML. Aggiungi un contenitore con un identificatore univoco nella posizione in cui vuoi visualizzare la griglia.</p>
+                                <p class="demo-note" data-i18n="guide.step1.text2">La libreria utilizzerà questo elemento per generare la tabella e gestirne le interazioni, senza richiedere una struttura HTML complessa.</p>
+                            </div>
+                        </div>
+                        <div class="demo-guide-step__code">
+                            <div class="demo-guide-code-panel">
+                                <div class="demo-guide-code-panel__header">
+                                    <span class="demo-guide-code-panel__language">HTML</span>
+                                    <button type="button" class="demo-guide-code-panel__copy"><span class="demo-guide-code-panel__icon" aria-hidden="true">${demoIcon('copy', { size: 14 })}</span><span data-i18n="guide.copy">Copia</span></button>
+                                    <span class="demo-visually-hidden demo-guide-code-panel__status" aria-live="polite"></span>
+                                </div>
+                                <pre class="demo-code-block"><code>&lt;<span class="syntax-tag">div</span> <span class="syntax-attr">id</span>=<span class="syntax-string">"grid"</span>&gt;&lt;/<span class="syntax-tag">div</span>&gt;</code></pre>
+                            </div>
                         </div>
                     </li>
 
                     <li class="demo-guide-step">
-                        <span class="demo-guide-step__number" aria-hidden="true">2</span>
-                        <div class="demo-guide-step__body">
-                            <h3 data-i18n="guide.step2.title">Definisci dati e colonne</h3>
-                            <p class="demo-note" data-i18n="guide.step2.text">I dati della griglia sono rappresentati da un array di oggetti JavaScript. Ogni oggetto corrisponde a una riga e le sue proprietà identificano i valori delle celle.</p>
-                            <p class="demo-note" data-i18n="guide.step2.text2">Le colonne definiscono quali informazioni visualizzare e come modificarle. Puoi associare editor, formatter e validatori ai singoli campi, mantenendo la configurazione separata dai dati.</p>
-                            <p class="demo-note" data-i18n="guide.step2.text3">In questo esempio utilizziamo un piccolo elenco di prodotti e tre colonne, di cui una con validazione numerica.</p>
-                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> rows = [
+                        <div class="demo-guide-step__explanation">
+                            <div class="demo-guide-step__heading"><span class="demo-guide-step__number" aria-hidden="true">2</span><h3 data-i18n="guide.step2.title">Definisci dati e colonne</h3></div>
+                            <div class="demo-guide-step__body">
+                                <p class="demo-note" data-i18n="guide.step2.text">I dati della griglia sono rappresentati da un array di oggetti JavaScript. Ogni oggetto corrisponde a una riga e le sue proprietà identificano i valori delle celle.</p>
+                                <p class="demo-note" data-i18n="guide.step2.text2">Le colonne definiscono quali informazioni visualizzare e come modificarle. Puoi associare editor, formatter e validatori ai singoli campi, mantenendo la configurazione separata dai dati.</p>
+                                <p class="demo-note" data-i18n="guide.step2.text3">In questo esempio utilizziamo un piccolo elenco di prodotti e tre colonne, di cui una con validazione numerica.</p>
+                            </div>
+                        </div>
+                        <div class="demo-guide-step__code">
+                            <div class="demo-guide-code-panel">
+                                <div class="demo-guide-code-panel__header">
+                                    <span class="demo-guide-code-panel__language">JavaScript</span>
+                                    <button type="button" class="demo-guide-code-panel__copy"><span class="demo-guide-code-panel__icon" aria-hidden="true">${demoIcon('copy', { size: 14 })}</span><span data-i18n="guide.copy">Copia</span></button>
+                                    <span class="demo-visually-hidden demo-guide-code-panel__status" aria-live="polite"></span>
+                                </div>
+                                <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> rows = [
   { <span class="syntax-property">id</span>: <span class="syntax-number">1</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">'SKU-1001'</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">'Steel shelving unit'</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">42</span> },
   { <span class="syntax-property">id</span>: <span class="syntax-number">2</span>, <span class="syntax-property">sku</span>: <span class="syntax-string">'SKU-1002'</span>, <span class="syntax-property">productName</span>: <span class="syntax-string">'Barcode scanner'</span>, <span class="syntax-property">stockQuantity</span>: <span class="syntax-number">8</span> }
 ];
@@ -92,17 +161,27 @@ export default function gettingStartedJavaScript(app) {
     <span class="syntax-property">validation</span>: { <span class="syntax-property">integer</span>: <span class="syntax-keyword">true</span>, <span class="syntax-property">min</span>: { <span class="syntax-property">value</span>: <span class="syntax-number">0</span> } }
   }
 ];</code></pre>
+                            </div>
                         </div>
                     </li>
 
                     <li class="demo-guide-step">
-                        <span class="demo-guide-step__number" aria-hidden="true">3</span>
-                        <div class="demo-guide-step__body">
-                            <h3 data-i18n="guide.step3.title">Crea la griglia CRUD</h3>
-                            <p class="demo-note" data-i18n="guide.step3.text">Con AMB.table() puoi creare una griglia utilizzando il contenitore HTML, i dati e le colonne definiti nei passaggi precedenti.</p>
-                            <p class="demo-note" data-i18n="guide.step3.text2">AMB Grid gestisce l'editing delle celle, le validazioni e lo stato delle righe. Le modifiche vengono tracciate per consentire all'applicazione di distinguere i record nuovi, modificati ed eliminati.</p>
-                            <p class="demo-note" data-i18n="guide.step3.text3">Puoi inoltre configurare una toolbar con le azioni necessarie alla tua applicazione.</p>
-                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
+                        <div class="demo-guide-step__explanation">
+                            <div class="demo-guide-step__heading"><span class="demo-guide-step__number" aria-hidden="true">3</span><h3 data-i18n="guide.step3.title">Crea la griglia CRUD</h3></div>
+                            <div class="demo-guide-step__body">
+                                <p class="demo-note" data-i18n="guide.step3.text">Con AMB.table() puoi creare una griglia utilizzando il contenitore HTML, i dati e le colonne definiti nei passaggi precedenti.</p>
+                                <p class="demo-note" data-i18n="guide.step3.text2">AMB Grid gestisce l'editing delle celle, le validazioni e lo stato delle righe. Le modifiche vengono tracciate per consentire all'applicazione di distinguere i record nuovi, modificati ed eliminati.</p>
+                                <p class="demo-note" data-i18n="guide.step3.text3">Puoi inoltre configurare una toolbar con le azioni necessarie alla tua applicazione.</p>
+                            </div>
+                        </div>
+                        <div class="demo-guide-step__code">
+                            <div class="demo-guide-code-panel">
+                                <div class="demo-guide-code-panel__header">
+                                    <span class="demo-guide-code-panel__language">JavaScript</span>
+                                    <button type="button" class="demo-guide-code-panel__copy"><span class="demo-guide-code-panel__icon" aria-hidden="true">${demoIcon('copy', { size: 14 })}</span><span data-i18n="guide.copy">Copia</span></button>
+                                    <span class="demo-visually-hidden demo-guide-code-panel__status" aria-live="polite"></span>
+                                </div>
+                                <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> grid = <span class="syntax-api">AMB</span>.<span class="syntax-function">table</span>({
   <span class="syntax-property">selector</span>: <span class="syntax-string">'#grid'</span>,
   <span class="syntax-property">data</span>: rows,
   <span class="syntax-property">columns</span>,
@@ -116,20 +195,31 @@ export default function gettingStartedJavaScript(app) {
     <span class="syntax-function">onPayload</span>: ({ payload }) => console.<span class="syntax-function">log</span>(payload.changes)
   }
 });</code></pre>
+                            </div>
                         </div>
                     </li>
 
                     <li class="demo-guide-step">
-                        <span class="demo-guide-step__number" aria-hidden="true">4</span>
-                        <div class="demo-guide-step__body">
-                            <h3 data-i18n="guide.step4.title">Ottieni il payload CRUD</h3>
-                            <p class="demo-note" data-i18n="guide.step4.text">AMB Grid tiene traccia delle modifiche effettuate dall'utente. Quando l'applicazione deve salvare, può ottenere un payload che distingue le operazioni da inviare al backend.</p>
-                            <p class="demo-note" data-i18n="guide.step4.text2">Il payload contiene le informazioni necessarie per identificare i record inseriti, modificati ed eliminati.</p>
-                            <p class="demo-note" data-i18n="guide.step4.text3">La comunicazione con il server rimane responsabilità dell'applicazione. Dopo un salvataggio riuscito, AMB Grid mette a disposizione API specifiche per aggiornare lo stato delle righe e riallineare i dati confermati.</p>
-                            <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> payload = grid.<span class="syntax-function">getSavePayload</span>();
+                        <div class="demo-guide-step__explanation">
+                            <div class="demo-guide-step__heading"><span class="demo-guide-step__number" aria-hidden="true">4</span><h3 data-i18n="guide.step4.title">Ottieni il payload CRUD</h3></div>
+                            <div class="demo-guide-step__body">
+                                <p class="demo-note" data-i18n="guide.step4.text">AMB Grid tiene traccia delle modifiche effettuate dall'utente. Quando l'applicazione deve salvare, può ottenere un payload che distingue le operazioni da inviare al backend.</p>
+                                <p class="demo-note" data-i18n="guide.step4.text2">Il payload contiene le informazioni necessarie per identificare i record inseriti, modificati ed eliminati.</p>
+                                <p class="demo-note" data-i18n="guide.step4.text3">La comunicazione con il server rimane responsabilità dell'applicazione. Dopo un salvataggio riuscito, AMB Grid mette a disposizione API specifiche per aggiornare lo stato delle righe e riallineare i dati confermati.</p>
+                                <p class="demo-note" data-i18n="guide.step4.note">Il payload descrive le modifiche, ma non esegue il salvataggio. L'invio al backend e la conferma dei record salvati sono operazioni applicative approfondite nella documentazione tecnica.</p>
+                            </div>
+                        </div>
+                        <div class="demo-guide-step__code">
+                            <div class="demo-guide-code-panel">
+                                <div class="demo-guide-code-panel__header">
+                                    <span class="demo-guide-code-panel__language">JavaScript</span>
+                                    <button type="button" class="demo-guide-code-panel__copy"><span class="demo-guide-code-panel__icon" aria-hidden="true">${demoIcon('copy', { size: 14 })}</span><span data-i18n="guide.copy">Copia</span></button>
+                                    <span class="demo-visually-hidden demo-guide-code-panel__status" aria-live="polite"></span>
+                                </div>
+                                <pre class="demo-code-block"><code><span class="syntax-keyword">const</span> payload = grid.<span class="syntax-function">getSavePayload</span>();
 
 console.<span class="syntax-function">log</span>(payload.changes);</code></pre>
-                            <p class="demo-note" data-i18n="guide.step4.note">Il payload descrive le modifiche, ma non esegue il salvataggio. L'invio al backend e la conferma dei record salvati sono operazioni applicative approfondite nella documentazione tecnica.</p>
+                            </div>
                         </div>
                     </li>
 
@@ -139,5 +229,5 @@ console.<span class="syntax-function">log</span>(payload.changes);</code></pre>
         ${renderDemoFooter()}
     `;
 
-    return null;
+    return bindGuideCodeCopy(app, translate);
 }

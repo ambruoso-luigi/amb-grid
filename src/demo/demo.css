@@ -6105,3 +6105,39 @@ body .demo-crud-row-confirm-dialog--rollback .teh-confirm-dialog__message {
 #javascript-demo .demo-action-tutorial__counter { font-size: 14px; font-weight: 800; }
 .js-guide-page #javascript-demo .demo-main-tutorial-note { font-size: 14px; font-weight: 500; }
 .demo-inventory-status-dialog .amb-lookup-dialog__search { font-size: 14.5px; font-weight: 550; }
+
+/* JavaScript getting started: explanation and source stay in the same row. */
+.js-guide-page #javascript-getting-started .demo-guide-step {
+    align-items: start;
+    border-top: 0;
+    border-bottom: 1px solid #dbe5ef;
+    display: grid;
+    gap: 28px;
+    grid-template-columns: minmax(0, 35fr) minmax(0, 65fr);
+    padding: 24px 0;
+}
+.js-guide-page #javascript-getting-started .demo-guide-step:last-child { border-bottom: 0; }
+.js-guide-page #javascript-getting-started .demo-guide-step__explanation,
+.js-guide-page #javascript-getting-started .demo-guide-step__code,
+.js-guide-page #javascript-getting-started .demo-guide-step__body { min-width: 0; }
+.js-guide-page #javascript-getting-started .demo-guide-step__heading { align-items: center; display: flex; gap: 12px; margin-bottom: 10px; }
+.js-guide-page #javascript-getting-started .demo-guide-step__number { flex: 0 0 34px; font-weight: 750; }
+.js-guide-page #javascript-getting-started .demo-guide-step__heading h3 { color: #10233f; font-size: 19px; font-weight: 750; line-height: 1.35; margin: 0; }
+.js-guide-page #javascript-getting-started .demo-guide-step__body .demo-note { color: #405671; font-size: 15px; font-weight: 400; line-height: 1.65; margin: 0 0 10px; }
+.js-guide-page #javascript-getting-started .demo-guide-step__body .demo-note:last-child { margin-bottom: 0; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel { background: #0d1420; border: 1px solid #25344a; border-radius: 10px; box-sizing: border-box; min-width: 0; overflow: hidden; width: 100%; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel__header { align-items: center; background: #151f2e; border-bottom: 1px solid #25344a; display: flex; justify-content: space-between; min-height: 38px; padding: 7px 14px; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel__language { color: #a9b9cd; font-size: 12px; font-weight: 600; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel__copy { align-items: center; background: transparent; border: 1px solid #34465d; border-radius: 6px; color: #c5d4e5; cursor: pointer; display: inline-flex; font-size: 12px; font-weight: 600; gap: 6px; justify-content: center; min-height: 28px; min-width: 110px; padding: 0 9px; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel__copy:hover { background: #25344a; color: #fff; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel__copy:focus-visible { outline: 2px solid #7db7f5; outline-offset: 2px; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel__copy[data-copy-state="success"] { color: #86d9ae; }
+.js-guide-page #javascript-getting-started .demo-guide-code-panel .demo-code-block { background: transparent; border: 0; border-radius: 0; color: #dce6f2; font: 400 13.5px/1.6 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; margin: 0; max-width: 100%; overflow-x: auto; padding: 18px; white-space: pre; }
+@media (min-width: 641px) and (max-width: 1024px) {
+    .js-guide-page #javascript-getting-started .demo-guide-step { gap: 18px; grid-template-columns: minmax(0, 40fr) minmax(0, 60fr); }
+    .js-guide-page #javascript-getting-started .demo-guide-code-panel .demo-code-block { padding: 16px; }
+}
+@media (max-width: 640px) {
+    .js-guide-page #javascript-getting-started .demo-guide-step { gap: 16px; grid-template-columns: minmax(0, 1fr); }
+    .js-guide-page #javascript-getting-started .demo-guide-code-panel .demo-code-block { padding: 14px; }
+}

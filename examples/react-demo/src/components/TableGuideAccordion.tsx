@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Braces, Building2, Calculator, CalendarDays, CheckSquare2, ChevronDown, CircleHelp, Database, Gauge, ListChecks, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, Braces, Building2, Calculator, CalendarDays, CheckSquare2, ChevronDown, Database, Gauge, ListChecks, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
 const operations = [
@@ -11,8 +11,8 @@ const operations = [
 
 const integration = [
   ['Controlli esterni', 'La toolbar React richiama direttamente le API pubbliche AMB Grid.', SlidersHorizontal],
-  ['KPI sincronizzati', 'Modifiche, errori e righe pending aggiornano la UI React.', Gauge],
-  ['Totali dinamici', 'La riga di riepilogo calcola stock, valore inventario e prodotti da ispezionare sui dati correnti della griglia. Gli stessi aggregati alimentano i KPI superiori.', Calculator],
+  ['KPI sincronizzati', 'Prodotti, modifiche, errori e indicatori di magazzino aggiornano la UI React.', Gauge],
+  ['Totali dinamici', 'La riga di riepilogo calcola stock, valore inventario e prodotti da ispezionare sui dati correnti della griglia.', Calculator],
   ['UI indipendente', 'shadcn/ui e Motion personalizzano l’esperienza senza cambiare il core.', PanelsTopLeft],
   ['Backend demo', 'MSW intercetta richieste HTTP reali e simula il backend.', Database],
 ] as const;
@@ -20,8 +20,8 @@ const integration = [
 type Language = 'it' | 'en';
 
 const summaryCopy = {
-  it: { title: 'Come funziona questa demo', description: 'Editing, validazione, payload e sincronizzazione React.' },
-  en: { title: 'How this demo works', description: 'Editing, validation, payloads, and React synchronization.' },
+  it: { title: 'Guida tecnica demo', description: 'Editing, validazione, payload e sincronizzazione React.' },
+  en: { title: 'Demo technical guide', description: 'Editing, validation, payloads, and React synchronization.' },
 } as const;
 
 const fields = (language: Language) => [
@@ -50,12 +50,20 @@ export function TableGuideAccordion({ language }: TableGuideAccordionProps) {
 
   return (
     <section className="react-table-guide">
-      <button aria-controls="react-table-guide-content" aria-expanded={open} className="react-table-guide__trigger" onClick={() => setOpen((current) => !current)} type="button">
-        <span className="react-table-guide__trigger-copy"><span className="react-table-guide__help-icon"><CircleHelp aria-hidden="true" size={18} /></span><span><strong>{summary.title}</strong><small>{summary.description}</small></span></span>
-        <ChevronDown aria-hidden="true" className="react-table-guide__chevron" data-open={open} size={20} />
-      </button>
-      <motion.div animate={{ gridTemplateRows: open ? '1fr' : '0fr', opacity: open ? 1 : 0 }} aria-hidden={!open} className="react-table-guide__content" id="react-table-guide-content" initial={false} transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}>
+      <header className="react-demo-intro">
+        <h2>{language === 'it' ? 'Inventario interattivo' : 'Interactive inventory'}</h2>
+        <div className="react-demo-intro__commands">
+          <button aria-controls="react-table-guide-content" aria-expanded={open} className="react-table-guide__trigger" onClick={() => setOpen((current) => !current)} type="button">
+            <span className="react-table-guide__help-icon"><BookOpen aria-hidden="true" size={17} strokeWidth={2.2} /></span>
+            <span className="react-table-guide__trigger-title">{summary.title}</span>
+            <span className="react-table-guide__chevron-box"><ChevronDown aria-hidden="true" className="react-table-guide__chevron" data-open={open} size={18} strokeWidth={2.4} /></span>
+          </button>
+        </div>
+        <p>Una demo moderna che mostra come integrare AMB Grid in un'applicazione React + TypeScript, mantenendo la stessa logica CRUD, validazione e payload della libreria.</p>
+      </header>
+      <motion.div animate={{ gridTemplateRows: open ? '1fr' : '0fr', opacity: open ? 1 : 0 }} aria-hidden={!open} className="react-table-guide__content" data-open={open} id="react-table-guide-content" initial={false} transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}>
         <div className="react-table-guide__content-inner">
+          <p className="react-table-guide__intro">{summary.description}</p>
           <section className="react-table-guide__section"><h3>Operatività</h3><div className="react-table-guide__operations">{cards(operations)}</div></section>
           <section className="react-table-guide__section"><h3>React + AMB Grid</h3><div className="react-table-guide__operations">{cards(integration)}</div></section>
           <section className="react-table-guide__columns" aria-labelledby="react-table-guide-columns-title">

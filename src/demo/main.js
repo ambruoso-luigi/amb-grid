@@ -163,6 +163,9 @@ const translations = {
         'guide.startText': 'Quattro passaggi per creare una prima griglia con AMB Grid: prepara il contenitore, definisci dati e colonne, inizializza la tabella e ottieni il payload delle modifiche. È un esempio minimo, distinto dal gestionale completo mostrato sopra.',
         'guide.installPrompt': 'Devi ancora installare AMB Grid?',
         'guide.installLink': 'Vai alla pagina Installazione →',
+        'guide.copy': 'Copia',
+        'guide.copied': 'Copiato',
+        'guide.copyError': 'Copia non riuscita',
         'guide.step1.title': 'Prepara il contenitore',
         'guide.step1.text': 'AMB Grid viene montata all’interno di un normale elemento HTML. Aggiungi un contenitore con un identificatore univoco nella posizione in cui vuoi visualizzare la griglia.',
         'guide.step1.text2': 'La libreria utilizzerà questo elemento per generare la tabella e gestirne le interazioni, senza richiedere una struttura HTML complessa.',
@@ -312,6 +315,9 @@ const translations = {
         'guide.startText': 'Four steps to create your first grid with AMB Grid: prepare the container, define data and columns, initialize the table, and obtain the changes payload. This minimal example is separate from the full management demo above.',
         'guide.installPrompt': 'Need to install AMB Grid first?',
         'guide.installLink': 'Go to the Installation page →',
+        'guide.copy': 'Copy',
+        'guide.copied': 'Copied',
+        'guide.copyError': 'Copy failed',
         'guide.step1.title': 'Prepare the container',
         'guide.step1.text': 'AMB Grid mounts inside a normal HTML element. Add a container with a unique identifier where you want to display the grid.',
         'guide.step1.text2': 'The library uses this element to generate the table and manage its interactions without requiring a complex HTML structure.',
@@ -342,6 +348,7 @@ const translations = {
 const root = document.querySelector('#app');
 listenDemoFooterLanguage(root);
 let currentMainDemo = null;
+let currentJavaScriptGuide = null;
 let currentFeatureExample = null;
 let currentReactDemoUnmount = null;
 let currentFeatureGuideCleanup = null;
@@ -521,6 +528,8 @@ const destroyFeatureGuideAnimations = () => {
 
 const destroyCurrentDemos = () => {
     destroyFeatureGuideAnimations();
+    destroyDemo(currentJavaScriptGuide);
+    currentJavaScriptGuide = null;
     destroyDemo(currentMainDemo);
     destroyDemo(currentFeatureExample);
     if (typeof currentReactDemoUnmount === 'function') {
@@ -860,7 +869,7 @@ const renderGuide = () => {
 
     destroyCurrentDemos();
     currentView = 'guide';
-    gettingStartedJavaScript(root);
+    currentJavaScriptGuide = gettingStartedJavaScript(root, { translate: getText });
     applyI18n();
     initDemoMotion(root);
     mountMainDemo('#javascript-demo', 'guide', {

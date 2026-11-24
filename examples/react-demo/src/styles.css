@@ -242,6 +242,55 @@ button, a { outline-offset: 3px; }
 @media (max-width: 820px) { .react-table-guide__operations { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .react-hero-brand { max-width: min(234px, 86vw); }.react-hero-brand img { width: min(234px, 86vw); }.react-demo-intro h2 { font-size: clamp(28px, 9vw, 36px); }.react-table-guide__trigger { padding: 13px 14px; }.react-table-guide__trigger small { font-size: 12px; }.react-table-guide__content-inner { padding: 0 14px 16px; }.react-table-guide__operations { grid-template-columns: 1fr; }.react-table-guide__column-list { gap: 10px; }.react-table-guide__column-list article > div { flex-direction: row; }.react-demo-grid-shell { min-height: 438px; } }
 
+/* React demo header and workbench share one full-width alignment. */
+.react-demo-panel > .react-table-guide { border: 0; margin: 0; min-width: 0; overflow: visible; }
+.react-demo-panel .react-demo-intro { align-items: center; column-gap: 8px; display: grid; grid-template-columns: minmax(0, 1fr) auto; max-width: none; min-width: 0; }
+.react-demo-panel .react-demo-intro h2 { grid-area: 1 / 1; min-width: 0; }
+.react-demo-panel .react-demo-intro__commands { grid-area: 1 / 2; justify-self: end; min-width: 0; }
+.react-demo-panel .react-demo-intro > p { grid-column: 1 / -1; margin: 10px 0 0; }
+.react-demo-panel .react-table-guide__trigger { background: #e0f6fa; border: 1px solid #90d1dd; border-radius: 8px; color: #10233f; display: grid; gap: 8px; grid-template-columns: 30px minmax(0, 1fr) 32px; min-height: 42px; padding: 5px 10px; width: auto; }
+.react-demo-panel .react-table-guide__trigger:hover { background: #cff1f7; border-color: #0891b2; }
+.react-demo-panel .react-table-guide__trigger:focus-visible { box-shadow: none; outline: 2px solid #0891b2; outline-offset: 2px; }
+.react-demo-panel .react-table-guide__trigger-title { color: #10233f; font-size: 14px; font-weight: 750; white-space: nowrap; }
+.react-demo-panel .react-table-guide__help-icon,
+.react-demo-panel .react-table-guide__chevron-box { align-items: center; background: #f0fdff; border: 1px solid #90d1dd; border-radius: 7px; color: #0e7490; display: inline-flex; flex: 0 0 auto; justify-content: center; }
+.react-demo-panel .react-table-guide__help-icon { height: 30px; width: 30px; }
+.react-demo-panel .react-table-guide__chevron-box { height: 32px; width: 32px; }
+.react-demo-panel .react-table-guide__chevron { color: #0e7490; margin: 0; transition: transform 160ms ease; }
+.react-demo-panel .react-table-guide__content { border: 0 solid #9dcfd9; border-radius: 8px; margin-top: 0; min-width: 0; width: 100%; }
+.react-demo-panel .react-table-guide__content[data-open="true"] { border-width: 1px; margin-top: 14px; }
+.react-demo-panel .inventory-operations { background: transparent; border: 0; border-radius: 0; box-shadow: none; box-sizing: border-box; margin: 18px 0 0; max-width: 100%; min-width: 0; overflow: visible; width: 100%; }
+.react-demo-panel .inventory-workspace { box-sizing: border-box; max-width: 100%; min-width: 0; padding: 0; width: 100%; }
+.react-demo-panel .inventory-kpis { margin-top: 0; }
+.react-demo-panel .inventory-operations { margin-top: 14px; }
+.react-demo-panel .inventory-kpi { background: rgb(255 255 255 / 86%); border-color: #d5e5ea; min-height: 0; padding: 12px 13px; }
+.react-demo-panel .inventory-kpi > .inventory-kpi__heading { align-items: center; color: #334155; display: flex; font-size: 13px; font-weight: 600; gap: 6px; line-height: 1.2; }
+.react-demo-panel .inventory-kpi__heading svg { color: #0891b2; flex: none; }
+.react-demo-panel .inventory-kpi__heading span { color: inherit; font: inherit; }
+.react-demo-panel .inventory-kpi strong { color: #0e7490; font-size: 24px; font-variant-numeric: tabular-nums; font-weight: 750; line-height: 1.15; margin-top: 4px; }
+.react-demo-panel .inventory-kpi small { color: #64748b; font-size: 11px; font-weight: 400; line-height: 1.35; margin-top: 4px; }
+.react-demo-panel .inventory-kpi[data-tone="error"] strong, .react-demo-panel .inventory-kpi[data-tone="error"] svg { color: #b91c1c; }
+.react-demo-panel .inventory-kpi[data-tone="low"] strong, .react-demo-panel .inventory-kpi[data-tone="low"] svg { color: #a16207; }
+.react-demo-panel .inventory-kpi[data-tone="hold"] strong, .react-demo-panel .inventory-kpi[data-tone="hold"] svg { color: #b45353; }
+.react-demo-panel .inventory-toolbar { margin-top: 12px; }
+.react-demo-grid .tabulator-footer { border-top: 0; }
+.react-demo-grid .tabulator-calcs-holder, .react-demo-grid .tabulator-calcs-holder .tabulator-row { background: #ecfeff; }
+.react-demo-grid .tabulator-calcs-holder { border-top: 2px solid #0891b2; }
+.react-demo-grid .tabulator-calcs-holder .tabulator-cell { border-right: 1px solid #cfe8ef; padding: 7px 8px; }
+.react-demo-grid .inventory-calculation { border-left: 3px solid #0891b2; border-radius: 2px; display: inline-flex; flex-direction: column; gap: 3px; padding-left: 6px; text-align: left; }
+.react-demo-grid .inventory-calculation .amb-calc-label { color: #155e75; font-size: 10px; font-weight: 700; letter-spacing: .03em; line-height: 1.2; text-transform: uppercase; }
+.react-demo-grid .inventory-calculation .amb-calc-value { color: #10233f; font-size: 16px; font-variant-numeric: tabular-nums; font-weight: 750; line-height: 1.2; }
+.react-demo-panel .react-demo-grid-shell { box-sizing: border-box; max-width: 100%; min-width: 0; padding-inline: 0; width: 100%; }
+@media (max-width: 640px) {
+  .react-demo-panel .react-demo-intro { grid-template-columns: minmax(0, 1fr); }
+  .react-demo-panel .react-demo-intro h2 { grid-area: 1 / 1; }
+  .react-demo-panel .react-demo-intro__commands { grid-area: 2 / 1; margin-top: 10px; }
+  .react-demo-panel .react-demo-intro > p { grid-area: 3 / 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .react-demo-panel .react-table-guide__chevron { transition: none; }
+}
+
 .inventory-toolbar__icon { color: #0ea5b7; height: 20px; stroke-width: 2; width: 20px; }
 .inventory-toolbar button:hover .inventory-toolbar__icon, .inventory-search:focus-within .inventory-toolbar__icon { color: #0891a6; }
 .inventory-toolbar__filter-control { position: relative; }
