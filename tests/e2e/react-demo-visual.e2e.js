@@ -109,7 +109,7 @@ test('React filters count active options and preserve them through reload', asyn
 });
 
 test('React grid keeps its initial height and scrolls only its rows after insertions', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.setViewportSize({ width: 1920, height: 900 });
     await page.goto('/#getting-started-react');
     const panel = page.locator('.react-demo-panel');
     const grid = panel.locator('.react-demo-grid');
@@ -117,33 +117,70 @@ test('React grid keeps its initial height and scrolls only its rows after insert
     const shell = panel.locator('.react-demo-grid-shell');
     const header = grid.locator('.tabulator-header');
     const footer = grid.locator('.tabulator-footer');
+    const diagnostics = async label => {
+        const state = await panel.evaluate(root => Object.fromEntries(Object.entries({ shell: '.react-demo-grid-shell', grid: '.react-demo-grid.tabulator', header: '.tabulator-header', holder: '.tabulator-tableholder', footer: '.tabulator-footer' }).map(([name, selector]) => {
+            const element = root.querySelector(selector);
+            const style = getComputedStyle(element);
+            const rect = element.getBoundingClientRect();
+            return [name, { scrollTop: element.scrollTop, scrollLeft: element.scrollLeft, scrollHeight: element.scrollHeight, clientHeight: element.clientHeight, overflowX: style.overflowX, overflowY: style.overflowY, height: style.height, maxHeight: style.maxHeight, rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } }];
+        })));
+        console.log(`[react-scroll ${label}] ${JSON.stringify(state)}`);
+    };
     await expect(holder.locator('.tabulator-row')).toHaveCount(8);
     await expect(header).toBeVisible();
     await expect(footer).toBeVisible();
     await expect.poll(() => grid.evaluate(element => getComputedStyle(element).maxHeight)).not.toBe('none');
+    await diagnostics('initial');
     const initial = await grid.boundingBox();
-    const initialHeader = await header.boundingBox();
-    const initialFooter = await footer.boundingBox();
+    const geometry = () => grid.evaluate(element => {
+        const rectangle = child => {
+            const { top, bottom } = child.getBoundingClientRect();
+            return { top, bottom };
+        };
+        return { grid: rectangle(element), header: rectangle(element.querySelector('.tabulator-header')), holder: rectangle(element.querySelector('.tabulator-tableholder')), footer: rectangle(element.querySelector('.tabulator-footer')), scrollTop: element.scrollTop };
+    });
+    const initialGeometry = await geometry();
     const initialShell = await shell.evaluate(element => ({ top: element.scrollTop, horizontal: element.scrollWidth > element.clientWidth }));
     const initialHorizontal = await holder.evaluate(element => element.scrollWidth > element.clientWidth);
-    for (let i = 0; i < 7; i++) await panel.getByRole('button', { name: 'Add product' }).click();
+    expect(initialShell.horizontal).toBe(false);
+    expect(initialHorizontal).toBe(false);
+    for (let i = 0; i < 7; i++) {
+        await panel.getByRole('button', { name: 'Add product' }).click();
+        if (i === 0 || i === 6) await diagnostics(`insertion-${i + 1}`);
+    }
+    await diagnostics('focused-new-row');
     await expect.poll(() => holder.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
     const expanded = await grid.boundingBox();
     expect(Math.abs(expanded.height - initial.height)).toBeLessThanOrEqual(2);
     const shellMetrics = await shell.evaluate(element => ({ top: element.scrollTop, horizontal: element.scrollWidth > element.clientWidth }));
     expect(shellMetrics).toEqual(initialShell);
+    expect(await grid.evaluate(element => element.scrollTop)).toBe(0);
     expect(await holder.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(initialHorizontal);
     const afterScroll = await holder.evaluate(element => { element.scrollTop = element.scrollHeight; return element.scrollTop; });
+    await diagnostics('holder-scrolled');
     expect(afterScroll).toBeGreaterThan(0);
-    const afterHeader = await header.boundingBox();
-    const afterFooter = await footer.boundingBox();
-    expect(Math.abs((initialHeader.y - initial.y) - (afterHeader.y - expanded.y))).toBeLessThanOrEqual(2);
-    expect(Math.abs((initialFooter.y - initial.y) - (afterFooter.y - expanded.y))).toBeLessThanOrEqual(2);
-    const textAtBottom = await holder.innerText();
+    const after = await geometry();
+    expect(after.scrollTop).toBe(0);
+    expect(await shell.evaluate(element => element.scrollTop)).toBe(0);
+    expect(Math.abs((initialGeometry.header.top - initialGeometry.grid.top) - (after.header.top - after.grid.top))).toBeLessThanOrEqual(2);
+    expect(Math.abs((initialGeometry.footer.top - initialGeometry.grid.top) - (after.footer.top - after.grid.top))).toBeLessThanOrEqual(2);
+    expect(after.header.top).toBeGreaterThanOrEqual(after.grid.top - 1);
+    expect(after.header.bottom).toBeLessThanOrEqual(after.holder.top + 1);
+    expect(after.holder.bottom).toBeLessThanOrEqual(after.footer.top + 1);
+    expect(after.footer.bottom).toBeLessThanOrEqual(after.grid.bottom + 1);
+    const rowVisible = (code) => holder.evaluate((element, itemCode) => {
+        const row = [...element.querySelectorAll('.tabulator-row')].find(item => {
+            const cell = item.querySelector('[tabulator-field="itemCode"]');
+            return (cell?.querySelector('input')?.value ?? cell?.textContent?.trim()) === itemCode;
+        });
+        if (!row) return false;
+        const outer = element.getBoundingClientRect();
+        const inner = row.getBoundingClientRect();
+        return inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1;
+    }, code);
+    await expect.poll(() => rowVisible('ITM-1015')).toBe(true);
     await holder.evaluate(element => { element.scrollTop = 0; });
-    const textAtTop = await holder.innerText();
-    expect(`${textAtTop}\n${textAtBottom}`).toContain('ITM-1001');
-    expect(`${textAtTop}\n${textAtBottom}`).toContain('ITM-1015');
+    await expect.poll(() => rowVisible('ITM-1001')).toBe(true);
     await panel.getByLabel('Search inventory').fill('pallet scale');
     await expect(holder.locator('.tabulator-row')).toHaveCount(1);
     await expect.poll(async () => (await grid.boundingBox()).height).toBeLessThan(expanded.height);

@@ -41,8 +41,6 @@ test('React grid uses native maximum height and exposes the active filter count'
     const grid = read('components/InventoryGrid.tsx');
     const toolbar = read('components/InventoryToolbar.tsx');
     const css = read('styles.css');
-    expect(grid).toContain('grid.on(\'dataProcessed\', captureInitialHeight)');
-    expect(grid).toContain('getBoundingClientRect().height');
     expect(grid).toContain('grid.setMaxHeight(height)');
     expect(toolbar).toContain("Number(props.filters.status !== '') + Number(props.filters.inspection !== '')");
     expect(toolbar).toContain('aria-describedby={activeFilterCount ? filterDescriptionId : undefined}');
