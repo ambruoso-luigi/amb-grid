@@ -36,3 +36,19 @@ test('React guide and workbench share a full width layout with responsive contro
     expect(css).toContain('padding-inline: 0');
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
 });
+
+test('React grid uses native maximum height and exposes the active filter count', () => {
+    const grid = read('components/InventoryGrid.tsx');
+    const toolbar = read('components/InventoryToolbar.tsx');
+    const css = read('styles.css');
+    expect(grid).toContain('grid.on(\'dataProcessed\', captureInitialHeight)');
+    expect(grid).toContain('getBoundingClientRect().height');
+    expect(grid).toContain('grid.setMaxHeight(height)');
+    expect(toolbar).toContain("Number(props.filters.status !== '') + Number(props.filters.inspection !== '')");
+    expect(toolbar).toContain('aria-describedby={activeFilterCount ? filterDescriptionId : undefined}');
+    expect(toolbar).toContain('activeFilterCount > 0');
+    expect(css).toContain('min-height: 438px');
+    expect(css).toContain('0 6px 16px rgb(16 78 98 / 8%)');
+    expect(css).toContain('background: #ecfeff !important');
+    expect(css).toContain('.inventory-toolbar__filter-count');
+});

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useId, useRef, type RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Braces, CircleHelp, Filter, LoaderCircle, PackagePlus, RotateCcw, Save, Search, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
@@ -29,6 +29,8 @@ type InventoryToolbarProps = {
 
 export function InventoryToolbar(props: InventoryToolbarProps) {
   const disabled = !props.gridReady || props.busy;
+  const activeFilterCount = Number(props.filters.status !== '') + Number(props.filters.inspection !== '');
+  const filterDescriptionId = useId();
   const commandGuide = commandGuideCopy[props.language].trigger;
   const filtersControlRef = useRef<HTMLDivElement | null>(null);
 
@@ -53,7 +55,8 @@ export function InventoryToolbar(props: InventoryToolbarProps) {
     <div className="inventory-toolbar__utilities">
       <label className="inventory-search"><Search aria-hidden="true" className="inventory-toolbar__icon" /><input aria-label="Search inventory" onChange={(event) => props.onSearch(event.target.value)} placeholder="Search inventory..." value={props.searchQuery} /></label>
       <div className="inventory-toolbar__filter-control" ref={filtersControlRef}>
-        <Button aria-expanded={props.filtersOpen} disabled={disabled} onClick={props.onFiltersToggle} size="sm" variant="outline"><Filter aria-hidden="true" className="inventory-toolbar__icon" /> Filters</Button>
+        <Button aria-describedby={activeFilterCount ? filterDescriptionId : undefined} aria-expanded={props.filtersOpen} className="inventory-toolbar__filters-button" disabled={disabled} onClick={props.onFiltersToggle} size="sm" variant="outline"><Filter aria-hidden="true" className="inventory-toolbar__icon" /> Filters{activeFilterCount > 0 && <span aria-hidden="true" className="inventory-toolbar__filter-count">{activeFilterCount}</span>}</Button>
+        {activeFilterCount > 0 && <span className="inventory-toolbar__filter-description" id={filterDescriptionId}>{props.language === 'it' ? `${activeFilterCount} filtri attivi` : `${activeFilterCount} active filters`}</span>}
         <AnimatePresence>
           {props.filtersOpen && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-filters" exit={{ opacity: 0, y: -6 }} initial={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
             <label>Status<select onChange={(event) => props.onFiltersChange({ ...props.filters, status: event.target.value })} value={props.filters.status}><option value="">Tutti</option><option value="ACTIVE">ACTIVE</option><option value="REVIEW">REVIEW</option><option value="HOLD">HOLD</option></select></label>

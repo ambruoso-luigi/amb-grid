@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { setSiteLanguage } from './helpers/site-language.js';
+import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
 for (const width of [1440, 1280, 1024, 768, 390]) {
     test(`React inventory guide and workbench stay aligned at ${width}px`, async ({ page }) => {
@@ -63,3 +64,132 @@ for (const width of [1440, 1280, 1024, 768, 390]) {
         await expect(trigger).toBeVisible();
     });
 }
+
+test('React filters count active options and preserve them through reload', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
+    await page.goto('/#getting-started-react');
+    const panel = page.locator('.react-demo-panel');
+    const button = panel.getByRole('button', { name: 'Filters', exact: true });
+    const badge = panel.locator('.inventory-toolbar__filter-count');
+    await expect(panel.locator('.tabulator-tableholder .tabulator-row').first()).toBeVisible();
+    await expect(badge).toHaveCount(0);
+    const size = await button.boundingBox();
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    const status = panel.locator('.inventory-filters').getByLabel('Status');
+    const inspection = panel.locator('.inventory-filters').getByLabel('Inspection');
+    await status.selectOption('ACTIVE');
+    await expect(badge).toHaveText('1');
+    await status.selectOption('HOLD');
+    await expect(badge).toHaveText('1');
+    await inspection.selectOption('false');
+    await expect(badge).toHaveText('2');
+    await expect(button).toHaveAccessibleDescription('2 filtri attivi');
+    const withBadge = await button.boundingBox();
+    expect(Math.abs(size.width - withBadge.width)).toBeLessThan(1);
+    expect(Math.abs(size.height - withBadge.height)).toBeLessThan(1);
+    await status.selectOption('');
+    await expect(badge).toHaveText('1');
+    await inspection.selectOption('');
+    await expect(badge).toHaveCount(0);
+    await panel.getByLabel('Search inventory').fill('scale');
+    await expect(badge).toHaveCount(0);
+    await panel.getByLabel('Search inventory').fill('');
+    await status.selectOption('HOLD');
+    await inspection.selectOption('true');
+    await expect(badge).toHaveText('2');
+    await button.click();
+    await panel.getByRole('button', { name: 'Reload', exact: true }).click();
+    await expect(badge).toHaveText('2');
+    await expect(panel.locator('.tabulator-tableholder .tabulator-row')).toHaveCount(1);
+    await button.click();
+    await expect(status).toHaveValue('HOLD');
+    await expect(inspection).toHaveValue('true');
+});
+
+test('React grid keeps its initial height and scrolls only its rows after insertions', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/#getting-started-react');
+    const panel = page.locator('.react-demo-panel');
+    const grid = panel.locator('.react-demo-grid');
+    const holder = grid.locator('.tabulator-tableholder');
+    const shell = panel.locator('.react-demo-grid-shell');
+    const header = grid.locator('.tabulator-header');
+    const footer = grid.locator('.tabulator-footer');
+    await expect(holder.locator('.tabulator-row')).toHaveCount(8);
+    await expect(header).toBeVisible();
+    await expect(footer).toBeVisible();
+    await expect.poll(() => grid.evaluate(element => getComputedStyle(element).maxHeight)).not.toBe('none');
+    const initial = await grid.boundingBox();
+    const initialHeader = await header.boundingBox();
+    const initialFooter = await footer.boundingBox();
+    const initialShell = await shell.evaluate(element => ({ top: element.scrollTop, horizontal: element.scrollWidth > element.clientWidth }));
+    const initialHorizontal = await holder.evaluate(element => element.scrollWidth > element.clientWidth);
+    for (let i = 0; i < 7; i++) await panel.getByRole('button', { name: 'Add product' }).click();
+    await expect.poll(() => holder.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    const expanded = await grid.boundingBox();
+    expect(Math.abs(expanded.height - initial.height)).toBeLessThanOrEqual(2);
+    const shellMetrics = await shell.evaluate(element => ({ top: element.scrollTop, horizontal: element.scrollWidth > element.clientWidth }));
+    expect(shellMetrics).toEqual(initialShell);
+    expect(await holder.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(initialHorizontal);
+    const afterScroll = await holder.evaluate(element => { element.scrollTop = element.scrollHeight; return element.scrollTop; });
+    expect(afterScroll).toBeGreaterThan(0);
+    const afterHeader = await header.boundingBox();
+    const afterFooter = await footer.boundingBox();
+    expect(Math.abs((initialHeader.y - initial.y) - (afterHeader.y - expanded.y))).toBeLessThanOrEqual(2);
+    expect(Math.abs((initialFooter.y - initial.y) - (afterFooter.y - expanded.y))).toBeLessThanOrEqual(2);
+    const textAtBottom = await holder.innerText();
+    await holder.evaluate(element => { element.scrollTop = 0; });
+    const textAtTop = await holder.innerText();
+    expect(`${textAtTop}\n${textAtBottom}`).toContain('ITM-1001');
+    expect(`${textAtTop}\n${textAtBottom}`).toContain('ITM-1015');
+    await panel.getByLabel('Search inventory').fill('pallet scale');
+    await expect(holder.locator('.tabulator-row')).toHaveCount(1);
+    await expect.poll(async () => (await grid.boundingBox()).height).toBeLessThan(expanded.height);
+    await panel.getByLabel('Search inventory').fill('');
+    await expect.poll(() => holder.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+});
+
+test('React bottom calculations remain integrated and aligned after editing and resizing', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
+    await page.goto('/#getting-started-react');
+    const panel = page.locator('.react-demo-panel');
+    const grid = panel.locator('.react-demo-grid');
+    const shell = panel.locator('.react-demo-grid-shell');
+    const footer = grid.locator('.tabulator-footer');
+    const totals = footer.locator('.tabulator-calcs-holder');
+    const row = grid.locator('.tabulator-tableholder .tabulator-row').filter({ hasText: 'ITM-1001' });
+    const stock = row.locator('[tabulator-field="stockQuantity"]');
+    await expect(stock).toBeVisible();
+    await expect(totals.locator('[tabulator-field="stockQuantity"]')).toContainText('296');
+    const appearance = await totals.evaluate(element => {
+        const style = getComputedStyle(element);
+        const footerStyle = getComputedStyle(element.closest('.tabulator-footer'));
+        return { background: style.backgroundColor, border: style.borderTopWidth, footerBorder: footerStyle.borderTopWidth, margin: style.marginBottom };
+    });
+    expect(appearance).toEqual({ background: 'rgb(236, 254, 255)', border: '2px', footerBorder: '0px', margin: '0px' });
+    const aligned = async () => {
+        const [cell, calc] = await Promise.all([stock.boundingBox(), totals.locator('[tabulator-field="stockQuantity"]').boundingBox()]);
+        return Math.abs(cell.x - calc.x) <= 2 && Math.abs(cell.width - calc.width) <= 2;
+    };
+    await expect.poll(aligned).toBe(true);
+    const input = await openEditorFromNavigation(page, stock, 'React stock quantity', '.react-demo-grid');
+    await input.fill('25');
+    await input.press('Enter');
+    await expect(totals.locator('[tabulator-field="stockQuantity"]')).toContainText('297');
+    await expect(totals.locator('[tabulator-field="inventoryValue"]')).toContainText('22.321,50');
+    await shell.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+    await expect.poll(aligned).toBe(true);
+    const handle = grid.locator('.tabulator-header [tabulator-field="stockQuantity"] .tabulator-col-resize-handle').last();
+    await handle.scrollIntoViewIfNeeded();
+    const box = await handle.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 20, box.y + box.height / 2);
+    await page.mouse.up();
+    await expect.poll(aligned).toBe(true);
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await expect.poll(aligned).toBe(true);
+});

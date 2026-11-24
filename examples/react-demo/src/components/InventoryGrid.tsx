@@ -152,6 +152,17 @@ export function InventoryGrid({ language, onReady, onStateChange }: InventoryGri
     } satisfies Parameters<typeof AMB.table>[0];
     const grid = AMB.table(tableOptions);
     let isActive = true;
+    let initialHeightCaptured = false;
+    const captureInitialHeight = (data: unknown) => {
+      if (initialHeightCaptured || !Array.isArray(data) || data.length === 0) return;
+      queueMicrotask(() => {
+        if (!isActive || initialHeightCaptured || !gridElementRef.current) return;
+        const height = Math.ceil(gridElementRef.current.getBoundingClientRect().height);
+        if (height <= 0) return;
+        initialHeightCaptured = true;
+        grid.setMaxHeight(height);
+      });
+    };
     const refresh = () => queueMicrotask(() => {
       if (isActive) onStateChange(grid);
     });
@@ -173,6 +184,7 @@ export function InventoryGrid({ language, onReady, onStateChange }: InventoryGri
     const removeCrudListeners = crudEvents.map((eventName) => grid.onCrud(eventName, refresh));
     engineEvents.forEach((eventName) => grid.on(eventName, refresh));
     grid.on('cellEdited', refreshEditedRow);
+    grid.on('dataProcessed', captureInitialHeight);
 
     const handleTableBuilt = () => {
       if (!isActive) return;
@@ -186,6 +198,7 @@ export function InventoryGrid({ language, onReady, onStateChange }: InventoryGri
       isActive = false;
       engineEvents.forEach((eventName) => grid.off(eventName, refresh));
       grid.off('cellEdited', refreshEditedRow);
+      grid.off('dataProcessed', captureInitialHeight);
       grid.off('tableBuilt', handleTableBuilt);
       removeCrudListeners.forEach((removeListener) => removeListener());
       grid.destroy();
