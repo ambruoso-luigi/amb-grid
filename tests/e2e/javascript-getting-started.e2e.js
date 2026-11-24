@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { setSiteLanguage } from './helpers/site-language.js';
 
 const titles = {
     it: ['Prepara il contenitore', 'Definisci dati e colonne', 'Crea la griglia CRUD', 'Ottieni il payload CRUD'],
@@ -124,7 +125,7 @@ for (const width of [1280, 768, 390]) {
         }
         expect(await page.evaluate(() => window.__guideCopied)).toEqual(originals);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-        await page.getByRole('button', { name: 'English', exact: true }).click();
+        await setSiteLanguage(page, 'en');
         const lastCopy = guide.locator('.demo-guide-code-panel__copy').last();
         await lastCopy.click();
         await expect(lastCopy).toHaveText('Copied');

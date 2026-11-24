@@ -205,6 +205,19 @@ test('inventory tutorial reaches and completes the F2 lookup through real intera
     await expect(calendar.locator('.datepicker-picker')).toHaveClass(/demo-crud-tutorial-target/);
     const bounds = await calendar.boundingBox();
     const viewport = page.viewportSize();
+    if (!bounds || bounds.x < 0 || bounds.y < 0 || bounds.x + bounds.width > viewport.width || bounds.y + bounds.height > viewport.height) {
+        const diagnostics = await page.evaluate(() => {
+            const rect = element => {
+                if (!element) return null;
+                const { x, y, width, height } = element.getBoundingClientRect();
+                return { x, y, width, height };
+            };
+            const anchor = document.querySelector('.amb-date-editor-picker-anchor');
+            const popup = document.querySelector('.datepicker.active');
+            return { cell: rect(anchor?.closest('.tabulator-cell')), anchor: rect(anchor), popup: rect(popup), popupStyle: popup?.getAttribute('style'), scrollX: window.scrollX, scrollY: window.scrollY, active: document.activeElement?.className };
+        });
+        console.error('[calendar positioning diagnostics]', JSON.stringify({ viewport, ...diagnostics }));
+    }
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.y).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);

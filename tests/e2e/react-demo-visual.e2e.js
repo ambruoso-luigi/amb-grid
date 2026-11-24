@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { setSiteLanguage } from './helpers/site-language.js';
 
 for (const width of [1440, 1280, 1024, 768, 390]) {
     test(`React inventory guide and workbench stay aligned at ${width}px`, async ({ page }) => {
@@ -52,13 +53,13 @@ for (const width of [1440, 1280, 1024, 768, 390]) {
         await expect(trigger).toHaveAttribute('aria-expanded', 'false');
         expect(await grid.evaluate((element, original) => element === original, gridHandle)).toBe(true);
         await expect(grid.locator('.tabulator-row')).toHaveCount(before);
-        await page.locator('#site-navbar').getByRole('button', { name: 'English' }).click();
+        await setSiteLanguage(page, 'en');
         await expect(panel.getByRole('heading', { name: 'Interactive inventory' })).toBeVisible();
         await expect(panel.getByRole('button', { name: 'Demo technical guide' })).toBeVisible();
         await expect(kpis.locator('.inventory-kpi__heading')).toHaveText(['Products', 'Modified', 'Errors', 'Ready to save', 'Low stock', 'On hold']);
         await expect(totals.locator('[tabulator-field="productName"]')).toContainText('Current totals');
         await expect(totals.locator('.amb-calc-label')).toHaveText(['TOTAL STOCK', 'TOTAL VALUE', 'INSPECTIONS']);
-        await page.locator('#site-navbar').getByRole('button', { name: 'Italiano' }).click();
+        await setSiteLanguage(page, 'it');
         await expect(trigger).toBeVisible();
     });
 }
