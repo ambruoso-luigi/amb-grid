@@ -13,7 +13,7 @@ test('React typography and geometry remain readable', async ({ page }) => {
     const metrics = await page.locator('.react-demo-panel').evaluate(panel => {
         const grid = panel.querySelector('.react-demo-grid');
         const rect = element => element.getBoundingClientRect().height;
-        const style = element => { const s = getComputedStyle(element); return { size: s.fontSize, weight: s.fontWeight, color: s.color, line: s.lineHeight }; };
+        const style = element => { const s = getComputedStyle(element); return { family: s.fontFamily, size: s.fontSize, weight: s.fontWeight, color: s.color, line: s.lineHeight }; };
         const cells = grid.querySelector('.tabulator-tableholder .tabulator-row');
         const selectors = {
             item: '[tabulator-field="itemCode"]', product: '[tabulator-field="productName"]', unit: '[tabulator-field="unitPrice"]',
@@ -39,8 +39,9 @@ test('React typography and geometry remain readable', async ({ page }) => {
     expect(metrics.kpis.every(height => Math.abs(height - 94.4375) < 1)).toBe(true);
     expect(metrics.holderWidth).toBe(1801);
     expect(metrics.widths.every(([, width], index) => Math.abs(width - [119, 211, 211, 144, 119, 151, 113, 177, 148, 356][index]) <= 2)).toBe(true);
-    expect(Object.fromEntries(Object.entries(metrics.fonts).map(([key, value]) => [key, value.size]))).toEqual({ item: '14px', product: '14px', unit: '14px', value: '14px', date: '14px', notes: '14px', supplier: '14px', supplierDetail: '12px', stock: '15px', stockLabel: '10px' });
-    expect(metrics.fonts.stock).toMatchObject({ size: '15px', weight: '600', color: 'rgb(16, 36, 62)' });
+    expect(Object.fromEntries(Object.entries(metrics.fonts).map(([key, value]) => [key, value.size]))).toEqual({ item: '14px', product: '14px', unit: '14px', value: '14px', date: '14px', notes: '14px', supplier: '14px', supplierDetail: '12px', stock: '14px', stockLabel: '10px' });
+    expect(metrics.fonts.stock).toMatchObject({ size: '14px', weight: '700', color: 'rgb(51, 65, 85)', line: metrics.fonts.unit.line });
+    expect(metrics.fonts.stock.family).toBe(metrics.fonts.unit.family);
     expect(metrics.fonts.stockLabel).toMatchObject({ size: '10px', weight: '700', color: 'rgb(71, 85, 105)' });
     expect(metrics.total).toMatchObject({ size: '18px', weight: '800', color: 'rgb(16, 36, 62)' });
     expect(metrics.sigma).toMatchObject({ size: '22px', weight: '750', color: 'rgb(14, 145, 168)' });
@@ -291,11 +292,17 @@ test('React bottom calculations remain integrated and aligned after editing and 
         return Boolean(header && cell && calc && Math.abs(header.x - cell.x) <= 2 && Math.abs(cell.x - calc.x) <= 2 && Math.abs(header.width - cell.width) <= 2 && Math.abs(cell.width - calc.width) <= 2);
     });
     await expect.poll(aligned).toBe(true);
+    const priceCell = row.locator('[tabulator-field="unitPrice"]');
+    const priceEditor = await openEditorFromNavigation(page, priceCell, 'React unit price', '.react-demo-grid');
+    const editorTypography = element => { const style = getComputedStyle(element); return { font: style.fontFamily, size: style.fontSize, weight: style.fontWeight, line: style.lineHeight, color: style.color, numeric: style.fontVariantNumeric, align: style.textAlign }; };
+    const priceStyle = await priceEditor.evaluate(editorTypography);
+    await priceEditor.press('Escape');
     const rowHeight = (await row.boundingBox()).height;
     const input = await openEditorFromNavigation(page, stock, 'React stock quantity', '.react-demo-grid');
     await expect(input).toHaveClass(/amb-cell-editor--number/);
-    const editorStyle = await input.evaluate(element => ({ size: getComputedStyle(element).fontSize, weight: getComputedStyle(element).fontWeight, color: getComputedStyle(element).color }));
-    expect(editorStyle).toEqual({ size: '16px', weight: '500', color: 'rgb(16, 36, 62)' });
+    const editorStyle = await input.evaluate(editorTypography);
+    expect(priceStyle).toMatchObject({ size: '14px', weight: '500', numeric: 'tabular-nums', align: 'right' });
+    expect(editorStyle).toEqual(priceStyle);
     expect((await row.boundingBox()).height).toBe(rowHeight);
     await input.fill('25');
     await input.press('Enter');
