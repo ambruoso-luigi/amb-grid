@@ -40,6 +40,8 @@ test('React typography and geometry remain readable', async ({ page }) => {
     expect(metrics.holderWidth).toBe(1801);
     expect(metrics.widths.every(([, width], index) => Math.abs(width - [119, 211, 211, 144, 119, 151, 113, 177, 148, 356][index]) <= 2)).toBe(true);
     expect(Object.fromEntries(Object.entries(metrics.fonts).map(([key, value]) => [key, value.size]))).toEqual({ item: '14px', product: '14px', unit: '14px', value: '14px', date: '14px', notes: '14px', supplier: '14px', supplierDetail: '12px', stock: '15px', stockLabel: '10px' });
+    expect(metrics.fonts.stock).toMatchObject({ size: '15px', weight: '600', color: 'rgb(16, 36, 62)' });
+    expect(metrics.fonts.stockLabel).toMatchObject({ size: '10px', weight: '700', color: 'rgb(71, 85, 105)' });
     expect(metrics.total).toMatchObject({ size: '18px', weight: '800', color: 'rgb(16, 36, 62)' });
     expect(metrics.sigma).toMatchObject({ size: '22px', weight: '750', color: 'rgb(14, 145, 168)' });
     expect(metrics.kpi).toMatchObject({ size: '11px', weight: '400', color: 'rgb(71, 85, 105)' });
@@ -289,7 +291,12 @@ test('React bottom calculations remain integrated and aligned after editing and 
         return Boolean(header && cell && calc && Math.abs(header.x - cell.x) <= 2 && Math.abs(cell.x - calc.x) <= 2 && Math.abs(header.width - cell.width) <= 2 && Math.abs(cell.width - calc.width) <= 2);
     });
     await expect.poll(aligned).toBe(true);
+    const rowHeight = (await row.boundingBox()).height;
     const input = await openEditorFromNavigation(page, stock, 'React stock quantity', '.react-demo-grid');
+    await expect(input).toHaveClass(/amb-cell-editor--number/);
+    const editorStyle = await input.evaluate(element => ({ size: getComputedStyle(element).fontSize, weight: getComputedStyle(element).fontWeight, color: getComputedStyle(element).color }));
+    expect(editorStyle).toEqual({ size: '16px', weight: '500', color: 'rgb(16, 36, 62)' });
+    expect((await row.boundingBox()).height).toBe(rowHeight);
     await input.fill('25');
     await input.press('Enter');
     await expect(totals.locator('[tabulator-field="stockQuantity"]')).toContainText('297');
