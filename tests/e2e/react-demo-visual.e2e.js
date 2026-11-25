@@ -122,7 +122,7 @@ test('React grid keeps its initial height and scrolls only its rows after insert
             const element = root.querySelector(selector);
             const style = getComputedStyle(element);
             const rect = element.getBoundingClientRect();
-            return [name, { scrollTop: element.scrollTop, scrollLeft: element.scrollLeft, scrollHeight: element.scrollHeight, clientHeight: element.clientHeight, overflowX: style.overflowX, overflowY: style.overflowY, height: style.height, maxHeight: style.maxHeight, rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } }];
+            return [name, { scrollTop: element.scrollTop, scrollLeft: element.scrollLeft, scrollHeight: element.scrollHeight, clientHeight: element.clientHeight, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth, offsetWidth: element.offsetWidth, overflowX: style.overflowX, overflowY: style.overflowY, height: style.height, maxHeight: style.maxHeight, rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } }];
         })));
         console.log(`[react-scroll ${label}] ${JSON.stringify(state)}`);
     };
@@ -144,8 +144,27 @@ test('React grid keeps its initial height and scrolls only its rows after insert
     const initialHorizontal = await holder.evaluate(element => element.scrollWidth > element.clientWidth);
     expect(initialShell.horizontal).toBe(false);
     expect(initialHorizontal).toBe(false);
+    const columnsAligned = () => grid.evaluate(element => {
+        const fields = ['productName', 'stockQuantity', 'inventoryValue', 'requiresInspection'];
+        return fields.every(field => {
+            const selector = `[tabulator-field="${field}"]`;
+            const headerCell = element.querySelector(`.tabulator-header ${selector}`)?.getBoundingClientRect();
+            const rowCell = element.querySelector(`.tabulator-tableholder .tabulator-row ${selector}`)?.getBoundingClientRect();
+            const calcCell = element.querySelector(`.tabulator-calcs-holder ${selector}`)?.getBoundingClientRect();
+            return headerCell && rowCell && calcCell && Math.abs(headerCell.left - rowCell.left) <= 1 && Math.abs(headerCell.left - calcCell.left) <= 1 && Math.abs(headerCell.width - calcCell.width) <= 1;
+        });
+    });
+    await expect.poll(columnsAligned).toBe(true);
+    const labelStyle = await footer.locator('.inventory-summary-label strong').evaluate(element => ({ fontSize: parseFloat(getComputedStyle(element).fontSize), fontWeight: Number(getComputedStyle(element).fontWeight) }));
+    expect(labelStyle.fontSize).toBeGreaterThanOrEqual(16);
+    expect(labelStyle.fontWeight).toBeGreaterThanOrEqual(750);
     for (let i = 0; i < 7; i++) {
         await panel.getByRole('button', { name: 'Add product' }).click();
+        if (i === 0) {
+            await expect.poll(() => holder.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+            expect(await holder.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(false);
+            await expect.poll(columnsAligned).toBe(true);
+        }
         if (i === 0 || i === 6) await diagnostics(`insertion-${i + 1}`);
     }
     await diagnostics('focused-new-row');
@@ -156,6 +175,10 @@ test('React grid keeps its initial height and scrolls only its rows after insert
     expect(shellMetrics).toEqual(initialShell);
     expect(await grid.evaluate(element => element.scrollTop)).toBe(0);
     expect(await holder.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(initialHorizontal);
+    await expect.poll(columnsAligned).toBe(true);
+    await expect(footer.locator('[tabulator-field="stockQuantity"]')).toContainText('296');
+    await expect(footer.locator('[tabulator-field="inventoryValue"]')).toContainText('22.131,60');
+    await expect(footer.locator('[tabulator-field="requiresInspection"]')).toContainText('4');
     const afterScroll = await holder.evaluate(element => { element.scrollTop = element.scrollHeight; return element.scrollTop; });
     await diagnostics('holder-scrolled');
     expect(afterScroll).toBeGreaterThan(0);
