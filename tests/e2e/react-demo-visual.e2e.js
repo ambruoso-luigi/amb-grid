@@ -2,6 +2,52 @@ import { expect, test } from '@playwright/test';
 import { setSiteLanguage } from './helpers/site-language.js';
 import { openEditorFromNavigation } from './helpers/focus-diagnostics.js';
 
+test('React typography and geometry remain readable', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
+    await page.goto('/#getting-started-react');
+    const grid = page.locator('.react-demo-grid.tabulator');
+    await expect(grid.locator('.tabulator-tableholder .tabulator-row')).toHaveCount(8);
+    await expect.poll(() => grid.evaluate(element => getComputedStyle(element).maxHeight)).not.toBe('none');
+    const metrics = await page.locator('.react-demo-panel').evaluate(panel => {
+        const grid = panel.querySelector('.react-demo-grid');
+        const rect = element => element.getBoundingClientRect().height;
+        const style = element => { const s = getComputedStyle(element); return { size: s.fontSize, weight: s.fontWeight, color: s.color, line: s.lineHeight }; };
+        const cells = grid.querySelector('.tabulator-tableholder .tabulator-row');
+        const selectors = {
+            item: '[tabulator-field="itemCode"]', product: '[tabulator-field="productName"]', unit: '[tabulator-field="unitPrice"]',
+            value: '[tabulator-field="inventoryValue"]', date: '[tabulator-field="lastCheckDate"]', notes: '[tabulator-field="notes"]',
+            supplier: '.inventory-supplier strong', supplierDetail: '.inventory-supplier small', stock: '.inventory-stock__top strong', stockLabel: '.inventory-stock__top span'
+        };
+        const suppliers = [...grid.querySelectorAll('.tabulator-tableholder .inventory-supplier')];
+        const supplierFits = suppliers.every(supplier => {
+            const name = supplier.querySelector('strong'), detail = supplier.querySelector('small');
+            return name.scrollWidth <= name.clientWidth && detail.scrollWidth <= detail.clientWidth && name.getBoundingClientRect().bottom <= detail.getBoundingClientRect().top;
+        });
+        const stockFits = [...grid.querySelectorAll('.tabulator-tableholder .inventory-stock')].every(stock => {
+            const value = stock.querySelector('strong').getBoundingClientRect(), label = stock.querySelector('.inventory-stock__top span').getBoundingClientRect(), bar = stock.querySelector('.inventory-stock__track').getBoundingClientRect(), cell = stock.closest('.tabulator-cell').getBoundingClientRect();
+            return value.right <= label.left && bar.top >= value.bottom && bar.bottom <= cell.bottom;
+        });
+        return { grid: rect(grid), header: rect(grid.querySelector('.tabulator-header')), rows: [...grid.querySelectorAll('.tabulator-tableholder .tabulator-row')].map(rect), footer: rect(grid.querySelector('.tabulator-footer')), kpis: [...panel.querySelectorAll('.inventory-kpi')].map(rect), widths: [...grid.querySelectorAll('.tabulator-header .tabulator-col[tabulator-field]')].map(element => [element.getAttribute('tabulator-field'), element.getBoundingClientRect().width]), holderWidth: grid.querySelector('.tabulator-tableholder').clientWidth, fonts: Object.fromEntries(Object.entries(selectors).map(([name, selector]) => [name, style(cells.querySelector(selector))])), total: style(grid.querySelector('.inventory-summary-label strong')), sigma: style(grid.querySelector('.inventory-summary-label > span')), kpi: style(panel.querySelector('.inventory-kpi small')), supplierCount: suppliers.length, supplierFits, stockFits };
+    });
+    console.log('[React typography metrics]', JSON.stringify(metrics));
+    expect(metrics.grid).toBe(584);
+    expect(metrics.header).toBe(51);
+    expect(metrics.rows).toEqual(Array(8).fill(60));
+    expect(metrics.footer).toBe(53);
+    expect(metrics.kpis.every(height => Math.abs(height - 94.4375) < 1)).toBe(true);
+    expect(metrics.holderWidth).toBe(1801);
+    expect(metrics.widths.every(([, width], index) => Math.abs(width - [119, 211, 211, 144, 119, 151, 113, 177, 148, 356][index]) <= 2)).toBe(true);
+    expect(Object.fromEntries(Object.entries(metrics.fonts).map(([key, value]) => [key, value.size]))).toEqual({ item: '14px', product: '14px', unit: '14px', value: '14px', date: '14px', notes: '14px', supplier: '14px', supplierDetail: '12px', stock: '15px', stockLabel: '10px' });
+    expect(metrics.total).toMatchObject({ size: '18px', weight: '800', color: 'rgb(16, 36, 62)' });
+    expect(metrics.sigma).toMatchObject({ size: '22px', weight: '750', color: 'rgb(14, 145, 168)' });
+    expect(metrics.kpi).toMatchObject({ size: '11px', weight: '400', color: 'rgb(71, 85, 105)' });
+    expect(metrics.supplierCount).toBe(8);
+    expect(metrics.supplierFits).toBe(true);
+    expect(metrics.stockFits).toBe(true);
+});
+
 for (const width of [1440, 1280, 1024, 768, 390]) {
     test(`React inventory guide and workbench stay aligned at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
@@ -28,6 +74,11 @@ for (const width of [1440, 1280, 1024, 768, 390]) {
         await expect(totals.locator('[tabulator-field="inventoryValue"]')).toContainText('22.131,60');
         await expect(totals.locator('[tabulator-field="requiresInspection"]')).toContainText('4');
         await expect(totals.locator('.amb-calc-label')).toHaveText(['TOTALE SCORTE', 'VALORE TOTALE', 'ISPEZIONI']);
+        const titleCentered = () => totals.locator('[tabulator-field="productName"]').evaluate(cell => {
+            const a = cell.getBoundingClientRect(), b = cell.querySelector('.inventory-summary-label').getBoundingClientRect();
+            return Math.abs((a.top + a.height / 2) - (b.top + b.height / 2)) <= 2 && b.left >= a.left && b.right <= a.right;
+        });
+        await expect.poll(titleCentered).toBe(true);
         await expect(grid.locator('.inventory-supplier small').first()).toBeVisible();
         await expect(panel.locator('.inventory-workspace__header, .react-demo-intro__kicker')).toHaveCount(0);
         await expect(panel.getByText('Operazioni inventario', { exact: true })).toHaveCount(0);
@@ -59,6 +110,7 @@ for (const width of [1440, 1280, 1024, 768, 390]) {
         await expect(panel.getByRole('button', { name: 'Demo technical guide' })).toBeVisible();
         await expect(kpis.locator('.inventory-kpi__heading')).toHaveText(['Products', 'Modified', 'Errors', 'Ready to save', 'Low stock', 'On hold']);
         await expect(totals.locator('[tabulator-field="productName"]')).toContainText('Current totals');
+        await expect.poll(titleCentered).toBe(true);
         await expect(totals.locator('.amb-calc-label')).toHaveText(['TOTAL STOCK', 'TOTAL VALUE', 'INSPECTIONS']);
         await setSiteLanguage(page, 'it');
         await expect(trigger).toBeVisible();
