@@ -93,6 +93,7 @@ test('the displayed snippets create an isolated grid and expose its changes', as
 for (const width of [1280, 768, 390]) {
     test(`JavaScript guide displays and copies the four snippets at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
+        await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.addInitScript(() => {
             localStorage.setItem('amb-grid-demo-language', 'it');
             window.__guideCopied = [];
@@ -113,11 +114,13 @@ for (const width of [1280, 768, 390]) {
             await expect(explanation).toBeVisible();
             await expect(panel).toBeVisible();
             await expect(button).toHaveText('Copia');
-            const [left, right] = await Promise.all([explanation.boundingBox(), panel.boundingBox()]);
-            if (width > 640) {
-                expect(right.x).toBeGreaterThan(left.x + left.width);
-                expect(Math.abs(right.y - left.y)).toBeLessThan(2);
-            } else expect(right.y).toBeGreaterThanOrEqual(left.y + left.height);
+            await expect.poll(() => step.evaluate(element => {
+                const left = element.querySelector('.demo-guide-step__explanation').getBoundingClientRect();
+                const right = element.querySelector('.demo-guide-code-panel').getBoundingClientRect();
+                return window.innerWidth > 640
+                    ? right.x > left.x + left.width && Math.abs(right.y - left.y) < 2
+                    : right.y >= left.y + left.height;
+            })).toBe(true);
             if (i === 0) { await button.focus(); await page.keyboard.press('Enter'); }
             else await button.click();
             await expect(button).toHaveText('Copiato');

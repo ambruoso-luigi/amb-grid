@@ -230,10 +230,12 @@ test('React bottom calculations remain integrated and aligned after editing and 
         return { background: style.backgroundColor, border: style.borderTopWidth, footerBorder: footerStyle.borderTopWidth, margin: style.marginBottom };
     });
     expect(appearance).toEqual({ background: 'rgb(236, 254, 255)', border: '2px', footerBorder: '0px', margin: '0px' });
-    const aligned = async () => {
-        const [cell, calc] = await Promise.all([stock.boundingBox(), totals.locator('[tabulator-field="stockQuantity"]').boundingBox()]);
-        return Math.abs(cell.x - calc.x) <= 2 && Math.abs(cell.width - calc.width) <= 2;
-    };
+    const aligned = () => grid.evaluate(element => {
+        const header = element.querySelector('.tabulator-header .tabulator-col[tabulator-field="stockQuantity"]')?.getBoundingClientRect();
+        const cell = element.querySelector('.tabulator-tableholder .tabulator-row [tabulator-field="stockQuantity"]')?.getBoundingClientRect();
+        const calc = element.querySelector('.tabulator-calcs-holder [tabulator-field="stockQuantity"]')?.getBoundingClientRect();
+        return Boolean(header && cell && calc && Math.abs(header.x - cell.x) <= 2 && Math.abs(cell.x - calc.x) <= 2 && Math.abs(header.width - cell.width) <= 2 && Math.abs(cell.width - calc.width) <= 2);
+    });
     await expect.poll(aligned).toBe(true);
     const input = await openEditorFromNavigation(page, stock, 'React stock quantity', '.react-demo-grid');
     await input.fill('25');
@@ -242,14 +244,22 @@ test('React bottom calculations remain integrated and aligned after editing and 
     await expect(totals.locator('[tabulator-field="inventoryValue"]')).toContainText('22.321,50');
     await shell.evaluate(element => { element.scrollLeft = element.scrollWidth; });
     await expect.poll(aligned).toBe(true);
-    const handle = grid.locator('.tabulator-header [tabulator-field="stockQuantity"] .tabulator-col-resize-handle').last();
+    const column = grid.locator('.tabulator-header .tabulator-col[tabulator-field="stockQuantity"]');
+    const handle = grid.locator('.tabulator-header .tabulator-col[tabulator-field="stockQuantity"] + .tabulator-col-resize-handle');
+    await expect(handle).toHaveCount(1);
+    await expect(handle).toBeVisible();
     await handle.scrollIntoViewIfNeeded();
+    const beforeWidth = (await column.boundingBox()).width;
     const box = await handle.boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
     await page.mouse.move(box.x + box.width / 2 + 20, box.y + box.height / 2);
     await page.mouse.up();
+    await expect.poll(async () => (await column.boundingBox()).width).toBeGreaterThan(beforeWidth);
+    const afterWidth = (await column.boundingBox()).width;
+    console.log(`[React stock column resize] ${beforeWidth}px -> ${afterWidth}px`);
     await expect.poll(aligned).toBe(true);
+    await expect(totals.locator('[tabulator-field="stockQuantity"]')).toContainText('297');
     await page.setViewportSize({ width: 1024, height: 900 });
     await expect.poll(aligned).toBe(true);
 });
