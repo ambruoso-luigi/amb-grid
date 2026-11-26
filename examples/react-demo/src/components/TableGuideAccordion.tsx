@@ -1,77 +1,66 @@
 import { useState } from 'react';
-import { BookOpen, Braces, Building2, Calculator, CalendarDays, CheckSquare2, ChevronDown, Database, Gauge, ListChecks, ListFilter, MousePointer2, NotepadText, PanelsTopLeft, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, Calculator, ChevronDown, Database, Gauge, SlidersHorizontal } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 
-const operations = [
-  ['Editing', 'Modifica direttamente i prodotti nella griglia. Gli stati si aggiornano automaticamente.', MousePointer2],
-  ['Validazione', 'Gli errori influenzano stato, KPI e possibilità di salvataggio.', ShieldCheck],
-  ['Save', 'Le modifiche valide si salvano lasciando pending quelle da correggere.', Save],
-  ['Payload', 'Payload e stato delle modifiche alimentano i pannelli React.', Braces],
-] as const;
-
-const integration = [
-  ['Controlli esterni', 'La toolbar React richiama direttamente le API pubbliche AMB Grid.', SlidersHorizontal],
-  ['KPI sincronizzati', 'Prodotti, modifiche, errori e indicatori di magazzino aggiornano la UI React.', Gauge],
-  ['Totali dinamici', 'La riga di riepilogo calcola stock, valore inventario e prodotti da ispezionare sui dati correnti della griglia.', Calculator],
-  ['UI indipendente', 'shadcn/ui e Motion personalizzano l’esperienza senza cambiare il core.', PanelsTopLeft],
-  ['Backend demo', 'MSW intercetta richieste HTTP reali e simula il backend.', Database],
-] as const;
-
 type Language = 'it' | 'en';
-
-const summaryCopy = {
-  it: { title: 'Guida tecnica demo', description: 'Editing, validazione, payload e sincronizzazione React.' },
-  en: { title: 'Demo technical guide', description: 'Editing, validation, payloads, and React synchronization.' },
+const copy = {
+  it: {
+    title: 'Guida tecnica demo', heading: 'Inventario interattivo',
+    description: "Una demo moderna che mostra come integrare AMB Grid in un'applicazione React + TypeScript, mantenendo la stessa logica CRUD, validazione e payload della libreria.",
+    intro: "AMB Grid gestisce la griglia, mentre React coordina l'interfaccia, lo stato applicativo e la comunicazione con il backend simulato.",
+    integration: 'INTEGRAZIONE REACT', operations: 'OPERATIVITÀ DELLA GRIGLIA', fields: 'CAMPI PRINCIPALI',
+    integrationCards: [
+      ['Controlli esterni', 'La toolbar React richiama le API pubbliche di AMB Grid attraverso controlli applicativi personalizzati.'],
+      ['KPI sincronizzati', 'Gli indicatori React si aggiornano al variare dei dati, degli errori e degli stati delle righe.'],
+      ['Totali dinamici', "Le aggregazioni integrate nella parte inferiore della griglia mostrano scorte, valore dell'inventario e prodotti da ispezionare."],
+      ['Backend simulato', "MSW intercetta le richieste HTTP dell'applicazione e simula le risposte del backend."],
+    ],
+    note: "L'interfaccia utilizza shadcn/ui e Motion per personalizzare l'esperienza applicativa senza modificare il CORE di AMB Grid.",
+    operationText: "AMB Grid gestisce l'editing diretto, la validazione automatica, gli stati CRUD e la preparazione del payload. L'applicazione React utilizza queste informazioni per aggiornare l'interfaccia e inviare le modifiche al backend simulato.",
+    descriptions: ['Ricerca del fornitore per codice, nome o città e aggiornamento dei campi collegati tramite mapToRow.', 'Quantità modificabile con barra grafica dinamica.', 'Valore calcolato moltiplicando la quantità disponibile per il prezzo unitario.', 'Selezione dello stato con rappresentazione grafica tramite badge e icone.', 'Editor data con calendario e formato controllato.', 'Editor esteso per la gestione delle annotazioni operative.'],
+  },
+  en: {
+    title: 'Demo technical guide', heading: 'Interactive inventory',
+    description: "A modern demo showing how to integrate AMB Grid into a React + TypeScript application while retaining the library's CRUD, validation and payload logic.",
+    intro: 'AMB Grid manages the data grid, while React coordinates the interface, application state and communication with the simulated backend.',
+    integration: 'REACT INTEGRATION', operations: 'GRID OPERATIONS', fields: 'KEY FIELDS',
+    integrationCards: [
+      ['External controls', "The React toolbar calls AMB Grid's public APIs through custom application controls."],
+      ['Synchronized KPIs', 'React indicators update as data, validation errors and row states change.'],
+      ['Dynamic totals', 'Aggregations integrated at the bottom of the grid display stock levels, inventory value and products requiring inspection.'],
+      ['Simulated backend', "MSW intercepts the application's HTTP requests and simulates backend responses."],
+    ],
+    note: 'The interface uses shadcn/ui and Motion to customize the application experience without modifying the AMB Grid core.',
+    operationText: 'AMB Grid handles direct editing, automatic validation, CRUD states and payload preparation. The React application uses this information to update the interface and send changes to the simulated backend.',
+    descriptions: ['Search suppliers by code, name or city and update related fields through mapToRow.', 'Editable quantity with a dynamic visual bar.', 'Calculated value obtained by multiplying stock quantity by unit price.', 'Status selection with visual representation through badges and icons.', 'Date editor with calendar picker and controlled formatting.', 'Extended editor for managing operational notes.'],
+  },
 } as const;
+const icons = [SlidersHorizontal, Gauge, Calculator, Database] as const;
+const fields = [['Supplier', 'LOOKUP'], ['Stock quantity', 'INTEGER + VISUAL BAR'], ['Inventory value', 'CALCULATED'], ['Status', 'SELECT + FORMATTER'], ['Last check date', 'DATE'], ['Notes', 'LONG TEXT']] as const;
 
-const fields = (language: Language) => [
-  [language === 'it' ? 'Fornitore' : 'Supplier', 'LOOKUP', language === 'it'
-    ? 'Ricerca un fornitore tramite codice, nome o città e aggiorna più dati della riga con mapToRow.'
-    : 'Search a supplier by code, name, or city and update multiple row fields with mapToRow.', Building2],
-  ['Status', 'SELECT', language === 'it'
-    ? 'Un insieme ristretto di stati usa un select; badge e icone restano nel formatter.'
-    : 'A small closed set of states uses a select while badges and icons stay in the formatter.', ListChecks],
-  ['Stock quantity', 'INTEGER + VISUAL BAR', 'Numero editabile con indicatore visuale.', ListFilter],
-  ['Inventory value', 'CALCULATED', 'Valore calcolato da quantità disponibile e prezzo unitario.', Calculator],
-  ['Requires inspection', 'BOOLEAN', 'Checkbox realmente editabile.', CheckSquare2],
-  ['Last check date', 'DATE', 'Data con picker e formato controllato.', CalendarDays],
-  ['Notes', 'LONG TEXT', 'Editor ampio per annotazioni operative.', NotepadText],
-] as const;
-
-type TableGuideAccordionProps = { language: Language };
-
-export function TableGuideAccordion({ language }: TableGuideAccordionProps) {
-  const summary = summaryCopy[language];
+export function TableGuideAccordion({ language }: { language: Language }) {
+  const text = copy[language];
   const [open, setOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
-  const cards = (items: typeof operations | typeof integration) => items.map(([title, description, Icon]) => (
-    <article key={title}><span><Icon aria-hidden="true" size={18} /></span><h4>{title}</h4><p>{description}</p></article>
-  ));
-
   return (
     <section className="react-table-guide">
       <header className="react-demo-intro">
-        <h2>{language === 'it' ? 'Inventario interattivo' : 'Interactive inventory'}</h2>
+        <h2>{text.heading}</h2>
         <div className="react-demo-intro__commands">
           <button aria-controls="react-table-guide-content" aria-expanded={open} className="react-table-guide__trigger" onClick={() => setOpen((current) => !current)} type="button">
             <span className="react-table-guide__help-icon"><BookOpen aria-hidden="true" size={17} strokeWidth={2.2} /></span>
-            <span className="react-table-guide__trigger-title">{summary.title}</span>
+            <span className="react-table-guide__trigger-title">{text.title}</span>
             <span className="react-table-guide__chevron-box"><ChevronDown aria-hidden="true" className="react-table-guide__chevron" data-open={open} size={18} strokeWidth={2.4} /></span>
           </button>
         </div>
-        <p>Una demo moderna che mostra come integrare AMB Grid in un'applicazione React + TypeScript, mantenendo la stessa logica CRUD, validazione e payload della libreria.</p>
+        <p>{text.description}</p>
       </header>
       <motion.div animate={{ gridTemplateRows: open ? '1fr' : '0fr', opacity: open ? 1 : 0 }} aria-hidden={!open} className="react-table-guide__content" data-open={open} id="react-table-guide-content" initial={false} transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}>
         <div className="react-table-guide__content-inner">
-          <p className="react-table-guide__intro">{summary.description}</p>
-          <section className="react-table-guide__section"><h3>Operatività</h3><div className="react-table-guide__operations">{cards(operations)}</div></section>
-          <section className="react-table-guide__section"><h3>React + AMB Grid</h3><div className="react-table-guide__operations">{cards(integration)}</div></section>
-          <section className="react-table-guide__columns" aria-labelledby="react-table-guide-columns-title">
-            <h3 id="react-table-guide-columns-title">Campi dimostrati</h3>
-            <div className="react-table-guide__column-list">
-              {fields(language).map(([name, badge, description, Icon]) => <article key={name}><i><Icon aria-hidden="true" size={16} /></i><div><h4>{name}</h4><span>{badge}</span></div><p>{description}</p></article>)}
-            </div>
-          </section>
+          <p className="react-table-guide__intro">{text.intro}</p>
+          <section className="react-table-guide__section"><h3>{text.integration}</h3><div className="react-table-guide__operations">{text.integrationCards.map(([title, description], index) => { const Icon = icons[index]; return <article key={title}><span><Icon aria-hidden="true" size={18} strokeWidth={1.75} /></span><h4>{title}</h4><p>{description}</p></article>; })}</div><p className="react-table-guide__note">{text.note}</p></section>
+          <section className="react-table-guide__section"><h3>{text.operations}</h3><p>{text.operationText}</p></section>
+          <section className="react-table-guide__columns" aria-labelledby="react-table-guide-columns-title"><h3 id="react-table-guide-columns-title">{text.fields}</h3><div className="react-table-guide__column-list">{fields.map(([name, badge], index) => <article key={name}><div><h4>{name}</h4><span>{badge}</span></div><p>{text.descriptions[index]}</p></article>)}</div></section>
         </div>
       </motion.div>
     </section>

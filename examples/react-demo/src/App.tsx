@@ -24,7 +24,7 @@ export default function App() {
   return (
     <main className="react-demo-page">
       <ReactHero language={language} />
-      <section aria-label="React integration demo" className="react-demo-panel">
+      <section aria-label={language === 'it' ? 'Demo di integrazione React' : 'React integration demo'} className="react-demo-panel">
         <TableGuideAccordion language={language} />
         <InventoryShell language={language} />
       </section>

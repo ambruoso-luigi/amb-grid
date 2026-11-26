@@ -111,7 +111,7 @@ const copy = {
       },
       {
         title: 'Sincronizza AMB Grid con lo stato React',
-        description: 'InventoryShell passa syncFromGrid come onStateChange. In InventoryGrid, gli eventi reali row-state-changed e dataFiltered richiamano questa callback: il nuovo payload aggiorna lo stato React. La callback completa legge anche getStateReport() e getCalcResults() per aggiornare i KPI.',
+        description: 'InventoryShell passa syncFromGrid come onStateChange. In InventoryGrid, gli eventi reali row-state-changed e dataFiltered richiamano questa callback: il nuovo payload aggiorna lo stato React. La callback completa legge anche getStateReport() per aggiornare i KPI.',
         note: 'Estratti parziali di InventoryShell.tsx e InventoryGrid.tsx; tipi, emptyPayload e handleGridReady sono definiti nella demo. Il secondo blocco mostra due sottoscrizioni e il relativo destroyGrid: onCrud restituisce la funzione di rimozione, mentre on richiede off.',
       },
       {
@@ -122,7 +122,7 @@ const copy = {
       {
         title: 'Gestisci il salvataggio asincrono',
         description: 'getSavePayload() prepara i dati, ma non li invia. fetch trasmette le modifiche all’API simulata; solo dopo una risposta valida applyBackendIds associa gli ID restituiti e markRowsSaved conferma le righe salvate. Le modifiche non valide restano da correggere.',
-        note: 'Due estratti consecutivi di saveValidChanges in InventoryShell.tsx, dentro il blocco try della callback asincrona. SaveResponse contiene insertedIds: { tempId?: string; id: number }[]. Prima di arrivare qui, prepareSave esegue validateChanges(), controlla hasChanges e canSave e richiede conferma per il salvataggio parziale. Sono omessi busy, catch/finally e i messaggi di feedback, presenti nella demo.',
+        note: 'Due estratti consecutivi di saveValidChanges in InventoryShell.tsx, dentro il blocco try della callback asincrona. SaveResponse contiene insertedIds: { tempId?: string; id: number }[]. Prima di arrivare qui, prepareSave esegue validateChanges(), controlla hasChanges e canSave. Sono omessi busy, catch/finally e i messaggi di feedback, presenti nella demo.',
       },
     ],
   },
@@ -140,7 +140,7 @@ const copy = {
       },
       {
         title: 'Synchronize AMB Grid with React state',
-        description: 'InventoryShell passes syncFromGrid as onStateChange. In InventoryGrid, the real row-state-changed and dataFiltered events call this callback: the new payload updates React state. The full callback also reads getStateReport() and getCalcResults() to update the KPIs.',
+        description: 'InventoryShell passes syncFromGrid as onStateChange. In InventoryGrid, the real row-state-changed and dataFiltered events call this callback: the new payload updates React state. The full callback also reads getStateReport() to update the KPIs.',
         note: 'Partial excerpts from InventoryShell.tsx and InventoryGrid.tsx; types, emptyPayload and handleGridReady are defined in the demo. The second block shows two subscriptions and their destroyGrid cleanup: onCrud returns an unsubscribe function, while on requires off.',
       },
       {
@@ -151,7 +151,7 @@ const copy = {
       {
         title: 'Handle asynchronous saving',
         description: 'getSavePayload() prepares data but does not send it. fetch submits changes to the mock API; only after a successful response does applyBackendIds assign the returned IDs and markRowsSaved acknowledge saved rows. Invalid changes remain pending correction.',
-        note: 'Two consecutive excerpts from saveValidChanges in InventoryShell.tsx, inside the async callback’s try block. SaveResponse contains insertedIds: { tempId?: string; id: number }[]. Before reaching this code, prepareSave runs validateChanges(), checks hasChanges and canSave, and requests confirmation for partial saves. The demo’s busy state, catch/finally and feedback messages are omitted.',
+        note: 'Two consecutive excerpts from saveValidChanges in InventoryShell.tsx, inside the async callback’s try block. SaveResponse contains insertedIds: { tempId?: string; id: number }[]. Before reaching this code, prepareSave runs validateChanges(), checks hasChanges and canSave. The demo’s busy state, catch/finally and feedback messages are omitted.',
       },
     ],
   },

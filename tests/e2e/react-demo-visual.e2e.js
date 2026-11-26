@@ -91,7 +91,23 @@ for (const width of [1440, 1280, 1024, 768, 390]) {
         await trigger.focus();
         await page.keyboard.press('Enter');
         await expect(trigger).toHaveAttribute('aria-expanded', 'true');
-        await expect(content.locator('.react-table-guide__column-list')).toContainText('Fornitore');
+        await expect(content.locator('.react-table-guide__column-list')).toContainText('Supplier');
+        await expect(content.locator('.react-table-guide__operations article')).toHaveCount(4);
+        await expect(content.locator('.react-table-guide__column-list article')).toHaveCount(6);
+        await expect(content.locator('.react-table-guide__column-list svg')).toHaveCount(0);
+        await expect(content.getByRole('heading', { name: 'OPERATIVITÀ DELLA GRIGLIA' })).toBeVisible();
+        await expect(content.locator('.react-table-guide__operations svg.lucide-sliders-horizontal, .react-table-guide__operations svg.lucide-gauge, .react-table-guide__operations svg.lucide-calculator, .react-table-guide__operations svg.lucide-database')).toHaveCount(4);
+        const layout = await content.evaluate(element => {
+            const operations = element.querySelector('.react-table-guide__operations');
+            const fields = element.querySelector('.react-table-guide__column-list');
+            const cards = [...element.querySelectorAll('article')];
+            return { operationColumns: getComputedStyle(operations).gridTemplateColumns.split(' ').length, fieldColumns: getComputedStyle(fields).gridTemplateColumns.split(' ').length, overflow: element.scrollWidth > element.clientWidth + 1, cardFont: getComputedStyle(cards[0].querySelector('h4')).fontSize, descriptionColor: getComputedStyle(cards[0].querySelector('p')).color };
+        });
+        expect(layout.operationColumns).toBe(width <= 640 ? 1 : width <= 1099 ? 2 : 4);
+        expect(layout.fieldColumns).toBe(width <= 640 ? 1 : width <= 1099 ? 2 : 3);
+        expect(layout.overflow).toBe(false);
+        expect(layout.cardFont).toBe('14px');
+        expect(layout.descriptionColor).toBe('rgb(71, 85, 105)');
         await expect.poll(async () => {
             const [t, d, b, c, k, tools, table] = await Promise.all([
                 title.boundingBox(), description.boundingBox(), trigger.boundingBox(), content.boundingBox(),
@@ -161,6 +177,49 @@ test('React filters count active options and preserve them through reload', asyn
     await button.click();
     await expect(status).toHaveValue('HOLD');
     await expect(inspection).toHaveValue('true');
+});
+
+test('React guide and inventory state survive language changes', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
+    await page.goto('/#getting-started-react');
+    const panel = page.locator('.react-demo-panel');
+    const grid = panel.locator('.react-demo-grid');
+    const row = grid.locator('.tabulator-tableholder .tabulator-row').filter({ hasText: 'ITM-1001' });
+    await expect(row).toBeVisible();
+    const input = await openEditorFromNavigation(page, row.locator('[tabulator-field="stockQuantity"]'), 'React stock', '.react-demo-grid');
+    await input.fill('25');
+    await input.press('Enter');
+    await expect(row).toHaveAttribute('data-state', 'modified');
+    const guide = panel.getByRole('button', { name: 'Guida tecnica demo' });
+    await guide.click();
+    const content = panel.locator('#react-table-guide-content');
+    const handle = await grid.elementHandle();
+    const headings = await grid.locator('.tabulator-header .tabulator-col-title').allTextContents();
+    const filter = panel.getByRole('button', { name: 'Filters', exact: true });
+    await filter.click();
+    await panel.locator('.inventory-filters').getByLabel('Status').selectOption('ACTIVE');
+    await panel.getByLabel('Search inventory').fill('scanner');
+    await expect(panel.locator('.inventory-toolbar__filter-count')).toHaveText('1');
+    await setSiteLanguage(page, 'en');
+    await expect(panel.getByRole('button', { name: 'Demo technical guide' })).toHaveAttribute('aria-expanded', 'true');
+    await expect(content.getByRole('heading', { name: 'REACT INTEGRATION' })).toBeVisible();
+    await expect(content).toContainText('AMB Grid manages the data grid');
+    await expect(content.locator('.react-table-guide__column-list article')).toHaveCount(6);
+    await expect(panel.getByLabel('Search inventory')).toHaveValue('scanner');
+    await expect(panel.locator('.inventory-toolbar__filter-count')).toHaveText('1');
+    await expect(row).toHaveAttribute('data-state', 'modified');
+    expect(await grid.evaluate((element, original) => element === original, handle)).toBe(true);
+    expect(await grid.locator('.tabulator-header .tabulator-col-title').allTextContents()).toEqual(headings);
+    await expect(panel.locator('.inventory-kpis')).toContainText('Ready to save');
+    await expect(panel.getByRole('button', { name: 'Validate', exact: true })).toBeVisible();
+    await panel.getByRole('button', { name: 'Validate', exact: true }).click();
+    await expect(panel.getByRole('status')).toContainText('Validation complete: no errors.');
+    await setSiteLanguage(page, 'it');
+    await expect(panel.getByRole('button', { name: 'Guida tecnica demo' })).toHaveAttribute('aria-expanded', 'true');
+    await expect(content).toContainText('AMB Grid gestisce la griglia');
+    await expect(row).toHaveAttribute('data-state', 'modified');
+    expect(await grid.evaluate((element, original) => element === original, handle)).toBe(true);
 });
 
 test('React grid keeps its initial height and scrolls only its rows after insertions', async ({ page }) => {

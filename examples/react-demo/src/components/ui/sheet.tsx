@@ -8,9 +8,10 @@ type SheetProps = {
   onOpenChange: (open: boolean) => void;
   open: boolean;
   title: string;
+  closeLabel: string;
 };
 
-export function Sheet({ children, description, onOpenChange, open, title }: SheetProps) {
+export function Sheet({ children, description, onOpenChange, open, title, closeLabel }: SheetProps) {
   return (
     <Dialog.Root onOpenChange={onOpenChange} open={open}>
       <Dialog.Portal>
@@ -18,7 +19,7 @@ export function Sheet({ children, description, onOpenChange, open, title }: Shee
         <Dialog.Content className="react-sheet__content">
           <div className="react-sheet__header">
             <div><Dialog.Title>{title}</Dialog.Title><Dialog.Description>{description}</Dialog.Description></div>
-            <Dialog.Close aria-label="Chiudi payload" className="react-sheet__close"><X aria-hidden="true" size={18} /></Dialog.Close>
+            <Dialog.Close aria-label={closeLabel} className="react-sheet__close"><X aria-hidden="true" size={18} /></Dialog.Close>
           </div>
           {children}
         </Dialog.Content>

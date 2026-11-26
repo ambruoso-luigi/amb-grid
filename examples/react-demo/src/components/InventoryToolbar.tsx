@@ -45,7 +45,7 @@ export function InventoryToolbar(props: InventoryToolbarProps) {
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [props.filtersOpen, props.onFiltersClose]);
 
-  return <div className="inventory-toolbar" aria-label="Inventory toolbar">
+  return <div className="inventory-toolbar" aria-label={props.language === 'it' ? 'Barra comandi inventario' : 'Inventory toolbar'}>
     <div className="inventory-toolbar__actions">
       <Button disabled={disabled} onClick={props.onAdd}><PackagePlus aria-hidden="true" className="inventory-toolbar__icon" /> Add product</Button>
       <Button disabled={disabled || props.pending === 0} onClick={props.onSave} variant="outline">{props.busy ? <LoaderCircle aria-hidden="true" className="inventory-spinner inventory-toolbar__icon" /> : <Save aria-hidden="true" className="inventory-toolbar__icon" />} Save changes</Button>
@@ -59,8 +59,8 @@ export function InventoryToolbar(props: InventoryToolbarProps) {
         {activeFilterCount > 0 && <span className="inventory-toolbar__filter-description" id={filterDescriptionId}>{props.language === 'it' ? `${activeFilterCount} filtri attivi` : `${activeFilterCount} active filters`}</span>}
         <AnimatePresence>
           {props.filtersOpen && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-filters" exit={{ opacity: 0, y: -6 }} initial={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
-            <label>Status<select onChange={(event) => props.onFiltersChange({ ...props.filters, status: event.target.value })} value={props.filters.status}><option value="">Tutti</option><option value="ACTIVE">ACTIVE</option><option value="REVIEW">REVIEW</option><option value="HOLD">HOLD</option></select></label>
-            <label>Inspection<select onChange={(event) => props.onFiltersChange({ ...props.filters, inspection: event.target.value })} value={props.filters.inspection}><option value="">Tutte</option><option value="true">Richiesta</option><option value="false">Non richiesta</option></select></label>
+            <label>Status<select onChange={(event) => props.onFiltersChange({ ...props.filters, status: event.target.value })} value={props.filters.status}><option value="">{props.language === 'it' ? 'Tutti' : 'All'}</option><option value="ACTIVE">ACTIVE</option><option value="REVIEW">REVIEW</option><option value="HOLD">HOLD</option></select></label>
+            <label>Inspection<select onChange={(event) => props.onFiltersChange({ ...props.filters, inspection: event.target.value })} value={props.filters.inspection}><option value="">{props.language === 'it' ? 'Tutte' : 'All'}</option><option value="true">{props.language === 'it' ? 'Richiesta' : 'Required'}</option><option value="false">{props.language === 'it' ? 'Non richiesta' : 'Not required'}</option></select></label>
           </motion.div>}
         </AnimatePresence>
       </div>

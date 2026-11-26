@@ -67,6 +67,8 @@ export function InventoryShell({ language }: InventoryShellProps) {
   const [filters, setFilters] = useState<InventoryFilters>({ status: '', inspection: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
+  const languageRef = useRef(language);
+  languageRef.current = language;
   const nextItemNumber = useRef(1009);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeGridRef = useRef<InventoryGridController | null>(null);
@@ -133,7 +135,7 @@ export function InventoryShell({ language }: InventoryShellProps) {
     } catch (error) {
       if (abortController.signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) return;
       if (activeGridRef.current !== controller) return;
-      showFeedback('error', error instanceof Error ? error.message : 'Impossibile caricare i prodotti.');
+      showFeedback('error', error instanceof Error ? error.message : languageRef.current === 'it' ? 'Impossibile caricare i prodotti.' : 'Unable to load products.');
     } finally {
       if (loadAbortRef.current === abortController) {
         loadAbortRef.current = null;
@@ -178,9 +180,10 @@ export function InventoryShell({ language }: InventoryShellProps) {
     syncFromGrid(grid);
     const report = grid.getStateReport();
     const cellErrorCount = grid.getCellErrors().length;
-    const cellLabel = cellErrorCount === 1 ? 'cella non valida' : 'celle non valide';
-    const rowLabel = report.errorRowsCount === 1 ? 'riga' : 'righe';
-    showFeedback(report.errorRowsCount ? 'error' : 'success', report.errorRowsCount ? `${cellErrorCount} ${cellLabel} in ${report.errorRowsCount} ${rowLabel}.` : 'Validazione completata: nessun errore.');
+    const it = languageRef.current === 'it';
+    const cellLabel = it ? (cellErrorCount === 1 ? 'cella non valida' : 'celle non valide') : (cellErrorCount === 1 ? 'invalid cell' : 'invalid cells');
+    const rowLabel = it ? (report.errorRowsCount === 1 ? 'riga' : 'righe') : (report.errorRowsCount === 1 ? 'row' : 'rows');
+    showFeedback(report.errorRowsCount ? 'error' : 'success', report.errorRowsCount ? `${cellErrorCount} ${cellLabel} in ${report.errorRowsCount} ${rowLabel}.` : it ? 'Validazione completata: nessun errore.' : 'Validation complete: no errors.');
   }, [grid, showFeedback, syncFromGrid]);
 
   const saveValidChanges = useCallback(async () => {
@@ -201,12 +204,12 @@ export function InventoryShell({ language }: InventoryShellProps) {
       grid.applyBackendIds(result.insertedIds.filter((mapping): mapping is { tempId: string; id: number } => typeof mapping.tempId === 'string'));
       const identifiers = savedCandidates.map(({ key, tempId }) => tempId ? idByTempId.get(tempId) ?? key : key);
       const acknowledged = grid.markRowsSaved(identifiers);
-      if (!acknowledged) throw new Error('Il backend ha risposto, ma AMB Grid non ha confermato tutte le righe.');
+      if (!acknowledged) throw new Error(languageRef.current === 'it' ? 'Il backend ha risposto, ma AMB Grid non ha confermato tutte le righe.' : 'The backend responded, but AMB Grid did not acknowledge all rows.');
       syncFromGrid(grid);
       const remaining = grid.getStateReport().invalidChangedRowsCount;
-      showFeedback('success', remaining ? `${identifiers.length} modifiche salvate. ${remaining} righe restano da correggere.` : 'Modifiche salvate.');
+      showFeedback('success', languageRef.current === 'it' ? (remaining ? `${identifiers.length} modifiche salvate. ${remaining} righe restano da correggere.` : 'Modifiche salvate.') : (remaining ? `${identifiers.length} changes saved. ${remaining} rows still need correction.` : 'Changes saved.'));
     } catch (error) {
-      showFeedback('error', error instanceof Error ? error.message : 'Salvataggio non riuscito.');
+      showFeedback('error', error instanceof Error ? error.message : languageRef.current === 'it' ? 'Salvataggio non riuscito.' : 'Save failed.');
     } finally {
       setBusy(false);
     }
@@ -217,8 +220,8 @@ export function InventoryShell({ language }: InventoryShellProps) {
     await Promise.resolve(grid.validateChanges());
     syncFromGrid(grid);
     const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-    if (!currentPayload.hasChanges) return showFeedback('success', 'Nessuna modifica da salvare.');
-    if (!currentPayload.canSave) return showFeedback('error', 'Correggi le righe non valide prima di salvare.');
+    if (!currentPayload.hasChanges) return showFeedback('success', languageRef.current === 'it' ? 'Nessuna modifica da salvare.' : 'No changes to save.');
+    if (!currentPayload.canSave) return showFeedback('error', languageRef.current === 'it' ? 'Correggi le righe non valide prima di salvare.' : 'Correct invalid rows before saving.');
     if (currentPayload.isPartialSave) return setPartialSaveOpen(true);
     await saveValidChanges();
   }, [grid, saveValidChanges, showFeedback, syncFromGrid]);
@@ -247,8 +250,8 @@ export function InventoryShell({ language }: InventoryShellProps) {
         {feedback && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-feedback" data-tone={feedback.tone} initial={shouldReduceMotion ? false : { opacity: 0, y: -4 }} role="status">{feedback.tone === 'success' ? <CheckCircle2 aria-hidden="true" size={16} /> : <CircleAlert aria-hidden="true" size={16} />}{feedback.text}</motion.div>}
         <div className="react-demo-grid-shell" aria-busy={busy}><InventoryGrid language={language} onReady={handleGridReady} onStateChange={syncFromGrid} /></div>
       </div>
-      <PayloadSheet onOpenChange={setPayloadOpen} open={payloadOpen} payload={payload} />
-      <PartialSaveAlert invalidCount={payload.summary.invalidChangedRowsCount} onConfirm={() => void saveValidChanges()} onOpenChange={setPartialSaveOpen} open={partialSaveOpen} validCount={payload.summary.validChangedRowsCount} />
+      <PayloadSheet language={language} onOpenChange={setPayloadOpen} open={payloadOpen} payload={payload} />
+      <PartialSaveAlert language={language} invalidCount={payload.summary.invalidChangedRowsCount} onConfirm={() => void saveValidChanges()} onOpenChange={setPartialSaveOpen} open={partialSaveOpen} validCount={payload.summary.validChangedRowsCount} />
     </motion.section>
   );
 }

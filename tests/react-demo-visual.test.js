@@ -24,7 +24,8 @@ test('React inventory keeps the existing grid and KPI components without redunda
     expect(guide).toContain('aria-controls="react-table-guide-content"');
     expect(guide).toContain('<BookOpen aria-hidden="true" size={17} strokeWidth={2.2} />');
     expect(guide).toContain('data-open={open}');
-    expect(guide).toContain('fields(language).map');
+    expect(guide).toContain('fields.map');
+    expect(guide).toContain('SlidersHorizontal, Gauge, Calculator, Database');
 });
 
 test('React guide and workbench share a full width layout with responsive controls', () => {
