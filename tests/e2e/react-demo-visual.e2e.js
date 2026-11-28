@@ -38,7 +38,14 @@ test('React typography and geometry remain readable', async ({ page }) => {
     expect(metrics.footer).toBe(53);
     expect(metrics.kpis.every(height => Math.abs(height - 94.4375) < 1)).toBe(true);
     expect(metrics.holderWidth).toBe(1801);
-    expect(metrics.widths.every(([, width], index) => Math.abs(width - [119, 211, 211, 144, 119, 151, 113, 177, 148, 356][index]) <= 2)).toBe(true);
+    const expectedWidths = {
+        itemCode: 119, productName: 211, supplierCode: 211, stockQuantity: 143, unitPrice: 119,
+        inventoryValue: 146, status: 113, requiresInspection: 176, lastCheckDate: 149, notes: 362
+    };
+    expect(metrics.widths.map(([field]) => field).sort()).toEqual(Object.keys(expectedWidths).sort());
+    for (const [field, width] of metrics.widths) {
+        expect(Math.abs(width - expectedWidths[field]), `Width of ${field}`).toBeLessThanOrEqual(2);
+    }
     expect(Object.fromEntries(Object.entries(metrics.fonts).map(([key, value]) => [key, value.size]))).toEqual({ item: '14px', product: '14px', unit: '14px', value: '14px', date: '14px', notes: '14px', supplier: '14px', supplierDetail: '12px', stock: '14px', stockLabel: '10px' });
     expect(metrics.fonts.stock).toMatchObject({ size: '14px', weight: '700', color: 'rgb(51, 65, 85)', line: metrics.fonts.unit.line });
     expect(metrics.fonts.stock.family).toBe(metrics.fonts.unit.family);

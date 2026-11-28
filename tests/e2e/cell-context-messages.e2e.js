@@ -212,15 +212,19 @@ test.describe('React supplier lookup messages and status select', () => {
         await expect(page.getByRole('heading', { name: 'Interactive inventory' })).toBeVisible();
         await page.locator('.react-table-guide__trigger').click();
         await expect(page.locator('.react-table-guide__column-list')).toContainText(
-            'Search a supplier by code, name, or city'
+            'Search suppliers by code, name or city and update related fields through mapToRow.'
         );
+        await expect(page.locator('.react-table-guide__column-list').getByRole('heading', { name: 'Supplier', exact: true })).toBeVisible();
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
         await expect(supplier).toContainText('Lombarda Industrial');
         await expect(supplier).toContainText('SUP-003 · Milano');
 
         await page.locator('#site-navbar').getByRole('button', { name: 'Italiano' }).click();
         await expect(page.getByRole('heading', { name: 'Inventario interattivo' })).toBeVisible();
-        await expect(page.locator('.react-table-guide__column-list')).toContainText('Fornitore');
+        await expect(page.locator('.react-table-guide__column-list')).toContainText(
+            'Ricerca del fornitore per codice, nome o città e aggiornamento dei campi collegati tramite mapToRow.'
+        );
+        await expect(page.locator('.react-table-guide__column-list').getByRole('heading', { name: 'Supplier', exact: true })).toBeVisible();
         await expect(row.locator('.amb-row-action-button--rollback')).toBeVisible();
         await expect(supplier).toContainText('Lombarda Industrial');
         await expect(supplier).toContainText('SUP-003 · Milano');
