@@ -6,6 +6,7 @@ export type InventoryGridController = ReturnType<typeof AMB.table>;
 
 type InventoryGridProps = {
   language: 'it' | 'en';
+  onConfirmDelete: (itemCode: string) => Promise<boolean>;
   onReady: (grid: InventoryGridController | null) => void;
   onStateChange: (grid: InventoryGridController) => void;
 };
@@ -112,7 +113,7 @@ const supplierLookup = AMB.lookup({
   },
 });
 
-export function InventoryGrid({ language, onReady, onStateChange }: InventoryGridProps) {
+export function InventoryGrid({ language, onConfirmDelete, onReady, onStateChange }: InventoryGridProps) {
   const gridElementRef = useRef<HTMLDivElement | null>(null);
   const gridRef = useRef<InventoryGridController | null>(null);
   const languageRef = useRef(language);
@@ -135,8 +136,7 @@ export function InventoryGrid({ language, onReady, onStateChange }: InventoryGri
       data: [],
       layout: 'fitDataStretch',
       toolbar: false,
-      // React demo intentionally keeps row actions immediate.
-      rowActionColumn: { enabled: true, width: 52 },
+      rowActionColumn: { enabled: true, width: 52, confirmDeleteMessage: 'Confirm delete', confirmProvider: ({ row }: { row: { getData: () => { itemCode?: string } } }) => onConfirmDelete(row.getData().itemCode ?? '') },
       columns: [
         { title: 'Item code', field: 'itemCode', minWidth: 118, editor: AMB.editors.text({ uppercase: true, trim: true }), required: true, validation: { pattern: { regex: /^ITM-[A-Z0-9]{4}$/, message: 'Use ITM-1001 format' }, unique: { caseSensitive: false, message: 'Item code must be unique' } } },
         { title: 'Product name', field: 'productName', minWidth: 210, editor: AMB.editors.text({ trim: true }), bottomCalc: () => languageRef.current === 'it' ? 'Totali correnti' : 'Current totals', bottomCalcFormatter: summaryLabelFormatter, required: true, validation: { minLength: { value: 3, message: 'Enter at least 3 characters' } } },
@@ -213,7 +213,7 @@ export function InventoryGrid({ language, onReady, onStateChange }: InventoryGri
       window.clearTimeout(initializeGrid);
       destroyGrid();
     };
-  }, [onReady, onStateChange]);
+  }, [onConfirmDelete, onReady, onStateChange]);
 
   return <div className="react-demo-grid" ref={gridElementRef} />;
 }

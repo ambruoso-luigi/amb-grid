@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, type RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Braces, CircleHelp, Filter, LoaderCircle, PackagePlus, RotateCcw, Save, Search, ShieldCheck } from 'lucide-react';
+import { Braces, CircleHelp, ClipboardList, Filter, LoaderCircle, PackagePlus, RotateCcw, Save, Search } from 'lucide-react';
 import { Button } from './ui/button';
 import { commandGuideCopy } from '../../../../src/demo/components/demo-command-guide-copy';
 
@@ -22,7 +22,7 @@ type InventoryToolbarProps = {
   onReload: () => void;
   onSave: () => void;
   onSearch: (query: string) => void;
-  onValidate: () => void;
+  onReport: () => void;
   pending: number;
   searchQuery: string;
 };
@@ -49,22 +49,22 @@ export function InventoryToolbar(props: InventoryToolbarProps) {
     <div className="inventory-toolbar__actions">
       <Button disabled={disabled} onClick={props.onAdd}><PackagePlus aria-hidden="true" className="inventory-toolbar__icon" /> Add product</Button>
       <Button disabled={disabled || props.pending === 0} onClick={props.onSave} variant="outline">{props.busy ? <LoaderCircle aria-hidden="true" className="inventory-spinner inventory-toolbar__icon" /> : <Save aria-hidden="true" className="inventory-toolbar__icon" />} Save changes</Button>
-      <Button disabled={disabled} onClick={props.onValidate} variant="outline"><ShieldCheck aria-hidden="true" className="inventory-toolbar__icon" /> Validate</Button>
+      <Button className="inventory-toolbar__report" disabled={disabled} onClick={props.onReport} variant="outline"><ClipboardList aria-hidden="true" size={16} strokeWidth={1.75} /> Report</Button>
       <Button disabled={disabled} onClick={props.onReload} variant="outline"><RotateCcw aria-hidden="true" className="inventory-toolbar__icon" /> Reload</Button>
     </div>
     <div className="inventory-toolbar__utilities">
-      <label className="inventory-search"><Search aria-hidden="true" className="inventory-toolbar__icon" /><input aria-label="Search inventory" onChange={(event) => props.onSearch(event.target.value)} placeholder="Search inventory..." value={props.searchQuery} /></label>
+      <label className="inventory-search"><Search aria-hidden="true" className="inventory-toolbar__icon" /><input aria-label="Search inventory" disabled={disabled} onChange={(event) => props.onSearch(event.target.value)} placeholder="Search inventory..." value={props.searchQuery} /></label>
       <div className="inventory-toolbar__filter-control" ref={filtersControlRef}>
         <Button aria-describedby={activeFilterCount ? filterDescriptionId : undefined} aria-expanded={props.filtersOpen} className="inventory-toolbar__filters-button" disabled={disabled} onClick={props.onFiltersToggle} size="sm" variant="outline"><Filter aria-hidden="true" className="inventory-toolbar__icon" /> Filters{activeFilterCount > 0 && <span aria-hidden="true" className="inventory-toolbar__filter-count">{activeFilterCount}</span>}</Button>
         {activeFilterCount > 0 && <span className="inventory-toolbar__filter-description" id={filterDescriptionId}>{props.language === 'it' ? `${activeFilterCount} filtri attivi` : `${activeFilterCount} active filters`}</span>}
         <AnimatePresence>
           {props.filtersOpen && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-filters" exit={{ opacity: 0, y: -6 }} initial={{ opacity: 0, y: -6 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
-            <label>Status<select onChange={(event) => props.onFiltersChange({ ...props.filters, status: event.target.value })} value={props.filters.status}><option value="">{props.language === 'it' ? 'Tutti' : 'All'}</option><option value="ACTIVE">ACTIVE</option><option value="REVIEW">REVIEW</option><option value="HOLD">HOLD</option></select></label>
-            <label>Inspection<select onChange={(event) => props.onFiltersChange({ ...props.filters, inspection: event.target.value })} value={props.filters.inspection}><option value="">{props.language === 'it' ? 'Tutte' : 'All'}</option><option value="true">{props.language === 'it' ? 'Richiesta' : 'Required'}</option><option value="false">{props.language === 'it' ? 'Non richiesta' : 'Not required'}</option></select></label>
+            <label>Status<select disabled={disabled} onChange={(event) => props.onFiltersChange({ ...props.filters, status: event.target.value })} value={props.filters.status}><option value="">{props.language === 'it' ? 'Tutti' : 'All'}</option><option value="ACTIVE">ACTIVE</option><option value="REVIEW">REVIEW</option><option value="HOLD">HOLD</option></select></label>
+            <label>Inspection<select disabled={disabled} onChange={(event) => props.onFiltersChange({ ...props.filters, inspection: event.target.value })} value={props.filters.inspection}><option value="">{props.language === 'it' ? 'Tutte' : 'All'}</option><option value="true">{props.language === 'it' ? 'Richiesta' : 'Required'}</option><option value="false">{props.language === 'it' ? 'Non richiesta' : 'Not required'}</option></select></label>
           </motion.div>}
         </AnimatePresence>
       </div>
-      <Button disabled={!props.gridReady} onClick={props.onPayload} size="sm" variant="outline"><Braces aria-hidden="true" className="inventory-toolbar__icon" /> Payload</Button>
+      <Button disabled={disabled} onClick={props.onPayload} size="sm" variant="outline"><Braces aria-hidden="true" className="inventory-toolbar__icon" /> Payload</Button>
       <Button aria-label={commandGuide.title} onClick={props.onCommandGuideToggle} ref={props.commandGuideTriggerRef} size="sm" title={commandGuide.title} variant="outline"><CircleHelp aria-hidden="true" className="inventory-toolbar__icon" /> {commandGuide.label}</Button>
     </div>
   </div>;

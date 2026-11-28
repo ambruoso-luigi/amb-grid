@@ -82,6 +82,7 @@ button, a { outline-offset: 3px; }
 .inventory-spinner { animation: inventory-spin .8s linear infinite; }
 .inventory-feedback { align-items: center; background: #edf9f2; border: 1px solid #bfe2cd; border-radius: 9px; color: #277047; display: flex; font-size: 13px; font-weight: 650; gap: 8px; margin-top: 14px; padding: 9px 11px; }
 .inventory-feedback[data-tone="error"] { background: #fff4f2; border-color: #efcdc7; color: #a43e35; }
+.inventory-feedback[data-tone="warning"] { background: #fff8ea; border-color: #eac47a; color: #795518; }
 @keyframes inventory-spin { to { transform: rotate(360deg); } }
 
 .react-table-guide__content-inner { display: grid; gap: 18px; padding-top: 17px; }
@@ -92,6 +93,7 @@ button, a { outline-offset: 3px; }
 .react-table-guide__column-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 .react-sheet__overlay, .react-alert__overlay { animation: react-overlay-in 180ms ease-out; background: rgb(11 28 43 / 44%); inset: 0; position: fixed; z-index: 90; }
+.react-alert__overlay { background: rgb(15 23 42 / 40%); }
 .react-sheet__content { animation: react-sheet-in 240ms ease-out; background: #f8fbfc; bottom: 0; box-shadow: -20px 0 60px rgb(12 35 53 / 20%); display: flex; flex-direction: column; max-width: 560px; padding: 22px; position: fixed; right: 0; top: 0; width: min(92vw, 560px); z-index: 91; }
 .react-sheet__header { align-items: flex-start; border-bottom: 1px solid #d9e6ea; display: flex; gap: 20px; justify-content: space-between; padding-bottom: 16px; }
 .react-sheet__header h2 { color: #14314a; font-size: 21px; margin: 0; }
@@ -112,11 +114,32 @@ button, a { outline-offset: 3px; }
 .payload-json__boolean, .payload-json__null { color: #b9a7ee; }
 .payload-json__punctuation { color: #aab8c8; }
 
-.react-alert__content { animation: react-alert-in 200ms ease-out; background: #fff; border: 1px solid #d9e5e9; border-radius: 14px; box-shadow: 0 24px 70px rgb(12 35 53 / 25%); left: 50%; max-width: 470px; padding: 24px; position: fixed; top: 50%; transform: translate(-50%, -50%); width: calc(100% - 32px); z-index: 91; }
-.react-alert__icon { align-items: center; background: #fff4d9; border-radius: 9px; color: #a87312; display: inline-flex; height: 40px; justify-content: center; margin-bottom: 14px; width: 40px; }
-.react-alert__content h2 { color: #17344d; font-size: 20px; margin: 0; }
-.react-alert__content p { color: #60778a; font-size: 14px; line-height: 1.55; margin: 9px 0 0; }
-.react-alert__actions { display: flex; gap: 9px; justify-content: flex-end; margin-top: 22px; }
+.react-alert__content { animation: react-alert-in 200ms ease-out; background: #fff; border: 1px solid #a9dce5; border-radius: 12px; box-shadow: 0 16px 40px rgb(15 23 42 / 16%); box-sizing: border-box; display: flex; flex-direction: column; font-family: inherit; gap: 16px; left: 50%; line-height: 1.5; max-height: calc(100dvh - 32px); max-width: calc(100vw - 32px); padding: 24px; position: fixed; top: 50%; transform: translate(-50%, -50%); width: 460px; z-index: 91; }
+.react-alert__content--partial { width: 520px; }
+.react-alert__icon { align-items: center; background: #fff5df; border: 1px solid #eac47a; border-radius: 8px; box-sizing: border-box; color: #986a00; display: inline-flex; flex: none; height: 40px; justify-content: center; width: 40px; }
+.react-alert__content h2 { color: #10243e; font-size: 20px; font-weight: 700; line-height: 1.5; margin: 0; }
+.react-alert__content p { color: #334155; font-size: 14px; font-weight: 400; line-height: 1.5; margin: 0; }
+.react-alert__summary { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.react-alert__summary > div { background: #f0f9fa; border: 1px solid #b5dde5; border-radius: 8px; display: grid; gap: 4px; padding: 12px; }
+.react-alert__summary > div + div { background: #fff8ea; border-color: #eac47a; }
+.react-alert__summary span { color: #334155; font-size: 13px; }.react-alert__summary strong { color: #007c96; font-size: 16px; font-weight: 700; }
+.react-alert__summary > div + div span { color: #795518; }.react-alert__summary > div + div strong { color: #986a00; }
+.react-alert__excluded { background: #fff8ea; border: 1px solid #eac47a; border-radius: 8px; color: #795518; flex: 0 1 auto; font-size: 13px; max-height: 180px; min-height: 0; overflow: auto; padding: 12px; }
+.react-alert__excluded > div + div { border-top: 1px solid #eac47a; margin-top: 10px; padding-top: 10px; }.react-alert__excluded strong { color: #10243e; font-weight: 600; }.react-alert__excluded ul { margin: 4px 0 0; padding-left: 18px; }
+.react-alert__content .react-alert__hint { color: #475569; font-size: 13px; }
+.react-alert__actions { display: flex; flex: none; gap: 8px; justify-content: flex-end; }
+.react-alert__actions button { background: #007c96; border: 1px solid #007c96; border-radius: 6px; color: #fff; font-size: 14px; font-weight: 600; gap: 8px; height: 38px; padding: 0 14px; transition: 150ms ease; }.react-alert__actions button:hover:not(:disabled) { background: #00677d; }.react-alert__actions button:first-child { background: #fff; border-color: #b7cbd5; color: #334155; }.react-alert__actions button:first-child:hover:not(:disabled) { background: #f1f5f9; }.react-alert__actions button:focus-visible { outline: 2px solid #007c96; outline-offset: 2px; }.react-alert__actions button:disabled { opacity: .55; }
+.react-alert--delete .react-alert__icon { background: #fdecec; border-color: #f1b8bd; color: #b42335; }
+.react-alert--delete .react-alert__actions button:last-child { background: #b42335; border-color: #b42335; }.react-alert--delete .react-alert__actions button:last-child:hover { background: #951d2c; }.react-alert--delete .react-alert__actions button:last-child:focus-visible { outline-color: #b42335; }
+.react-alert--reload .react-alert__actions button:last-child { background: #986a00; border-color: #986a00; }.react-alert--reload .react-alert__actions button:last-child:hover { background: #805900; }.react-alert--reload .react-alert__actions button:last-child:focus-visible { outline-color: #986a00; }
+.react-alert__content--report { width: 640px; }.react-alert__icon--report { background: #f0f9fa; border-color: #b5dde5; color: #007c96; }
+.react-alert__content--report .react-alert__actions button { background: #007c96; border-color: #007c96; color: #fff; }.react-alert__content--report .react-alert__actions button:hover { background: #00677d; }
+.react-report__body { display: grid; gap: 16px; min-height: 0; overflow: auto; }.react-report__body h3 { color: #10243e; font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+.react-report__counts { display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }.react-report__counts > div { background: #f8fafc; border: 1px solid #d9e2ea; border-radius: 8px; display: grid; gap: 4px; padding: 12px; }.react-report__counts span { color: #475569; font-size: 12px; font-weight: 500; }.react-report__counts strong { color: #10243e; font-size: 20px; font-weight: 700; }.react-report__counts > div:nth-child(2) { background: #f0f9fa; border-color: #b5dde5; }.react-report__counts > div:nth-child(2) strong { color: #007c96; }.react-report__counts > div:nth-child(3) { background: #fff8ea; border-color: #eac47a; }.react-report__counts > div:nth-child(3) strong { color: #986a00; }.react-report__counts > div:nth-child(4) { background: #fdecec; border-color: #f1b8bd; }.react-report__counts > div:nth-child(4) strong { color: #b42335; }
+.react-report__changes, .react-report__errors, .react-report__empty { border-radius: 8px; color: #475569; font-size: 13px; overflow: auto; padding: 12px; }.react-report__changes { background: #f8fafc; border: 1px solid #d9e2ea; max-height: 160px; }.react-report__changes > div { display: flex; gap: 8px; justify-content: space-between; }.react-report__changes strong, .react-report__errors strong { color: #10243e; font-weight: 600; }.react-report__changes [data-state="new"] { color: #087f98; }.react-report__changes [data-state="modified"] { color: #986a00; }.react-report__changes [data-state="deleted"] { color: #b42335; }
+.react-report__errors { background: #fff7f7; border: 1px solid #f1b8bd; color: #b42335; max-height: 180px; }.react-report__errors > div + div { border-top: 1px solid #f1b8bd; margin-top: 10px; padding-top: 10px; }.react-report__errors ul { margin: 4px 0 0; padding-left: 18px; }.react-report__empty { padding: 0; }
+@media (max-width: 599px) { .react-report__counts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 479px) { .react-alert__content { gap: 12px; padding: 16px; }.react-alert__summary { grid-template-columns: 1fr; }.react-alert__actions { flex-direction: column; } }
 .react-demo-bootstrap-error { color: #a43e35; margin: 40px auto; max-width: 760px; padding: 20px; }
 @keyframes react-overlay-in { from { opacity: 0; } }
 @keyframes react-sheet-in { from { transform: translateX(100%); } }
@@ -315,6 +338,7 @@ button, a { outline-offset: 3px; }
 }
 
 .inventory-toolbar__icon { color: #0ea5b7; height: 20px; stroke-width: 2; width: 20px; }
+.inventory-toolbar .inventory-toolbar__report { background: #fff; border-color: #b7cbd5; color: #10243e; gap: 8px; }.inventory-toolbar .inventory-toolbar__report svg { color: #007c96; }.inventory-toolbar .inventory-toolbar__report:hover { background: #eaf6f8; }.inventory-toolbar .inventory-toolbar__report:focus-visible { outline: 2px solid #007c96; outline-offset: 2px; }
 .inventory-toolbar button:hover .inventory-toolbar__icon, .inventory-search:focus-within .inventory-toolbar__icon { color: #0891a6; }
 .inventory-toolbar__filter-control { position: relative; }
 .inventory-toolbar .inventory-toolbar__filters-button { overflow: visible; position: relative; }

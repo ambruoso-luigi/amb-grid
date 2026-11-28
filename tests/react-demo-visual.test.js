@@ -14,7 +14,7 @@ test('React inventory keeps the existing grid and KPI components without redunda
     expect(shell).not.toContain('Operazioni inventario');
     expect(shell).not.toContain('inventory-workspace__header');
     expect(shell).toContain('<InventoryKpis language={language} snapshot={snapshot} />');
-    expect(shell).toContain('<InventoryGrid language={language} onReady={handleGridReady} onStateChange={syncFromGrid} />');
+    expect(shell).toContain('<InventoryGrid language={language} onConfirmDelete={confirmDelete} onReady={handleGridReady} onStateChange={syncFromGrid} />');
     expect(kpis.match(/\['(?:Products|Modified|Errors|Ready to save|Low stock|On hold)'/g)).toHaveLength(6);
     expect(guide).toContain('Inventario interattivo');
     expect(guide).toContain('Interactive inventory');

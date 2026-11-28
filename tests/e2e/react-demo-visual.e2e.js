@@ -212,9 +212,10 @@ test('React guide and inventory state survive language changes', async ({ page }
     expect(await grid.evaluate((element, original) => element === original, handle)).toBe(true);
     expect(await grid.locator('.tabulator-header .tabulator-col-title').allTextContents()).toEqual(headings);
     await expect(panel.locator('.inventory-kpis')).toContainText('Ready to save');
-    await expect(panel.getByRole('button', { name: 'Validate', exact: true })).toBeVisible();
-    await panel.getByRole('button', { name: 'Validate', exact: true }).click();
-    await expect(panel.getByRole('status')).toContainText('Validation complete: no errors.');
+    await expect(panel.getByRole('button', { name: 'Report', exact: true })).toBeVisible();
+    await panel.getByRole('button', { name: 'Report', exact: true }).click();
+    await expect(page.getByRole('alertdialog')).toContainText('No validation errors.');
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Close' }).click();
     await setSiteLanguage(page, 'it');
     await expect(panel.getByRole('button', { name: 'Guida tecnica demo' })).toHaveAttribute('aria-expanded', 'true');
     await expect(content).toContainText('AMB Grid gestisce la griglia');

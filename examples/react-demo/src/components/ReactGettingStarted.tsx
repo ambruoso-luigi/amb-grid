@@ -70,30 +70,30 @@ const supplierEditor = AMB.editors.lookup(supplierLookup, {
 });
 // In columns: { title: 'Supplier', field: 'supplierCode', editor: supplierEditor, ... }
 // In destroyGrid: supplierDialog.destroy();`,
-  request: `const currentPayload = grid.getSavePayload({
+  request: `grid.validateChanges();
+const report = grid.getStateReport();
+const payload = grid.getSavePayload({
   savePolicy: 'valid-only', includeInvalid: true,
 });
-const report = grid.getStateReport();
-const savedCandidates = report.validChangedRows.map(({ key, tempId }) => ({ key, tempId }));
+// Report displays the current report; React confirms a partial save.
 const response = await fetch('/api/products/save', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(currentPayload.changes),
+  body: JSON.stringify(payload.changes),
 });
 if (!response.ok) throw new Error(\`POST /api/products/save failed with \${response.status}\`);
-const result = await response.json() as SaveResponse;`,
-  acknowledge: `const idByTempId = new Map(result.insertedIds
-  .filter(({ tempId }) => Boolean(tempId))
-  .map(({ tempId, id }) => [tempId as string, id]));
-grid.applyBackendIds(result.insertedIds.filter(
-  (mapping): mapping is { tempId: string; id: number } =>
-    typeof mapping.tempId === 'string',
-));
-const identifiers = savedCandidates.map(({ key, tempId }) =>
+const result = await response.json();`,
+  acknowledge: `const candidates = report.validChangedRows.map(
+  ({ key, tempId, state }) => ({ key, tempId, state }),
+);
+const idByTempId = new Map(result.insertedIds.map(({ tempId, id }) => [tempId, id]));
+const mappings = candidates.filter(row => row.state === 'new')
+  .map(row => ({ tempId: row.tempId, id: idByTempId.get(row.tempId) }));
+const applied = grid.applyBackendIds(mappings);
+// The demo checks applied, invalid, duplicate and missing mappings before acknowledging.
+const identifiers = candidates.map(({ key, tempId }) =>
   tempId ? idByTempId.get(tempId) ?? key : key);
-const acknowledged = grid.markRowsSaved(identifiers);
-if (!acknowledged) throw new Error('Save acknowledgement failed');
-syncFromGrid(grid);`,
+grid.markRowsSaved(identifiers);`,
 } as const;
 
 const copy = {
@@ -122,7 +122,7 @@ const copy = {
       {
         title: 'Gestisci il salvataggio asincrono',
         description: 'getSavePayload() prepara i dati, ma non li invia. fetch trasmette le modifiche all’API simulata; solo dopo una risposta valida applyBackendIds associa gli ID restituiti e markRowsSaved conferma le righe salvate. Le modifiche non valide restano da correggere.',
-        note: 'Due estratti consecutivi di saveValidChanges in InventoryShell.tsx, dentro il blocco try della callback asincrona. SaveResponse contiene insertedIds: { tempId?: string; id: number }[]. Prima di arrivare qui, prepareSave esegue validateChanges(), controlla hasChanges e canSave. Sono omessi busy, catch/finally e i messaggi di feedback, presenti nella demo.',
+        note: 'Estratti semplificati di reviewChanges e sendValidChanges in inventory-save.ts. Report mostra lo stato corrente; prepareSave confronta il riepilogo prima della conferma parziale. La demo verifica anche gli identificativi restituiti e gestisce errori e feedback.',
       },
     ],
   },
@@ -151,7 +151,7 @@ const copy = {
       {
         title: 'Handle asynchronous saving',
         description: 'getSavePayload() prepares data but does not send it. fetch submits changes to the mock API; only after a successful response does applyBackendIds assign the returned IDs and markRowsSaved acknowledge saved rows. Invalid changes remain pending correction.',
-        note: 'Two consecutive excerpts from saveValidChanges in InventoryShell.tsx, inside the async callback’s try block. SaveResponse contains insertedIds: { tempId?: string; id: number }[]. Before reaching this code, prepareSave runs validateChanges(), checks hasChanges and canSave. The demo’s busy state, catch/finally and feedback messages are omitted.',
+        note: 'Simplified excerpts from reviewChanges and sendValidChanges in inventory-save.ts. Report displays the current state; prepareSave compares the summary before partial confirmation. The demo also checks returned identifiers and handles errors and feedback.',
       },
     ],
   },

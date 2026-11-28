@@ -16,7 +16,7 @@ const copy = {
       ['Backend simulato', "MSW intercetta le richieste HTTP dell'applicazione e simula le risposte del backend."],
     ],
     note: "L'interfaccia utilizza shadcn/ui e Motion per personalizzare l'esperienza applicativa senza modificare il CORE di AMB Grid.",
-    operationText: "AMB Grid gestisce l'editing diretto, la validazione automatica, gli stati CRUD e la preparazione del payload. L'applicazione React utilizza queste informazioni per aggiornare l'interfaccia e inviare le modifiche al backend simulato.",
+    operationText: "AMB Grid gestisce l'editing diretto, la validazione automatica, gli stati CRUD e la preparazione del payload. L'applicazione React utilizza queste informazioni per aggiornare l'interfaccia e inviare le modifiche al backend simulato. L'applicazione può salvare anche soltanto le modifiche valide, mantenendo disponibili per la correzione le righe contenenti errori.",
     descriptions: ['Ricerca del fornitore per codice, nome o città e aggiornamento dei campi collegati tramite mapToRow.', 'Quantità modificabile con barra grafica dinamica.', 'Valore calcolato moltiplicando la quantità disponibile per il prezzo unitario.', 'Selezione dello stato con rappresentazione grafica tramite badge e icone.', 'Editor data con calendario e formato controllato.', 'Editor esteso per la gestione delle annotazioni operative.'],
   },
   en: {
@@ -31,7 +31,7 @@ const copy = {
       ['Simulated backend', "MSW intercepts the application's HTTP requests and simulates backend responses."],
     ],
     note: 'The interface uses shadcn/ui and Motion to customize the application experience without modifying the AMB Grid core.',
-    operationText: 'AMB Grid handles direct editing, automatic validation, CRUD states and payload preparation. The React application uses this information to update the interface and send changes to the simulated backend.',
+    operationText: 'AMB Grid handles direct editing, automatic validation, CRUD states and payload preparation. The React application uses this information to update the interface and send changes to the simulated backend. The application can also save only valid changes, keeping rows containing errors available for correction.',
     descriptions: ['Search suppliers by code, name or city and update related fields through mapToRow.', 'Editable quantity with a dynamic visual bar.', 'Calculated value obtained by multiplying stock quantity by unit price.', 'Status selection with visual representation through badges and icons.', 'Date editor with calendar picker and controlled formatting.', 'Extended editor for managing operational notes.'],
   },
 } as const;

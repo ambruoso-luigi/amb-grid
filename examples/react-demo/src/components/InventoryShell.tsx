@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import { CheckCircle2, CircleAlert } from 'lucide-react';
 import { InventoryGrid, type InventoryGridController } from './InventoryGrid';
 import { InventoryKpis } from './InventoryKpis';
 import { inventorySnapshot, type InventorySnapshot } from '../inventory-metrics';
+import { createSaveGate, excludedRows, reviewChanges, sendValidChanges, type SaveReview } from '../inventory-save';
 import { InventoryToolbar, type InventoryFilters } from './InventoryToolbar';
 import { PayloadSheet, type InventoryPayload } from './PayloadSheet';
-import { PartialSaveAlert } from './ui/alert-dialog';
+import { ActionConfirmation, ChangesReport, PartialSaveAlert } from './ui/alert-dialog';
 import type { InventoryRow } from '../data/inventory';
 import {
   createDemoCommandGuide,
   type DemoCommandGuideController,
 } from '../../../../src/demo/components/demo-command-guide';
-
-type SaveResponse = {
-  insertedIds: { tempId?: string; id: number }[];
-};
 
 type Language = 'it' | 'en';
 type InventoryShellProps = { language: Language };
@@ -62,11 +60,18 @@ export function InventoryShell({ language }: InventoryShellProps) {
   const [payload, setPayload] = useState<InventoryPayload>(emptyPayload);
   const [payloadOpen, setPayloadOpen] = useState(false);
   const [partialSaveOpen, setPartialSaveOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportData, setReportData] = useState<SaveReview['report'] | null>(null);
+  const [confirmation, setConfirmation] = useState<{ kind: 'delete' | 'reload'; itemCode?: string } | null>(null);
+  const confirmDeleteRef = useRef<((value: boolean) => void) | null>(null);
   const [busy, setBusy] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<InventoryFilters>({ status: '', inspection: '' });
   const [searchQuery, setSearchQuery] = useState('');
-  const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
+  const [feedback, setFeedback] = useState<{ tone: 'success' | 'warning' | 'error'; text: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [review, setReview] = useState<SaveReview | null>(null);
+  const saveGate = useRef(createSaveGate());
   const languageRef = useRef(language);
   languageRef.current = language;
   const nextItemNumber = useRef(1009);
@@ -97,7 +102,7 @@ export function InventoryShell({ language }: InventoryShellProps) {
     commandGuideRef.current?.setLocale(language);
   }, [language]);
 
-  const showFeedback = useCallback((tone: 'success' | 'error', text: string) => {
+  const showFeedback = useCallback((tone: 'success' | 'warning' | 'error', text: string) => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
     setFeedback({ tone, text });
     feedbackTimer.current = setTimeout(() => setFeedback(null), 4200);
@@ -108,6 +113,8 @@ export function InventoryShell({ language }: InventoryShellProps) {
     loadAbortRef.current?.abort();
     loadAbortRef.current = null;
     activeGridRef.current = null;
+    confirmDeleteRef.current?.(false);
+    confirmDeleteRef.current = null;
   }, []);
 
   const syncFromGrid = useCallback((controller: InventoryGridController) => {
@@ -135,7 +142,8 @@ export function InventoryShell({ language }: InventoryShellProps) {
     } catch (error) {
       if (abortController.signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) return;
       if (activeGridRef.current !== controller) return;
-      showFeedback('error', error instanceof Error ? error.message : languageRef.current === 'it' ? 'Impossibile caricare i prodotti.' : 'Unable to load products.');
+      const message = languageRef.current === 'it' ? 'Impossibile caricare i prodotti.' : 'Unable to load products.';
+      showFeedback('error', error instanceof Error ? `${message} (${error.message})` : message);
     } finally {
       if (loadAbortRef.current === abortController) {
         loadAbortRef.current = null;
@@ -171,60 +179,88 @@ export function InventoryShell({ language }: InventoryShellProps) {
       requiresInspection: false,
       lastCheckDate: '2026-09-10',
       notes: '',
-    })).then(() => syncFromGrid(grid));
+    })).then(() => {
+      grid.validateChanges();
+      syncFromGrid(grid);
+    });
   }, [grid, syncFromGrid]);
 
-  const validate = useCallback(async () => {
+  const openReport = useCallback(() => {
     if (!grid) return;
-    await Promise.resolve(grid.validate());
+    const current = reviewChanges(grid);
     syncFromGrid(grid);
-    const report = grid.getStateReport();
-    const cellErrorCount = grid.getCellErrors().length;
-    const it = languageRef.current === 'it';
-    const cellLabel = it ? (cellErrorCount === 1 ? 'cella non valida' : 'celle non valide') : (cellErrorCount === 1 ? 'invalid cell' : 'invalid cells');
-    const rowLabel = it ? (report.errorRowsCount === 1 ? 'riga' : 'righe') : (report.errorRowsCount === 1 ? 'row' : 'rows');
-    showFeedback(report.errorRowsCount ? 'error' : 'success', report.errorRowsCount ? `${cellErrorCount} ${cellLabel} in ${report.errorRowsCount} ${rowLabel}.` : it ? 'Validazione completata: nessun errore.' : 'Validation complete: no errors.');
-  }, [grid, showFeedback, syncFromGrid]);
+    setReportData(current.report);
+    setReportOpen(true);
+  }, [grid, syncFromGrid]);
 
-  const saveValidChanges = useCallback(async () => {
+  const confirmDelete = useCallback((itemCode: string) => new Promise<boolean>(resolve => {
+    if (confirmDeleteRef.current) return resolve(false);
+    confirmDeleteRef.current = resolve;
+    setConfirmation({ kind: 'delete', itemCode });
+  }), []);
+  const cancelConfirmation = useCallback(() => {
+    confirmDeleteRef.current?.(false);
+    confirmDeleteRef.current = null;
+    setConfirmation(null);
+  }, []);
+  const acceptConfirmation = useCallback(() => {
+    if (confirmation?.kind === 'delete') confirmDeleteRef.current?.(true);
+    else if (confirmation?.kind === 'reload' && grid) void loadProducts(grid);
+    confirmDeleteRef.current = null;
+    setConfirmation(null);
+  }, [confirmation, grid, loadProducts]);
+  const requestReload = useCallback(() => {
     if (!grid) return;
-    const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-    const report = grid.getStateReport();
-    const savedCandidates = report.validChangedRows.map(({ key, tempId }) => ({ key, tempId }));
-    setBusy(true);
+    if (grid.getStateReport().hasChanges) setConfirmation({ kind: 'reload' });
+    else void loadProducts(grid);
+  }, [grid, loadProducts]);
+
+  const sendReviewedChanges = useCallback(async (current: SaveReview) => {
+    if (!grid) return;
     try {
-      const response = await fetch('/api/products/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(currentPayload.changes),
-      });
-      if (!response.ok) throw new Error(`POST /api/products/save failed with ${response.status}`);
-      const result = await response.json() as SaveResponse;
-      const idByTempId = new Map(result.insertedIds.filter(({ tempId }) => Boolean(tempId)).map(({ tempId, id }) => [tempId as string, id]));
-      grid.applyBackendIds(result.insertedIds.filter((mapping): mapping is { tempId: string; id: number } => typeof mapping.tempId === 'string'));
-      const identifiers = savedCandidates.map(({ key, tempId }) => tempId ? idByTempId.get(tempId) ?? key : key);
-      const acknowledged = grid.markRowsSaved(identifiers);
-      if (!acknowledged) throw new Error(languageRef.current === 'it' ? 'Il backend ha risposto, ma AMB Grid non ha confermato tutte le righe.' : 'The backend responded, but AMB Grid did not acknowledge all rows.');
+      await sendValidChanges(grid, current);
       syncFromGrid(grid);
-      const remaining = grid.getStateReport().invalidChangedRowsCount;
-      showFeedback('success', languageRef.current === 'it' ? (remaining ? `${identifiers.length} modifiche salvate. ${remaining} righe restano da correggere.` : 'Modifiche salvate.') : (remaining ? `${identifiers.length} changes saved. ${remaining} rows still need correction.` : 'Changes saved.'));
+      setPartialSaveOpen(false);
+      showFeedback(current.payload.isPartialSave ? 'warning' : 'success', languageRef.current === 'it' ? (current.payload.isPartialSave ? 'Modifiche valide salvate. Le righe con errori restano da correggere.' : 'Modifiche salvate correttamente.') : (current.payload.isPartialSave ? 'Valid changes saved. Rows containing errors still need correction.' : 'Changes saved successfully.'));
     } catch (error) {
-      showFeedback('error', error instanceof Error ? error.message : languageRef.current === 'it' ? 'Salvataggio non riuscito.' : 'Save failed.');
-    } finally {
-      setBusy(false);
+      syncFromGrid(grid);
+      showFeedback('error', error instanceof Error && error.message === 'Local reconciliation failed after server response'
+        ? (languageRef.current === 'it' ? 'Il server ha risposto, ma il riallineamento locale non è stato completato. Verifica le righe prima di riprovare.' : 'The server responded, but local reconciliation did not complete. Check the rows before retrying.')
+        : (languageRef.current === 'it' ? 'Impossibile salvare le modifiche. I dati non salvati sono stati conservati.' : 'Unable to save changes. Unsaved data has been preserved.'));
     }
   }, [grid, showFeedback, syncFromGrid]);
 
-  const prepareSave = useCallback(async () => {
-    if (!grid) return;
-    await Promise.resolve(grid.validateChanges());
-    syncFromGrid(grid);
-    const currentPayload = grid.getSavePayload({ savePolicy: 'valid-only', includeInvalid: true });
-    if (!currentPayload.hasChanges) return showFeedback('success', languageRef.current === 'it' ? 'Nessuna modifica da salvare.' : 'No changes to save.');
-    if (!currentPayload.canSave) return showFeedback('error', languageRef.current === 'it' ? 'Correggi le righe non valide prima di salvare.' : 'Correct invalid rows before saving.');
-    if (currentPayload.isPartialSave) return setPartialSaveOpen(true);
-    await saveValidChanges();
-  }, [grid, saveValidChanges, showFeedback, syncFromGrid]);
+  const prepareSave = useCallback(async (confirmed?: SaveReview) => {
+    if (!grid || !saveGate.current.begin()) return;
+    flushSync(() => { setSaving(true); setBusy(true); });
+    try {
+      const current = reviewChanges(grid);
+      syncFromGrid(grid);
+      if (!current.payload.canSave) {
+        setReview(current);
+        if (confirmed) setPartialSaveOpen(false);
+        return showFeedback('error', languageRef.current === 'it' ? 'Correggi le righe non valide prima di salvare.' : 'Correct invalid rows before saving.');
+      }
+      if (confirmed && current.signature !== confirmed.signature) {
+        setReview(current);
+        return showFeedback('warning', languageRef.current === 'it' ? 'Le modifiche sono cambiate. Controlla il riepilogo aggiornato.' : 'Changes have changed. Review the updated summary.');
+      }
+      if (!confirmed && current.payload.isPartialSave) {
+        setReview(current);
+        setPartialSaveOpen(true);
+        return;
+      }
+      if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+      setFeedback({ tone: 'success', text: languageRef.current === 'it' ? 'Salvataggio in corso…' : 'Saving changes…' });
+      await sendReviewedChanges(current);
+    } catch {
+      showFeedback('error', languageRef.current === 'it' ? 'Impossibile verificare le modifiche.' : 'Unable to validate changes.');
+    } finally {
+      saveGate.current.end();
+      setSaving(false);
+      setBusy(false);
+    }
+  }, [grid, sendReviewedChanges, showFeedback, syncFromGrid]);
 
   const updateSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -246,12 +282,14 @@ export function InventoryShell({ language }: InventoryShellProps) {
       <div className="inventory-workspace">
         <InventoryKpis language={language} snapshot={snapshot} />
         <div className="demo-command-guide-host" ref={commandGuideHostRef} />
-        <InventoryToolbar busy={busy} commandGuideTriggerRef={commandGuideTriggerRef} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} language={language} onAdd={addProduct} onCommandGuideToggle={handleCommandGuideToggle} onFiltersChange={updateFilters} onFiltersClose={() => setFiltersOpen(false)} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={() => grid && void loadProducts(grid)} onSave={() => void prepareSave()} onSearch={updateSearch} onValidate={() => void validate()} pending={snapshot.modified} searchQuery={searchQuery} />
+        <InventoryToolbar busy={busy} commandGuideTriggerRef={commandGuideTriggerRef} filters={filters} filtersOpen={filtersOpen} gridReady={Boolean(grid)} language={language} onAdd={addProduct} onCommandGuideToggle={handleCommandGuideToggle} onFiltersChange={updateFilters} onFiltersClose={() => setFiltersOpen(false)} onFiltersToggle={() => setFiltersOpen((open) => !open)} onPayload={() => setPayloadOpen(true)} onReload={requestReload} onSave={() => void prepareSave()} onSearch={updateSearch} onReport={openReport} pending={snapshot.ready} searchQuery={searchQuery} />
         {feedback && <motion.div animate={{ opacity: 1, y: 0 }} className="inventory-feedback" data-tone={feedback.tone} initial={shouldReduceMotion ? false : { opacity: 0, y: -4 }} role="status">{feedback.tone === 'success' ? <CheckCircle2 aria-hidden="true" size={16} /> : <CircleAlert aria-hidden="true" size={16} />}{feedback.text}</motion.div>}
-        <div className="react-demo-grid-shell" aria-busy={busy}><InventoryGrid language={language} onReady={handleGridReady} onStateChange={syncFromGrid} /></div>
+        <div className="react-demo-grid-shell" aria-busy={busy} inert={busy}><InventoryGrid language={language} onConfirmDelete={confirmDelete} onReady={handleGridReady} onStateChange={syncFromGrid} /></div>
       </div>
       <PayloadSheet language={language} onOpenChange={setPayloadOpen} open={payloadOpen} payload={payload} />
-      <PartialSaveAlert language={language} invalidCount={payload.summary.invalidChangedRowsCount} onConfirm={() => void saveValidChanges()} onOpenChange={setPartialSaveOpen} open={partialSaveOpen} validCount={payload.summary.validChangedRowsCount} />
+      <PartialSaveAlert busy={saving} excluded={review ? excludedRows(review.report, language) : []} language={language} invalidCount={review?.report.invalidChangedRowsCount ?? 0} onConfirm={() => review && void prepareSave(review)} onOpenChange={setPartialSaveOpen} open={partialSaveOpen} validCount={review?.report.validChangedRowsCount ?? 0} />
+      <ChangesReport language={language} onClose={() => setReportOpen(false)} open={reportOpen} report={reportData} />
+      <ActionConfirmation kind={confirmation?.kind ?? 'reload'} itemCode={confirmation?.itemCode} language={language} onClose={cancelConfirmation} onConfirm={acceptConfirmation} open={Boolean(confirmation)} />
     </motion.section>
   );
 }
