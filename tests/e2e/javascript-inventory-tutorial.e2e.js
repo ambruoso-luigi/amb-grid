@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { enterNavigationWithClick, openEditorFromNavigation } from './helpers/focus-diagnostics.js';
+import { enterNavigationWithClick, openEditorFromNavigation, reportFocusDiagnostics } from './helpers/focus-diagnostics.js';
 
 test('inventory tutorial closes without resetting and confirms a fresh start', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('amb-grid-demo-language', 'it'));
@@ -157,11 +157,58 @@ test('inventory tutorial reaches and completes the F2 lookup through real intera
     await price.press('Escape');
     await step('pages');
     await expect(cell('stockQuantity')).toContainText(String(originalStock + 2));
-    await enterNavigationWithClick(page, cell('productName'), 'Tutorial pagination', '#inventory-table');
-    await page.keyboard.press('Alt+PageDown');
-    await step('pages', '1');
-    await page.keyboard.press('Alt+PageUp');
-    await step('direct-lookup');
+    let initialPage = null;
+    let expectedPage = null;
+    const currentPage = () => grid.locator('.tabulator-page.active').textContent().then(Number);
+    const firstItemCode = grid.locator('.tabulator-tableholder .tabulator-row').first()
+        .locator('.tabulator-cell[tabulator-field="itemCode"]');
+    try {
+        initialPage = await currentPage();
+        expect(Number.isInteger(initialPage) && initialPage > 0).toBe(true);
+        await enterNavigationWithClick(page, cell('productName'), 'Tutorial pagination', '#inventory-table');
+        await expect(cell('productName')).toBeFocused();
+        await expect(cell('productName')).not.toHaveClass(/tabulator-editing/);
+        await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+
+        expectedPage = initialPage + 1;
+        await page.keyboard.press('Alt+PageDown');
+        await expect.poll(currentPage).toBe(expectedPage);
+        await step('pages', '1');
+        await expect(firstItemCode).toBeVisible();
+        await expect(firstItemCode).toBeFocused();
+        await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+        await expect(tutorial).toHaveAttribute('data-feedback', 'false');
+        await expect.poll(() => firstItemCode.evaluate(async element => {
+            const focused = () => element.isConnected && document.activeElement === element;
+            if (!focused()) return false;
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            if (!focused()) return false;
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            return focused();
+        })).toBe(true);
+
+        expectedPage = initialPage;
+        await page.keyboard.press('Alt+PageUp');
+        await expect.poll(currentPage).toBe(initialPage);
+        await expect(firstItemCode).toBeVisible();
+        await expect(firstItemCode).toBeFocused();
+        await expect(grid.locator('.tabulator-cell.tabulator-editing')).toHaveCount(0);
+        await step('direct-lookup');
+    } catch (error) {
+        try {
+            const state = await tutorial.evaluate(element => ({
+                step: element.getAttribute('data-tutorial-step'),
+                actionIndex: element.getAttribute('data-tutorial-action-index')
+            }));
+            console.error('[tutorial pagination diagnostics]', JSON.stringify({
+                initialPage, expectedPage, actualPage: await currentPage(), ...state
+            }));
+            await reportFocusDiagnostics(page, firstItemCode, 'Tutorial pagination', '#inventory-table');
+        } catch (diagnosticError) {
+            console.error('[tutorial pagination diagnostics unavailable]', diagnosticError);
+        }
+        throw error;
+    }
 
     const statusInput = await openEditorFromNavigation(page, cell('status'), 'Tutorial direct status', '#inventory-table', '.amb-lookup-editor__input');
     const oldStatus = await statusInput.inputValue();
